@@ -569,7 +569,7 @@ if(sizeof($future))
 else
 	die('no meeting within timeframe');
 
-echo __("Next meeting",'rsvpmaker-for-toastmasters')." $next->datetime <br />";	
+echo __("Next meeting",'rsvpmaker-for-toastmasters')." $next->datetime <br />";
 
 $nexttime = $next->datetime;
 wp4_speech_prompt($next, strtotime($next->datetime));
@@ -691,7 +691,7 @@ if(!empty($atts["editable"]))
 			$content .= '<h3>'.$atts["editable"].'</h3>'.wpautop($editable);
 			}
 	}
-	
+
 if(isset($_GET["print_agenda"]) || isset($_GET["email_agenda"]))
 	{
 	$agenda_time = get_option('agenda_time');
@@ -718,7 +718,7 @@ return $output;
 
 function toastmaster_short($atts=array(),$content="") {
 	global $tmroles;
-	
+
 	if(isset($_GET["page"]) && ($_GET["page"] == 'agenda_timing') )
 		return timeplanner($atts, $content);
 	elseif(!empty($content))
@@ -1469,7 +1469,7 @@ if(isset($_POST["_manual"]))
 			$title = $_POST["_title"][$basefield];
 			$project = $_POST["_project"][$basefield];
 			$intro = (isset($_POST["_intro"][$basefield])) ? $_POST["_intro"][$basefield] : '';
-			$time = (int) (isset($_POST["_maxtime"][$basefield])) ? $_POST["_maxtime"][$basefield] : 0;	
+			$time = (int) (isset($_POST["_maxtime"][$basefield])) ? $_POST["_maxtime"][$basefield] : 0;
 			if($time == 0)
 				$time = 7;
 			if($user_id < 1) // unassigned or not available
@@ -1708,12 +1708,12 @@ $output = "";
 			}
 		if(empty($project_options))
 		{
-		$project_options = sprintf('<option value="%s">%s</option>',$project_key,$project_text);		
+		$project_options = sprintf('<option value="%s">%s</option>',$project_key,$project_text);
 		$pa = get_projects_array('options');
 		$project_options .= isset($pa[$manual]) ? $pa[$manual] : $pa["COMPETENT COMMUNICATION"];
 		}
 		$field = preg_replace('/[^a-zA-Z0-9]/','',$key);
-		
+
 		$output .= '<div>
 		<select class="speaker_details manual" name="manual" id="_manual_'.$field.'"">'.get_manuals_options($manual).'</select><br /><select class="speaker_details project" name="project" id="_project_'.$field.'">'.$project_options.'</select>';
 		$output .= '</div>';
@@ -1722,7 +1722,7 @@ $output = "";
 		if(strpos($key,'|0'))
 		{
 		preg_match('/\d{4}-\d{2}-\d{2}/',$key,$match);
-		$output .= '<div><input type="text" id="date'.$field.'" name="date" value="'.$match[0].'" > (added on dashboard)</div>';	
+		$output .= '<div><input type="text" id="date'.$field.'" name="date" value="'.$match[0].'" > (added on dashboard)</div>';
 		}
 return $output;
 }
@@ -4163,7 +4163,7 @@ return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script
 </script>
 <form id="edit_roles_form" method="post" action="%s"">
 %s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>%s',rsvpmaker_permalink_query($post->ID),$sidebar_editor,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),$content);
-	}	
+	}
 if(!isset($_GET["edit_roles"]) || !current_user_can('edit_signups') )
 	return $content;
 if(current_user_can('agenda_setup'))
@@ -4559,7 +4559,7 @@ p
 <body>
 <?php
 }
-	if(isset($_GET["intros"]) && is_numeric($_GET["intros"]))	
+	if(isset($_GET["intros"]) && is_numeric($_GET["intros"]))
 		$event = (int) $_GET["intros"];
 	else
 		{
@@ -5231,7 +5231,7 @@ function wp4_speech_prompt($event_post, $datetime) {
 	$post = $event_post;
 	$signup = get_post_custom($event_post->ID);
 	preg_match_all('/\[toastmaster role.{0,2}=.{0,2}"([^"]+)/',$event_post->post_content,$matches);
-	$templates = get_rsvpmaker_notification_templates();	
+	$templates = get_rsvpmaker_notification_templates();
 	$rsvpdata["[rsvptitle]"] = $event_post->post_title;
 	$rsvpdata["[rsvpdate]"] = $event_post->date;
 		$toastmaster = (!empty($signup["_Toastmaster_of_the_Day_1"][0])) ? $signup["_Toastmaster_of_the_Day_1"][0] : 0;
@@ -5242,7 +5242,7 @@ function wp4_speech_prompt($event_post, $datetime) {
 			}
 		else
 			$toastmaster_email = get_bloginfo('admin_email');
-	
+
 	foreach($signup as $key => $values)
 		{
 		$role = trim(preg_replace('/[_[0-9]/',' ',$key));
@@ -5348,7 +5348,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id().'&orderby=nicename');
 		{
 		ksort($members);
 		foreach($members as $userdata) {
-			$output .= wp4_format_contact ($userdata);		
+			$output .= wp4_format_contact ($userdata);
 		}
 	}
 return $output;
@@ -6068,6 +6068,26 @@ function toastmasters_sidebar_mce_css( $mce_css ) {
 	$mce_css .= plugins_url( '/rsvpmaker-for-toastmasters/sidebar.css');
 
 	return $mce_css;
+}
+
+
+function agenda_enhanced_css ($post_id) {
+    // this sets a flag in agenda setup that enables CSS enhancements to the agenda print out
+
+    ob_start();
+    ?>
+    <h2><?php _e("Use New Enhanced CSS",'rsvpmaker-for-toastmasters');?></h2>
+    <div style="width: 500px;">
+    <p><?php _e("Check the box below to use the new enhanced CSS",'rsvpmaker-for-toastmasters');?></p>
+    <?php
+
+    $enhanced_css = get_post_meta($post_id,'_enhanced_css',true);
+     ?>
+    </div>
+    <p><input type="checkbox" name="enhanced_css" <?php if($enhanced_css) echo ' checked="checked" ' ?> />
+    <?php _e("Check to Enable Enhanced CSS",'rsvpmaker-for-toastmasters');?></p>
+    <?php
+    return ob_get_clean();
 }
 
 
