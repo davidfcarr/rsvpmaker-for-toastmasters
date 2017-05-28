@@ -789,7 +789,7 @@ function toastmaster_short($atts=array(),$content="") {
 				$output  .= "\n".'<div class="role-agenda-item" style="margin-left: 15px;">';
 			else
 				$output  .= "\n".'<div class="role-agenda-item">';
-			$output .= '<p>';
+			$output .= '<ul class="role-agenda-item-leader"><li><span>';
 			// old style of time display
 			if(isset($time) && is_array($time) && $time[$i - 1])
 				$output .= '<em>'.$time[$i - 1].'</em> ';
@@ -798,14 +798,29 @@ function toastmaster_short($atts=array(),$content="") {
 				{
 					$speaktime += (int) get_post_meta($post->ID,'_maxtime'.$field,true);
 				}
-			$output .= '<strong>'.$atts["role"].': </strong>';
+			$output .= '<strong>'.$atts["role"];
+			if ( (strpos($field,'Speaker')) | (strpos($field,'Evaluator')) && $field != '_General_Evaluator_1')
+			    {
+			        $output .= ' '.$i;
+			    }
+
+            $output .= '</strong>';
+            if ( ( (strpos($field,'Evaluator')) ) && ($field != '_General_Evaluator_1'))  //add speaker after evaluator
+            {
+                $speechfield = '_Speaker_'.$i;
+                $speakerID_to_be_evaluated = get_post_meta($post->ID, $speechfield, true);
+                $user_info = get_userdata($speakerID_to_be_evaluated);
+                $speaker_to_be_evaluated = $user_info -> first_name . ' ' . $user_info -> last_name;
+                $output .= '<span class = "evaluates"> evaluates '. $speaker_to_be_evaluated . '</span>';
+            }
+            $output .= '</span>';
 			if($assigned == '-1')
 				{
 				$output .= __('Not Available','rsvpmaker-for-toastmasters');
 				}
 			elseif($assigned)
 				{
-					$title = get_post_meta($post->ID, '_title'.$field, true);
+
 					if(!empty($title))
 						$title = ": ".$title;
 					if(is_numeric($assigned))
@@ -816,7 +831,7 @@ function toastmaster_short($atts=array(),$content="") {
 						}
 					else
 						$name = $assigned.' ('.__('guest','rsvpmaker-for-toastmasters').')';
-					$output .= sprintf('<span class="member-role">%s%s</span>', $name, $title);
+					$output .= sprintf('<span class="member-role">%s</span></li></ul>', $name);
 				}
 			else
 				{
@@ -1014,7 +1029,7 @@ add_shortcode( 'agenda_note', 'agenda_note' );
 function toastmaster_officers ($atts) {
 if(!isset($_GET["print_agenda"]) && !isset($_GET["email_agenda"]))
 	return;
-$label = isset($atts["label"]) ? $atts["label"] : __('Officers','rsvpmaker-for-toastmasters');
+$label = isset($atts["label"]) ? $atts["label"] : __('','rsvpmaker-for-toastmasters');
 $sep = isset($atts["sep"]) ? html_entity_decode($atts["sep"]) : ' ';
 if($sep == 'br')
 	$sep = '<br />';
@@ -1031,7 +1046,7 @@ foreach ($wp4toastmasters_officer_ids as $index => $officer_id)
 			continue;
 		$officer = get_userdata($officer_id);
 		$title = str_replace(' ','&nbsp;',$wp4toastmasters_officer_titles[$index]);
-		$buffer .= sprintf('%s<em>%s</em>&nbsp;%s&nbsp;%s',$sep,$title,$officer->first_name,$officer->last_name);
+		$buffer .= sprintf('<div class="officerind"><p>%s<officertitle>%s</officertitle><br><officer>%s&nbsp;%s</officer>&nbsp;<educationawards>%s</educationawards></p></div>',$sep,$title,$officer->first_name,$officer->last_name, $officer->education_awards);
 	}
 }
 else
@@ -1604,9 +1619,11 @@ function speaker_details_agenda ($field) {
 		{
 		$project = get_project_text($project_index);
 		$manual .= ': '.$project;
+		$manual = ucwords(strtolower($manual));
+		$title = get_post_meta($post->ID, '_title'.$field, true);
 		}
-	$output = ($manual && !strpos($manual,'Manual /') ) ? '<div id="manual"><strong>'.$manual."</strong></div>" : "\n";
-	$output = "\n".'<div class="speaker-details">'.$output.'</div>'."\n";
+	$output = ($manual && !strpos($manual,'Manual /') ) ? '<div id="manual">'.$manual."</div>" : "";
+	$output = '<div class="speaker-details">'.$output.'<div id="title">"'.$title.'"</div></div>'."\n";
 	return $output;
 }
 
@@ -6070,6 +6087,20 @@ function toastmasters_sidebar_mce_css( $mce_css ) {
 	return $mce_css;
 }
 
+function agenda_enhanced_css_check($post_id)
+{
+    $enhanced_css = get_post_meta($post_id,'_enhanced_css',true);
+    if ($enhanced_css == 1)
+        {
+            return true;
+        }
+   else {
+        return false;
+        }
+
+}
+
+
 
 function agenda_enhanced_css ($post_id) {
     // this sets a flag in agenda setup that enables CSS enhancements to the agenda print out
@@ -10279,7 +10310,12 @@ add_action('rsvpmaker_special_metabox','rsvpmaker_special_toastmasters');
 function tmlayout_club_name ($atts) {
 	return get_bloginfo('name');
 }
-function tmlayout_meeting_date ($atts) {
+
+function tmlayout_tag_line ($atts) {
+	return get_bloginfo('description');
+	}
+
+	function tmlayout_meeting_date ($atts) {
 	global $post;
 	global $rsvp_options;
 	$datestring = get_rsvp_date($post->ID);
@@ -10344,6 +10380,7 @@ function tmlayout_main($atts) {
 }
 
 add_shortcode('tmlayout_club_name','tmlayout_club_name');
+add_shortcode('tmlayout_tag_line','tmlayout_tag_line');
 add_shortcode('tmlayout_meeting_date','tmlayout_meeting_date');
 add_shortcode('tmlayout_sidebar','tmlayout_sidebar');
 add_shortcode('tmlayout_main','tmlayout_main');
