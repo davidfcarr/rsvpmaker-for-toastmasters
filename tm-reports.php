@@ -108,10 +108,6 @@ if(isset($_POST["_tm_sidebar"]))
 	tm_sidebar_post($post_id);
 if(isset($_POST["enable_sidebar_layout"]) && $_POST["enable_sidebar_layout"])
 	update_option("wp4toastmasters_agenda_layout",'sidebar');
-if(isset($_POST["enhanced_css"]))
-        update_post_meta($post_id,'_enhanced_css','1'); // flag to enable enhanced CSS
-    else
-        update_post_meta($post_id,'_enhanced_css','0'); // flag to disable enhanced CSS
 }
 
 	if(isset($_POST["sked"]))
@@ -146,9 +142,6 @@ echo admin_link_menu();
 	wp_editor( $post->post_content, $editor_id, $settings );
 
 $layout = get_option("wp4toastmasters_agenda_layout");
-
-echo agenda_enhanced_css ($post_id);
-
 if($layout == 'sidebar')
 {
 echo agenda_sidebar_editor ($post->ID);
@@ -1327,7 +1320,7 @@ foreach($attendance as $user_id => $count)
 		else
 			$bar = 0;
 		if($bar > 20)	
-			$barhtml = '<div style="background-color: red; padding: 3px; width: '.$bar.'px"><span style="background-color: #fff;font-weight: bold;">'.$count.'</span></div>';
+			$barhtml = '<div style="background-color: #772432; padding: 3px; width: '.$bar.'px"><span style="background-color: #fff;font-weight: bold;">'.$count.'</span></div>';
 		else
 			$barhtml = '<div>'.$count.'</div>';
 		
@@ -1528,13 +1521,13 @@ function tm_barhtml($count,$target) {
 $barhtml = '';
 while ($count > $target)
 	{
-	$barhtml .= '<div style="width: 500px; border: thin solid #000;"><div style="background-color: red; padding: 5px; font-size: large; width:100%;"><span style="background-color: #fff;font-weight: bold; margin: 5px;">'.$target.'</span></div></div>';
+	$barhtml .= '<div style="width: 500px; border: thin solid #000;"><div style="background-color: #772432; padding-top: 5px; padding-bottom: 5px; font-size: large; width: 100%;"><span style="font-weight: bold; margin: 5px; text-shadow: 2px 3px 4px #000000; font-size: 35px; color: white;">'.$target.'</span></div></div>';
 	$count = $count - $target;
 	}
 
 $increment = 100 / $target;
 $bar = $count * $increment;
-$barhtml .= '<div style="width: 500px; border: thin solid #000;"><div style="background-color: red; padding: 5px; font-size: large; width: '.$bar.'%;"><span style="background-color: #fff;font-weight: bold; margin: 5px;">'.$count.'</span></div></div>';
+$barhtml .= '<div style="width: 500px; border: thin solid #000;"><div style="background-color: #772432; padding-top: 5px; padding-bottom: 5px; font-size: large; width: '.$bar.'%;"><span style="font-weight: bold; margin: 5px; text-shadow: 2px 3px 4px #000000; font-size: 35px; color: white;">'.$count.'</span></div></div>';
 return $barhtml;
 }
 
@@ -3006,11 +2999,11 @@ echo '<h3>Competent Communication</h3>';
 	$count = isset($myroles["COMPETENT COMMUNICATION"]) ? $myroles["COMPETENT COMMUNICATION"] : 0;
 	while($count > 10)
 		{
-			echo '<div style="width: 100%; border: thin solid #000;"><div style="background-color: red; padding: 5px; font-size: large; width: 100%"><span style="background-color: #fff;font-weight: bold; margin: 5px;">10</span></div></div><p>additional CC?</p>';
+			echo '<div style="width: 100%; border: thin solid #000;"><div style="background-color: #772432; padding-top: 5px; padding-bottom: 5px; font-size: large; width: 100%"><span style="font-weight: bold; margin: 5px; text-shadow: 2px 3px 4px #000000; font-size: 35px; color: white;">10</span></div></div><p>additional CC?</p>';
 			$count -= 10;
 		}
 	$bar = $count * 10;
-	echo '<div style="width: 100%; border: thin solid #000;"><div style="background-color: red; padding: 5px; font-size: large; width: '.$bar.'%"><span style="background-color: #fff;font-weight: bold; margin: 5px;">'.$count.'</span></div></div>';
+	echo '<div style="width: 100%; border: thin solid #000;"><div style="background-color: #772432; padding-top: 5px; padding-bottom: 5px; font-size: large; width: '.$bar.'%"><span style="font-weight: bold; margin: 5px; text-shadow: 2px 3px 4px #000000; font-size: 35px; color: white;">'.$count.'</span></div></div>';
 $table2 = '';
 echo '<h3>Competent Leader</h3>';	
 	ob_start();
