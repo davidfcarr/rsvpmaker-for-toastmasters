@@ -1320,7 +1320,7 @@ foreach($attendance as $user_id => $count)
 		else
 			$bar = 0;
 		if($bar > 20)	
-			$barhtml = '<div style="background-color: #772432; padding: 3px; width: '.$bar.'px"><span style="background-color: #fff;font-weight: bold;">'.$count.'</span></div>';
+			$barhtml = '<div style="background-color: #772432; padding-top: 5px; padding-bottom: 5px; font-size: large; width: '.$bar.'px"><span style="font-weight: bold; margin: 5px; text-shadow: 2px 3px 4px #000000; font-size: 35px; color: white;">'.$count.'</span></div>';
 		else
 			$barhtml = '<div>'.$count.'</div>';
 		
