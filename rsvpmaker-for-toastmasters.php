@@ -10808,13 +10808,17 @@ add_shortcode('wpt_officers','wpt_officers');
 function speaker_evaluator () {
 global $tmagendadata;
 global $post;
-global $tmroles;
+global $wpdb;
 if(isset($tmagendadata['speaker_evaluator']))
 	return $tmagendadata['speaker_evaluator'];
 $tmagendadata['speaker_evaluator'] = '';
 $high = 0;
-foreach($tmroles as $slug => $assigned)
+$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND (meta_key LIKE '_Speaker%' OR meta_key LIKE '_Evaluator%') ";
+$results = $wpdb->get_results($sql);
+foreach($results as $row)
 	{
+	$assigned = $row->meta_value;
+	$slug = $row->meta_key;
 	$p = (int) preg_replace('/[^0-9]/','',$slug);
 	if(strpos($slug,'_Speaker') !== false)
 		{
@@ -10892,17 +10896,17 @@ add_shortcode('evaluation_links','evaluation_links');
 function wpt_speakers () {
 global $tmagendadata;
 global $post;
-global $tmroles;
+global $wpdb;
 if(isset($tmagendadata['wpt_speakers']))
 	return $tmagendadata['wpt_speakers'];
 $tmagendadata['wpt_speakers'] = '';
-foreach($tmroles as $slug => $assigned)
+$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE '_Speaker%' ";
+$results = $wpdb->get_results($sql);
+foreach($results as $row)
 	{
-	if(strpos($slug,'_Speaker') === false)
-		continue;
-	if(empty($tmroles[$slug]))
-		continue;
-$userdata = get_userdata($tmroles[$slug]);
+	$assigned = $row->meta_value;
+	$slug = $row->meta_key;
+$userdata = get_userdata($assigned);
 $contact = '';
 $contactmethods['home_phone'] = __("Home Phone",'rsvpmaker-for-toastmasters');
 $contactmethods['work_phone'] = __("Work Phone",'rsvpmaker-for-toastmasters');
@@ -10925,18 +10929,17 @@ add_shortcode('wpt_speakers','wpt_speakers');
 function wpt_evaluators () {
 global $tmagendadata;
 global $post;
-global $tmroles;
+global $wpdb;
 if(isset($tmagendadata['wpt_evaluators']))
 	return $tmagendadata['wpt_evaluators'];
 $tmagendadata['wpt_evaluators'] = '';
-foreach($tmroles as $slug => $assigned)
+$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE '_Evaluator%' ";
+$results = $wpdb->get_results($sql);
+foreach($results as $row)
 	{
-	$pos = strpos($slug,'_Evaluator');
-	if(($pos === false) || ($pos > 0))// don't match general evaluator
-		continue;
-	if(empty($tmroles[$slug]))
-		continue;
-$userdata = get_userdata($tmroles[$slug]);
+	$assigned = $row->meta_value;
+	$slug = $row->meta_key;
+$userdata = get_userdata($assigned);
 $contact = '';
 $contactmethods['home_phone'] = __("Home Phone",'rsvpmaker-for-toastmasters');
 $contactmethods['work_phone'] = __("Work Phone",'rsvpmaker-for-toastmasters');
@@ -10962,10 +10965,12 @@ global $post;
 global $tmroles;
 if(isset($tmagendadata['wpt_general_evaluator']))
 	return $tmagendadata['wpt_general_evaluator'];
-if(empty($tmroles['_General_Evaluator_1']))
+$ge_id = get_post_meta($post->ID,'_General_Evaluator_1',true);
+
+if(empty($ge_id))
 	return __('General Evaluator not yet assigned','rsvpmaker-for-toastmasters');
 
-$userdata = get_userdata($tmroles['_General_Evaluator_1']);
+$userdata = get_userdata($ge_id);
 $contact = '';
 $contactmethods['home_phone'] = __("Home Phone",'rsvpmaker-for-toastmasters');
 $contactmethods['work_phone'] = __("Work Phone",'rsvpmaker-for-toastmasters');
@@ -10987,7 +10992,8 @@ add_shortcode('wpt_general_evaluator','wpt_general_evaluator');
 function wpt_tod () {
 global $tmagendadata;
 global $post;
-
+if(!empty($tmagendadata['wpt_tod']))
+	return $tmagendadata['wpt_tod'];
 $toastmaster = get_post_meta($post->ID,"_Toastmaster_of_the_Day_1",true);
 if($toastmaster)
 	{
@@ -11007,7 +11013,7 @@ if($toastmaster)
 }
 $contact .= sprintf('<div>'.__("Email",'rsvpmaker-for-toastmasters').': <a href="mailto:%s">%s</a></div>'."\n",$userdata->user_email,$userdata->user_email);
 
-return sprintf('<div><strong>Toastmaster of the Day %s %s</strong></div>',$userdata->first_name, $userdata->last_name).$contact;
+return $tmagendadata['wpt_tod'] = sprintf('<div><strong>Toastmaster of the Day %s %s</strong></div>',$userdata->first_name, $userdata->last_name).$contact;
 	}
 else
 	return __('Toastmasters of the Day not yet assigned','rsvpmaker-for-toastmasters');
