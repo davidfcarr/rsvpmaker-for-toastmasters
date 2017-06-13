@@ -1077,7 +1077,14 @@ foreach ($wp4toastmasters_officer_ids as $index => $officer_id)
 			continue;
 		$officer = get_userdata($officer_id);
 		$title = str_replace(' ','&nbsp;',$wp4toastmasters_officer_titles[$index]);
-		$buffer .= sprintf('<div class="officer_entity"><p>%s<officertitle>%s</officertitle><br><officer>%s&nbsp;%s</officer>&nbsp;<educationawards>%s</educationawards></p></div>',$sep,$title,$officer->first_name,$officer->last_name, $officer->education_awards);
+		if ($enhanced_css == 1)
+		    {
+		        $buffer .= sprintf('<div class="officer_entity"><p>%s<officertitle>%s</officertitle><br><officer>%s&nbsp;%s</officer>&nbsp;<educationawards>%s</educationawards></p></div>',$sep,$title,$officer->first_name,$officer->last_name, $officer->education_awards);
+		    }
+		else
+		    {
+		        $buffer .= sprintf('%s<em>%s</em>&nbsp;%s&nbsp;%s',$sep,$title,$officer->first_name,$officer->last_name);
+		    }
 	}
 }
 else
