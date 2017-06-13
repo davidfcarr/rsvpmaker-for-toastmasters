@@ -775,6 +775,7 @@ function toastmaster_short($atts=array(),$content="") {
 	if(isset($_GET["print_agenda"]) || isset($_GET["email_agenda"]) || is_email_context())
 		{
 		$agenda_time = get_option('agenda_time');
+		$enhanced_css = get_option('wp4toastmasters_agenda_enhanced_css');
 		$output = '';
 		$maxtime = (isset($atts["time_allowed"]) ) ? (int) $atts["time_allowed"] : 0;
 		$padding_time = (isset($atts["padding_time"])) ? (int) $atts["padding_time"] : 0;
@@ -789,7 +790,16 @@ function toastmaster_short($atts=array(),$content="") {
 				$output  .= "\n".'<div class="role-agenda-item" style="margin-left: 15px;">';
 			else
 				$output  .= "\n".'<div class="role-agenda-item">';
-			$output .= '<p>';
+
+			if ($enhanced_css == 1)
+			    {
+			        $output .= '<ul class="role-agenda-item-leader"><li><span>';
+			    }
+			 else
+			    {
+			        $output .= '<p>';
+			    }
+
 			// old style of time display
 			if(isset($time) && is_array($time) && $time[$i - 1])
 				$output .= '<em>'.$time[$i - 1].'</em> ';
@@ -798,7 +808,28 @@ function toastmaster_short($atts=array(),$content="") {
 				{
 					$speaktime += (int) get_post_meta($post->ID,'_maxtime'.$field,true);
 				}
-			$output .= '<strong>'.$atts["role"].': </strong>';
+			$output .= '<strong>'.$atts["role"];
+			if ($enhanced_css)
+			    {
+                if ( (strpos($field,'Speaker')) | (strpos($field,'Evaluator')) && $field != '_General_Evaluator_1')
+                    {
+                        $output .= ' '.$i;
+                    }
+			    }
+
+            $output .= '</strong>';
+			if ($enhanced_css == 1)
+			    {
+                if ( ( (strpos($field,'Evaluator')) ) && ($field != '_General_Evaluator_1'))  //add speaker after evaluator
+                {
+                    $speechfield = '_Speaker_'.$i;
+                    $speakerID_to_be_evaluated = get_post_meta($post->ID, $speechfield, true);
+                    $user_info = get_userdata($speakerID_to_be_evaluated);
+                    $speaker_to_be_evaluated = $user_info -> first_name . ' ' . $user_info -> last_name;
+                    $output .= '<span class = "evaluates"> evaluates '. $speaker_to_be_evaluated . '</span>';
+                }
+                $output .= '</span>';
+                }
 			if($assigned == '-1')
 				{
 				$output .= __('Not Available','rsvpmaker-for-toastmasters');
@@ -816,7 +847,14 @@ function toastmaster_short($atts=array(),$content="") {
 						}
 					else
 						$name = $assigned.' ('.__('guest','rsvpmaker-for-toastmasters').')';
-					$output .= sprintf('<span class="member-role">%s%s</span>', $name, $title);
+					if ($enhanced_css == 1)
+					      {
+					        $output .= sprintf('<span class="member-role">%s</span></li></ul>', $name);
+					      }
+					 else
+					      {
+					        $output .= sprintf('<span class="member-role">%s%s</span>', $name, $title);
+					      }
 				}
 			else
 				{
@@ -1021,8 +1059,16 @@ if($sep == 'br')
 
 $wp4toastmasters_officer_ids = get_option('wp4toastmasters_officer_ids');
 $wp4toastmasters_officer_titles = get_option('wp4toastmasters_officer_titles');
+$enhanced_css = get_option('wp4toastmasters_agenda_enhanced_css');
 
-$buffer = "\n<div class=\"officers\"><strong>".$label."</strong>"; //.$label.": ";
+if ($enhanced_css == 1)
+    {
+        $buffer = "\n<div class=\"officers\">"; //.$label.": ";
+    }
+else
+    {
+        $buffer = "\n<div class=\"officers\"><strong>".$label."</strong>"; //.$label.": ";
+    }
 if(is_array($wp4toastmasters_officer_ids))
 {
 foreach ($wp4toastmasters_officer_ids as $index => $officer_id)
@@ -1031,7 +1077,7 @@ foreach ($wp4toastmasters_officer_ids as $index => $officer_id)
 			continue;
 		$officer = get_userdata($officer_id);
 		$title = str_replace(' ','&nbsp;',$wp4toastmasters_officer_titles[$index]);
-		$buffer .= sprintf('%s<em>%s</em>&nbsp;%s&nbsp;%s',$sep,$title,$officer->first_name,$officer->last_name);
+		$buffer .= sprintf('<div class="officer_entity"><p>%s<officertitle>%s</officertitle><br><officer>%s&nbsp;%s</officer>&nbsp;<educationawards>%s</educationawards></p></div>',$sep,$title,$officer->first_name,$officer->last_name, $officer->education_awards);
 	}
 }
 else
@@ -1598,15 +1644,29 @@ Title: %s',$manual,$project,$title);
 
 function speaker_details_agenda ($field) {
 	global $post;
+	$enhanced_css = get_option('wp4toastmasters_agenda_enhanced_css');
 	$manual = get_post_meta($post->ID, '_manual'.$field, true);
 	$project_index = get_post_meta($post->ID, '_project'.$field, true);
 	if(!empty($project_index))
 		{
 		$project = get_project_text($project_index);
 		$manual .= ': '.$project;
+		if ($enhanced_css == 1)
+		    {
+		        $manual = ucwords(strtolower($manual));
+		        $title = get_post_meta($post->ID, '_title'.$field, true);
+		    }
 		}
-	$output = ($manual && !strpos($manual,'Manual /') ) ? '<div id="manual"><strong>'.$manual."</strong></div>" : "\n";
-	$output = "\n".'<div class="speaker-details">'.$output.'</div>'."\n";
+	if ($enhanced_css == 1)
+		{
+            $output = ($manual && !strpos($manual,'Manual /') ) ? '<div id="manual">'.$manual."</div>" : "";
+            $output = '<div class="speaker-details">'.$output.'<div id="title">"'.$title.'"</div></div>'."\n";
+	    }
+	else
+	    {
+            $output = ($manual && !strpos($manual,'Manual /') ) ? '<div id="manual"><strong>'.$manual."</strong></div>" : "\n";
+            $output = "\n".'<div class="speaker-details">'.$output.'</div>'."\n";
+	    }
 	return $output;
 }
 
@@ -2682,6 +2742,13 @@ if($layout_id)
 <br /><code>#agenda {border-left: thick dotted #000;}</code> - <?php _e('add a dotted black line to the left of sidebar','rsvpmaker-for-toastmasters'); ?>
 </p>
 
+<h3><?php _e('Render CSS Enhancements','rsvpmaker-for-toastmasters'); ?></h3>
+<?php $enhanced_css = get_option('wp4toastmasters_agenda_enhanced_css'); ?>
+<p><input type="radio" name="wp4toastmasters_agenda_enhanced_css" value="1" <?php if($enhanced_css == 1) echo ' checked="checked" '; ?> /> <?php _e("Yes, implement CSS Enhancements",'rsvpmaker-for-toastmasters');?></p>
+<p><input type="radio" name="wp4toastmasters_agenda_enhanced_css" value="0" <?php if($enhanced_css != 1) echo ' checked="checked" '; ?> /> <?php _e("No",'rsvpmaker-for-toastmasters');?>.</p>
+
+
+
 <h3><?php _e('Show Times on Agenda','rsvpmaker-for-toastmasters'); ?></h3>
 <?php $agenda_time = get_option('agenda_time'); ?>
 <p><input type="radio" name="agenda_time" value="1" <?php if($agenda_time) echo ' checked="checked" '; ?> /> <?php _e("Yes, show time",'rsvpmaker-for-toastmasters');?></p>
@@ -2781,6 +2848,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'blog_public' );
 	register_setting( 'wp4toastmasters-settings-group', 'tm_security' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_beta' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_agenda_enhanced_css' );
 	register_setting( 'wp4toastmasters-settings-group', 'agenda_time' );
 	register_setting( 'wp4toastmasters-settings-group', 'tm_signup_count' );
 	register_setting( 'wp4toastmasters-settings-group', 'last_filled_limit' );
@@ -6867,8 +6935,8 @@ return array_search($project, $projects);
 
 function get_projects_array ($choice = 'projects')
 {
-$projects["COMPETENT COMMUNICATION 1"] = __("The Ice Breaker (4 to 6 min) (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] = '<option value="COMPETENT COMMUNICATION 1">'.__("The Ice Breaker (4 to 6 min) (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
+$projects["COMPETENT COMMUNICATION 1"] = __("The Ice Breaker (4 to 6 min)","rsvpmaker-for-toastmasters");
+$project_options["COMPETENT COMMUNICATION"] = '<option value="COMPETENT COMMUNICATION 1">'.__("The Ice Breaker (4 to 6 min)","rsvpmaker-for-toastmasters")."</option>";
 $project_times["COMPETENT COMMUNICATION 1"] = 6;
 
 $projects["COMPETENT COMMUNICATION 2"] = __("Organize Your Speech (5 to 7 min)","rsvpmaker-for-toastmasters");
@@ -7482,8 +7550,8 @@ $project_times["HIGH PERFORMANCE LEADERSHIP 2"] = 7;
 
 //Pathways
 
-$projects["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] = '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 0">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
+$projects["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
+$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] = '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 0">'.__("Ice Breaker","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = 6;
 
 $projects["Dynamic Leadership Level 1 Mastering Fundamentals 11"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
@@ -7652,8 +7720,8 @@ $projects["Dynamic Leadership Level 5 Demonstrating Expertise 224"] = __("Prepar
 $project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 224">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Dynamic Leadership Level 5 Demonstrating Expertise 224"] = 22;
 
-$projects["Effective Coaching Level 1 Mastering Fundamentals 233"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 1 Mastering Fundamentals"] = '<option value="Effective Coaching Level 1 Mastering Fundamentals 233">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
+$projects["Effective Coaching Level 1 Mastering Fundamentals 233"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
+$project_options["Effective Coaching Level 1 Mastering Fundamentals"] = '<option value="Effective Coaching Level 1 Mastering Fundamentals 233">'.__("Ice Breaker","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Effective Coaching Level 1 Mastering Fundamentals 233"] = 6;
 
 $projects["Effective Coaching Level 1 Mastering Fundamentals 240"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
@@ -7816,8 +7884,8 @@ $projects["Effective Coaching Level 5 Demonstrating Expertise 461"] = __("Prepar
 $project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 461">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Effective Coaching Level 5 Demonstrating Expertise 461"] = 22;
 
-$projects["Innovative Planning Level 1 Mastering Fundamentals 470"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 1 Mastering Fundamentals"] = '<option value="Innovative Planning Level 1 Mastering Fundamentals 470">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
+$projects["Innovative Planning Level 1 Mastering Fundamentals 470"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
+$project_options["Innovative Planning Level 1 Mastering Fundamentals"] = '<option value="Innovative Planning Level 1 Mastering Fundamentals 470">'.__("Ice Breaker","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Innovative Planning Level 1 Mastering Fundamentals 470"] = 6;
 
 $projects["Innovative Planning Level 1 Mastering Fundamentals 477"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
@@ -10259,6 +10327,11 @@ add_action('rsvpmaker_special_metabox','rsvpmaker_special_toastmasters');
 function tmlayout_club_name ($atts) {
 	return get_bloginfo('name');
 }
+
+function tmlayout_tag_line ($atts) {
+	return get_bloginfo('description');
+	}
+
 function tmlayout_meeting_date ($atts) {
 	global $post;
 	global $rsvp_options;
@@ -10324,6 +10397,7 @@ function tmlayout_main($atts) {
 }
 
 add_shortcode('tmlayout_club_name','tmlayout_club_name');
+add_shortcode('tmlayout_tag_line','tmlayout_tag_line');
 add_shortcode('tmlayout_meeting_date','tmlayout_meeting_date');
 add_shortcode('tmlayout_sidebar','tmlayout_sidebar');
 add_shortcode('tmlayout_main','tmlayout_main');
