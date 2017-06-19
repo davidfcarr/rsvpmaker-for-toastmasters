@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: http://wp4toastmasters.com/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 4.7.4
-Stable tag: 2.5.4
+Tested up to: 4.8
+Stable tag: 2.5.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,11 @@ The related [Lectern WordPress theme](https://wordpress.org/themes/lectern/) mak
 For documentation and tips on more effective Toastmasters web and social media marketing, see [WP4Toastmasters.com](http://wp4toastmasters.com/ "WordPress for Toastmasters")
 
 RSVPMaker for Toastmasters is an extension of [RSVPMaker](https://wordpress.org/plugins/rsvpmaker/), a general purpose event scheduling and RSVP tracking plugin. This means you can also use your website to manage other types of events, beyond club meetings, such as open house or training events. RSVPMaker can be configured to allow you to accept online payments via PayPal. [Documentation at RSVPMaker.com](https://rsvpmaker.com)
+
+Developers who would like to contribute to this project can find the code on GitHub
+[RSVPMaker](https://github.com/davidfcarr/rsvpmaker)
+[RSVPMaker for WordPress](https://github.com/davidfcarr/rsvpmaker-for-toastmasters)
+[Lectern](https://github.com/davidfcarr/lectern)
 
 == Installation ==
 

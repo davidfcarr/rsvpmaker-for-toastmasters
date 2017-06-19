@@ -1,6 +1,26 @@
 @charset "utf-8";
 /* CSS Document */
 
+.tmsortable li {
+	list-style: none;
+	padding: 10px;
+	background-color: #eee;
+	border: thin dotted blue;
+	margin: 5px;
+}
+.tmsortable li.prompt {
+	list-style: none;
+	padding: 10px;
+	background-color: #fff;
+	border: none;
+	margin: 5px;
+	font-style: italic;
+}
+
+.sortresult {
+background-color: #fff;
+}
+
 #agenda_print a, #agendalogin a, button {
   font: bold 11px Arial;
   text-decoration: none;

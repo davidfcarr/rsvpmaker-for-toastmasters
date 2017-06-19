@@ -1,4 +1,30 @@
 jQuery(document).ready(function($) {
+
+$('.tmsortable').sortable({
+  containment: "parent",
+  cursor: "move",
+  update: function (event, ui) {
+  var datastr = 'action=wpt_reorder&reorder_nonce=' + $('#reorder_nonce').val()+'&post_id=' + $('#post_id').val();
+  var order = $(this).sortable('toArray');
+  var assigned = 0;
+  var field = order[0].replace(/_[0-9]+/,'[]');
+var arrayLength = order.length;
+for (var i = 0; i < arrayLength; i++) {
+	assigned = $('#'+order[i]+'_assigned').val();
+	if('undefined' !== typeof assigned)
+	datastr = datastr + '&' + field +'='+ assigned; 
+}
+	var id = $(this).prop("id");
+	$('#'+id+'_sortresult').text('Working ...');
+
+	jQuery.post(ajaxurl, datastr, function(response) {
+	$('#'+id+'_sortresult').html(response);
+	$('#'+id+'_sortresult').fadeIn(200);
+	});
+  }
+});
+$('.tmsortable').disableSelection();
+
 $("div.role-block").mouseenter(function(){
 $(this).css("background-color","#EFEFEF");
 });

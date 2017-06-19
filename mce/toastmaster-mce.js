@@ -137,7 +137,7 @@
 						name: 'agenda_note',
 						label: 'Agenda Note',
 						value: agenda_note,
-						tooltip: 'Explanation of role (optinal)'
+						tooltip: 'Explanation of role (optinal). To show Speaker/Evaluator matches, you can use "Evaluates {Speaker}" in the note for Evaluator role'
 					},
 					{
 						type: 'listbox',

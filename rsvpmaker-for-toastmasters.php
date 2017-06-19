@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 2.5.4
+Version: 2.5.5
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
@@ -647,6 +647,8 @@ echo "<p>$success of $total </p>";
 }
 
 function agenda_note($atts, $content) {
+if(isset($_GET["reorder"]))
+	return; // not needed in this context	
 global $post;
 $output = '';
 $display = isset($atts["agenda_display"]) ? $atts["agenda_display"] : 'agenda';
@@ -718,7 +720,6 @@ return $output;
 
 function toastmaster_short($atts=array(),$content="") {
 	global $tmroles;
-
 	if(isset($_GET["page"]) && ($_GET["page"] == 'agenda_timing') )
 		return timeplanner($atts, $content);
 	elseif(!empty($content))
@@ -736,7 +737,44 @@ function toastmaster_short($atts=array(),$content="") {
 	global $post, $current_user, $open;
 	$permalink = rsvpmaker_permalink_query($post->ID);
 	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
-	
+
+	if(isset($_GET["reorder"]))
+		{
+		global $reorder_hidden;
+		if($count == 1)
+			return;
+		if(empty($reorder_hidden))
+			{
+				$reorder_hidden = 1;
+				$output .= '<input type="hidden" id="post_id" value="'.$post->ID.'"><input type="hidden" id="reorder_nonce" value="'.wp_create_nonce('reorder').'">';
+			}
+		$output .= '<h3>'.$atts["role"].'</h3><ul id="'.$field_base.'" class="tmsortable sortable">';
+		for($i = 1; $i <= $count; $i++)
+			{
+			$field = '_' . $field_base . '_' . $i;
+			$assigned = get_post_meta($post->ID, $field, true);
+			if($assigned == '-1')
+				{
+				$assignedto = __('Not Available','rsvpmaker-for-toastmasters');
+				}
+			elseif($assigned)
+				{
+					if(is_numeric($assigned))
+						{
+					$member = get_userdata( $assigned );
+					$assignedto = (isset($member->first_name) && isset($member->first_name)) ? $member->first_name." ".$member->last_name : __('member name not found','rsvpmaker-for-toastmasters');
+					if(!empty($member->education_awards)) $assignedto .= ', '.$member->education_awards;
+						}
+					else
+						$assignedto = $assigned . ' (guest)';
+				}
+			else
+				$assignedto = "&nbsp;";
+			$output .= '<li class="sortableitem sortable_'.$field_base.'" id="'.$field.'" >'.$assignedto.'<input type="hidden" id="'.$field.'_assigned" value="'.$assigned.'"></li>';
+			}
+		$output .= '<li><div id="'.$field_base.'_sortresult" class="sortresult">'.__('Drag and drop assignments into the desired agenda order','rsvpmaker-for-toastmasters').'</div></li></ul>';
+		return $output;
+		}
 	// need to know what role to look up for notifications	
 	if(isset($atts["leader"]) )
 		update_post_meta($post->ID,'meeting_leader','_'.$field_base.'_1' );
@@ -826,7 +864,25 @@ function toastmaster_short($atts=array(),$content="") {
 					$open[$atts["role"]] = 1;				
 				}
 			if(isset($atts["agenda_note"]) && !empty($atts["agenda_note"]) )
-				$output .=  "<br /><em>".$atts["agenda_note"]."</em>";
+				{
+				$note = $atts["agenda_note"];
+				if(strpos($note,'{Speaker}'))
+					{
+					$speaker_id = get_post_meta($post->ID,'_Speaker_'.$i,true);
+					if(empty($speaker_id))
+						$speaker_name = '?';
+					elseif(is_numeric($speaker_id))
+						{
+						$member = get_userdata( $speaker_id );
+						$speaker_name = $member->first_name.' '.$member->last_name;
+						if(!empty($member->education_awards)) $speaker_name .= ', '.$member->education_awards;
+						}
+					else
+						$speaker_name = $speaker_id.' ('.__('guest','rsvpmaker-for-toastmasters').')';
+					$note = str_replace('{Speaker}',$speaker_name,$note);
+					}
+				$output .=  "<br /><em>".$note."</em>";
+				}
 			$output .= '</p>';
 
 			if($assigned && (strpos($field,'Speaker') == 1) )
@@ -852,7 +908,6 @@ function toastmaster_short($atts=array(),$content="") {
 	global $random_available;
 	global $last_attended;
 	global $last_filled;
-
 	for($i = 1; $i <= $count; $i++)
 		{
 		
@@ -957,11 +1012,30 @@ function toastmaster_short($atts=array(),$content="") {
 		if(is_club_member() && !(isset($_GET["edit_roles"]) || isset($_GET["recommend_roles"]) || (isset($_GET["page"]) && ($_GET["page"] == 'toastmasters_reconcile') ) )  ) 
 				$output .= '</form>';
 
-		if(isset($atts["agenda_note"]) && !empty($atts["agenda_note"]) )
-			$output .=  "<br /><em>".$atts["agenda_note"]."</em>";
+			if(isset($atts["agenda_note"]) && !empty($atts["agenda_note"]) )
+				{
+				$note = $atts["agenda_note"];
+				if(strpos($note,'{Speaker}'))
+					{
+					$speaker_id = get_post_meta($post->ID,'_Speaker_'.$i,true);
+					if(empty($speaker_id))
+						$speaker_name = '?';
+					elseif(is_numeric($speaker_id))
+						{
+						$member = get_userdata( $speaker_id );
+						$speaker_name = $member->first_name.' '.$member->last_name;
+						if(!empty($member->education_awards)) $speaker_name .= ', '.$member->education_awards;
+						}
+					else
+						$speaker_name = $speaker_id.' ('.__('guest','rsvpmaker-for-toastmasters').')';
+					$note = str_replace('{Speaker}',$speaker_name,$note);
+					}
+				$output .=  "<br /><em>".$note."</em>";
+				}
 
 			$output .= '</div></div><!-- end role block -->';			
-			}
+			} //end for loop
+
 		if(strpos($field,'Speaker') )
 			{
 			$time_limit = (isset($atts["time_allowed"])) ? (int) $atts["time_allowed"] : 0;
@@ -3070,6 +3144,7 @@ else
 	if(current_user_can($security['edit_signups']))
 		{
 		$link .= '<li class="has-sub"><a href="'.$permalink.'edit_roles=1">'.__('Edit Signups','rsvpmaker-for-toastmasters').'</a><ul>';
+		$link .= '<li"><a href="'.$permalink.'reorder=1">'.__('Reorder','rsvpmaker-for-toastmasters').'</a></li>';
 		$link .= '<li"><a href="'.$permalink.'recommend_roles=1">'.__('Recommend','rsvpmaker-for-toastmasters').'</a></li>';
 		$events = get_future_events("post_content LIKE '%[toastmaster%' AND ID != ".$post->ID, 10);
 		if($events)
@@ -4164,6 +4239,8 @@ return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script
 <form id="edit_roles_form" method="post" action="%s"">
 %s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>%s',rsvpmaker_permalink_query($post->ID),$sidebar_editor,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),$content);
 	}
+if(isset($_GET["reorder"]))
+	return '<p><em>'.__('Drag and drop to change the order in which speakers, evaluators and other roles with multiple participants will appear on the agenda').'</em></p>'.$content;
 if(!isset($_GET["edit_roles"]) || !current_user_can('edit_signups') )
 	return $content;
 if(current_user_can('agenda_setup'))
@@ -4673,6 +4750,101 @@ foreach($rate as $id => $value)
 	}
 }
 
+add_action('wp_ajax_wpt_reorder','ajax_reorder');
+
+function ajax_reorder() {
+	$post_id = $_POST["post_id"];
+	if(!$post_id)
+		die('Post ID not set');
+	$nonce = $_POST["reorder_nonce"];
+	//if(!wp_verify_nonce( $nonce, "reorder" ))
+		//die('nonce security error');
+	$test = '';
+	//test nonce
+	foreach($_POST as $name => $value)
+	{
+		if(is_array($value))
+		{
+			if($name == '_Speaker')
+			{
+				//print_r($value);
+				$neworder = array();
+				foreach($value as $assigned)
+					{
+						$neworder[] = get_speaker_array($assigned, $post_id);
+					}
+				foreach($neworder as $index => $speaker)
+					{
+					save_speaker_array($speaker, $index + 1, $post_id);
+					$assigned = $speaker["ID"];
+					if(empty($assigned))
+						$assigned = '?';
+					elseif(is_numeric($assigned))
+						{
+						$assigned_member = get_userdata($assigned);
+						$assignee = $assigned_member->first_name.' '.$assigned_member->last_name;
+						}
+					else
+						$assignee = $assigned;
+					$test .= ', ' .($index+1).': '.$assignee;
+					}
+			}
+			else
+			{
+			foreach($value as $index => $assigned)
+				{
+				if(empty($assigned))
+					$assigned = '?';
+				elseif(is_numeric($assigned))
+					{
+					$assigned_member = get_userdata($assigned);
+					$assignee = $assigned_member->first_name.' '.$assigned_member->last_name;
+					}
+				else
+					$assignee = $assigned;
+				update_post_meta($post_id, $name.'_'.($index+1), $assigned);
+				$test .= ', ' .($index+1).': '.$assignee;
+				}
+			}
+		}
+	}
+	die('Saved. <a href="'.get_permalink($post_id).'">Verify updated order</a>'.$test );
+}
+
+function get_speaker_array($assigned, $post_id=0) {
+if(empty($assigned))
+	return array("ID" => 0, "manual" => '', "project" => '', "maxtime" => '', "title" => '', "intro" => '');
+global $wpdb;
+if(!$post_id)
+	{
+	global $post;
+	$post_id = $post->ID;
+	}
+$field = $wpdb->get_var("SELECT meta_key from $wpdb->postmeta WHERE post_id=$post_id AND meta_value='".$assigned."' ");
+$speaker["ID"] = $assigned;
+$speaker["manual"] = get_post_meta($post_id, '_manual'.$field, true);
+$speaker["project"] = get_post_meta($post_id, '_project'.$field, true);
+$speaker["maxtime"] = get_post_meta($post_id, '_maxtime'.$field, true);
+$speaker["title"] = get_post_meta($post_id, '_title'.$field, true);
+$speaker["intro"] = get_post_meta($post_id, '_intro'.$field, true);
+return $speaker;
+}
+
+function save_speaker_array($speaker, $count, $post_id=0) {
+$field = '_Speaker_' . $count;
+if(!$post_id)
+	{
+	global $post;
+	$post_id = $post->ID;
+	}
+update_post_meta($post_id, $field, $speaker["ID"]);
+update_post_meta($post_id, '_manual'.$field, $speaker["manual"]);
+update_post_meta($post_id, '_project'.$field, $speaker["project"]);
+update_post_meta($post_id, '_maxtime'.$field, $speaker["maxtime"]);
+update_post_meta($post_id, '_title'.$field, $speaker["title"]);
+update_post_meta($post_id, '_intro'.$field, $speaker["intro"]);
+}
+
 function pack_speakers($count)
 {
 global $post;
@@ -4684,8 +4856,8 @@ $currentorder =array();
 		{
 		
 		$field = '_Speaker_' . $i;
-		$assigned = (int) get_post_meta($post->ID, $field, true);
-		if($assigned != 0)
+		$assigned = get_post_meta($post->ID, $field, true);
+		if(!empty($assigned))
 			{
 				$currentorder[] = $i;
 				$fullorder[] = $scount;
@@ -5157,8 +5329,11 @@ function toastmasters_css_js() {
 	if( (isset($post->post_content) && (strpos($post->post_content,'toastmaster') || strpos($post->post_content,'rsvpmaker') ) ) || (isset($_GET["page"]) && (($_GET["page"] == 'toastmasters_reconcile') || ($_GET["page"] == 'my_progress_report')  || ($_GET["page"] == 'toastmasters_reports') )  ) )
 	{
 	wp_enqueue_style( 'jquery' );
-	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.4.2' );
-	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery'), '2.4.2');
+	wp_enqueue_style( 'jquery-ui-core' );
+	wp_enqueue_style( 'jquery-ui-sortable' );
+	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.4.3' );
+	wp_enqueue_style('jquery-ui-css', 'http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css');
+	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.4.4');
 	wp_enqueue_script( 'script-toastmasters');
 	$manuals = get_manuals_options();
 	wp_localize_script( 'script-toastmasters', 'manuals_list', $manuals );
@@ -6700,8 +6875,7 @@ $bg = imagecolorallocate($im, 200, 200, 255);
 $border = imagecolorallocate($im, 0, 0, 0);
 $textcolor = imagecolorallocate($im, 255, 255, 255);
 
-
-$text = '';
+$tip = $text = '';
 
 if(isset($_GET["role"]))
 	{
@@ -6904,7 +7078,7 @@ $project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNI
 $project_times["COMPETENT COMMUNICATION 9"] = 7;
 
 $projects["COMPETENT COMMUNICATION 10"] = __("Inspire Your Audience (8 to 10 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 10">'.__("1Inspire Your Audience (8 to 10 min)","rsvpmaker-for-toastmasters")."</option>";
+$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 10">'.__("Inspire Your Audience (8 to 10 min)","rsvpmaker-for-toastmasters")."</option>";
 $project_times["COMPETENT COMMUNICATION 10"] = 10;
 
 $projects["ADVANCED MANUAL TBD 1"] = __("Placeholder for manual/project to be specified later","rsvpmaker-for-toastmasters");
@@ -10485,269 +10659,11 @@ $template_forms['role_reminder'] = array('subject' => 'Your role: [wptrole] for 
 $template_forms['Toastmaster of the Day'] = array('subject' => 'You are the Toastmaster of the Day for [rsvpdate]','body' => "You are scheduled to serve as [wptrole] for [rsvpdate].\n\nHere is the lineup so far:\n\n[wp4t_assigned_open]");
 $template_forms['Speaker'] = array('subject' => 'You are signed up to speak on [rsvpdate]','body' => "You are scheduled to speak on [rsvpdate].\n\n[wpt_speech_details]\n\nIf for any reason you cannot, please post an update to the agenda\n\n[wptagendalink]\n\n[wpt_tod]");
 $template_forms['Evaluator'] = array('subject' => 'You are signed up as an evaluator for [rsvpdate]','body' => "You are signed up as an evaluator for [rsvpdate].\n\n[speaker_evaluator]\n\n[evaluation_links]\n\n[tmlayout_intros]\n\n\n\n[wpt_speakers]\n\nEvaluation Team:\n\n[wpt_evaluators]\n\n[wpt_general_evaluator] ");
-$template_forms['General Evaluator'] = array('subject' => 'You are signed up as an evaluator for [rsvpdate]','body' => "You are signed up as an evaluator for [rsvpdate].\n\n[speaker_evaluator]\n\n[evaluation_links]\n\n[wpt_speakers]\n\nEvaluation Team:\n\n[wpt_evaluators]\n\n[wpt_general_evaluator] ");
+$template_forms['General Evaluator'] = array('subject' => 'You are signed up as General Evaluator for [rsvpdate]','body' => "You are signed up as an evaluator for [rsvpdate].\n\n[speaker_evaluator]\n\n[evaluation_links]\n\n[wpt_speakers]\n\nEvaluation Team:\n\n[wpt_evaluators] ");
 return $template_forms;
 }
 
 add_filter('rsvpmaker_notification_template_forms','wpt_notification_forms');
-
-function wpt_sample_data ($sample_data)
-{
-$sample_data['wptrole'] = 'Ah Counter';
-$sample_data['wptagendalink'] = '<a href="https://demo.toastmost.org/rsvpmaker/weekly-meeting-2020-1-1/">https://demo.toastmost.org/rsvpmaker/weekly-meeting-2020-1-1/</a>';
-$sample_data['wpt_tod'] = '<h3>Toastmaster of the Day: Abraham Lincoln</h3>
-<div>Email: <a href="mailto:abrahamlincoln@example.com">abrahamlincoln@example.com</a></div>';
-$sample_data['wpt_speakers'] = '<h3>Speaker: Zoe Heriot</h3>
-<div>Home Phone: 954-555-1212</div>
-<div>Work Phone: 202-555-1212</div>
-<div>Email: <a href="mailto:Zoe@example.com">Zoe@example.com</a></div>
-	
-<h3>Speaker: Grace Holloway</h3>
-<div>Home Phone: 954-555-1212</div>
-<div>Work Phone: 202-555-1212</div>
-<div>Email: <a href="mailto:Grace@example.com">Grace@example.com</a></div>';
-
-$sample_data['wpt_evaluators'] = '<h3>Evaluator: Thomas Jefferson</h3>
-<div>Email: <a href="mailto:thomasjefferson@example.com">thomasjefferson@example.com</a></div>
-
-<h3>Evaluator: Martha Jones</h3>
-
-<div>Home Phone: 954-555-1212</div>
-<div>Work Phone: 202-555-1212</div>
-<div>Email: <a href="mailto:Martha@example.com">Martha@example.com</a></div>
-
-<h3>Evaluator: Johnny Lately</h3>
-
-<div>Email: <a href="mailto:johnny@example.com">johnny@example.com</a></div>';
-
-$sample_data['wpt_general_evaluator'] = '<h3>General Evaluator: James Madison</h3>
-
-<div>Home Phone: (575)555-0000</div>
-<div>Work Phone: (954)555-1212</div>
-<div>Mobile Phone: (500)111-2222</div>
-<div>Email: <a href="mailto:Madison@example.com">Madison@example.com</a></div>';
-$sample_data['wpt_officers'] = '<h3>President: George Washington</h3>
-
-<div>Home Phone: (575)555-0000</div>
-<div>Work Phone: (954)555-1212</div>
-<div>Mobile Phone: (500)111-2222</div>
-<div>Email: <a href="mailto:georgewashington@example.com">georgewashington@example.com</a></div>
-
-<h3>VP Education: Martin Van Buren</h3>
-
-<div>Home Phone: (575)555-0000</div>
-<div>Work Phone: (954)555-1212</div>
-<div>Mobile Phone: (500)111-2222</div>
-<div>Email: <a href="mailto:VanBuren@example.com">VanBuren@example.com</a></div>';
-$sample_data['wpt_agenda'] = '<div class="timewrap">
-<div class="timeblock"> 7:00 PM</div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>Invocation: </strong></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 7:02 PM</div>
-<div class="timed_content">
-<p class="agenda_note" style=";">President or Presiding Officer leads the self-introductions Introduces the Toastmaster of the Day</p>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 7:12 PM</div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>Toastmaster of the Day: </strong><span class="member-role">Abraham Lincoln</span><br /><em>Introduces supporting roles. Leads the meeting.</em></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item" style="margin-left: 15px;">
-<p><strong>Ah Counter: </strong><span class="member-role">Clara Oswald</span></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item" style="margin-left: 15px;">
-<p><strong>Timer: </strong><span class="member-role">Amy Pond, ACS, CL</span></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item" style="margin-left: 15px;">
-<p><strong>Vote Counter: </strong><span class="member-role">Franklin Roosevelt</span></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item" style="margin-left: 15px;">
-<p><strong>Body Language Monitor: </strong><span class="member-role">Rory Williams</span></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item" style="margin-left: 15px;">
-<p><strong>Videographer: </strong></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item" style="margin-left: 15px;">
-<p><strong>Grammarian: </strong><br /><em>Leads word of the day contest.</em></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 7:17 PM</div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>Topics Master: </strong><span class="member-role">Thomas Jefferson</span></p>
-</div>
-</div>
-</div>
-<p class="agenda_note" style=";">5 minute break</p>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>Listener: </strong></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 7:32 PM</div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>Speaker: </strong><span class="member-role">George Washington: The importance of being honest</span></p>
-<div class="speaker-details">
-<div id="manual"><strong>SPEECHES BY MANAGEMENT: Manage And Motivate (10 to 12 min)</strong></div>
-</div>
-</div>
-<div class="role-agenda-item">
-<p><strong>Speaker: </strong><span class="member-role">Teddy Roosevelt: The speech must go on</span></p>
-<div class="speaker-details">
-<div id="manual"><strong>COMPETENT COMMUNICATION: Persuade with Power (5 to 7 min)</strong></div>
-</div>
-</div>
-<div class="role-agenda-item">
-<p><strong>Speaker: </strong></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"></div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>Backup Speaker: </strong></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 8:00 PM</div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>General Evaluator: </strong><span class="member-role">Barbara Wright</span><br /><em>Explains the importance of evaluations. Introduces Evaluators.</em></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 8:01 PM</div>
-<div class="timed_content">
-<div class="role-agenda-item">
-<p><strong>Evaluator: </strong><span class="member-role">James K. Polk</span></p>
-</div>
-<div class="role-agenda-item">
-<p><strong>Evaluator: </strong><span class="member-role">Dodo Chaplet</span></p>
-</div>
-<div class="role-agenda-item">
-<p><strong>Evaluator: </strong><span class="member-role">James A. Garfield</span></p>
-</div>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 8:11 PM</div>
-<div class="timed_content">
-<p class="agenda_note" style=";">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 8:16 PM</div>
-<div class="timed_content">
-<p class="agenda_note" style=";">Toastmaster of the Day presents the awards.</p>
-</div>
-</div>
-<div class="timewrap">
-<div class="timeblock"> 8:21 PM</div>
-<div class="timed_content">
-<p class="agenda_note" style=";">President wraps up the meeting.</p>
-</div>
-</div>';
-$sample_data['wpt_unassigned_members'] = '<h2>Members with No Assignment</h2>
-<h3>Franklin Pierce</h3>
-
-<div>Home Phone: (575)555-0000</div>
-<div>Work Phone: (954)555-1212</div>
-<div>Mobile Phone: (500)111-2222</div>
-<div>Email: <a href="mailto:Pierce@example.com">Pierce@example.com</a></div>
-	
-<h3>James K. Polk</h3>
-
-<div>Home Phone: (575)555-0000</div>
-<div>Work Phone: (954)555-1212</div>
-<div>Mobile Phone: (500)111-2222</div>
-<div>Email: <a href="mailto:Polk@example.com">Polk@example.com</a></div>
-	
-<h3>Liz Shaw</h3>
-
-<div>Home Phone: 954-555-1212</div>
-<div>Work Phone: 202-555-1212</div>
-<div>Email: <a href="mailto:Liz@example.com">Liz@example.com</a></div>
-
-<h3>Clone Sarah Jane Smith</h3>
-
-<div>Home Phone: 954-555-1212</div>
-<div>Work Phone: 202-555-1212</div>
-<div>Mobile Phone: 757-555-1212</div>
-<div>Email: <a href="mailto:CloneSarah@example.com">CloneSarah@example.com</a></div>
-
-<h3>Mickey Smith</h3>
-
-<div>Home Phone: 954-555-1212</div>
-<div>Work Phone: 202-555-1212</div>
-<div>Email: <a href="mailto:Mickey@example.com">Mickey@example.com</a></div>';
-$sample_data['speaker_evaluator'] = '<table>
-<tr><th>Speaker</th><th>Evaluator</th></tr>
-<tr><td>George Washington</td><td>James K. Polk</td></tr>
-<tr><td>Teddy Roosevelt</td><td>Dodo Chaplet</td></tr>
-</table>';
-$sample_data['evaluation_links'] = '<p><a href="https://demo.toastmost.org/wp-admin/admin.php?page=wp4t_evaluations&speaker=307&meeting_id=569&project=SPEECHES BY MANAGEMENT 3">George Washington, Manage And Motivate (10 to 12 min), May 5, 2017</a></p><p>Title: The importance of being honest</p>
-<p>The stories about me are all true. The stories I told my men at Valley Forge were mostly true. We got through it and that is all that counts. Let me tell you about it.</p>
-<p><a href="https://demo.toastmost.org/wp-admin/admin.php?page=wp4t_evaluations&speaker=309&meeting_id=569&project=COMPETENT COMMUNICATION 9">Teddy Roosevelt, Persuade with Power (5 to 7 min), May 5, 2017</a></p><p>Title: The speech must go on</p>
-<p>Let me tell you the story about the day I was shot and finished my speech anyway.</p>';
-$sample_data['tmlayout_intros'] = '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;"><h2>George Washington</h2>
-<p>SPEECHES BY MANAGEMENT: Manage And Motivate (10 to 12 min)</p>
-<p>Title: The importance of being honest</p>
-<p>Introduction: The stories about me are all true. The stories I told my men at Valley Forge were mostly true. We got through it and that is all that counts. Let me tell you about it.</p>
-</div><div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;"><h2>Teddy Roosevelt</h2>
-<p>COMPETENT COMMUNICATION: Persuade with Power (5 to 7 min)</p>
-<p>Title: The speech must go on</p>
-<p>Introduction: Let me tell you the story about the day I was shot and finished my speech anyway.</p>
-</div>';
-return $sample_data;
-}
-add_filter('rsvpmaker_notification_sample_data','wpt_sample_data');
 
 function wpt_notifications_doc () {
 ?>
