@@ -58,6 +58,11 @@ You can purchase hosting through project sponsor [Carr Communications Inc.](http
 
 == Changelog ==
 
+= 2.5.5 =
+
+* Reorder function allows you to change the order in which speakers and evaluators are displayed on the agenda.
+* To display the matching of speakers to evaluators on the agenda, you can add text like "Evaluates {Speaker}" in the agenda note field. That shortcode will be replaced with the speaker name (Speaker 1 for Evaluator 1, Speaker 2 for Evaluator 2, etc)
+
 = 2.5.2 =
 
 * Refinements to menus, reports on member data

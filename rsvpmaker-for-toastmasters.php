@@ -4326,8 +4326,8 @@ return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script
         tinymce.init({selector:"textarea.mce",plugins: "code"});		
 </script>
 <form id="edit_roles_form" method="post" action="%s"">
-<p><em>'.__("Edit signups and click <b>Save Changes</b> as the bottom of the form.",'rsvpmaker-for-toastmasters').' <a href="%s?edit_roles=1&rm=1">'.__('Show random assignments','rsvpmaker-for-toastmasters').'</a></em><p>
-%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>',rsvpmaker_permalink_query($post->ID),rsvpmaker_permalink_query($post->ID),$content,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ));
+<p><em>'.__("Edit signups and click <b>Save Changes</b> as the bottom of the form.",'rsvpmaker-for-toastmasters').' <a href="%s?edit_roles=1&rm=1">'.__('Show random assignments','rsvpmaker-for-toastmasters').'</a> / <a href="%s">'.__('Return to agenda signup','rsvpmaker-for-toastmasters').'</a></em><p>
+%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>',rsvpmaker_permalink_query($post->ID),rsvpmaker_permalink_query($post->ID),rsvpmaker_permalink_query($post->ID),$content,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ));
 }
 
 function recommend_hash($role, $user) {
