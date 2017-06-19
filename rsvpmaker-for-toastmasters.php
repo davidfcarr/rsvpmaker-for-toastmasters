@@ -887,11 +887,11 @@ function toastmaster_short($atts=array(),$content="") {
 						$name = $assigned.' ('.__('guest','rsvpmaker-for-toastmasters').')';
 					if ($enhanced_css == 1)
 					      {
-					        $output .= sprintf('<span class="member-role">%s</span></li></ul>', $name);
+					        $output .= sprintf(' <span class="member-role">%s</span></li></ul>', $name);
 					      }
 					 else
 					      {
-					        $output .= sprintf('<span class="member-role">%s%s</span>', $name, $title);
+					        $output .= sprintf(' <span class="member-role">%s%s</span>', $name, $title);
 					      }
 				}
 			else
