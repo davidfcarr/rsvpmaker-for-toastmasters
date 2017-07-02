@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 2.5.5
+Version: 2.5.7
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
@@ -740,14 +740,9 @@ function toastmaster_short($atts=array(),$content="") {
 
 	if(isset($_GET["reorder"]))
 		{
-		global $reorder_hidden;
 		if($count == 1)
 			return;
-		if(empty($reorder_hidden))
-			{
-				$reorder_hidden = 1;
-				$output .= '<input type="hidden" id="post_id" value="'.$post->ID.'"><input type="hidden" id="reorder_nonce" value="'.wp_create_nonce('reorder').'">';
-			}
+		$output .= '<input type="hidden" id="post_id" value="'.$post->ID.'">';
 		$output .= '<h3>'.$atts["role"].'</h3><ul id="'.$field_base.'" class="tmsortable sortable">';
 		for($i = 1; $i <= $count; $i++)
 			{
@@ -1120,6 +1115,7 @@ function tm_calc_time($minutes)
 		return $start_time;
 	}
 
+add_shortcode( 'agenda_role', 'toastmaster_short' );
 add_shortcode( 'toastmaster', 'toastmaster_short' );
 add_shortcode( 'agenda_note', 'agenda_note' );
 
@@ -3557,7 +3553,7 @@ elseif(function_exists('userphoto_exists') && userphoto_exists($userdata))
 }
 elseif(function_exists('bp_core_fetch_avatar')) {
 {
-$args = array('item_id' => $userdata->ID,'type' => 'full', no_grav => false);
+$args = array('item_id' => $userdata->ID,'type' => 'full', 'no_grav' => false);
 $avatar = bp_core_fetch_avatar($args);
 if(!strpos($avatar,'mystery') )
 {
@@ -4309,7 +4305,7 @@ if(isset($_GET["edit_sidebar"]))
 	$sidebar_editor = agenda_sidebar_editor($post->ID);
 return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script> 
 <script>
-        tinymce.init({selector:"textarea.mce",plugins: "code"});		
+        tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
 </script>
 <form id="edit_roles_form" method="post" action="%s"">
 %s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>%s',rsvpmaker_permalink_query($post->ID),$sidebar_editor,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),$content);
@@ -4323,7 +4319,7 @@ $content .= sprintf('<p><a href="%sedit_sidebar=1">%s</a></p>',rsvpmaker_permali
 
 return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script> 
 <script>
-        tinymce.init({selector:"textarea.mce",plugins: "code"});		
+        tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
 </script>
 <form id="edit_roles_form" method="post" action="%s"">
 <p><em>'.__("Edit signups and click <b>Save Changes</b> as the bottom of the form.",'rsvpmaker-for-toastmasters').' <a href="%s?edit_roles=1&rm=1">'.__('Show random assignments','rsvpmaker-for-toastmasters').'</a> / <a href="%s">'.__('Return to agenda signup','rsvpmaker-for-toastmasters').'</a></em><p>
@@ -4593,7 +4589,7 @@ $wp4toastmasters_mailman = get_option("wp4toastmasters_mailman");
 	<p>'.__("Your note, along with the roster details, will be sent to all members.",'rsvpmaker-for-toastmasters').'</p>
 <script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script><br />
 <script>
-        tinymce.init({selector:"textarea",plugins: "code,link"});	
+        tinymce.init({selector:"textarea",plugins: "code, link"});	
 </script>
 	<form method="post" action="'.$permalink.'email_agenda=1">
 Subject: <input type="text" name="subject" value="'.$subject.'" size="60"><br />
@@ -5401,7 +5397,7 @@ if(isset($_POST['wp4toastmasters_admin_ids']) )
 
 function toastmasters_css_js() {
 	global $post;
-	if( (isset($post->post_content) && (strpos($post->post_content,'toastmaster') || strpos($post->post_content,'rsvpmaker') ) ) || (isset($_GET["page"]) && (($_GET["page"] == 'toastmasters_reconcile') || ($_GET["page"] == 'my_progress_report')  || ($_GET["page"] == 'toastmasters_reports') )  ) )
+	if( (isset($post->post_content) && (strpos($post->post_content,'role=') || strpos($post->post_content,'rsvpmaker') ) ) || (isset($_GET["page"]) && (($_GET["page"] == 'toastmasters_reconcile') || ($_GET["page"] == 'my_progress_report')  || ($_GET["page"] == 'toastmasters_reports') )  ) )
 	{
 	wp_enqueue_style( 'jquery' );
 	wp_enqueue_style( 'jquery-ui-core' );
@@ -6709,7 +6705,6 @@ Anyone who is a strong leader has to first be an effective communicator. In Toas
 		{
 		if(isset($_GET["page"]) && ($_GET["page"] == 'agenda_setup') )
 			return; // don't prompt if already doing it
-
 ?>
 <div class="error">
 <p><a href="<?php echo admin_url('edit.php?post_type=rsvpmaker&page=agenda_setup&post_id=').$d; ?>">Set up meeting schedule and roles</a>.</p>
@@ -9797,6 +9792,7 @@ return $link;
 }
 
 function tm_security_setup ($check = true) {
+setcookie('tm_member', $_SERVER['REMOTE_ADDR'], time() + 15552000);//180 days
 
 $security_roles = array('administrator','manager','editor','author','contributor','subscriber');
 
@@ -9893,7 +9889,6 @@ if(!empty($security))
 					$tm_security[$role][$tm_cap] = in_array($role,$caparray[$cap]);
 					}
 			}
-	// delete_option('tm_security');
 	}
 
 add_awesome_roles();
@@ -9914,10 +9909,16 @@ if(!$tm_cap_set || ($check == 2))
 		}
 	update_option('tm_cap_set',1);
 	}
+
+// make sure administrator gets all rights
+$tm_role = get_role('administrator');
+foreach($tm_security['administrator'] as $cap => $value)
+	{
+	$tm_role->add_cap($cap);
+	}
 }
 return $tm_security;
 }
-
 
 function tm_security_caps () {
 ?>
@@ -10220,9 +10221,19 @@ if(current_user_can('manage_options'))
 
 add_filter('editable_roles', 'officers_limit_promotion',99);
 
-function extract_video($content) {
+function wpt_extract_video($content) {
 
 $pattern = '/<a class="vm-video-title-content.+video_id=([^"]+)[^>]+([^\<]+)/';
+
+	preg_match_all($pattern,$content, $matches);
+	foreach($matches[1] as $index => $value)
+		{
+			$url = 'https://www.youtube.com/watch?v='.$value;
+			$title = $matches[2][$index];
+			$links[] = sprintf('<a href="%s"%s</a>'."\n%s\n\n",$url,$title,$url);
+		}
+
+$pattern = '/href="(https:\/\/www.youtube.com\/playlist\?list=[^"]+)[^>]+([^\<]+)/';
 
 	preg_match_all($pattern,$content, $matches);
 	foreach($matches[1] as $index => $value)
@@ -10254,7 +10265,7 @@ if($_POST["video"])
 	
 	echo "<h1>".stripslashes($_POST["title"])."</h1>";
 	
-	$vtext = extract_video(stripslashes($_POST["video"]))."<br /><br />";
+	$vtext = wpt_extract_video(stripslashes($_POST["video"]))."<br /><br />";
 
 $blog = $_POST["blog"];
 $email = $_POST["email"];

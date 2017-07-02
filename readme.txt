@@ -4,7 +4,7 @@ Donate link: http://wp4toastmasters.com/
 Tags: toastmasters
 Requires at least: 3.0
 Tested up to: 4.8
-Stable tag: 2.5.5
+Stable tag: 2.5.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,11 @@ You can purchase hosting through project sponsor [Carr Communications Inc.](http
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 2.5.7 =
+
+* Fix to the reorder function
+* YouTube tool now handles playlists as well as individual video links (can be used to share unlisted playlists in a members-only blog post)
 
 = 2.5.5 =
 

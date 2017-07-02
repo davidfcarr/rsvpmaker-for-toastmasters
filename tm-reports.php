@@ -4253,7 +4253,7 @@ echo '<h3>Evaluations of My Speeches</h3>';
 		$timestamp = $parts[1];
 		$project = $parts[2];
 		$project_text = get_project_text($project);
-		printf('<p><a target="_blank" href="%s">%s %s</p>', site_url('?show_evaluation='.$key), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
+		printf('<p><a target="_blank" href="%s">%s %s</a></p>', site_url('?show_evaluation='.$key), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
 	}
 }
 
