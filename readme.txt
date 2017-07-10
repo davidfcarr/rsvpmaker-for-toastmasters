@@ -4,7 +4,7 @@ Donate link: http://wp4toastmasters.com/
 Tags: toastmasters
 Requires at least: 3.0
 Tested up to: 4.8
-Stable tag: 2.5.7
+Stable tag: 2.5.8
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,12 @@ You can purchase hosting through project sponsor [Carr Communications Inc.](http
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 2.5.8 =
+
+* Added tracking for a guests Mailman email list, in addition to members and officers lists. Activate on the Toastmasters settings screen.
+* New admin screen for Mailman makes it possible to add addresses to the list and remove them. You can also manage pending messages that have been held for moderation from this screen, rather than logging into Mailman directly. Located in the submenu under Users, along with the Guests/Former Members screen.
+* Guests/Former Members screen also allows you to add addresses to the Mailman guest email list.
 
 = 2.5.7 =
 

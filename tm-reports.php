@@ -4854,10 +4854,16 @@ $response  = curl_exec($ch);
 curl_close($ch);
 $json_response = json_decode($response,true);
 if(!isset($json_response["log"]))
-	return 'Sync error, unable to parse response: '.$response;
+	{
+	update_option('sync_error_json_log',$response);
+	return 'Sync error, logged to sync_error_json_log';
+	}
 $log = $json_response["log"];
 if(!isset($json_response["uploaded"]))
-	return 'Sync error: '.$json_response["log"];
+	{
+	update_option('sync_error_json_log',$json_response["log"]);
+	return 'Sync error, logged to sync_error_json_log';
+	}
 update_option('last_sync_result',var_export($json_response,true));
 $download = $json_response["download"];
 $uploaded = $json_response["uploaded"];

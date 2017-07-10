@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 2.5.7
+Version: 2.5.8
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
@@ -410,10 +410,16 @@ foreach($templates as $template)
 }
 
 if(!empty($wp4toastmasters_mailman["mpass"]))
-echo '<p><a href="'.trailingslashit($wp4toastmasters_mailman["mpath"]).'members" target="_blank">'.__("Members Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$wp4toastmasters_mailman["mpass"].'<br /></p>';
+echo '<p><a href="'.trailingslashit($wp4toastmasters_mailman["mpath"]).'members" target="_blank">'.__("Members Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$wp4toastmasters_mailman["mpass"].' <a href="mailto:'.$wp4toastmasters_mailman["members"].'">'.$wp4toastmasters_mailman["members"].'</a><br /></p>';
 
 if(!empty($wp4toastmasters_mailman["opass"]))
-echo'<p><a href="'.trailingslashit($wp4toastmasters_mailman["opath"]).'members" target="_blank">'.__("Officers Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$wp4toastmasters_mailman["opass"].'</p>';
+echo'<p><a href="'.trailingslashit($wp4toastmasters_mailman["opath"]).'members" target="_blank">'.__("Officers Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$wp4toastmasters_mailman["opass"].' <a href="mailto:'.$wp4toastmasters_mailman["officers"].'">'.$wp4toastmasters_mailman["officers"].'</a></p>';
+
+if(!empty($wp4toastmasters_mailman["gpass"]))
+echo '<p><a href="'.trailingslashit($wp4toastmasters_mailman["gpath"]).'members" target="_blank">'.__("Guests Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$wp4toastmasters_mailman["gpass"].' <a href="mailto:'.$wp4toastmasters_mailman["guest"].'">'.$wp4toastmasters_mailman["guest"].'</a></p>';
+
+if(!empty($wp4toastmasters_mailman["mpass"]) || !empty($wp4toastmasters_mailman["opass"]) || !empty($wp4toastmasters_mailman["gpass"]))
+printf('<p>See also <a href="%s">Mailman Mailing Lists</a></p>',admin_url('users.php?page=mailman'));
 
 echo $wp4toastmasters_officer_message;
 
@@ -684,14 +690,18 @@ if(!empty($atts["editable"]))
 		$editable = get_post_meta($post->ID,'agenda_note_'.$atts["editable"],true);
 		if(is_club_member() && isset($_GET["edit_roles"]))
 			{
-			$content .= '<div class="agenda_note_editable"><h3>'.$atts["editable"].'</h3>
-<textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="agenda_note_'.$atts["editable"].'" /></div>';
+			$editable = '<div class="agenda_note_editable"><textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="agenda_note_'.$atts["editable"].'" /></div>';
 			$display = 'both';
 			}
-		elseif(!empty($editable))
+		elseif(empty($editable) && is_club_member() && current_user_can('edit_signups') && !isset($_GET["print_agenda"]) && !isset($_GET["email_agenda"]))
 			{
-			$content .= '<h3>'.$atts["editable"].'</h3>'.wpautop($editable);
+			$permalink = get_permalink($post->ID);
+			$permalink .= (strpos($permalink,'?')) ? '&edit_roles=1' : '?edit_roles=1'; 
+			$editable = sprintf('%s %s %s <a href="%s">%s</a>',__('To add','rsvpmaker-for-toastmasters'),$atts["editable"],__('content, switch to ','rsvpmaker-for-toastmasters'),$permalink, __('Edit Signups mode'));
 			}
+		elseif(empty($editable))
+			$editable = __('Not set','rsvpmaker-for-toastmasters');
+		$content .= '<h3>'.$atts["editable"].'</h3>'.wpautop($editable);
 	}
 
 if(isset($_GET["print_agenda"]) || isset($_GET["email_agenda"]))
@@ -2125,6 +2135,16 @@ printf('<p>Filters: <a href="%s">%s</a> | <a href="%s">%s</a>  | <a href="%s">%s
 
 global $wpdb;
 $public_context = false;
+$mm = get_option('wp4toastmasters_mailman');
+
+if(!empty($_POST["guestlist"]))
+	{
+	foreach($_POST["guestlist"] as $email)
+		{
+			add_to_mailman($email,'g');
+		}
+	printf('<p>Attempted to add %s email addresses to guest list. Verify by visiting <a href="%s">%s</a>, password: %s</p>',sizeof($_POST["guestlist"]),$mm["gpath"],$mm["gpath"],$mm["gpass"]);
+	}
 
 if(!empty($_GET["reset"]))
 	{
@@ -2278,14 +2298,20 @@ foreach($results as $row)
 			{
 			$status = ' - '.__('Former Member','rsvpmaker-for-toastmasters').' <a href="'.admin_url('users.php?page=extended_list&lookup=').$row->sort.'">('.__('Edit','rsvpmaker-for-toastmasters').')</a> <a href="'.admin_url('users.php?page=extended_list&activate=').$row->sort.'">('.__('Reactivate','rsvpmaker-for-toastmasters').')</a> <br />'.__('Updated','rsvpmaker-for-toastmasters').': '.$row->updated;
 			if(isset($userdata["user_email"]) && !in_array($userdata["user_email"],$unsubscribed))
+				{
 				$former_list .= $userdata["user_email"].", ";
+				$f_email[] = $userdata["user_email"];
+				}
 			if(isset($_GET['guests_only']))
 				continue;
 			}
 		elseif($row->guest)
 			{
 			if(isset($userdata["user_email"]) && !in_array($userdata["user_email"],$unsubscribed))
+				{
 				$guest_list .= $userdata["user_email"].", ";
+				$g_email[] = $userdata["user_email"];
+				}
 			$status = ' - '.__('Guest','rsvpmaker-for-toastmasters').' <a href="'.admin_url('users.php?page=extended_list&lookup=').$row->sort.'">('.__('Edit','rsvpmaker-for-toastmasters').')</a> <a href="'.admin_url('users.php?page=extended_list&activate=').$row->sort.'">('.__('Convert to Member','rsvpmaker-for-toastmasters').')</a><br />'.__('Updated','rsvpmaker-for-toastmasters').': '.$row->updated;
 			if(isset($_GET['former_only']))
 				continue;
@@ -2295,7 +2321,6 @@ foreach($results as $row)
 			if(isset($_GET['guests_only']) || isset($_GET['former_only']))
 				continue;	
 			}
-		
 ?>	
 <div class="member-entry" style="margin-bottom: 50px; clear: both;">
 <p><strong><?php echo $userdata["first_name"].' '.$userdata["last_name"].$status; ?></strong></p>
@@ -2326,7 +2351,6 @@ foreach($results as $row)
 
 		if(isset($userdata["note"]))
 			echo wpautop('<strong>'.__('Note','rsvpmaker-for-toastmasters').':</strong> '.$userdata["note"]);
-
 ?>
 </div>
 <?php
@@ -2336,9 +2360,42 @@ foreach($results as $row)
 printf('<p>%s <a target="_blank" href="mailto:%s">%s</a></p>',__('Combined email','rsvpmaker-for-toastmasters'),$email_list,$email_list);
 printf('<p>%s <a target="_blank" href="mailto:%s">%s</a></p>',__('Former member emails','rsvpmaker-for-toastmasters'),$former_list,$former_list);
 printf('<p>%s <a target="_blank" href="mailto:%s">%s</a></p>',__('Guest emails','rsvpmaker-for-toastmasters'),$guest_list,$guest_list);
+
+if(isset($mm["gpass"]))
+{
+if(!empty($g_email) || !empty($f_email))
+	{
+	echo '<h2>Add to Guest Email List</h2>';
+	printf('<form action="%s" method="post">',admin_url('users.php?page=extended_list'));
+	if(!empty($g_email))	
+		{		
+		sort($g_email);
+		echo '<h3>Guests</h3>';
+		foreach($g_email as $email)
+			{
+				printf('<div><input type="checkbox" name="guestlist[]" value="%s" /> %s</div>',$email,$email);
+			}
+		}	
+	if(!empty($f_email))
+		{
+		echo '<h3>Former Members</h3>';
+		sort($f_email);
+		foreach($f_email as $email)
+			{
+				printf('<div><input type="checkbox" name="guestlist[]" value="%s" /> %s</div>',$email,$email);
+			}
+		}
+	echo '<p><button>Add</button></p></form>';
+	}	
+printf('<p>See also <a href="%s">Mailman Mailing Lists</a></p>',admin_url('users.php?page=mailman'));
+
+}
 ?>
+
+
 <p><a href="<?php echo admin_url('users.php?page=extended_list&reset=1') ?>"><?php _e('Reset','rsvpmaker-for-toastmasters');?></a></p>
 <?php
+
 }
 
 
@@ -2500,6 +2557,9 @@ add_submenu_page('profile.php', __("Set Away Status",'rsvpmaker-for-toastmasters
 
 add_submenu_page('profile.php', __("Edit Members",'rsvpmaker-for-toastmasters'), __("Edit Members",'rsvpmaker-for-toastmasters'), 'edit_members', "edit_members", "edit_members" );
 add_submenu_page('profile.php', __("Guests/Former Members",'rsvpmaker-for-toastmasters'), __("Guests/Former Members",'rsvpmaker-for-toastmasters'), 'edit_members', "extended_list", "extended_list" );
+$mm = get_option('wp4toastmasters_mailman');
+if(!empty($mm["mpass"]) || !empty($mm["opass"]) || !empty($mm["gpass"]))
+add_submenu_page('profile.php', __("Mailman Mailing List",'rsvpmaker-for-toastmasters'), __("Mailman Mailing List",'rsvpmaker-for-toastmasters'), 'edit_members', "mailman", "mailman" );
 
 add_submenu_page('profile.php', __("RSVP List to Members",'rsvpmaker-for-toastmasters'), __("RSVP List to Members",'rsvpmaker-for-toastmasters'), 'edit_members', "rsvp_to_member", "rsvp_to_member" );
 
@@ -2697,7 +2757,7 @@ if(isset($_GET["mailman_add_members"]))
 if(isset($_GET["mailman_add_officers"]))
 {
     foreach ($wp4toastmasters_officer_ids as $user_id) {
-		add_to_mailman($user_id);
+		add_to_mailman($user_id,'o');
 	}
 }
 
@@ -2710,7 +2770,13 @@ if(isset($_GET["mailman_add_officers"]))
 <?php if(isset($wp4toastmasters_mailman["opass"])) {
 	printf('<p><a href="%s&mailman_add_officers=1">'.__("Update officers mailing list",'rsvpmaker-for-toastmasters').'</a></p>',admin_url('options-general.php?page=wp4toastmasters_settings'));
 	}
+?>
 
+<h3><?php _e("Guest Email List",'rsvpmaker-for-toastmasters');?></h3>
+<p><?php _e("List email address",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[guest]" value="<?php if(isset($wp4toastmasters_mailman["guest"])) echo $wp4toastmasters_mailman["guest"]; ?>" /></p>
+<p><?php _e("Path",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[gpath]" value="<?php if(isset($wp4toastmasters_mailman["gpath"])) echo $wp4toastmasters_mailman["gpath"]; ?>" /> <?php _e("Password",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[gpass]" value="<?php if(isset($wp4toastmasters_mailman["gpass"])) echo $wp4toastmasters_mailman["gpass"]; ?>" />
+
+<?php
 if(isset($_GET["mailman_add_officers"]))
 {
     foreach ($wp4toastmasters_officer_ids as $user_id) {
@@ -2730,7 +2796,6 @@ if(isset($_GET["mailman_add_officers"]))
 }
 
 }
-
 ?>
 
 <p><?php _e("Message for Login Page",'rsvpmaker-for-toastmasters');?><br />
@@ -2999,25 +3064,8 @@ function register_wp4toastmasters_settings() {
 		}
 }
 
-function wp4toastmasters_agenda_layout_check ($option) {
-global $current_user;
-if($option == 'custom')
-	{
-		// create layout post if it does not already exist
-		global $wpdb;
-		if(! $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key='_rsvpmaker_special' AND meta_value='Agenda Layout' ") )
-			{
-			$layout["post_type"] = 'rsvpmaker';
-			$layout["post_title"] = 'Agenda Layout';
-			$layout["post_content"] = '<div id="banner"><img src="' . plugins_url('rsvpmaker-for-toastmasters/agenda-rays.png') . '" width="700" height="79"></div>
-<h2 id="title">[tmlayout_club_name] - [tmlayout_meeting_date]</h2>
-<table id="main" width="700"><tr><td id="sidebar" width="175">[tmlayout_sidebar]</td><td id="agenda" width="*">[tmlayout_main]</td></tr></table>';
-			$layout["post_author"] = $current_user->ID;
-			$layout["post_status"] = 'publish';
-			$layout_id = wp_insert_post( $layout );
-			add_post_meta($layout_id,'_rsvpmaker_special','Agenda Layout');
-			update_option('rsvptoast_agenda_layout',$layout_id);
-			$css = '
+function wpt_default_agenda_css() {
+return '
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -3053,6 +3101,7 @@ margin-left: 10px;
 }
 h1 {font-size: 24px;  font-weight: bold;  margin-bottom: 5px;}
 h2 {font-size: 18px; font-weight: bold; margin-bottom: 5px;}
+h3 {font-size: 18px; font-weight: bold; margin-bottom: 5px; font-style: italic;}
 td {vertical-align: top;}
 strong { font-weight: bold; }
 em {font-style: italic; }
@@ -3095,9 +3144,29 @@ clear: both;
 div.agenda_note p {
 margin: 0;
 padding: 0;
+}';
+
 }
-';
-			add_post_meta($layout_id,'_rsvptoast_agenda_css',$css);
+
+function wp4toastmasters_agenda_layout_check ($option) {
+global $current_user;
+if($option == 'custom')
+	{
+		// create layout post if it does not already exist
+		global $wpdb;
+		if(! $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key='_rsvpmaker_special' AND meta_value='Agenda Layout' ") )
+			{
+			$layout["post_type"] = 'rsvpmaker';
+			$layout["post_title"] = 'Agenda Layout';
+			$layout["post_content"] = '<div id="banner"><img src="' . plugins_url('rsvpmaker-for-toastmasters/agenda-rays.png') . '" width="700" height="79"></div>
+<h2 id="title">[tmlayout_club_name] - [tmlayout_meeting_date]</h2>
+<table id="main" width="700"><tr><td id="sidebar" width="175">[tmlayout_sidebar]</td><td id="agenda" width="*">[tmlayout_main]</td></tr></table>';
+			$layout["post_author"] = $current_user->ID;
+			$layout["post_status"] = 'publish';
+			$layout_id = wp_insert_post( $layout );
+			add_post_meta($layout_id,'_rsvpmaker_special','Agenda Layout');
+			update_option('rsvptoast_agenda_layout',$layout_id);
+			add_post_meta($layout_id,'_rsvptoast_agenda_css',wpt_default_agenda_css());
 			}
 	}
 return $option;
@@ -3136,22 +3205,226 @@ return sprintf('<label for="%s">Select:</label>
 </select>',$label,$label,$label,$list);
 }
 
-function add_to_mailman($user_id, $olduser = NULL)
+function add_to_mailman($user_id, $list = 'm')
 	{
 		$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
-		if(!isset($wp4toastmasters_mailman["mpath"]) || empty($wp4toastmasters_mailman["mpath"]) || !isset($wp4toastmasters_mailman["mpass"]) || empty($wp4toastmasters_mailman["mpass"]) )
+		if(!isset($wp4toastmasters_mailman[$list."path"]) || empty($wp4toastmasters_mailman[$list."path"]) || !isset($wp4toastmasters_mailman[$list."pass"]) || empty($wp4toastmasters_mailman[$list."pass"]) )
 			return;
+		if(is_numeric($user_id))
+		{
 		$user = get_userdata($user_id);
 		$email = $user->user_email;
-		$url = trailingslashit($wp4toastmasters_mailman["mpath"])."members?findmember=".$email."&setmemberopts_btn&adminpw=".$wp4toastmasters_mailman["mpass"];
+		}
+		elseif(is_email($user_id))
+		{
+		$email = $user_id;
+		}
+		else
+			{
+			echo 'not numeric or email?'.$user_id;
+			return;
+			}
+		$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."members?findmember=".$email."&setmemberopts_btn&adminpw=".$wp4toastmasters_mailman[$list."pass"];
 		$result = file_get_contents($url);
 		if(!strpos($result, 'CHECKBOX') )
 			{
-			$url = trailingslashit($wp4toastmasters_mailman["mpath"])."add?subscribe_or_invite=0&send_welcome_msg_to_this_batch=0&notification_to_list_owner=0&subscribees_upload=".$email."&adminpw=".$wp4toastmasters_mailman["mpass"];;
+			$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."add?subscribe_or_invite=0&send_welcome_msg_to_this_batch=0&notification_to_list_owner=0&subscribees_upload=".$email."&adminpw=".$wp4toastmasters_mailman[$list."pass"];;
 		$result = file_get_contents($url);
 		if(!strpos($result, 'Successfully') )
 			echo "<div>".__('Error attempting to subscribe','rsvpmaker-for-toastmasters')." $email</div>";
+		else
+			echo "<div>".__('Added ','rsvpmaker-for-toastmasters')." $email</div>";			
 			}
+}
+
+function list_mailman($list = 'm')
+	{
+		$lists = array('m' => 'members','o' => 'officers', 'g' => 'guests');
+		printf('<h3>Mailing List: %s</h3>',$lists[$list]);
+		$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
+		if(!isset($wp4toastmasters_mailman[$list."path"]) || empty($wp4toastmasters_mailman[$list."path"]) || !isset($wp4toastmasters_mailman[$list."pass"]) || empty($wp4toastmasters_mailman[$list."pass"]) )
+			return;
+		$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."members?adminpw=".$wp4toastmasters_mailman[$list."pass"];
+		$result = file_get_contents($url);
+		preg_match_all('/letter=([a-z])/',$result,$matches);
+		if(!empty($matches[1][1]))
+		{
+			//array_shift($matches);
+			foreach($matches[1] as $m)
+				{
+				if($m == 'a')
+					continue;
+				$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."members?adminpw=".$wp4toastmasters_mailman[$list."pass"].'&letter='.$m;
+				$result .= file_get_contents($url);
+				}
+		}
+preg_match_all('/[a-z\d._%+-]+@[a-z\d.-]+\.[a-z]{2,4}\b/i',$result, $matches);
+foreach($matches[0] as $email)
+	{
+	if(strpos($email,'-owner@'))
+		continue;
+	$status = (get_user_by( 'email', $email )) ? '' : __('Not in user/member list','rsvpmaker-for-toastmasters');
+	printf('<div>%s (<a href="%s">%s</a>) %s</div>',$email,admin_url('users.php?page=mailman&unsubscribe=').$email.'&list='.$list,__('Unsubscribe - '.$lists[$list],'rsvpmaker-for-toastmasters'), $status);
+	}
+}
+
+function list_mailman_pending($list = 'm')
+	{
+		$lists = array('m' => 'members','o' => 'officers', 'g' => 'guests');
+		$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
+		if(!isset($wp4toastmasters_mailman[$list."path"]) || empty($wp4toastmasters_mailman[$list."path"]) || !isset($wp4toastmasters_mailman[$list."pass"]) || empty($wp4toastmasters_mailman[$list."pass"]) )
+			return;
+		$path = str_replace('/admin/','/admindb/',$wp4toastmasters_mailman[$list."path"]);
+		$url = $path."?adminpw=".$wp4toastmasters_mailman[$list."pass"];
+		
+		if(isset($_POST["always_approve"]))
+			{
+			$adminurl = $url;
+			foreach($_POST["always_approve"] as $email) {
+				$emailcoded = str_replace('@','%40',$email);
+				foreach($_POST['msgid'][$email] as $msgid)
+					$adminurl .= '&'.$emailcoded.'='.$msgid;
+				$adminurl .= '&senderaction-'.$emailcoded.'=1&senderfilter-'.$emailcoded.'=6&senderfilterp-'.$emailcoded.'=1';
+				$results = file_get_contents($adminurl);
+				echo '<p>Attempting to whitelist email '.$email.'<p>';
+				}
+			}
+		if(isset($_POST["approve"]))
+			{
+			$adminurl = $url;
+			foreach($_POST["approve"] as $email) {
+				$emailcoded = str_replace('@','%40',$email);
+				foreach($_POST['msgid'][$email] as $msgid)
+					$adminurl .= '&'.$emailcoded.'='.$msgid;
+				$adminurl .= '&senderaction-'.$emailcoded.'=1';
+				$results = file_get_contents($adminurl);
+				echo '<p>Attempting to approve current messages for '.$email.'<p>';
+				}
+			}
+		if(isset($_POST["deny"]))
+			{
+			$adminurl = $url;
+			foreach($_POST["deny"] as $email) {
+				$emailcoded = str_replace('@','%40',$email);
+				foreach($_POST['msgid'][$email] as $msgid)
+					$adminurl .= '&'.$emailcoded.'='.$msgid;
+				$adminurl .= '&senderaction-'.$emailcoded.'=3&senderfilter-'.$emailcoded.'=3&senderfilterp-'.$emailcoded.'=1';
+				$results = file_get_contents($adminurl);
+				echo '<p>Attempting to blacklist email '.$email.'<p>';
+				}
+			}		
+		
+		$result = file_get_contents($url);
+
+		$parts = explode('From:',$result);
+		if(sizeof($parts) > 1)
+		{
+		echo '<h2>Pending Messages</h2>';
+		printf('<form action="%s" method="post">',admin_url('users.php?page=mailman&list='.$list));
+		foreach($parts as $text)
+		{
+		preg_match('/<\/strong>([^<]+)<\/center>/',$text,$email_matches);
+		$pattern = '/msgid=([0-9]+)">/';//[([0-9]+)].+<\/strong><\/td>.+<td>(.+)<\/td>/s';
+		preg_match_all($pattern,$text,$msg_matches);
+		$pattern = '/Subject:<\/strong><\/td>[^<]+<td>([^<]+)<\/td>/s';
+		preg_match_all($pattern,$text,$subject_matches);		
+		if(!empty($email_matches[1]))
+			{
+			$email = $email_matches[1];
+		printf('<div><input type="checkbox" name="always_approve[]" value="%s" />Always Approve: %s</div>',$email,$email);
+		printf('<div><input type="checkbox" name="approve[]" value="%s" />Approve Once: %s</div>',$email,$email);
+		printf('<div><input type="checkbox" name="deny[]" value="%s" />Blacklist: %s</div>',$email,$email);
+			}
+		if(!empty($msg_matches[1]))
+		{
+		foreach($msg_matches[1] as $index => $msg_id)
+			{
+				$subject = $subject_matches[1][$index];
+				$pending .= sprintf('<div><a target="_blank" href="%s?msgid=%d" />%s</a></div>',$path,$msg_id,$subject);
+			printf('<input type="hidden" name="msgid[%s][]" value="%s" />',$email,$msg_id);
+			}		
+		}
+
+		}
+	
+		if(!empty($pending))
+			echo "<div>Messages from $email</div>".$pending;
+		echo '<button>Submit</button></form>';		
+		}
+}
+
+function mailman () {
+$hook = tm_admin_page_top(__('Mailman Mailing Lists','rsvpmaker-for-toastmasters'));
+$mm = get_option('wp4toastmasters_mailman');
+$list = isset($_REQUEST["list"]) ? $_REQUEST["list"] : '';
+$lists = array('m' => 'members','o' => 'officers', 'g' => 'guests');
+$options = '';
+foreach($lists as $l => $label)
+	{
+	$s = ($l == $list) ? ' selected="selected" ' : '';
+	if(!empty($mm[$l.'pass']))
+		{
+		$options .= sprintf('<option value="%s" %s>%s</option>',$l,$s,$label);
+		if(empty($list))
+			$list = $l;
+		}
+	}
+
+printf('<form action="%s" method="get"><input type="hidden" name="page" value="mailman" />Select List: <select name="list">%s</select><button>Go</button></form>',admin_url('users.php'),$options);		
+
+if(isset($_GET["unsubscribe"]))
+	unsubscribe_mailman_by_email($_GET["unsubscribe"],$_GET["list"]);
+if(isset($_POST["add_email"]) && isset($_POST["list"]))
+{
+preg_match_all('/[a-z\d._%+-]+@[a-z\d.-]+\.[a-z]{2,4}\b/i',$_POST["add_email"], $matches);
+if(!empty($matches[0]))
+foreach($matches[0] as $email)
+	{
+		add_to_mailman($email,$_POST["list"]);
+	}
+}
+
+if(!empty($mm[$list."pass"]))
+	{
+	list_mailman($list);
+	
+	list_mailman_pending($list);
+	
+	$suggestions = array();
+	if(isset($_GET["rsvp"]))
+		{
+		global $wpdb;
+		$sql = 'SELECT * from '.$wpdb->prefix.'rsvpmaker ORDER BY id DESC';
+		$results = $wpdb->get_results($sql);
+		foreach($results as $row)
+			{
+			if(empty($row->email) || get_user_by( 'email', $row->email ) || isset($suggestions[$row->email]))
+				continue;
+			$suggestions[$row->email] = sprintf("%s (%s %s %s)",$row->email,$row->first,$row->last,$row->timestamp);
+			}
+		}
+	printf('<h3>%s</h3><p>%s</p><form action="%s" method="post"><input type="hidden" name="list" value="%s" /><textarea name="add_email"  rows="5" cols="80">%s</textarea><br /><button>Add</button></form>',__('Add Email','rsvpmaker-for-toastmasters'),__('Add one or more email addresses separated by commas or line breaks','rsvpmaker-for-toastmasters'),admin_url('users.php?page=mailman'),$list,implode("\n",$suggestions));
+	if($list == 'g')
+		{
+		printf('<p>You can pull in guest list suggestions from the <a href="%s">RSVP List</a>',admin_url('users.php?page=mailman&rsvp=1&list=g'));
+		printf('<p>Or check off email address to include on the <a href="%s">Guests/Former Members page</a>',admin_url('users.php?page=extended_list'));	
+		}
+	}
+
+?>
+<h1>Direct Login</h1>
+<p>For some administrative functions, you will need to log into the Mailman mailing list directly. Mailman is a Linux mailing list utility, which allows limited access from WordPress.</p>
+<?php
+if(!empty($mm["mpass"]))
+echo '<p><a href="'.trailingslashit($mm["mpath"]).'members" target="_blank">'.__("Members Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$mm["mpass"].' <a href="mailto:'.$mm["members"].'">'.$mm["members"].'</a><br /></p>';
+
+if(!empty($mm["opass"]))
+echo'<p><a href="'.trailingslashit($mm["opath"]).'members" target="_blank">'.__("Officers Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$mm["opass"].' <a href="mailto:'.$mm["officers"].'">'.$mm["officers"].'</a></p>';
+
+if(!empty($mm["gpass"]))
+echo '<p><a href="'.trailingslashit($mm["gpath"]).'members" target="_blank">'.__("Guests Email List",'rsvpmaker-for-toastmasters').'</a> password: '.$mm["gpass"].' <a href="mailto:'.$mm["guest"].'">'.$mm["guest"].'</a></p>';
+
+tm_admin_page_bottom($hook);
 }
 
 function unsubscribe_mailman($user_id, $olduser = NULL)
@@ -3167,13 +3440,14 @@ function unsubscribe_mailman($user_id, $olduser = NULL)
 		echo "<div>".__('Error attempting to unsubscribe','rsvpmaker-for-toastmasters')." $email</div>";
 }
 
-function unsubscribe_mailman_by_email($email)
+function unsubscribe_mailman_by_email($email, $list = 'm')
 	{
 		$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
-		if(!isset($wp4toastmasters_mailman["mpath"]) || empty($wp4toastmasters_mailman["mpath"]) || !isset($wp4toastmasters_mailman["mpass"]) || empty($wp4toastmasters_mailman["mpass"]) )
-			return;
-		$url = trailingslashit($wp4toastmasters_mailman["mpath"])."members/remove?send_unsub_ack_to_this_batch=0&send_unsub_notifications_to_list_owner=0&unsubscribees_upload=".$email."&adminpw=".$wp4toastmasters_mailman["mpass"];;
+		if(!empty($wp4toastmasters_mailman[$list."path"]) && !empty($wp4toastmasters_mailman[$list."pass"]) )
+		{
+		$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."members/remove?send_unsub_ack_to_this_batch=0&send_unsub_notifications_to_list_owner=0&unsubscribees_upload=".$email."&adminpw=".$wp4toastmasters_mailman[$list."pass"];;
 	$result = file_get_contents($url);
+		}
 }
 
 add_action('rsvpmail_unsubscribe','unsubscribe_mailman_by_email');
@@ -3217,7 +3491,7 @@ else
 		$link .= '<li class="has-sub"><a href="'.$permalink.'edit_roles=1">'.__('Edit Signups','rsvpmaker-for-toastmasters').'</a><ul>';
 		$link .= '<li"><a href="'.$permalink.'reorder=1">'.__('Reorder','rsvpmaker-for-toastmasters').'</a></li>';
 		$link .= '<li"><a href="'.$permalink.'recommend_roles=1">'.__('Recommend','rsvpmaker-for-toastmasters').'</a></li>';
-		$events = get_future_events("post_content LIKE '%[toastmaster%' AND ID != ".$post->ID, 10);
+		$events = get_future_events("post_content LIKE '%[toastmaster%' ", 10);
 		if($events)
 		foreach ($events as $event)
 			$link .= '<li><a href="'.rsvpmaker_permalink_query($event->ID,'edit_roles=1').'">'.__('Edit','rsvpmaker-for-toastmasters').' '.strftime($rsvp_options["short_date"],strtotime($event->datetime)).'</a></li>';
@@ -4168,7 +4442,7 @@ class AwesomeWidget extends WP_Widget {
 		$dateformat = (isset($instance["dateformat"]) && strpos($instance["dateformat"],'%s') ) ? $instance["dateformat"] : '%b %e';
 		if($showlog)
 			{
-			$activity_sql = "SELECT meta_value from $wpdb->postmeta JOIN $wpdb->posts ON $wpdb->postmeta.post_id = $wpdb->posts.ID WHERE meta_key='_activity' ORDER BY meta_id DESC LIMIT 0,5";
+			$activity_sql = "SELECT meta_value, post_id from $wpdb->postmeta JOIN $wpdb->posts ON $wpdb->postmeta.post_id = $wpdb->posts.ID WHERE meta_key='_activity' ORDER BY meta_id DESC LIMIT 0,5";
 			$log = $wpdb->get_results($activity_sql);
 			}
 		else
@@ -4242,10 +4516,14 @@ printf('<div><a href="%s">%s</a></div>',admin_url('profile.php?page=wp4t_set_sta
 			  
 			 if(isset($log) && !empty($log) )
 			 {
+			$most_recent = get_rsvp_date($log[0]->post_id);
+			if(strtotime($most_recent) > strtotime('-1 month'))//only show if there is recent activity
+			{	
 			  echo "<li><strong>".__('Activity','rsvpmaker-for-toastmasters')."</strong><br />";
 			  foreach($log as $row)
 			  	echo "<div>".$row->meta_value . "</div>";
 			  echo "</li>";
+			}
 			  }
 			do_action('awesome_widget_bottom');
 			  echo "\n</ul>\n";
@@ -5192,8 +5470,8 @@ global $wpdb;
 $wpdb->show_errors();
 
 $db_version = (int) get_option('rsvptoast_db');
-if($db_version < 3)
-	toast_activate();
+if($db_version < 5)
+	toast_activate($db_version);
 
 $blogusers = get_users('blog_id='.get_current_blog_id());
     foreach ($blogusers as $user) {
@@ -5201,18 +5479,27 @@ $blogusers = get_users('blog_id='.get_current_blog_id());
 	// Filter out empty meta data
 	$meta = array_filter( array_map( function( $a ) { return $a[0]; }, $meta ) );
 	$userdata = array_merge(array('ID' => $user->ID, 'user_login' => $user->user_login, 'user_email' => $user->user_email), $meta);
-	$index = (isset($userdata["last_name"])) ? $userdata["last_name"].$userdata["first_name"] : '';
-	$index = preg_replace('/[^A-Za-z]/','',$index.$user->user_login);
-	$sort = $wpdb->get_var("SELECT sort FROM ".$wpdb->prefix."users_archive WHERE user_id=".$user->ID);
-	if($sort)
+	$index = (isset($userdata["last_name"])) ? $userdata["last_name"].$userdata["first_name"] : $user->user_login;
+	$index = preg_replace('/[^A-Za-z]/','',$index);
+	$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE user_id=".$user->ID);
+	if(!$id)
+		$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE sort=".$index." AND email='".$user->user_email."'");
+	if(!$id && $meta["toastmasters_id"])
+		$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE toastmasters_id='".$meta["toastmasters_id"]."'");
+	if($id)
 		{
-		$sql = $wpdb->prepare("UPDATE ".$wpdb->prefix."users_archive SET data=%s, sort=%s, email=%s WHERE user_id=%d", serialize($userdata),$index,$user->user_email, $user->ID);
+		$wpdb->query($wpdb->prepare("UPDATE ".$wpdb->prefix."users_archive SET data=%s, sort=%s, email=%s, user_id=%d WHERE id=%d", serialize($userdata),$index,$user->user_email, $user->ID, $id));
 		}
 	else
 		{
-		$sql = $wpdb->prepare("REPLACE INTO ".$wpdb->prefix."users_archive SET data=%s, sort=%s, user_id=%d, email=%s", serialize($userdata),$index, $user->ID, $user->user_email);
+		$id = $wpdb->query($wpdb->prepare("INSERT INTO ".$wpdb->prefix."users_archive SET data=%s, sort=%s, user_id=%d, email=%s", serialize($userdata),$index, $user->ID, $user->user_email));
 		}
-	$wpdb->query($sql);
+	if(isset($meta["toastmasters_id"]) && $meta["toastmasters_id"])
+		{
+		$toastmasters_id = (int) $meta["toastmasters_id"];
+		$sql = "UPDATE ".$wpdb->prefix."users_archive SET toastmasters_id=".$toastmasters_id." WHERE id=".$id;
+		$wpdb->query($sql);
+		}
 	}
 }
 
@@ -5801,37 +6088,35 @@ $default = '[toastmaster role="Speaker" count="1" ]';
 }
 
 
-function toast_activate() {
+function toast_activate($db_version) {
 
 global $wpdb;
 $wpdb->show_errors();
 
 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
-$sql = "CREATE TABLE `".$wpdb->prefix."toastmasters_history` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `datetime` date NOT NULL,
-  `role` varchar(255) CHARACTER SET utf8 NOT NULL,
-  `quantity` int(11) NOT NULL,
-  PRIMARY KEY (`ID`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;";
-dbDelta($sql);
+if($db_version && ($db_version < 4))
+	{
+		$wpdb->query('ALTER TABLE `'.$wpdb->prefix.'users_archive` DROP PRIMARY KEY');
+		$wpdb->query('ALTER TABLE `'.$wpdb->prefix.'users_archive` ADD `id` INT NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`)');
+	}
 
 $sql = "CREATE TABLE `".$wpdb->prefix."users_archive` (
+  	`id` int(11) NOT NULL AUTO_INCREMENT,
 	  `sort` varchar(255) NOT NULL,
 	  `data` text NOT NULL,
 	  `user_id` int(11) NOT NULL DEFAULT '0',
+	  `toastmasters_id` int(11) NOT NULL DEFAULT '0',
 	  `guest` tinyint(4) NOT NULL,
 	  `email` varchar(255) NOT NULL,
 	  `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	  PRIMARY KEY (`sort`)
+	  PRIMARY KEY (`id`)
 	) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
 dbDelta($sql);
 
 //establish custom roles
 tm_security_setup();
-update_option('rsvptoast_db','3');
+update_option('rsvptoast_db','5');
 
 }
 
@@ -5840,12 +6125,13 @@ $first = get_option('first_tm_login');
 if($first)
 	return;
 update_option('first_tm_login',current_time('timestamp') );
-toast_activate(); // in case this didn't run on plugin activation (multisite)
+$db_version = (int) get_option('rsvptoast_db');
+toast_activate($db_version); // in case this didn't run on plugin activation (multisite)
 }
 
 function archive_users_init () {
 // if a logged in user access the users list, back up users
-if(!strpos($_SERVER['REQUEST_URI'],'users.php') )
+if(!strpos($_SERVER['REQUEST_URI'],'user') )
 	return;
 	user_archive();
 }
@@ -6469,13 +6755,13 @@ $next_show_promo = (int) get_user_meta($current_user->ID,'next_show_promo',true)
 if(($next_show_promo == 0) && sizeof(get_past_events()) < 10 )
 	{
 		//newish site, too soon
-		$next_show_promo = strtotime('+ 1 month');
+		$next_show_promo = strtotime('+ 2 month');
 		update_user_meta($current_user->ID,'next_show_promo',$next_show_promo);
 	}
 if((time() > $next_show_promo ) || isset($_GET["show_ad"]) )
 {
 show_wpt_promo();
-$next_show_promo = strtotime('+ 1 week');
+$next_show_promo = strtotime('+ 1 month');
 update_user_meta($current_user->ID,'next_show_promo',$next_show_promo);
 }
 
