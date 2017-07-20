@@ -1114,6 +1114,14 @@ function tm_calc_time($minutes)
 		if(empty($time_count))
 			{
 				$datetime = get_rsvp_date($post->ID);
+				if(empty($datetime))
+					{
+						$sked = get_post_meta($post->ID,'_sked',true);
+						if(isset($sked["hour"]))
+							{
+								$datetime = '2017-01-01 '.$sked["hour"].':'.$sked["minutes"].':00';
+							}
+					}
 				$time_count = strtotime($datetime);
 				//todo also end time
 			}
@@ -4243,7 +4251,7 @@ function add_member_user($user, $override_check = false) {
 				}
 			
 			// anyone have the same last name?
-			$args = array( 
+/*			$args = array( 
 			  'meta_key' =>  'last_name',
 			   'meta_compare' => '=',
 			   'meta_value' => $user["last_name"]
@@ -4257,7 +4265,7 @@ function add_member_user($user, $override_check = false) {
 				$possible_match[$data->ID] = sprintf('<option value="%d">%s %s %s</option>',$data->ID,$data->display_name,$data->user_login, $data->user_email);
 				}
 			}
-			
+*/			
 			if(!isset($user["ID"]) && !empty($possible_match))
 				{
 				echo '<h3>'.__('New or existing member?','rsvpmaker-for-toastmasters').'</h3>';
@@ -5483,7 +5491,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id());
 	$index = preg_replace('/[^A-Za-z]/','',$index);
 	$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE user_id=".$user->ID);
 	if(!$id)
-		$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE sort=".$index." AND email='".$user->user_email."'");
+		$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE sort='".$index."' AND email='".$user->user_email."'");
 	if(!$id && $meta["toastmasters_id"])
 		$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE toastmasters_id='".$meta["toastmasters_id"]."'");
 	if($id)
@@ -6779,10 +6787,17 @@ if($template_id)
 	{
 		printf('<p>%s <a href="%s">%s</a></p>',__('Changes made below will be applied to a single event. To change the agenda for all future events: '),admin_url('post.php?action=edit&post='.$template_id),__('Edit Template'));
 	}
+
+printf('<div>%s: <a href="%s">%s</a> | <a href="%s" target="_blank">%s</a></div>',__('Related','rsvpmaker-for-toastmasters'),admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$post->ID),__('Agenda Timing','rsvpmaker-for-toastmasters'),rsvpmaker_permalink_query($post->ID,'print_agenda=1&no_print=1'),__('Show Agenda','rsvpmaker-for-toastmasters'));
+
 ?>
 </div>
 <?php
 }
+
+if(isset($_GET["page"]) && ($_GET["page"] == 'agenda_timing') && isset($_GET["post_id"]))
+printf('<div class="notice notice-info"><p>%s: <a href="%s">%s</a> | <a href="%s" target="_blank">%s</a></p></div>',__('Related','rsvpmaker-for-toastmasters'),admin_url('post.php?action=edit&post='.$_GET["post_id"]),__('Edit/Agenda Setup','rsvpmaker-for-toastmasters'),rsvpmaker_permalink_query($_GET["post_id"],'print_agenda=1&no_print=1'),__('Show Times on Agenda','rsvpmaker-for-toastmasters'));
+
 
 $sync_ok = get_option('wp4toastmasters_enable_sync');
 
@@ -9689,24 +9704,28 @@ return $options;
 }
 
 function timeplanner($atts, $content) {
+
 	global $time_counter;
 	global $newoutput;
 	global $timeplanner_total;
-	if(!isset($time_counter))
-		$time_counter = 0;
-	
 	if(isset($atts["themewords"]))
 		{
 		if(!empty($newoutput))
 			$newoutput .= '[toastmaster themewords="1" ]'."\n\n";
 		return;
 		}
-	$time_counter++;
-	$output = '';
+	if(empty($atts["time_allowed"]))
+		 $atts["time_allowed"] = 0;
+	if(empty($atts["padding_time"]))
+		 $atts["padding_time"] = 0;
 
-	if(isset($_POST["remove"][$time_counter]))
-		return;
-	
+	if(isset($_POST["time_allowed"][$time_counter]))
+		$atts["time_allowed"] = (int) $_POST["time_allowed"][$time_counter];
+	if(isset($_POST["padding_time"][$time_counter]))
+		$atts["padding_time"] = (int) $_POST["padding_time"][$time_counter];
+
+	$txt = $output = '';
+
 	if(isset($atts["role"]))
 		{
 		$c = '';
@@ -9716,9 +9735,9 @@ function timeplanner($atts, $content) {
 				if($count > 1)
 					$c = '('.$count.')';
 			}
-		$output .= sprintf('<h3>Role: %s %s</h3>',$atts["role"],$c);
+		$txt = sprintf('Role: %s %s',$atts["role"],$c);
 		if(!empty($atts["agenda_note"]))
-			$output .= '<p>'.$atts["agenda_note"].'</p>';
+			$txt .= ' '.$atts["agenda_note"].' ';
 		if(strpos($atts["role"],'peaker') && !strpos($atts["role"],'ackup'))
 			{
 				$speak_count = 0;
@@ -9733,31 +9752,28 @@ function timeplanner($atts, $content) {
 				if($speak_count > $time_allowed)
 					{
 					$s = ' style="color:red;" ';
-					$output .= sprintf('<input type="hidden" id="speaker_time_count" value="%s" />', $speak_count - $time_allowed);
+					$txt .= sprintf('<input type="hidden" id="speaker_time_count" value="%s" />', $speak_count - $time_allowed);
 					}
 				else
 					$s = '';
-				$output .= sprintf('<p><strong %s>Speakers have reserved: %s minutes</strong></p>',$s, $speak_count);
+				$txt .= sprintf('<p><strong %s>Speakers have reserved: %s minutes</strong></p>',$s, $speak_count);
 				}
 			}
 		}
-	elseif( !empty($content) )
-		$output .= sprintf('<h3>Note</h3><p>%s</p>',$content);
-	$output .= sprintf('<p>Time Allowed: <select class="time_count" name="time_allowed[%d]" id="time_allowed_%s" >%s</select> ',$time_counter,$time_counter,timeplanner_option ($atts["time_allowed"]));
-	if(isset($atts["role"]))
-		$output .= sprintf(' Extra Time: <select class="time_count" name="padding_time[%d]" id="padding_time_%d" >%s</select>',$time_counter,$time_counter,timeplanner_option ($atts["padding_time"]));
-	$output .= sprintf('<br /><input type="checkbox" name="remove[%d]" class="remove_checkbox" value="%s" /> Remove',$time_counter,$time_counter);
-	$output .= '</p>';
-	$output .= '<div class="time_message"></div>'."\n\n";
+	if( !empty($content) )
+		$txt .= " ".$content;
+	if(!empty($atts["editable"]))
+		$txt .= ' Editable: '.$atts["editable"];
+
+	$output = sprintf('<tr class="timerow" timecount="%d"><td id="time%s"></td><td class="time_allowed_cell"><select class="time_count" name="time_allowed[%d]" id="time_allowed%d">%s</select></td><td class="padding_time_cell"><select class="time_count" name="padding_time[%d]" id="padding_time%d">%s</select></td><td class="text_cell">%s</td></tr>',$time_counter,$time_counter,$time_counter ,$time_counter,timeplanner_option ($atts["time_allowed"]),$time_counter, $time_counter,timeplanner_option ($atts["padding_time"]),$txt);	
 	if(isset($_POST["time_allowed"][$time_counter]))
 		{				
 			$time_allowed = (int) $_POST["time_allowed"][$time_counter];
 			$timeplanner_total += $time_allowed;
-			$output .= sprintf('<p>Set time_allowed: %s</p>',$_POST["time_allowed"][$time_counter]);
 			if(isset($atts["role"]))
-				$newoutput .= sprintf('[toastmaster role="%s" ',$atts["role"]);
+				$newoutput .= sprintf('[toastmaster role="%s" counter="%s" ',$atts["role"], $time_counter);
 			else
-				$newoutput .= '[agenda_note " ';
+				$newoutput .= '[agenda_note counter="'.$time_counter.'" ';
 			foreach($atts as $index => $value)
 				{
 					if(($index != 'role') && ($index != 'time_allowed') && ($index != 'padding_time'))
@@ -9768,7 +9784,6 @@ function timeplanner($atts, $content) {
 			{
 			$padding_time = (int) $_POST["padding_time"][$time_counter];
 			$timeplanner_total += $padding_time;
-			$output .= sprintf('<p>Set padding time: %s</p>',$_POST["padding_time"][$time_counter]);
 			$newoutput .= 'padding_time="'.$padding_time.'" ';
 			}
 
@@ -9785,15 +9800,50 @@ return $output;
 
 function agenda_timing () {
 global $wpdb;
-$template_options = '';
+global $time_counter;
+global $timeplanner_total;
+$output = $newoutput = $template_options = '';
 if(isset($_GET["post_id"]) && $_GET["post_id"])
 {
 $post_id = (int) $_GET["post_id"];
 global $post;
 $post = get_post($post_id);
-
-$output = do_shortcode($post->post_content);
-echo admin_link_menu();
+$time_counter = 1;
+$lines = explode("\n",$post->post_content);
+foreach($lines as $line)
+	{
+		if( isset($_POST["time_allowed"]))
+			{
+			if ((strpos($line,'[toastmaster') === false)  && (strpos($line,'[agenda_note') === false))
+				$newoutput .= "\n".$line;
+			else
+				{
+					$time_allowed = (int) $_POST["time_allowed"][$time_counter];
+					$padding_time = (int) $_POST["padding_time"][$time_counter];
+					if(strpos($line,'padding_time'))
+						$line = preg_replace('/padding_time="(\d+)/','padding_time="'.$padding_time,$line);
+					else
+						{
+						if(isset($atts['role']))
+							$line = str_replace('[toastmaster','[toastmaster padding_time="'.$padding_time.'" ',$line);
+						else
+							$line = str_replace('[agenda_note','[agenda_note padding_time="'.$padding_time.'" ',$line);
+						}
+					if(strpos($line,'time_allowed'))
+						$line = preg_replace('/time_allowed="(\d+)/','time_allowed="'.$time_allowed,$line);
+					else
+						{
+						if(isset($atts['role']))
+							$line = str_replace('[toastmaster','[toastmaster time_allowed="'.$time_allowed.'" ',$line);
+						else
+							$line = str_replace('[agenda_note','[agenda_note time_allowed="'.$time_allowed.'" ',$line);
+						}
+					$newoutput .= "\n".$line;
+				}
+			}
+		$output .= "\n".do_shortcode($line);
+		$time_counter++;
+	}
 ?>
 <h1><?php _e("Title",'rsvpmaker-for-toastmasters');?>: <?php echo $post->post_title; ?></h1>
 <?php
@@ -9806,10 +9856,10 @@ $results = get_rsvp_dates($post_id);
 if($results)
 {
 $dateblock = '';
-foreach($results as $row)
+foreach($results as $index => $row)
 	{
 	$t = strtotime($row["datetime"]);
-	$dateblock .= '<div class="datetime" itemprop="startDate" datetime="'.date('c',$t).'" utc="'.gmtdate('YYYY-mm-dd H:i'). 'UTC">';
+	$dateblock .= '<div class="datetime" itemprop="startDate" datetime="'.date('c',$t).'" utc="'.gmdate('YYYY-mm-dd H:i'). 'UTC">';
 	$dateblock .= strftime($rsvp_options["long_date"],$t);
 	$dur = $row["duration"];
 	if($dur != 'allday')
@@ -9820,6 +9870,11 @@ foreach($results as $row)
 	if(is_numeric($dur) )
 		$dateblock .= " ".__('to','rsvpmaker')." ". strftime($rsvp_options["time_format"],$dur);
 	$dateblock .= "</div>\n";
+	if($index == 0)
+		{
+			$p = explode(' ',$row['datetime']);
+			$dateblock .= '<input type="hidden" id="start_time" value="'.$p[1].'" />';
+		}
 	}
 }
 echo $dateblock;
@@ -9856,11 +9911,10 @@ else
 		}
 	printf('<h2>%s</h2>',$t);
 	}
+echo '<input type="hidden" id="start_time" value="2017-01-01 '.$sked['hour'].':'.$sked['minutes'].'">';
 }
 
-global $newoutput;
-global $timeplanner_total;
-if(!empty($newoutput))
+if( isset($_POST["time_allowed"]))
 	{
 	wp_update_post(array('ID' => $post_id,'post_content' => $newoutput));
 	//echo nl2br($newoutput);
@@ -9870,8 +9924,6 @@ if(!empty($newoutput))
 	printf('<p><a href="%s">Go to Agenda Setup</a></p>',admin_url('edit.php?post_type=rsvpmaker&page=agenda_setup&post_id=').$post_id);
 	printf('<p><a href="%s">View on site</a></p>',get_permalink($post_id));
 	}
-else
-{
 ?>
 <div style="position: fixed; left: 550px; bottom: 0; background-color: #fff; width: 100%; padding: 20px;" ><h2 id="time_message"></h2></div>
 <?php
@@ -9885,20 +9937,43 @@ else
 </div>
 <p id="doc_button_container" style="width: 200px; float: right;"><button id="doc_button">Show Explanation</button></p>
 <form id="agenda_timing" method="post" action = "<?php echo admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$post_id); ?>">
-
+<table>
+<tr><th>Elapsed Time</th><th>Time Allowed</th><th>Extra Time</th><th>Role/Note</th></tr>
 <input type="hidden" name="post_id" value="<?php echo $post_id; ?>" />
 
 <?php
-if(empty($newoutput))
-	{
-	echo $output;
-
+echo $output . '</table>';
 submit_button();
-	}
 ?>
 </form>
 <script>
 jQuery(document).ready(function($) {
+
+var time_tally;
+
+var agenda_add_minutes =  function (dt, minutes) {
+    return new Date(dt.getTime() + minutes*60000);
+}
+
+var agenda_time_tally =  function () {
+	time_tally = new Date($('#start_time').val());//start time
+    $('.timerow').each(function() {
+     var count = $(this).attr('timecount');
+	  	var hour = time_tally.getHours();
+		var minute = time_tally.getMinutes();
+		hour = (hour >= 12)? hour - 12: hour;
+		if(minute < 10)
+		minute = '0' + minute;
+	$('#time' + count).html(hour + ":" + minute);
+	var tallyadd = 0;
+	tallyadd += Number($('#time_allowed' + count).val());
+	tallyadd += Number($('#padding_time' + count).val());
+    time_tally = agenda_add_minutes(time_tally,tallyadd);
+	
+	});
+}
+
+agenda_time_tally();
 
     var sum = 0;
     $('.time_count').each(function() {
@@ -9914,6 +9989,7 @@ jQuery(document).ready(function($) {
 	$('#doc').hide();	
 
 $('.time_count').on('change', function(){
+	agenda_time_tally();
     var sum = 0;
     $('.time_count').each(function() {
         sum += Number($(this).val());
@@ -9921,7 +9997,6 @@ $('.time_count').on('change', function(){
 	
 	$('#time_message').html('Total time: '+sum+' minutes.');
 });
-
 
 $('.remove_checkbox').on('click', function(){
 	var counter = $(this).val();
@@ -9955,8 +10030,8 @@ $('#doc_button').on('click', function(){
 
 </script>
 <?php
-}
-else
+
+if( isset($_POST["time_allowed"]))
 {
 		$dayarray = Array(__("Sunday",'rsvpmaker'),__("Monday",'rsvpmaker'),__("Tuesday",'rsvpmaker'),__("Wednesday",'rsvpmaker'),__("Thursday",'rsvpmaker'),__("Friday",'rsvpmaker'),__("Saturday",'rsvpmaker'));
 		$weekarray = Array(__("Varies",'rsvpmaker'),__("First",'rsvpmaker'),__("Second",'rsvpmaker'),__("Third",'rsvpmaker'),__("Fourth",'rsvpmaker'),__("Last",'rsvpmaker'),__("Every",'rsvpmaker'));
