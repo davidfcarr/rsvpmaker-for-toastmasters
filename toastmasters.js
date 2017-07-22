@@ -101,8 +101,11 @@ $('.manual').on('change', function(){
 $('.project').on('change', function(){
 	var project = this.value;
 	var time_id = this.id.replace('project','maxtime');
+	var display_time_id = this.id.replace('project','display_time');
 	var time = project_times[project];
+	var display_time = display_times[project];
 	$('#'+time_id).val(time);
+	$('#'+display_time_id).val(display_time);
 
 	if(this.id.indexOf('Backup') > -1)
 		return;

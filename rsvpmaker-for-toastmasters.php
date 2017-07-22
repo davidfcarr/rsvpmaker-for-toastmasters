@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 2.5.9
+Version: 2.6.1
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
@@ -726,6 +726,31 @@ if(isset($agenda_time) && $agenda_time && !empty($atts["time_allowed"]))
 		}
 
 return $output;
+}
+
+function get_role_signups ($post_id, $role, $count) {
+	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$role);	
+	$volunteers = array();	
+		for($i = 1; $i <= $count; $i++)
+			{
+			$field = '_' . $field_base . '_' . $i;
+			$assigned = get_post_meta($post_id, $field, true);
+			if($assigned == '-1')
+				continue;
+			elseif($assigned)
+				{
+					if(is_numeric($assigned))
+						{
+					$member = get_userdata( $assigned );
+					$assignedto = (isset($member->first_name) && isset($member->first_name)) ? $member->first_name." ".$member->last_name : __('member name not found','rsvpmaker-for-toastmasters');
+					if(!empty($member->education_awards)) $assignedto .= ', '.$member->education_awards;
+						}
+					else
+						$assignedto = $assigned . ' (guest)';
+				$volunteers[] = $assignedto;
+				}
+			}
+return implode(', ',$volunteers);
 }
 
 function toastmaster_short($atts=array(),$content="") {
@@ -1611,6 +1636,7 @@ if(isset($_POST["_manual"]))
 			$project = $_POST["_project"][$basefield];
 			$intro = (isset($_POST["_intro"][$basefield])) ? $_POST["_intro"][$basefield] : '';
 			$time = (int) (isset($_POST["_maxtime"][$basefield])) ? $_POST["_maxtime"][$basefield] : 0;
+			$display_time = (isset($_POST["_display_time"][$basefield])) ? $_POST["_display_time"][$basefield] : '';
 			if($time == 0)
 				$time = 7;
 			if($user_id < 1) // unassigned or not available
@@ -1626,6 +1652,8 @@ if(isset($_POST["_manual"]))
 			update_post_meta($post_id,'_manual'.$basefield,$manual);
 			update_post_meta($post_id,'_title'.$basefield,$title);
 			update_post_meta($post_id,'_project'.$basefield,$project);
+			if(isset($_POST["_display_time"][$basefield]))
+				update_post_meta($post_id,'_display_time'.$basefield,$display_time);
 			if(isset($_POST["_maxtime"][$basefield]))
 				update_post_meta($post_id,'_maxtime'.$basefield,$time);
 			if(isset($_POST["_intro"][$basefield]))
@@ -1736,7 +1764,6 @@ Title: %s',$manual,$project,$title);
 		awemailer($mail); // notify member
 }
 
-
 function speaker_details_agenda ($field) {
 	global $post;
 	$enhanced_css = get_option('wp4toastmasters_agenda_enhanced_css');
@@ -1745,11 +1772,19 @@ function speaker_details_agenda ($field) {
 	if(!empty($project_index))
 		{
 		$project = get_project_text($project_index);
+		$dt = get_post_meta($post->ID, '_display_time'.$field, true);
+		if(empty($dt))
+			{
+			$timing = get_projects_array('display_times');
+			$dt = (isset($timing[$project_index])) ? $timing[$project_index] : '';
+			}
+		if(!empty($dt))
+			$project .= ' ('.$dt.')';
 		$manual .= ': '.$project;
 		if ($enhanced_css == 1)
 		    {
 		        $manual = ucwords(strtolower($manual));
-		        $title = get_post_meta($post->ID, '_title'.$field, true);
+				$title = get_post_meta($post->ID, '_title'.$field, true);
 		    }
 		}
 	if ($enhanced_css == 1)
@@ -1832,13 +1867,13 @@ $output = "";
 		<input type="hidden" name="post_id" value="'.$post->ID.'" />
 		<select class="speaker_details manual" name="_manual['.$field.']" id="_manual_'.$field.'"">'.get_manuals_options($manual).'</select><br /><select class="speaker_details project" name="_project['.$field.']" id="_project_'.$field.'">'.$project_options.'</select>';
 		$output .= '</div>';
+		$display_time = get_post_meta($post->ID, '_display_time'.$field,true);
+		$output .= '<div class="time_required">Timing: <input type="text"class="speaker_details '.$maxclass.'" name="_display_time['.$field.']" id="_display_time_'.$field.'" size="10" value="'.$display_time.'">';		
+		$output .= ' Maximum Time: <input type="text"class="speaker_details '.$maxclass.'" name="_maxtime['.$field.']" id="_maxtime_'.$field.'" size="4" value="'.$time.'"></div>';
+
 		$title = get_post_meta($post->ID, '_title'.$field, true);
 		$output .= '<div class="speech_title">Title: <input type="text" class="speaker_details title_text" id="title_text'.$field.'" name="_title['.$field.']" value="'.$title.'" /></div>';
-		
-		$output .= '<div class="time_required">Time Required: <input type="text"class="speaker_details '.$maxclass.'" name="_maxtime['.$field.']" id="_maxtime_'.$field.'" size="4" value="'.$time.'"></div>';
-
 		$intro = get_post_meta($post->ID, '_intro'.$field, true);
-
 		$output .= '<div class="speaker_introduction">Introduction: <br /><textarea class="intro_'.$field.'" name="_intro['.$field.']" id="_intro_'.$field.'" style="width: 100%; height: 4em;">'.$intro.'</textarea></div>';
 		
 return $output;
@@ -1883,6 +1918,7 @@ return $output;
 }
 
 //obsolete
+/*
 function get_toast_speech_options() {
 
 return '<option value="Choose Manual / Speech">Choose Manual / Speech</option>
@@ -1999,6 +2035,7 @@ return '<option value="Choose Manual / Speech">Choose Manual / Speech</option>
 </option>';
 
 }
+*/
 
 function speech_public_details ($field) {
 global $post;
@@ -2555,9 +2592,7 @@ $security = get_tm_security ();
 
 add_submenu_page('edit.php?post_type=rsvpmaker', __("Agenda Setup",'rsvpmaker-for-toastmasters'), __("Agenda Setup",'rsvpmaker-for-toastmasters'), $security['agenda_setup'], "agenda_setup", "agenda_setup");
 
-$agenda_time = get_option('agenda_time');
-if($agenda_time)
-	add_submenu_page('edit.php?post_type=rsvpmaker', __("Agenda Timing",'rsvpmaker-for-toastmasters'), __("Agenda Timing",'rsvpmaker-for-toastmasters'), $security['agenda_setup'], "agenda_timing", "agenda_timing");
+add_submenu_page('edit.php?post_type=rsvpmaker', __("Agenda Timing",'rsvpmaker-for-toastmasters'), __("Agenda Timing",'rsvpmaker-for-toastmasters'), $security['agenda_setup'], "agenda_timing", "agenda_timing");
 
 add_submenu_page('profile.php', __("Add Members",'rsvpmaker-for-toastmasters'), __("Add Members",'rsvpmaker-for-toastmasters'), 'edit_others_posts', "add_awesome_member", "add_awesome_member" );
 
@@ -5219,6 +5254,7 @@ $currentorder =array();
 				$speaker[$scount]["manual"] = get_post_meta($post->ID, '_manual'.$field, true);
 				$speaker[$scount]["project"] = get_post_meta($post->ID, '_project'.$field, true);
 				$speaker[$scount]["maxtime"] = get_post_meta($post->ID, '_maxtime'.$field, true);
+				$speaker[$scount]["display_time"] = get_post_meta($post->ID, '_display_maxtime'.$field, true);
 				$speaker[$scount]["title"] = get_post_meta($post->ID, '_title'.$field, true);
 				$speaker[$scount]["intro"] = get_post_meta($post->ID, '_intro'.$field, true);
 				$scount++;
@@ -5234,6 +5270,7 @@ $currentorder =array();
 					$speaker[$scount]["manual"] = get_post_meta($post->ID, '_manual_Backup_Speaker_1', true);
 					$speaker[$scount]["project"] = get_post_meta($post->ID, '_project_Backup_Speaker_1', true);
 					$speaker[$scount]["maxtime"] = get_post_meta($post->ID, '_maxtime_Backup_Speaker_1', true);
+					$speaker[$scount]["display_time"] = get_post_meta($post->ID, '_display_time_Backup_Speaker_1', true);
 					$speaker[$scount]["title"] = get_post_meta($post->ID, '_title_Backup_Speaker_1', true);
 					$speaker[$scount]["intro"] = get_post_meta($post->ID, '_intro_Backup_Speaker_1', true);
 					if(empty($speaker[$scount]["manual"]))
@@ -5246,6 +5283,7 @@ $currentorder =array();
 					delete_post_meta($post->ID,'_manual_Backup_Speaker_1');
 					delete_post_meta($post->ID,'_project_Backup_Speaker_1');
 					delete_post_meta($post->ID,'_maxtime_Backup_Speaker_1');
+					delete_post_meta($post->ID,'_display_time_Backup_Speaker_1');
 					delete_post_meta($post->ID,'_title_Backup_Speaker_1');
 					delete_post_meta($post->ID,'_intro_Backup_Speaker_1');
 					
@@ -5266,6 +5304,7 @@ $currentorder =array();
 					update_post_meta($post->ID,'_manual_Speaker_' . $i,$speaker[$i]["manual"]);
 					update_post_meta($post->ID,'_project_Speaker_' . $i,$speaker[$i]["project"]);
 					update_post_meta($post->ID,'_maxtime_Speaker_' . $i,$speaker[$i]["maxtime"]);
+					update_post_meta($post->ID,'_display_time_Speaker_' . $i,$speaker[$i]["display_time"]);
 					update_post_meta($post->ID,'_title_Speaker_' . $i,$speaker[$i]["title"]);
 					if(isset($speaker[$i]["intro"]))
 						update_post_meta($post->ID,'_intro_Speaker_' . $i,$speaker[$i]["intro"]);
@@ -5278,6 +5317,7 @@ $currentorder =array();
 					delete_post_meta($post->ID,'_manual_Speaker_' . $i);
 					delete_post_meta($post->ID,'_project_Speaker_' . $i);
 					delete_post_meta($post->ID,'_maxtime_Speaker_' . $i);
+					delete_post_meta($post->ID,'_display_time_Speaker_' . $i);
 					delete_post_meta($post->ID,'_title_Speaker_' . $i);
 					delete_post_meta($post->ID,'_intro_Speaker_' . $i);
 					}
@@ -5696,7 +5736,7 @@ function toastmasters_css_js() {
 	wp_enqueue_style( 'jquery-ui-sortable' );
 	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.4.3' );
 	wp_enqueue_style('jquery-ui-css', 'http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css');
-	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.4.4');
+	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.4.5');
 	wp_enqueue_script( 'script-toastmasters');
 	$manuals = get_manuals_options();
 	wp_localize_script( 'script-toastmasters', 'manuals_list', $manuals );
@@ -5704,6 +5744,8 @@ function toastmasters_css_js() {
 	wp_localize_script( 'script-toastmasters', 'project_list', $projects );
 	$times = get_projects_array('times');
 	wp_localize_script( 'script-toastmasters', 'project_times', $times );
+	$display_times = get_projects_array('display_times');
+	wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
 	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
 	}
 }
@@ -5966,13 +6008,11 @@ $default = '[agenda_note padding_time="0"  agenda_display="agenda" strong="" ita
 
 [agenda_note time_allowed="5"  padding_time="0"  agenda_display="agenda" style="" ]General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.[/agenda_note]
 
-[agenda_note padding_time="0"  " agenda_display="agenda" style="" time_allowed="3" ]Toastmaster of the Day presents the awards.[/agenda_note]
+[agenda_note padding_time="0" agenda_display="agenda" style="" time_allowed="3" ]Toastmaster of the Day presents the awards.[/agenda_note]
 
-[agenda_note padding_time="0"  " agenda_display="agenda" style="" time_allowed="2" ]President wraps up the meeting.[/agenda_note]
+[agenda_note padding_time="0" agenda_display="agenda" style="" time_allowed="2" ]President wraps up the meeting.[/agenda_note]
 
-[agenda_note padding_time="0"  agenda_display="both" strong="" italic="" size="" style="" alink="" editable="Theme" time_allowed="0"][/agenda_note]
-
-[agenda_note editable="Theme" comment="'.__('Rather than wrapping around content, this agenda note is set up as a user-editable field for the meeting theme that can be changed for every meeting','rsvpmaker-for-toastmasters').'"][/agenda_note]
+[agenda_note agenda_display="both" strong="" italic="" size="" style="" alink="" editable="Theme" time_allowed="0"][/agenda_note]
 ';
 
 	$post = array(
@@ -6819,12 +6859,6 @@ else
 if(!current_user_can('manage_options'))
 	return;
 
-if($sync_ok == '') // if not 1 or 0
-	{
-	echo '<div class="notice notice-info"><p>'.sprintf(__('You can choose to allow the member data on the Progress Reports screen to sync with other websites that use this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/13/sync-member-progress-report-data/">blog post</a>.</p><p>Choose whether this should be on our off: <a href="%s">Toastmasters Settings.</a>','rsvpmaker-for-toastmasters'), admin_url('options-general.php?page=wp4toastmasters_settings') )."</p></div>\n";
-	}
-
-
 $cleared = get_option('cleared_rsvptoast_notices');
 $cleared = is_array($cleared) ? $cleared : array();
 if(isset($_GET['cleared_rsvptoast_notices']) && $_GET['cleared_rsvptoast_notices'])
@@ -6992,7 +7026,7 @@ Anyone who is a strong leader has to first be an effective communicator. In Toas
 	}
 	return;
 	} // end page on front routine
-
+	
 	$d = get_option('default_toastmasters_template');
 	if($d)
 		{
@@ -7057,6 +7091,12 @@ if($upcoming == 0)
 elseif($upcoming < 5)
 	printf('<div class="notice"><p>'.$upcoming.' '.__('meetings currently published. Add more based on template (standard schedule and roles):</p><ul>%s</ul>','rsvpmaker-for-toastmasters').'or <a href="%s">clear reminder</a></div>',get_toast_templates (), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=meetings_nag') );
 }
+
+if($sync_ok == '') // if not 1 or 0
+	{
+	echo '<div class="notice notice-info"><p>'.sprintf(__('You can choose to allow the member data on the Progress Reports screen to sync with other websites that use this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/13/sync-member-progress-report-data/">blog post</a>.</p><p>Choose whether this should be on our off: <a href="%s">Toastmasters Settings.</a>','rsvpmaker-for-toastmasters'), admin_url('options-general.php?page=wp4toastmasters_settings') )."</p></div>\n";
+	}
+
 }
 
 
@@ -7225,7 +7265,12 @@ if($blog_id)
 function placeholder_image () {
 if(!isset($_GET["placeholder_image"]))
 	return;
-$impath = dirname( __FILE__ ).DIRECTORY_SEPARATOR.'mce'.DIRECTORY_SEPARATOR.'placeholder.png';
+if(isset($_GET["role"]))
+	$impath = dirname( __FILE__ ).DIRECTORY_SEPARATOR.'mce'.DIRECTORY_SEPARATOR.'placeholder.png';
+elseif(isset($_GET["agenda_note"]) && strpos($_GET["agenda_note"],'editable'))
+	$impath = dirname( __FILE__ ).DIRECTORY_SEPARATOR.'mce'.DIRECTORY_SEPARATOR.'editable_placeholder.png';
+else
+	$impath = dirname( __FILE__ ).DIRECTORY_SEPARATOR.'mce'.DIRECTORY_SEPARATOR.'note_placeholder.png';
 $im = imagecreatefrompng($impath);
 if(!$im)
 {
@@ -7404,2275 +7449,14 @@ return array_search($project, $projects);
 
 function get_projects_array ($choice = 'projects')
 {
-$projects["COMPETENT COMMUNICATION 1"] = __("The Ice Breaker (4 to 6 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] = '<option value="COMPETENT COMMUNICATION 1">'.__("The Ice Breaker (4 to 6 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 1"] = 6;
-
-$projects["COMPETENT COMMUNICATION 2"] = __("Organize Your Speech (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 2">'.__("Organize Your Speech (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 2"] = 7;
-
-$projects["COMPETENT COMMUNICATION 3"] = __("Get to the Point (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 3">'.__("Get to the Point (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 3"] = 7;
-
-$projects["COMPETENT COMMUNICATION 4"] = __("How to Say It (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 4">'.__("How to Say It (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 4"] = 7;
-
-$projects["COMPETENT COMMUNICATION 5"] = __("Your Body Speaks (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 5">'.__("Your Body Speaks (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 5"] = 7;
-
-$projects["COMPETENT COMMUNICATION 6"] = __("Vocal Variety (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 6">'.__("Vocal Variety (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 6"] = 7;
-
-$projects["COMPETENT COMMUNICATION 7"] = __("Research Your Topic (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 7">'.__("Research Your Topic (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 7"] = 7;
-
-$projects["COMPETENT COMMUNICATION 8"] = __("Get Comfortable with Visual Aids (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 8">'.__("Get Comfortable with Visual Aids (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 8"] = 7;
-
-$projects["COMPETENT COMMUNICATION 9"] = __("Persuade with Power (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 9">'.__("Persuade with Power (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 9"] = 7;
-
-$projects["COMPETENT COMMUNICATION 10"] = __("Inspire Your Audience (8 to 10 min)","rsvpmaker-for-toastmasters");
-$project_options["COMPETENT COMMUNICATION"] .= '<option value="COMPETENT COMMUNICATION 10">'.__("Inspire Your Audience (8 to 10 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMPETENT COMMUNICATION 10"] = 10;
-
-$projects["ADVANCED MANUAL TBD 1"] = __("Placeholder for manual/project to be specified later","rsvpmaker-for-toastmasters");
-$project_options["ADVANCED MANUAL TBD"] = '<option value="ADVANCED MANUAL TBD 1">'.__("Placeholder for manual/project to be specified later","rsvpmaker-for-toastmasters")."</option>";
-$project_times["ADVANCED MANUAL TBD 1"] = 7;
-
-$projects["COMMUNICATING ON VIDEO 1"] = __("Straight Talk (3 min) (3 minutes ±30 seconds)","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] = '<option value="COMMUNICATING ON VIDEO 1">'.__("Straight Talk (3 min) (3 minutes ±30 seconds)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 1"] = 3;
-
-$projects["COMMUNICATING ON VIDEO 2"] = __("The Interview Show (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] .= '<option value="COMMUNICATING ON VIDEO 2">'.__("The Interview Show (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 2"] = 7;
-
-$projects["COMMUNICATING ON VIDEO 3"] = __("When You Are the Host (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] .= '<option value="COMMUNICATING ON VIDEO 3">'.__("When You Are the Host (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 3"] = 7;
-
-$projects["COMMUNICATING ON VIDEO 4"] = __("The Press Conference (3 to 5 min + 2 to 3 min Q&A) (4-6 minutes, plus 8-10 minutes for Q&A)","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] .= '<option value="COMMUNICATING ON VIDEO 4">'.__("The Press Conference (3 to 5 min + 2 to 3 min Q&A) (4-6 minutes, plus 8-10 minutes for Q&A)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 4"] = 16;
-
-$projects["COMMUNICATING ON VIDEO 5"] = __("Instructing on the Internet (5 to 7 min + 5 to 7 min video playback)","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] .= '<option value="COMMUNICATING ON VIDEO 5">'.__("Instructing on the Internet (5 to 7 min + 5 to 7 min video playback)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 5"] = 14;
-
-$projects["FACILITATING DISCUSSION 1"] = __("The Panel Moderator (28 to 30 min)","rsvpmaker-for-toastmasters");
-$project_options["FACILITATING DISCUSSION"] = '<option value="FACILITATING DISCUSSION 1">'.__("The Panel Moderator (28 to 30 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["FACILITATING DISCUSSION 1"] = 30;
-
-$projects["FACILITATING DISCUSSION 2"] = __("The Brainstorming Session (31 to 33 min)","rsvpmaker-for-toastmasters");
-$project_options["FACILITATING DISCUSSION"] .= '<option value="FACILITATING DISCUSSION 2">'.__("The Brainstorming Session (31 to 33 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["FACILITATING DISCUSSION 2"] = 31;
-
-$projects["FACILITATING DISCUSSION 3"] = __("The Problem-Solving Discussion (19 to 23 min)","rsvpmaker-for-toastmasters");
-$project_options["FACILITATING DISCUSSION"] .= '<option value="FACILITATING DISCUSSION 3">'.__("The Problem-Solving Discussion (19 to 23 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["FACILITATING DISCUSSION 3"] = 33;
-
-$projects["FACILITATING DISCUSSION 4"] = __("Handling Challenging Situations (Role Playing) (22 to 32 min)","rsvpmaker-for-toastmasters");
-$project_options["FACILITATING DISCUSSION"] .= '<option value="FACILITATING DISCUSSION 4">'.__("Handling Challenging Situations (Role Playing) (22 to 32 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["FACILITATING DISCUSSION 4"] = 32;
-
-$projects["FACILITATING DISCUSSION 5"] = __("Reaching A Consensus (22 to 26 min)","rsvpmaker-for-toastmasters");
-$project_options["FACILITATING DISCUSSION"] .= '<option value="FACILITATING DISCUSSION 5">'.__("Reaching A Consensus (22 to 26 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["FACILITATING DISCUSSION 5"] = 26;
-
-$projects["HUMOROUSLY SPEAKING 1"] = __("Warm Up Your Audience (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["HUMOROUSLY SPEAKING"] = '<option value="HUMOROUSLY SPEAKING 1">'.__("Warm Up Your Audience (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["HUMOROUSLY SPEAKING 1"] = 7;
-
-$projects["HUMOROUSLY SPEAKING 2"] = __("Leave Them With A Smile (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["HUMOROUSLY SPEAKING"] .= '<option value="HUMOROUSLY SPEAKING 2">'.__("Leave Them With A Smile (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["HUMOROUSLY SPEAKING 2"] = 7;
-
-$projects["HUMOROUSLY SPEAKING 3"] = __("Make Them Laugh (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["HUMOROUSLY SPEAKING"] .= '<option value="HUMOROUSLY SPEAKING 3">'.__("Make Them Laugh (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["HUMOROUSLY SPEAKING 3"] = 7;
-
-$projects["HUMOROUSLY SPEAKING 4"] = __("Keep Them Laughing (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["HUMOROUSLY SPEAKING"] .= '<option value="HUMOROUSLY SPEAKING 4">'.__("Keep Them Laughing (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["HUMOROUSLY SPEAKING 4"] = 7;
-
-$projects["HUMOROUSLY SPEAKING 5"] = __("The Humorous Speech (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["HUMOROUSLY SPEAKING"] .= '<option value="HUMOROUSLY SPEAKING 5">'.__("The Humorous Speech (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["HUMOROUSLY SPEAKING 5"] = 7;
-
-$projects["INTERPERSONAL COMMUNICATIONS 1"] = __("Conversing with Ease (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPERSONAL COMMUNICATIONS"] = '<option value="INTERPERSONAL COMMUNICATIONS 1">'.__("Conversing with Ease (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPERSONAL COMMUNICATIONS 1"] = 14;
-
-$projects["INTERPERSONAL COMMUNICATIONS 2"] = __("The Successful Negotiator (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPERSONAL COMMUNICATIONS"] .= '<option value="INTERPERSONAL COMMUNICATIONS 2">'.__("The Successful Negotiator (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPERSONAL COMMUNICATIONS 2"] = 14;
-
-$projects["INTERPERSONAL COMMUNICATIONS 3"] = __("Diffusing Verbal Criticism (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPERSONAL COMMUNICATIONS"] .= '<option value="INTERPERSONAL COMMUNICATIONS 3">'.__("Diffusing Verbal Criticism (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPERSONAL COMMUNICATIONS 3"] = 14;
-
-$projects["INTERPERSONAL COMMUNICATIONS 4"] = __("The Coach (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPERSONAL COMMUNICATIONS"] .= '<option value="INTERPERSONAL COMMUNICATIONS 4">'.__("The Coach (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPERSONAL COMMUNICATIONS 4"] = 14;
-
-$projects["INTERPERSONAL COMMUNICATIONS 5"] = __("Asserting Yourself Effectively (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPERSONAL COMMUNICATIONS"] .= '<option value="INTERPERSONAL COMMUNICATIONS 5">'.__("Asserting Yourself Effectively (10 to 14 min) (10 to 14 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPERSONAL COMMUNICATIONS 5"] = 14;
-
-$projects["INTERPRETIVE READING 1"] = __("Read A Story (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPRETIVE READING"] = '<option value="INTERPRETIVE READING 1">'.__("Read A Story (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPRETIVE READING 1"] = 10;
-
-$projects["INTERPRETIVE READING 2"] = __("Interpreting Poetry (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPRETIVE READING"] .= '<option value="INTERPRETIVE READING 2">'.__("Interpreting Poetry (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPRETIVE READING 2"] = 8;
-
-$projects["INTERPRETIVE READING 3"] = __("The Monodrama (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["INTERPRETIVE READING"] .= '<option value="INTERPRETIVE READING 3">'.__("The Monodrama (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPRETIVE READING 3"] = 7;
-
-$projects["INTERPRETIVE READING 4"] = __("The Play (12 to 15 min) (12 to 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPRETIVE READING"] .= '<option value="INTERPRETIVE READING 4">'.__("The Play (12 to 15 min) (12 to 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPRETIVE READING 4"] = 15;
-
-$projects["INTERPRETIVE READING 5"] = __("The Oratorical Speech (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters");
-$project_options["INTERPRETIVE READING"] .= '<option value="INTERPRETIVE READING 5">'.__("The Oratorical Speech (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["INTERPRETIVE READING 5"] = 10;
-
-$projects["Other Manual or Non Manual Speech 1"] = __("Custom Speech (3 to 5 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] = '<option value="Other Manual or Non Manual Speech 1">'.__("Custom Speech (3 to 5 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 1"] = 5;
-
-$projects["Other Manual or Non Manual Speech 2"] = __("Custom Speech (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 2">'.__("Custom Speech (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 2"] = 7;
-
-$projects["Other Manual or Non Manual Speech 3"] = __("Custom Speech (8 to 10 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 3">'.__("Custom Speech (8 to 10 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 3"] = 10;
-
-$projects["Other Manual or Non Manual Speech 4"] = __("Custom Speech (10 to 12 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 4">'.__("Custom Speech (10 to 12 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 4"] = 12;
-
-$projects["Other Manual or Non Manual Speech 5"] = __("Custom Speech (13 to 15 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 5">'.__("Custom Speech (13 to 15 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 5"] = 15;
-
-$projects["Other Manual or Non Manual Speech 6"] = __("Custom Speech (18 to 20 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 6">'.__("Custom Speech (18 to 20 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 6"] = 20;
-
-$projects["Other Manual or Non Manual Speech 7"] = __("Custom Speech (23 to 25 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 7">'.__("Custom Speech (23 to 25 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 7"] = 25;
-
-$projects["Other Manual or Non Manual Speech 8"] = __("Custom Speech (28 to 30 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 8">'.__("Custom Speech (28 to 30 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 8"] = 30;
-
-$projects["Other Manual or Non Manual Speech 9"] = __("Custom Speech (35 to 40 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 9">'.__("Custom Speech (35 to 40 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 9"] = 40;
-
-$projects["Other Manual or Non Manual Speech 10"] = __("Custom Speech (40 to 45 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 10">'.__("Custom Speech (40 to 45 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 10"] = 45;
-
-$projects["Other Manual or Non Manual Speech 11"] = __("Custom Speech (45 to 50 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 11">'.__("Custom Speech (45 to 50 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 11"] = 50;
-
-$projects["Other Manual or Non Manual Speech 12"] = __("Custom Speech (55 to 60 min)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 12">'.__("Custom Speech (55 to 60 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 12"] = 60;
-
-$projects["Other Manual or Non Manual Speech 13"] = __("Custom Speech (more than an hour)","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 13">'.__("Custom Speech (more than an hour)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Other Manual or Non Manual Speech 13"] = 0;
-
-$projects["PERSUASIVE SPEAKING 1"] = __("The Effective Salesperson (8 to 12 min (8 to 12 minutes)","rsvpmaker-for-toastmasters");
-$project_options["PERSUASIVE SPEAKING"] = '<option value="PERSUASIVE SPEAKING 1">'.__("The Effective Salesperson (8 to 12 min (8 to 12 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PERSUASIVE SPEAKING 1"] = 12;
-
-$projects["PERSUASIVE SPEAKING 2"] = __("Conquering the &quot;Cold Call&quot; (10 to 14 min)","rsvpmaker-for-toastmasters");
-$project_options["PERSUASIVE SPEAKING"] .= '<option value="PERSUASIVE SPEAKING 2">'.__("Conquering the &quot;Cold Call&quot; (10 to 14 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PERSUASIVE SPEAKING 2"] = 14;
-
-$projects["PERSUASIVE SPEAKING 3"] = __("The Winning Proposal (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["PERSUASIVE SPEAKING"] .= '<option value="PERSUASIVE SPEAKING 3">'.__("The Winning Proposal (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PERSUASIVE SPEAKING 3"] = 7;
-
-$projects["PERSUASIVE SPEAKING 4"] = __("Addressing the Opposition (7 to 9 min) (7 to 9 minutes for the speech, plus 2 to 3 minutes for the question and answer period)","rsvpmaker-for-toastmasters");
-$project_options["PERSUASIVE SPEAKING"] .= '<option value="PERSUASIVE SPEAKING 4">'.__("Addressing the Opposition (7 to 9 min) (7 to 9 minutes for the speech, plus 2 to 3 minutes for the question and answer period)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PERSUASIVE SPEAKING 4"] = 12;
-
-$projects["PERSUASIVE SPEAKING 5"] = __("The Persuasive Leader (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters");
-$project_options["PERSUASIVE SPEAKING"] .= '<option value="PERSUASIVE SPEAKING 5">'.__("The Persuasive Leader (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PERSUASIVE SPEAKING 5"] = 8;
-
-$projects["PUBLIC RELATIONS 1"] = __("1.The Goodwill Speech (5  to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["PUBLIC RELATIONS"] = '<option value="PUBLIC RELATIONS 1">'.__("1.The Goodwill Speech (5  to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PUBLIC RELATIONS 1"] = 7;
-
-$projects["PUBLIC RELATIONS 2"] = __("The Radio Talk Show (3 to 5 min + 2 to 3 min Q&A) (3 to 5 minutes for the presentation, plus 2 to 3 minutes for questions and answers)","rsvpmaker-for-toastmasters");
-$project_options["PUBLIC RELATIONS"] .= '<option value="PUBLIC RELATIONS 2">'.__("The Radio Talk Show (3 to 5 min + 2 to 3 min Q&A) (3 to 5 minutes for the presentation, plus 2 to 3 minutes for questions and answers)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PUBLIC RELATIONS 2"] = 8;
-
-$projects["PUBLIC RELATIONS 3"] = __("Persuasive Approach (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["PUBLIC RELATIONS"] .= '<option value="PUBLIC RELATIONS 3">'.__("Persuasive Approach (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PUBLIC RELATIONS 3"] = 7;
-
-$projects["PUBLIC RELATIONS 4"] = __("Speaking Under Fire (3 to 5 min + 2 to 3 Q&A) (3 to 5 minutes for the presentation, plus 2 to 3 minutes for questions and answers)","rsvpmaker-for-toastmasters");
-$project_options["PUBLIC RELATIONS"] .= '<option value="PUBLIC RELATIONS 4">'.__("Speaking Under Fire (3 to 5 min + 2 to 3 Q&A) (3 to 5 minutes for the presentation, plus 2 to 3 minutes for questions and answers)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PUBLIC RELATIONS 4"] = 8;
-
-$projects["PUBLIC RELATIONS 5"] = __("The Crisis Management Speech (4 to 6 min + 3 to 5 min Q&A) (4 to 6 minutes for the presentation, plus 3 to 5 minutes for questions and answers)","rsvpmaker-for-toastmasters");
-$project_options["PUBLIC RELATIONS"] .= '<option value="PUBLIC RELATIONS 5">'.__("The Crisis Management Speech (4 to 6 min + 3 to 5 min Q&A) (4 to 6 minutes for the presentation, plus 3 to 5 minutes for questions and answers)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PUBLIC RELATIONS 5"] = 11;
-
-$projects["SPEAKING TO INFORM 1"] = __("The Speech to Inform (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["SPEAKING TO INFORM"] = '<option value="SPEAKING TO INFORM 1">'.__("The Speech to Inform (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEAKING TO INFORM 1"] = 7;
-
-$projects["SPEAKING TO INFORM 2"] = __("Resources for Informing (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["SPEAKING TO INFORM"] .= '<option value="SPEAKING TO INFORM 2">'.__("Resources for Informing (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEAKING TO INFORM 2"] = 7;
-
-$projects["SPEAKING TO INFORM 3"] = __("The Demonstration Talk (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["SPEAKING TO INFORM"] .= '<option value="SPEAKING TO INFORM 3">'.__("The Demonstration Talk (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEAKING TO INFORM 3"] = 7;
-
-$projects["SPEAKING TO INFORM 4"] = __("A Fact-Finding Report (5 to 7 min + 2 to 3 min for Q&A)","rsvpmaker-for-toastmasters");
-$project_options["SPEAKING TO INFORM"] .= '<option value="SPEAKING TO INFORM 4">'.__("A Fact-Finding Report (5 to 7 min + 2 to 3 min for Q&A)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEAKING TO INFORM 4"] = 7;
-
-$projects["SPEAKING TO INFORM 5"] = __("The Abstract Concept (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters");
-$project_options["SPEAKING TO INFORM"] .= '<option value="SPEAKING TO INFORM 5">'.__("The Abstract Concept (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEAKING TO INFORM 5"] = 8;
-
-$projects["SPECIAL OCCASION SPEECHES 1"] = __("Mastering the Toast (2 to 3 min) (2 to 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["SPECIAL OCCASION SPEECHES"] = '<option value="SPECIAL OCCASION SPEECHES 1">'.__("Mastering the Toast (2 to 3 min) (2 to 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIAL OCCASION SPEECHES 1"] = 3;
-
-$projects["SPECIAL OCCASION SPEECHES 2"] = __("Speaking in Praise (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["SPECIAL OCCASION SPEECHES"] .= '<option value="SPECIAL OCCASION SPEECHES 2">'.__("Speaking in Praise (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIAL OCCASION SPEECHES 2"] = 7;
-
-$projects["SPECIAL OCCASION SPEECHES 3"] = __("The Roast (3 to 5 min) (3 to 5 minutes)","rsvpmaker-for-toastmasters");
-$project_options["SPECIAL OCCASION SPEECHES"] .= '<option value="SPECIAL OCCASION SPEECHES 3">'.__("The Roast (3 to 5 min) (3 to 5 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIAL OCCASION SPEECHES 3"] = 5;
-
-$projects["SPECIAL OCCASION SPEECHES 4"] = __("Presenting an Award (3 to 4 min) (3 to 4 minutes)","rsvpmaker-for-toastmasters");
-$project_options["SPECIAL OCCASION SPEECHES"] .= '<option value="SPECIAL OCCASION SPEECHES 4">'.__("Presenting an Award (3 to 4 min) (3 to 4 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIAL OCCASION SPEECHES 4"] = 4;
-
-$projects["SPECIAL OCCASION SPEECHES 5"] = __("Accepting an Award (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["SPECIAL OCCASION SPEECHES"] .= '<option value="SPECIAL OCCASION SPEECHES 5">'.__("Accepting an Award (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIAL OCCASION SPEECHES 5"] = 7;
-
-$projects["SPECIALTY SPEECHES 1"] = __("Speak Off The Cuff (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["SPECIALTY SPEECHES"] = '<option value="SPECIALTY SPEECHES 1">'.__("Speak Off The Cuff (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIALTY SPEECHES 1"] = 7;
-
-$projects["SPECIALTY SPEECHES 2"] = __("Uplift the Spirit (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters");
-$project_options["SPECIALTY SPEECHES"] .= '<option value="SPECIALTY SPEECHES 2">'.__("Uplift the Spirit (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIALTY SPEECHES 2"] = 10;
-
-$projects["SPECIALTY SPEECHES 3"] = __("Sell a Product (10 to 12 min) (10 to 12 minutes)","rsvpmaker-for-toastmasters");
-$project_options["SPECIALTY SPEECHES"] .= '<option value="SPECIALTY SPEECHES 3">'.__("Sell a Product (10 to 12 min) (10 to 12 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIALTY SPEECHES 3"] = 12;
-
-$projects["SPECIALTY SPEECHES 4"] = __("Read Out Loud (12 to 15 min) (12 to 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["SPECIALTY SPEECHES"] .= '<option value="SPECIALTY SPEECHES 4">'.__("Read Out Loud (12 to 15 min) (12 to 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIALTY SPEECHES 4"] = 15;
-
-$projects["SPECIALTY SPEECHES 5"] = __("Introduce the Speaker (duration of a club meeting) (The duration of a club meeting)","rsvpmaker-for-toastmasters");
-$project_options["SPECIALTY SPEECHES"] .= '<option value="SPECIALTY SPEECHES 5">'.__("Introduce the Speaker (duration of a club meeting) (The duration of a club meeting)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPECIALTY SPEECHES 5"] = 120;
-
-$projects["SPEECHES BY MANAGEMENT 1"] = __("The Briefing (8 to 10 min + 5 min Q&A) (3 to 5 minutes for speech, plus 2 to 3 minutes for question period)","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] = '<option value="SPEECHES BY MANAGEMENT 1">'.__("The Briefing (8 to 10 min + 5 min Q&A) (3 to 5 minutes for speech, plus 2 to 3 minutes for question period)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 1"] = 8;
-
-$projects["SPEECHES BY MANAGEMENT 2"] = __("The Technical Speech (8 to 10 min)","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 2">'.__("The Technical Speech (8 to 10 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 2"] = 10;
-
-$projects["SPEECHES BY MANAGEMENT 3"] = __("Manage And Motivate (10 to 12 min)","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 3">'.__("Manage And Motivate (10 to 12 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 3"] = 12;
-
-$projects["SPEECHES BY MANAGEMENT 4"] = __("The Status Report (10 to 12 min)","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 4">'.__("The Status Report (10 to 12 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 4"] = 12;
-
-$projects["SPEECHES BY MANAGEMENT 5"] = __("Confrontation: The Adversary Relationship (5 min + 10 min Q&A)","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 5">'.__("Confrontation: The Adversary Relationship (5 min + 10 min Q&A)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 5"] = 15;
-
-$projects["STORYTELLING 1"] = __("The Folk Tale (7 to 9 min) (7 to 9 minutes)","rsvpmaker-for-toastmasters");
-$project_options["STORYTELLING"] = '<option value="STORYTELLING 1">'.__("The Folk Tale (7 to 9 min) (7 to 9 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["STORYTELLING 1"] = 9;
-
-$projects["STORYTELLING 2"] = __("Let’s Get Personal (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters");
-$project_options["STORYTELLING"] .= '<option value="STORYTELLING 2">'.__("Let’s Get Personal (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["STORYTELLING 2"] = 8;
-
-$projects["STORYTELLING 3"] = __("The Moral of the Story (5 to 7 min) (4 to 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["STORYTELLING"] .= '<option value="STORYTELLING 3">'.__("The Moral of the Story (5 to 7 min) (4 to 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["STORYTELLING 3"] = 6;
-
-$projects["STORYTELLING 4"] = __("The Touching Story (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters");
-$project_options["STORYTELLING"] .= '<option value="STORYTELLING 4">'.__("The Touching Story (6 to 8 min) (6 to 8 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["STORYTELLING 4"] = 8;
-
-$projects["STORYTELLING 5"] = __("Bringing History to Life (7 to 9 min) (7 to 9 minutes)","rsvpmaker-for-toastmasters");
-$project_options["STORYTELLING"] .= '<option value="STORYTELLING 5">'.__("Bringing History to Life (7 to 9 min) (7 to 9 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["STORYTELLING 5"] = 9;
-
-$projects["TECHNICAL PRESENTATIONS 1"] = __("The Technical Briefing (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters");
-$project_options["TECHNICAL PRESENTATIONS"] = '<option value="TECHNICAL PRESENTATIONS 1">'.__("The Technical Briefing (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["TECHNICAL PRESENTATIONS 1"] = 10;
-
-$projects["TECHNICAL PRESENTATIONS 2"] = __("The Proposal (8 to 10 min + 3 to 5 min Q&A) (8 to 10 minutes for speech, plus 3 to 5 minutes for question period)","rsvpmaker-for-toastmasters");
-$project_options["TECHNICAL PRESENTATIONS"] .= '<option value="TECHNICAL PRESENTATIONS 2">'.__("The Proposal (8 to 10 min + 3 to 5 min Q&A) (8 to 10 minutes for speech, plus 3 to 5 minutes for question period)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["TECHNICAL PRESENTATIONS 2"] = 10;
-
-$projects["TECHNICAL PRESENTATIONS 3"] = __("The Nontechnical Audience (10 to 12 min) (10 to 12 minutes)","rsvpmaker-for-toastmasters");
-$project_options["TECHNICAL PRESENTATIONS"] .= '<option value="TECHNICAL PRESENTATIONS 3">'.__("The Nontechnical Audience (10 to 12 min) (10 to 12 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["TECHNICAL PRESENTATIONS 3"] = 12;
-
-$projects["TECHNICAL PRESENTATIONS 4"] = __("Presenting a Technical Paper (10 to 12 min) (10 to 12 minutes)","rsvpmaker-for-toastmasters");
-$project_options["TECHNICAL PRESENTATIONS"] .= '<option value="TECHNICAL PRESENTATIONS 4">'.__("Presenting a Technical Paper (10 to 12 min) (10 to 12 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["TECHNICAL PRESENTATIONS 4"] = 12;
-
-$projects["TECHNICAL PRESENTATIONS 5"] = __("The Team Technical Presentation (20 to 30 min)","rsvpmaker-for-toastmasters");
-$project_options["TECHNICAL PRESENTATIONS"] .= '<option value="TECHNICAL PRESENTATIONS 5">'.__("The Team Technical Presentation (20 to 30 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["TECHNICAL PRESENTATIONS 5"] = 30;
-
-$projects["THE DISCUSSION LEADER 1"] = __("The Seminar Solution (20 to 30 min)","rsvpmaker-for-toastmasters");
-$project_options["THE DISCUSSION LEADER"] = '<option value="THE DISCUSSION LEADER 1">'.__("The Seminar Solution (20 to 30 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE DISCUSSION LEADER 1"] = 30;
-
-$projects["THE DISCUSSION LEADER 2"] = __("The Round Robin (20 to 30 min)","rsvpmaker-for-toastmasters");
-$project_options["THE DISCUSSION LEADER"] .= '<option value="THE DISCUSSION LEADER 2">'.__("The Round Robin (20 to 30 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE DISCUSSION LEADER 2"] = 30;
-
-$projects["THE DISCUSSION LEADER 3"] = __("Pilot a Panel (30 to 40 min)","rsvpmaker-for-toastmasters");
-$project_options["THE DISCUSSION LEADER"] .= '<option value="THE DISCUSSION LEADER 3">'.__("Pilot a Panel (30 to 40 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE DISCUSSION LEADER 3"] = 40;
-
-$projects["THE DISCUSSION LEADER 4"] = __("Make Believe (Role Playing) (20 to 30 min)","rsvpmaker-for-toastmasters");
-$project_options["THE DISCUSSION LEADER"] .= '<option value="THE DISCUSSION LEADER 4">'.__("Make Believe (Role Playing) (20 to 30 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE DISCUSSION LEADER 4"] = 30;
-
-$projects["THE DISCUSSION LEADER 5"] = __("The Workshop Leader (30 to 40 min)","rsvpmaker-for-toastmasters");
-$project_options["THE DISCUSSION LEADER"] .= '<option value="THE DISCUSSION LEADER 5">'.__("The Workshop Leader (30 to 40 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE DISCUSSION LEADER 5"] = 40;
-
-$projects["THE ENTERTAINING SPEAKER 1"] = __("The Entertaining Speech (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["THE ENTERTAINING SPEAKER"] = '<option value="THE ENTERTAINING SPEAKER 1">'.__("The Entertaining Speech (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE ENTERTAINING SPEAKER 1"] = 7;
-
-$projects["THE ENTERTAINING SPEAKER 2"] = __("Resources for Entertainment (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["THE ENTERTAINING SPEAKER"] .= '<option value="THE ENTERTAINING SPEAKER 2">'.__("Resources for Entertainment (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE ENTERTAINING SPEAKER 2"] = 7;
-
-$projects["THE ENTERTAINING SPEAKER 3"] = __("Make Them Laugh (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["THE ENTERTAINING SPEAKER"] .= '<option value="THE ENTERTAINING SPEAKER 3">'.__("Make Them Laugh (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE ENTERTAINING SPEAKER 3"] = 7;
-
-$projects["THE ENTERTAINING SPEAKER 4"] = __("A Dramatic Talk (5 to 7 min)","rsvpmaker-for-toastmasters");
-$project_options["THE ENTERTAINING SPEAKER"] .= '<option value="THE ENTERTAINING SPEAKER 4">'.__("A Dramatic Talk (5 to 7 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE ENTERTAINING SPEAKER 4"] = 7;
-
-$projects["THE ENTERTAINING SPEAKER 5"] = __("Speaking After Dinner (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters");
-$project_options["THE ENTERTAINING SPEAKER"] .= '<option value="THE ENTERTAINING SPEAKER 5">'.__("Speaking After Dinner (8 to 10 min) (8 to 10 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE ENTERTAINING SPEAKER 5"] = 10;
-
-$projects["THE PROFESSIONAL SALESPERSON 1"] = __("The Winning Attitude (8 to 10 min)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SALESPERSON"] = '<option value="THE PROFESSIONAL SALESPERSON 1">'.__("The Winning Attitude (8 to 10 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SALESPERSON 1"] = 10;
-
-$projects["THE PROFESSIONAL SALESPERSON 2"] = __("Closing The Sale (10 to 12 min)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SALESPERSON"] .= '<option value="THE PROFESSIONAL SALESPERSON 2">'.__("Closing The Sale (10 to 12 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SALESPERSON 2"] = 12;
-
-$projects["THE PROFESSIONAL SALESPERSON 3"] = __("Training The Sales Force (6 to 8 min speech; 8 to 10 min role play; 2 to 5 min discussion)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SALESPERSON"] .= '<option value="THE PROFESSIONAL SALESPERSON 3">'.__("Training The Sales Force (6 to 8 min speech; 8 to 10 min role play; 2 to 5 min discussion)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SALESPERSON 3"] = 23;
-
-$projects["THE PROFESSIONAL SALESPERSON 4"] = __("The Sales Meeting (15 to 20 min)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SALESPERSON"] .= '<option value="THE PROFESSIONAL SALESPERSON 4">'.__("The Sales Meeting (15 to 20 min)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SALESPERSON 4"] = 20;
-
-$projects["THE PROFESSIONAL SALESPERSON 5"] = __("The Team Sales Presentation (15 to 20 min plus 5 to 7 min per person for manual credit)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SALESPERSON"] .= '<option value="THE PROFESSIONAL SALESPERSON 5">'.__("The Team Sales Presentation (15 to 20 min plus 5 to 7 min per person for manual credit)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SALESPERSON 5"] = 27;
-
-$projects["THE PROFESSIONAL SPEAKER 1"] = __("The Keynote Address (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SPEAKER"] = '<option value="THE PROFESSIONAL SPEAKER 1">'.__("The Keynote Address (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SPEAKER 1"] = 20;
-
-$projects["THE PROFESSIONAL SPEAKER 2"] = __("Speaking to Entertain (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SPEAKER"] .= '<option value="THE PROFESSIONAL SPEAKER 2">'.__("Speaking to Entertain (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SPEAKER 2"] = 20;
-
-$projects["THE PROFESSIONAL SPEAKER 3"] = __("The Sales Training Speech (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SPEAKER"] .= '<option value="THE PROFESSIONAL SPEAKER 3">'.__("The Sales Training Speech (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SPEAKER 3"] = 20;
-
-$projects["THE PROFESSIONAL SPEAKER 4"] = __("The Professional Seminar (20 to 40 min) (20 to 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SPEAKER"] .= '<option value="THE PROFESSIONAL SPEAKER 4">'.__("The Professional Seminar (20 to 40 min) (20 to 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SPEAKER 4"] = 40;
-
-$projects["THE PROFESSIONAL SPEAKER 5"] = __("The Motivational Speech (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters");
-$project_options["THE PROFESSIONAL SPEAKER"] .= '<option value="THE PROFESSIONAL SPEAKER 5">'.__("The Motivational Speech (15 to 20 min) (15 to 20 minutes, longer if club program allows)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["THE PROFESSIONAL SPEAKER 5"] = 20;
-
-$projects["BETTER SPEAKER SERIES 0"] = __("Beginning Your Speech","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] = '<option value="BETTER SPEAKER SERIES 0">'.__("Beginning Your Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 0"] = 15;
-
-$projects["BETTER SPEAKER SERIES 1"] = __("Concluding Your Speech","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 1">'.__("Concluding Your Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 1"] = 15;
-
-$projects["BETTER SPEAKER SERIES 2"] = __("Controlling Your Fear","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 2">'.__("Controlling Your Fear","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 2"] = 15;
-
-$projects["BETTER SPEAKER SERIES 3"] = __("Impromptu Speaking","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 3">'.__("Impromptu Speaking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 3"] = 15;
-
-$projects["BETTER SPEAKER SERIES 4"] = __("Selecting Your Topic","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 4">'.__("Selecting Your Topic","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 4"] = 15;
-
-$projects["BETTER SPEAKER SERIES 5"] = __("Know Your Audience","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 5">'.__("Know Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 5"] = 15;
-
-$projects["BETTER SPEAKER SERIES 6"] = __("Organizing Your Speech","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 6">'.__("Organizing Your Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 6"] = 15;
-
-$projects["BETTER SPEAKER SERIES 7"] = __("Creating An Introduction","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 7">'.__("Creating An Introduction","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 7"] = 15;
-
-$projects["BETTER SPEAKER SERIES 8"] = __("Preparation And Practice","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 8">'.__("Preparation And Practice","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 8"] = 15;
-
-$projects["BETTER SPEAKER SERIES 9"] = __("Using Body Language","rsvpmaker-for-toastmasters");
-$project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 9">'.__("Using Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["BETTER SPEAKER SERIES 9"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 0"] = __("Moments Of Truth","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] = '<option value="SUCCESSFUL CLUB SERIES 0">'.__("Moments Of Truth","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 0"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 1"] = __("Finding New Members For Your Club","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 1">'.__("Finding New Members For Your Club","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 1"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 2"] = __("Evaluate To Motivate","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 2">'.__("Evaluate To Motivate","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 2"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 3"] = __("Closing The Sale","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 3">'.__("Closing The Sale","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 3"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 4"] = __("Creating The Best Club Climate","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 4">'.__("Creating The Best Club Climate","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 4"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 5"] = __("Meeting Roles And Responsibilities","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 5">'.__("Meeting Roles And Responsibilities","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 5"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 6"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 6">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 6"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 7"] = __("Keeping The Commitment","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 7">'.__("Keeping The Commitment","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 7"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 8"] = __("Going Beyond Our Club","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 8">'.__("Going Beyond Our Club","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 8"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 9"] = __("How To Be A Distinguished Club","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 9">'.__("How To Be A Distinguished Club","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 9"] = 15;
-
-$projects["SUCCESSFUL CLUB SERIES 10"] = __("The Toastmasters Educational Program","rsvpmaker-for-toastmasters");
-$project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 10">'.__("The Toastmasters Educational Program","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SUCCESSFUL CLUB SERIES 10"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 0"] = __("The Visionary Leader","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] = '<option value="LEADERSHIP EXCELLENCE SERIES 0">'.__("The Visionary Leader","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 0"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 1"] = __("Developing A Mission","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 1">'.__("Developing A Mission","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 1"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 2"] = __("Values and Leadership","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 2">'.__("Values and Leadership","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 2"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 3"] = __("Goal Setting And Planning","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 3">'.__("Goal Setting And Planning","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 3"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 4"] = __("Delegate To Empower","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 4">'.__("Delegate To Empower","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 4"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 5"] = __("Building A Team","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 5">'.__("Building A Team","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 5"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 6"] = __("Giving Effective Feedback","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 6">'.__("Giving Effective Feedback","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 6"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 7"] = __("The Leader as a Coach","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 7">'.__("The Leader as a Coach","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 7"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 8"] = __("Motivating People","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 8">'.__("Motivating People","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 8"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 9"] = __("Service And Leadership","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 9">'.__("Service And Leadership","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 9"] = 15;
-
-$projects["LEADERSHIP EXCELLENCE SERIES 10"] = __("Resolving Conflict","rsvpmaker-for-toastmasters");
-$project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 10">'.__("Resolving Conflict","rsvpmaker-for-toastmasters")."</option>";
-$project_times["LEADERSHIP EXCELLENCE SERIES 10"] = 15;
-
-$projects["SPEECHES BY MANAGEMENT 8"] = __(" Persuade and Inspire","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 8">'.__(" Persuade and Inspire","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 8"] = 7;
-
-$projects["TECHNICAL PRESENTATIONS 11"] = __(" Enhancing a Technical Talk with the Internet (12 to 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["TECHNICAL PRESENTATIONS"] .= '<option value="TECHNICAL PRESENTATIONS 11">'.__(" Enhancing a Technical Talk with the Internet (12 to 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["TECHNICAL PRESENTATIONS 11"] = 15;
-
-$projects["COMMUNICATING ON VIDEO 13"] = __("The Talk Show (10 minutes ±30 seconds)","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] .= '<option value="COMMUNICATING ON VIDEO 13">'.__("The Talk Show (10 minutes ±30 seconds)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 13"] = 10;
-
-$projects["SPEECHES BY MANAGEMENT 10"] = __(" Delivering Bad News","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 10">'.__(" Delivering Bad News","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 10"] = 7;
-
-$projects["COMMUNICATING ON VIDEO 14"] = __("When You're the Host (10 minutes ±30 seconds)","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] .= '<option value="COMMUNICATING ON VIDEO 14">'.__("When You're the Host (10 minutes ±30 seconds)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 14"] = 10;
-
-$projects["PUBLIC RELATIONS 6"] = __(" The Persuasive Approach","rsvpmaker-for-toastmasters");
-$project_options["PUBLIC RELATIONS"] .= '<option value="PUBLIC RELATIONS 6">'.__(" The Persuasive Approach","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PUBLIC RELATIONS 6"] = 7;
-
-$projects["SPEECHES BY MANAGEMENT 9"] = __(" Communicating Change","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 9">'.__(" Communicating Change","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 9"] = 7;
-
-$projects["PERSUASIVE SPEAKING 12"] = __(" Conquering the &quot;Cold Call&quot; (10 to 14 minutes)","rsvpmaker-for-toastmasters");
-$project_options["PERSUASIVE SPEAKING"] .= '<option value="PERSUASIVE SPEAKING 12">'.__(" Conquering the &quot;Cold Call&quot; (10 to 14 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["PERSUASIVE SPEAKING 12"] = 14;
-
-$projects["COMMUNICATING ON VIDEO 15"] = __("Training On Video","rsvpmaker-for-toastmasters");
-$project_options["COMMUNICATING ON VIDEO"] .= '<option value="COMMUNICATING ON VIDEO 15">'.__("Training On Video","rsvpmaker-for-toastmasters")."</option>";
-$project_times["COMMUNICATING ON VIDEO 15"] = 7;
-
-$projects["SPEECHES BY MANAGEMENT 7"] = __(" Appraise with Praise","rsvpmaker-for-toastmasters");
-$project_options["SPEECHES BY MANAGEMENT"] .= '<option value="SPEECHES BY MANAGEMENT 7">'.__(" Appraise with Praise","rsvpmaker-for-toastmasters")."</option>";
-$project_times["SPEECHES BY MANAGEMENT 7"] = 7;
-
-$projects["HIGH PERFORMANCE LEADERSHIP 1"] = __("First Speech","rsvpmaker-for-toastmasters");
-$project_options["HIGH PERFORMANCE LEADERSHIP"] = '<option value="HIGH PERFORMANCE LEADERSHIP 1">'.__("First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["HIGH PERFORMANCE LEADERSHIP 1"] = 7;
-
-$projects["HIGH PERFORMANCE LEADERSHIP 2"] = __("Second Speech","rsvpmaker-for-toastmasters");
-$project_options["HIGH PERFORMANCE LEADERSHIP"] .= '<option value="HIGH PERFORMANCE LEADERSHIP 2">'.__("Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["HIGH PERFORMANCE LEADERSHIP 2"] = 7;
-
-
-//Pathways
-
-$projects["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] = '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 0">'.__("Ice Breaker","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = 6;
-
-$projects["Dynamic Leadership Level 1 Mastering Fundamentals 11"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] .= '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 11">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 1 Mastering Fundamentals 11"] = 7;
-
-$projects["Dynamic Leadership Level 1 Mastering Fundamentals 5"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] .= '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 5">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 1 Mastering Fundamentals 5"] = 7;
-
-$projects["Dynamic Leadership Level 1 Mastering Fundamentals 6"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] .= '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 6">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 1 Mastering Fundamentals 6"] = 7;
-
-$projects["Dynamic Leadership Level 1 Mastering Fundamentals 7"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] .= '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 7">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 1 Mastering Fundamentals 7"] = 3;
-
-$projects["Dynamic Leadership Level 2 Learning Your Style 20"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 2 Learning Your Style"] = '<option value="Dynamic Leadership Level 2 Learning Your Style 20">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 2 Learning Your Style 20"] = 7;
-
-$projects["Dynamic Leadership Level 2 Learning Your Style 25"] = __("Understanding Your Communication Style","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 2 Learning Your Style"] .= '<option value="Dynamic Leadership Level 2 Learning Your Style 25">'.__("Understanding Your Communication Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 2 Learning Your Style 25"] = 7;
-
-$projects["Dynamic Leadership Level 2 Learning Your Style 31"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 2 Learning Your Style"] .= '<option value="Dynamic Leadership Level 2 Learning Your Style 31">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 2 Learning Your Style 31"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 105"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] = '<option value="Dynamic Leadership Level 3 Increasing Knowledge 105">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 105"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 111"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 111">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 111"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 117"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 117">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 117"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 40"] = __("Negotiate the Best Outcome","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 40">'.__("Negotiate the Best Outcome","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 40"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 45"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 45">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 45"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 51"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 51">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 51"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 57"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 57">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 57"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 63"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 63">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 63"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 69"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 69">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 69"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 70"] = __("Deliver Social Speeches -
- Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 70">'.__("Deliver Social Speeches -
- Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 70"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 75"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 75">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 75"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 81"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 81">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 81"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 87"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 87">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 87"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 93"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 93">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 93"] = 7;
-
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 99"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 99">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 99"] = 7;
-
-$projects["Dynamic Leadership Level 4 Building Skills 126"] = __("Manage Change","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] = '<option value="Dynamic Leadership Level 4 Building Skills 126">'.__("Manage Change","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 126"] = 7;
-
-$projects["Dynamic Leadership Level 4 Building Skills 131"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 131">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 131"] = 7;
-
-$projects["Dynamic Leadership Level 4 Building Skills 137"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 137">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 137"] = 13;
-
-$projects["Dynamic Leadership Level 4 Building Skills 143"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 143">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 143"] = 25;
-
-$projects["Dynamic Leadership Level 4 Building Skills 149"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 149">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 149"] = 15;
-
-$projects["Dynamic Leadership Level 4 Building Skills 155"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 155">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 155"] = 3;
-
-$projects["Dynamic Leadership Level 4 Building Skills 156"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 156">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 156"] = 7;
-
-$projects["Dynamic Leadership Level 4 Building Skills 161"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 161">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 161"] = 7;
-
-$projects["Dynamic Leadership Level 4 Building Skills 167"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 167">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 167"] = 20;
-
-$projects["Dynamic Leadership Level 4 Building Skills 173"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 173">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 4 Building Skills 173"] = 3;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 182"] = __("Lead in Any Situation","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] = '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 182">'.__("Lead in Any Situation","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 182"] = 7;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 187"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 187">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 187"] = 7;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 193"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 193">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 193"] = 40;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 199"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 199">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 199"] = 7;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 200"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 200">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 200"] = 7;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 205"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 205">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 205"] = 7;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 211"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 211">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 211"] = 7;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 218"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 218">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 218"] = 40;
-
-$projects["Dynamic Leadership Level 5 Demonstrating Expertise 224"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 224">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Dynamic Leadership Level 5 Demonstrating Expertise 224"] = 22;
-
-$projects["Effective Coaching Level 1 Mastering Fundamentals 233"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 1 Mastering Fundamentals"] = '<option value="Effective Coaching Level 1 Mastering Fundamentals 233">'.__("Ice Breaker","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 1 Mastering Fundamentals 233"] = 6;
-
-$projects["Effective Coaching Level 1 Mastering Fundamentals 240"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 1 Mastering Fundamentals"] .= '<option value="Effective Coaching Level 1 Mastering Fundamentals 240">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 1 Mastering Fundamentals 240"] = 7;
-
-$projects["Effective Coaching Level 1 Mastering Fundamentals 241"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 1 Mastering Fundamentals"] .= '<option value="Effective Coaching Level 1 Mastering Fundamentals 241">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 1 Mastering Fundamentals 241"] = 7;
-
-$projects["Effective Coaching Level 1 Mastering Fundamentals 242"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 1 Mastering Fundamentals"] .= '<option value="Effective Coaching Level 1 Mastering Fundamentals 242">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 1 Mastering Fundamentals 242"] = 3;
-
-$projects["Effective Coaching Level 1 Mastering Fundamentals 246"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 1 Mastering Fundamentals"] .= '<option value="Effective Coaching Level 1 Mastering Fundamentals 246">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 1 Mastering Fundamentals 246"] = 7;
-
-$projects["Effective Coaching Level 2 Learning Your Style 256"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 2 Learning Your Style"] = '<option value="Effective Coaching Level 2 Learning Your Style 256">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 2 Learning Your Style 256"] = 7;
-
-$projects["Effective Coaching Level 2 Learning Your Style 263"] = __("Understanding Your Communication Style","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 2 Learning Your Style"] .= '<option value="Effective Coaching Level 2 Learning Your Style 263">'.__("Understanding Your Communication Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 2 Learning Your Style 263"] = 7;
-
-$projects["Effective Coaching Level 2 Learning Your Style 269"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 2 Learning Your Style"] .= '<option value="Effective Coaching Level 2 Learning Your Style 269">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 2 Learning Your Style 269"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 278"] = __("Reaching Consensus","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] = '<option value="Effective Coaching Level 3 Increasing Knowledge 278">'.__("Reaching Consensus","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 278"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 285"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 285">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 285"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 291"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 291">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 291"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 297"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 297">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 297"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 303"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 303">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 303"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 309"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 309">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 309"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 310"] = __("Deliver Social Speeches - Second Speech ()","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 310">'.__("Deliver Social Speeches - Second Speech ()","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 310"] = 0;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 315"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 315">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 315"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 321"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 321">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 321"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 327"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 327">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 327"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 333"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 333">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 333"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 339"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 339">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 339"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 345"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 345">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 345"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 351"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 351">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 351"] = 7;
-
-$projects["Effective Coaching Level 3 Increasing Knowledge 357"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 357">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 3 Increasing Knowledge 357"] = 7;
-
-$projects["Effective Coaching Level 4 Building Skills 366"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] = '<option value="Effective Coaching Level 4 Building Skills 366">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 366"] = 7;
-
-$projects["Effective Coaching Level 4 Building Skills 373"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 373">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 373"] = 13;
-
-$projects["Effective Coaching Level 4 Building Skills 385"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 385">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 385"] = 25;
-
-$projects["Effective Coaching Level 4 Building Skills 391"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 391">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 391"] = 3;
-
-$projects["Effective Coaching Level 4 Building Skills 392"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 392">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 392"] = 7;
-
-$projects["Effective Coaching Level 4 Building Skills 397"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 397">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 397"] = 15;
-
-$projects["Effective Coaching Level 4 Building Skills 403"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 403">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 403"] = 7;
-
-$projects["Effective Coaching Level 4 Building Skills 409"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 409">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 409"] = 20;
-
-$projects["Effective Coaching Level 4 Building Skills 415"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 415">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 415"] = 3;
-
-$projects["Effective Coaching Level 4 Building Skills 422"] = __("Improvement Through Positive Coaching","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 422">'.__("Improvement Through Positive Coaching","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 4 Building Skills 422"] = 7;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 424"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] = '<option value="Effective Coaching Level 5 Demonstrating Expertise 424">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 424"] = 7;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 425"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 425">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 425"] = 7;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 431"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 431">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 431"] = 7;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 437"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 437">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 437"] = 40;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 443"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 443">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 443"] = 7;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 449"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 449">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 449"] = 7;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 455"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 455">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 455"] = 40;
-
-$projects["Effective Coaching Level 5 Demonstrating Expertise 461"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 461">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Effective Coaching Level 5 Demonstrating Expertise 461"] = 22;
-
-$projects["Innovative Planning Level 1 Mastering Fundamentals 470"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 1 Mastering Fundamentals"] = '<option value="Innovative Planning Level 1 Mastering Fundamentals 470">'.__("Ice Breaker","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 1 Mastering Fundamentals 470"] = 6;
-
-$projects["Innovative Planning Level 1 Mastering Fundamentals 477"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 1 Mastering Fundamentals"] .= '<option value="Innovative Planning Level 1 Mastering Fundamentals 477">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 1 Mastering Fundamentals 477"] = 7;
-
-$projects["Innovative Planning Level 1 Mastering Fundamentals 478"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 1 Mastering Fundamentals"] .= '<option value="Innovative Planning Level 1 Mastering Fundamentals 478">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 1 Mastering Fundamentals 478"] = 7;
-
-$projects["Innovative Planning Level 1 Mastering Fundamentals 479"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 1 Mastering Fundamentals"] .= '<option value="Innovative Planning Level 1 Mastering Fundamentals 479">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 1 Mastering Fundamentals 479"] = 3;
-
-$projects["Innovative Planning Level 1 Mastering Fundamentals 483"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 1 Mastering Fundamentals"] .= '<option value="Innovative Planning Level 1 Mastering Fundamentals 483">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 1 Mastering Fundamentals 483"] = 7;
-
-$projects["Innovative Planning Level 2 Learning Your Style 492"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 2 Learning Your Style"] = '<option value="Innovative Planning Level 2 Learning Your Style 492">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 2 Learning Your Style 492"] = 7;
-
-$projects["Innovative Planning Level 2 Learning Your Style 499"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 2 Learning Your Style"] .= '<option value="Innovative Planning Level 2 Learning Your Style 499">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 2 Learning Your Style 499"] = 7;
-
-$projects["Innovative Planning Level 2 Learning Your Style 505"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 2 Learning Your Style"] .= '<option value="Innovative Planning Level 2 Learning Your Style 505">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 2 Learning Your Style 505"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 514"] = __("Present a Proposal","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] = '<option value="Innovative Planning Level 3 Increasing Knowledge 514">'.__("Present a Proposal","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 514"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 521"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 521">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 521"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 527"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 527">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 527"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 533"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 533">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 533"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 539"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 539">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 539"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 545"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 545">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 545"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 551"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 551">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 551"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 557"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 557">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 557"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 563"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 563">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 563"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 569"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 569">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 569"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 575"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 575">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 575"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 581"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 581">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 581"] = 7;
-
-$projects["Innovative Planning Level 3 Increasing Knowledge 587"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 587">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 3 Increasing Knowledge 587"] = 7;
-
-$projects["Innovative Planning Level 4 Building Skills 596"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] = '<option value="Innovative Planning Level 4 Building Skills 596">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 596"] = 3;
-
-$projects["Innovative Planning Level 4 Building Skills 598"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 598">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 598"] = 7;
-
-$projects["Innovative Planning Level 4 Building Skills 603"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 603">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 603"] = 7;
-
-$projects["Innovative Planning Level 4 Building Skills 609"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 609">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 609"] = 13;
-
-$projects["Innovative Planning Level 4 Building Skills 615"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 615">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 615"] = 25;
-
-$projects["Innovative Planning Level 4 Building Skills 621"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 621">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 621"] = 15;
-
-$projects["Innovative Planning Level 4 Building Skills 627"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 627">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 627"] = 7;
-
-$projects["Innovative Planning Level 4 Building Skills 633"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 633">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 633"] = 20;
-
-$projects["Innovative Planning Level 4 Building Skills 639"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 639">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 4 Building Skills 639"] = 3;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 648"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] = '<option value="Innovative Planning Level 5 Demonstrating Expertise 648">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 648"] = 7;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 649"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 649">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 649"] = 7;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 655"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 655">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 655"] = 7;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 661"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 661">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 661"] = 40;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 667"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 667">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 667"] = 7;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 673"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 673">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 673"] = 7;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 679"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 679">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 679"] = 40;
-
-$projects["Innovative Planning Level 5 Demonstrating Expertise 685"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 685">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 5 Demonstrating Expertise 685"] = 22;
-
-$projects["Innovative Planning Level 6 7"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Innovative Planning Level 6"] = '<option value="Innovative Planning Level 6 7">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Innovative Planning Level 6 7"] = 7;
-
-$projects["Leadership Development Level 1 Mastering Fundamentals 694"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 1 Mastering Fundamentals"] = '<option value="Leadership Development Level 1 Mastering Fundamentals 694">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 1 Mastering Fundamentals 694"] = 6;
-
-$projects["Leadership Development Level 1 Mastering Fundamentals 701"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 1 Mastering Fundamentals"] .= '<option value="Leadership Development Level 1 Mastering Fundamentals 701">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 1 Mastering Fundamentals 701"] = 7;
-
-$projects["Leadership Development Level 1 Mastering Fundamentals 702"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 1 Mastering Fundamentals"] .= '<option value="Leadership Development Level 1 Mastering Fundamentals 702">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 1 Mastering Fundamentals 702"] = 7;
-
-$projects["Leadership Development Level 1 Mastering Fundamentals 703"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 1 Mastering Fundamentals"] .= '<option value="Leadership Development Level 1 Mastering Fundamentals 703">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 1 Mastering Fundamentals 703"] = 3;
-
-$projects["Leadership Development Level 1 Mastering Fundamentals 707"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 1 Mastering Fundamentals"] .= '<option value="Leadership Development Level 1 Mastering Fundamentals 707">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 1 Mastering Fundamentals 707"] = 7;
-
-$projects["Leadership Development Level 2 Learning Your Style 716"] = __("Managing Time","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 2 Learning Your Style"] = '<option value="Leadership Development Level 2 Learning Your Style 716">'.__("Managing Time","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 2 Learning Your Style 716"] = 7;
-
-$projects["Leadership Development Level 2 Learning Your Style 723"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 2 Learning Your Style"] .= '<option value="Leadership Development Level 2 Learning Your Style 723">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 2 Learning Your Style 723"] = 7;
-
-$projects["Leadership Development Level 2 Learning Your Style 729"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 2 Learning Your Style"] .= '<option value="Leadership Development Level 2 Learning Your Style 729">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 2 Learning Your Style 729"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 738"] = __("Planning and Implementing","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] = '<option value="Leadership Development Level 3 Increasing Knowledge 738">'.__("Planning and Implementing","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 738"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 745"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 745">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 745"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 751"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 751">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 751"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 757"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 757">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 757"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 763"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 763">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 763"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 769"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 769">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 769"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 775"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 775">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 775"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 781"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 781">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 781"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 787"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 787">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 787"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 793"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 793">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 793"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 799"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 799">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 799"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 805"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 805">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 805"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 811"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 811">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 811"] = 7;
-
-$projects["Leadership Development Level 3 Increasing Knowledge 817"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 817">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 3 Increasing Knowledge 817"] = 7;
-
-$projects["Leadership Development Level 4 Building Skills 826"] = __("Leading Your Team","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] = '<option value="Leadership Development Level 4 Building Skills 826">'.__("Leading Your Team","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 826"] = 7;
-
-$projects["Leadership Development Level 4 Building Skills 833"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 833">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 833"] = 7;
-
-$projects["Leadership Development Level 4 Building Skills 839"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 839">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 839"] = 13;
-
-$projects["Leadership Development Level 4 Building Skills 845"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 845">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 845"] = 25;
-
-$projects["Leadership Development Level 4 Building Skills 851"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 851">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 851"] = 3;
-
-$projects["Leadership Development Level 4 Building Skills 852"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 852">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 852"] = 7;
-
-$projects["Leadership Development Level 4 Building Skills 857"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 857">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 857"] = 15;
-
-$projects["Leadership Development Level 4 Building Skills 863"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 863">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 863"] = 7;
-
-$projects["Leadership Development Level 4 Building Skills 869"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 869">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 869"] = 20;
-
-$projects["Leadership Development Level 4 Building Skills 875"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 875">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 4 Building Skills 875"] = 3;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 884"] = __("Manage Successful Events","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] = '<option value="Leadership Development Level 5 Demonstrating Expertise 884">'.__("Manage Successful Events","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 884"] = 7;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 891"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 891">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 891"] = 7;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 897"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 897">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 897"] = 40;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 903"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 903">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 903"] = 7;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 904"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 904">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 904"] = 7;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 909"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 909">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 909"] = 7;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 915"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 915">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 915"] = 7;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 921"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 921">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 921"] = 40;
-
-$projects["Leadership Development Level 5 Demonstrating Expertise 927"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 927">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Leadership Development Level 5 Demonstrating Expertise 927"] = 22;
-
-$projects["Motivational Strategies Level 1 Mastering Fundamentals 937"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 1 Mastering Fundamentals"] = '<option value="Motivational Strategies Level 1 Mastering Fundamentals 937">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 1 Mastering Fundamentals 937"] = 6;
-
-$projects["Motivational Strategies Level 1 Mastering Fundamentals 944"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 1 Mastering Fundamentals"] .= '<option value="Motivational Strategies Level 1 Mastering Fundamentals 944">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 1 Mastering Fundamentals 944"] = 7;
-
-$projects["Motivational Strategies Level 1 Mastering Fundamentals 945"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 1 Mastering Fundamentals"] .= '<option value="Motivational Strategies Level 1 Mastering Fundamentals 945">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 1 Mastering Fundamentals 945"] = 7;
-
-$projects["Motivational Strategies Level 1 Mastering Fundamentals 946"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 1 Mastering Fundamentals"] .= '<option value="Motivational Strategies Level 1 Mastering Fundamentals 946">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 1 Mastering Fundamentals 946"] = 3;
-
-$projects["Motivational Strategies Level 1 Mastering Fundamentals 950"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 1 Mastering Fundamentals"] .= '<option value="Motivational Strategies Level 1 Mastering Fundamentals 950">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 1 Mastering Fundamentals 950"] = 7;
-
-$projects["Motivational Strategies Level 2 Learning Your Style 959"] = __("Understanding Your Communication Style","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 2 Learning Your Style"] = '<option value="Motivational Strategies Level 2 Learning Your Style 959">'.__("Understanding Your Communication Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 2 Learning Your Style 959"] = 7;
-
-$projects["Motivational Strategies Level 2 Learning Your Style 966"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 2 Learning Your Style"] .= '<option value="Motivational Strategies Level 2 Learning Your Style 966">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 2 Learning Your Style 966"] = 7;
-
-$projects["Motivational Strategies Level 2 Learning Your Style 972"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 2 Learning Your Style"] .= '<option value="Motivational Strategies Level 2 Learning Your Style 972">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 2 Learning Your Style 972"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1000"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] = '<option value="Motivational Strategies Level 3 Increasing Knowledge 1000">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1000"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1006"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1006">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1006"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1012"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1012">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1012"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1018"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1018">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1018"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1024"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1024">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1024"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1030"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1030">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1030"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1036"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1036">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1036"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1042"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1042">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1042"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1048"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1048">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1048"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 1054"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1054">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1054"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 981"] = __("Understanding Emotional Intelligence","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 981">'.__("Understanding Emotional Intelligence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 981"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 988"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 988">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 988"] = 7;
-
-$projects["Motivational Strategies Level 3 Increasing Knowledge 994"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 994">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 994"] = 7;
-
-$projects["Motivational Strategies Level 4 Building Skills 1063"] = __("Motivate Others","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] = '<option value="Motivational Strategies Level 4 Building Skills 1063">'.__("Motivate Others","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1063"] = 7;
-
-$projects["Motivational Strategies Level 4 Building Skills 1070"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1070">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1070"] = 7;
-
-$projects["Motivational Strategies Level 4 Building Skills 1076"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1076">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1076"] = 13;
-
-$projects["Motivational Strategies Level 4 Building Skills 1082"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1082">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1082"] = 25;
-
-$projects["Motivational Strategies Level 4 Building Skills 1088"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1088">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1088"] = 3;
-
-$projects["Motivational Strategies Level 4 Building Skills 1089"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1089">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1089"] = 7;
-
-$projects["Motivational Strategies Level 4 Building Skills 1094"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1094">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1094"] = 15;
-
-$projects["Motivational Strategies Level 4 Building Skills 1100"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1100">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1100"] = 7;
-
-$projects["Motivational Strategies Level 4 Building Skills 1106"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1106">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1106"] = 20;
-
-$projects["Motivational Strategies Level 4 Building Skills 1112"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 1112">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 4 Building Skills 1112"] = 3;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1121"] = __("Team Building","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] = '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1121">'.__("Team Building","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1121"] = 7;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1128"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1128">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1128"] = 7;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1134"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1134">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1134"] = 40;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1140"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1140">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1140"] = 7;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1141"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1141">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1141"] = 7;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1146"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1146">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1146"] = 7;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1152"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1152">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1152"] = 7;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1158"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1158">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1158"] = 40;
-
-$projects["Motivational Strategies Level 5 Demonstrating Expertise 1164"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 1164">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Motivational Strategies Level 5 Demonstrating Expertise 1164"] = 22;
-
-$projects["Persuasive Influence Level 1 Mastering Fundamentals 1173"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 1 Mastering Fundamentals"] = '<option value="Persuasive Influence Level 1 Mastering Fundamentals 1173">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 1 Mastering Fundamentals 1173"] = 6;
-
-$projects["Persuasive Influence Level 1 Mastering Fundamentals 1180"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 1 Mastering Fundamentals"] .= '<option value="Persuasive Influence Level 1 Mastering Fundamentals 1180">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 1 Mastering Fundamentals 1180"] = 7;
-
-$projects["Persuasive Influence Level 1 Mastering Fundamentals 1181"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 1 Mastering Fundamentals"] .= '<option value="Persuasive Influence Level 1 Mastering Fundamentals 1181">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 1 Mastering Fundamentals 1181"] = 7;
-
-$projects["Persuasive Influence Level 1 Mastering Fundamentals 1182"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 1 Mastering Fundamentals"] .= '<option value="Persuasive Influence Level 1 Mastering Fundamentals 1182">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 1 Mastering Fundamentals 1182"] = 3;
-
-$projects["Persuasive Influence Level 1 Mastering Fundamentals 1186"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 1 Mastering Fundamentals"] .= '<option value="Persuasive Influence Level 1 Mastering Fundamentals 1186">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 1 Mastering Fundamentals 1186"] = 7;
-
-$projects["Persuasive Influence Level 2 Learning Your Style 1195"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 2 Learning Your Style"] = '<option value="Persuasive Influence Level 2 Learning Your Style 1195">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 2 Learning Your Style 1195"] = 7;
-
-$projects["Persuasive Influence Level 2 Learning Your Style 1202"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 2 Learning Your Style"] .= '<option value="Persuasive Influence Level 2 Learning Your Style 1202">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 2 Learning Your Style 1202"] = 7;
-
-$projects["Persuasive Influence Level 2 Learning Your Style 1208"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 2 Learning Your Style"] .= '<option value="Persuasive Influence Level 2 Learning Your Style 1208">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 2 Learning Your Style 1208"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1217"] = __("Understanding Conflict Resolution","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] = '<option value="Persuasive Influence Level 3 Increasing Knowledge 1217">'.__("Understanding Conflict Resolution","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1217"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1224"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1224">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1224"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1230"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1230">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1230"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1236"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1236">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1236"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1242"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1242">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1242"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1248"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1248">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1248"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1254"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1254">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1254"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1260"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1260">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1260"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1266"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1266">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1266"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1272"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1272">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1272"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1278"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1278">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1278"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1284"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1284">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1284"] = 7;
-
-$projects["Persuasive Influence Level 3 Increasing Knowledge 1290"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1290">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1290"] = 7;
-
-$projects["Persuasive Influence Level 4 Building Skills 1299"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] = '<option value="Persuasive Influence Level 4 Building Skills 1299">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1299"] = 7;
-
-$projects["Persuasive Influence Level 4 Building Skills 1306"] = __("Leading in Difficult Situations (5- to 7-minute prepared speech AND 5 to 10 minutes for impromptu responses)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1306">'.__("Leading in Difficult Situations (5- to 7-minute prepared speech AND 5 to 10 minutes for impromptu responses)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1306"] = 17;
-
-$projects["Persuasive Influence Level 4 Building Skills 1312"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1312">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1312"] = 13;
-
-$projects["Persuasive Influence Level 4 Building Skills 1318"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1318">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1318"] = 25;
-
-$projects["Persuasive Influence Level 4 Building Skills 1324"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1324">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1324"] = 3;
-
-$projects["Persuasive Influence Level 4 Building Skills 1325"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1325">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1325"] = 7;
-
-$projects["Persuasive Influence Level 4 Building Skills 1330"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1330">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1330"] = 15;
-
-$projects["Persuasive Influence Level 4 Building Skills 1336"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1336">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1336"] = 7;
-
-$projects["Persuasive Influence Level 4 Building Skills 1342"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1342">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1342"] = 20;
-
-$projects["Persuasive Influence Level 4 Building Skills 1348"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 1348">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 4 Building Skills 1348"] = 3;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1357"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] = '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1357">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1357"] = 7;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1358"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1358">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1358"] = 7;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1364"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1364">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1364"] = 7;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1370"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1370">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1370"] = 40;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1376"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1376">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1376"] = 7;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1382"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1382">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1382"] = 7;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1388"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1388">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1388"] = 40;
-
-$projects["Persuasive Influence Level 5 Demonstrating Expertise 1394"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 1394">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Persuasive Influence Level 5 Demonstrating Expertise 1394"] = 22;
-
-$projects["Presentation Mastery Level 1 Mastering Fundamentals 1404"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 1 Mastering Fundamentals"] = '<option value="Presentation Mastery Level 1 Mastering Fundamentals 1404">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 1 Mastering Fundamentals 1404"] = 6;
-
-$projects["Presentation Mastery Level 1 Mastering Fundamentals 1411"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 1 Mastering Fundamentals"] .= '<option value="Presentation Mastery Level 1 Mastering Fundamentals 1411">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 1 Mastering Fundamentals 1411"] = 7;
-
-$projects["Presentation Mastery Level 1 Mastering Fundamentals 1412"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 1 Mastering Fundamentals"] .= '<option value="Presentation Mastery Level 1 Mastering Fundamentals 1412">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 1 Mastering Fundamentals 1412"] = 7;
-
-$projects["Presentation Mastery Level 1 Mastering Fundamentals 1413"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 1 Mastering Fundamentals"] .= '<option value="Presentation Mastery Level 1 Mastering Fundamentals 1413">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 1 Mastering Fundamentals 1413"] = 3;
-
-$projects["Presentation Mastery Level 1 Mastering Fundamentals 1417"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 1 Mastering Fundamentals"] .= '<option value="Presentation Mastery Level 1 Mastering Fundamentals 1417">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 1 Mastering Fundamentals 1417"] = 7;
-
-$projects["Presentation Mastery Level 2 Learning Your Style 1426"] = __("Understanding Your Communication Style","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 2 Learning Your Style"] = '<option value="Presentation Mastery Level 2 Learning Your Style 1426">'.__("Understanding Your Communication Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 2 Learning Your Style 1426"] = 7;
-
-$projects["Presentation Mastery Level 2 Learning Your Style 1433"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 2 Learning Your Style"] .= '<option value="Presentation Mastery Level 2 Learning Your Style 1433">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 2 Learning Your Style 1433"] = 7;
-
-$projects["Presentation Mastery Level 2 Learning Your Style 1439"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 2 Learning Your Style"] .= '<option value="Presentation Mastery Level 2 Learning Your Style 1439">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 2 Learning Your Style 1439"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1448"] = __("Persuasive Speaking","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] = '<option value="Presentation Mastery Level 3 Increasing Knowledge 1448">'.__("Persuasive Speaking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1448"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1455"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1455">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1455"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1461"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1461">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1461"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1467"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1467">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1467"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1473"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1473">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1473"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1479"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1479">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1479"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1485"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1485">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1485"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1491"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1491">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1491"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1497"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1497">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1497"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1503"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1503">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1503"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1509"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1509">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1509"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1515"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1515">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1515"] = 7;
-
-$projects["Presentation Mastery Level 3 Increasing Knowledge 1521"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1521">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1521"] = 7;
-
-$projects["Presentation Mastery Level 4 Building Skills 1530"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] = '<option value="Presentation Mastery Level 4 Building Skills 1530">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1530"] = 15;
-
-$projects["Presentation Mastery Level 4 Building Skills 1537"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1537">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1537"] = 7;
-
-$projects["Presentation Mastery Level 4 Building Skills 1543"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1543">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1543"] = 13;
-
-$projects["Presentation Mastery Level 4 Building Skills 1549"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1549">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1549"] = 25;
-
-$projects["Presentation Mastery Level 4 Building Skills 1555"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1555">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1555"] = 3;
-
-$projects["Presentation Mastery Level 4 Building Skills 1556"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1556">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1556"] = 7;
-
-$projects["Presentation Mastery Level 4 Building Skills 1561"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1561">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1561"] = 7;
-
-$projects["Presentation Mastery Level 4 Building Skills 1567"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1567">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1567"] = 20;
-
-$projects["Presentation Mastery Level 4 Building Skills 1573"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 1573">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 4 Building Skills 1573"] = 3;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1582"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] = '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1582">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1582"] = 22;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1589"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1589">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1589"] = 7;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1595"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1595">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1595"] = 40;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1601"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1601">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1601"] = 7;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1602"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1602">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1602"] = 7;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1607"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1607">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1607"] = 7;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1613"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1613">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1613"] = 7;
-
-$projects["Presentation Mastery Level 5 Demonstrating Expertise 1619"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 1619">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Presentation Mastery Level 5 Demonstrating Expertise 1619"] = 40;
-
-$projects["Strategic Relationships Level 1 Mastering Fundamentals 1628"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 1 Mastering Fundamentals"] = '<option value="Strategic Relationships Level 1 Mastering Fundamentals 1628">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 1 Mastering Fundamentals 1628"] = 6;
-
-$projects["Strategic Relationships Level 1 Mastering Fundamentals 1635"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 1 Mastering Fundamentals"] .= '<option value="Strategic Relationships Level 1 Mastering Fundamentals 1635">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 1 Mastering Fundamentals 1635"] = 7;
-
-$projects["Strategic Relationships Level 1 Mastering Fundamentals 1636"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 1 Mastering Fundamentals"] .= '<option value="Strategic Relationships Level 1 Mastering Fundamentals 1636">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 1 Mastering Fundamentals 1636"] = 7;
-
-$projects["Strategic Relationships Level 1 Mastering Fundamentals 1637"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 1 Mastering Fundamentals"] .= '<option value="Strategic Relationships Level 1 Mastering Fundamentals 1637">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 1 Mastering Fundamentals 1637"] = 3;
-
-$projects["Strategic Relationships Level 1 Mastering Fundamentals 1641"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 1 Mastering Fundamentals"] .= '<option value="Strategic Relationships Level 1 Mastering Fundamentals 1641">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 1 Mastering Fundamentals 1641"] = 7;
-
-$projects["Strategic Relationships Level 2 Learning Your Style 1650"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 2 Learning Your Style"] = '<option value="Strategic Relationships Level 2 Learning Your Style 1650">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 2 Learning Your Style 1650"] = 7;
-
-$projects["Strategic Relationships Level 2 Learning Your Style 1657"] = __("Cross-Cultural Understanding","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 2 Learning Your Style"] .= '<option value="Strategic Relationships Level 2 Learning Your Style 1657">'.__("Cross-Cultural Understanding","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 2 Learning Your Style 1657"] = 7;
-
-$projects["Strategic Relationships Level 2 Learning Your Style 1663"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 2 Learning Your Style"] .= '<option value="Strategic Relationships Level 2 Learning Your Style 1663">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 2 Learning Your Style 1663"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1672"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] = '<option value="Strategic Relationships Level 3 Increasing Knowledge 1672">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1672"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1679"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1679">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1679"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1685"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1685">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1685"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1691"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1691">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1691"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1697"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1697">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1697"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1703"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1703">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1703"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1709"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1709">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1709"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1715"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1715">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1715"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1721"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1721">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1721"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1727"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1727">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1727"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1733"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1733">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1733"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1739"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1739">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1739"] = 7;
-
-$projects["Strategic Relationships Level 3 Increasing Knowledge 1745"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1745">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1745"] = 7;
-
-$projects["Strategic Relationships Level 4 Building Skills 1754"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] = '<option value="Strategic Relationships Level 4 Building Skills 1754">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1754"] = 7;
-
-$projects["Strategic Relationships Level 4 Building Skills 1761"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1761">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1761"] = 7;
-
-$projects["Strategic Relationships Level 4 Building Skills 1767"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1767">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1767"] = 13;
-
-$projects["Strategic Relationships Level 4 Building Skills 1773"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1773">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1773"] = 25;
-
-$projects["Strategic Relationships Level 4 Building Skills 1779"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1779">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1779"] = 3;
-
-$projects["Strategic Relationships Level 4 Building Skills 1780"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1780">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1780"] = 7;
-
-$projects["Strategic Relationships Level 4 Building Skills 1785"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1785">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1785"] = 15;
-
-$projects["Strategic Relationships Level 4 Building Skills 1791"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1791">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1791"] = 20;
-
-$projects["Strategic Relationships Level 4 Building Skills 1797"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 1797">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 4 Building Skills 1797"] = 3;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1806"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] = '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1806">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1806"] = 7;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1813"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1813">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1813"] = 7;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1819"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1819">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1819"] = 40;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1825"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1825">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1825"] = 7;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1826"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1826">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1826"] = 7;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1831"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1831">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1831"] = 7;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1837"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1837">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1837"] = 40;
-
-$projects["Strategic Relationships Level 5 Demonstrating Expertise 1843"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 1843">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Strategic Relationships Level 5 Demonstrating Expertise 1843"] = 22;
-
-$projects["Team Collaboration Level 1 Mastering Fundamentals 1852"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 1 Mastering Fundamentals"] = '<option value="Team Collaboration Level 1 Mastering Fundamentals 1852">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 1 Mastering Fundamentals 1852"] = 6;
-
-$projects["Team Collaboration Level 1 Mastering Fundamentals 1859"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 1 Mastering Fundamentals"] .= '<option value="Team Collaboration Level 1 Mastering Fundamentals 1859">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 1 Mastering Fundamentals 1859"] = 7;
-
-$projects["Team Collaboration Level 1 Mastering Fundamentals 1860"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 1 Mastering Fundamentals"] .= '<option value="Team Collaboration Level 1 Mastering Fundamentals 1860">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 1 Mastering Fundamentals 1860"] = 7;
-
-$projects["Team Collaboration Level 1 Mastering Fundamentals 1861"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 1 Mastering Fundamentals"] .= '<option value="Team Collaboration Level 1 Mastering Fundamentals 1861">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 1 Mastering Fundamentals 1861"] = 3;
-
-$projects["Team Collaboration Level 1 Mastering Fundamentals 1865"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 1 Mastering Fundamentals"] .= '<option value="Team Collaboration Level 1 Mastering Fundamentals 1865">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 1 Mastering Fundamentals 1865"] = 7;
-
-$projects["Team Collaboration Level 2 Learning Your Style 1874"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 2 Learning Your Style"] = '<option value="Team Collaboration Level 2 Learning Your Style 1874">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 2 Learning Your Style 1874"] = 7;
-
-$projects["Team Collaboration Level 2 Learning Your Style 1881"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 2 Learning Your Style"] .= '<option value="Team Collaboration Level 2 Learning Your Style 1881">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 2 Learning Your Style 1881"] = 7;
-
-$projects["Team Collaboration Level 2 Learning Your Style 1887"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 2 Learning Your Style"] .= '<option value="Team Collaboration Level 2 Learning Your Style 1887">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 2 Learning Your Style 1887"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1896"] = __("Successful Collaboration","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] = '<option value="Team Collaboration Level 3 Increasing Knowledge 1896">'.__("Successful Collaboration","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1896"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1903"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1903">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1903"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1909"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1909">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1909"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1915"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1915">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1915"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1921"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1921">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1921"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1927"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1927">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1927"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1933"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1933">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1933"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1939"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1939">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1939"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1945"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1945">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1945"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1951"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1951">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1951"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1957"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1957">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1957"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1963"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1963">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1963"] = 7;
-
-$projects["Team Collaboration Level 3 Increasing Knowledge 1969"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1969">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1969"] = 7;
-
-$projects["Team Collaboration Level 4 Building Skills 1978"] = __("Motivate Others","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] = '<option value="Team Collaboration Level 4 Building Skills 1978">'.__("Motivate Others","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 1978"] = 7;
-
-$projects["Team Collaboration Level 4 Building Skills 1985"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 1985">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 1985"] = 7;
-
-$projects["Team Collaboration Level 4 Building Skills 1991"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 1991">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 1991"] = 13;
-
-$projects["Team Collaboration Level 4 Building Skills 1997"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 1997">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 1997"] = 25;
-
-$projects["Team Collaboration Level 4 Building Skills 2003"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 2003">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 2003"] = 3;
-
-$projects["Team Collaboration Level 4 Building Skills 2004"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 2004">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 2004"] = 7;
-
-$projects["Team Collaboration Level 4 Building Skills 2009"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 2009">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 2009"] = 15;
-
-$projects["Team Collaboration Level 4 Building Skills 2015"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 2015">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 2015"] = 7;
-
-$projects["Team Collaboration Level 4 Building Skills 2021"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 2021">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 2021"] = 20;
-
-$projects["Team Collaboration Level 4 Building Skills 2027"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 2027">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 4 Building Skills 2027"] = 3;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2036"] = __("Lead in Any Situation","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] = '<option value="Team Collaboration Level 5 Demonstrating Expertise 2036">'.__("Lead in Any Situation","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2036"] = 7;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2043"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2043">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2043"] = 7;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2049"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2049">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2049"] = 40;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2055"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2055">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2055"] = 7;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2056"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2056">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2056"] = 7;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2061"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2061">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2061"] = 7;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2067"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2067">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2067"] = 7;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2073"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2073">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2073"] = 40;
-
-$projects["Team Collaboration Level 5 Demonstrating Expertise 2079"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 2079">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Team Collaboration Level 5 Demonstrating Expertise 2079"] = 22;
-
-$projects["Visionary Communication Level 1 Mastering Fundamentals 2088"] = __("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 1 Mastering Fundamentals"] = '<option value="Visionary Communication Level 1 Mastering Fundamentals 2088">'.__("Ice Breaker (4 - 6 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 1 Mastering Fundamentals 2088"] = 6;
-
-$projects["Visionary Communication Level 1 Mastering Fundamentals 2095"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 1 Mastering Fundamentals"] .= '<option value="Visionary Communication Level 1 Mastering Fundamentals 2095">'.__("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 1 Mastering Fundamentals 2095"] = 7;
-
-$projects["Visionary Communication Level 1 Mastering Fundamentals 2096"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 1 Mastering Fundamentals"] .= '<option value="Visionary Communication Level 1 Mastering Fundamentals 2096">'.__("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 1 Mastering Fundamentals 2096"] = 7;
-
-$projects["Visionary Communication Level 1 Mastering Fundamentals 2097"] = __("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 1 Mastering Fundamentals"] .= '<option value="Visionary Communication Level 1 Mastering Fundamentals 2097">'.__("Evaluation and Feedback - Evaluator Speech (2-3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 1 Mastering Fundamentals 2097"] = 3;
-
-$projects["Visionary Communication Level 1 Mastering Fundamentals 2101"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 1 Mastering Fundamentals"] .= '<option value="Visionary Communication Level 1 Mastering Fundamentals 2101">'.__("Researching and Presenting","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 1 Mastering Fundamentals 2101"] = 7;
-
-$projects["Visionary Communication Level 2 Learning Your Style 2110"] = __("Understanding Your Leadership Style","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 2 Learning Your Style"] = '<option value="Visionary Communication Level 2 Learning Your Style 2110">'.__("Understanding Your Leadership Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 2 Learning Your Style 2110"] = 7;
-
-$projects["Visionary Communication Level 2 Learning Your Style 2117"] = __("Understanding Your Communication Style","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 2 Learning Your Style"] .= '<option value="Visionary Communication Level 2 Learning Your Style 2117">'.__("Understanding Your Communication Style","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 2 Learning Your Style 2117"] = 7;
-
-$projects["Visionary Communication Level 2 Learning Your Style 2123"] = __("Mentoring","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 2 Learning Your Style"] .= '<option value="Visionary Communication Level 2 Learning Your Style 2123">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 2 Learning Your Style 2123"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2132"] = __("Develop a Communication Plan","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] = '<option value="Visionary Communication Level 3 Increasing Knowledge 2132">'.__("Develop a Communication Plan","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2132"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2139"] = __("Active Listening","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2139">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2139"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2145"] = __("Connect with Storytelling","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2145">'.__("Connect with Storytelling","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2145"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2151"] = __("Connect with Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2151">'.__("Connect with Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2151"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2157"] = __("Creating Effective Visual Aids","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2157">'.__("Creating Effective Visual Aids","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2157"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2163"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2163">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2163"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2169"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2169">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2169"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2175"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2175">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2175"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2181"] = __("Inspire Your Audience","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2181">'.__("Inspire Your Audience","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2181"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2187"] = __("Make Connections Through Networking","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2187">'.__("Make Connections Through Networking","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2187"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2193"] = __("Prepare for an Interview","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2193">'.__("Prepare for an Interview","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2193"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2199"] = __("Understanding Vocal Variety","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2199">'.__("Understanding Vocal Variety","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2199"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2205"] = __("Using Descriptive Language","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2205">'.__("Using Descriptive Language","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2205"] = 7;
-
-$projects["Visionary Communication Level 3 Increasing Knowledge 2211"] = __("Using Presentation Software","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2211">'.__("Using Presentation Software","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2211"] = 7;
-
-$projects["Visionary Communication Level 4 Building Skills 2220"] = __("Communicate Change","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] = '<option value="Visionary Communication Level 4 Building Skills 2220">'.__("Communicate Change","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2220"] = 7;
-
-$projects["Visionary Communication Level 4 Building Skills 2227"] = __("Building a Social Media Presence","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2227">'.__("Building a Social Media Presence","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2227"] = 7;
-
-$projects["Visionary Communication Level 4 Building Skills 2233"] = __("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2233">'.__("Create a Podcast (2-3 minute intro; 5-10 minute podcast)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2233"] = 13;
-
-$projects["Visionary Communication Level 4 Building Skills 2239"] = __("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2239">'.__("Manage Online Meetings (20 - 25 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2239"] = 25;
-
-$projects["Visionary Communication Level 4 Building Skills 2245"] = __("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2245">'.__("Manage Projects Successfully - First Speech (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2245"] = 3;
-
-$projects["Visionary Communication Level 4 Building Skills 2246"] = __("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2246">'.__("Manage Projects Successfully - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2246"] = 7;
-
-$projects["Visionary Communication Level 4 Building Skills 2251"] = __("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2251">'.__("Managing a Difficult Audience (10 - 15 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2251"] = 15;
-
-$projects["Visionary Communication Level 4 Building Skills 2257"] = __("Public Relations Strategies","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2257">'.__("Public Relations Strategies","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2257"] = 7;
-
-$projects["Visionary Communication Level 4 Building Skills 2263"] = __("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2263">'.__("Question-and-Answer Session (15 - 20 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2263"] = 20;
-
-$projects["Visionary Communication Level 4 Building Skills 2269"] = __("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 2269">'.__("Write a Compelling Blog (2 - 3 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 4 Building Skills 2269"] = 3;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2278"] = __("Develop Your Vision","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] = '<option value="Visionary Communication Level 5 Demonstrating Expertise 2278">'.__("Develop Your Vision","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2278"] = 7;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2285"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2285">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2285"] = 7;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2291"] = __("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2291">'.__("Ethical Leadership (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2291"] = 40;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2297"] = __("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2297">'.__("High Performance Leadership - First Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2297"] = 7;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2298"] = __("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2298">'.__("High Performance Leadership - Second Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2298"] = 7;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2303"] = __("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2303">'.__("Leading in Your Volunteer Organization","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2303"] = 7;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2309"] = __("Lessons Learned","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2309">'.__("Lessons Learned","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2309"] = 7;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2315"] = __("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2315">'.__("Moderate a Panel Discussion (20 - 40 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2315"] = 40;
-
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2321"] = __("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2321">'.__("Prepare to Speak Professionally (18 - 22 minutes)","rsvpmaker-for-toastmasters")."</option>";
-$project_times["Visionary Communication Level 5 Demonstrating Expertise 2321"] = 22;
-
-$project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] .= '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Dynamic Leadership Level 2 Learning Your Style"] .= '<option value="Dynamic Leadership Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Dynamic Leadership Level 4 Building Skills"] .= '<option value="Dynamic Leadership Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Dynamic Leadership Level 5 Demonstrating Expertise"] .= '<option value="Dynamic Leadership Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Effective Coaching Level 1 Mastering Fundamentals"] .= '<option value="Effective Coaching Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Effective Coaching Level 2 Learning Your Style"] .= '<option value="Effective Coaching Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Effective Coaching Level 4 Building Skills"] .= '<option value="Effective Coaching Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Effective Coaching Level 5 Demonstrating Expertise"] .= '<option value="Effective Coaching Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Innovative Planning Level 1 Mastering Fundamentals"] .= '<option value="Innovative Planning Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Innovative Planning Level 2 Learning Your Style"] .= '<option value="Innovative Planning Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Innovative Planning Level 4 Building Skills"] .= '<option value="Innovative Planning Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Innovative Planning Level 5 Demonstrating Expertise"] .= '<option value="Innovative Planning Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Innovative Planning Level 6"] .= '<option value="Innovative Planning Level 6 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Leadership Development Level 1 Mastering Fundamentals"] .= '<option value="Leadership Development Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Leadership Development Level 2 Learning Your Style"] .= '<option value="Leadership Development Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Leadership Development Level 4 Building Skills"] .= '<option value="Leadership Development Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Leadership Development Level 5 Demonstrating Expertise"] .= '<option value="Leadership Development Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Motivational Strategies Level 1 Mastering Fundamentals"] .= '<option value="Motivational Strategies Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Motivational Strategies Level 2 Learning Your Style"] .= '<option value="Motivational Strategies Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Motivational Strategies Level 4 Building Skills"] .= '<option value="Motivational Strategies Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Motivational Strategies Level 5 Demonstrating Expertise"] .= '<option value="Motivational Strategies Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Persuasive Influence Level 1 Mastering Fundamentals"] .= '<option value="Persuasive Influence Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Persuasive Influence Level 2 Learning Your Style"] .= '<option value="Persuasive Influence Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Persuasive Influence Level 4 Building Skills"] .= '<option value="Persuasive Influence Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Persuasive Influence Level 5 Demonstrating Expertise"] .= '<option value="Persuasive Influence Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Presentation Mastery Level 1 Mastering Fundamentals"] .= '<option value="Presentation Mastery Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Presentation Mastery Level 2 Learning Your Style"] .= '<option value="Presentation Mastery Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Presentation Mastery Level 4 Building Skills"] .= '<option value="Presentation Mastery Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Presentation Mastery Level 5 Demonstrating Expertise"] .= '<option value="Presentation Mastery Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Strategic Relationships Level 1 Mastering Fundamentals"] .= '<option value="Strategic Relationships Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Strategic Relationships Level 2 Learning Your Style"] .= '<option value="Strategic Relationships Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Strategic Relationships Level 4 Building Skills"] .= '<option value="Strategic Relationships Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Strategic Relationships Level 5 Demonstrating Expertise"] .= '<option value="Strategic Relationships Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Team Collaboration Level 1 Mastering Fundamentals"] .= '<option value="Team Collaboration Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Team Collaboration Level 2 Learning Your Style"] .= '<option value="Team Collaboration Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Team Collaboration Level 4 Building Skills"] .= '<option value="Team Collaboration Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Team Collaboration Level 5 Demonstrating Expertise"] .= '<option value="Team Collaboration Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Visionary Communication Level 1 Mastering Fundamentals"] .= '<option value="Visionary Communication Level 1 Mastering Fundamentals 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Visionary Communication Level 2 Learning Your Style"] .= '<option value="Visionary Communication Level 2 Learning Your Style 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Visionary Communication Level 4 Building Skills"] .= '<option value="Visionary Communication Level 4 Building Skills 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 00">'.__("Other Pathways Speech","rsvpmaker-for-toastmasters")."</option>";
+include 'projects_array.php';
 
 if($choice == 'projects')
 	return $projects;
 elseif($choice == 'options')
 	return $project_options;
+elseif($choice == 'display_times')
+	return $display_times;
 else
 	return $project_times;
 }
@@ -9700,6 +7484,7 @@ function timeplanner($atts, $content) {
 	global $time_counter;
 	global $newoutput;
 	global $timeplanner_total;
+	global $post;
 	if(isset($atts["themewords"]))
 		{
 		if(!empty($newoutput))
@@ -9717,6 +7502,8 @@ function timeplanner($atts, $content) {
 	if(isset($atts["role"]))
 		{
 		$c = '';
+		$role = $atts["role"];
+		$count = 1;
 		if(isset($atts["count"]))
 			{
 				$count = (int) $atts["count"];
@@ -9724,12 +7511,16 @@ function timeplanner($atts, $content) {
 					$c = '('.$count.')';
 			}
 		$txt = sprintf('Role: %s %s',$atts["role"],$c);
+		$signups = get_role_signups ($post->ID, $role, $count);
+		if(!empty($signups))
+			$txt .= ' '.$signups;
 		if(strpos($atts["role"],'peaker') && !strpos($atts["role"],'ackup'))
 			{
-			$txt .= sprintf('<p>Time Allowed should be at least %d minutes (%d speeches, 7-minutes each) or longer to allow for 10 or 12-minute speeches. The signup form will show a warning if members sign up for speeches that exceed the limit. Use <strong>Extra Time</strong> to pad the agenda for introductions and presentation setup.</p>',($count * 7),$count);
+			global $max_speakers;
+			$max_speakers = $count;
+			$txt .= sprintf('<p>Time Allowed should be at least %d minutes (%d speeches, 7-minutes each) or more to allow for longer speeches. The signup form will show a warning if members sign up for speeches that exceed the limit. Use <strong>Extra Time</strong> to pad the agenda for introductions and presentation setup.</p>',($count * 7),$count);
 			$padding_time_block = sprintf('<br /><strong>Extra Time</strong><br /><select class="time_count" name="padding_time[%d]" id="padding_time%d">%s</select>',$time_counter,$time_counter,timeplanner_option ($atts["padding_time"]));
 				$speak_count = 0;
-				global $post;
 				for($i = 1; $i <= $count; $i++)
 					{
 						$speak_count += (int) get_post_meta($post->ID,'_maxtime_Speaker_'.$i,true);
@@ -9753,7 +7544,7 @@ function timeplanner($atts, $content) {
 	if(!empty($atts["editable"]))
 		$txt .= ' Editable: '.$atts["editable"];
 
-	$output = sprintf('<tr class="timerow" timecount="%d"><td id="time%s"></td><td class="time_allowed_cell"><select class="time_count" name="time_allowed[%d]" id="time_allowed%d">%s</select>%s</td><td class="text_cell">%s</td></tr>',$time_counter,$time_counter,$time_counter ,$time_counter,timeplanner_option ($atts["time_allowed"]),$padding_time_block ,$txt);
+	$output = sprintf('<tr class="timerow" timecount="%d"><td><input type="checkbox" name="delete[%s]" value="1" /></td><td id="time%s"></td><td class="time_allowed_cell"><select class="time_count" name="time_allowed[%d]" id="time_allowed%d">%s</select>%s</td><td class="text_cell">%s</td></tr>',$time_counter,$time_counter,$time_counter,$time_counter ,$time_counter,timeplanner_option ($atts["time_allowed"]),$padding_time_block ,$txt);
 
 return $output;
 }
@@ -9762,7 +7553,7 @@ function agenda_timing () {
 global $wpdb;
 global $time_counter;
 global $timeplanner_total;
-
+global $post;
 if( !isset($_GET["post_id"]))
 {
 $template_options = '';
@@ -9831,27 +7622,46 @@ WHERE meta_key='_sked' AND post_status='publish' AND post_content LIKE '%[toastm
 		echo '</form>';
 return;
 }
+else
+	$post = get_post($_GET["post_id"]);
 
 update_option('agenda_time',1);
 $output = $newoutput = $template_options = '';
-
 if(isset($_GET["post_id"]) && $_GET["post_id"])
 {
 $post_id = (int) $_GET["post_id"];
 global $post;
 $post = get_post($post_id);
+
+// clean up multiline agenda notes
+$r = get_shortcode_regex(array('agenda_note'));
+$post->post_content = preg_replace_callback(
+        "/$r/s",
+        function ($matches) {
+			$clean_content = preg_replace("/[\r\n]+/"," ",trim($matches[5]));
+            return '[agenda_note '.$matches[3].']'.$clean_content.'[/agenda_note]';
+			return preg_replace("/[\r\n]+/"," ",$matches[0]);
+        },
+        $post->post_content
+    );
+
 $time_counter = 1;
 $lines = explode("\n",$post->post_content);
 foreach($lines as $line)
 	{
 		if( isset($_POST["time_allowed"]))
 			{
-			if ((strpos($line,'[toastmaster') === false)  && (strpos($line,'[agenda_note') === false))
+			if(!empty($_POST["delete"][$time_counter]))
+				{
+				$time_counter++;
+				continue;
+				}
+			elseif ((strpos($line,'[toastmaster') === false)  && (strpos($line,'[agenda_note') === false))
 				$newoutput .= "\n".$line;
 			else
 				{
-					$time_allowed = (int) $_POST["time_allowed"][$time_counter];
-					$padding_time = (int) $_POST["padding_time"][$time_counter];
+					$time_allowed = (!empty($_POST["time_allowed"][$time_counter])) ? (int) $_POST["time_allowed"][$time_counter] : 0;
+					$padding_time = (!empty($_POST["padding_time"][$time_counter])) ? (int) $_POST["padding_time"][$time_counter] : 0;
 					if(strpos($line,'padding_time'))
 						$line = preg_replace('/padding_time="(\d+)/','padding_time="'.$padding_time,$line);
 					else
@@ -9870,6 +7680,11 @@ foreach($lines as $line)
 						else
 							$line = str_replace('[agenda_note','[agenda_note time_allowed="'.$time_allowed.'" ',$line);
 						}
+				if(!empty($_POST["change_speaker_count"]) && (strpos($line,'"Speaker"') || strpos($line,'"Evaluator"')))
+					{
+						$newcount = (int) $_POST["change_speaker_count"];
+						$line = preg_replace('/count="(\d+)/','count="'.$newcount,$line);							
+					}
 					$newoutput .= "\n".$line;
 				}
 			}
@@ -9877,7 +7692,7 @@ foreach($lines as $line)
 		$time_counter++;
 	}
 
-$output .= '<tr class="timerow" timecount="'.$time_counter.'"><td id="time'.$time_counter.'"></td><td><input type="hidden" id="time_allowed'.$time_counter.'" value="0" /><input type="hidden" id="padding_time'.$time_counter.'" value="0"></td><td class="text_cell">'.__('Projected End of Meeting','rsvpmaker-for-toastmasters').'</td></tr>';	
+$output .= '<tr class="timerow" timecount="'.$time_counter.'"><td></td><td id="time'.$time_counter.'"></td><td><input type="hidden" id="time_allowed'.$time_counter.'" value="0" /><input type="hidden" id="padding_time'.$time_counter.'" value="0"></td><td class="text_cell">'.__('Projected End of Meeting','rsvpmaker-for-toastmasters').'</td></tr>';	
 
 ?>
 <h1><?php _e("Title",'rsvpmaker-for-toastmasters');?>: <?php echo $post->post_title; ?></h1>
@@ -9951,13 +7766,12 @@ echo '<input type="hidden" id="start_time" value="2017-01-01 '.$sked['hour'].':'
 
 if( isset($_POST["time_allowed"]))
 	{
+	$newoutput = trim(preg_replace("/[\n\r]{3,100}/","\n\n",$newoutput));
 	wp_update_post(array('ID' => $post_id,'post_content' => $newoutput));
 	//echo nl2br($newoutput);
 	printf('<h3>Total Time Allowed: %s</h3>',$timeplanner_total);
-	echo rsvp_template_update_checkboxes($post_id);
-	printf('<p><a href="%s">Revise Timing</a></p>',admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id=').$post_id);
-	printf('<p><a href="%s">Go to Agenda Setup</a></p>',admin_url('edit.php?post_type=rsvpmaker&page=agenda_setup&post_id=').$post_id);
-	printf('<p><a href="%s">View on site</a></p>',get_permalink($post_id));
+	if(!empty($sked["week"]))
+		echo rsvp_template_update_checkboxes($post_id);
 	}
 }
 ?>
@@ -9975,11 +7789,27 @@ vertical-align: top;
 }
 </style>
 <table>
-<tr><th>Elapsed Time</th><th>Time Allowed</th><th>Role/Note</th></tr>
+<tr><th>Delete</th><th>Elapsed Time</th><th>Time Allowed</th><th>Role/Note</th></tr>
 <input type="hidden" name="post_id" value="<?php echo $post_id; ?>" />
-
 <?php
-echo $output . '</table>';
+echo $output;
+global $max_speakers;
+?>
+</table>
+<p>Number of Speakers and Evaluators: <select name="change_speaker_count">
+<option value=""><?php echo $max_speakers; ?> (no change)</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+</select></p>
+<?php
 submit_button();
 ?>
 </form>

@@ -94,6 +94,11 @@ if($_POST)
 	$permalink = get_permalink($post_id);
 	$agenda_link = rsvpmaker_permalink_query($post_id, 'print_agenda=1');
 
+	if(isset($_POST["agenda_time"]))
+		update_option('agenda_time',1);
+	else
+		update_option('agenda_time',0);
+
 printf('<div id="message" class="updated">
 		<p><strong>'.__("Meeting Agenda updated",'rsvpmaker-for-toastmasters').'.</strong> <a href="%s">'.__("View Form",'rsvpmaker-for-toastmasters').'</a> | <a href="%s">'.__("View Agenda",'rsvpmaker-for-toastmasters').'</a></p>
 	</div>',$permalink, $agenda_link);
@@ -121,7 +126,6 @@ $post_id = (int) $_GET["post_id"];
 global $post;
 $post = get_post($post_id);
 global $agenda_setup_item;
-echo admin_link_menu();
 ?>
 <form id="agenda_form" method="post" action = "<?php echo admin_url('edit.php?post_type=rsvpmaker&page=agenda_setup&post_id='.$post_id); ?>">
 <input type="hidden" name="post_id" value="<?php echo $post_id; ?>" />
@@ -151,6 +155,11 @@ echo agenda_sidebar_editor ($post->ID);
 }
 else
 	echo '<p><input type="checkbox" name="enable_sidebar_layout" value="1" /> '.__('Enable agenda layout with sidebar','rsvpmaker-for-toastmasters').'</p>';
+
+$agenda_time = get_option('agenda_time');
+$checked = (($agenda_time == 1) || ($agenda_time == '')) ? ' checked="checked" ' : '';
+
+echo '<p><input type="checkbox" name="agenda_time" value="1" '.$checked.'/> '.__('Show times on agenda','rsvpmaker-for-toastmasters').'</p>';
 
 ?>
 <input type="hidden" id="order" name="order" value="<?php for($i = 0; $i <= $agenda_setup_item; $i++) { if($i > 0) echo ","; echo "item_".$i; } ?>">
