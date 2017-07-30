@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 2.6.1
+Version: 2.6.3
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
@@ -189,6 +189,20 @@ add_action( 'bp_profile_header_meta', 'display_toastmasters_profile' );
 add_action( 'admin_head', 'profile_richtext' );
 
 //add_action( 'wp_ajax_toast_assign', 'ajax_toast_assign' );
+
+function get_member_name($user_id, $credentials = true) {
+	if(!is_numeric($user_id))
+		return $user_id; // guest ?
+	if($user_id == 0)
+		return 'Open';
+	elseif($user_id == -1)
+		return 'Not Available';
+	$member = get_userdata($user_id);
+	$name = $member->first_name.' '.$member->last_name;
+	if($credentials && !empty($member->education_awards))
+		$name .= ', '.$member->education_awards;
+	return $name;
+}
 
 function profile_richtext () {
 if(strpos($_SERVER['REQUEST_URI'],'profile.php') || strpos($_SERVER['REQUEST_URI'],'user-edit.php')) 
@@ -471,6 +485,64 @@ if ($attachments) {
 
 }
 
+function toastmasters_admin_widget () {
+?>
+<p><strong><a class="wp-first-item" href="admin.php?page=toastmasters_screen">Toastmasters</a></strong> - Reports and Tools for Updating Speech and Role Records</p>
+<p><strong><a class="wp-first-item" href="edit.php">Posts</a></strong> - listing of blog posts</p>
+<ul>
+ 	<li><a href="post-new.php">Add New</a> - new blog post (club news or article)</li>
+</ul>
+<?php
+if(current_user_can('edit_others_pages'))
+{
+?>
+<p><strong><a href="edit.php?post_type=page">Pages</a></strong> - pages of your site</p>
+<ul>
+ 	<li><a href="post-new.php?post_type=page">Add New</a> - new page</li>
+</ul>
+<?php
+}
+?>
+<p><strong><a href="edit.php?post_type=rsvpmaker">RSVP Events</a></strong> - list of event posts</p>
+<ul>
+ 	<li><a href="post-new.php?post_type=rsvpmaker">Add New</a> - new event (not from template)</li>
+ 	<li><a href="edit.php?post_type=rsvpmaker&amp;page=rsvpmaker_template_list">Event Templates</a> - list of event templates for meetings</li>
+</ul>
+
+<?php
+if(current_user_can('manage_options'))
+{
+?>
+<p><strong>Appearance</strong></p>
+<ul>
+ 	<li id="menu-posts-rsvpmaker"><a class="hide-if-no-customize" href="customize.php">Customize</a> - tweak website design</li>
+ 	<li><a href="widgets.php">Widgets</a> - add/update sidebar widgets</li>
+ 	<li><a href="nav-menus.php">Menus</a> - update menu of pages, other links</li>
+</ul>
+<?php
+}
+if(current_user_can('add_members'))
+{
+?>
+<p><strong><a href="users.php?page=add_awesome_member">Users</strong> - list users/members</p>
+<ul>
+ 	<li><a href="users.php?page=add_awesome_member">Add Members</a> - create user/member accounts</li>
+</ul>
+<?php
+}
+if(current_user_can('manage_options'))
+{
+?>
+<p><strong>Settings</strong></p>
+<ul>
+ 	<li><a href="options-general.php?page=wp4toastmasters_settings">Toastmasters</a> - set Officers list, agenda options, security for functions such as Edit Signups</li>
+ 	<li><a href="options-general.php?page=rsvpmaker-admin.php">RSVPMaker</a> - options for the calendar and event registration functions</li>
+</ul>
+<?php
+}
+
+}
+
 function awesome_add_dashboard_widgets() {
 wp_add_dashboard_widget('awesome_dashboard_widget', 'WordPress for Toastmasters Dashboard', 'awesome_dashboard_widget_function');
 
@@ -485,7 +557,6 @@ unset($wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins']);
 // (which has our new widget already but at the end)
 
 $normal_dashboard = $wp_meta_boxes['dashboard']['normal']['core'];
-$side_dashboard = $wp_meta_boxes['dashboard']['side']['core'];
 
 // Backup and delete our new dashbaord widget from the end of the array
 
@@ -501,8 +572,17 @@ $sorted_dashboard = array_merge($awesome_widget_backup, $normal_dashboard);
 // Save the sorted array back into the original metaboxes
 
 $wp_meta_boxes['dashboard']['normal']['core'] = $sorted_dashboard;
-//$wp_meta_boxes['dashboard']['side']['core'] = $awesome_widget_backup;
 
+if(current_user_can('edit_others_rsvpmakers') || current_user_can('add_members'))
+	{
+	wp_add_dashboard_widget('toastmasters_admin_widget', 'Club Website Administration', 'toastmasters_admin_widget');
+	$side_dashboard = $wp_meta_boxes['dashboard']['side']['core'];
+	$normal_dashboard = $wp_meta_boxes['dashboard']['normal']['core'];
+	$sidebar_widget_backup = array('toastmasters_admin_widget' =>
+$normal_dashboard['toastmasters_admin_widget']);
+	unset($normal_dashboard['toastmasters_admin_widget']);
+	$wp_meta_boxes['dashboard']['side']['core'] = array_merge($sidebar_widget_backup,$side_dashboard);
+	}
 }
 
 function wp4toast_reminders () {
@@ -1077,29 +1157,31 @@ function toastmaster_short($atts=array(),$content="") {
 				$output .= '<div class="time_message"></div> ';
 				}
 			}
+
+		if(isset($atts["agenda_note"]) && !empty($atts["agenda_note"]) )
+			{
+			$note = $atts["agenda_note"];
+			if(strpos($note,'{Speaker}'))
+				{
+				$speaker_id = get_post_meta($post->ID,'_Speaker_'.$i,true);
+				if(empty($speaker_id))
+					$speaker_name = '?';
+				elseif(is_numeric($speaker_id))
+					{
+					$member = get_userdata( $speaker_id );
+					$speaker_name = $member->first_name.' '.$member->last_name;
+					if(!empty($member->education_awards)) $speaker_name .= ', '.$member->education_awards;
+					}
+				else
+					$speaker_name = $speaker_id.' ('.__('guest','rsvpmaker-for-toastmasters').')';
+				$note = str_replace('{Speaker}',$speaker_name,$note);
+				}
+			$output .=  "<div><em>".$note."</em></div>";
+			}
+
 		if(is_club_member() && !(isset($_GET["edit_roles"]) || isset($_GET["recommend_roles"]) || (isset($_GET["page"]) && ($_GET["page"] == 'toastmasters_reconcile') ) )  ) 
 				$output .= '</form>';
 
-			if(isset($atts["agenda_note"]) && !empty($atts["agenda_note"]) )
-				{
-				$note = $atts["agenda_note"];
-				if(strpos($note,'{Speaker}'))
-					{
-					$speaker_id = get_post_meta($post->ID,'_Speaker_'.$i,true);
-					if(empty($speaker_id))
-						$speaker_name = '?';
-					elseif(is_numeric($speaker_id))
-						{
-						$member = get_userdata( $speaker_id );
-						$speaker_name = $member->first_name.' '.$member->last_name;
-						if(!empty($member->education_awards)) $speaker_name .= ', '.$member->education_awards;
-						}
-					else
-						$speaker_name = $speaker_id.' ('.__('guest','rsvpmaker-for-toastmasters').')';
-					$note = str_replace('{Speaker}',$speaker_name,$note);
-					}
-				$output .=  "<br /><em>".$note."</em>";
-				}
 
 			$output .= '</div></div><!-- end role block -->';			
 			} //end for loop
@@ -1510,7 +1592,7 @@ $comment_content = "<strong>".$current_user->display_name.':</strong> '.$comment
 $stamp = '<small><em>(Posted: '.date('m/d/y H:i').')</em></small>';
 $date = get_rsvp_date($post_id);
 $ts = strtotime($date);
-$comment_content .= ' for '.date('F jS',$ts). ' '.$stamp;
+$comment_content .= ' for '.date('F jS, Y',$ts). ' '.$stamp;
 
 add_post_meta($post_id, '_activity', $comment_content, false);
 
@@ -1584,17 +1666,26 @@ if(isset($_POST["agenda_note"]))
 
 if(isset($_POST["editor_assign"]) )
 	{
+		$edit_log = array();
 		foreach($_POST["editor_assign"] as $role => $user_id)
 		{
+			$timestamp = get_rsvp_date($post_id);
 			$was = get_post_meta($post_id,$role,true);
 			if($was != $user_id)
 				{
 				update_post_meta($post_id,$role,$user_id);
-
 				$actiontext = __("signed up for",'rsvpmaker-for-toastmasters').' '.clean_role($role);
-				if($user_id > 0)
-				do_action('toastmasters_agenda_notification',$post_id,$actiontext,$user_id);
-
+				if(is_numeric($user_id))
+					{
+					if($user_id > 0)
+						{
+						do_action('toastmasters_agenda_notification',$post_id,$actiontext,$user_id);
+						}
+					$log = get_member_name($current_user->ID) .' assigned '.$role.' to '.get_member_name($user_id).' for '.date('F jS, Y',strtotime($timestamp));
+					if($was)
+						$log .= ' (was: '.get_member_name($was).')';
+					$edit_log[] = $log;
+					}
 				if(strpos($role,'peaker') )
 					editor_signup_notification($post_id, $user_id,$role,$_POST["_manual"][$role],$_POST["_project"][$role],$_POST["_title"][$role]);
 				else
@@ -1607,6 +1698,7 @@ if(isset($_POST["editor_assign"]) )
 			delete_post_meta($post_id,'_title'.$role);
 			delete_post_meta($post_id,'_project'.$role);
 			delete_post_meta($post_id,'_maxtime'.$role);
+			delete_post_meta($post_id,'_display_time'.$role);
 			delete_post_meta($post_id,'_intro'.$role);
 			}
 		}
@@ -1615,11 +1707,18 @@ if(isset($_POST["editor_assign"]) )
 		foreach($_POST["edit_guest"] as $role => $guest)
 		{
 			if(!empty($guest))
+				{
 				update_post_meta($post_id,$role,$guest);			
+				$log = get_member_name($current_user->ID) .' assigned '.$role.' to '.$guest.' (guest) for '.date('F jS, Y',strtotime($timestamp));
+				if($was)
+					$log .= ' (was: '.get_member_name($was).')';
+				$edit_log[] = $log;
+				}
 		}
 		
+	if(!empty($edit_log))
+		add_post_meta($post_id,'_activity_editor',implode('<br />',$edit_log));
 	awesome_wall("edited role signups ",$post_id);
-
 	}
 
 if(isset($_POST["_manual"]))
@@ -1866,9 +1965,9 @@ $output = "";
 		$output .= '<div>
 		<input type="hidden" name="post_id" value="'.$post->ID.'" />
 		<select class="speaker_details manual" name="_manual['.$field.']" id="_manual_'.$field.'"">'.get_manuals_options($manual).'</select><br /><select class="speaker_details project" name="_project['.$field.']" id="_project_'.$field.'">'.$project_options.'</select>';
-		$output .= '</div>';
+		$output .= '<div id="_tmsg_'.$field.'"></div></div>';
 		$display_time = get_post_meta($post->ID, '_display_time'.$field,true);
-		$output .= '<div class="time_required">Timing: <input type="text"class="speaker_details '.$maxclass.'" name="_display_time['.$field.']" id="_display_time_'.$field.'" size="10" value="'.$display_time.'">';		
+		$output .= '<div class="time_required">Timing: <input type="text"class="speaker_details" name="_display_time['.$field.']" id="_display_time_'.$field.'" size="10" value="'.$display_time.'">';
 		$output .= ' Maximum Time: <input type="text"class="speaker_details '.$maxclass.'" name="_maxtime['.$field.']" id="_maxtime_'.$field.'" size="4" value="'.$time.'"></div>';
 
 		$title = get_post_meta($post->ID, '_title'.$field, true);
@@ -2592,7 +2691,7 @@ $security = get_tm_security ();
 
 add_submenu_page('edit.php?post_type=rsvpmaker', __("Agenda Setup",'rsvpmaker-for-toastmasters'), __("Agenda Setup",'rsvpmaker-for-toastmasters'), $security['agenda_setup'], "agenda_setup", "agenda_setup");
 
-add_submenu_page('edit.php?post_type=rsvpmaker', __("Agenda Timing",'rsvpmaker-for-toastmasters'), __("Agenda Timing",'rsvpmaker-for-toastmasters'), $security['agenda_setup'], "agenda_timing", "agenda_timing");
+add_submenu_page('edit.php?post_type=rsvpmaker', __("Agenda Timing",'rsvpmaker-for-toastmasters'), __("Agenda Timing",'rsvpmaker-for-toastmasters'), $security['edit_signups'], "agenda_timing", "agenda_timing");
 
 add_submenu_page('profile.php', __("Add Members",'rsvpmaker-for-toastmasters'), __("Add Members",'rsvpmaker-for-toastmasters'), 'edit_others_posts', "add_awesome_member", "add_awesome_member" );
 
@@ -3549,18 +3648,23 @@ else
 	$link .= '<li class="last"><a href="'.$permalink.'assigned_open=1">'.__('Agenda with Contacts','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'intros=show">'.__('Speech Introductions','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
 
+	$template_id = get_post_meta($post->ID,'_meet_recur',true);
+
 	if(current_user_can($security['agenda_setup']))
 		{
-		$template_id = get_post_meta($post->ID,'_meet_recur',true);
-		$agenda_time = get_option('agenda_time');
-		
 		$agenda_menu[__('Agenda Setup','rsvpmaker-for-toastmasters')] = admin_url('post.php?action=edit&post='.$post->ID);
 		if($template_id)
 			$agenda_menu[__('Agenda Setup: Template','rsvpmaker-for-toastmasters')] = admin_url('post.php?action=edit&post='.$template_id);
+		}
+	if(current_user_can($security['edit_signups']))
+		{		
 		$agenda_menu[__('Agenda Timing','rsvpmaker-for-toastmasters')] = admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$post->ID);
-		if($template_id)
+		if($template_id && current_user_can($security['agenda_setup']))
 			$agenda_menu[__('Agenda Timing: Template','rsvpmaker-for-toastmasters')] = admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$template_id);
-		$agenda_menu[__('Agenda Sidebar','rsvpmaker-for-toastmasters')] = $permalink.'edit_sidebar=1';
+		if(current_user_can($security['agenda_setup']))
+			$agenda_menu[__('Agenda Sidebar','rsvpmaker-for-toastmasters')] = $permalink.'edit_sidebar=1';
+		}
+if(!empty($agenda_menu)) {
 		$size = sizeof($agenda_menu);
 		$linkcounter = 1;
 		foreach($agenda_menu as $label => $agenda_link)
@@ -3925,6 +4029,10 @@ if(!empty($title))
 				echo '<p>'.$status.'</p>';
 			printf('<p><a href="%s">%s</a></p>',admin_url('profile.php?page=wp4t_set_status_form&member_id=').$userdata->ID,__('Set Away Message','rsvpmaker-for-toastmasters'));
 			}
+if(!empty($userdata->club_member_since))
+	printf('<div class="club_join_date">%s: %s</div>',__('Joined Club','rsvpmaker-for-toastmasters'),$userdata->club_member_since);
+if(!empty($userdata->original_join_date))
+	printf('<div class="original_join_date">%s: %s</div>',__('Joined Toastmasters','rsvpmaker-for-toastmasters'),$userdata->original_join_date);
 ?>
 </div>
 <?php
@@ -3939,10 +4047,53 @@ global $wpdb;
 global $current_user;
 $blog_id = get_current_blog_id();
 
+if(isset($_POST["correction"]))
+	{
+		foreach($_POST["correction"] as $index => $type)
+			{
+				$user = NULL;
+				if($type == 'new')
+					{
+					if(!empty($_POST["newuser"][$index]))
+					$user = $_POST["newuser"][$index];
+					}
+				else
+					{
+					if(!empty($_POST["existing"][$index]))
+						{
+						$user = array('ID' => $_POST["existing"][$index]);
+						if(!empty($_POST["existingtmid"][$index]))
+							$user['toastmasters_id'] = $_POST["existingtmid"][$index];
+						}
+					}
+			if(!empty($user))
+				$users[] = $user;
+			}
+	if(!empty($users))
+	{
+$member_factory = new Toastmasters_Member();
+foreach($users as $index => $user)
+	{
+		$users[$index] = $member_factory->check($user);
+	}
+foreach($users as $user)
+	{
+	if(!empty($user))
+	$active_ids[] = $member_factory->add($user);
+	//$active_ids[] = add_member_user($user);
+	}
+$member_factory->show_prompts();
+$member_factory->show_confirmations();
+	}
+
+	}
 if(isset($_POST["remove_user"])) {
 	foreach($_POST["remove_user"] as $user_id)
 		{
-		remove_user_from_blog( $user_id, $blog_id );
+		if(function_exists('remove_user_from_blog'))
+			remove_user_from_blog( $user_id, $blog_id ); // multisite
+		else
+			wp_delete_user($user_id);
 		}
 }
 
@@ -3956,9 +4107,6 @@ if(isset($_POST["member_ids"])) {
 }
 
 if(isset($_POST["spreadsheet"])) {
-?>
-<form method="post" action="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">
-<?php
 $active_ids = array();
 $lines = explode("\n", trim($_POST["spreadsheet"]));
 $label = array();
@@ -3991,8 +4139,7 @@ foreach($lines as $linenumber => $line)
 		{
 			$user = name2fields($cells[$label["Name"]]);
 		}
-
-	if($cells[$label["Edu."]])
+	if(!empty($label["Edu."]) && !empty($cells[$label["Edu."]]))
 		$user["education_awards"] = $cells[$label["Edu."]];		
 		
 	if(isset($label["E-mail"]))
@@ -4005,7 +4152,7 @@ foreach($lines as $linenumber => $line)
 	$user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"].$user["last_name"]));
 	$user["nickname"] = $user["display_name"] = $user["first_name"].' '.$user["last_name"];
 
-	if(isset($label["Home Phone"]))
+	if(isset($label["Home Phone"]) && isset($cells[$label["Home Phone"]]))
 		$user["home_phone"] = $cells[$label["Home Phone"]];
 	elseif(isset($label["Home"]))
 		$user["home_phone"] = $cells[$label["Home"]];
@@ -4028,24 +4175,38 @@ foreach($lines as $linenumber => $line)
 		$user["toastmasters_id"] = $cells[$label["Member #"]];
 	elseif(isset($label["Member ID"]))
 		$user["toastmasters_id"] = $cells[$label["Member ID"]];
-	elseif(isset($label["ID"]))
-		$user["toastmasters_id"] = $cells[$label["ID"]];
 	elseif(isset($label["CustomerID"]))
 		$user["toastmasters_id"] = $cells[$label["CustomerID"]];
+	elseif(isset($label["Customer ID"]))
+		$user["toastmasters_id"] = $cells[$label["Customer ID"]];
 	elseif(isset($label["Customer Id"]))
 		$user["toastmasters_id"] = $cells[$label["Customer Id"]];
+	if(!empty($user["toastmasters_id"]))
+		$user["toastmasters_id"] = (int) $user["toastmasters_id"];//get rid of zero padding
+	
+	if(isset($label["Member of Club Since"]))
+		$user["club_member_since"] = $cells[$label["Member of Club Since"]];
+	if(isset($label["Original Join Date"]))
+		$user["original_join_date"] = $cells[$label["Original Join Date"]];
 	
 	$user["user_pass"] = password_hurdle(wp_generate_password());
-	$active_ids[] = add_member_user($user);
+	$users[] = $user;
 	}
 	//break;
 	}
-if(isset($_POST["check_missing"]))
-	no_member_match ($active_ids);
-?>
-<input type="submit"  class="button-primary" value="<?php _e("Submit",'rsvpmaker-for-toastmasters');?>" />
-</form>
-<?php
+
+$member_factory = new Toastmasters_Member();
+foreach($users as $index => $user)
+	{
+		$users[$index] = $member_factory->check($user);
+	}
+foreach($users as $user)
+	{
+	if(!empty($user))
+	$active_ids[] = $member_factory->add($user);
+	}
+$member_factory->show_prompts();
+$member_factory->show_confirmations();
 }
 
 if(isset($_POST["first_name"]) && $_POST["first_name"] && isset($_POST["last_name"]) && $_POST["last_name"])
@@ -4060,22 +4221,13 @@ if(isset($_POST["first_name"]) && $_POST["first_name"] && isset($_POST["last_nam
 		$user["work_phone"] = $_POST["work_phone"];
 		$user["mobile_phone"] = $_POST["mobile_phone"];
 		$user["toastmasters_id"] = (int) $_POST["toastmasters_id"];
-		ob_start();
-		add_member_user($user);
-		$form = ob_get_clean();
-		if( strpos($form,'member_ids') )
-			{
-?>
-<form method="post" action="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">
-<?php
-				echo $form;
-?>
-<input type="submit"  class="button-primary" value="<?php _e("Submit",'rsvpmaker-for-toastmasters');?>" />
-</form>
-<?php
-			}
-		else
-			echo $form;
+
+$member_factory = new Toastmasters_Member();
+$user = $member_factory->check($user);
+if(!empty($user))
+	$member_factory->add($user);
+$member_factory->show_prompts();
+$member_factory->show_confirmations();
 	}
 
 $user_pass_default = password_hurdle(wp_generate_password());
@@ -4186,7 +4338,7 @@ $user["nickname"] = $user["display_name"] = preg_replace($edpattern,'',$name);
 $np = explode(" ",$user["display_name"]);
 $user["last_name"] = array_pop($np);
 $user["first_name"] = implode(" ",$np);
-if($matches[1][0])
+if(!empty($matches[1][0]))
 	$user["education_awards"] = implode(", ",$matches[1]); 
 return $user;
 }
@@ -4198,14 +4350,22 @@ $args = array(
    'meta_value' => $id
 );
 $users = get_users($args);
+if($users)
 return $users[0];
 }
 
-function add_member_user($user, $override_check = false) {
+class Toastmasters_Member  {
 
-	global $wpdb;
-	$blog_id = get_current_blog_id();
-	
+public $prompts;
+public $confirmations;
+public $active_ids;
+public 	$blog_id;
+public $welcome;
+public $prompt_count;
+
+function __construct() {
+$this->prompt_count = 0;
+$this->blog_id = get_current_blog_id();
 	$welcome = '';
 	$w = get_option('wp4toastmasters_welcome_message');
 	if(!empty($w))
@@ -4213,132 +4373,36 @@ function add_member_user($user, $override_check = false) {
 		$p = get_post($w);
 		$welcome = '<h1>'.$p->post_title."</h1>\n\n".wpautop($p->post_content);
 		}
-
-	foreach($user as $name => $value)
-		$user[$name] = trim($value);	
-	if(empty($user["first_name"]) || empty($user["last_name"]))
-		return;
-
-	if(!isset($user["user_login"]) || empty($user["user_login"]) )
-		$user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"].$user["last_name"]));
-	if(empty($user["user_login"]))
-		return;
-
-	if(empty($user["user_email"]))
-		$user["user_email"] = $user["user_login"].'@example.com';
-	if(empty($user["user_pass"]))
-		$user["user_pass"] = wp_generate_password();
-	
-	if(!empty($user["member_id"]))
-		{
-		$member_id = (int) $user["member_id"];
-		$member_exists = get_user($member_id);
-		}
-	else
-	{
-	if(!empty($user["toastmasters_id"]))
-	{
-	$user["toastmasters_id"] = (int) $user["toastmasters_id"]; // get rid of any zero padding
-	$member_exists = get_user_by_tmid($user["toastmasters_id"]);
-	printf('<p>Member found by toastmasters ID: %s %s</p>',$user["first_name"],$user["last_name"]);
 	}
-	
-	if(isset($member_exists->ID) && $member_exists->ID)
+function add ($user) 
+	{
+	$member_id = (!empty($user["ID"])) ? $user["ID"] : 0;			
+	if($member_id)
 		{
-		$member_id = $member_exists->ID;
-		}
-	else
-		{
-		$login_exists = get_user_by('login',$user["user_login"] );
-		$email_exists = get_user_by('email',$user["user_email"] );
-		if( ($login_exists && $email_exists) && ($login_exists->ID == $email_exists->ID) )
+		$name = get_member_name($member_id);
+		$this->active_ids[] = $member_id;
+		if(!is_user_member_of_blog( $member_id, $this->blog_id ) && !user_can($member_id,'manage_options') )
 			{
-				$member_id = $login_exists->ID; // clearly the same person
-			}
-		else
-			{
-				
-			if($login_exists)
-				{
-				$data = get_userdata($login_exists->ID);
-				$seek = true;
-				$i = 1;
-				while($seek)
-					{
-						$newlogin = $user["user_login"] . $i;
-						$i++;
-						if(!get_user_by('login',$newlogin))
-							{
-							$user["user_login"] = $newlogin;
-							$seek = false;
-							}
-					}
-				$possible_match[$data->ID] = sprintf('<option value="%d">%s %s %s</option>',$data->ID,$data->display_name,$data->user_login, $data->user_email);
-				}
-			if($email_exists)
-				{
-				$user["user_email"] = $user["user_login"].'@example.com';
-				$data = get_userdata($email_exists->ID);
-				$possible_match[$data->ID] = sprintf('<option value="%d">%s %s %s</option>',$data->ID,$data->display_name,$data->user_login, $data->user_email);
-				}
-			
-			// anyone have the same last name?
-/*			$args = array( 
-			  'meta_key' =>  'last_name',
-			   'meta_compare' => '=',
-			   'meta_value' => $user["last_name"]
-			);
-			$same_last_name = get_users($args);
-			if($same_last_name && !$override_check)
-			{
-			foreach($same_last_name as $exists)
-				{
-				$data = get_userdata($exists->ID);
-				$possible_match[$data->ID] = sprintf('<option value="%d">%s %s %s</option>',$data->ID,$data->display_name,$data->user_login, $data->user_email);
-				}
-			}
-*/			
-			if(!isset($user["ID"]) && !empty($possible_match))
-				{
-				echo '<h3>'.__('New or existing member?','rsvpmaker-for-toastmasters').'</h3>';
-				echo '<p>'.__('If you match this entry with an existing member, their Toastmasters ID will be added to their record to make this easier to sync next time. If this person is a new member, an account will be created using the information below.','rsvpmaker-for-toastmasters').'</p>';
-				printf('<div><select name="member_ids[%s]"><option value="0">New Member</option>%s</select></div>',$user["user_login"],implode('',$possible_match) );
-				foreach($user as $field => $value)
-					{
-					printf('<div>%s: %s<input type="hidden" name="verify[%s][%s]" value="%s"></div>',$field,stripslashes($value),$user["user_login"],$field,stripslashes($value));
-					if(strpos($value,'@example.com') )
-						echo "<div><em>".__('When no email is supplied, or the same email is in use by another member/user, an example.com fake email address is generated to fill that required field. This is an internet domain reserved for examples and tests.','rsvpmaker-for-toastmasters').'</em></div>';
-					}
-				return;					
-				}
-			}
-		}
-	} // end no member ID submitted
-	
-	//$incpath = trailingslashit(str_replace('content','includes',WP_CONTENT_DIR));
-	//include_once $incpath.'registration.php';	
-
-	if(!is_email($user["user_email"]) && !strpos($user["user_email"],'example.com') )
-		 {
-		echo '<h3 style="color: red;">'.__('Error: invalid email address','rsvpmaker-for-toastmasters').' '.$user["user_email"].'</h3>';
-		 return;
-		 }
-	elseif(!empty($member_id))
-		{
-		if(!is_user_member_of_blog( $member_id, $blog_id ) && !user_can($member_id,'manage_options') )
-			{
-			add_user_to_blog($blog_id, $member_id,'subscriber');
-			echo '<p>'.__('Adding user to this site','rsvpmaker-for-toastmasters').'.</p>';
+			add_user_to_blog($this->blog_id, $member_id,'subscriber');
+			$this->confirmation[] = $name .' '. __('added to this site','rsvpmaker-for-toastmasters');
 			}
 		if(!empty($user["toastmasters_id"]) && !get_user_meta($member_id,'toastmasters_id',true) )
 			{
-			printf('<p>Adding Toastmasters ID for: %s %s</p>',$user["first_name"],$user["last_name"]);			
+			$this->confirmation[] = $name .' '. __('adding Toastmasters ID','rsvpmaker-for-toastmasters');
 			update_user_meta($member_id,"toastmasters_id",$user["toastmasters_id"]);
 			}
 		if(!empty($user["education_awards"]))
 			{
-			printf('<p>Updating educational awards for: %s %s</p>',$user["first_name"],$user["last_name"]);			
-			update_user_meta($member_id,"educational_awards",$user["educational_awards"]);
+			$this->confirmation[] = $name .' '. __('educational awards updated','rsvpmaker-for-toastmasters');
+			update_user_meta($member_id,"education_awards",$user["education_awards"]);
+			}
+		if(!empty($user["club_member_since"]))
+			{
+			update_user_meta($member_id,"club_member_since",$user["club_member_since"]);
+			}
+		if(!empty($user["original_join_date"]))
+			{
+			update_user_meta($member_id,"original_join_date",$user["original_join_date"]);
 			}
 		return $member_id;
 		}
@@ -4346,22 +4410,13 @@ function add_member_user($user, $override_check = false) {
 		{
 		//register user
 		if(isset($user["ID"]))
-			{
-				$former_id = $user["ID"];
-				unset($user["ID"]);
-			}
+			unset($user["ID"]); // if set but empty, discard
 		if($user_id = wp_insert_user($user))
 			{
-			if(isset($former_id))
-				{
-					$wpdb->query('UPDATE '.$wpdb->users.' SET ID='.$former_id.' WHERE ID='.$user_id);
-					$wpdb->query('UPDATE '.$wpdb->usermeta.' SET user_id='.$former_id.' WHERE user_id='.$user_id);
-					$user_id = $former_id;
-				}
+			$this->active_ids[] = $user_id;
     // Generate something random for a password reset key.
     $key = wp_generate_password( 20, false );
  
-    /** This action is documented in wp-login.php */
     do_action( 'retrieve_password_key', $user["user_login"], $key );
  
     // Now insert the key, hashed, into the DB.
@@ -4370,6 +4425,7 @@ function add_member_user($user, $override_check = false) {
         $wp_hasher = new PasswordHash( 8, true );
     }
     $hashed = time() . ':' . $wp_hasher->HashPassword( $key );
+	global $wpdb;
     $wpdb->update( $wpdb->users, array( 'user_activation_key' => $hashed ), array( 'user_login' => $user["user_login"] ) );
     $set_password_msg = __('To set your password, visit the following address:');
     $set_password = site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user["user_login"]), 'login');
@@ -4388,16 +4444,16 @@ function add_member_user($user, $override_check = false) {
 			$admin_email = get_bloginfo('admin_email');
 			$mail["subject"] = 'Welcome to '.get_bloginfo('name');
 			$mail["replyto"] = $admin_email;
-			$mail["html"] = "<html>\n<body>\n".$message.$welcome."\n</body></html>";
+			$mail["html"] = "<html>\n<body>\n".$message.$this->welcome."\n</body></html>";
 			$mail["to"] = $user["user_email"];
 			$mail["cc"] = $admin_email;			
 			$mail["from"] = $admin_email;
 			$mail["fromname"] = get_bloginfo('name');
 			$return = awemailer($mail);
 			if($return === false)
-				echo "<h3>".__('Emailing notifications disabled','rsvpmaker-for-toastmasters')."</h3><pre>".$message."</pre>";			
+				$this->confirmations[] = "<h3>".__('Emailing notifications disabled','rsvpmaker-for-toastmasters')."</h3><pre>".$message."</pre>";			
 			else	
-				echo "<h3>".__('Emailing to','rsvpmaker-for-toastmasters')." ".$user["user_email"]."</h3><pre>".$message."</pre>";
+				$this->confirmations[] = "<h3>".__('Emailing to','rsvpmaker-for-toastmasters')." ".$user["user_email"]."</h3><pre>".$message."</pre>";
 			}
 						
 			}
@@ -4410,25 +4466,195 @@ function add_member_user($user, $override_check = false) {
 		}
 
 return $user_id;
+	}
+function check ($user) 
+	{
+	foreach($user as $name => $value)
+		$user[$name] = trim($value);	
+	if(empty($user["first_name"]) || empty($user["last_name"]))
+		return;
+
+	if(empty($user["user_login"]) )
+		{
+		//assign based on first name or first+last
+		$user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"]));
+		if(get_user_by('login',$user["user_login"] ))
+			$user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"].$user["last_name"]));
+		}
+	if(empty($user["user_login"]))
+		return;
+
+	if(empty($user["user_email"]))
+		$user["user_email"] = $user["user_login"].'@example.com';
+	if(empty($user["user_pass"]))
+		$user["user_pass"] = wp_generate_password();
+	
+	if(!empty($user["member_id"]))
+		{
+		$member_id = (int) $user["member_id"];
+		$member_exists = get_user($member_id);
+		if(!empty($member_exists->ID))
+			{
+			$user["ID"] = $member_exists->ID;
+			return $user;
+			}
+		}
+	else
+	{
+	if(!empty($user["toastmasters_id"]))
+	{
+	$user["toastmasters_id"] = (int) $user["toastmasters_id"]; // get rid of any zero padding
+	$member_exists = get_user_by_tmid($user["toastmasters_id"]);
+	if(!empty($member_exists->ID))
+		{
+		$user["ID"] = $member_exists->ID;
+		$this->confirmations[] = $user["first_name"].' '.$user["last_name"].' recognized by Toastmasters ID'; 
+		return $user;
+		}
+	}
+	$login_exists = get_user_by('login',$user["user_login"] );
+	$email_exists = get_user_by('email',$user["user_email"] );
+	if( ($login_exists && $email_exists) && ($login_exists->ID == $email_exists->ID) )
+		{
+		$user["ID"] = $login_exists->ID;
+		$this->confirmations[] = get_member_name($login_exists->ID).' recognized by name and email';
+		return $user;
+		}
+	elseif($email_exists)
+		{
+			$tmid = get_user_meta($email_exists->ID,'toastmasters_id',true);
+			if(empty($tmid) && !empty($user["toastmasters_id"]))
+				{
+					$user["ID"] = $email_exists->ID;
+					return $user; // right user, no tmid
+				}
+			elseif(!empty($tmid) && !empty($user["toastmasters_id"]) && ($tmid != $user["toastmasters_id"]))
+				{
+					//different person with same email address
+					$user["user_email"] = $user["user_login"].'@example.com';
+					$this->confirmations[] = '<span style="color: red;">'.$user["first_name"].' '.$user["last_name"].' appears to have the same email address as '.get_member_name($email_exists->ID). ': '.$email_exists->user_email. '(set to '.$user["user_email"].' instead to keep records distinct)</span>';
+					return $user;
+				}
+			else
+				{
+				$this->prompts[] = '<span style="color: red;">'.$user["first_name"].' '.$user["last_name"].' appears to have the same email address as '.get_member_name($email_exists->ID). ': '.$email_exists->user_email.' Each user must have a distinct email address.</span><br />'.$this->prompt_fields($user,$email_exists);
+				return;
+				}
+		}
+	elseif($login_exists)
+		{
+		$this->prompts[] = '<span style="color: red;">'.$user["first_name"].' '.$user["last_name"].' cannot have the same username as '.get_member_name($login_exists->ID). ': '.$login_exists->user_email.' Are they the same person?</span><br />'.$this->prompt_fields($user,$login_exists);
+		return;
+		}
+	if(!is_email($user["user_email"]) && !strpos($user["user_email"],'example.com') )
+		 {
+		$this->prompts[] = '<span style="color: red;">'.__('Error: invalid email address','rsvpmaker-for-toastmasters').' '.$user["user_email"].'</span><br />'.$this->prompt_fields($user);
+		 return;
+		 }
+	return $user;
+	}
 }
 
-function no_member_match ($active_ids) {
-global $current_user;
-$active_ids[] = $current_user->ID;
-?>
-<h3><?php _e("No Match",'rsvpmaker-for-toastmasters');?></h3>
-<p><?php _e("The members below don't show up on the current list. Check those who should be deleted.",'rsvpmaker-for-toastmasters');?></p>
-<?php
+function prompt_fields($user, $other_user = NULL) {
+$visible = array('user_login','first_name','last_name','educational_awards','user_email','home_phone','work_phone','mobile_phone');
+$o = sprintf('<input type="radio" name="correction[%d]" value="new" /> Correct and re-submit ',$this->prompt_count);
+foreach($user as $field => $value)
+	{
+		if(!empty($value) && in_array($field,$visible))
+			$o .= sprintf('<br />%s <input type="text" name="newuser[%d][%s]" value="%s" > ',$field,$this->prompt_count,$field,$value);
+		else
+			$o .= sprintf('<input type="hidden" name="newuser[%d][%s]" value="%s" > ',$this->prompt_count,$field,$value);		
+	}
+if(!empty($other_user) && ($user["user_login"] == $other_user->user_login))
+	{
+		$o .= '<br />Suggested alternate logins ';
+		$short = preg_replace('/[^a-z]/','',strtolower($user["first_name"]));
+		$long = $user["user_login"];
+		for($i = 1; $i < 6; $i++)
+			{
+			$test = $short.$i;
+			if(!get_user_by('login',$test))
+				$o .= $test.' ';
+			}
+		for($i = 1; $i < 6; $i++)
+			{
+			$test = $long.$i;
+			if(!get_user_by('login',$test))
+				$o .= $test.' ';
+			}
+	}
+if(!empty($other_user))
+{
+$member = (is_user_member_of_blog($other_user->ID)) ? '' : ' (user account not currently associated with this club website)';
+$o .= sprintf('<br /><input type="radio" name="correction[%d]" value="existing" /> Update existing user <input type="hidden" name="existing[%s]" value="%s" /> %s',$this->prompt_count,$this->prompt_count,$other_user->ID, $member);
+if(!empty($user["toastmasters_id"]))
+$o .= sprintf('<input_type="hidden" name="existingtmid[%s]" value="%s" />',$this->prompt_count,$user["toastmasters_id"]);
+$other_user = get_userdata($other_user->ID);
+$o .= $other_user->first_name.' '.$other_user->last_name.$other_user->user_login.' '.$other_user->user_email;
+if(!empty($other_user->toastmasters_id))
+$o .= ' TMID:'.$other_user->toastmasters_id;
+}
+$this->prompt_count++;
+return $o;
+}
 
+function show_prompts() 
+	{
+$o = '';
+$missing = '';
+if(!empty($this->prompts))
+foreach($this->prompts as $p)
+	$o .= '<p class="prompt">'.$p.'</p>';
+if(!empty($_POST["check_missing"]))
+{
+global $current_user;
+$this->active_ids[] = $current_user->ID;
 $blogusers = get_users('blog_id='.get_current_blog_id() );
     foreach ($blogusers as $user) {		
-	if(!in_array($user->ID, $active_ids) )
+	if(!in_array($user->ID, $this->active_ids) )
 		{
 		if($user->user_login == '0_NOT_AVAILABLE')
 			continue;
 		$userdata = get_userdata($user->ID);
-		printf('<p><input type="checkbox" name="remove_user[%d]" value="%d"> %s (%s) </p>',$user->ID, $user->ID, $userdata->display_name, $userdata->user_login);
+		$missing .= sprintf('<p><input type="checkbox" name="remove_user[%d]" value="%d"> Remove: %s (%s) </p>',$user->ID, $user->ID, $userdata->display_name, $userdata->user_login);
 		}
+	}
+
+if(!empty($missing))
+$o .= '<p>'._e("The members below don't show up on the current list. Check those who should be deleted.",'rsvpmaker-for-toastmasters').'</p>'.$missing;
+}
+if(!empty($o))
+	{
+?>
+<form method="post" action="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">
+<?php
+echo $o;
+?>
+<input type="submit"  class="button-primary" value="<?php _e("Submit Changes",'rsvpmaker-for-toastmasters');?>" />
+</form>
+<?php
+	}
+}
+function show_confirmations()
+	{
+		if(empty($this->confirmations))
+			return;
+		else
+			{
+			foreach($this->confirmations as $conf)
+				echo '<div class="confirmation">'.$conf.'</div>';	
+			}
+	}
+}
+
+function add_member_user($user, $override_check = false) {
+$member_factory = new Toastmasters_Member();
+$user = $member_factory->check($user);
+if(!empty($user))
+	{
+	$member_factory->add($user);
+$member_factory->show_prompts();
+$member_factory->show_confirmations();	
 	}
 }
 
@@ -4443,7 +4669,8 @@ $contactmethods['linkedin_url'] = __("LinkedIn Profile",'rsvpmaker-for-toastmast
 $contactmethods['business_url'] = __("Business Web Address",'rsvpmaker-for-toastmasters');
 $contactmethods['toastmasters_id'] = "Toastmasters ID";
 $contactmethods['education_awards'] = "Educational Awards";
-//$contactmethods['user_email'] = __("Email",'rsvpmaker-for-toastmasters');
+$contactmethods['club_member_since'] = "Joined Club";
+$contactmethods['original_join_date'] = "Joined Toastmasters";
 
   // Remove Yahoo IM
   unset($contactmethods['yim']);
@@ -4459,7 +4686,6 @@ if( is_club_member() )
 else
 	return site_url().'/wp-login.php?redirect_to='.urlencode($link);
 }
-
 
 /**
  * CPEventsWidget Class
@@ -4641,7 +4867,7 @@ return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script
 </script>
 <form id="edit_roles_form" method="post" action="%s"">
 <p><em>'.__("Edit signups and click <b>Save Changes</b> as the bottom of the form.",'rsvpmaker-for-toastmasters').' <a href="%s?edit_roles=1&rm=1">'.__('Show random assignments','rsvpmaker-for-toastmasters').'</a> / <a href="%s">'.__('Return to agenda signup','rsvpmaker-for-toastmasters').'</a></em><p>
-%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>',rsvpmaker_permalink_query($post->ID),rsvpmaker_permalink_query($post->ID),rsvpmaker_permalink_query($post->ID),$content,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ));
+%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="editor_id" value="%d" /><input type="hidden" id="toastcode" value="%s"></form>',rsvpmaker_permalink_query($post->ID),rsvpmaker_permalink_query($post->ID),rsvpmaker_permalink_query($post->ID),$content,$post->ID,$current_user->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ));
 }
 
 function recommend_hash($role, $user) {
@@ -5529,7 +5755,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id());
 	$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE user_id=".$user->ID);
 	if(!$id)
 		$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE sort='".$index."' AND email='".$user->user_email."'");
-	if(!$id && $meta["toastmasters_id"])
+	if(!$id && isset($meta["toastmasters_id"]))
 		$id = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."users_archive WHERE toastmasters_id='".$meta["toastmasters_id"]."'");
 	if($id)
 		{
@@ -5736,7 +5962,7 @@ function toastmasters_css_js() {
 	wp_enqueue_style( 'jquery-ui-sortable' );
 	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.4.3' );
 	wp_enqueue_style('jquery-ui-css', 'http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css');
-	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.4.5');
+	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.4.9');
 	wp_enqueue_script( 'script-toastmasters');
 	$manuals = get_manuals_options();
 	wp_localize_script( 'script-toastmasters', 'manuals_list', $manuals );
@@ -6828,8 +7054,19 @@ printf('<div>%s: <a href="%s">%s</a> | <a href="%s" target="_blank">%s</a></div>
 }
 
 if(isset($_GET["page"]) && ($_GET["page"] == 'agenda_timing') && isset($_GET["post_id"]))
-printf('<div class="notice notice-info"><p>%s: <a href="%s">%s</a> | <a href="%s" target="_blank">%s</a></p></div>',__('Related','rsvpmaker-for-toastmasters'),admin_url('post.php?action=edit&post='.$_GET["post_id"]),__('Edit/Agenda Setup','rsvpmaker-for-toastmasters'),rsvpmaker_permalink_query($_GET["post_id"],'print_agenda=1&no_print=1'),__('Show Times on Agenda','rsvpmaker-for-toastmasters'));
+{
+echo '<div class="notice notice-info"><p>'.__('Related','rsvpmaker-for-toastmasters').': ';
+$template_id = get_post_meta($_GET["post_id"],'_meet_recur',true);	
+if($template_id && current_user_can('agenda_setup'))
+	printf('<a href="%s">%s</a> | ',admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$template_id),__('Agenda Timing: Template','rsvpmaker-for-toastmasters'));
 
+if(current_user_can('agenda_setup'))
+	printf('<a href="%s">%s</a> | ',admin_url('post.php?action=edit&post='.$_GET["post_id"]),__('Edit/Agenda Setup','rsvpmaker-for-toastmasters'));
+
+printf('<a href="%s" target="_blank">%s</a> | ',rsvpmaker_permalink_query($_GET["post_id"],'print_agenda=1&no_print=1'),__('View Agenda','rsvpmaker-for-toastmasters'));
+printf('<a href="%s">%s</a>',get_permalink($_GET["post_id"]),__('View Signup Form','rsvpmaker-for-toastmasters'));
+echo '</div>';
+}
 
 $sync_ok = get_option('wp4toastmasters_enable_sync');
 
@@ -7523,6 +7760,7 @@ function timeplanner($atts, $content) {
 				$speak_count = 0;
 				for($i = 1; $i <= $count; $i++)
 					{
+						if(get_post_meta($post->ID,'_Speaker_'.$i,true))//if speaker assigned
 						$speak_count += (int) get_post_meta($post->ID,'_maxtime_Speaker_'.$i,true);
 					}
 			if($speak_count)
@@ -7554,6 +7792,7 @@ global $wpdb;
 global $time_counter;
 global $timeplanner_total;
 global $post;
+fix_timezone();
 if( !isset($_GET["post_id"]))
 {
 $template_options = '';
@@ -7660,10 +7899,11 @@ foreach($lines as $line)
 				$newoutput .= "\n".$line;
 			else
 				{
+
 					$time_allowed = (!empty($_POST["time_allowed"][$time_counter])) ? (int) $_POST["time_allowed"][$time_counter] : 0;
 					$padding_time = (!empty($_POST["padding_time"][$time_counter])) ? (int) $_POST["padding_time"][$time_counter] : 0;
 					if(strpos($line,'padding_time'))
-						$line = preg_replace('/padding_time="(\d+)/','padding_time="'.$padding_time,$line);
+						$line = preg_replace('/padding_time="(\d{0,3})/','padding_time="'.$padding_time,$line);
 					else
 						{
 						if(isset($atts['role']))
@@ -7672,7 +7912,7 @@ foreach($lines as $line)
 							$line = str_replace('[agenda_note','[agenda_note padding_time="'.$padding_time.'" ',$line);
 						}
 					if(strpos($line,'time_allowed'))
-						$line = preg_replace('/time_allowed="(\d+)/','time_allowed="'.$time_allowed,$line);
+						$line = preg_replace('/time_allowed="(\d{0,3})/','time_allowed="'.$time_allowed,$line);
 					else
 						{
 						if(isset($atts['role']))
@@ -7683,11 +7923,14 @@ foreach($lines as $line)
 				if(!empty($_POST["change_speaker_count"]) && (strpos($line,'"Speaker"') || strpos($line,'"Evaluator"')))
 					{
 						$newcount = (int) $_POST["change_speaker_count"];
-						$line = preg_replace('/count="(\d+)/','count="'.$newcount,$line);							
+						$line = preg_replace('/count="(\d{0,3})/','count="'.$newcount,$line);							
 					}
 					$newoutput .= "\n".$line;
 				}
 			}
+
+		if ((strpos($line,'[toastmaster') === false)  && (strpos($line,'[agenda_note') === false))
+			continue; // ignore non shortcode content on form
 		$output .= "\n".do_shortcode($line);
 		$time_counter++;
 	}
@@ -7824,19 +8067,20 @@ var agenda_add_minutes =  function (dt, minutes) {
 
 var agenda_time_tally =  function () {
 	time_tally = new Date($('#start_time').val());//start time
-    $('.timerow').each(function() {
+    $('.timerow').each(function(index) {
      var count = $(this).attr('timecount');
 	  	var hour = time_tally.getHours();
 		var minute = time_tally.getMinutes();
 		hour = (hour >= 12)? hour - 12: hour;
 		if(minute < 10)
 		minute = '0' + minute;
+	$('#time' + count).fadeTo( "fast", 0.1 );
 	$('#time' + count).html(hour + ":" + minute);
+	$('#time' + count).delay(index*50).fadeTo( "fast", 1.0 );
 	var tallyadd = 0;
 	tallyadd += Number($('#time_allowed' + count).val());
 	tallyadd += Number($('#padding_time' + count).val());
     time_tally = agenda_add_minutes(time_tally,tallyadd);
-	
 	});
 }
 
@@ -8787,8 +9031,6 @@ $blog_id = get_current_blog_id();
 
 if(isset($_POST["add"]))
 {
-	print_r($_POST["add"]);
-		
 	foreach($_POST["add"] as $index => $check)
 	{
 		$user["first_name"] = $_POST["first_name"][$index];		

@@ -56,11 +56,15 @@ menu.on('click', '#responsive-tab', function(){
 	
 	if((time_limit != 0) && (sum > time_limit) )
 		{
-		$('.time_message').html('Time reserved (all speakers): ' + sum + ' minutes <span style="color:red;">(limit:' + time_limit + ')</span>');
+		$('.time_message').html('Time reserved, all speakers: ' + sum + ' minutes <span style="color:red;">(limit:' + time_limit + ')</span>');
+		}
+	else if((time_limit != 0) && (sum > 0))
+		{
+		$('.time_message').html('Time reserved, all speakers: '+sum+' minutes (limit:' + time_limit + ').');
 		}
 	else if(sum > 0)
 		{
-		$('.time_message').html('Time reserved (all speakers): '+sum+' minutes.');
+		$('.time_message').html('Time reserved, all speakers: '+sum+' minutes.');
 		}
 
 // delegation code? $('.role_data').on('change', '.manual', function(){
@@ -74,12 +78,14 @@ $('.editor_assign').on('change', function(){
 	$('#title_text'+role).val('');
 	$('#_intro_'+role).val('');
 	var post_id = $('#post_id').val();
+	var editor_id = $('#editor_id').val();
 	if(security && (post_id > 0))
 	{
 		var data = {
 			'action': 'editor_assign',
 			'role': role,
 			'user_id': user_id,
+			'editor_id': editor_id,
 			'security': security,
 			'post_id': post_id
 		};
@@ -102,6 +108,7 @@ $('.project').on('change', function(){
 	var project = this.value;
 	var time_id = this.id.replace('project','maxtime');
 	var display_time_id = this.id.replace('project','display_time');
+	var time_msg_id = this.id.replace('project','tmsg');
 	var time = project_times[project];
 	var display_time = display_times[project];
 	$('#'+time_id).val(time);
@@ -117,12 +124,19 @@ $('.project').on('change', function(){
 	
 	if((time_limit != 0) && (sum > time_limit) )
 		{
-		alert('This choice would push the time requirement for speeches to ' + sum + ' minutes (normal limit:' + time_limit + ').\n\nYou may need to speak to club and meeting organizers about adjusting the agenda.\n\nYou can also manually adjust the Time Required field if you do not need the maximum time specified by the manual.');
-		$('.time_message').html('Time reserved (all speakers): ' + sum + ' minutes <span style="color: red;">(limit:' + time_limit + ')</span>');
+		$('#' + time_msg_id).html('<span style="color:red">This choice would push the total time required for speeches over the limit set for the agenda (' + time_limit + ' minutes). You may need to speak to club and meeting organizers about adjusting the agenda. You can also manually adjust the Time Required field if you do not need the maximum time specified by the manual.</span>');
+		$('.time_message').html('Time reserved, all speakers: ' + sum + ' minutes <span style="color: red;">(limit:' + time_limit + ')</span>.');
+		}
+	else if((time_limit != 0) && (sum > 0))
+		{
+		$('.time_message').html('Time reserved, all speakers: '+sum+' minutes (limit:' + time_limit + ').');
+		$('#' + time_msg_id).html('');
 		}
 	else if(sum > 0)
-		$('.time_message').html('Time reserved (all speakers): '+sum+' minutes.');
-
+		{
+		$('.time_message').html('Time reserved, all speakers: '+sum+' minutes.');
+		$('#' + time_msg_id).html('');
+		}
 });
 
 $('.moremeetings').hide();

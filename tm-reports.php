@@ -2935,7 +2935,7 @@ $hook = tm_admin_page_top(__('Activity Log','rsvpmaker-for-toastmasters'));
 	else
 		$filterSQL =  "";
 	
-	$activity_sql = "SELECT meta_value from $wpdb->postmeta WHERE meta_key='_activity' $filterSQL ORDER BY meta_id DESC LIMIT 0,1000";
+	$activity_sql = "SELECT meta_value from $wpdb->postmeta WHERE (meta_key='_activity' OR meta_key='_activity_editor') $filterSQL ORDER BY meta_id DESC LIMIT 0,1000";
 	$log = $wpdb->get_results($activity_sql);
 	$output = '';
 	foreach($log as $row)
@@ -3227,9 +3227,8 @@ tm_admin_page_bottom($hook);
 }
 
 function tm_welcome_screen_assets( $hook ) {
-
-  if( strpos($hook,'toastmasters') !== false ) {
-    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css' );
+  if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) {
+    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.1 );
     wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.4', true );
   }
 }
@@ -3979,7 +3978,9 @@ global $wpdb;
 $post_id = (int) $_POST["post_id"];
 $user_id = (int) $_POST["user_id"];
 $role = $_POST["role"];
+$editor_id = (int) $_POST["editor_id"];
 $timestamp = get_rsvp_date($post_id);
+$was = get_post_meta($post_id,$role,true);
 update_post_meta($post_id,$role,$user_id);
 if(strpos($role,'Speaker'))
 	{
@@ -4007,6 +4008,12 @@ $name = $userdata->first_name.' '.$userdata->last_name;
 else
 	$name = 'Open';
 printf('%s assigned to %s',preg_replace('/[\_0-9]/',' ',$role),$name);
+$log = get_member_name($editor_id) .' assigned '.clean_role($role).' to '.get_member_name($user_id).' for '.date('F jS, Y',strtotime($timestamp));
+if($was)
+	$log .= ' (was: '.get_member_name($was).')';
+$log .= ' <small><em>(Posted: '.date('m/d/y H:i').')</em></small>';
+
+add_post_meta($post_id,'_activity_editor', $log );
 wp_die();
 }
 
