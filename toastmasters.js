@@ -92,7 +92,6 @@ $('.editor_assign').on('change', function(){
 		jQuery.post(ajaxurl, data, function(response) {
 		$('#status'+role).html(response);
 		$('#status'+role).fadeIn(200);
-		//$('#status'+role).fadeOut(1200);
 		});
 	}
 });

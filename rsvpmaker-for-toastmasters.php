@@ -133,7 +133,6 @@ tm_security_setup ($check = true)
 tm_security_caps ()
 bp_toastmasters($post_id,$actiontext,$user_id)
 display_toastmasters_profile()
-ajax_toast_assign()
 */
 
 add_filter( 'login_message', 'wp4toast_login_message' );
@@ -187,8 +186,6 @@ add_action('toastmasters_agenda_notification','bp_toastmasters', 10, 3);
 add_action('toastmasters_agenda_notification','wp4t_intro_notification', 10, 5);
 add_action( 'bp_profile_header_meta', 'display_toastmasters_profile' );
 add_action( 'admin_head', 'profile_richtext' );
-
-//add_action( 'wp_ajax_toast_assign', 'ajax_toast_assign' );
 
 function get_member_name($user_id, $credentials = true) {
 	if(!is_numeric($user_id))
@@ -287,6 +284,10 @@ function awesome_dashboard_widget_function() {
 
 global $current_user;
 global $wpdb;
+$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
+$wp4toastmasters_member_message = get_option('wp4toastmasters_member_message');
+if(!empty($wp4toastmasters_member_message))
+	$wp4toastmasters_member_message = wpautop($wp4toastmasters_member_message);
 
 ?>
 <p><?php echo sprintf(__('You are viewing the private members-only area of the website. For a basic orientation, see the <a href="%s">welcome page</a>.','rsvpmaker-for-toastmasters'),admin_url('index.php?page=toastmasters_welcome') ); ?>
@@ -328,22 +329,23 @@ if(function_exists('bp_core_get_userlink'))
 						if($index == 0)
 						printf('<tr><td>&nbsp;</td><td> <a target="_blank" href="%sprint_agenda=1">'.__('Print Agenda','rsvpmaker-for-toastmasters').'</a> | <a target="_blank" href="%sprint_agenda=1&word_agenda=1">'.__('Download to Word','rsvpmaker-for-toastmasters').'</a></td></tr>', $permalink,$permalink);
 					}
-				}
-			  if(!empty($upcoming_roles))
-			  	{
-					printf('<h3>%s</h3>
-%s',__('Upcoming Roles','rsvpmaker-for-toastmasters'),$upcoming_roles);					
-				}
-			  
+				}			  
 			  }
-
-$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
-$wp4toastmasters_member_message = get_option('wp4toastmasters_member_message');
-if(!empty($wp4toastmasters_member_message))
-	$wp4toastmasters_member_message = wpautop($wp4toastmasters_member_message);
 
 ?>
 </table>
+<?php
+
+$link = get_rsvpmaker_archive_link();
+printf('<p><a href="%s">%s</a></p>',$link,__('View future events'));
+
+if(!empty($upcoming_roles))
+{
+	printf('<h3>%s</h3>
+%s',__('Upcoming Roles','rsvpmaker-for-toastmasters'),$upcoming_roles);					
+}
+
+?>
 <p><a href="<?php echo site_url('/?signup2=1'); ?>" target="_blank"><?php _e("Print Signup Sheet",'rsvpmaker-for-toastmasters');?></a>
 <br /></p>
 <p><a href="./profile.php#user_login"><?php _e("Edit My Member Profile",'rsvpmaker-for-toastmasters');?></a>
@@ -1649,6 +1651,7 @@ if(isset($_POST["take_role"]) || isset($_POST["update_speaker_details"]))
 			delete_post_meta($post_id,'_title'.$role);
 			delete_post_meta($post_id,'_project'.$role);
 			delete_post_meta($post_id,'_maxtime'.$role);
+			delete_post_meta($post_id,'_display_time'.$role);
 			delete_post_meta($post_id,'_intro'.$role);
 			}
 	}
@@ -1757,6 +1760,7 @@ if(isset($_POST["_manual"]))
 				update_post_meta($post_id,'_maxtime'.$basefield,$time);
 			if(isset($_POST["_intro"][$basefield]))
 				update_post_meta($post_id,'_intro'.$basefield,$intro);
+			do_action('save_speaker_extra',$post_id,$basefield);
 			}
 	}
 
@@ -1893,10 +1897,10 @@ function speaker_details_agenda ($field) {
 	    }
 	else
 	    {
-            $output = ($manual && !strpos($manual,'Manual /') ) ? '<div id="manual"><strong>'.$manual."</strong></div>" : "\n";
+            $output = ($manual && !strpos($manual,'Manual /') ) ? '<div class="manual"><strong>'.$manual."</strong></div>" : "\n";
             $output = "\n".'<div class="speaker-details">'.$output.'</div>'."\n";
 	    }
-	return $output;
+	return apply_filters('speaker_details_agenda',$output,$field);
 }
 
 function speaker_details ($field, $assigned = 0, $atts) {
@@ -1974,7 +1978,8 @@ $output = "";
 		$output .= '<div class="speech_title">Title: <input type="text" class="speaker_details title_text" id="title_text'.$field.'" name="_title['.$field.']" value="'.$title.'" /></div>';
 		$intro = get_post_meta($post->ID, '_intro'.$field, true);
 		$output .= '<div class="speaker_introduction">Introduction: <br /><textarea class="intro_'.$field.'" name="_intro['.$field.']" id="_intro_'.$field.'" style="width: 100%; height: 4em;">'.$intro.'</textarea></div>';
-		
+		$output = apply_filters('speaker_form_extra',$output,$field);	
+
 return $output;
 }
 
@@ -2016,126 +2021,6 @@ $output = "";
 return $output;
 }
 
-//obsolete
-/*
-function get_toast_speech_options() {
-
-return '<option value="Choose Manual / Speech">Choose Manual / Speech</option>
-<option value="COMPETENT COMMUNICATION (CC) MANUAL: The Ice Breaker (4 to 6 min)">COMPETENT COMMUNICATION (CC) MANUAL: The Ice Breaker (4 to 6 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Organize Your Speech (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: Organize Your Speech (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Get to the Point (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: Get to the Point (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: How to Say It (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: How to Say It (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Your Body Speaks (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: Your Body Speaks (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Vocal Variety (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: Vocal Variety (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Research Your Topic (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: Research Your Topic (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Get Comfortable with Visual Aids (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: Get Comfortable with Visual Aids (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Persuade with Power (5 to 7 min)">COMPETENT COMMUNICATION (CC) MANUAL: Persuade with Power (5 to 7 min)
-</option><option value="COMPETENT COMMUNICATION (CC) MANUAL: Inspire Your Audience (8 to 10 min)">COMPETENT COMMUNICATION (CC) MANUAL: Inspire Your Audience (8 to 10 min)
-</option><option value="COMMUNICATING ON VIDEO: Straight Talk (3 min)">COMMUNICATING ON VIDEO: Straight Talk (3 min)
-</option><option value="COMMUNICATING ON VIDEO: The Talk Show (10 min)">COMMUNICATING ON VIDEO: The Talk Show (10 min)
-</option><option value="COMMUNICATING ON VIDEO: When You&#39;re the Host (10 min)">COMMUNICATING ON VIDEO: When You Are the Host (10 min)
-</option><option value="COMMUNICATING ON VIDEO: The Press Conference (4 to 6 min presentation; 8 to 10 min with Q&amp;A)">COMMUNICATING ON VIDEO: The Press Conference (4 to 6 min presentation; 8 to 10 min with Q&amp;A)
-</option><option value="COMMUNICATING ON VIDEO: Training On video (5 to 7 min; 5 to 7 min video tape playback)">COMMUNICATING ON VIDEO: Training On video (5 to 7 min; 5 to 7 min video tape playback)
-</option><option value="FACILITATING DISCUSSION: The Panel Moderator (20 to 30 min)">FACILITATING DISCUSSION: The Panel Moderator (20 to 30 min)
-</option><option value="FACILITATING DISCUSSION: The Brainstorming Session (20 to 30 min)">FACILITATING DISCUSSION: The Brainstorming Session (20 to 30 min)
-</option><option value="FACILITATING DISCUSSION: The Problem-Solving Session (30 to 40 min)">FACILITATING DISCUSSION: The Problem-Solving Session (30 to 40 min)
-</option><option value="FACILITATING DISCUSSION: Handling Challenging Situations (Role Playing) (20 to 30 min)">FACILITATING DISCUSSION: Handling Challenging Situations (Role Playing) (20 to 30 min)
-</option><option value="FACILITATING DISCUSSION: Reaching A Consensus (30 to 40 min)">FACILITATING DISCUSSION: Reaching A Consensus (30 to 40 min)
-</option><option value="HIGH PERFORMANCE LEADERSHIP: Vision (5 to 7 min)">HIGH PERFORMANCE LEADERSHIP: Vision (5 to 7 min)
-</option><option value="HIGH PERFORMANCE LEADERSHIP: Learning (5 to 7 min)">HIGH PERFORMANCE LEADERSHIP: Learning (5 to 7 min)
-</option><option value="HUMOROUSLY SPEAKING: Warm Up Your Audience (5 to 7 min)">HUMOROUSLY SPEAKING: Warm Up Your Audience (5 to 7 min)
-</option><option value="HUMOROUSLY SPEAKING: Leave Them With A Smile (5 to 7 min)">HUMOROUSLY SPEAKING: Leave Them With A Smile (5 to 7 min)
-</option><option value="HUMOROUSLY SPEAKING: Make Them Laugh (5 to 7 min)">HUMOROUSLY SPEAKING: Make Them Laugh (5 to 7 min)
-</option><option value="HUMOROUSLY SPEAKING: Keep Them Laughing (5 to 7 min)">HUMOROUSLY SPEAKING: Keep Them Laughing (5 to 7 min)
-</option><option value="HUMOROUSLY SPEAKING: The Humorous Speech (5 to 7 min)">HUMOROUSLY SPEAKING: The Humorous Speech (5 to 7 min)
-</option><option value="INTERPERSONAL COMMUNICATIONS: Conversing with Ease (10 to 14 min)">INTERPERSONAL COMMUNICATIONS: Conversing with Ease (10 to 14 min)
-</option><option value="INTERPERSONAL COMMUNICATIONS: The Successful Negotiator (10 to 14 min)">INTERPERSONAL COMMUNICATIONS: The Successful Negotiator (10 to 14 min)
-</option><option value="INTERPERSONAL COMMUNICATIONS: Diffusing Verbal Criticism (10 to 14 min)">INTERPERSONAL COMMUNICATIONS: Diffusing Verbal Criticism (10 to 14 min)
-</option><option value="INTERPERSONAL COMMUNICATIONS: The Coach (10 to 14 min)">INTERPERSONAL COMMUNICATIONS: The Coach (10 to 14 min)
-</option><option value="INTERPERSONAL COMMUNICATIONS: Asserting Yourself Effectively (10 to 14 min)">INTERPERSONAL COMMUNICATIONS: Asserting Yourself Effectively (10 to 14 min)
-</option><option value="INTERPRETIVE READING: Read A Story (8 to 10 min)">INTERPRETIVE READING: Read A Story (8 to 10 min)
-</option><option value="INTERPRETIVE READING: Interpreting Poetry (6 to 8 min)">INTERPRETIVE READING: Interpreting Poetry (6 to 8 min)
-</option><option value="INTERPRETIVE READING: The Monodrama (5 to 7 min)">INTERPRETIVE READING: The Monodrama (5 to 7 min)
-</option><option value="INTERPRETIVE READING: The Play (12 to 15 min)">INTERPRETIVE READING: The Play (12 to 15 min)
-</option><option value="INTERPRETIVE READING: The Oratorical Speech (10 to 12 min)">INTERPRETIVE READING: The Oratorical Speech (10 to 12 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (3 to 5 min)">Other Manual or Non Manual Speech: Custom Speech (3 to 5 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (5 to 7 min)">Other Manual or Non Manual Speech: Custom Speech (5 to 7 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (8 to 10 min)">Other Manual or Non Manual Speech: Custom Speech (8 to 10 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (10 to 12 min)">Other Manual or Non Manual Speech: Custom Speech (10 to 12 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (13 to 15 min)">Other Manual or Non Manual Speech: Custom Speech (13 to 15 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (18 to 20 min)">Other Manual or Non Manual Speech: Custom Speech (18 to 20 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (23 to 25 min)">Other Manual or Non Manual Speech: Custom Speech (23 to 25 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (28 to 30 min)">Other Manual or Non Manual Speech: Custom Speech (28 to 30 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (35 to 40 min)">Other Manual or Non Manual Speech: Custom Speech (35 to 40 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (40 to 45 min)">Other Manual or Non Manual Speech: Custom Speech (40 to 45 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (45 to 50 min)">Other Manual or Non Manual Speech: Custom Speech (45 to 50 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (55 to 60 min)">Other Manual or Non Manual Speech: Custom Speech (55 to 60 min)
-</option><option value="Other Manual or Non Manual Speech: Custom Speech (more than an hour)">Other Manual or Non Manual Speech: Custom Speech (more than an hour)
-</option><option value="PERSUASIVE SPEAKING: The Effective Salesperson (3 to 4 min speech; 2 min intro; 3 to 5 min role play)">PERSUASIVE SPEAKING: The Effective Salesperson (3 to 4 min speech; 2 min intro; 3 to 5 min role play)
-</option><option value="PERSUASIVE SPEAKING: Conquering the cold call(3 to 4 min speech;2 min intro, 5 to 7 min role play; 2 to 3 min discussion)">PERSUASIVE SPEAKING: Conquering the "Cold Call" (3 to 4 min speech;2 min intro, 5 to 7 min role play; 2 to 3 min discussion)
-</option><option value="PERSUASIVE SPEAKING: The Winning Proposal (5 to 7 min)">PERSUASIVE SPEAKING: The Winning Proposal (5 to 7 min)
-</option><option value="PERSUASIVE SPEAKING: Addressing the Opposition (7 to 9 min speech; 2 to 3 min Q&amp;A)">PERSUASIVE SPEAKING: Addressing the Opposition (7 to 9 min speech; 2 to 3 min Q&amp;A)
-</option><option value="PERSUASIVE SPEAKING: The Persuasive Leader (6 to 8 min)">PERSUASIVE SPEAKING: The Persuasive Leader (6 to 8 min)
-</option><option value="PUBLIC RELATIONS: The Persuasive Approach (8 to 10 min)">PUBLIC RELATIONS: The Persuasive Approach (8 to 10 min)
-</option><option value="PUBLIC RELATIONS: Speaking Under Fire (6 to 8 min, 8 to 10 min with Q&amp;A)">PUBLIC RELATIONS: Speaking Under Fire (6 to 8 min, 8 to 10 min with Q&amp;A)
-</option><option value="PUBLIC RELATIONS: The Goodwill Speech (5 to 7 min)">PUBLIC RELATIONS: The Goodwill Speech (5 to 7 min)
-</option><option value="PUBLIC RELATIONS: The Radio Talk Show (8 to 10 min)">PUBLIC RELATIONS: The Radio Talk Show (8 to 10 min)
-</option><option value="PUBLIC RELATIONS: The Crisis Management Speech (8 to 10 min, plus 30 seconds wth Q&amp;A)">PUBLIC RELATIONS: The Crisis Management Speech (8 to 10 min, plus 30 seconds wth Q&amp;A)
-</option><option value="SPEAKING TO INFORM: The Speech to Inform (5 to 7 min)">SPEAKING TO INFORM: The Speech to Inform (5 to 7 min)
-</option><option value="SPEAKING TO INFORM: Resources for Informing (8 to 10 min)">SPEAKING TO INFORM: Resources for Informing (8 to 10 min)
-</option><option value="SPEAKING TO INFORM: The Demonstration Talk (10 to 12 min)">SPEAKING TO INFORM: The Demonstration Talk (10 to 12 min)
-</option><option value="SPEAKING TO INFORM: A Fact-Finding Report (10 to 12 min)">SPEAKING TO INFORM: A Fact-Finding Report (10 to 12 min)
-</option><option value="SPEAKING TO INFORM: The Abstract Concept (10 to 12 min)">SPEAKING TO INFORM: The Abstract Concept (10 to 12 min)
-</option><option value="SPECIAL OCCASION SPEECHES: Mastering the Toast (2 to 3 min)">SPECIAL OCCASION SPEECHES: Mastering the Toast (2 to 3 min)
-</option><option value="SPECIAL OCCASION SPEECHES: Speaking in Praise (5 to 7 min)">SPECIAL OCCASION SPEECHES: Speaking in Praise (5 to 7 min)
-</option><option value="SPECIAL OCCASION SPEECHES: The Roast (3 to 5 min)">SPECIAL OCCASION SPEECHES: The Roast (3 to 5 min)
-</option><option value="SPECIAL OCCASION SPEECHES: Presenting an Award (3 to 4 min)">SPECIAL OCCASION SPEECHES: Presenting an Award (3 to 4 min)
-</option><option value="SPECIAL OCCASION SPEECHES: Accepting an Award (5 to 7 min)">SPECIAL OCCASION SPEECHES: Accepting an Award (5 to 7 min)
-</option><option value="SPECIALTY SPEECHES: Speak Off The Cuff (5 to 7 min)">SPECIALTY SPEECHES: Speak Off The Cuff (5 to 7 min)
-</option><option value="SPECIALTY SPEECHES: Uplift the Spirit (8 to 10 min)">SPECIALTY SPEECHES: Uplift the Spirit (8 to 10 min)
-</option><option value="SPECIALTY SPEECHES: Sell a Product (10 to 12 min)">SPECIALTY SPEECHES: Sell a Product (10 to 12 min)
-</option><option value="SPECIALTY SPEECHES: Read Out Loud (12 to 15 min)">SPECIALTY SPEECHES: Read Out Loud (12 to 15 min)
-</option><option value="SPECIALTY SPEECHES: Introduce the Speaker (duration of a club meeting)">SPECIALTY SPEECHES: Introduce the Speaker (duration of a club meeting)
-</option><option value="SPEECHES BY MANAGEMENT: The Briefing (8 to 10 min; plus 5 min with Q&amp;A)">SPEECHES BY MANAGEMENT: The Briefing (8 to 10 min; plus 5 min with Q&amp;A)
-</option><option value="SPEECHES BY MANAGEMENT: The Technical Speech (8 to 10 min)">SPEECHES BY MANAGEMENT: The Technical Speech (8 to 10 min)
-</option><option value="SPEECHES BY MANAGEMENT: Manage And Motivate (10 to 12 min)">SPEECHES BY MANAGEMENT: Manage And Motivate (10 to 12 min)
-</option><option value="SPEECHES BY MANAGEMENT: The Status Report (10 to 12 min)">SPEECHES BY MANAGEMENT: The Status Report (10 to 12 min)
-</option><option value="SPEECHES BY MANAGEMENT: Confrontation: The Adversary Relationship (5 min speech; plus 10 min with Q&amp;A)">SPEECHES BY MANAGEMENT: Confrontation: The Adversary Relationship (5 min speech; plus 10 min with Q&amp;A)
-</option><option value="STORYTELLING: The Folk Tale (7 to 9 min)">STORYTELLING: The Folk Tale (7 to 9 min)
-</option><option value="STORYTELLING: Let&#39;s Get Personal (6 to 8 min)">STORYTELLING: Let&rsquo;s Get Personal (6 to 8 min)
-</option><option value="STORYTELLING: The Moral of the Story (4 to 6 min)">STORYTELLING: The Moral of the Story (4 to 6 min)
-</option><option value="STORYTELLING: The Touching Story (6 to 8 min)">STORYTELLING: The Touching Story (6 to 8 min)
-</option><option value="STORYTELLING: Bringing History to Life (7 to 9 min)">STORYTELLING: Bringing History to Life (7 to 9 min)
-</option><option value="TECHNICAL PRESENTATIONS: The Technical Briefing (8 to 10 min)">TECHNICAL PRESENTATIONS: The Technical Briefing (8 to 10 min)
-</option><option value="TECHNICAL PRESENTATIONS: The Proposal (8 to 10 min; 3 to 5 min with Q&amp;A)">TECHNICAL PRESENTATIONS: The Proposal (8 to 10 min; 3 to 5 min with Q&amp;A)
-</option><option value="TECHNICAL PRESENTATIONS: The Nontechnical Audience (10 to 12 min)">TECHNICAL PRESENTATIONS: The Nontechnical Audience (10 to 12 min)
-</option><option value="TECHNICAL PRESENTATIONS: Presenting a Technical Paper (10 to 12 min)">TECHNICAL PRESENTATIONS: Presenting a Technical Paper (10 to 12 min)
-</option><option value="TECHNICAL PRESENTATIONS: Enhancing A Technical Talk With The Internet (12 to 15 min)">TECHNICAL PRESENTATIONS: Enhancing A Technical Talk With The Internet (12 to 15 min)
-</option><option value="THE DISCUSSION LEADER: The Seminar Solution (20 to 30 min)">THE DISCUSSION LEADER: The Seminar Solution (20 to 30 min)
-</option><option value="THE DISCUSSION LEADER: The Round Robin (20 to 30 min)">THE DISCUSSION LEADER: The Round Robin (20 to 30 min)
-</option><option value="THE DISCUSSION LEADER: Pilot a Panel (30 to 40 min)">THE DISCUSSION LEADER: Pilot a Panel (30 to 40 min)
-</option><option value="THE DISCUSSION LEADER: Make Believe (Role Playing) (20 to 30 min)">THE DISCUSSION LEADER: Make Believe (Role Playing) (20 to 30 min)
-</option><option value="THE DISCUSSION LEADER: The Workshop Leader (30 to 40 min)">THE DISCUSSION LEADER: The Workshop Leader (30 to 40 min)
-</option><option value="THE ENTERTAINING SPEAKER: The Entertaining Speech (5 to 7 min)">THE ENTERTAINING SPEAKER: The Entertaining Speech (5 to 7 min)
-</option><option value="THE ENTERTAINING SPEAKER: Resources for Entertainment (5 to 7 min)">THE ENTERTAINING SPEAKER: Resources for Entertainment (5 to 7 min)
-</option><option value="THE ENTERTAINING SPEAKER: Make Them Laugh (5 to 7 min)">THE ENTERTAINING SPEAKER: Make Them Laugh (5 to 7 min)
-</option><option value="THE ENTERTAINING SPEAKER: A Dramatic Talk (5 to 7 min)">THE ENTERTAINING SPEAKER: A Dramatic Talk (5 to 7 min)
-</option><option value="THE ENTERTAINING SPEAKER: Speaking After Dinner (8 to 10 min)">THE ENTERTAINING SPEAKER: Speaking After Dinner (8 to 10 min)
-</option><option value="THE PROFESSIONAL SALESPERSON: The Winning Attitude (8 to 10 min)">THE PROFESSIONAL SALESPERSON: The Winning Attitude (8 to 10 min)
-</option><option value="THE PROFESSIONAL SALESPERSON: Closing The Sale (10 to 12 min)">THE PROFESSIONAL SALESPERSON: Closing The Sale (10 to 12 min)
-</option><option value="THE PROFESSIONAL SALESPERSON: Training The Sales Force (6 to 8 min speech; 8 to 10 min role play; 2 to 5 min discussion)">THE PROFESSIONAL SALESPERSON: Training The Sales Force (6 to 8 min speech; 8 to 10 min role play; 2 to 5 min discussion)
-</option><option value="THE PROFESSIONAL SALESPERSON: The Sales Meeting (15 to 20 min)">THE PROFESSIONAL SALESPERSON: The Sales Meeting (15 to 20 min)
-</option><option value="THE PROFESSIONAL SALESPERSON: The Team Sales Presentation (15 to 20 min plus 5 to 7 min per person for manual credit)">THE PROFESSIONAL SALESPERSON: The Team Sales Presentation (15 to 20 min plus 5 to 7 min per person for manual credit)
-</option><option value="THE PROFESSIONAL SPEAKER: The Keynote Address (15 to 20 min)">THE PROFESSIONAL SPEAKER: The Keynote Address (15 to 20 min)
-</option><option value="THE PROFESSIONAL SPEAKER: Speaking to Entertain (15 to 20 min)">THE PROFESSIONAL SPEAKER: Speaking to Entertain (15 to 20 min)
-</option><option value="THE PROFESSIONAL SPEAKER: The Sales Training Speech (15 to 20 min)">THE PROFESSIONAL SPEAKER: The Sales Training Speech (15 to 20 min)
-</option><option value="THE PROFESSIONAL SPEAKER: The Professional Seminar (20 to 40 min)">THE PROFESSIONAL SPEAKER: The Professional Seminar (20 to 40 min)
-</option><option value="THE PROFESSIONAL SPEAKER: The Motivational Speech (15 to 20 min)">THE PROFESSIONAL SPEAKER: The Motivational Speech (15 to 20 min)
-</option>';
-
-}
-*/
-
 function speech_public_details ($field) {
 global $post;
 
@@ -2158,7 +2043,7 @@ global $post;
 			$output .= '<div class="speech_title">'.$title."</div>";
 		if($time && !strpos($field,'Backup'))
 			$output .= '<div class="speech_time">'.__('Time reserved for this speech','rsvpmaker-for-toastmasters').': '.$time.' '.__('minutes.','rsvpmaker-for-toastmasters')."</div>";
-		return $output;
+		return apply_filters('speech_details_public',$output,$field);
 }
 
 function speech_progress () {
@@ -3695,6 +3580,8 @@ if(isset($_GET["assigned_open"]) && current_user_can($security['edit_signups']))
 	$link .= "\n".sprintf('<div style="margin-top: 10px; margin-bottom: 10px;"><a href="%s">%s</a></div>',$permalink.'assigned_open=1&email_me=1',__('Email to me','rspmaker-for-toastmasters'))."\n";
 	
 	$link .= wp4t_assigned_open();
+	$link .= rsvp_report_this_post();
+	return $link;
 	}
 if(isset($_POST["editor_suggest"]))
 	{
@@ -5426,7 +5313,7 @@ function ajax_reorder() {
 	die('Saved. <a href="'.get_permalink($post_id).'">Verify updated order</a>'.$test );
 }
 
-function get_speaker_array($assigned, $post_id=0) {
+function get_speaker_array($assigned, $post_id=0, $backup=false) {
 if(empty($assigned))
 	return array("ID" => 0, "manual" => '', "project" => '', "maxtime" => '', "title" => '', "intro" => '');
 global $wpdb;
@@ -5435,14 +5322,22 @@ if(!$post_id)
 	global $post;
 	$post_id = $post->ID;
 	}
-$field = $wpdb->get_var("SELECT meta_key from $wpdb->postmeta WHERE post_id=$post_id AND meta_value='".$assigned."' ");
+if($backup)
+	$field = '_Backup_Speaker_1';
+else
+	$field = $wpdb->get_var("SELECT meta_key from $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '%Speaker%' AND meta_value='".$assigned."' ");
 $speaker["ID"] = $assigned;
 $speaker["manual"] = get_post_meta($post_id, '_manual'.$field, true);
 $speaker["project"] = get_post_meta($post_id, '_project'.$field, true);
 $speaker["maxtime"] = get_post_meta($post_id, '_maxtime'.$field, true);
 $speaker["title"] = get_post_meta($post_id, '_title'.$field, true);
 $speaker["intro"] = get_post_meta($post_id, '_intro'.$field, true);
-return $speaker;
+
+if(empty($speaker["manual"]))
+	$speaker["manual"] = "COMPETENT COMMUNICATION";
+if(empty($speaker["maxtime"]))
+	$speaker["maxtime"] = 7;	
+return apply_filters('get_speaker_array',$speaker,$field,$post_id);
 }
 
 function save_speaker_array($speaker, $count, $post_id=0) {
@@ -5453,11 +5348,12 @@ if(!$post_id)
 	$post_id = $post->ID;
 	}
 update_post_meta($post_id, $field, $speaker["ID"]);
-update_post_meta($post_id, '_manual'.$field, $speaker["manual"]);
-update_post_meta($post_id, '_project'.$field, $speaker["project"]);
-update_post_meta($post_id, '_maxtime'.$field, $speaker["maxtime"]);
-update_post_meta($post_id, '_title'.$field, $speaker["title"]);
-update_post_meta($post_id, '_intro'.$field, $speaker["intro"]);
+foreach($speaker as $name => $value)
+	{
+	if($name =='ID')
+		continue;
+	update_post_meta($post_id, '_'.$name.$field, $value);
+	}
 }
 
 function pack_speakers($count)
@@ -5476,13 +5372,7 @@ $currentorder =array();
 			{
 				$currentorder[] = $i;
 				$fullorder[] = $scount;
-				$speaker[$scount]["assigned"] = $assigned;
-				$speaker[$scount]["manual"] = get_post_meta($post->ID, '_manual'.$field, true);
-				$speaker[$scount]["project"] = get_post_meta($post->ID, '_project'.$field, true);
-				$speaker[$scount]["maxtime"] = get_post_meta($post->ID, '_maxtime'.$field, true);
-				$speaker[$scount]["display_time"] = get_post_meta($post->ID, '_display_maxtime'.$field, true);
-				$speaker[$scount]["title"] = get_post_meta($post->ID, '_title'.$field, true);
-				$speaker[$scount]["intro"] = get_post_meta($post->ID, '_intro'.$field, true);
+				$speaker[$scount] = get_speaker_array($assigned,$post->ID);
 				$scount++;
 			}
 		}
@@ -5492,18 +5382,7 @@ $currentorder =array();
 				$assigned = (int) get_post_meta($post->ID, '_Backup_Speaker_1', true);
 				if($assigned > 0)
 					{
-					$speaker[$scount]["assigned"] = $assigned;
-					$speaker[$scount]["manual"] = get_post_meta($post->ID, '_manual_Backup_Speaker_1', true);
-					$speaker[$scount]["project"] = get_post_meta($post->ID, '_project_Backup_Speaker_1', true);
-					$speaker[$scount]["maxtime"] = get_post_meta($post->ID, '_maxtime_Backup_Speaker_1', true);
-					$speaker[$scount]["display_time"] = get_post_meta($post->ID, '_display_time_Backup_Speaker_1', true);
-					$speaker[$scount]["title"] = get_post_meta($post->ID, '_title_Backup_Speaker_1', true);
-					$speaker[$scount]["intro"] = get_post_meta($post->ID, '_intro_Backup_Speaker_1', true);
-					if(empty($speaker[$scount]["manual"]))
-						$speaker[$scount]["manual"] = "COMPETENT COMMUNICATION";
-					if(empty($speaker[$scount]["maxtime"]))
-						$speaker[$scount]["maxtime"] = 7;
-					
+					$speaker[$scount] = get_speaker_array($assigned,$post->ID,true);
 					$fullorder[] = $scount;
 					delete_post_meta($post->ID,'_Backup_Speaker_1');
 					delete_post_meta($post->ID,'_manual_Backup_Speaker_1');
@@ -5514,7 +5393,6 @@ $currentorder =array();
 					delete_post_meta($post->ID,'_intro_Backup_Speaker_1');
 					
 					backup_speaker_notify($assigned);
-
 					}
 			}
 		if( !sizeof($fullorder) )
@@ -5524,18 +5402,9 @@ $currentorder =array();
 		{
 			for($i = 1; $i <= $count; $i++)
 				{
-				if(isset($speaker[$i]["assigned"]))
+				if(isset($speaker[$i]["ID"]))
 					{
-					update_post_meta($post->ID,'_Speaker_' . $i,$speaker[$i]["assigned"]);
-					update_post_meta($post->ID,'_manual_Speaker_' . $i,$speaker[$i]["manual"]);
-					update_post_meta($post->ID,'_project_Speaker_' . $i,$speaker[$i]["project"]);
-					update_post_meta($post->ID,'_maxtime_Speaker_' . $i,$speaker[$i]["maxtime"]);
-					update_post_meta($post->ID,'_display_time_Speaker_' . $i,$speaker[$i]["display_time"]);
-					update_post_meta($post->ID,'_title_Speaker_' . $i,$speaker[$i]["title"]);
-					if(isset($speaker[$i]["intro"]))
-						update_post_meta($post->ID,'_intro_Speaker_' . $i,$speaker[$i]["intro"]);
-					else
-						update_post_meta($post->ID,'_intro_Speaker_' . $i,'');				
+					save_speaker_array($speaker[$i],$i,$post->ID);
 					}
 				else
 					{
@@ -5549,7 +5418,6 @@ $currentorder =array();
 					}
 				}
 		}
-
 }//end pack speakers
 
 
@@ -5579,7 +5447,7 @@ if(!is_rsvpmaker_future($post->ID))
 	
 		$speakerdata = get_userdata($assigned);
 		$subject = $message = sprintf('%s %s ',$speakerdata->first_name,$speakerdata->last_name).__('now scheduled to speak on','rsvpmaker-for-toastmasters').' '.$meetingdate;
-		$url = rsvpmaker_permalink_query($post_id);
+		$url = rsvpmaker_permalink_query($post->ID);
 		$mail["subject"] = substr(strip_tags($subject),0, 100);
 		$message .= "\n\n" . __("Backup speaker promoted to speaker following a cancellation.",'rsvpmaker-for-toastmasters');
 
@@ -5833,11 +5701,19 @@ function member_not_user() {
 echo '<p style="color: red;"><b>For Toastmasters members, please use the <a href="'.admin_url('users.php?page=add_awesome_member').'">Add Member</a> form instead.</b></p>';
 }
 
-function add_awesome_roles() {
 
+add_action('init','add_awesome_roles');
+
+function add_awesome_roles() {
 $manager = get_role('manager');
 if(!$manager)
+
+
+
+
 add_role( 'manager', 'Manager', array( 'delete_others_pages' => true,
+'read' => true,
+'upload_files' => true,
 'delete_others_posts' => true,
 'delete_pages' => true,
 'delete_posts' => true,
@@ -5858,17 +5734,11 @@ add_role( 'manager', 'Manager', array( 'delete_others_pages' => true,
 'moderate_comments' => true,
 'publish_pages' => true,
 'publish_posts' => true,
-'read' => true,
 'read_private_pages' => true,
 'read_private_posts' => true,
-'upload_files' => true,
-'delete_others_rsvpmakers' => true,
-'delete_rsvpmakers' => true,
-'delete_private_rsvpmakers' => true,
-'delete_published_rsvpmakers' => true,
-'edit_others_rsvpmakers' => true,
-'edit_rsvpmakers' => true,
-'edit_private_rsvpmakers' => true,
+ 'delete_others_rsvpmakers' => true,
+ 'delete_rsvpmakers' => true,
+'delete_others_pages' => true,
 'edit_published_rsvpmakers' => true,
 'publish_rsvpmakers' => true,
 'read_private_rsvpmakers' => true,
@@ -5886,7 +5756,6 @@ add_role( 'manager', 'Manager', array( 'delete_others_pages' => true,
 "email_list" => true,
 "add_member" => true,
 "edit_members" => true
-
  ) );
 
 // fix legacy role
@@ -5900,8 +5769,7 @@ foreach ( $officer_users as $officer ) {
 	}
 }
 remove_role('officer');
-
-   }
+}
 
 function awesome_role_activation_wrapper() {
 
@@ -6137,7 +6005,7 @@ function wp4_email_contacts( $has_assignment = array() ) {
 
 $output = '';
 if(!empty($has_assignment))
-	$output .= __('List of members without an assignment','rsvpmaker-for-toastmasters')."\n\n";
+	$output .= '<h2>'.__('List of Members Without an Assignment','rsvpmaker-for-toastmasters')."</h2>\n\n";
 
 $blogusers = get_users('blog_id='.get_current_blog_id().'&orderby=nicename');
     foreach ($blogusers as $user) {
@@ -7515,8 +7383,7 @@ $im = imagecreate(800, 50);
 imagefilledrectangle($im,5,5,790,45, imagecolorallocate($im, 50, 50, 255));
 }
 
-// White background and blue text
-$bg = imagecolorallocate($im, 200, 200, 255);
+// White text
 $border = imagecolorallocate($im, 0, 0, 0);
 $textcolor = imagecolorallocate($im, 255, 255, 255);
 
@@ -7541,8 +7408,8 @@ else
 	$text = 'error: unrecognized';
 
 // Write the string at the top left
-imagestring($im, 5, 10, 10, $text, $textcolor);
-imagestring($im, 5, 10, 25, $tip, $textcolor);
+imagestring($im, 5, 40, 10, $text, $textcolor);
+imagestring($im, 5, 40, 25, $tip, $textcolor);
 
 // Output the image
 header('Content-type: image/png');
@@ -8427,7 +8294,6 @@ echo '</form>';
 
 //BuddyPress support
 
-
 function bp_toastmasters($post_id,$actiontext,$user_id) {
 
 if(!function_exists('bp_activity_add'))
@@ -8506,47 +8372,6 @@ if(bp_displayed_user_id() == $current_user->ID)
 }
 
 /* Ajax */
-
-function ajax_toast_assign() {
-
-	check_ajax_referer( 'rsvpmaker-for-toastmasters', 'security' );
-	global $wpdb; // this is how you get access to the database
-	
-	$role = $_POST["role"];
-	$post_id = $_POST["post_id"];	
-	$assign = $_POST["assign"];
-	$manual = $_POST["manual"];
-	$project = $_POST["project"];
-	$time = $_POST["time"];
-	$title = $_POST["title"];
-	if($assign)
-	{
-		if($assign == 'open')
-			$assign = 0;
-		update_post_meta($post_id,$role,$assign);
-		update_post_meta($post_id,'_maxtime'.$role,$time);		
-		_e('Background saved role assignment','rsvpmaker-for-toastmasters');
-	}
-	elseif($project)
-	{
-		update_post_meta($post_id,'_project'.$role,$project);
-		update_post_meta($post_id,'_manual'.$role,$manual);
-		update_post_meta($post_id,'_maxtime'.$role,$time);		
-		_e('Background saved role, manual, and time','rsvpmaker-for-toastmasters');
-	}
-	elseif($manual)
-	{
-		update_post_meta($post_id,'_manual'.$role,$manual);
-		_e('Background saved manual','rsvpmaker-for-toastmasters');
-	}
-	elseif($title)
-	{
-		update_post_meta($post_id,'_title'.$role,$title);
-		_e('Background saved title','rsvpmaker-for-toastmasters');
-	}
-	
-	wp_die(); // this is required to terminate immediately and return a proper response
-}
 
 function wp4t_emails () {
 $list = '';
@@ -9437,4 +9262,14 @@ add_shortcode('wptagendalink','wptagendalink');
 
 add_shortcode('wp4t_assigned_open','wp4t_assigned_open');
 
+if(!function_exists('pre_print_test')) {
+function pre_print_test ($var,$label,$return=false)
+{
+	$debug = '<pre>'.$label."\n".var_export($var,true).'</pre>';
+	if($return)
+		return $debug;
+	echo $debug;
+	
+}
+}
 ?>

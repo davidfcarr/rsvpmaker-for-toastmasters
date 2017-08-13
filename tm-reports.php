@@ -569,8 +569,6 @@ ob_start();
 tm_member_edit($user_id);
 $edit_form = ob_get_clean();
 
-//if(isset($_GET["toastmaster"]))
-//	{
 ?>
     <h2 class="nav-tab-wrapper">
       <a class="nav-tab nav-tab-active" href="#profile_main">Basic Program</a>
@@ -3302,10 +3300,10 @@ global $wpdb;
     <li>See this <a  target="_blank" href="http://wp4toastmasters.com/2016/02/10/adding-and-editing-club-website-content/">video tutorial</a> on creating and editing basic website content.</li>
     </ul>
     </li>
-    <li>In addition to Posts and Pages, this supports Events as a separate content time through the RSVPMaker plugin, which is why that menu item is labeled <a href="<?php echo admin_url('edit.php?post_type=rsvpmaker'); ?>">RSVP Events</a>.
+    <li>In addition to Posts and Pages, this site uses a WordPress plugin called RSVPMaker to support events as a separate content type. The events editing screen is labeled <a href="<?php echo admin_url('edit.php?post_type=rsvpmaker'); ?>">RSVP Events</a>.
     <ul>
     <li>Events appear on the site in calendar order, rather than blog order or menu order, with the emphasis on upcoming events people can participate in.</li>
-    <li>Toastmasters meeting events appear in the WordPress editor as a series of placeholders for the different roles that will be displayed on the signup form and on the printable agenda.</li>
+    <li>Toastmasters meeting events appear in the WordPress editor with a series of placeholders for the different roles that will be displayed on the signup form and on the printable agenda. Other placeholders represent "agenda notes" or "stage directions" for the organization of your meeting. Double-click on any of the colored placeholders to edit the options for that role or note.</li>
     <li>Typically, Toastmasters meetings follow an event template that lays out the organization of a "typical" meeting and defines a standard meeting schedule. You then generate individual events based on that template. For example, if your template says your club meets every Monday at 7 pm and typically schedules 3 speakers and 3 evaluators per meeting, the software will help you create events for the next several months that follow that pattern. <em>You always have the option of customizing the agenda for an individual meeting that does not follow the template.</em></li>
     <li>See this <a  target="_blank"  href="http://wp4toastmasters.com/2016/02/09/video-setting-up-and-editing-your-standard-meeting-agenda/">video tutorial</a> on setting up and managing meeting agendas.</li>
     <li>For any other sort of event, such as an open house, you would edit text and add media exactly as you would for Pages and Posts, except that you must also specify the date in the Event Options box. If you are advertising an event for which you are requesting online RSVPs, you would also specify that in this section. See this <a target="_blank" href="http://wp4toastmasters.com/2016/02/23/rsvpmaker-event-management-for-toastmasters/">blog post</a>.</li>
