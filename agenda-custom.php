@@ -5,6 +5,7 @@ global $post;
 header('Content-Type: application/msword');
 header('Content-disposition: attachment; filename='.$post->post_name.'.doc');
 }
+wp4toastmasters_agenda_layout_check('custom'); //add layout post if doesn't already exist
 $layout = get_option('rsvptoast_agenda_layout');
 $layout_post = get_post($layout);
 $layout_css = get_post_meta($layout,'_rsvptoast_agenda_css',true);

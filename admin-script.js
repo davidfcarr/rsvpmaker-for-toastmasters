@@ -1,5 +1,12 @@
 (function($) {
 	
+	$('#default_css').hide();
+	
+	$("#default_css_show").click(function(){
+		$('#default_css').show();
+		$("#default_css_show").hide();
+	});
+	
 	$('.speech_update').hide();
 		
 	$(document).on( 'click', '.nav-tab-wrapper a', function() {

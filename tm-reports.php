@@ -120,9 +120,9 @@ if(isset($_POST["enable_sidebar_layout"]) && $_POST["enable_sidebar_layout"])
 				echo rsvp_template_update_checkboxes($post_id);
 		}
 
-if(isset($_GET["post_id"]))
+if(isset($_REQUEST["post_id"]))
 {
-$post_id = (int) $_GET["post_id"];
+$post_id = (int) $_REQUEST["post_id"];
 global $post;
 $post = get_post($post_id);
 global $agenda_setup_item;
@@ -374,14 +374,14 @@ $projects = get_advanced_projects ();
 
 $project_options_array = get_projects_array('options');
 if(isset($_REQUEST['toastmaster']) && $_REQUEST['toastmaster'])
-	$id = (int) $_GET['toastmaster'];
+	$id = (int) $_REQUEST['toastmaster'];
 if($id)
 {
 	$userdata = get_userdata($id);
 	$tmstats = get_tm_stats($userdata->ID);
 	$stats = $tmstats["count"];
 
-	if(isset($_GET["debug"]))
+	if(isset($_REQUEST["debug"]))
 	{
 	echo "<p>";
 	print_r($stats);
@@ -395,7 +395,7 @@ if($id)
 </section>
 <section id="edit_stats_count">
 <?php
-	if($_GET["page"] == 'tm_member_edit')
+	if($_REQUEST["page"] == 'tm_member_edit')
 	tm_select_member('tm_member_edit','toastmaster');
 	$hook = tm_admin_page_top(__('Edit Overview Stats','rsvpmaker-for-toastmasters').': '.$userdata->first_name.' '.$userdata->last_name);
 
@@ -452,7 +452,7 @@ if($id)
 	// refresh the list now that changes have been posted
 	$stats = awesome_get_stats($userdata->ID);
 
-	printf('<form method="post" id="edit_member_stats" action="%s"><input type="hidden" name="action" value="edit_member_stats" /><input type="hidden" name="toastmaster" value="%s" />',admin_url('admin.php?page='.$_GET["page"].'&toastmaster=').$id,$id);
+	printf('<form method="post" id="edit_member_stats" action="%s"><input type="hidden" name="action" value="edit_member_stats" /><input type="hidden" name="toastmaster" value="%s" />',admin_url('admin.php?page='.$_REQUEST["page"].'&toastmaster=').$id,$id);
 	
 	echo '<table>';
 	printf('<tr><td>Educational Awards</td><td><input type="text" size="10" name="education_awards" value="%s"><br />Use the abbreviations CC,  ACB, ACS, ACG, CL, ALB, ALS, DTM</td><td></td></tr>',$userdata->education_awards);
@@ -488,7 +488,7 @@ submit_button('Save Changes','primary','edit_stats');
 printf('<input type="hidden" name="edit" id="edit" value="%d"></form>',$id);
 
 }// edit member
-elseif(isset($_GET["edit_all"]))
+elseif(isset($_REQUEST["edit_all"]))
 {
 $users = get_users();
 foreach($users as $user) {
@@ -545,9 +545,11 @@ $competent_leader = array(
 "Club Webmaster");
 
 function toastmasters_reports () {
-if($_GET["page"] == 'my_progress_report')
+
+global $pagenow;
+if($_REQUEST["page"] == 'my_progress_report')
 	{
-	$hook = tm_admin_page_top(__('Progress Reports','rsvpmaker-for-toastmasters'));
+	$hook = tm_admin_page_top(__('My Progress Report','rsvpmaker-for-toastmasters'));
 	global $current_user;
 	$user_id = $current_user->ID;
 	}
@@ -576,18 +578,18 @@ $edit_form = ob_get_clean();
       <a class="nav-tab " href="#advanced">Advanced Awards</a>
       <a class="nav-tab " href="#pathways">Pathways</a>
 <?php
-if( (($_GET["page"] == 'my_progress_report') && current_user_can('edit_own_stats')) || current_user_can('edit_member_stats'))
+if( (($_REQUEST["page"] == 'my_progress_report') && current_user_can('edit_own_stats')) || current_user_can('edit_member_stats'))
 {
 ?>
-     <a class="nav-tab <?php if(isset($_GET["active"]) && ($_GET["active"] =='edit' ) ) echo 'nav-tab-active'; ?>" href="#edit" id="edit_tab">Edit</a>
-     <a class="nav-tab <?php if(isset($_GET["active"]) && ($_GET["active"] =='edit_stats' ) ) echo 'nav-tab-active'; ?>" href="#edit_stats" id="edit_stats_tab">Edit Stats</a>
-     <a class="nav-tab <?php if(isset($_GET["active"]) && ($_GET["active"] =='add_member_speech' ) ) echo 'nav-tab-active'; ?>" href="#add_member_speech" id="speech_tab">Add Speech/Role</a>
+     <a class="nav-tab <?php if(isset($_REQUEST["active"]) && ($_REQUEST["active"] =='edit' ) ) echo 'nav-tab-active'; ?>" href="#edit" id="edit_tab">Edit</a>
+     <a class="nav-tab <?php if(isset($_REQUEST["active"]) && ($_REQUEST["active"] =='edit_stats' ) ) echo 'nav-tab-active'; ?>" href="#edit_stats" id="edit_stats_tab">Edit Stats</a>
+     <a class="nav-tab <?php if(isset($_REQUEST["active"]) && ($_REQUEST["active"] =='add_member_speech' ) ) echo 'nav-tab-active'; ?>" href="#add_member_speech" id="speech_tab">Add Speech/Role</a>
 <?php
 }
 if(current_user_can('manage_options'))
 {
 ?>
-<a class="nav-tab <?php if(isset($_GET["active"]) && ($_GET["active"] =='deleterecords' ) ) echo 'nav-tab-active'; ?>" href="#deleterecords" id="deleterecords_tab">Delete</a>
+<a class="nav-tab <?php if(isset($_REQUEST["active"]) && ($_REQUEST["active"] =='deleterecords' ) ) echo 'nav-tab-active'; ?>" href="#deleterecords" id="deleterecords_tab">Delete</a>
 <?php
 }
 ?>
@@ -617,7 +619,7 @@ else
 <?php pathways_report(); ?>
 </section>
 <?php
-if( (($_GET["page"] == 'my_progress_report') && current_user_can('edit_own_stats')) || current_user_can('edit_member_stats'))
+if( (($_REQUEST["page"] == 'my_progress_report') && current_user_can('edit_own_stats')) || current_user_can('edit_member_stats'))
 {
 ?>
 <section id="edit">
@@ -647,13 +649,13 @@ wpt_delete_records($user_id);
 ?>
 </div>
 <?php
-if(isset($_GET["tab"]))
+if(isset($_REQUEST["tab"]))
 	{
 ?>
 <script>
 (function($) {
 		$('section').hide();
-		$('section#<?php echo $_GET["tab"]; ?>').show();
+		$('section#<?php echo $_REQUEST["tab"]; ?>').show();
 		return false;
 })( jQuery );
 </script>
@@ -756,9 +758,9 @@ foreach($speeches as $s)
 				}
 			}
 		$title = get_post_meta($s->post_id,'_title'.$s->speech,true);
-		$action = admin_url('admin.php?page='.$_GET['page']);
-		if(isset($_GET["toastmaster"]))
-			$action .= '&toastmaster='. (int) $_GET["toastmaster"];
+		$action = admin_url('admin.php?page='.$_REQUEST['page']);
+		if(isset($_REQUEST["toastmaster"]))
+			$action .= '&toastmaster='. (int) $_REQUEST["toastmaster"];
 		$field = $s->speech;
 		$slug = preg_replace('/[^A-Za-z]/','',$project_key).$s->post_id;
 		if(empty($project) || strpos($project,'hoose Manual') )
@@ -852,9 +854,9 @@ foreach($speeches as $s)
 				}
 			}
 		$title = get_post_meta($s->post_id,'_title'.$s->speech,true);
-		$action = admin_url('admin.php?page='.$_GET['page']);
-		if(isset($_GET["toastmaster"]))
-			$action .= '&toastmaster='. (int) $_GET["toastmaster"];
+		$action = admin_url('admin.php?page='.$_REQUEST['page']);
+		if(isset($_REQUEST["toastmaster"]))
+			$action .= '&toastmaster='. (int) $_REQUEST["toastmaster"];
 		$field = $s->speech;
 		$slug = preg_replace('/[^A-Za-z]/','',$project_key).$s->post_id;
 		$ts = strtotime($s->datetime);
@@ -964,10 +966,10 @@ if(!empty($_POST["year"]))
 		}
 	echo '<p>'.__('Advancing date +1 week','rsvpmaker-for-toastmasters').'</p>';
 	}
-if(!empty($_GET["history"]))
+if(!empty($_REQUEST["history"]))
 	{
-	$r_post = get_post($_GET["history"]);
-	printf('<form action="%s" method="post">',admin_url('admin.php?page=toastmasters_reconcile&history='.$_GET["history"]) );
+	$r_post = get_post($_REQUEST["history"]);
+	printf('<form action="%s" method="post">',admin_url('admin.php?page=toastmasters_reconcile&history='.$_REQUEST["history"]) );
 	if(!isset($nextdate))
 		$nextdate = strtotime('-1 year');
 	$year = date('Y',$nextdate);
@@ -1142,7 +1144,7 @@ foreach ($members as $index => $userdata)
 	}
 
 submit_button('Save Changes','primary','edit_roles');
-if(isset($_GET["history"]))
+if(isset($_REQUEST["history"]))
 	$post->ID = 0;
 printf('<input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>',$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ));
 
@@ -1277,10 +1279,10 @@ tm_reports_disclaimer();
 if(is_admin())
 {
 
-if(isset($_GET["start_month"]) && $_GET["start_month"])
+if(isset($_REQUEST["start_month"]) && $_REQUEST["start_month"])
 	{
-		$year = (int) $_GET["start_year"];
-		$month = (int) $_GET["start_month"];
+		$year = (int) $_REQUEST["start_year"];
+		$month = (int) $_REQUEST["start_month"];
 		$start = sprintf('&amp;start_year=%d&amp;start_month=%d',$year,$month);
 		$startmsg = '';
 	}
@@ -1348,10 +1350,10 @@ tm_admin_page_bottom($hook);
 function awesome_get_attendance($user_id) {
 global $wpdb;
 
-if(isset($_GET["start_year"]) && $_GET["start_year"])
+if(isset($_REQUEST["start_year"]) && $_REQUEST["start_year"])
 	{
-		$year = (int) $_GET["start_year"];
-		$month = (int) $_GET["start_month"];
+		$year = (int) $_REQUEST["start_year"];
+		$month = (int) $_REQUEST["start_month"];
 		if($month < 10)
 			$month = '0'.$month;
 		$start_date = " AND a1.meta_value > '".$year.'-'.$month."-01' ";
@@ -1383,7 +1385,7 @@ $role_count_projects = array();
 	 WHERE a1.meta_value < NOW() AND post_status='publish'
 	 ORDER BY a1.meta_value DESC ";
 
-if(isset($_GET["debug"]))
+if(isset($_REQUEST["debug"]))
 	echo $sql;
 
 $results = $wpdb->get_results($sql);
@@ -1402,7 +1404,7 @@ foreach ($results as $row)
 		else
 			$role = $manual = $parts[0];
 		}
-	if(isset($_GET["debug"]))
+	if(isset($_REQUEST["debug"]))
 	{
 	echo $manual;
 	printf('<p>Speech record: %s</p>',$role);	
@@ -1417,7 +1419,7 @@ foreach ($results as $row)
 
 	}//end foreach
 
-if(isset($_GET["debug"]))
+if(isset($_REQUEST["debug"]))
 print_r($counts);
 
 	$manuals = get_manuals_array();
@@ -1454,7 +1456,7 @@ return $counts;
 
 function toastmasters_cc() {
 
-if($_GET["page"] == 'toastmasters_cc')
+if($_REQUEST["page"] == 'toastmasters_cc')
 $hook = tm_admin_page_top(__('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'));
 tm_reports_disclaimer();
 
@@ -1473,14 +1475,14 @@ $blogusers = get_users('blog_id='.get_current_blog_id());
 		$pure[$user->ID] = (isset($pure_counts["COMPETENT COMMUNICATION"]) ) ? $pure_counts["COMPETENT COMMUNICATION"] : 0;
 	}
 
-if(isset($_GET["debug"]))
+if(isset($_REQUEST["debug"]))
 {
 echo '<br />CC array: ';
 print_r($ccs);
 }
 	arsort($ccs);
 
-if(!isset($_GET["all"]))
+if(!isset($_REQUEST["all"]))
 {
 $datefilter = strtotime('3 months ago');
 printf('<p><em>'.__('Filtered by default to show members active within the last 3 months (since %s) <a href="%s">(show all)','rsvpmaker-for-toastmasters').'</a></em></p>',date('m/d/Y',$datefilter),admin_url('admin.php?page=toastmasters_cc&all=1'));
@@ -1500,7 +1502,7 @@ echo "<table>";
 	else
 		$d = '';
 
-	if(!isset($_GET["all"]))
+	if(!isset($_REQUEST["all"]))
 		{
 			if( $ts && ($datefilter > $ts) )
 				continue;
@@ -1513,13 +1515,13 @@ echo "<table>";
 		echo $userdata->last_name;
 		echo '</strong>'.$d.'</td><td>';
 		echo $barhtml;
-		if(isset($_GET["debug"]) && ($count != $pure[$member]))
+		if(isset($_REQUEST["debug"]) && ($count != $pure[$member]))
 			printf('<br />Detailed speech records: %d, adjusted total %d', $pure[$member], $count);
 		echo '<br />&nbsp;</td></tr>';
 	}
 echo "</table>";
 
-if($_GET["page"] == 'toastmasters_cc')
+if($_REQUEST["page"] == 'toastmasters_cc')
 tm_admin_page_bottom($hook);
 
 }
@@ -1680,7 +1682,7 @@ foreach($advanced_projects as $key => $project)
 }
 
 function toastmasters_advanced () {
-if($_GET["page"] == 'toastmasters_advanced')
+if($_REQUEST["page"] == 'toastmasters_advanced')
 $hook = tm_admin_page_top(__('Advanced Award Progress','rsvpmaker-for-toastmasters'));
 tm_reports_disclaimer('<em>This report is still under development.</em>');
 
@@ -1783,7 +1785,7 @@ sponsor performed his/her duties. World Headquarters must receive this letter no
 president sends World Headquarters a letter verifying that the mentor performed his/her duties for those six months.)
 */
 
-if($_GET["page"] == 'toastmasters_advanced')
+if($_REQUEST["page"] == 'toastmasters_advanced')
 tm_admin_page_bottom($hook);
 }
 
@@ -1856,7 +1858,7 @@ width: 150px;
 </style>
 ';
 
-if(!isset($_GET["all"]))
+if(!isset($_REQUEST["all"]))
 {
 $datefilter = strtotime('3 months ago');
 printf(__('<p><em>Filtered by default to show members active within the last 3 months (since %s) <a href="%s">(show all)</a></em></p>','rsvpmaker-for-toastmasters'),date('m/d/Y',$datefilter),admin_url('admin.php?page=cl_report&all=1'));
@@ -1877,7 +1879,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	else
 		$d = '';
 
-	if(!isset($_GET["all"]))
+	if(!isset($_REQUEST["all"]))
 		{
 			if( $ts && ($datefilter > $ts) )
 				continue;
@@ -2469,12 +2471,12 @@ echo '<div id="message" class="updated">
 
 	}
 
-if(isset($_GET["edit"]))
+if(isset($_REQUEST["edit"]))
 	printf('<h2><a class="add-new-h2" href="%s">%s</a></h2>',admin_url('admin.php?page=toastmasters_mentors'),__('Return to Report','rsvpmaker-for-toastmasters') );
 else
 	printf('<h2><a class="add-new-h2" href="%s">%s</a></h2>',admin_url('admin.php?page=toastmasters_mentors&edit=1'), __('Edit','rsvpmaker-for-toastmasters') );
 
-if(!isset($_GET["all"]))
+if(!isset($_REQUEST["all"]))
 {
 $datefilter = strtotime('3 months ago');
 printf('<p><em>'.__('Filtered by default to show members active within the last 3 months','rsvpmaker-for-toastmasters').' ('.__('since','rsvpmaker-for-toastmasters').' %s) <strong>'.__('AND','rsvpmaker-for-toastmasters').'</strong> '.__('who have not yet attained an educational award such as CC or CL','rsvpmaker-for-toastmasters').' <a href="%s">('.__('show all','rsvpmaker-for-toastmasters').')</a></em></p>',date('m/d/Y',$datefilter),admin_url('admin.php?page=toastmasters_mentors&all=1'));
@@ -2486,7 +2488,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	if($userdata->hidden_profile)
 		continue;
 	$ts = strtotime(get_latest_visit ($user->ID));
-	if(!isset($_GET["all"]))
+	if(!isset($_REQUEST["all"]))
 		{
 			if( $ts && ($datefilter > $ts) )
 				continue;
@@ -2500,18 +2502,18 @@ if(empty($members))
 	return;
 ksort($members);
 
-if(isset($_GET["edit"]) && current_user_can('edit_others_rsvpmakers') )
+if(isset($_REQUEST["edit"]) && current_user_can('edit_others_rsvpmakers') )
 	printf('<form action="%s" method="post">',admin_url('admin.php?page=toastmasters_mentors&edit=1') );
 
 foreach($members as $userdata)
 	{
-	if(isset($_GET["edit"]) && current_user_can('edit_others_rsvpmakers') )
+	if(isset($_REQUEST["edit"]) && current_user_can('edit_others_rsvpmakers') )
 		printf('<p>%s %s: <input type="text" name="mentor[%d]" value="%s" /></p>',$userdata->first_name,$userdata->last_name, $userdata->ID, $userdata->mentor);
 	else
 		printf('<p>%s %s: %s</p>',$userdata->first_name,$userdata->last_name, $userdata->mentor);
 	}
 
-if(isset($_GET["edit"]) && current_user_can('edit_others_rsvpmakers') )
+if(isset($_REQUEST["edit"]) && current_user_can('edit_others_rsvpmakers') )
 	echo '<button>'.__('Save','rsvpmaker-for-toastmasters').'</button></form>';
 
 tm_admin_page_bottom($hook);
@@ -2925,9 +2927,9 @@ $hook = tm_admin_page_top(__('Activity Log','rsvpmaker-for-toastmasters'));
 	global $wpdb;
 	$log = "";
 	
-	if(isset($_GET["filter"]))
+	if(isset($_REQUEST["filter"]))
 		{
-		$filter = preg_replace('[^a-zA-Z0-9 ]','',$_GET["filter"]);
+		$filter = preg_replace('[^a-zA-Z0-9 ]','',$_REQUEST["filter"]);
 		$filterSQL =  " AND meta_value LIKE '%".$filter."%'";
 		}
 	else
@@ -2944,7 +2946,7 @@ $hook = tm_admin_page_top(__('Activity Log','rsvpmaker-for-toastmasters'));
 <p><em><?php _e('Optionally, you can filter by the name of a member or by a keyword such as "edited" or "withdrawn."','rsvpmaker-for-toastmasters'); ?></em></p>
 <form method="get" action="<?php echo admin_url('admin.php'); ?>">
 <input type="hidden" name="page" value="toastmasters_activity_log" />
-<input type="text" name="filter" value="<?php if(isset($_GET["filter"])) echo $_GET["filter"]; ?>" />
+<input type="text" name="filter" value="<?php if(isset($_REQUEST["filter"])) echo $_REQUEST["filter"]; ?>" />
 <button>Filter</button>
 </form>
 <?php
@@ -2989,7 +2991,7 @@ th.role {
 	$stats = get_tm_stats($userdata->ID);
 	$myroles = $stats["count"];//awesome_get_stats($userdata->ID);
 	$pure_count = $stats["pure_count"];
-if(isset($_GET["debug"]))
+if(isset($_REQUEST["debug"]))
 {
 	echo "<pre>Adjusted count:\n";
 	print_r($myroles);
@@ -3055,7 +3057,7 @@ echo $l;
 
 $security = get_tm_security ();
 		
-if(isset($_GET["edit"]) && current_user_can($security['edit_member_stats']))
+if(isset($_REQUEST["edit"]) && current_user_can($security['edit_member_stats']))
 {
 		echo "<tr><td>";
 			printf('<input type="text" name="newstat[%d][%s]" value="%d" size="2" />',$userdata->ID,"COMPETENT COMMUNICATION",$myroles["COMPETENT COMMUNICATION"]);
@@ -3227,13 +3229,13 @@ tm_admin_page_bottom($hook);
 function tm_welcome_screen_assets( $hook ) {
   if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) {
     wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.1 );
-    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.4', true );
+    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.6', true );
   }
 }
 
 function tm_member_welcome_redirect() {
 	global $current_user;
-	if(isset($_GET["forget_welcome"]))
+	if(isset($_REQUEST["forget_welcome"]))
 		{
 		delete_user_meta($current_user->ID,'tm_member_welcome');
 		wp_logout();
@@ -3415,7 +3417,7 @@ tm_admin_page_bottom($hook);
 
 add_action('admin_init','tm_export');
 function tm_export() {
-if(!isset($_GET["tm_export"]))
+if(!isset($_REQUEST["tm_export"]))
 	return;
 $nonce = $_REQUEST['tm_export'];
 if ( ! wp_verify_nonce( $nonce, 'tm_export' ) ) {
@@ -3734,7 +3736,7 @@ if(is_admin()) { // if not full screen view
 	$hook = $screen->id;
 }
 
-$print = (isset($_GET["page"]) && !isset($_GET["rsvp_print"])) ? '<div style="width: 200px; text-align: right; float: right;"><a target="_blank" href="'.admin_url(str_replace('/wp-admin/','',$_SERVER['REQUEST_URI'])).'&rsvp_print=1">Print</a></div>' : '';
+$print = (isset($_REQUEST["page"]) && !isset($_REQUEST["rsvp_print"])) ? '<div style="width: 200px; text-align: right; float: right;"><a target="_blank" href="'.admin_url(str_replace('/wp-admin/','',$_SERVER['REQUEST_URI'])).'&rsvp_print=1">Print</a></div>' : '';
 printf('<div id="wrap" class="%s toastmasters">%s<h1>%s</h1>',$hook,$print,$headline);
 return $hook;
 }
@@ -3783,7 +3785,7 @@ update_option('archive_site_user_roles',date('Y-m-d G:i:s'));
 }
 
 add_action('wp_login','archive_site_user_roles');
-if(isset($_GET["archive"]))
+if(isset($_REQUEST["archive"]))
 	add_action('admin_init','archive_site_user_roles');
 
 function post_user_role_archive ($timestamp) {
@@ -4055,7 +4057,7 @@ $lastdate = '';
 			$domain = $key_array[4];
 			$post_id = $key_array[5];
 			$roledata = unserialize($row->meta_value);
-			if(isset($_GET["details"]))
+			if(isset($_REQUEST["details"]))
 				{
 				echo $role.' ';
 				echo $event_date.' ';
@@ -4081,12 +4083,12 @@ $lastdate = '';
 				//$speech_details .= '<br />'.var_export($roledata,true);
 				if(!empty($roledata['title']))
 					$speech_details .= '<br />'.$roledata['title'];
-				if(isset($_GET["intro"]) && !empty($roledata['intro']))
+				if(isset($_REQUEST["intro"]) && !empty($roledata['intro']))
 					$speech_details .= '<br />'.nl2br($roledata['intro']);
 				if($domain != $_SERVER['SERVER_NAME'])
 					$speech_details .= '<br /><em>'.$domain.'</em>';
 
-				if(isset($_GET["debug"]))
+				if(isset($_REQUEST["debug"]))
 				$speech_details .= '<br />'.$row->meta_key;
 
 				$speech_details = '<p>'.strftime($rsvp_options["long_date"],strtotime($event_date)).'<br />'.$speech_details.'</p>';
@@ -4096,7 +4098,7 @@ $lastdate = '';
 					$speeches[$manual] .= $speech_details;
 				$speech_list .= $speech_details;
 
-				if(isset($_GET["debug"]))
+				if(isset($_REQUEST["debug"]))
 				$speech_list .= '<pre>'.var_export($row,true).'</pre>';
 
 				}
@@ -4123,7 +4125,7 @@ $lastdate = '';
 					//sprintf('<p>Manual %s Project %s Title <input type="text" name="title" id="_title_%s" value="%s" /> Intro %s</p><p><button>Update</button></p>',$roledata['manual'],$roledata['project'],$roledata['title'],$roledata['intro']);
 				}
 			$form .= '</form>';
-			if(isset($_GET["debug"]))
+			if(isset($_REQUEST["debug"]))
 				$form .= '<div>'.$field.'</div>';
 			$editdetail[$event_date] = (isset($editdetail[$event_date])) ? $editdetail[$event_date] . $form : $form;
 		}
@@ -4145,7 +4147,7 @@ foreach ($results as $row)
 			//printf('<p>%s adjustment: %s</p>'."\n",$role,$row->meta_value);
 			$speech_count[$role] = isset($speech_count[$role]) ? $speech_count[$role] + $row->meta_value : $row->meta_value;
 			}
-		if(isset($_GET["debug"]))
+		if(isset($_REQUEST["debug"]))
 			printf('<p>%s adjustment: %s</p>',$role,$row->meta_value);
 	}
 
@@ -4337,11 +4339,11 @@ Other Comments';
 
 	}
 
-if(!empty($_GET["project"]) && !empty($_GET["speaker"]) && !empty($_GET["meeting_id"]))
+if(!empty($_REQUEST["project"]) && !empty($_REQUEST["speaker"]) && !empty($_REQUEST["meeting_id"]))
 	{
-		$project = $_GET["project"];
-		$speaker_id = (int) $_GET["speaker"];
-		$meeting_id = (int) $_GET["meeting_id"];
+		$project = $_REQUEST["project"];
+		$speaker_id = (int) $_REQUEST["speaker"];
+		$meeting_id = (int) $_REQUEST["meeting_id"];
 		show_evaluation_form($project, $speaker_id, $meeting_id);
 	}
 
@@ -4496,9 +4498,9 @@ tm_admin_page_bottom($hook);
 function wp4t_evaluations_edit () {
 $hook = tm_admin_page_top(__('Edit Evaluation Forms','rsvpmaker-for-toastmasters'));
 
-if(isset($_GET["form"]))
+if(isset($_REQUEST["form"]))
 {
-$response = wp_remote_get( 'http://wp4toastmasters.com/?wpt_forms&form='.$_GET["form"] );
+$response = wp_remote_get( 'http://wp4toastmasters.com/?wpt_forms&form='.$_REQUEST["form"] );
 if( is_array($response) ) {
   $header = $response['headers']; // array of http header lines
   $body = $response['body']; // use the content
@@ -4564,11 +4566,11 @@ return $newtext;
 }
 
 function show_evaluation () {
-if(isset($_GET["show_evaluation"]) && is_user_logged_in())
+if(isset($_REQUEST["show_evaluation"]) && is_user_logged_in())
 	{
 		global $current_user;
-		$user_id = (isset($_GET["member_id"])) ? $_GET["member_id"] : $current_user->ID;
-		$eval = get_user_meta($user_id,$_GET["show_evaluation"],true);
+		$user_id = (isset($_REQUEST["member_id"])) ? $_REQUEST["member_id"] : $current_user->ID;
+		$eval = get_user_meta($user_id,$_REQUEST["show_evaluation"],true);
 		printf('<html><title>Evaluation</title><body>%s</body></html>',$eval);
 		exit();
 	}
@@ -4581,9 +4583,9 @@ function pathways_report($toastmaster = 0) {
 global $current_user;
 global $rsvp_options;
 
-if(isset($_GET["toastmaster"]))
+if(isset($_REQUEST["toastmaster"]))
 	{
-		$toastmaster = (int) $_GET["toastmaster"];
+		$toastmaster = (int) $_REQUEST["toastmaster"];
 	}
 if(empty($toastmaster))
 	{
@@ -4713,7 +4715,7 @@ wp_die();
 function wpt_json () {
 global $wpdb;
 global $current_user;
-if(isset($_GET["all"]))
+if(isset($_REQUEST["all"]))
 {
 $users = get_users();
 foreach($users as $user)
@@ -4793,7 +4795,7 @@ if(!get_option('wp4toastmasters_enable_sync'))
 if(!$toastmasters_id)
 	return 'To sync data, first add Toastmasters ID to member profile';
 $last_sync = (int) get_user_meta($user_id,'tm_last_stats_sync',true);
-if($last_sync && ($last_sync > strtotime('-1 day')) && !isset($_GET["debug"]) && !isset($_GET["syncnow"]) )
+if($last_sync && ($last_sync > strtotime('-1 day')) && !isset($_REQUEST["debug"]) && !isset($_REQUEST["syncnow"]) )
 	return 'Last data sync within 24 hours (<a href="'.$_SERVER['REQUEST_URI'].'&syncnow=1">sync now</a>)';
 update_user_meta($user_id,'tm_last_stats_sync',time());
 $sql = "SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id=".$user_id." AND meta_key LIKE 'tm|%".$_SERVER['SERVER_NAME']."%' ";
@@ -4862,7 +4864,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Length: ' . strlen($json)));
 curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-if(isset($_GET["debug"]))
+if(isset($_REQUEST["debug"]))
 echo $url . "<br />" .$json ."<br />";
 $response  = curl_exec($ch);
 curl_close($ch);
@@ -4883,7 +4885,7 @@ $download = $json_response["download"];
 $uploaded = $json_response["uploaded"];
 $deleted = $json_response["deleted"];
 $members = $json_response["members"];
-if(isset($_GET["debug"]))
+if(isset($_REQUEST["debug"]))
 {
 echo $parts[0];
 echo '<pre>';

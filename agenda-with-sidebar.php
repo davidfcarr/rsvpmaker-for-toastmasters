@@ -61,6 +61,7 @@ foreach($wp_filter["the_content"] as $priority => $filters)
 <?php echo wpt_default_agenda_css(); ?>
 <?php echo get_option('wp4toastmasters_agenda_css'); ?>
 </style>
+<!-- agenda with sidebar -->
 </head>
 
 <body lang=EN-US style='tab-interval:.5in'>
