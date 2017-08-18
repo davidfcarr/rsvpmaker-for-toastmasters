@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 2.6.5
+Version: 2.6.6
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
@@ -188,10 +188,10 @@ add_action( 'bp_profile_header_meta', 'display_toastmasters_profile' );
 add_action( 'admin_head', 'profile_richtext' );
 
 function get_member_name($user_id, $credentials = true) {
-	if($user_id == 0)
-		return 'Open';
-	elseif(!empty($user_id) && !is_numeric($user_id))
+	if(!empty($user_id) && !is_numeric($user_id))
 		return $user_id.' ('.__('guest','rsvpmaker-for-toastmasters').')'; // guest ?
+	elseif($user_id == 0)
+		return 'Open';
 	elseif($user_id == -1)
 		return 'Not Available';
 	$member = get_userdata($user_id);
@@ -519,6 +519,11 @@ if(current_user_can('manage_options'))
  	<li id="menu-posts-rsvpmaker"><a class="hide-if-no-customize" href="customize.php">Customize</a> - tweak website design</li>
  	<li><a href="widgets.php">Widgets</a> - add/update sidebar widgets</li>
  	<li><a href="nav-menus.php">Menus</a> - update menu of pages, other links</li>
+<?php
+	$layout_id = get_option('rsvptoast_agenda_layout');
+	if($layout_id)
+		echo '<li><a href="'.admin_url('post.php?action=edit&post='.$layout_id).'">'.__('Agenda Layout Editor (Advanced)','rsvpmaker-for-toastmasters').'</a> - change the agenda HTML page structure or CSS.</li>';
+?>
 </ul>
 <?php
 }
@@ -902,6 +907,7 @@ function toastmasters_agenda_display($atts) {
                 }
             $output .= '</span>';
 			$output .= ' <span class="member-role">';
+			if(isset($_GET['debug'])) $output .= 'assigned: '.$assigned .' ';
 			$output .= get_member_name($assigned);	
 			$output .= '</span>';
 			if($assigned < 1)
@@ -935,7 +941,7 @@ function toastmasters_agenda_display($atts) {
 			$output .= '<div>Each evaluator '.get_stoplight(2,3).'</div>';
 		}
 		if((strpos($field,'Topics_Master') == 1) && get_option('wp4toastmasters_stoplight')) {
-			$output .= '<div>Each Table Topics Speaker '.get_stoplight(2,3).'</div>';
+			$output .= '<div>Each Table Topics Speaker '.get_stoplight(1,2).'</div>';
 		}
 		$output = apply_filters('agenda_role_bottom',$output,$field);
 		$output .= '</div>';
@@ -1240,10 +1246,6 @@ function toastmaster_officers ($atts) {
 if(!isset($_REQUEST["print_agenda"]) && !isset($_REQUEST["email_agenda"]))
 	return;
 $label = isset($atts["label"]) ? $atts["label"] : __('Officers','rsvpmaker-for-toastmasters');
-$sep = isset($atts["sep"]) ? html_entity_decode($atts["sep"]) : ' ';
-if($sep == 'br')
-	$sep = '<br />';
-
 $wp4toastmasters_officer_ids = get_option('wp4toastmasters_officer_ids');
 $wp4toastmasters_officer_titles = get_option('wp4toastmasters_officer_titles');
 $buffer = "\n<div class=\"officers\"><span class=\"officers_label\">".$label."</span>"; //.$label.": ";
@@ -1254,9 +1256,9 @@ foreach ($wp4toastmasters_officer_ids as $index => $officer_id)
 	{
 		if(!$officer_id)
 			continue;
-		$officer = get_userdata($officer_id);
+		$officer = get_member_name($officer_id);
 		$title = str_replace(' ','&nbsp;',$wp4toastmasters_officer_titles[$index]);
-		$buffer .= sprintf('<div class="officer_entity"><p>%s<officertitle>%s</officertitle><br><officer>%s&nbsp;%s</officer>&nbsp;<educationawards>%s</educationawards></p></div>',$sep,$title,$officer->first_name,$officer->last_name, $officer->education_awards);
+		$buffer .= sprintf('<div class="officer_entity"><div class="officertitle">%s</div><div class="officer">%s</div></div>',$title,$officer);
 	}
 }
 else
@@ -3155,7 +3157,8 @@ font-style: italic;
   padding-left: 0;
   margin-left: 0;
 }
-.officers_label {font-weight: strong;}
+.officers_label {font-weight: bold;}
+.officer_entity {margin-top: 10px;}
 '.$segment["stoplight"];
 }
 
@@ -5330,7 +5333,7 @@ function ajax_reorder() {
 
 function get_speaker_array($assigned, $post_id=0, $backup=false) {
 if(empty($assigned))
-	return array("ID" => 0, "manual" => '', "project" => '', "maxtime" => '', "title" => '', "intro" => '');
+	return array("ID" => 0, "manual" => '', "project" => '', "maxtime" => '', "display_time"=> '', "title" => '', "intro" => '');
 global $wpdb;
 if(!$post_id)
 	{
@@ -5354,6 +5357,7 @@ $speaker["ID"] = $assigned;
 $speaker["manual"] = get_post_meta($post_id, '_manual'.$field, true);
 $speaker["project"] = get_post_meta($post_id, '_project'.$field, true);
 $speaker["maxtime"] = get_post_meta($post_id, '_maxtime'.$field, true);
+$speaker["display_time"] = get_post_meta($post_id, '_display_time'.$field, true);
 $speaker["title"] = get_post_meta($post_id, '_title'.$field, true);
 $speaker["intro"] = get_post_meta($post_id, '_intro'.$field, true);
 

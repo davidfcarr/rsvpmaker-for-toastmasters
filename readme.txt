@@ -4,7 +4,7 @@ Donate link: http://wp4toastmasters.com/
 Tags: toastmasters
 Requires at least: 3.0
 Tested up to: 4.8.1
-Stable tag: 2.6.5
+Stable tag: 2.6.6
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,10 @@ You can purchase hosting through project sponsor [Carr Communications Inc.](http
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 2.6.6 =
+
+Fixing a couple of agenda and agenda timing bugs
 
 = 2.6.5 =
 
