@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 2.6.6
+Version: 2.6.9
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
@@ -197,7 +197,7 @@ function get_member_name($user_id, $credentials = true) {
 	$member = get_userdata($user_id);
 	$name = $member->first_name.' '.$member->last_name;
 	if($credentials && !empty($member->education_awards))
-		$name .= ', '.$member->education_awards;
+		$name .= ', <span class="education_awards">'.$member->education_awards.'</span>';
 	return $name;
 }
 
@@ -586,7 +586,7 @@ if(current_user_can('edit_others_rsvpmakers') || current_user_can('add_members')
 	$normal_dashboard = $wp_meta_boxes['dashboard']['normal']['core'];
 	$sidebar_widget_backup = array('toastmasters_admin_widget' =>
 $normal_dashboard['toastmasters_admin_widget']);
-	unset($normal_dashboard['toastmasters_admin_widget']);
+	unset($wp_meta_boxes['dashboard']['normal']['core']['toastmasters_admin_widget']);
 	$wp_meta_boxes['dashboard']['side']['core'] = array_merge($sidebar_widget_backup,$side_dashboard);
 	}
 }
@@ -2746,24 +2746,6 @@ if(isset($_REQUEST["mailman_add_officers"]))
 <p><?php _e("Path",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[gpath]" value="<?php if(isset($wp4toastmasters_mailman["gpath"])) echo $wp4toastmasters_mailman["gpath"]; ?>" /> <?php _e("Password",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[gpass]" value="<?php if(isset($wp4toastmasters_mailman["gpass"])) echo $wp4toastmasters_mailman["gpass"]; ?>" />
 
 <?php
-if(isset($_REQUEST["mailman_add_officers"]))
-{
-    foreach ($wp4toastmasters_officer_ids as $user_id) {
-
-		$user = get_userdata($user_id);
-		$email = $user->user_email;
-		$url = trailingslashit($wp4toastmasters_mailman["opath"])."members?findmember=".$email."&setmemberopts_btn&adminpw=".$wp4toastmasters_mailman["opass"];
-		$result = file_get_contents($url);
-		if(!strpos($result, 'CHECKBOX') )
-			{
-			$url = trailingslashit($wp4toastmasters_mailman["opath"])."add?subscribe_or_invite=0&send_welcome_msg_to_this_batch=0&notification_to_list_owner=0&subscribees_upload=".$email."&adminpw=".$wp4toastmasters_mailman["opass"];;
-		$result = file_get_contents($url);
-		if(!strpos($result, 'Successfully') )
-			echo "<div>".__('Error attempting to subscribe','rsvpmaker-for-toastmasters')." $email</div>";
-			}
-	}
-}
-
 }
 ?>
 
@@ -3178,7 +3160,7 @@ function get_stoplight ($green,$red, $yellow=NULL) {
 	if(empty($yellow))
 	{
 		$diff = $red - $green;
-		$plus_minutes = intdiv($diff,2);
+		$plus_minutes = ($diff - $diff % 2) / 2;
 		$yellow = $green + $plus_minutes;
 		if($diff % 2)
 		{
@@ -3190,6 +3172,17 @@ function get_stoplight ($green,$red, $yellow=NULL) {
 	}
 	return sprintf('<span class="stoplight_block"><span class="stoplight stoplight_green">Green: '.$green.'</span> '.'<span  class="stoplight stoplight_yellow">Yellow: '.$yellow.'</span> '.'<span class="stoplight stoplight_red">Red: '.$red.'</span></span>');
 }
+
+function stoplight_shortcode($atts) {
+	if(!isset($atts['red']) || !isset($atts["green"]))
+		return;
+	$red = $atts['red'];
+	$green = $atts["green"];
+	$yellow = (isset($atts["yellow"])) ? $atts["yellow"] : NULL;
+	return get_stoplight($green,$red,$yellow);
+}
+
+add_shortcode('stoplight','stoplight_shortcode');
 
 function wp4toastmasters_agenda_layout_check ($option) {
 global $current_user;
@@ -3250,6 +3243,8 @@ return sprintf('<label for="%s">Select:</label>
 
 function add_to_mailman($user_id, $list = 'm')
 	{
+		if(empty($user_id))
+			return;
 		$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
 		if(!isset($wp4toastmasters_mailman[$list."path"]) || empty($wp4toastmasters_mailman[$list."path"]) || !isset($wp4toastmasters_mailman[$list."pass"]) || empty($wp4toastmasters_mailman[$list."pass"]) )
 			return;
@@ -3267,16 +3262,20 @@ function add_to_mailman($user_id, $list = 'm')
 			echo 'not numeric or email?'.$user_id;
 			return;
 			}
+		if(empty($email))
+			return;
 		$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."members?findmember=".$email."&setmemberopts_btn&adminpw=".$wp4toastmasters_mailman[$list."pass"];
 		$result = file_get_contents($url);
 		if(!strpos($result, 'CHECKBOX') )
 			{
-			$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."add?subscribe_or_invite=0&send_welcome_msg_to_this_batch=0&notification_to_list_owner=0&subscribees_upload=".$email."&adminpw=".$wp4toastmasters_mailman[$list."pass"];;
+			$url = trailingslashit($wp4toastmasters_mailman[$list."path"])."add?subscribe_or_invite=0&send_welcome_msg_to_this_batch=0&notification_to_list_owner=0&subscribees_upload=".$email."&adminpw=".urlencode($wp4toastmasters_mailman[$list."pass"]);
 		$result = file_get_contents($url);
 		if(!strpos($result, 'Successfully') )
+		{
 			echo "<div>".__('Error attempting to subscribe','rsvpmaker-for-toastmasters')." $email</div>";
+		}
 		else
-			echo "<div>".__('Added ','rsvpmaker-for-toastmasters')." $email</div>";			
+			echo "<div>".__('Added ','rsvpmaker-for-toastmasters')." $email</div>";
 			}
 }
 
@@ -4136,6 +4135,18 @@ $member_factory->show_confirmations();
 	}
 
 $user_pass_default = password_hurdle(wp_generate_password());
+
+if(isset($_POST["resend"]))
+{
+	$member_factory = new Toastmasters_Member();
+	foreach($_POST["resend"] as $resend)
+	{
+		$user = get_userdata($resend);
+		$member_factory->sendWelcome(array('user_login' => $user->user_login, 'user_email' => $user->user_email));
+	}
+$member_factory->show_confirmations();
+}
+
 ?>
 
 		<div class="wrap">
@@ -4206,8 +4217,30 @@ $user_pass_default = password_hurdle(wp_generate_password());
 <p><img src="<?php echo plugins_url( 'spreadsheet.png' , __FILE__ ); ?>" width="500" height="169" /></p>
 </div>
 
+<div id="resend">
+<h3>Resend Welcome Message</h3>
+	<p>If members did not receive the email inviting them to set their password, or if you added them before turning on email notifications, you can resend those notifications by checking off the names below and clicking Send. Note that this will generate a new password reset code (invalidating any that may have been sent previously).</p>
+<form method="post" action="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">
+	<p><input type="checkbox" id="checkAll"> <strong>Check all</strong></p>
+<?php
+$blogusers = get_users( 'orderby=nicename&blog_id='.get_current_blog_id() );
+// Array of WP_User objects.
+foreach ( $blogusers as $user ) {
+    printf('<div><input type="checkbox" class="resend" name="resend[]" value="%d">%s %s</div>',$user->ID,$user->user_login,$user->display_name);
+}	
+?>
+<input type="submit" value="<?php _e("Send",'rsvpmaker-for-toastmasters');?>" />
+</form>	
 </div>
 
+</div>
+<script>
+(function($) {
+$("#checkAll").change(function () {
+    $(".resend").prop('checked', $(this).prop("checked"));
+});	
+})( jQuery );
+</script>
 <?php
 }
 
@@ -4264,7 +4297,7 @@ class Toastmasters_Member  {
 public $prompts;
 public $confirmations;
 public $active_ids;
-public 	$blog_id;
+public $blog_id;
 public $welcome;
 public $prompt_count;
 
@@ -4320,27 +4353,41 @@ function add ($user)
 			{
 			$this->active_ids[] = $user_id;
     // Generate something random for a password reset key.
-    $key = wp_generate_password( 20, false );
- 
-    do_action( 'retrieve_password_key', $user["user_login"], $key );
- 
-    // Now insert the key, hashed, into the DB.
-    if ( empty( $wp_hasher ) ) {
-        require_once ABSPATH . WPINC . '/class-phpass.php';
-        $wp_hasher = new PasswordHash( 8, true );
-    }
-    $hashed = time() . ':' . $wp_hasher->HashPassword( $key );
-	global $wpdb;
-    $wpdb->update( $wpdb->users, array( 'user_activation_key' => $hashed ), array( 'user_login' => $user["user_login"] ) );
-    $set_password_msg = __('To set your password, visit the following address:');
-    $set_password = site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user["user_login"]), 'login');
+			$this->sendWelcome($user);
+			}
+		else
+			 {
+			echo '<h3 style="color: red;">WordPress '.__('registration error','rsvpmaker-for-toastmasters').'</h3>';
+			print_r($user);
+			echo "<br />";
+			 }
+		}
 
-				$profile_url = admin_url('profile.php#user_login');
-				$message = '<p>'.__('You have been registered at').': '.site_url().'</p>';
-				$message .= '<p>'.__('Username').': '.$user["user_login"].'</p>';
-				$message .= '<p>'. $set_password_msg .'<br /><a href="'.$set_password.'">'.$set_password.'</a></p>';
-				$message .= '<p>'.__('For a basic orientation to the website setup we are using, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>','rsvpmaker-for-toastmasters').'</p>';
-			if(isset($_POST["no_email"]) && $_POST["no_email"])
+return $user_id;
+	}
+function sendWelcome($user) {
+	    $key = wp_generate_password( 20, false );
+ 
+		do_action( 'retrieve_password_key', $user["user_login"], $key );
+
+		// Now insert the key, hashed, into the DB.
+		if ( empty( $wp_hasher ) ) {
+			require_once ABSPATH . WPINC . '/class-phpass.php';
+			$wp_hasher = new PasswordHash( 8, true );
+		}
+		$hashed = time() . ':' . $wp_hasher->HashPassword( $key );
+		global $wpdb;
+		$wpdb->update( $wpdb->users, array( 'user_activation_key' => $hashed ), array( 'user_login' => $user["user_login"] ) );
+		$set_password_msg = __('To set your password, visit the following address:');
+		$set_password = site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user["user_login"]), 'login');
+
+		$profile_url = admin_url('profile.php#user_login');
+		$message = '<p>'.__('You have been registered at').': '.site_url().'</p>';
+		$message .= '<p>'.__('Username').': '.$user["user_login"].'</p>';
+		$message .= '<p>'. $set_password_msg .'<br /><a href="'.$set_password.'">'.$set_password.'</a></p>';
+		$message .= '<p>'.__('For a basic orientation to the website setup we are using, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>','rsvpmaker-for-toastmasters').'</p>';
+
+		if(isset($_POST["no_email"]) && $_POST["no_email"])
 			{
 			echo "<h3>".__('Email notification disabled','rsvpmaker-for-toastmasters')."</h3><pre>".$message."</pre>";
 			}
@@ -4359,19 +4406,8 @@ function add ($user)
 				$this->confirmations[] = "<h3>".__('Emailing notifications disabled','rsvpmaker-for-toastmasters')."</h3><pre>".$message."</pre>";			
 			else	
 				$this->confirmations[] = "<h3>".__('Emailing to','rsvpmaker-for-toastmasters')." ".$user["user_email"]."</h3><pre>".$message."</pre>";
-			}
-						
-			}
-		else
-			 {
-			echo '<h3 style="color: red;">WordPress '.__('registration error','rsvpmaker-for-toastmasters').'</h3>';
-			print_r($user);
-			echo "<br />";
-			 }
-		}
-
-return $user_id;
-	}
+			}	
+}
 function check ($user) 
 	{
 	foreach($user as $name => $value)
@@ -5015,7 +5051,7 @@ $wp4toastmasters_mailman = get_option("wp4toastmasters_mailman");
 	$mail["from"] = $current_user->user_email;
 	$mail["fromname"] = $current_user->display_name;
 	$mail["subject"] = stripslashes($_POST["subject"]);
-	if(is_array($emails))
+	if(isset($emails) && is_array($emails))
 	{
 		foreach($emails as $e)
 		{
@@ -5859,7 +5895,7 @@ function toastmasters_css_js() {
 	wp_enqueue_style( 'jquery-ui-core' );
 	wp_enqueue_style( 'jquery-ui-sortable' );
 	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.4.3' );
-	wp_enqueue_style('jquery-ui-css', 'http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css');
+	wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css');
 	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.4.9');
 	wp_enqueue_script( 'script-toastmasters');
 	$manuals = get_manuals_options();
@@ -6871,27 +6907,27 @@ $height = (isset($atts["height"])) ? $atts["height"] : 300;
 <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
 </form>
 <p>Financial contributions offset project expenses such as web hosting and security.</p>
+<?php do_action('rsvptoast_tip_jar'); ?>
 </div>
 
 <div style="float: left; width: 300px; height: <?php echo $height; ?>px; background-color: #fff; padding: 10px; margin-right: 5px; margin-top: 5px;">
 <h3>Advertise on Toastmost.org</h3>
 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 <input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="98TYNDX3RZSVU">
+<input type="hidden" name="hosted_button_id" value="X8AA8UKDNCL78">
 <table>
-<tr><td><input type="hidden" name="on0" value="Advertisement">Advertisement</td></tr><tr><td><select name="os0">
-	<option value="Sidebar Ad: 1 Month">Sidebar Ad: 1 Month $200.00 USD</option>
-	<option value="Sidebar Ad: 3 Months">Sidebar Ad: 3 Months $500.00 USD</option>
-	<option value="Sidebar Ad: 6 Months">Sidebar Ad: 6 Months $750.00 USD</option>
-	<option value="Sidebar Ad: 1 Year">Sidebar Ad: 1 Year $1,000.00 USD</option>
-	<option value="Exclusive Sponsor: 1 Year">Exclusive Sponsor: 1 Year $2,000.00 USD</option>
+<tr><td><input type="hidden" name="on0" value="Ad Type">Ad Type</td></tr><tr><td><select name="os0">
+	<option value="Sidebar Ad, 1 Month">Sidebar Ad, 1 Month $100.00 USD</option>
+	<option value="Sidebar Ad, 3 Months">Sidebar Ad, 3 Months $250.00 USD</option>
+	<option value="Sidebar Ad, 6 Months">Sidebar Ad, 6 Months $450.00 USD</option>
+	<option value="Exclusive Sponsor, 1 Year">Exclusive Sponsor, 1 Year $1,000.00 USD</option>
 </select> </td></tr>
 </table>
 <input type="hidden" name="currency_code" value="USD">
 <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
 <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
 </form>
-<p>Advertise to Toastmasters leaders in the clubs who take advantage of the free website offer at toastmost.org (example: <a target="_blank" href="https://demo.toastmost.org">demo.toastmost.org</a>). Ads appear in the sidebar of the page.</p>
+<p>Advertise to Toastmasters leaders in the clubs who take advantage of the ad-supported club websites at toastmost.org (example: <a target="_blank" href="https://demo.toastmost.org">demo.toastmost.org</a>). Ads appear in the sidebar of the page.</p>
 </div>
 
 <div style="float: left; width: 400px; height: <?php echo $height; ?>px; background-color: #fff; padding: 10px; margin-top: 5px;">
@@ -6906,6 +6942,19 @@ $height = (isset($atts["height"])) ? $atts["height"] : 300;
 </div>
 <div style="text-align: center; margin-top: 5px; width: 1030px;">WordPress for Toastmasters is a project of <a target="_blank" href="https://www.carrcommunications.com">Carr Communications Inc.</a> and receives no financial or logistical support from Toastmasters International.<br />The Toastmasters-branded theme Lectern has been reviewed for conformance to Toastmasters branding requirements.</div>
 <?php
+}
+
+add_action( 'wp_ajax_wptoast_dismissed_notice_handler', 'wptoast_ajax_notice_handler' );
+
+/**
+ * AJAX handler to store the state of dismissible notices.
+ */
+function wptoast_ajax_notice_handler() {
+$cleared = get_option('cleared_rsvptoast_notices');
+$cleared = is_array($cleared) ? $cleared : array();
+    // Pick up the notice "type" - passed via jQuery (the "data-notice" attribute on the notice)
+    $cleared[] = $_REQUEST['type'];
+    update_option('cleared_rsvptoast_notices',$cleared);
 }
 
 function rsvptoast_admin_notice() {
@@ -7002,9 +7051,16 @@ else
 
 if(!current_user_can('manage_options'))
 	return;
-
+if(isset($_GET['reset_notices']))
+{
+	$cleared = array();
+	delete_option('cleared_rsvptoast_notices');
+}
+else
+{
 $cleared = get_option('cleared_rsvptoast_notices');
-$cleared = is_array($cleared) ? $cleared : array();
+$cleared = is_array($cleared) ? $cleared : array();	
+}
 if(isset($_REQUEST['cleared_rsvptoast_notices']) && $_REQUEST['cleared_rsvptoast_notices'])
  	{
 		$cleared[] = $_REQUEST['cleared_rsvptoast_notices'];
@@ -7031,7 +7087,8 @@ if(current_user_can('edit_member_stats') && !in_array('update_history',$cleared)
 			}
 		else
 			{
-			echo '<div class="notice notice-info"><p>'.sprintf(__('The Reconcile screen has been renamed Update History and can now be used to record backdated information such as speeches delivered before you started using this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/07/updating-member-history/">blog post</a> for explanation of this and related changes.</p><p><a href="%s">Got it: stop showing this notice.</a>','rsvpmaker-for-toastmasters'), admin_url('admin.php?page=toastmasters_reconcile&cleared_rsvptoast_notices=update_history') )."</p></div>\n";
+			$message = sprintf(__('The Reconcile screen has been renamed Update History and can now be used to record backdated information such as speeches delivered before you started using this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/07/updating-member-history/">blog post</a> for explanation of this and related changes.</p><p><a href="%s">Got it: stop showing this notice.</a>','rsvpmaker-for-toastmasters'), admin_url('admin.php?page=toastmasters_reconcile&cleared_rsvptoast_notices=update_history') );
+			rsvptoast_admin_notice_format($message, 'update_history', $cleared, 'info');
 			}
 	}
 
@@ -7042,9 +7099,9 @@ $pdir = str_replace('rsvpmaker-for-toastmasters/','',plugin_dir_path( __FILE__ )
 
 if(!is_plugin_active('rsvpmaker/rsvpmaker.php')){
 	if(file_exists($pdir.'rsvpmaker/rsvpmaker.php'  ) )
-		echo '<div class="error"><p>'.sprintf(__('The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker is installed but must be activated. <a href="%s#name">Activate now</a>','rsvpmaker-for-toastmasters'),admin_url('plugins.php?s=rsvpmaker') )."</p></div>\n";
+		echo '<div class="notice notice-error"><p>'.sprintf(__('The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker is installed but must be activated. <a href="%s#name">Activate now</a>','rsvpmaker-for-toastmasters'),admin_url('plugins.php?s=rsvpmaker') )."</p></div>\n";
 	else
-		echo  '<div class="error"><p>'.sprintf(__('The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker must be installed and activated. <a href="%s">Install now</a>','rsvpmaker-for-toastmasters'),admin_url('plugin-install.php?tab=search&s=rsvpmaker#plugin-filter'))."</p></div>\n";
+		echo  '<div class="notice notice-error"><p>'.sprintf(__('The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker must be installed and activated. <a href="%s">Install now</a>','rsvpmaker-for-toastmasters'),admin_url('plugin-install.php?tab=search&s=rsvpmaker#plugin-filter'))."</p></div>\n";
 return; // if this is not configured, the rest doesn't matter
 }
 
@@ -7055,9 +7112,15 @@ $theme_name = $my_theme->get( 'Name' );
 if($theme_name != 'Lectern')
 	{
 	if(file_exists( get_theme_root().'/lectern/style.css' ) )
-		echo '<div class="error"><p>'.sprintf(__('The Lectern theme (recommended for Toastmasters branding) is installed but not active. <a href="%s">Activate now</a> or <a href="%s">No thanks,</a> I prefer another theme.','rsvpmaker-for-toastmasters'),admin_url('themes.php?search=Lectern#lectern-action'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=lectern') )."</p></div>\n";
+	{
+		$message = sprintf(__('The Lectern theme (recommended for Toastmasters branding) is installed but not active. <a href="%s">Activate now</a> or <a href="%s">No thanks,</a> I prefer another theme.','rsvpmaker-for-toastmasters'),admin_url('themes.php?search=Lectern#lectern-action'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=lectern') );
+		rsvptoast_admin_notice_format($message, 'lectern', $cleared, 'info');
+	}
 	else
-		echo  '<div class="error">'.sprintf(__('The Lectern theme (recommended for Toastmasters branding) is not installed or activated. <a href="%s">Install it now</a> or <a href="%s">No thanks,</a> I prefer another theme.','rsvpmaker-for-toastmasters'),admin_url('theme-install.php?theme=lectern'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=lectern'))."</div>\n";
+	{
+		$message = sprintf(__('The Lectern theme (recommended for Toastmasters branding) is not installed or activated. <a href="%s">Install it now</a> or <a href="%s">No thanks,</a> I prefer another theme.','rsvpmaker-for-toastmasters'),admin_url('theme-install.php?theme=lectern'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=lectern'));		
+		rsvptoast_admin_notice_format($message, 'lectern', $cleared, 'info');
+	}
 	return;
 	}
 }
@@ -7170,33 +7233,6 @@ Anyone who is a strong leader has to first be an effective communicator. In Toas
 	}
 	return;
 	} // end page on front routine
-	
-	$d = get_option('default_toastmasters_template');
-	if($d)
-		{
-		if(isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'agenda_setup') )
-			return; // don't prompt if already doing it
-?>
-<div class="error">
-<p><a href="<?php echo admin_url('edit.php?post_type=rsvpmaker&page=agenda_setup&post_id=').$d; ?>">Set up meeting schedule and roles</a>.</p>
-</div>
-<?php			
-		return;
-		}
-
-if(!in_array('users',$cleared))
-{
-$blogusers = get_users('blog_id='.get_current_blog_id() );
-if( sizeof($blogusers) == 1 )
-	printf('<div class="error"><p>'.__('<a href="%s">Add club members</a> as website users. You can import your whole roster, using the spreadsheet from toastmasters.org\'s Club Central. Or selectively add a few members to help you with testing.','rsvpmaker-for-toastmasters').'</p></div>',admin_url('users.php?page=add_awesome_member'));
-}
-
-if(!in_array('wp-user-avatar',$cleared) && !is_plugin_active('wp-user-avatar/wp-user-avatar.php')){
-	if(file_exists($pdir.'wp-user-avatar/wp-user-avatar.php'  ) )
-		echo '<div class="error"><p>'.sprintf(__('The WP User Avatar plugin is recommended for allowing members to add a profile picture. WP User Avatar is installed but must be activated. <a href="%s#name">Activate now</a> or <a href="%s">No thanks</a>','rsvpmaker-for-toastmasters'),admin_url('plugins.php?s=wp-user-avatar'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=wp-user-avatar') )."</p></div>\n";
-	else
-		echo  '<div class="error"><p>'.sprintf(__('The WP User Avatar plugin is recommended for allowing members to add a profile picture. <a href="%s">Install now</a> or <a href="%s">No thanks</a>','rsvpmaker-for-toastmasters'),admin_url('plugin-install.php?tab=search&s=wp-user-avatar#plugin-filter'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=wp-user-avatar') )."</p></div>\n";
-}
 
 if(!in_array('settings',$cleared))
 {
@@ -7221,9 +7257,42 @@ if(empty($tz) )
 	$missing .= '<li>'.__('Make sure to set the correct timezone for your site so scheduling functions will work properly.','rsvpmaker-for-toastmasters').'</li>';
 
 if(!empty($missing) )
-	printf('<div class="error"><p>'.__('Visit the <a href="%s">Toastmasters Settings</a> screen','rsvpmaker-for-toastmasters').'<p><ul>'.$missing.'</ul></div>',admin_url('options-general.php?page=wp4toastmasters_settings'));
-
+	$message = sprintf(__('Visit the <a href="%s">Toastmasters Settings</a> screen','rsvpmaker-for-toastmasters').'<p><ul>'.$missing.'</ul>',admin_url('options-general.php?page=wp4toastmasters_settings'));
+	rsvptoast_admin_notice_format($message, 'visit_settings', $cleared, 'info');
 }
+		
+	$d = get_option('default_toastmasters_template');
+	if($d && !in_array('schedule',$cleared))
+		{
+		if(isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'agenda_setup') )
+			return; // don't prompt if already doing it
+?>
+<div class="notice notice-error wptoast-notice is-dismissible" data-notice="schedule">
+<p><a href="<?php echo admin_url('edit.php?post_type=rsvpmaker&page=agenda_setup&post_id=').$d; ?>">Set up meeting schedule and roles</a>.</p>
+</div>
+<?php			
+		return;
+		}
+
+$blogusers = get_users('blog_id='.get_current_blog_id() );
+if( sizeof($blogusers) == 1 )
+{
+	$message = sprintf(__('<a href="%s">Add club members</a> as website users. You can import your whole roster, using the spreadsheet from toastmasters.org\'s Club Central. Or selectively add a few members to help you with testing.','rsvpmaker-for-toastmasters'),admin_url('users.php?page=add_awesome_member'));
+	rsvptoast_admin_notice_format($message,'users',$cleared,'info');
+}
+
+if(!in_array('wp-user-avatar',$cleared) && !is_plugin_active('wp-user-avatar/wp-user-avatar.php')){
+	if(file_exists($pdir.'wp-user-avatar/wp-user-avatar.php'  ) )
+	{
+		$message = sprintf(__('The WP User Avatar plugin is recommended for allowing members to add a profile picture. WP User Avatar is installed but must be activated. <a href="%s#name">Activate now</a> or <a href="%s">No thanks</a>','rsvpmaker-for-toastmasters'),admin_url('plugins.php?s=wp-user-avatar'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=wp-user-avatar') );
+		rsvptoast_admin_notice_format($message,'wp-user-avatar',$cleared,'info');
+	}
+	else {
+		$message = sprintf(__('The WP User Avatar plugin is recommended for allowing members to add a profile picture. <a href="%s">Install now</a> or <a href="%s">No thanks</a>','rsvpmaker-for-toastmasters'),admin_url('plugin-install.php?tab=search&s=wp-user-avatar#plugin-filter'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=wp-user-avatar') );
+		rsvptoast_admin_notice_format($message,'wp-user-avatar',$cleared,'info');
+	}
+}
+
 
 if(!in_array('meetings_nag',$cleared) && !strpos($_SERVER['REQUEST_URI'],'rsvpmaker_template_list') && !strpos($_SERVER['REQUEST_URI'],'agenda_setup')) // don't test if already on the projected dates page
 {
@@ -7231,19 +7300,33 @@ global $wpdb;
 		$future = get_future_events(" post_content LIKE '%[toastmaster %' ");
 		$upcoming = sizeof($future);
 if($upcoming == 0)
-	printf('<div class="error"><p>'.__('No meetings currently published. Add based on template (standard schedule and roles):</p><ul>%s</ul>','rsvpmaker-for-toastmasters').'</div>',get_toast_templates () );
+{
+	$message = sprintf(__('No meetings currently published. Add based on template (standard schedule and roles):</p><ul>%s</ul>','rsvpmaker-for-toastmasters'),get_toast_templates () );
+	rsvptoast_admin_notice_format($message,'meetings_nag',$cleared,'info');	
+}
 elseif($upcoming < 5)
-	printf('<div class="notice"><p>'.$upcoming.' '.__('meetings currently published. Add more based on template (standard schedule and roles):</p><ul>%s</ul>','rsvpmaker-for-toastmasters').'or <a href="%s">clear reminder</a></div>',get_toast_templates (), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=meetings_nag') );
+{
+	$message = sprintf($upcoming.' '.__('meetings currently published. Add more based on template (standard schedule and roles):</p><ul>%s</ul>','rsvpmaker-for-toastmasters').'or <a href="%s">clear reminder</a>',get_toast_templates (), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=meetings_nag') );
+	rsvptoast_admin_notice_format($message,'meetings_nag',$cleared,'info');
+}
+
 }
 
 if($sync_ok == '') // if not 1 or 0
 	{
-	echo '<div class="notice notice-info"><p>'.sprintf(__('You can choose to allow the member data on the Progress Reports screen to sync with other websites that use this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/13/sync-member-progress-report-data/">blog post</a>.</p><p>Choose whether this should be on our off: <a href="%s">Toastmasters Settings.</a>','rsvpmaker-for-toastmasters'), admin_url('options-general.php?page=wp4toastmasters_settings') )."</p></div>\n";
+	$message = sprintf(__('You can choose to allow the member data on the Progress Reports screen to sync with other websites that use this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/13/sync-member-progress-report-data/">blog post</a>.</p><p>Choose whether this should be on our off: <a href="%s">Toastmasters Settings.</a>','rsvpmaker-for-toastmasters'), admin_url('options-general.php?page=wp4toastmasters_settings') );
+	rsvptoast_admin_notice_format($message, 'sync_ok', $cleared, 'info');
 	}
-
 }
 
-
+function rsvptoast_admin_notice_format($message, $slug, $cleared, $type='info')
+{
+if(in_array($slug,$cleared))
+	return;
+printf('<div class="notice notice-%s wptoast-notice is-dismissible" data-notice="%s">
+<p>%s</p>
+</div>',$type,$slug,$message);
+}
 
 function get_toast_templates () {
 
@@ -9366,7 +9449,7 @@ function no_shortcode_paragraphs($content) {
 
 function wpautop_for_toastmasters () {
 	global $post;
-	if(($post->post_type == 'rsvpmaker') && strpos($post->post_content,'[toastmaster'))
+	if(isset($post->post_type) && ($post->post_type == 'rsvpmaker') && strpos($post->post_content,'[toastmaster'))
 	{
 	remove_filter( 'the_content', 'wpautop' );
 	add_filter( 'the_content', 'wpautop' , 1);

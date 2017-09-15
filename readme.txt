@@ -1,10 +1,10 @@
 === RSVPMaker for Toastmasters ===
 Contributors: davidfcarr
-Donate link: http://wp4toastmasters.com/
+Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
 Tested up to: 4.8.1
-Stable tag: 2.6.6
+Stable tag: 2.6.9
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,9 +18,9 @@ https://www.youtube.com/watch?v=D1E9GMwnImM
 
 As an alternative to other club web software options that include a custom content management system, this WordPress-based solution allows website operators to take advantage of all the flexibility available on other WordPress sites. Members can sign up for roles on the website, meeting organizers can also assign members to roles, and club leaders can track member participation and performance.
 
-The related [Lectern WordPress theme](https://wordpress.org/themes/lectern/) makes it easy to add meet Toastmasters International branding guidelines with your WordPress website, adding the logo and the required legal disclaimers.
+The related [Lectern WordPress theme](https://wordpress.org/themes/lectern/) makes it easy to meet Toastmasters International branding guidelines with your WordPress website, adding the logo and the required legal disclaimers.
 
-For documentation and tips on more effective Toastmasters web and social media marketing, see [WP4Toastmasters.com](http://wp4toastmasters.com/ "WordPress for Toastmasters")
+For documentation and tips on more effective Toastmasters web and social media marketing, see [WP4Toastmasters.com](https://wp4toastmasters.com/ "WordPress for Toastmasters"). Managed hosting for the WordPress for Toastmasters solution is available at [Toastmost.org](https://toastmost.org).
 
 RSVPMaker for Toastmasters is an extension of [RSVPMaker](https://wordpress.org/plugins/rsvpmaker/), a general purpose event scheduling and RSVP tracking plugin. This means you can also use your website to manage other types of events, beyond club meetings, such as open house or training events. RSVPMaker can be configured to allow you to accept online payments via PayPal. [Documentation at RSVPMaker.com](https://rsvpmaker.com)
 
@@ -57,6 +57,10 @@ You can purchase hosting through project sponsor [Carr Communications Inc.](http
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 2.6.8 =
+
+* Factored out a dependency on the intdiv function introduced in PHP 7
 
 = 2.6.6 =
 

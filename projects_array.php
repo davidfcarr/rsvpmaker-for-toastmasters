@@ -194,62 +194,62 @@ $project_options["INTERPRETIVE READING"] .= '<option value="INTERPRETIVE READING
 $project_times["INTERPRETIVE READING 5"] = 10;
 $display_times["INTERPRETIVE READING 5"] = "8 to 10 minutes";
 
-$projects["Other Manual or Non Manual Speech 1"] = __("Custom Speech ","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 1"] = __("Custom Speech 3 to 5 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] = '<option value="Other Manual or Non Manual Speech 1">'.__("Custom Speech ","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 1"] = 5;
-$display_times["Other Manual or Non Manual Speech 1"] = "5 minutes";
+$display_times["Other Manual or Non Manual Speech 1"] = "3 to 5 minutes";
 
-$projects["Other Manual or Non Manual Speech 2"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 2"] = __("Custom Speech 5 to 7 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 2">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 2"] = 7;
 $display_times["Other Manual or Non Manual Speech 2"] = "5 to 7 minutes";
 
-$projects["Other Manual or Non Manual Speech 3"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 3"] = __("Custom Speech 8 to 10 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 3">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 3"] = 10;
 $display_times["Other Manual or Non Manual Speech 3"] = "8 to 10 min";
 
-$projects["Other Manual or Non Manual Speech 4"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 4"] = __("Custom Speech 10 to 12 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 4">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 4"] = 12;
 $display_times["Other Manual or Non Manual Speech 4"] = "10 to 12 min";
 
-$projects["Other Manual or Non Manual Speech 5"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 5"] = __("Custom Speech 13 to 15 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 5">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 5"] = 15;
 $display_times["Other Manual or Non Manual Speech 5"] = "13 to 15 min";
 
-$projects["Other Manual or Non Manual Speech 6"] = __("Custom Speech ()","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 6"] = __("Custom Speech 18 to 20 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 6">'.__("Custom Speech ()","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 6"] = 20;
 $display_times["Other Manual or Non Manual Speech 6"] = "18 to 20 min";
 
-$projects["Other Manual or Non Manual Speech 7"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 7"] = __("Custom Speech 23 to 25 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 7">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 7"] = 25;
 $display_times["Other Manual or Non Manual Speech 7"] = "23 to 25 min";
 
-$projects["Other Manual or Non Manual Speech 8"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 8"] = __("Custom Speech 28 to 30 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 8">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 8"] = 30;
 $display_times["Other Manual or Non Manual Speech 8"] = "28 to 30 min";
 
-$projects["Other Manual or Non Manual Speech 9"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 9"] = __("Custom Speech 35 to 40 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 9">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 9"] = 40;
 $display_times["Other Manual or Non Manual Speech 9"] = "35 to 40 min";
 
-$projects["Other Manual or Non Manual Speech 10"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 10"] = __("Custom Speech 40 to 45 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 10">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 10"] = 45;
 $display_times["Other Manual or Non Manual Speech 10"] = "40 to 45 min";
 
-$projects["Other Manual or Non Manual Speech 11"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 11"] = __("Custom Speech 45 to 50 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 11">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 11"] = 50;
 $display_times["Other Manual or Non Manual Speech 11"] = "45 to 50 min";
 
-$projects["Other Manual or Non Manual Speech 12"] = __("Custom Speech","rsvpmaker-for-toastmasters");
+$projects["Other Manual or Non Manual Speech 12"] = __("Custom Speech 55 to 60 minutes","rsvpmaker-for-toastmasters");
 $project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 12">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 12"] = 60;
 $display_times["Other Manual or Non Manual Speech 12"] = "55 to 60 min";

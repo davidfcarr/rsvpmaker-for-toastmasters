@@ -458,6 +458,8 @@ if($id)
 	printf('<tr><td>Educational Awards</td><td><input type="text" size="10" name="education_awards" value="%s"><br />Use the abbreviations CC,  ACB, ACS, ACG, CL, ALB, ALS, DTM</td><td></td></tr>',$userdata->education_awards);
 	foreach($manuals as $role => $display)
 		{
+			if(strpos($display,'Manual/Path')) // don't include placeholder select manual field
+				continue;
 			$stat = (isset($stats[$role])) ? $stats[$role] : 0;
 			$pure = (isset($tmstats["pure_count"][$role])) ? $tmstats["pure_count"][$role] : 0;
 			$difftext = ($stat != $pure) ? sprintf('detailed records: %s, adjustment: %s',$pure, ($stat - $pure)) : '';
@@ -3229,8 +3231,8 @@ tm_admin_page_bottom($hook);
 function tm_welcome_screen_assets( $hook ) {
   if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) {
     wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.1 );
-    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.6', true );
   }
+    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.10', true );
 }
 
 function tm_member_welcome_redirect() {
@@ -3434,7 +3436,10 @@ $manuals = get_manuals_array();
 global $toast_roles;
 global $competent_leader;
 foreach($manuals as $manual => $manual_text)
-	$statfields[] = $manual;
+{
+	if(!strpos($manual,'Manual/Path')) // don't include placeholder select manual field
+		$statfields[] = $manual;
+}
 foreach($toast_roles as $column)
 	$statfields[] = $column;
 foreach($competent_leader as $column)
@@ -3672,17 +3677,26 @@ foreach($lines as $linenumber => $line)
 		{
 			$cell = trim(str_replace('"','',$cell));
 			$field = $label[$index];
-			//printf('<br />%s = %s',$field,$cell);
+			//printf('<br />%d %s = %s',$id,$field,$cell);
 			if($index < 3)
 				continue;
 			elseif(in_array($field,$statfields) )
 				{
-				if(!isset($stats[$field]) || ($cell == $stats[$field]))
+				if(empty($cell))
 					{
-					continue; // if it didn't change, we don't need to update it
+					//echo '<br >empty';
+					continue;
+					}
+				elseif(!empty($stats[$field]) && ($cell == $stats[$field]))
+					{
+					//echo '<br />unchanged';
+					continue; // if empty or didn't change, we don't need to update it
 					}
 				$current_meta = (int) get_user_meta($id,'tmstat:'.$field,true);
-				$new_meta = $cell - ($stats[$field] - $current_meta);
+				if(strpos($field,'_'))
+					$new_meta = $cell;
+				else
+					$new_meta = $cell - ($stats[$field] - $current_meta);
 				update_user_meta($id,'tmstat:'.$field,$new_meta);
 				printf('<br />%s %s = %s',$cells[1],$field,$new_meta);
 				}
