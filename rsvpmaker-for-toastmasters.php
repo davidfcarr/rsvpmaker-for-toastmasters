@@ -873,8 +873,9 @@ function toastmasters_agenda_display($atts) {
 		return  toastmasters_agenda_display_custom($atts);
 	global $post;
 	global $open;
+	if(empty($atts["count"])) $atts["count"] = 1;
 		$agenda_time = get_option('agenda_time');
-		$output = '';
+		$field = $output = '';
 		$maxtime = (isset($atts["time_allowed"]) ) ? (int) $atts["time_allowed"] : 0;
 		$padding_time = (isset($atts["padding_time"])) ? (int) $atts["padding_time"] : 0;
 		$speaktime = 0;
@@ -978,7 +979,7 @@ function toastmaster_short($atts=array(),$content="") {
 		return '<div class="role-block role-agenda-item"><p><strong>'.$atts["special"].'</strong></p></div>';	
 	elseif(empty($atts["role"]) )
 		return;
-	$count = (int) ($atts["count"]) ? $atts["count"] : 1;
+	$count = (int) (isset($atts["count"])) ? $atts["count"] : 1;
 	$output = '';
 	global $post, $current_user, $open;
 	$permalink = rsvpmaker_permalink_query($post->ID);
