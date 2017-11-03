@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 4.8.1
-Stable tag: 2.6.9
+Tested up to: 4.8.3
+Stable tag: 2.7.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,29 @@ You can purchase hosting through project sponsor [Carr Communications Inc.](http
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 2.7.4 =
+
+* Dates now displayed on Competent Leader report.
+
+= 2.7.3 =
+
+* More tweaks for recommended roles
+
+= 2.7.2 =
+
+* Fixes for recommended role feature, online evaluation forms
+
+= 2.7.1 =
+
+* Improved the random member selection tool, particularly for use by clubs that tend to assign members to roles more than asking for volunteers. This is enabled when you choose Assign or Recommend from the menu. In the Recommend mode, members must confirm before they are added to the agenda. The software attempts to filter out 1) members who have filled the same role at one of the last few meetings, 2) members who have been absent recently, and 3) junior members who have completed less than 3 speeches in the case of senior roles like evaluator and Toastmaster of the Day.
+* Changed the coding for red-yellow-green stoplight indicators. Now works better with download to Word and should print more clearly in black and white.
+* A shortcode in the format [signup_sheet limit="3"] is now available for displaying a multi-week view of upcoming roles on your website. This is essentially the same as the paper signup sheet. The limit value must be specified and determines the number of columns for the table.
+
+= 2.7 =
+
+* fix to admin css / js
+* tweak to recommend role function
 
 = 2.6.8 =
 

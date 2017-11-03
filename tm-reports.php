@@ -51,7 +51,7 @@ global $current_user;
 $security = get_tm_security ();	
 $beta = get_option('wp4toastmasters_beta');
 
-add_menu_page(__('Toastmasters','rsvpmaker-for-toastmasters'), __('Toastmasters','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_screen', 'toastmasters_screen',plugins_url('rsvpmaker-for-toastmasters/toastmasters-20.png'),'2.01');
+add_menu_page(__('Toastmasters','rsvpmaker-for-toastmasters'), __('Toastmasters','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_screen', 'toastmasters_screen','dashicons-microphone','2.01');
 add_submenu_page( 'toastmasters_screen', __('Update History','rsvpmaker-for-toastmasters'), __('Update History','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_reconcile', 'toastmasters_reconcile');
 
 add_submenu_page( 'toastmasters_screen', __('My Progress','rsvpmaker-for-toastmasters'), __('My Progress','rsvpmaker-for-toastmasters'), 'read', 'my_progress_report', 'my_progress_report');
@@ -61,7 +61,6 @@ add_submenu_page( 'toastmasters_screen', __('Competent Leader Progress Report','
 add_submenu_page( 'toastmasters_screen', __('Advanced Awards Progress Report','rsvpmaker-for-toastmasters'), __('Advanced Awards','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_advanced', 'toastmasters_advanced');
 
 add_submenu_page( 'toastmasters_screen', __('Evaluations','rsvpmaker-for-toastmasters'), __('Evaluations','rsvpmaker-for-toastmasters'), 'read', 'wp4t_evaluations', 'wp4t_evaluations');
-add_submenu_page( 'toastmasters_screen', __('Edit Evaluation Forms','rsvpmaker-for-toastmasters'), __('Edit Evaluation Forms','rsvpmaker-for-toastmasters'), 'edit_others_rsvpmakers', 'wp4t_evaluations_edit', 'wp4t_evaluations_edit');
 
 add_submenu_page( 'toastmasters_screen', __('Member List','rsvpmaker-for-toastmasters'), __('Member List','rsvpmaker-for-toastmasters'), 'view_contact_info', 'contacts_list', 'member_list');
 
@@ -360,7 +359,7 @@ if(!$id)
 ?>
 Select member from the list above
 </section>
-<section id="edit_stats_count">
+<section class="rsvpmaker"  id="edit_stats_count">
 Select member from the list above
 <?php
 return;
@@ -393,7 +392,7 @@ if($id)
 	echo $tmstats['editdetail'];
 ?>
 </section>
-<section id="edit_stats_count">
+<section class="rsvpmaker"  id="edit_stats_count">
 <?php
 	if($_REQUEST["page"] == 'tm_member_edit')
 	tm_select_member('tm_member_edit','toastmaster');
@@ -597,13 +596,13 @@ if(current_user_can('manage_options'))
 ?>
     </h2>
 
-    <div id='sections'>
-    <section id="profile_main">
+    <div id="sections" class="rsvpmaker" >
+    <section class="rsvpmaker"  id="profile_main">
 <?php
 echo toastmasters_progress_report($user_id);
 ?>
 </section>
-<section id="advanced">
+<section class="rsvpmaker"  id="advanced">
 <?php
 if($user_id)
 {
@@ -617,19 +616,19 @@ else
 	}
 ?>
 </section>
-<section id="pathways">
+<section class="rsvpmaker"  id="pathways">
 <?php pathways_report(); ?>
 </section>
 <?php
 if( (($_REQUEST["page"] == 'my_progress_report') && current_user_can('edit_own_stats')) || current_user_can('edit_member_stats'))
 {
 ?>
-<section id="edit">
+<section class="rsvpmaker"  id="edit">
 <?php
 echo $edit_form;
 ?>
 </section>
-<section id="add_member_speech">
+<section class="rsvpmaker"  id="add_member_speech">
 <?php
 add_member_speech($user_id);
 ?>
@@ -641,7 +640,7 @@ add_member_speech($user_id);
 if(current_user_can('manage_options'))
 {
 ?>
-<section id="deleterecords">
+<section class="rsvpmaker"  id="deleterecords">
 <?php
 wpt_delete_records($user_id);
 ?>
@@ -1807,7 +1806,23 @@ update_user_meta($user_id,$role,$stat);
 die('+1 ' . $_POST["role"]);
 }
 
-function is_requirement_met($user_id, $choices, $goal, $echo = true) {
+function roledates_text($datesarray)
+{
+	if(sizeof($datesarray) > 5)
+	{
+	$buff = ' '.array_shift($datesarray);
+	$buff .= ', '.array_shift($datesarray);
+	$end = array_pop($datesarray);
+	$buff .= ' ... '.array_pop($datesarray).', '.$end;
+	return $buff;
+	}
+	else
+	{
+		return ' '.implode(", ",$datesarray);
+	}
+}	
+
+function is_requirement_met($user_id, $choices, $goal, $echo = true, $roledates=array()) {
 global $myroles;
 $score = 0;
 
@@ -1818,13 +1833,20 @@ foreach($choices as $choice)
 			$myroles[$choice]--;
 			$score++;
 			if($echo)
-			echo '<div><span style="color: green; font-weight: bold">(x)</span> '.$choice."</div>\n";
+			echo '<div><span style="color: green; font-weight: bold">(x)</span> '.$choice;
+			if(!empty($roledates[$choice]))
+				echo roledates_text($roledates[$choice]);	
+			echo "</div>\n";
 			}
 		elseif($echo)
 			{
 			echo '<div>'.$choice;
 			if(current_user_can('edit_member_stats'))
 				echo increment_stat_button($user_id, $choice );
+			if(!empty($roledates[$choice]))
+			{
+				echo roledates_text($roledates[$choice]);	
+			}
 			echo "</div>\n";
 			}
 	}
@@ -1948,8 +1970,10 @@ if(empty($project_gaps[$userdata->ID])) $project_gaps[$userdata->ID] = '';
 printf('<h2 id="%d">%s %s</h2>',$userdata->ID, $userdata->first_name,$userdata->last_name);
 $project_gaps[$userdata->ID] .= sprintf('<td class="name"><a href="#%s">%s %s</a></td>',$userdata->ID, $userdata->first_name,$userdata->last_name);
 
-$myroles = awesome_get_stats($userdata->ID);
-
+$tmstats = get_tm_stats($userdata->ID);
+$myroles = $tmstats["count"];
+$roledates = $tmstats["roledates"];
+	
 $completed = 0;
 
 echo '<h3>'.__('PROJECT 1: Listening','rsvpmaker-for-toastmasters').'<br />
@@ -1961,7 +1985,7 @@ $choices = array(
 'Table Topics',
 'Evaluator');
 $goal = 3;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met)
 	{
@@ -1981,7 +2005,7 @@ $choices = array(
 'Evaluator');
 
 $goal = 2;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met)
 	{
@@ -2001,7 +2025,7 @@ $choices = array(
 'Evaluator');
 
 $goal = 3;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met)
 	{
@@ -2018,7 +2042,7 @@ $choices = array(
 'Timer');
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 echo "<h3>+1 ".__("Other",'rsvpmaker-for-toastmasters')."</h3>\n";
 
@@ -2029,7 +2053,7 @@ $choices = array(
 'Toastmaster of the Day');
 
 $goal = 1;
-$met2 = is_requirement_met($userdata->ID, $choices, $goal);
+$met2 = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met && $met2)
 	{
@@ -2054,7 +2078,7 @@ $choices = array(
 'Toastmaster of the Day');
 
 $goal = 3;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met)
 	{
@@ -2078,7 +2102,7 @@ $choices = array(
 );
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met)
 	{
@@ -2099,7 +2123,7 @@ $choices = array(
 'Toastmaster of the Day');
 
 $goal = 2;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met)
 	{
@@ -2118,7 +2142,7 @@ $choices = array("Membership Campaign Chair",
 );
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 echo "<h3> +2 ".__("OTHERS","rsvpmaker-for-toastmasters")."</h3>\n";
 
@@ -2129,7 +2153,7 @@ $choices = array(
 "PR Campaign Chair");
 
 $goal = 2;
-$met2 = is_requirement_met($userdata->ID, $choices, $goal);
+$met2 = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met && $met2)
 	{
@@ -2154,7 +2178,7 @@ $choices = array(
 );
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met)
 	{
@@ -2174,7 +2198,7 @@ $choices = array(
 );
 
 $goal = 2;
-$met = is_requirement_met($userdata->ID, $choices, $goal);
+$met = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 echo "<h3>".__("OR 1 OF THE FOLLOWING",'rsvpmaker-for-toastmasters')."</h3>";
 
@@ -2187,7 +2211,7 @@ $choices = array(
 "Club Webmaster");
 
 $goal = 1;
-$met2 = is_requirement_met($userdata->ID, $choices, $goal);
+$met2 = is_requirement_met($userdata->ID, $choices, $goal, true, $roledates);
 
 if($met || $met2)
 	{
@@ -2215,7 +2239,7 @@ $choices = array(
 'Grammarian',
 'Table Topics');
 $goal = 3;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met)
 	{
@@ -2231,7 +2255,7 @@ $choices = array(
 'General Evaluator');
 
 $goal = 2;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met)
 	{
@@ -2247,7 +2271,7 @@ $choices = array(
 'General Evaluator');
 
 $goal = 3;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met)
 	{
@@ -2261,7 +2285,7 @@ $choices = array(
 'Timer');
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 $choices = array(
 'Grammarian',
@@ -2270,7 +2294,7 @@ $choices = array(
 'Toastmaster of the Day');
 
 $goal = 1;
-$met2 = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met2 = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met && $met2)
 	{
@@ -2291,7 +2315,7 @@ $choices = array(
 'Toastmaster of the Day');
 
 $goal = 3;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met)
 	{
@@ -2311,7 +2335,7 @@ $choices = array(
 );
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met)
 	{
@@ -2329,7 +2353,7 @@ $choices = array(
 );
 
 $goal = 2;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met)
 	{
@@ -2344,7 +2368,7 @@ $choices = array("Membership Campaign Chair",
 );
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 $choices = array(
 "PR Campaign Chair",
@@ -2353,7 +2377,7 @@ $choices = array(
 'Toastmaster of the Day');
 
 $goal = 2;
-$met2 = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met2 = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met && $met2)
 	{
@@ -2374,7 +2398,7 @@ $choices = array(
 );
 
 $goal = 1;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met)
 	{
@@ -2390,7 +2414,7 @@ $choices = array(
 );
 
 $goal = 2;
-$met = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 $choices = array(
 "Membership Campaign Chair",
@@ -2401,7 +2425,7 @@ $choices = array(
 "Club Webmaster");
 
 $goal = 1;
-$met2 = is_requirement_met($userdata->ID, $choices, $goal, false);
+$met2 = is_requirement_met($userdata->ID, $choices, $goal, false, $roledates);
 
 if($met || $met2)
 	{
@@ -2966,7 +2990,7 @@ if(!$user_id)
 <h2>Competent Communicator Progress Report</h2>
 <?php toastmasters_cc(); ?>
 </section>
-<section id="speeches">
+<section class="rsvpmaker"  id="speeches">
 Select member from the list above
 <?php
 return;
@@ -3156,7 +3180,7 @@ echo $cl_detail;
 //echo get_speeches_by_manual($id);
 ?>
 </section>
-<section id="speeches">
+<section class="rsvpmaker"  id="speeches">
 <?php
 echo $stats["speech_list"];
 
@@ -3230,9 +3254,9 @@ tm_admin_page_bottom($hook);
 
 function tm_welcome_screen_assets( $hook ) {
   if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) {
-    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.1 );
+    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.2 );
   }
-    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.10', true );
+    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.2', true );
 }
 
 function tm_member_welcome_redirect() {
@@ -3272,8 +3296,8 @@ global $wpdb;
       <a class="nav-tab" href="#credits">Credits</a>
     </h2>
 
-    <div id='sections'>
-    <section id="main">
+    <div id="sections" class="rsvpmaker" >
+    <section class="rsvpmaker"  id="main">
     <p>This website takes advantage of software from the <a href="http://wp4toastmasters.com">WordPress for Toastmasters</a> project, which adds Toastmasters-specific features such as meeting and membership management to WordPress, a popular web publishing and online marketing platform. Here is a quick orientation.</p>
     <p>You are viewing the website's administrative back end, or "Dashboard." This is where you come to <a href="<?php echo admin_url('profile.php'); ?>">update your member profile</a> (please verify your contact information!) and <a href="<?php echo admin_url('profile.php#password'); ?>">change your password</a>. Site administrators can also edit the content of the website and tweak settings from here. To sign up for meeting roles, you will want to return to the public website, as shown below.</p>
     <p>The basic dashboard menu for a member looks something like this:</p>
@@ -3325,7 +3349,7 @@ global $wpdb;
 ?>
 <p><a href="<?php echo admin_url('?forget_welcome=1'); ?>">Reset welcome screen</a></p>
     </section><!-- end #main -->
-    <section id="TODO">
+    <section class="rsvpmaker"  id="TODO">
     <p>New members should start by:</p>
     <ul>
     <li><a href="<?php echo admin_url('profile.php#user_login'); ?>"><?php _e("Editing your member profile",'rsvpmaker-for-toastmasters');?></a> (you can also change your password on this screen)</li>
@@ -3354,7 +3378,7 @@ $count = 0;
     </ul>
 
     </section><!-- end #TO DO -->
-    <section id="credits">
+    <section class="rsvpmaker"  id="credits">
     <p>WordPress for Toastmasters is a volunteer project derived from customizations originally created by David F. Carr for <a href="http://www.clubawesome.org">Club Awesome Toastmasters</a> in Coral Springs, Florida and supported by <a href="http://www.carrcommunications.com">Carr Communications Inc</a>.</p>
     <p>Many improvements have been (and continue to be) suggested by the members of Club Awesome and by Toastmasters around the world who see the potential of this project.</p>
     <p>Some particularly important supporters include:
@@ -3602,8 +3626,8 @@ $hook = tm_admin_page_top('Import/Export');
       <a class="nav-tab nav-tab-active" href="#main">WP4Toastmasters Data</a>
       <a class="nav-tab" href="#fth">Import from Free Toast Host</a>
     </h2>
-    <div id='sections'>
-    <section id="main">
+    <div id="sections" class="rsvpmaker" >
+    <section class="rsvpmaker"  id="main">
 <?php
 
 $export_link = sprintf('<a href="%s?page=%s&tm_export=%s">Export</a>', admin_url('admin.php') ,'import_export',wp_create_nonce('tm_export') );
@@ -3725,7 +3749,7 @@ foreach($lines as $linenumber => $line)
 <br /><button>Import</button>
 </form>
 </section>
-<section id="fth">
+<section class="rsvpmaker"  id="fth">
 <?php import_fth(); ?>
 </section>
 </div>
@@ -4122,8 +4146,8 @@ $lastdate = '';
 					$count[$role] = 1;
 				else
 					$count[$role]++;
+				$roledates[$role][] = date('M j Y',strtotime($event_date));
 				}
-
 		if((current_user_can('edit_member_stats')) || (($user_id == $current_user->ID) && current_user_can('edit_own_stats')) )
 		{
 			$form = '';
@@ -4167,7 +4191,7 @@ foreach ($results as $row)
 
 ksort($editdetail);
 
-$stats_array[$user_id] = array('count' => $count, 'pure_count' => $pure_count, 'speech_count' => $speech_count, 'speeches' => $speeches, 'speech_list' => $speech_list, 'editdetail' => implode("\n",$editdetail));
+$stats_array[$user_id] = array('count' => $count, 'pure_count' => $pure_count, 'speech_count' => $speech_count, 'speeches' => $speeches, 'speech_list' => $speech_list, 'editdetail' => implode("\n",$editdetail),'roledates' => $roledates);
 
 return $stats_array[$user_id];
 }
@@ -4182,24 +4206,13 @@ $evaluator = get_userdata($current_user->ID);
 $timestamp = get_rsvp_date($meeting_id);
 $date = strftime($rsvp_options["long_date"],strtotime($timestamp));
 
-$response = wp_remote_get( 'http://wp4toastmasters.com/?wpt_forms&form='.$project );
-if( is_array($response) ) {
-  $header = $response['headers']; // array of http header lines
-  $body = $response['body']; // use the content
-}
-
 $slug = $project;
 $name = $project_text;
 $intro = $prompts = '';
-if(!empty($body) && strpos($body,'++++'))
-	{
-	$parts = explode("++++",$body);
-	$id = trim($parts[0]);
-	$slug = trim($parts[1]);
-	$name = trim($parts[2]);
-	$intro = trim($parts[3]);
-	$prompts = trim($parts[4]);
-	}
+
+$prompts = get_option('evalprompts:'.$project);	
+$intro = get_option('evalintro:'.$project);
+$name = get_project_text($project);
 	if(empty($prompts))
 		{
 		$intro = '<h4>We do not yet have a form with specific prompts for this project, but you can record your notes below.</h4>
@@ -4303,23 +4316,9 @@ if(!empty($_POST["speaker_id"]) && !empty($_POST["project"]))
 		$evaluation .= sprintf('<p><strong>Evaluator</strong> %s</p>',$evaluator->first_name. ' '.$evaluator->last_name)."\n";
 		$evaluation .= sprintf('<p><strong>Date</strong> %s</p>', strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
 
-$url = 'http://wp4toastmasters.com/?wpt_forms&form='.$project;
-$response = wp_remote_get( $url );
-if( is_array($response) ) {
-  $header = $response['headers']; // array of http header lines
-  $body = $response['body']; // use the content
-}
-else
-	die('Error retrieving form template');
-
-$slug = $project;
-$name = $project_text;
-$intro = $prompts = '';
-if(!empty($body) && strpos($body,'++++'))
-	{
-	$parts = explode('++++',$body);
-	$prompts = trim($parts[4]);
-	}
+$prompts = get_option('evalprompts:'.$project);	
+$intro = get_option('evalintro:'.$project);
+$name = get_project_text($project);
 if(empty($prompts))
 		{
 		$prompts = 'You excelled at
@@ -4335,7 +4334,8 @@ Other Comments';
 			$evaluation .= wpautop('<strong>'.$prompt.'</strong>');
 			if(!empty($_POST["check"][$index]))
 				$evaluation .= wpautop($_POST["check"][$index]);
-			$evaluation .= wpautop(stripslashes($_POST["comment"][$index]));
+			if(!empty($_POST["comment"][$index]))
+				$evaluation .= wpautop(stripslashes($_POST["comment"][$index]));
 			}
 
 		update_user_meta($speaker_id,$key, $evaluation);
@@ -4507,60 +4507,6 @@ if(!empty($eval_emails))
 
 tm_admin_page_bottom($hook);
 }
-
-
-function wp4t_evaluations_edit () {
-$hook = tm_admin_page_top(__('Edit Evaluation Forms','rsvpmaker-for-toastmasters'));
-
-if(isset($_REQUEST["form"]))
-{
-$response = wp_remote_get( 'http://wp4toastmasters.com/?wpt_forms&form='.$_REQUEST["form"] );
-if( is_array($response) ) {
-  $header = $response['headers']; // array of http header lines
-  $body = $response['body']; // use the content
-}
-
-if(!empty($body))
-	{
-		$forms = explode("====",$body);
-echo '<form method="post" target="_blank" action="http://wp4toastmasters.com/?wpt_forms"><input type="hidden" name="edit" value="1"> ';
-		foreach($forms as $form)
-		{
-			$parts = explode("++++",$form);
-			$id = trim($parts[0]);
-			$slug = trim($parts[1]);
-			$name = trim($parts[2]);
-			$intro = trim($parts[3]);
-			$prompts = trim($parts[4]);
-			printf('<input type="hidden" name="slug[%d]" value="%s" >',$id, $slug);
-			printf('<input type="hidden" name="name[%d]" value="%s" ><h3>%s</h3>',$id, $name, $name);
-			printf('<p><strong>Instructions for Evaluator</strong>
-<br /><textarea style="width:800px; height: 15em;" name="intro[%d]">%s</textarea></p>',$id, $intro);
-			printf('<p><strong>Speech Prompts</strong></p>
-<p><em>Each prompt appears on a single line. Multiple choice prompts, if any, are separated from the prompt and from each other by the | symbol.<br />Examples:</em>
-<br />What did you like about the speech?
-<br />Vocal Variety|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
-<br /><textarea style="width:800px; height: 15em;" name="prompts[%d]">%s</textarea></p>',$id, $prompts);
-		}
-
-	submit_button('Update');
-	echo '</form>';
-	}
-}
-//$o = '<option value="all">All</option>';
-$o = '';
-$project_options_array = get_projects_array('options');
-foreach($project_options_array as $manual => $options)
-	$o .= sprintf('<option value="manual:%s" style="font-weight: bold;">%s</option>%s',$manual,$manual,$options);
-
-printf('<h3>Choose Forms to Display</h3><p>Select a whole manual/path or a specific project</p>
-<form method="get" action="%s"><select name="form">%s</select>',admin_url('admin.php'),$o);
-submit_button('Submit');
-echo '<input type="hidden" name="page" value="wp4t_evaluations_edit" /></form>';	
-
-tm_admin_page_bottom($hook);
-}
-
 
 function clean_bullets($text, $replace = '')
 {
