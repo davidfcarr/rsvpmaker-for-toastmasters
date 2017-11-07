@@ -824,10 +824,8 @@ $project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option 
 $project_times["Dynamic Leadership Level 3 Increasing Knowledge 69"] = 7;
 $display_times["Dynamic Leadership Level 3 Increasing Knowledge 69"] = "5 - 7 minutes";
 
-$projects["Dynamic Leadership Level 3 Increasing Knowledge 70"] = __("Deliver Social Speeches -
- Second Speech","rsvpmaker-for-toastmasters");
-$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 70">'.__("Deliver Social Speeches -
- Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$projects["Dynamic Leadership Level 3 Increasing Knowledge 70"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Dynamic Leadership Level 3 Increasing Knowledge"] .= '<option value="Dynamic Leadership Level 3 Increasing Knowledge 70">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Dynamic Leadership Level 3 Increasing Knowledge 70"] = 7;
 $display_times["Dynamic Leadership Level 3 Increasing Knowledge 70"] = "5 - 7 minutes";
 

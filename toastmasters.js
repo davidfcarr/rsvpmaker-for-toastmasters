@@ -67,11 +67,18 @@ menu.on('click', '#responsive-tab', function(){
 		$('.time_message').html('Time reserved, all speakers: '+sum+' minutes.');
 		}
 
+$('.recommend_instead').on('click', function(){
+	var target = this.value;
+	var role = target.replace('_rm','');
+	$('#'+target).html('<p>Add a personal note (optional):<br /><textarea rows="3" cols="40" name="editor_suggest_note['+role+']"></textarea></p>');
+});
+
 // delegation code? $('.role_data').on('change', '.manual', function(){
 $('.editor_assign').on('change', function(){
 	var user_id = this.value;
 	var id = this.id;
 	var role = id.replace('editor_assign','');
+	if ( $('input[name="recommend_instead'+role+'"]').is(':checked') ) {return false;}
 	var security = $('#toastcode').val();
 	$('#_manual_'+role).html(manuals_list);
 	$('#_project_'+role).html('<option value="">Pick Manual for Project List</option>');

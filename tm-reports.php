@@ -4703,8 +4703,8 @@ else
 }
 
 $json = json_encode($json_data);
+rsvpmaker_debug_log($json,'json to submit for '.$current_user->user_login);
 
-//echo $json;
 $url = 'http://wp4toastmasters.com/?wpt_stats_warehouse='.$_SERVER['SERVER_NAME'];
 $ch = curl_init();
 curl_setopt($ch,  CURLOPT_URL, $url);
@@ -4715,15 +4715,15 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 $response  = curl_exec($ch);
+rsvpmaker_debug_log($response,'response to json submission');
 echo '<p>curl error: '.curl_error($ch).'</p>';
+rsvpmaker_debug_log(curl_error($ch),'curl error');
 curl_close($ch);
 $parts = explode('+++++',$response);
 echo $parts[0];
 $json = trim($parts[1]);
 $download = json_decode($json,true);
-echo '<pre>';
-print_r($download);
-echo '</pre>';
+json_debug_log($download,'download from sync attempt');
 foreach($download as $toastmasters_id => $keys) {
 	   if(!$toastmasters_id)
 	   		continue;
@@ -4741,8 +4741,6 @@ foreach($download as $toastmasters_id => $keys) {
 		$wpdb->query($sql);
 	   }
    }
-
-
 }
 
 function wpt_json_user_id ($user_id, $toastmasters_id) {
@@ -4788,7 +4786,9 @@ global $wpdb;
 $wpdb->show_errors();
 $last_wpt_json_batch_upload = (int) get_option('last_wpt_json_batch_upload');
 $sql = "SELECT * from $wpdb->usermeta WHERE umeta_id > $last_wpt_json_batch_upload AND meta_key LIKE 'tm|%".$_SERVER['SERVER_NAME']."%' ORDER BY umeta_id LIMIT 0, 200";
+rsvpmaker_debug_log($sql,'batch upload sql');
 $results = $wpdb->get_results($sql);
+rsvpmaker_debug_log($results,'batch upload db result');
 if($results)
 	{
 		$tmids = get_toastmasters_ids();
@@ -4801,12 +4801,23 @@ if($results)
 	update_option('last_wpt_json_batch_upload',$last);
 	}
 if(isset($json_data))
-	return wpt_json_send($json_data, true);
+{
+	rsvpmaker_debug_log($json_data,'batch upload json');
+	$result = wpt_json_send($json_data, true);
+	global $successful_upload;
+	if($successful_upload)
+		update_option('last_wpt_json_batch_upload',$last);
+	return $result;
+}
+
 }
 
 function wpt_json_send($json_data, $upload_only = false) {
 global $wpdb;
+global $successful_upload;
+$successful_upload = false;
 $json = json_encode($json_data);
+rsvpmaker_debug_log($json,'wpt_json_send data to upload');
 $p = get_option('wpt_stats_warehouse_password');
 if(empty($p))
 	{
@@ -4818,17 +4829,21 @@ if($upload_only)
 	$url .= '&upload_only=1';
 $ch = curl_init();
 curl_setopt($ch,  CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Length: ' . strlen($json)));
+//Tell cURL that we want to send a POST request.
+curl_setopt($ch, CURLOPT_POST, 1);
+ 
+//Set the content type to application/json
+curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json')); 
+
 curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-if(isset($_REQUEST["debug"]))
-echo $url . "<br />" .$json ."<br />";
 $response  = curl_exec($ch);
 curl_close($ch);
 $json_response = json_decode($response,true);
+rsvpmaker_debug_log($response,'wpt_json_send response');
+
 if(!isset($json_response["log"]))
 	{
 	update_option('sync_error_json_log',$response);
@@ -4879,6 +4894,7 @@ foreach($download as $toastmasters_id => $keys) {
 		$down++;
 	   }
    }
+$successful_upload = true;
 return "Data sync result uploaded $uploaded records, deleted $deleted, downloaded $down for $members members";
 }
 
