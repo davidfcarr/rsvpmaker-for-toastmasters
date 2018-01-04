@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 4.8.3
-Stable tag: 2.7.7
+Tested up to: 4.9.1
+Stable tag: 2.8.6
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,11 +45,13 @@ RSVPMaker includes many features you will not use in the course of a regular Toa
 
 = How is the version hosted at toastmost.org different? =
 
-Toastmasters clubs can get free websites hosted as subdomains of [toastmost.org](https://toastmost.org/), a free ad-supported service that is part of the broader [WordPress for Toastmasters](https://wp4toastmasters.com) project. Toastmost.org uses the WordPress Multisite version of WordPress, meaning that all sites hosted in this fashion run on the same instance of the software, with the network administrator controlling what plugins and themes are available. This is similar to the way WordPress.com, the service provided by the company behind WordPress, functions.
+Toastmasters clubs can get websites hosted as subdomains of [toastmost.org](https://toastmost.org/), a service of project project sponsor [Carr Communications Inc.](https://www.carrcommunications.com/toastmasters-club-website-hosting/) based on the free, open source software from the [WordPress for Toastmasters](https://wp4toastmasters.com) project. Toastmost.org uses the WordPress Multisite version of WordPress, meaning that all sites hosted in this fashion run on the same instance of the software, with the network administrator controlling what plugins and themes are available. This is similar to the way WordPress.com, the service provided by the company behind WordPress, functions.
 
 When you install this software on your own website, you have greater freedom to install other plugins or themes, including those of your own design.
 
-You can purchase hosting through project sponsor [Carr Communications Inc.](https://www.carrcommunications.com/toastmasters-club-website-hosting/), which is a way of supporting the author of this software and getting the most direct technical support.
+You can purchase hosting at your own domain through [Carr Communications Inc.](https://www.carrcommunications.com/toastmasters-club-website-hosting/), which is a way of supporting the author of this software and getting the most direct technical support. However, the software will run on any WordPress web hosting service.
+
+The toastmost.org service was originally free and would be again if we could find sufficient sponsorships or advertising to support a free service. Currently, toastmost.org sites are offered on the basis of a free trial and a lower hosting fee than for an independent website.
 
 == Screenshots ==
 
@@ -57,6 +59,35 @@ You can purchase hosting through project sponsor [Carr Communications Inc.](http
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 2.8.4 =
+
+* Updates to Multi-Meeting Role Planner tool.
+
+= 2.8.3 =
+
+* Added autocomplete on member name to the timing tool.
+
+= 2.8.2 =
+
+* Tweaks to timing tool.
+
+= 2.8.1 =
+
+* New Role Planner for signing up for roles several weeks in advance, with suggestions based on past history.
+* Online Timing tool on Agenda menu for displaying timing lights on a computer screen. Pulls time requirements for projects from the agenda. In addition to showing green/yellow/red, it can sound a chime as each milestone is passed. Particularly intended for use by online clubs, in combination with webcam software. See [blog post](https://wp4toastmasters.com/2017/11/29/new-online-timing-lights-tool/)
+
+= 2.8 =
+
+* Improvements to email reminders function, including the ability to preview messages and an option to send a meeting reminder to members without a role (in addition to reminders for members who have taken a role).
+
+= 2.7.9 =
+
+* Added Request Evaluation tab to the Evaluations page.
+
+= 2.7.8 =
+
+* Redesign of online evaluations screen with Evaluations Received and Evaluations Given tabs. Tracking of evaluations given added.
 
 = 2.7.7 =
 

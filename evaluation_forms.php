@@ -3,8 +3,12 @@ add_action("admin_init","update_evaluation_forms");
 	
 function update_evaluation_forms() {
 	$last = (int) get_option("evalforms_updated");
-	if(($last > strtotime("-1 week")) && !isset($_GET['update_evaluation_forms']))
+	$updated = strtotime('2017-11-12');
+	
+	if(($last > $updated) && ($last > strtotime("-1 week")) && !isset($_GET['update_evaluation_forms']))
 		return;
+	update_option('evalforms_updated',time());
+
 	update_option('evalintro:COMPETENT COMMUNICATION 1','Executive Summary:
 For your first speech project, you will introduce yourself to your fellow club members and give them some information about your background, interests and ambitions. Practice giving your speech to friends or family members, and strive to make eye contact with some of your audience. You may use notes during your speech if you wish. Read the entire project before preparing your talk.
 
@@ -10220,4 +10224,287 @@ If the speaker used the techniques he or she demonstrated to influence you, woul
 update_option('evalforms_updated',time());
 
 }
+
+/*
+1 Listening
+2 Critical Thinking
+CL3
+CL4
+5 Planning and Implementation
+6 Organization and Delegation
+7 Facilitation
+8 Motivation
+9 Mentoring
+10 Team Building
+*/
+
+update_option('evalintro:Evaluator:CL1','Assess the speech evaluator’s behavior as a listener. What specific behaviors demonstrated that the evaluator understood the speaker’s ideas? Did the evaluator remember the speaker’s main ideas and points?
+',false);
+update_option('evalprompts:Evaluator:CL1','The speech evaluator engaged the speaker, using eye contact and other nonverbal behavior to show interest.|3 Outstanding|2 Average|1 Needs Work
+The speech evaluator devoted his or her entire attention to the speaker and did not perform other tasks while the speaker was talking.|3 Outstanding|2 Average|1 Needs Work
+The speech evaluator summarized the content of the speech and/or repeated key phrases from the speech in his or her evaluation.|3 Outstanding|2 Average|1 Needs Work
+Notes
+',false);
+
+update_option('evalintro:Table Topics:CL1','Assess the speaker’s behavior as a listener. Did the Table Topics speaker’s body language indicate that he or she was listening to the Topicsmaster as the topic was delivered? How did the Table Topics speaker’s answer demonstrate his comprehension of the topic?
+',false);
+update_option('evalprompts:Table Topics:CL1','The speaker devoted his or her entire attention to the Topicsmaster and did not perform other tasks while the Topicsmaster was talking.|3 Outstanding|2 Average|1 Needs Work
+The speaker demonstrated complete understanding of the topic.|3 Outstanding|2 Average|1 Needs Work
+The speaker listened politely to all other Table Topics speakers.|3 Outstanding|2 Average|1 Needs Work
+Notes
+',false);
+
+update_option('evalintro:Ah Counter:CL1','Assess the Ah-Counter’s behavior as a listener. What body language cues did the Ah-Counter use to show he or she was listening? What other listening behaviors did the Ah-Counter demonstrate during the meeting?
+',false);
+update_option('evalprompts:Ah Counter:CL1','The Ah-Counter devoted his or her entire attention to all speakers and did not perform other tasks while the speakers were talking.|3 Outstanding|2 Average|1 Needs Work
+The Ah-Counter’s reports clearly demonstrated that he or she listened intently to all speakers during the meeting.|3 Outstanding|2 Average|1 Needs Work
+The Ah-Counter’s body language clearly demonstrated that he or she listened to all speakers during the meeting.|3 Outstanding|2 Average|1 Needs Work
+Notes
+',false);
+
+update_option('evalintro:Grammarian:CL1','Assess the grammarian’s behavior as a listener. Did the grammarian identify and repeat key phrases used by the speakers? What specific behaviors indicated that he or she was listening for the word of the day and distinctive grammar usage?
+',false);
+update_option('evalprompts:Grammarian:CL1','The grammarian demonstrated good listening skills by repeating key phrases the speakers used when delivering his or her report.|3 Outstanding|2 Average|1 Needs Work
+The grammarian noted each instance that the word of the day or a derivative was used correctly during the meeting.|3 Outstanding|2 Average|1 Needs Work
+The grammarian remained alert during the meeting. He or she displayed acute awareness during the meeting and identified and clarified all distinctive grammar usage.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:Evaluator:CL2','Evaluate the critical-thinking practices the speech evaluator used. How did the evaluator demonstrate his or her understanding of the speaker\'s ideas? How did the evaluator reveal that he or she had gained insight into the speaker’s point of view? Did the evaluator analyze the speech and/or the speaker\'s presentation style?',false);
+update_option('evalprompts:Evaluator:CL2','The speech evaluator demonstrated understanding of the speaker’s ideas.|3 Outstanding|2 Average|1 Needs Work
+The evaluator’s appraisal of the speech was well-organized.|3 Outstanding|2 Average|1 Needs Work
+The evaluator showed insight into the speaker’s feelings about his or her topic.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:Grammarian:CL2','How did the grammarian go about clarifying grammar issues? What specific suggestions did the grammarian provide that demonstrated his or her knowledge of English grammar?',false);
+update_option('evalprompts:Grammarian:CL2','The grammarian addressed specific issues relating to grammar.|3 Outstanding|2 Average|1 Needs Work
+The grammarian demonstrated good critical thinking skills.|3 Outstanding|2 Average|1 Needs Work
+The grammarian provided well-informed suggestions for improvement.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:General Evaluator:CL2','Did the General Evaluator comment on the quality of the meeting\'s evaluations, such as whether they were positive and helpful and pointed the way to improvement? What other suggestions did the General Evaluator make to ensure the club is meeting the needs of each member?',false);
+update_option('evalprompts:General Evaluator:CL2','The General Evaluator demonstrated a clear understanding of a successful club meeting.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator’s appraisal of the meeting was well-organized.|3 Outstanding|2 Average|1 Needs Work
+All evaluators for the meeting were well-prepared due to the preparation of the general evaluator.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator offered specific suggestions to help clarify what is needed for the club to become more successful and useful to members.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:Evaluator:CL3','How did the evaluator tailor his or her feedback to the speaker? Did the evaluator understand the speaker\'s goals? How did the evaluator demonstrate his or her understanding?',false);
+update_option('evalprompts:Evaluator:CL3','The evaluator offered feedback only on the speaker\'s presentation, not on his or her personality or qualities.|3 Outstanding|2 Average|1 Needs Work
+The evaluator offered specific suggestions for improvement.|3 Outstanding|2 Average|1 Needs Work
+The evaluator offered specific examples of what the speaker did well.|3 Outstanding|2 Average|1 Needs Work
+The evaluator concluded by encouraging the speaker.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Grammarian:CL3','Give examples of how the grammarian provided specific suggestions for improvement. Did the grammarian\'s report provide encouragement to the speakers?',false);
+update_option('evalprompts:Grammarian:CL3','The grammarian offered feedback only on the speaker\'s presentation, not on his or her personality or qualities.|3 Outstanding|2 Average|1 Needs Work
+When the grammarian noted incorrect grammar usage he or she supplied the correct usage.|3 Outstanding|2 Average|1 Needs Work
+The grammarian called attention to members employing creative language usage.|3 Outstanding|2 Average|1 Needs Work
+The grammarian announced who used the word of the day (or a derivative of it) correctly or incorrectly.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:General Evaluator:CL3','Did the General Evaluator provide comments that enabled fellow Toastmasters to develop their skills? How well was the General Evaluator able to explain her suggestions for improving the meeting?',false);
+update_option('evalprompts:General Evaluator:CL3','The General Evaluator offered specific suggestions for improvement when needed.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator offered specific examples of what meeting participants did well.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator concluded his or her evaluation on a positive note and encouraged meeting participants to continue improving.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:Timer:CL3','What steps did the timer take to keep the meeting on schedule? How did the timer demonstrate his preparedness for the role?',false);
+update_option('evalprompts:Timer:CL3','The timer understood how to operate the timing and signal devices smoothly
+and accurately.|3 Outstanding|2 Average|1 Needs Work
+The timer explained the timing rules and how timing signals would be given.|3 Outstanding|2 Average|1 Needs Work
+The timer was organized.|3 Outstanding|2 Average|1 Needs Work
+The timer recognized when meeting segments were not meeting the established time requirement.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:Toastmaster of the Day:CL4','How did the Toastmaster control interruptions in the meeting schedule? What evidence did you see that the Toastmaster had begun preparing for this role several days before the meeting?',false);
+update_option('evalprompts:Toastmaster of the Day:CL4','The Toastmaster was prepared and adhered to the times in the meeting agenda.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster ensured that the meeting began and ended on time.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster avoided awkward interruptions or gaps in meeting flow by using fluid transitions between meeting segments.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster’s introductions for speakers were tightly organized and brief.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Speaker:CL4','How did the speaker make adjustments to keep his or her speech within time limits? Did the speaker try to cover too much information in his speech? Suggest improvements.',false);
+update_option('evalprompts:Speaker:CL4','The speaker met the time requirement for the manual project.|3 Outstanding|2 Average|1 Needs Work
+The speech was organized so that the speaker presented the necessary information in the available time.|3 Outstanding|2 Average|1 Needs Work
+The speaker displayed detailed knowledge of the speech topic, indicating that the topic was well-researched.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Grammarian:CL4','',false);
+update_option('evalprompts:Grammarian:CL4','The word of the day was well-researched and easily incorporated into everyday conversation.Outstanding|2 Average|1 Needs Work
+The grammarian prioritized his or her comments to the best benefit of meeting participants within the allotted time.Outstanding|2 Average|1 Needs Work
+The visual aid for the word of the day was prepared in advance and placed for maximum effect at the meeting.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Topics Master:CL4','What evidence did you see that the Topicsmaster had begun preparing for this role several days before the meeting? Offer methods for managing and simplifying this preparation.',false);
+update_option('evalprompts:Topics Master:CL4','Topics were well-researched and reflected the meeting’s theme.|3 Outstanding|2 Average|1 Needs Work
+The Topicsmaster’s comments were short, giving respondents more opportunity to speak.|3 Outstanding|2 Average|1 Needs Work
+The Table Topics segment ended on time.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Speaker:CL5','Did the speaker meet the objectives of the speech assignment? Did the speech reflect careful planning? What could the speaker have done differently to demonstrate better planning skills?',false);
+update_option('evalprompts:Speaker:CL5','The speaker delivered a well-developed speech that demonstrated planning and forethought.|3 Outstanding|2 Average|1 Needs Work
+The speaker displayed confidence in the quality of her speech.|3 Outstanding|2 Average|1 Needs Work
+The speaker discussed her speech goals and concerns with her evaluator before the meeting.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:General Evaluator:CL5','How did the General Evaluator prepare to overcome obstacles, such as the unexpected absence of an evaluation team member? Was the General Evaluator’s report effective? Why or why not?',false);
+update_option('evalprompts:General Evaluator:CL5','The evaluation portion of the meeting demonstrated careful planning and forethought.|3 Outstanding|2 Average|1 Needs Work
+In his report, the General Evaluator provided guidance for the planning of future meetings.|3 Outstanding|2 Average|1 Needs Work
+The evaluation team (timer, grammarian, Ah-Counter, and speech evaluators) demonstrated careful planning and forethought in the completion of their duties, as led by the General Evaluator.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Toastmaster of the Day:CL5','How did the Toastmaster prepare to overcome obstacles, such as the unexpected absence of a meeting participant? Was the Toastmaster’s preparation effective? Why or why not?
+',false);
+update_option('evalprompts:Toastmaster of the Day:CL5','The Toastmaster was prepared with thoughtful, well-planned introductions for each speaker.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster ensured that the meeting began and ended on time.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster demonstrated careful planning and forethought in the conduct of the meeting as a whole.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Topics Master:CL5','What evidence did you see that the Topicsmaster had begun preparing for this role several days before the meeting? Offer methods for managing and simplifying this preparation.',false);
+update_option('evalprompts:Topics Master:CL5','Topics were well-researched and reflected the meeting’s theme.|3 Outstanding|2 Average|1 Needs Work
+The Topicsmaster’s comments were short, giving respondents more opportunity to speak.|3 Outstanding|2 Average|1 Needs Work
+The Table Topics segment ended on time.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:Help Organize a Club Speech Contest:CL6','In what ways did the member\'s organizational skills contribute to accomplishing objectives and goals? Did the member work well with others on the team and delegate tasks appropriately?',false);
+update_option('evalprompts:Help Organize a Club Speech Contest:CL6','
+The member ensured that required resources were available when needed.|3 Outstanding|2 Average|1 Needs
+Tasks were completed on time.|3 Outstanding|2 Average|1 Needs
+The member collaborated successfully with others on the team.|3 Outstanding|2 Average|1 Needs
+In what ways did the member’s organizational skills contribute to accomplishing objectives and goals? Did the member work well with others on the team and delegate tasks appropriately?|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+
+update_option('evalintro:Help Organize a Club Special Event:CL6','In what ways did the member\'s organizational skills contribute to accomplishing objectives and goals? Did the member work well with others on the team and delegate tasks appropriately?',false);
+update_option('evalprompts:Help Organize a Club Special Event:CL6','The member ensured that required resources were available when needed.|3 Outstanding|2 Average|1 Needs Work 
+Tasks were completed on time.|3 Outstanding|2 Average|1 Needs Work 
+The member was organized.|3 Outstanding|2 Average|1 Needs Work 
+The member collaborated successfully with others on the team.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Help Organize a Club Membership Campaign or Contest:CL6','In what ways did the member’s organizational skills contribute to accomplishing objectives and goals? Did the member work well with others on the team and delegate tasks appropriately?',false);
+update_option('evalprompts:Help Organize a Club Membership Campaign or Contest:CL6','The member ensured that required resources were available when needed.|3 Outstanding|2 Average|1 Needs Work 
+Tasks were completed on time.|3 Outstanding|2 Average|1 Needs Work 
+The member was organized.|3 Outstanding|2 Average|1 Needs Work 
+The member collaborated successfully with others on the team.|3 Outstanding|2 Average|1 Needs Work 
+The membership campaign was successful.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Help Organize a Club PR Campaign:CL6','In what ways did the member\'s organizational skills contribute to accomplishing objectives and goals? Did the member work well with others on the team and delegate tasks appropriately?',false);
+update_option('evalprompts:Help Organize a Club PR Campaign:CL6','The member ensured that required resources were available when needed.|3 Outstanding|2 Average|1 Needs Work
+Tasks were completed on time.|3 Outstanding|2 Average|1 Needs Work
+The member was organized.|3 Outstanding|2 Average|1 Needs Work
+The member collaborated successfully with others on the team.|3 Outstanding|2 Average|1 Needs Work
+The public relations campaign was successful.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Help Produce a Club Newsletter:CL6','In what ways did the member’s organizational skills contribute to accomplishing objectives and goals? Did the member work well with others on the team and delegate tasks appropriately?
+Assist',false);
+update_option('evalprompts:Help Produce a Club Newsletter:CL6','The member ensured that required resources were available when needed.|3 Outstanding|2 Average|1 Needs Work
+The newsletter was published on time.|3 Outstanding|2 Average|1 Needs Work
+Strategies for planning, organizing,|3 Outstanding|2 Average|1 Needs Work and completing tasks were carried out systematically.|3 Outstanding|2 Average|1 Needs Work
+The member collaborated successfully with others on the team.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Assist the Club Webmaster:CL6','In what ways did the member\'s organizational skills contribute to accomplishing objectives and goals? Did the member work well with others on the team and delegate tasks appropriately?',false);
+update_option('evalprompts:Assist the Club Webmaster:CL6','The member ensured that required resources were available when needed.|3 Outstanding|2 Average|1 Needs Work
+The Web site was maintained with up-to-date information.|3 Outstanding|2 Average|1 Needs Work
+Strategies for planning, organizing, and completing tasks were carried out systematically.|3 Outstanding|2 Average|1 Needs Work
+The member collaborated successfully with others on the team.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Toastmaster of the Day:CL7','What kinds of obstacles did the Toastmaster face? What strategies did he use to overcome these obstacles?',false);
+update_option('evalprompts:Toastmaster of the Day:CL7','The Toastmaster ensured that all meeting roles were filled.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster ensured that each meeting segment stayed within the prescribed time limit.|3 Outstanding|2 Average|1 Needs Work
+The meeting began and ended on time.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:General Evaluator:CL7','In what ways did the General Evaluator assist the members of the evaluation team with the completion of their tasks? Suggest methods the General Evaluator can use to sharpen his or her facilitation skills.',false);
+update_option('evalprompts:General Evaluator:CL7','The speech and leadership project evaluators knew and understood their responsibilities.|3 Outstanding|2 Average|1 Needs Work
+The evaluation team (timer, grammarian, and Ah-Counter) understood and was prepared to perform its duties.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator appraised each activity during the meeting and commented on significant flaws or special successes.|3 Outstanding|2 Average|1 Needs Work
+The appropriate evaluation format was used for each type of evaluation.|3 Outstanding|2 Average|1 Needs Work
+Notes',false);
+update_option('evalintro:Topics Master:CL7','How effectively did the Topicsmaster facilitate the Table Topics discussion? Was he or she able to plan the Table Topics session so that as many people as possible could participate? Why or why not?',false);
+update_option('evalprompts:Topics Master:CL7','The Topicsmaster prepared topics reflecting the meeting theme.|3 Outstanding|2 Average|1 Needs Work
+The Topicsmaster adjusted the number of topics so that the Table Topics segment ended on time.|3 Outstanding|2 Average|1 Needs Work
+The Topicsmaster kept his or her comments short and direct.|3 Outstanding|2 Average|1 Needs Work
+The Topicsmaster called first on members at the meeting who were not already assigned a speaking role.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Befriend a Guest:CL7','How well did the member use questions to clarify the guest’s concerns? What did the member do to make it easier for the guest to join the club?',false);
+update_option('evalprompts:Befriend a Guest:CL7','The member helped the guest overcome his or her fears and influenced them to join the club or attend another meeting.|3 Outstanding|2 Average|1 Needs Work
+The member discussed the guest’s goals and concerns.|3 Outstanding|2 Average|1 Needs Work
+The member described how the Toastmasters program would help the guest achieve his or her goals.|3 Outstanding|2 Average|1 Needs Work
+The member made him- or herself available to the guest outside of the club meeting.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+
+update_option('evalintro:Toastmaster of the Day:CL8','How did the Toastmaster motivate members to fill meeting roles? Were these methods successful? Why or why not?',false);
+update_option('evalprompts:Toastmaster of the Day:CL8','The Toastmaster used motivation techniques tailored to specific members to encourage these members to fill meeting roles.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster motivated the General Evaluator to contact the evaluation team and prepare them for their responsibilities at the club meeting.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster ensured that the Topicsmaster had the information he or she needed to call on members at the meeting who did not have a speaking role.|3 Outstanding|2 Average|1 Needs Work
+The Toastmaster led the applause during the meeting.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Evaluator:CL8','How did the evaluator motivate the speaker to improve? Were the evaluator’s motivational techniques effective?
+Why or why not?',false);
+update_option('evalprompts:Evaluator:CL8','The evaluator highlighted the speaker’s strengths and weaknesses in an encouraging way.|3 Outstanding|2 Average|1 Needs Work
+The evaluator provided clear suggestions for improvement.|3 Outstanding|2 Average|1 Needs Work
+The evaluator understood the speaker’s specific needs for improvement and the evaluation fulfilled those needs.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:General Evaluator:CL8','How effectively did the General Evaluator motivate the members of the evaluation team to contribute to the success of the meeting? What specific motivational techniques did the General Evaluator employ with his or her team?',false);
+update_option('evalprompts:General Evaluator:CL8','The General Evaluator ensured that all members of the evaluation team believed in the importance and meaning of their work.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator suggested stimulating and varied approaches to each evaluation team member’s task.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator helped speech evaluators recognize their own skill development when delivering positive and negative feedback to speakers.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Membership Campaign Chair:CL8','What motivation techniques did the chair use to acknowledge team members’ performance? Were the motivation techniques successful? Did the team achieve its goal(s)?',false);
+update_option('evalprompts:Membership Campaign Chair:CL8','The chair created and maintained a motivating environment.|3 Outstanding|2 Average|1 Needs Work
+The chair developed a reward system that matched team values.|3 Outstanding|2 Average|1 Needs Work
+The chair treated the team with respect.|3 Outstanding|2 Average|1 Needs Work
+The chair provided clear direction and purpose to the team.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Club PR Campaign Chair:CL8','What motivation techniques did the chair use to acknowledge team members’ performance? Were the motivation techniques successful? Did the team achieve its goal(s)?',false);
+update_option('evalprompts:Club PR Campaign Chair:CL8','The chair provided clear direction and purpose to the team.|3 Outstanding|2 Average|1 Needs Work
+The chair recognized only positive performance by team members.|3 Outstanding|2 Average|1 Needs Work
+The chair’s recognition of team members’ achievement was appropriate and timely.|3 Outstanding|2 Average|1 Needs Work
+The chair ensured that the team had all of the materials it needed to conduct the public relations campaign.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Mentor for a New Member:CL9','What did the mentor do to help the new member learn about Toastmasters? Was the mentor successful in meeting the new member’s needs? Why or why not?',false);
+update_option('evalprompts:Mentor for a New Member:CL9','The mentor provided support, personal contact, and reassurance.|3 Outstanding|2 Average|1 Needs Work
+The mentor’s communication with the new member was always alert and thoughtful.|3 Outstanding|2 Average|1 Needs Work
+The mentor provided opportunities and resources for skill development.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Mentor for an Existing Member:CL9','What did the mentor do to help the existing member learn about Toastmasters? Was the mentor successful in meeting the member\'s needs? Why or why not?',false);
+update_option('evalprompts:Mentor for an Existing Member:CL9','The mentor provided support, personal contact, and reassurance.|3 Outstanding|2 Average|1 Needs Work
+The mentor’s communication with the existing member was always alert and thoughtful.|3 Outstanding|2 Average|1 Needs Work
+The mentor provided opportunities and resources for skill development in areas of specific interest to the existing member.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:HPL Guidance Committee Member:CL9','What did the guidance committee member do to help the member complete the High Performance Leadership project? Was the member successful in meeting his or her needs? Why or why not?',false);
+update_option('evalprompts:HPL Guidance Committee Member:CL9','The guidance committee member was always available for guidance committee meetings.|3 Outstanding|2 Average|1 Needs Work
+The guidance committee member was experienced and knowledgeable about the principles of leadership.|3 Outstanding|2 Average|1 Needs Work
+The guidance committee member freely offered pertinent advice, ideas, and information.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Toastmaster of the Day:CL10','Describe the Toastmaster’s level of success in organizing and motivating his or her team. What team-building tasks did he or she perform particularly well? What needed improvement?',false);
+update_option('evalprompts:Toastmaster of the Day:CL10','The Toastmaster demonstrated reliability to all who held meeting roles.|3 Outstanding|2 Average|1 Needs Work 
+The Toastmaster worked with team members to identify skills, work around any skill gaps, and help each member do his or her best.|3 Outstanding|2 Average|1 Needs Work 
+The Toastmaster expressly conveyed the team\'s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:General Evaluator:CL10','Describe the General Evaluator’s level of success in organizing and motivating his or her team. What team building tasks did he or she perform particularly well? What needed improvement?',false);
+update_option('evalprompts:General Evaluator:CL10','The General Evaluator demonstrated reliability to all members of the evaluation team.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator worked with team members to identify skills, any skill gaps, and help each member do his or her best.|3 Outstanding|2 Average|1 Needs Work
+The General Evaluator expressly conveyed the team’s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Membership Campaign Chair:CL10','Evaluate the methods the chair used to organize and motivate the team. Was the membership campaign or contest successful? Why or why not?',false);
+update_option('evalprompts:Membership Campaign Chair:CL10','The chair selected competent, reliable team members who possessed the necessary skills and knowledge.|3 Outstanding|2 Average|1 Needs Work
+The chair worked with the team to develop a realistic plan to meet goals.|3 Outstanding|2 Average|1 Needs Work
+The chair expressly conveyed the team\'s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:PR Campaign Chair:CL10','Evaluate the methods the chair used to organize and motivate the team. Was the public relations campaign successful? Why or why not?',false);
+update_option('evalprompts:PR Campaign Chair:CL10','The chair selected competent, reliable team members who possessed the necessary skills and knowledge.|3 Outstanding|2 Average|1 Needs Work
+The chair worked with the team to develop a realistic plan to meet goals.|3 Outstanding|2 Average|1 Needs Work
+The chair expressly conveyed the team’s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Club Speech Contest Chair:CL10','Evaluate the methods the chair used to organize and motivate the team. Was the special event successful?
+Why or why not?',false);
+update_option('evalprompts:Club Speech Contest Chair:CL10','The chair selected competent, reliable team members who possessed the necessary skills and knowledge.|3 Outstanding|2 Average|1 Needs Work
+The chair worked with the team to develop a realistic plan to meet goals.|3 Outstanding|2 Average|1 Needs Work
+The chair expressly conveyed the team’s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Club Special Event Chair:CL10','Evaluate the methods the chair used to organize and motivate the team. Was the special event successful? Why or why not?',false);
+update_option('evalprompts:Club Special Event Chair:CL10','The chair selected competent, reliable team members who possessed the necessary skills and knowledge.|3 Outstanding|2 Average|1 Needs Work
+The chair developed a realistic plan to meet goals.|3 Outstanding|2 Average|1 Needs Work
+The chair expressly conveyed the team’s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Club Newsletter Editor:CL10','Evaluate the methods the editor or webmaster used to organize and motivate the team. Was the team successful in producing a quality product? Why or why not?',false);
+update_option('evalprompts:Club Newsletter Editor:CL10','The newsletter editor or webmaster selected competent, reliable team members who possessed the necessary skills and knowledge.|3 Outstanding|2 Average|1 Needs Work
+The newsletter editor or webmaster developed a realistic plan to meet goals.|3 Outstanding|2 Average|1 Needs Work
+The newsletter editor or webmaster expressly conveyed the team’s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
+update_option('evalintro:Club Webmaster:CL10','Evaluate the methods the editor or webmaster used to organize and motivate the team. Was the team successful in producing a quality product? Why or why not?',false);
+update_option('evalprompts:Club Webmaster:CL10','The newsletter editor or webmaster selected competent, reliable team members who possessed the necessary skills and knowledge.|3 Outstanding|2 Average|1 Needs Work
+The newsletter editor or webmaster developed a realistic plan to meet goals.|3 Outstanding|2 Average|1 Needs Work
+The newsletter editor or webmaster expressly conveyed the team’s expected standards.|3 Outstanding|2 Average|1 Needs Work 
+Notes',false);
 ?>

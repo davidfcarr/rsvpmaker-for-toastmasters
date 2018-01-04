@@ -1,0 +1,4200 @@
+# Copyright (C) 2017 RSVPMaker for Toastmasters
+# This file is distributed under the same license as the RSVPMaker for Toastmasters package.
+msgid ""
+msgstr ""
+"Project-Id-Version: RSVPMaker for Toastmasters 2.7.5\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rsvpmaker-for-"
+"toastmasters\n"
+"POT-Creation-Date: 2017-11-04 20:11:11+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2017-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: agenda-with-sidebar.php:32
+msgid "Template"
+msgstr ""
+
+#: agenda-with-sidebar.php:98
+msgid ""
+"<p>Set sidebar text using the <a href=\"%s\">Agenda Sidebar editor</a></p>"
+msgstr ""
+
+#: projects_array.php:2 projects_array.php:3
+msgid "1. The Ice Breaker"
+msgstr ""
+
+#: projects_array.php:7 projects_array.php:8
+msgid "2. Organize Your Speech"
+msgstr ""
+
+#: projects_array.php:12 projects_array.php:13
+msgid "3. Get to the Point"
+msgstr ""
+
+#: projects_array.php:17 projects_array.php:18
+msgid "4. How to Say It"
+msgstr ""
+
+#: projects_array.php:22 projects_array.php:23
+msgid "5. Your Body Speaks"
+msgstr ""
+
+#: projects_array.php:27 projects_array.php:28
+msgid "6. Vocal Variety"
+msgstr ""
+
+#: projects_array.php:32 projects_array.php:33
+msgid "7. Research Your Topic"
+msgstr ""
+
+#: projects_array.php:37 projects_array.php:38
+msgid "8. Get Comfortable with Visual Aids"
+msgstr ""
+
+#: projects_array.php:42 projects_array.php:43
+msgid "9. Persuade with Power"
+msgstr ""
+
+#: projects_array.php:47 projects_array.php:48
+msgid "10. Inspire Your Audience"
+msgstr ""
+
+#: projects_array.php:52 projects_array.php:53
+msgid "Placeholder for manual/project to be specified later"
+msgstr ""
+
+#: projects_array.php:57 projects_array.php:58
+msgid "Straight Talk "
+msgstr ""
+
+#: projects_array.php:62 projects_array.php:63
+msgid "The Interview Show"
+msgstr ""
+
+#: projects_array.php:67 projects_array.php:68 projects_array.php:87
+#: projects_array.php:88
+msgid "When You Are the Host"
+msgstr ""
+
+#: projects_array.php:72 projects_array.php:73
+msgid "4. The Press Conference "
+msgstr ""
+
+#: projects_array.php:77 projects_array.php:78
+msgid "Instructing on the Internet"
+msgstr ""
+
+#: projects_array.php:82 projects_array.php:83
+msgid "The Talk Show"
+msgstr ""
+
+#: projects_array.php:92 projects_array.php:93
+msgid "Training On Video"
+msgstr ""
+
+#: projects_array.php:97 projects_array.php:98
+msgid "The Panel Moderator"
+msgstr ""
+
+#: projects_array.php:102 projects_array.php:103
+msgid "The Brainstorming Session"
+msgstr ""
+
+#: projects_array.php:107 projects_array.php:108
+msgid "The Problem-Solving Discussion"
+msgstr ""
+
+#: projects_array.php:112 projects_array.php:113
+msgid "Handling Challenging Situations (Role Playing)"
+msgstr ""
+
+#: projects_array.php:117 projects_array.php:118
+msgid "Reaching A Consensus"
+msgstr ""
+
+#: projects_array.php:122 projects_array.php:123
+msgid "1. Warm Up Your Audience "
+msgstr ""
+
+#: projects_array.php:127 projects_array.php:128
+msgid "2. Leave Them With A Smile "
+msgstr ""
+
+#: projects_array.php:132 projects_array.php:133 projects_array.php:532
+#: projects_array.php:533
+msgid "3. Make Them Laugh "
+msgstr ""
+
+#: projects_array.php:137 projects_array.php:138
+msgid "4. Keep Them Laughing "
+msgstr ""
+
+#: projects_array.php:142 projects_array.php:143
+msgid "5. The Humorous Speech "
+msgstr ""
+
+#: projects_array.php:147 projects_array.php:148
+msgid "1. Conversing with Ease "
+msgstr ""
+
+#: projects_array.php:152 projects_array.php:153
+msgid "2. The Successful Negotiator "
+msgstr ""
+
+#: projects_array.php:157 projects_array.php:158
+msgid "3. Diffusing Verbal Criticism "
+msgstr ""
+
+#: projects_array.php:162 projects_array.php:163
+msgid "4. The Coach "
+msgstr ""
+
+#: projects_array.php:167 projects_array.php:168
+msgid "5. Asserting Yourself Effectively "
+msgstr ""
+
+#: projects_array.php:172 projects_array.php:173
+msgid "1. Read A Story "
+msgstr ""
+
+#: projects_array.php:177 projects_array.php:178
+msgid "2. Interpreting Poetry "
+msgstr ""
+
+#: projects_array.php:182 projects_array.php:183
+msgid "3. The Monodrama "
+msgstr ""
+
+#: projects_array.php:187 projects_array.php:188
+msgid "4. The Play "
+msgstr ""
+
+#: projects_array.php:192 projects_array.php:193
+msgid "5. The Oratorical Speech "
+msgstr ""
+
+#: projects_array.php:197
+msgid "Custom Speech 3 to 5 minutes"
+msgstr ""
+
+#: projects_array.php:198
+msgid "Custom Speech "
+msgstr ""
+
+#: projects_array.php:202
+msgid "Custom Speech 5 to 7 minutes"
+msgstr ""
+
+#: projects_array.php:203 projects_array.php:208 projects_array.php:213
+#: projects_array.php:218 projects_array.php:228 projects_array.php:233
+#: projects_array.php:238 projects_array.php:243 projects_array.php:248
+#: projects_array.php:253
+msgid "Custom Speech"
+msgstr ""
+
+#: projects_array.php:207
+msgid "Custom Speech 8 to 10 minutes"
+msgstr ""
+
+#: projects_array.php:212
+msgid "Custom Speech 10 to 12 minutes"
+msgstr ""
+
+#: projects_array.php:217
+msgid "Custom Speech 13 to 15 minutes"
+msgstr ""
+
+#: projects_array.php:222
+msgid "Custom Speech 18 to 20 minutes"
+msgstr ""
+
+#: projects_array.php:223
+msgid "Custom Speech ()"
+msgstr ""
+
+#: projects_array.php:227
+msgid "Custom Speech 23 to 25 minutes"
+msgstr ""
+
+#: projects_array.php:232
+msgid "Custom Speech 28 to 30 minutes"
+msgstr ""
+
+#: projects_array.php:237
+msgid "Custom Speech 35 to 40 minutes"
+msgstr ""
+
+#: projects_array.php:242
+msgid "Custom Speech 40 to 45 minutes"
+msgstr ""
+
+#: projects_array.php:247
+msgid "Custom Speech 45 to 50 minutes"
+msgstr ""
+
+#: projects_array.php:252
+msgid "Custom Speech 55 to 60 minutes"
+msgstr ""
+
+#: projects_array.php:257 projects_array.php:258
+msgid "Custom Speech (more than an hour)"
+msgstr ""
+
+#: projects_array.php:262 projects_array.php:263
+msgid "1. The Effective Salesperson (8 to 12 min"
+msgstr ""
+
+#: projects_array.php:267 projects_array.php:268
+msgid "2. Conquering the Cold Call"
+msgstr ""
+
+#: projects_array.php:272 projects_array.php:273
+msgid "3. The Winning Proposal "
+msgstr ""
+
+#: projects_array.php:277 projects_array.php:278
+msgid "4. Addressing the Opposition "
+msgstr ""
+
+#: projects_array.php:282 projects_array.php:283
+msgid "5. The Persuasive Leader "
+msgstr ""
+
+#: projects_array.php:287 projects_array.php:288
+msgid " 2. Conquering theCold Call"
+msgstr ""
+
+#: projects_array.php:292 projects_array.php:293
+msgid "1.The Goodwill Speech "
+msgstr ""
+
+#: projects_array.php:297 projects_array.php:298
+msgid "2. The Radio Talk Show "
+msgstr ""
+
+#: projects_array.php:302 projects_array.php:303
+msgid "3. Persuasive Approach "
+msgstr ""
+
+#: projects_array.php:307 projects_array.php:308
+msgid "4. Speaking Under Fire "
+msgstr ""
+
+#: projects_array.php:312 projects_array.php:313
+msgid "5. The Crisis Management Speech "
+msgstr ""
+
+#: projects_array.php:317 projects_array.php:318
+msgid " 3. The Persuasive Approach"
+msgstr ""
+
+#: projects_array.php:322 projects_array.php:323
+msgid "1. The Speech to Inform "
+msgstr ""
+
+#: projects_array.php:327 projects_array.php:328
+msgid "2. Resources for Informing "
+msgstr ""
+
+#: projects_array.php:332 projects_array.php:333
+msgid "3. The Demonstration Talk "
+msgstr ""
+
+#: projects_array.php:337 projects_array.php:338
+msgid "4. A Fact-Finding Report "
+msgstr ""
+
+#: projects_array.php:342 projects_array.php:343
+msgid "5. The Abstract Concept "
+msgstr ""
+
+#: projects_array.php:347 projects_array.php:348
+msgid "1. Mastering the Toast "
+msgstr ""
+
+#: projects_array.php:352 projects_array.php:353
+msgid "2. Speaking in Praise "
+msgstr ""
+
+#: projects_array.php:357 projects_array.php:358
+msgid "3. The Roast "
+msgstr ""
+
+#: projects_array.php:362 projects_array.php:363
+msgid "4. Presenting an Award "
+msgstr ""
+
+#: projects_array.php:367 projects_array.php:368
+msgid "5. Accepting an Award "
+msgstr ""
+
+#: projects_array.php:372 projects_array.php:373
+msgid "1. Speak Off The Cuff "
+msgstr ""
+
+#: projects_array.php:377 projects_array.php:378
+msgid "2. Uplift the Spirit "
+msgstr ""
+
+#: projects_array.php:382 projects_array.php:383
+msgid "3. Sell a Product "
+msgstr ""
+
+#: projects_array.php:387 projects_array.php:388
+msgid "4. Read Out Loud "
+msgstr ""
+
+#: projects_array.php:392 projects_array.php:393
+msgid "5. Introduce the Speaker (duration of a club meeting)"
+msgstr ""
+
+#: projects_array.php:397 projects_array.php:398
+msgid "1. The Briefing "
+msgstr ""
+
+#: projects_array.php:402 projects_array.php:403
+msgid "2. The Technical Speech "
+msgstr ""
+
+#: projects_array.php:407 projects_array.php:408
+msgid "3. Manage And Motivate "
+msgstr ""
+
+#: projects_array.php:412 projects_array.php:413
+msgid "4. The Status Report "
+msgstr ""
+
+#: projects_array.php:417 projects_array.php:418
+msgid "5. Confrontation: The Adversary Relationship "
+msgstr ""
+
+#: projects_array.php:422 projects_array.php:423
+msgid " 2. Appraise with Praise"
+msgstr ""
+
+#: projects_array.php:427 projects_array.php:428
+msgid " 3. Persuade and Inspire"
+msgstr ""
+
+#: projects_array.php:432 projects_array.php:433
+msgid " 4. Communicating Change"
+msgstr ""
+
+#: projects_array.php:437 projects_array.php:438
+msgid " 5. Delivering Bad News"
+msgstr ""
+
+#: projects_array.php:442 projects_array.php:443
+msgid "1. The Folk Tale "
+msgstr ""
+
+#: projects_array.php:447 projects_array.php:448
+msgid "2. Let’s Get Personal "
+msgstr ""
+
+#: projects_array.php:452 projects_array.php:453
+msgid "3. The Moral of the Story "
+msgstr ""
+
+#: projects_array.php:457 projects_array.php:458
+msgid "4. The Touching Story "
+msgstr ""
+
+#: projects_array.php:462 projects_array.php:463
+msgid "5. Bringing History to Life "
+msgstr ""
+
+#: projects_array.php:467 projects_array.php:468
+msgid "1. The Technical Briefing "
+msgstr ""
+
+#: projects_array.php:472 projects_array.php:473
+msgid "2. The Proposal "
+msgstr ""
+
+#: projects_array.php:477 projects_array.php:478
+msgid "3. The Nontechnical Audience "
+msgstr ""
+
+#: projects_array.php:482 projects_array.php:483
+msgid "4. Presenting a Technical Paper "
+msgstr ""
+
+#: projects_array.php:487 projects_array.php:488
+msgid "5. The Team Technical Presentation "
+msgstr ""
+
+#: projects_array.php:492 projects_array.php:493
+msgid " 5. Enhancing a Technical Talk with the Internet"
+msgstr ""
+
+#: projects_array.php:497 projects_array.php:498
+msgid "1. The Seminar Solution "
+msgstr ""
+
+#: projects_array.php:502 projects_array.php:503
+msgid "2. The Round Robin "
+msgstr ""
+
+#: projects_array.php:507 projects_array.php:508
+msgid "3. Pilot a Panel "
+msgstr ""
+
+#: projects_array.php:512 projects_array.php:513
+msgid "4. Make Believe "
+msgstr ""
+
+#: projects_array.php:517 projects_array.php:518
+msgid "5. The Workshop Leader "
+msgstr ""
+
+#: projects_array.php:522 projects_array.php:523
+msgid "1. The Entertaining Speech "
+msgstr ""
+
+#: projects_array.php:527 projects_array.php:528
+msgid "2. Resources for Entertainment "
+msgstr ""
+
+#: projects_array.php:537 projects_array.php:538
+msgid "4. A Dramatic Talk "
+msgstr ""
+
+#: projects_array.php:542 projects_array.php:543
+msgid "5. Speaking After Dinner "
+msgstr ""
+
+#: projects_array.php:547 projects_array.php:548
+msgid "1. The Winning Attitude "
+msgstr ""
+
+#: projects_array.php:552 projects_array.php:553
+msgid "2. Closing The Sale "
+msgstr ""
+
+#: projects_array.php:557 projects_array.php:558
+msgid "3. Training The Sales Force "
+msgstr ""
+
+#: projects_array.php:562 projects_array.php:563
+msgid "4. The Sales Meeting "
+msgstr ""
+
+#: projects_array.php:567 projects_array.php:568
+msgid "5. The Team Sales Presentation "
+msgstr ""
+
+#: projects_array.php:572 projects_array.php:573
+msgid "1. The Keynote Address "
+msgstr ""
+
+#: projects_array.php:577 projects_array.php:578
+msgid "2. Speaking to Entertain "
+msgstr ""
+
+#: projects_array.php:582 projects_array.php:583
+msgid "3. The Sales Training Speech "
+msgstr ""
+
+#: projects_array.php:587 projects_array.php:588
+msgid "4. The Professional Seminar "
+msgstr ""
+
+#: projects_array.php:592 projects_array.php:593
+msgid "5. The Motivational Speech "
+msgstr ""
+
+#: projects_array.php:597 projects_array.php:598
+msgid "Beginning Your Speech"
+msgstr ""
+
+#: projects_array.php:602 projects_array.php:603
+msgid "Concluding Your Speech"
+msgstr ""
+
+#: projects_array.php:607 projects_array.php:608
+msgid "Controlling Your Fear"
+msgstr ""
+
+#: projects_array.php:612 projects_array.php:613
+msgid "Impromptu Speaking"
+msgstr ""
+
+#: projects_array.php:617 projects_array.php:618
+msgid "Selecting Your Topic"
+msgstr ""
+
+#: projects_array.php:622 projects_array.php:623
+msgid "Know Your Audience"
+msgstr ""
+
+#: projects_array.php:627 projects_array.php:628
+msgid "Organizing Your Speech"
+msgstr ""
+
+#: projects_array.php:632 projects_array.php:633
+msgid "Creating An Introduction"
+msgstr ""
+
+#: projects_array.php:637 projects_array.php:638
+msgid "Preparation And Practice"
+msgstr ""
+
+#: projects_array.php:642 projects_array.php:643
+msgid "Using Body Language"
+msgstr ""
+
+#: projects_array.php:647 projects_array.php:648
+msgid "Moments Of Truth"
+msgstr ""
+
+#: projects_array.php:652 projects_array.php:653
+msgid "Finding New Members For Your Club"
+msgstr ""
+
+#: projects_array.php:657 projects_array.php:658
+msgid "Evaluate To Motivate"
+msgstr ""
+
+#: projects_array.php:662 projects_array.php:663
+msgid "Closing The Sale"
+msgstr ""
+
+#: projects_array.php:667 projects_array.php:668
+msgid "Creating The Best Club Climate"
+msgstr ""
+
+#: projects_array.php:672 projects_array.php:673
+msgid "Meeting Roles And Responsibilities"
+msgstr ""
+
+#: projects_array.php:677 projects_array.php:678 projects_array.php:792
+#: projects_array.php:793 projects_array.php:1003 projects_array.php:1004
+#: projects_array.php:1208 projects_array.php:1209 projects_array.php:1398
+#: projects_array.php:1399 projects_array.php:1603 projects_array.php:1604
+#: projects_array.php:1803 projects_array.php:1804 projects_array.php:1998
+#: projects_array.php:1999 projects_array.php:2188 projects_array.php:2189
+#: projects_array.php:2378 projects_array.php:2379 projects_array.php:2578
+#: projects_array.php:2579
+msgid "Mentoring"
+msgstr ""
+
+#: projects_array.php:682 projects_array.php:683
+msgid "Keeping The Commitment"
+msgstr ""
+
+#: projects_array.php:687 projects_array.php:688
+msgid "Going Beyond Our Club"
+msgstr ""
+
+#: projects_array.php:692 projects_array.php:693
+msgid "How To Be A Distinguished Club"
+msgstr ""
+
+#: projects_array.php:697 projects_array.php:698
+msgid "The Toastmasters Educational Program"
+msgstr ""
+
+#: projects_array.php:702 projects_array.php:703
+msgid "The Visionary Leader"
+msgstr ""
+
+#: projects_array.php:707 projects_array.php:708
+msgid "Developing A Mission"
+msgstr ""
+
+#: projects_array.php:712 projects_array.php:713
+msgid "Values and Leadership"
+msgstr ""
+
+#: projects_array.php:717 projects_array.php:718
+msgid "Goal Setting And Planning"
+msgstr ""
+
+#: projects_array.php:722 projects_array.php:723
+msgid "Delegate To Empower"
+msgstr ""
+
+#: projects_array.php:727 projects_array.php:728
+msgid "Building A Team"
+msgstr ""
+
+#: projects_array.php:732 projects_array.php:733
+msgid "Giving Effective Feedback"
+msgstr ""
+
+#: projects_array.php:737 projects_array.php:738
+msgid "The Leader as a Coach"
+msgstr ""
+
+#: projects_array.php:742 projects_array.php:743
+msgid "Motivating People"
+msgstr ""
+
+#: projects_array.php:747 projects_array.php:748
+msgid "Service And Leadership"
+msgstr ""
+
+#: projects_array.php:752 projects_array.php:753
+msgid "Resolving Conflict"
+msgstr ""
+
+#: projects_array.php:757 projects_array.php:758 projects_array.php:968
+#: projects_array.php:969 projects_array.php:1173 projects_array.php:1174
+#: projects_array.php:1363 projects_array.php:1364 projects_array.php:1568
+#: projects_array.php:1569 projects_array.php:1768 projects_array.php:1769
+#: projects_array.php:1963 projects_array.php:1964 projects_array.php:2153
+#: projects_array.php:2154 projects_array.php:2343 projects_array.php:2344
+#: projects_array.php:2543 projects_array.php:2544
+msgid "Ice Breaker"
+msgstr ""
+
+#: projects_array.php:762 projects_array.php:763 projects_array.php:973
+#: projects_array.php:974 projects_array.php:1178 projects_array.php:1179
+#: projects_array.php:1368 projects_array.php:1369 projects_array.php:1573
+#: projects_array.php:1574 projects_array.php:1773 projects_array.php:1774
+#: projects_array.php:1968 projects_array.php:1969 projects_array.php:2158
+#: projects_array.php:2159 projects_array.php:2348 projects_array.php:2349
+#: projects_array.php:2548 projects_array.php:2549
+msgid "Evaluation and Feedback - First Speech"
+msgstr ""
+
+#: projects_array.php:767 projects_array.php:768 projects_array.php:978
+#: projects_array.php:979 projects_array.php:1183 projects_array.php:1184
+#: projects_array.php:1373 projects_array.php:1374 projects_array.php:1578
+#: projects_array.php:1579 projects_array.php:1778 projects_array.php:1779
+#: projects_array.php:1973 projects_array.php:1974 projects_array.php:2163
+#: projects_array.php:2164 projects_array.php:2353 projects_array.php:2354
+#: projects_array.php:2553 projects_array.php:2554
+msgid "Evaluation and Feedback - Second Speech"
+msgstr ""
+
+#: projects_array.php:772 projects_array.php:773 projects_array.php:983
+#: projects_array.php:984 projects_array.php:1188 projects_array.php:1189
+#: projects_array.php:1378 projects_array.php:1379 projects_array.php:1583
+#: projects_array.php:1584 projects_array.php:1783 projects_array.php:1784
+#: projects_array.php:1978 projects_array.php:1979 projects_array.php:2168
+#: projects_array.php:2169 projects_array.php:2358 projects_array.php:2359
+#: projects_array.php:2558 projects_array.php:2559
+msgid "Evaluation and Feedback - Evaluator Speech"
+msgstr ""
+
+#: projects_array.php:777 projects_array.php:778 projects_array.php:988
+#: projects_array.php:989 projects_array.php:1193 projects_array.php:1194
+#: projects_array.php:1383 projects_array.php:1384 projects_array.php:1588
+#: projects_array.php:1589 projects_array.php:1788 projects_array.php:1789
+#: projects_array.php:1983 projects_array.php:1984 projects_array.php:2173
+#: projects_array.php:2174 projects_array.php:2363 projects_array.php:2364
+#: projects_array.php:2563 projects_array.php:2564
+msgid "Researching and Presenting"
+msgstr ""
+
+#: projects_array.php:782 projects_array.php:783 projects_array.php:993
+#: projects_array.php:994 projects_array.php:1198 projects_array.php:1199
+#: projects_array.php:1393 projects_array.php:1394 projects_array.php:1793
+#: projects_array.php:1794 projects_array.php:2178 projects_array.php:2179
+#: projects_array.php:2368 projects_array.php:2369 projects_array.php:2568
+#: projects_array.php:2569
+msgid "Understanding Your Leadership Style"
+msgstr ""
+
+#: projects_array.php:787 projects_array.php:788 projects_array.php:998
+#: projects_array.php:999 projects_array.php:1593 projects_array.php:1594
+#: projects_array.php:1988 projects_array.php:1989 projects_array.php:2573
+#: projects_array.php:2574
+msgid "Understanding Your Communication Style"
+msgstr ""
+
+#: projects_array.php:797 projects_array.php:798
+msgid "Negotiate the Best Outcome"
+msgstr ""
+
+#: projects_array.php:802 projects_array.php:803 projects_array.php:1013
+#: projects_array.php:1014 projects_array.php:1218 projects_array.php:1219
+#: projects_array.php:1408 projects_array.php:1409 projects_array.php:1598
+#: projects_array.php:1599 projects_array.php:1798 projects_array.php:1799
+#: projects_array.php:2008 projects_array.php:2009 projects_array.php:2198
+#: projects_array.php:2199 projects_array.php:2373 projects_array.php:2374
+#: projects_array.php:2588 projects_array.php:2589
+msgid "Active Listening"
+msgstr ""
+
+#: projects_array.php:807 projects_array.php:808 projects_array.php:1018
+#: projects_array.php:1019 projects_array.php:1223 projects_array.php:1224
+#: projects_array.php:1413 projects_array.php:1414 projects_array.php:1613
+#: projects_array.php:1614 projects_array.php:1813 projects_array.php:1814
+#: projects_array.php:2013 projects_array.php:2014 projects_array.php:2203
+#: projects_array.php:2204 projects_array.php:2388 projects_array.php:2389
+#: projects_array.php:2593 projects_array.php:2594
+msgid "Connect with Storytelling"
+msgstr ""
+
+#: projects_array.php:812 projects_array.php:813 projects_array.php:1023
+#: projects_array.php:1024 projects_array.php:1203 projects_array.php:1204
+#: projects_array.php:1418 projects_array.php:1419 projects_array.php:1618
+#: projects_array.php:1619 projects_array.php:1818 projects_array.php:1819
+#: projects_array.php:2018 projects_array.php:2019 projects_array.php:2208
+#: projects_array.php:2209 projects_array.php:2393 projects_array.php:2394
+#: projects_array.php:2598 projects_array.php:2599
+msgid "Connect with Your Audience"
+msgstr ""
+
+#: projects_array.php:817 projects_array.php:818 projects_array.php:1028
+#: projects_array.php:1029 projects_array.php:1228 projects_array.php:1229
+#: projects_array.php:1423 projects_array.php:1424 projects_array.php:1623
+#: projects_array.php:1624 projects_array.php:1823 projects_array.php:1824
+#: projects_array.php:2023 projects_array.php:2024 projects_array.php:2213
+#: projects_array.php:2214 projects_array.php:2398 projects_array.php:2399
+#: projects_array.php:2603 projects_array.php:2604
+msgid "Creating Effective Visual Aids"
+msgstr ""
+
+#: projects_array.php:822 projects_array.php:823 projects_array.php:1033
+#: projects_array.php:1034 projects_array.php:1233 projects_array.php:1234
+#: projects_array.php:1428 projects_array.php:1429 projects_array.php:1628
+#: projects_array.php:1629 projects_array.php:1828 projects_array.php:1829
+#: projects_array.php:2028 projects_array.php:2029 projects_array.php:2218
+#: projects_array.php:2219 projects_array.php:2403 projects_array.php:2404
+#: projects_array.php:2608 projects_array.php:2609
+msgid "Deliver Social Speeches - First Speech"
+msgstr ""
+
+#: projects_array.php:827 projects_array.php:1038 projects_array.php:1039
+msgid "Deliver Social Speeches - Second Speech"
+msgstr ""
+
+#: projects_array.php:828
+msgid ""
+"Deliver Social Speeches -\r\n"
+" Second Speech"
+msgstr ""
+
+#: projects_array.php:833 projects_array.php:834 projects_array.php:1043
+#: projects_array.php:1044 projects_array.php:1238 projects_array.php:1239
+#: projects_array.php:1433 projects_array.php:1434 projects_array.php:1633
+#: projects_array.php:1634 projects_array.php:1833 projects_array.php:1834
+#: projects_array.php:1993 projects_array.php:1994 projects_array.php:2223
+#: projects_array.php:2224 projects_array.php:2408 projects_array.php:2409
+#: projects_array.php:2613 projects_array.php:2614
+msgid "Effective Body Language"
+msgstr ""
+
+#: projects_array.php:838 projects_array.php:839 projects_array.php:1048
+#: projects_array.php:1049 projects_array.php:1243 projects_array.php:1244
+#: projects_array.php:1438 projects_array.php:1439 projects_array.php:1638
+#: projects_array.php:1639 projects_array.php:1838 projects_array.php:1839
+#: projects_array.php:2033 projects_array.php:2034 projects_array.php:2228
+#: projects_array.php:2229 projects_array.php:2413 projects_array.php:2414
+#: projects_array.php:2618 projects_array.php:2619
+msgid "Focus on the Positive"
+msgstr ""
+
+#: projects_array.php:843 projects_array.php:844 projects_array.php:1053
+#: projects_array.php:1054 projects_array.php:1248 projects_array.php:1249
+#: projects_array.php:1443 projects_array.php:1444 projects_array.php:1643
+#: projects_array.php:1644 projects_array.php:1843 projects_array.php:1844
+#: projects_array.php:2038 projects_array.php:2039 projects_array.php:2233
+#: projects_array.php:2234 projects_array.php:2418 projects_array.php:2419
+#: projects_array.php:2623 projects_array.php:2624
+msgid "Inspire Your Audience"
+msgstr ""
+
+#: projects_array.php:848 projects_array.php:849 projects_array.php:1058
+#: projects_array.php:1059 projects_array.php:1253 projects_array.php:1254
+#: projects_array.php:1448 projects_array.php:1449 projects_array.php:1648
+#: projects_array.php:1649 projects_array.php:1848 projects_array.php:1849
+#: projects_array.php:2043 projects_array.php:2044 projects_array.php:2193
+#: projects_array.php:2194 projects_array.php:2423 projects_array.php:2424
+#: projects_array.php:2628 projects_array.php:2629
+msgid "Make Connections Through Networking"
+msgstr ""
+
+#: projects_array.php:853 projects_array.php:854 projects_array.php:1063
+#: projects_array.php:1064 projects_array.php:1258 projects_array.php:1259
+#: projects_array.php:1453 projects_array.php:1454 projects_array.php:1653
+#: projects_array.php:1654 projects_array.php:1853 projects_array.php:1854
+#: projects_array.php:2048 projects_array.php:2049 projects_array.php:2238
+#: projects_array.php:2239 projects_array.php:2428 projects_array.php:2429
+#: projects_array.php:2633 projects_array.php:2634
+msgid "Prepare for an Interview"
+msgstr ""
+
+#: projects_array.php:858 projects_array.php:859 projects_array.php:1073
+#: projects_array.php:1074 projects_array.php:1268 projects_array.php:1269
+#: projects_array.php:1463 projects_array.php:1464 projects_array.php:1663
+#: projects_array.php:1664 projects_array.php:1863 projects_array.php:1864
+#: projects_array.php:2058 projects_array.php:2059 projects_array.php:2248
+#: projects_array.php:2249 projects_array.php:2438 projects_array.php:2439
+#: projects_array.php:2643 projects_array.php:2644
+msgid "Using Descriptive Language"
+msgstr ""
+
+#: projects_array.php:863 projects_array.php:864 projects_array.php:1078
+#: projects_array.php:1079 projects_array.php:1273 projects_array.php:1274
+#: projects_array.php:1468 projects_array.php:1469 projects_array.php:1668
+#: projects_array.php:1669 projects_array.php:1868 projects_array.php:1869
+#: projects_array.php:2063 projects_array.php:2064 projects_array.php:2253
+#: projects_array.php:2254 projects_array.php:2443 projects_array.php:2444
+#: projects_array.php:2648 projects_array.php:2649
+msgid "Using Presentation Software"
+msgstr ""
+
+#: projects_array.php:868 projects_array.php:869 projects_array.php:1068
+#: projects_array.php:1069 projects_array.php:1263 projects_array.php:1264
+#: projects_array.php:1458 projects_array.php:1459 projects_array.php:1658
+#: projects_array.php:1659 projects_array.php:1858 projects_array.php:1859
+#: projects_array.php:2053 projects_array.php:2054 projects_array.php:2243
+#: projects_array.php:2244 projects_array.php:2433 projects_array.php:2434
+#: projects_array.php:2638 projects_array.php:2639
+msgid "Understanding Vocal Variety"
+msgstr ""
+
+#: projects_array.php:873 projects_array.php:874
+msgid "Manage Change"
+msgstr ""
+
+#: projects_array.php:878 projects_array.php:879 projects_array.php:1083
+#: projects_array.php:1084 projects_array.php:1288 projects_array.php:1289
+#: projects_array.php:1478 projects_array.php:1479 projects_array.php:1678
+#: projects_array.php:1679 projects_array.php:1873 projects_array.php:1874
+#: projects_array.php:2073 projects_array.php:2074 projects_array.php:2263
+#: projects_array.php:2264 projects_array.php:2453 projects_array.php:2454
+#: projects_array.php:2658 projects_array.php:2659
+msgid "Building a Social Media Presence"
+msgstr ""
+
+#: projects_array.php:883 projects_array.php:884 projects_array.php:1088
+#: projects_array.php:1089 projects_array.php:1293 projects_array.php:1294
+#: projects_array.php:1483 projects_array.php:1484 projects_array.php:1683
+#: projects_array.php:1684 projects_array.php:1883 projects_array.php:1884
+#: projects_array.php:2078 projects_array.php:2079 projects_array.php:2268
+#: projects_array.php:2269 projects_array.php:2458 projects_array.php:2459
+#: projects_array.php:2663 projects_array.php:2664
+msgid "Create a Podcast"
+msgstr ""
+
+#: projects_array.php:888 projects_array.php:889 projects_array.php:1093
+#: projects_array.php:1094 projects_array.php:1298 projects_array.php:1299
+#: projects_array.php:1488 projects_array.php:1489 projects_array.php:1688
+#: projects_array.php:1689 projects_array.php:1888 projects_array.php:1889
+#: projects_array.php:2083 projects_array.php:2084 projects_array.php:2273
+#: projects_array.php:2274 projects_array.php:2463 projects_array.php:2464
+#: projects_array.php:2668 projects_array.php:2669
+msgid "Manage Online Meetings"
+msgstr ""
+
+#: projects_array.php:893 projects_array.php:894 projects_array.php:1108
+#: projects_array.php:1109 projects_array.php:1303 projects_array.php:1304
+#: projects_array.php:1503 projects_array.php:1504 projects_array.php:1703
+#: projects_array.php:1704 projects_array.php:1903 projects_array.php:1904
+#: projects_array.php:2068 projects_array.php:2069 projects_array.php:2288
+#: projects_array.php:2289 projects_array.php:2478 projects_array.php:2479
+#: projects_array.php:2683 projects_array.php:2684
+msgid "Managing a Difficult Audience"
+msgstr ""
+
+#: projects_array.php:898 projects_array.php:899 projects_array.php:1098
+#: projects_array.php:1099 projects_array.php:1278 projects_array.php:1279
+#: projects_array.php:1493 projects_array.php:1494 projects_array.php:1693
+#: projects_array.php:1694 projects_array.php:1893 projects_array.php:1894
+#: projects_array.php:2088 projects_array.php:2089 projects_array.php:2278
+#: projects_array.php:2279 projects_array.php:2468 projects_array.php:2469
+#: projects_array.php:2673 projects_array.php:2674
+msgid "Manage Projects Successfully - First Speech"
+msgstr ""
+
+#: projects_array.php:903 projects_array.php:904 projects_array.php:1103
+#: projects_array.php:1104 projects_array.php:1283 projects_array.php:1284
+#: projects_array.php:1498 projects_array.php:1499 projects_array.php:1698
+#: projects_array.php:1699 projects_array.php:1898 projects_array.php:1899
+#: projects_array.php:2093 projects_array.php:2094 projects_array.php:2283
+#: projects_array.php:2284 projects_array.php:2473 projects_array.php:2474
+#: projects_array.php:2678 projects_array.php:2679
+msgid "Manage Projects Successfully - Second Speech"
+msgstr ""
+
+#: projects_array.php:908 projects_array.php:909 projects_array.php:1113
+#: projects_array.php:1114 projects_array.php:1308 projects_array.php:1309
+#: projects_array.php:1508 projects_array.php:1509 projects_array.php:1708
+#: projects_array.php:1709 projects_array.php:1908 projects_array.php:1909
+#: projects_array.php:2098 projects_array.php:2099 projects_array.php:2258
+#: projects_array.php:2259 projects_array.php:2483 projects_array.php:2484
+#: projects_array.php:2688 projects_array.php:2689
+msgid "Public Relations Strategies"
+msgstr ""
+
+#: projects_array.php:913 projects_array.php:914 projects_array.php:1118
+#: projects_array.php:1119 projects_array.php:1313 projects_array.php:1314
+#: projects_array.php:1513 projects_array.php:1514 projects_array.php:1713
+#: projects_array.php:1714 projects_array.php:1913 projects_array.php:1914
+#: projects_array.php:2103 projects_array.php:2104 projects_array.php:2293
+#: projects_array.php:2294 projects_array.php:2488 projects_array.php:2489
+#: projects_array.php:2693 projects_array.php:2694
+msgid "Question-and-Answer Session"
+msgstr ""
+
+#: projects_array.php:918 projects_array.php:919 projects_array.php:1123
+#: projects_array.php:1124 projects_array.php:1318 projects_array.php:1319
+#: projects_array.php:1518 projects_array.php:1519 projects_array.php:1718
+#: projects_array.php:1719 projects_array.php:1918 projects_array.php:1919
+#: projects_array.php:2108 projects_array.php:2109 projects_array.php:2298
+#: projects_array.php:2299 projects_array.php:2493 projects_array.php:2494
+#: projects_array.php:2698 projects_array.php:2699
+msgid "Write a Compelling Blog"
+msgstr ""
+
+#: projects_array.php:923 projects_array.php:924 projects_array.php:2498
+#: projects_array.php:2499
+msgid "Lead in Any Situation"
+msgstr ""
+
+#: projects_array.php:928 projects_array.php:929 projects_array.php:1143
+#: projects_array.php:1144 projects_array.php:1333 projects_array.php:1334
+#: projects_array.php:1528 projects_array.php:1529 projects_array.php:1728
+#: projects_array.php:1729 projects_array.php:1933 projects_array.php:1934
+#: projects_array.php:2118 projects_array.php:2119 projects_array.php:2308
+#: projects_array.php:2309 projects_array.php:2503 projects_array.php:2504
+#: projects_array.php:2708 projects_array.php:2709
+msgid "Reflect on Your Path"
+msgstr ""
+
+#: projects_array.php:933 projects_array.php:934 projects_array.php:1148
+#: projects_array.php:1149 projects_array.php:1338 projects_array.php:1339
+#: projects_array.php:1533 projects_array.php:1534 projects_array.php:1733
+#: projects_array.php:1734 projects_array.php:1938 projects_array.php:1939
+#: projects_array.php:2123 projects_array.php:2124 projects_array.php:2313
+#: projects_array.php:2314 projects_array.php:2508 projects_array.php:2509
+#: projects_array.php:2713 projects_array.php:2714
+msgid "Ethical Leadership"
+msgstr ""
+
+#: projects_array.php:938 projects_array.php:939 projects_array.php:1133
+#: projects_array.php:1134 projects_array.php:1323 projects_array.php:1324
+#: projects_array.php:1538 projects_array.php:1539 projects_array.php:1738
+#: projects_array.php:1739 projects_array.php:1923 projects_array.php:1924
+#: projects_array.php:2128 projects_array.php:2129 projects_array.php:2318
+#: projects_array.php:2319 projects_array.php:2513 projects_array.php:2514
+#: projects_array.php:2718 projects_array.php:2719
+msgid "High Performance Leadership - First Speech"
+msgstr ""
+
+#: projects_array.php:943 projects_array.php:944 projects_array.php:1138
+#: projects_array.php:1139 projects_array.php:1328 projects_array.php:1329
+#: projects_array.php:1543 projects_array.php:1544 projects_array.php:1743
+#: projects_array.php:1744 projects_array.php:1928 projects_array.php:1929
+#: projects_array.php:2133 projects_array.php:2134 projects_array.php:2323
+#: projects_array.php:2324 projects_array.php:2518 projects_array.php:2519
+#: projects_array.php:2723 projects_array.php:2724
+msgid "High Performance Leadership - Second Speech"
+msgstr ""
+
+#: projects_array.php:948 projects_array.php:949 projects_array.php:1153
+#: projects_array.php:1154 projects_array.php:1343 projects_array.php:1344
+#: projects_array.php:1548 projects_array.php:1549 projects_array.php:1748
+#: projects_array.php:1749 projects_array.php:1943 projects_array.php:1944
+#: projects_array.php:2138 projects_array.php:2139 projects_array.php:2303
+#: projects_array.php:2304 projects_array.php:2523 projects_array.php:2524
+#: projects_array.php:2728 projects_array.php:2729
+msgid "Leading in Your Volunteer Organization"
+msgstr ""
+
+#: projects_array.php:953 projects_array.php:954 projects_array.php:1158
+#: projects_array.php:1159 projects_array.php:1348 projects_array.php:1349
+#: projects_array.php:1553 projects_array.php:1554 projects_array.php:1753
+#: projects_array.php:1754 projects_array.php:1948 projects_array.php:1949
+#: projects_array.php:2143 projects_array.php:2144 projects_array.php:2328
+#: projects_array.php:2329 projects_array.php:2528 projects_array.php:2529
+#: projects_array.php:2733 projects_array.php:2734
+msgid "Lessons Learned"
+msgstr ""
+
+#: projects_array.php:958 projects_array.php:959 projects_array.php:1163
+#: projects_array.php:1164 projects_array.php:1353 projects_array.php:1354
+#: projects_array.php:1558 projects_array.php:1559 projects_array.php:1758
+#: projects_array.php:1759 projects_array.php:1953 projects_array.php:1954
+#: projects_array.php:2148 projects_array.php:2149 projects_array.php:2333
+#: projects_array.php:2334 projects_array.php:2533 projects_array.php:2534
+#: projects_array.php:2738 projects_array.php:2739
+msgid "Moderate a Panel Discussion"
+msgstr ""
+
+#: projects_array.php:963 projects_array.php:964 projects_array.php:1168
+#: projects_array.php:1169 projects_array.php:1358 projects_array.php:1359
+#: projects_array.php:1563 projects_array.php:1564 projects_array.php:1763
+#: projects_array.php:1764 projects_array.php:1958 projects_array.php:1959
+#: projects_array.php:2113 projects_array.php:2114 projects_array.php:2338
+#: projects_array.php:2339 projects_array.php:2538 projects_array.php:2539
+#: projects_array.php:2743 projects_array.php:2744
+msgid "Prepare to Speak Professionally"
+msgstr ""
+
+#: projects_array.php:1008 projects_array.php:1009
+msgid "Reaching Consensus"
+msgstr ""
+
+#: projects_array.php:1128 projects_array.php:1129
+msgid "Improvement Through Positive Coaching"
+msgstr ""
+
+#: projects_array.php:1213 projects_array.php:1214
+msgid "Present a Proposal"
+msgstr ""
+
+#: projects_array.php:1388 projects_array.php:1389
+msgid "Managing Time"
+msgstr ""
+
+#: projects_array.php:1403 projects_array.php:1404
+msgid "Planning and Implementing"
+msgstr ""
+
+#: projects_array.php:1473 projects_array.php:1474
+msgid "Leading Your Team"
+msgstr ""
+
+#: projects_array.php:1523 projects_array.php:1524
+msgid "Manage Successful Events"
+msgstr ""
+
+#: projects_array.php:1608 projects_array.php:1609
+msgid "Understanding Emotional Intelligence"
+msgstr ""
+
+#: projects_array.php:1673 projects_array.php:1674 projects_array.php:2448
+#: projects_array.php:2449
+msgid "Motivate Others"
+msgstr ""
+
+#: projects_array.php:1723 projects_array.php:1724 tm-reports.php:2220
+#: tm-reports.php:2223 tm-reports.php:2433 tm-reports.php:2436
+msgid "Team Building"
+msgstr ""
+
+#: projects_array.php:1808 projects_array.php:1809
+msgid "Understanding Conflict Resolution"
+msgstr ""
+
+#: projects_array.php:1878 projects_array.php:1879
+msgid "Leading in Difficult Situations"
+msgstr ""
+
+#: projects_array.php:2003 projects_array.php:2004
+msgid "Persuasive Speaking"
+msgstr ""
+
+#: projects_array.php:2183 projects_array.php:2184
+msgid "Cross-Cultural Understanding"
+msgstr ""
+
+#: projects_array.php:2383 projects_array.php:2384
+msgid "Successful Collaboration"
+msgstr ""
+
+#: projects_array.php:2583 projects_array.php:2584
+msgid "Develop a Communication Plan"
+msgstr ""
+
+#: projects_array.php:2653 projects_array.php:2654
+msgid "Communicate Change"
+msgstr ""
+
+#: projects_array.php:2703 projects_array.php:2704
+msgid "Develop Your Vision"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:194 rsvpmaker-for-toastmasters.php:1090
+#: rsvpmaker-for-toastmasters.php:1179
+msgid "guest"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:234 rsvpmaker-for-toastmasters.php:7913
+#: tm-reports.php:132
+msgid "Title"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:236
+msgid "Introduction"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:269
+msgid "Speech Intro for"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:271
+msgid "Speech for"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:295
+msgid ""
+"You are viewing the private members-only area of the website. For a basic "
+"orientation, see the <a href=\"%s\">welcome page</a>."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:301 rsvpmaker-for-toastmasters.php:3889
+#: rsvpmaker-for-toastmasters.php:4665
+msgid "Set Away Message"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:301
+msgid "on vacation or unavailable"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:304
+msgid "Post a message on your club social profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:330
+msgid "Signup"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:330 rsvpmaker-for-toastmasters.php:3484
+msgid "Edit Signups"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:330
+msgid "Email Roster"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:332
+msgid "Print Agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:332
+msgid "Download to Word"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:342
+msgid "View future events"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:347
+msgid "Upcoming Roles"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:351
+msgid "Print Signup Sheet"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:353
+msgid "Edit My Member Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:357
+msgid "Print Contacts List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:359
+msgid "Home Page"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:363 rsvpmaker-for-toastmasters.php:365
+msgid "Email all members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:363 rsvpmaker-for-toastmasters.php:365
+msgid "for club business or social invitations, no spam please"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:365
+msgid "Mailing list"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:374 tm-reports.php:57
+msgid "My Progress"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:377
+msgid "Overview Report"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:378
+msgid "Competent Communicator"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:379
+msgid "Competent Leader"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:380 tm-reports.php:61
+msgid "Advanced Awards"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:381
+msgid "Attendance"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:392
+msgid "Administration"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:393 rsvpmaker-for-toastmasters.php:2477
+msgid "Add Members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:395 rsvpmaker-for-toastmasters.php:2481
+msgid "Edit Members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:397 rsvpmaker-for-toastmasters.php:2057
+#: rsvpmaker-for-toastmasters.php:2482
+msgid "Guests/Former Members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:410
+msgid "You have no published events based on your club meeting template"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:415
+msgid "Future events scheduled"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:420
+msgid "Event Templates"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:426
+msgid "Add Events (based on template)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:426
+msgid "Agenda Setup (drag-and-drop editor)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:431 rsvpmaker-for-toastmasters.php:3412
+msgid "Members Email List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:434 rsvpmaker-for-toastmasters.php:3415
+msgid "Officers Email List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:437 rsvpmaker-for-toastmasters.php:3418
+msgid "Guests Email List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:457
+msgid "Member Files"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:460
+msgid ""
+"This listing shows all files uploaded to the website, with the exception of "
+"images. As an editor or officer, you can hide any of these that should not "
+"be displayed to your members."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:460
+msgid "Show all files"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:479
+msgid "Show This"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:481
+msgid "Hide This"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:482 rsvpmaker-for-toastmasters.php:2224
+#: rsvpmaker-for-toastmasters.php:2240 rsvpmaker-for-toastmasters.php:3491
+#: tm-reports.php:2503
+msgid "Edit"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:527 rsvpmaker-for-toastmasters.php:3517
+msgid "Agenda Layout Editor (Advanced)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:614 rsvpmaker-for-toastmasters.php:652
+#: rsvpmaker-for-toastmasters.php:666
+msgid "Next meeting"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:623
+msgid "Reminder time is past"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:626
+msgid "Reminder already ran"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:629
+msgid "Run reminder now"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:635
+msgid "Reminder time is NOT past"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:687
+msgid "Calendar page created"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:691 rsvpmaker-for-toastmasters.php:700
+msgid "To Do: Create a Calendar page including the shortcode/placeholder"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:696
+msgid "Member page created"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:709
+msgid "Templates created"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:713 rsvpmaker-for-toastmasters.php:736
+msgid "To Do"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:713
+msgid "Create an event template for your regular meetings"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:722
+msgid "Members imported"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:726
+msgid "To Do: Import members. Current members:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:726
+msgid "See add members screen"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:732
+msgid "Officer list recorded"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:736
+msgid "Record list of officers on settings screen"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:788
+msgid "To add"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:788
+msgid "content, switch to "
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:788
+msgid "Edit Signups mode"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:791
+msgid "Not set"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:833 rsvpmaker-for-toastmasters.php:1007
+#: rsvpmaker-for-toastmasters.php:1043
+msgid "member name not found"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1000 rsvpmaker-for-toastmasters.php:1036
+#: rsvpmaker-for-toastmasters.php:1076 rsvpmaker-for-toastmasters.php:1322
+msgid "Not Available"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1017
+msgid "Drag and drop assignments into the desired agenda order"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1108 rsvpmaker-for-toastmasters.php:1129
+msgid "Random assignment (unconfirmed)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1108 rsvpmaker-for-toastmasters.php:1129
+#: tm-reports.php:1502 tm-reports.php:1902
+msgid "Last attended"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1108 rsvpmaker-for-toastmasters.php:1129
+msgid "Last filled role"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1133
+msgid "Add a personal note (optional)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1147
+msgid "Update Role"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1151
+msgid "Remove Me"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1253
+msgid "Officers"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1270
+msgid "Officers list not yet set"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1303 rsvpmaker-for-toastmasters.php:2181
+#: rsvpmaker-for-toastmasters.php:2240
+msgid "Guest"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1320
+msgid "Available"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1321
+msgid "Not"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1345 rsvpmaker-for-toastmasters.php:1367
+msgid "Last did role"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1391
+msgid "expires"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1404
+msgid ""
+"Set a temporary message for the members page letting people know when you "
+"are on vacation or unavailable to attend."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1440
+msgid "Expires"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1441
+msgid "Month:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1453
+msgid "Day:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1467 tm-reports.php:331 tm-reports.php:348
+msgid "Year"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1482
+msgid "Hour:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1503 rsvpmaker-for-toastmasters.php:2144
+#: rsvpmaker-for-toastmasters.php:2184 rsvpmaker-for-toastmasters.php:2859
+#: rsvpmaker-for-toastmasters.php:7207
+msgid "Submit"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1505
+msgid "Clear Status"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1574 rsvpmaker-for-toastmasters.php:1611
+msgid "signed up for"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1682
+msgid "Speaker Introduction: "
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1708
+msgid "withdrawn: "
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1760
+msgid "Your role: %s for %s %s"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1770
+msgid ""
+"Please sign into the website to add speech project details, particularly if "
+"the speech project will require more than the default 7 minutes on the "
+"agenda."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1771
+msgid "Please add project/timing"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1774
+msgid ""
+"If this information is not correct, or if you cannot attend on this date, "
+"please let us know as soon as possible."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1817 rsvpmaker-for-toastmasters.php:1827
+#: rsvpmaker-for-toastmasters.php:1889
+msgid "Select Manual/Path to See Options"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1825
+msgid "Select Project"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1941
+msgid "Time reserved for this speech"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1941
+msgid "minutes."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1953
+msgid "Progress Report for"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1959
+msgid "Progress Report for You"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1962 tm-reports.php:268 tm-reports.php:1055
+#: tm-reports.php:1064
+msgid "Get"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1964
+msgid "Speeches"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:1988
+msgid "Other Roles"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2026
+msgid "user"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2058
+msgid "This list includes inactive members and guests"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2059 rsvpmaker-for-toastmasters.php:8819
+msgid "Guests"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2059
+msgid "Former members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2059
+msgid "All"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2083
+msgid "Are you sure you want to delete the user records archive?"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2083 rsvpmaker-for-toastmasters.php:2716
+#: rsvpmaker-for-toastmasters.php:2789 rsvpmaker-for-toastmasters.php:8352
+#: rsvpmaker-for-toastmasters.php:8382 rsvpmaker-for-toastmasters.php:8700
+#: rsvpmaker-for-toastmasters.php:8703
+msgid "Yes"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2162
+msgid "Activate Member Account"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2164
+msgid "Activate"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2171
+msgid "Edit Entry"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2171
+msgid "Add Entry"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2173 rsvpmaker-for-toastmasters.php:7772
+#: rsvpmaker-for-toastmasters.php:7800 rsvpmaker-for-toastmasters.php:7959
+#: tm-reports.php:172 tm-reports.php:200
+msgid "First"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2174 rsvpmaker-for-toastmasters.php:7772
+#: rsvpmaker-for-toastmasters.php:7800 rsvpmaker-for-toastmasters.php:7959
+#: tm-reports.php:172 tm-reports.php:200
+msgid "Last"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2175 rsvpmaker-for-toastmasters.php:2196
+#: rsvpmaker-for-toastmasters.php:2268 rsvpmaker-for-toastmasters.php:2386
+#: rsvpmaker-for-toastmasters.php:3497 rsvpmaker-for-toastmasters.php:3801
+#: rsvpmaker-for-toastmasters.php:3873 rsvpmaker-for-toastmasters.php:4124
+#: rsvpmaker-for-toastmasters.php:6019 rsvpmaker-for-toastmasters.php:8456
+#: rsvpmaker-for-toastmasters.php:8476 rsvpmaker-for-toastmasters.php:9055
+#: rsvpmaker-for-toastmasters.php:9176 rsvpmaker-for-toastmasters.php:9184
+#: rsvpmaker-for-toastmasters.php:9297 rsvpmaker-for-toastmasters.php:9305
+#: rsvpmaker-for-toastmasters.php:9330 rsvpmaker-for-toastmasters.php:9338
+#: rsvpmaker-for-toastmasters.php:9361 rsvpmaker-for-toastmasters.php:9369
+#: rsvpmaker-for-toastmasters.php:9389 rsvpmaker-for-toastmasters.php:9397
+#: tm-reports.php:3238 tm-reports.php:3247
+msgid "Email"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2176
+msgid "Home"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2177
+msgid "Work"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2178
+msgid "Mobile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2179 rsvpmaker-for-toastmasters.php:2197
+#: rsvpmaker-for-toastmasters.php:2278
+msgid "Note"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2182 rsvpmaker-for-toastmasters.php:2224
+msgid "Former Member"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2189 rsvpmaker-for-toastmasters.php:2398
+#: rsvpmaker-for-toastmasters.php:3794 rsvpmaker-for-toastmasters.php:4136
+#: rsvpmaker-for-toastmasters.php:4559 rsvpmaker-for-toastmasters.php:6016
+#: rsvpmaker-for-toastmasters.php:8449 rsvpmaker-for-toastmasters.php:9173
+#: rsvpmaker-for-toastmasters.php:9294 rsvpmaker-for-toastmasters.php:9327
+#: rsvpmaker-for-toastmasters.php:9358 rsvpmaker-for-toastmasters.php:9386
+#: tm-reports.php:3235
+msgid "Home Phone"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2190 rsvpmaker-for-toastmasters.php:2402
+#: rsvpmaker-for-toastmasters.php:3795 rsvpmaker-for-toastmasters.php:4141
+#: rsvpmaker-for-toastmasters.php:4560 rsvpmaker-for-toastmasters.php:6017
+#: rsvpmaker-for-toastmasters.php:8450 rsvpmaker-for-toastmasters.php:9174
+#: rsvpmaker-for-toastmasters.php:9295 rsvpmaker-for-toastmasters.php:9328
+#: rsvpmaker-for-toastmasters.php:9359 rsvpmaker-for-toastmasters.php:9387
+#: tm-reports.php:3236
+msgid "Work Phone"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2191 rsvpmaker-for-toastmasters.php:2406
+#: rsvpmaker-for-toastmasters.php:3796 rsvpmaker-for-toastmasters.php:4146
+#: rsvpmaker-for-toastmasters.php:4561 rsvpmaker-for-toastmasters.php:6018
+#: rsvpmaker-for-toastmasters.php:8451 rsvpmaker-for-toastmasters.php:9175
+#: rsvpmaker-for-toastmasters.php:9296 rsvpmaker-for-toastmasters.php:9329
+#: rsvpmaker-for-toastmasters.php:9360 rsvpmaker-for-toastmasters.php:9388
+#: tm-reports.php:3237
+msgid "Mobile Phone"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2192 rsvpmaker-for-toastmasters.php:3797
+#: rsvpmaker-for-toastmasters.php:4562 rsvpmaker-for-toastmasters.php:8452
+msgid "Facebook Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2193 rsvpmaker-for-toastmasters.php:3798
+#: rsvpmaker-for-toastmasters.php:4563 rsvpmaker-for-toastmasters.php:8453
+msgid "Twitter Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2194 rsvpmaker-for-toastmasters.php:3799
+#: rsvpmaker-for-toastmasters.php:4564 rsvpmaker-for-toastmasters.php:8454
+msgid "LinkedIn Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2195 rsvpmaker-for-toastmasters.php:3800
+#: rsvpmaker-for-toastmasters.php:4565 rsvpmaker-for-toastmasters.php:8455
+msgid "Business Web Address"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2224
+msgid "Reactivate"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2224 rsvpmaker-for-toastmasters.php:2240
+#: tm-reports.php:448 tm-reports.php:4671
+msgid "Updated"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2240
+msgid "Convert to Member"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2270
+msgid "Unsubscribed from email"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2270
+msgid "Restore"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2272
+msgid "Unsubscribe"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2275 rsvpmaker-for-toastmasters.php:3877
+#: rsvpmaker-for-toastmasters.php:8479
+msgid "About Me"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2285
+msgid "Combined email"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2286
+msgid "Former member emails"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2287
+msgid "Guest emails"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2321
+msgid "Reset"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2336 rsvpmaker-for-toastmasters.php:2344
+msgid "Edit Member"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2348
+msgid ""
+"Authorized users can use this screen to edit member email addresses and "
+"other contact information."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2390 rsvpmaker-for-toastmasters.php:4128
+#: rsvpmaker-for-toastmasters.php:9055
+msgid "First Name"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2394 rsvpmaker-for-toastmasters.php:4132
+#: rsvpmaker-for-toastmasters.php:9055
+msgid "Last Name"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2410 rsvpmaker-for-toastmasters.php:4150
+msgid "Toastmasters ID #"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2414
+msgid "Education Awards"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2416
+msgid "Use the abbreviations"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2430 rsvpmaker-for-toastmasters.php:6079
+#: rsvpmaker-for-toastmasters.php:8373 tm-reports.php:2836
+msgid "Member"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2436
+msgid "User Role"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2444 tm-reports.php:332 tm-reports.php:349
+#: tm-reports.php:2543
+msgid "Save"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2473 rsvpmaker-for-toastmasters.php:3507
+#: rsvpmaker-for-toastmasters.php:8124
+msgid "Agenda Setup"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2475 rsvpmaker-for-toastmasters.php:3513
+#: rsvpmaker-for-toastmasters.php:6981 rsvpmaker-for-toastmasters.php:8129
+msgid "Agenda Timing"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2479
+msgid "Set Away Status"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2485
+msgid "Mailman Mailing List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2487
+msgid "RSVP List to Members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2497
+msgid "YouTube Toastmasters"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2506
+msgid "Settings"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "President"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "VP of Education"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "VP of Membership"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "VP of Public Relations"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "Secretary"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "Treasurer"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "Sgt. at Arms"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2519
+msgid "Immediate Past President"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2538
+msgid "Make the Website Public"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2539
+msgid "Yes, this website is open for business!"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2540
+msgid ""
+"No, I am still testing, so I don't want this site indexed by Google or other "
+"search engines"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2542
+msgid "Enable Email Functions"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2543
+msgid "Yes, the email list is active"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2544
+msgid "No, do not sent automated email from the website"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2546
+msgid "Sync With WP4Toastmasters.com"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2547
+msgid "Yes, sync member speech and role data with other sites"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2548
+msgid "No, do not share data outside of this club website"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2549
+msgid "Reset sync count"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2553
+msgid ""
+"Timezone not set - defaults to UTC 0 (UK time). Scroll to the top of the "
+"list for U.S. timezones"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2574 rsvpmaker-for-toastmasters.php:2575
+msgid "Timezone"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2585
+msgid "Choose a city in the same timezone as you."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2588
+msgid "Officer List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2605
+msgid ""
+"Officers will be listed at the top of the members page and can also be "
+"displayed on the agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2607
+msgid ""
+"You may also want to appoint a backup administrator (who will have full "
+"rights to administer the site) and one or more site managers (who have "
+"editing rights and can also add and edit member records). Be judicious in "
+"awarding these additional responsibilities."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2633 rsvpmaker-for-toastmasters.php:2642
+#: rsvpmaker-for-toastmasters.php:2747 rsvpmaker-for-toastmasters.php:2753
+#: rsvpmaker-for-toastmasters.php:2830
+msgid "None"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2638
+msgid "Make Administrator"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2649
+msgid "Make Manager"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2664
+msgid "Member Email List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2665
+msgid "Documentation"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2666 rsvpmaker-for-toastmasters.php:2690
+#: rsvpmaker-for-toastmasters.php:2699
+msgid "List email address"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2667 rsvpmaker-for-toastmasters.php:2691
+#: rsvpmaker-for-toastmasters.php:2700
+msgid "Path"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2667 rsvpmaker-for-toastmasters.php:2691
+#: rsvpmaker-for-toastmasters.php:2700 rsvpmaker-for-toastmasters.php:4154
+msgid "Password"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2669
+msgid "Add current members to mailing list"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2689
+msgid "Officer Email List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2694
+msgid "Update officers mailing list"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2698
+msgid "Guest Email List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2706
+msgid "Message for Login Page"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2709
+msgid "Message To Members on Dashboard"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2712
+msgid "Message To Officers on Dashboard"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2715
+msgid "Include Time/Timezone on Agenda Email"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2716 rsvpmaker-for-toastmasters.php:2790
+#: rsvpmaker-for-toastmasters.php:2795 rsvpmaker-for-toastmasters.php:8352
+#: rsvpmaker-for-toastmasters.php:8382 rsvpmaker-for-toastmasters.php:8700
+#: rsvpmaker-for-toastmasters.php:8703
+msgid "No"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2743
+msgid "Email Reminders"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2745
+msgid "Reminder"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2751
+msgid "Reminder #2"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2758
+msgid "Agenda Formatting"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2772
+msgid "Agenda Layout"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2779
+msgid "Edit Custom Agenda Layout"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2785
+msgid "Agenda CSS Customization"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2787
+msgid "Show Stoplight (green/yellow/red) times"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2792
+msgid "Show Times on Agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2794
+msgid "Yes, show time"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2812 rsvpmaker-for-toastmasters.php:3544
+msgid "Signup Sheet"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2813
+msgid "Future Meetings Displayed"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2826
+msgid "Random Assignment"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2842
+msgid "Avoid selecting members who have"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2842
+msgid "not attended in more than"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2842
+msgid "days"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2842
+msgid "or who have filled the same role within"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2842
+msgid ""
+"Note: If you use the random assignment of members to roles, you may wish to "
+"have the software favor members who have attended the club recently but have "
+"not filled the same role within the last few weeks. This works best after "
+"your club has built up some history recording meetings in the software. "
+"Recommended reasonable settings: members who have attended more recently "
+"than 56 days (2 months) but have not filled the same role in the last 14 "
+"days."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2844
+msgid "Page Containing Welcome Message"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2851
+msgid "Beta Software"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2853
+msgid "Yes, enable beta test features"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2854
+msgid "No, do not turn on beta features"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2878
+msgid "Examples"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2878
+msgid "increase the default font size for all text"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2879
+msgid "change the font size of the actual agenda but not the sidebar content"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:2880
+msgid "add a dotted black line to the left of sidebar"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3226
+msgid "Error attempting to subscribe"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3229
+msgid "Added "
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3259
+msgid "Not in user/member list"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3350
+msgid "Mailman Mailing Lists"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3399
+msgid "Add Email"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3399
+msgid "Add one or more email addresses separated by commas or line breaks"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3433
+msgid "Error attempting to unsubscribe"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3460
+msgid "You have accepted a role for this meeting. Thanks!"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3462
+msgid ""
+"Oops, something went wrong with the automatic sign up. Please sign in with "
+"your password to take a role"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3464
+msgid ""
+"Oops, someone else took that role first. Sign in to take any other open role "
+"listed below"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3474
+msgid "Login to Sign Up for Roles"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3485
+msgid "Assign"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3486
+msgid "Recommend"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3487
+msgid "Reorder"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3492
+msgid "Stop Editing"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3494 rsvpmaker-for-toastmasters.php:9412
+msgid "Agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3496
+msgid "Print"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3498
+msgid "Export to Word"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3499
+msgid "Show"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3500
+msgid "Agenda with Contacts"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3501 rsvpmaker-for-toastmasters.php:5144
+msgid "Speech Introductions"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3509 rsvpmaker-for-toastmasters.php:8126
+msgid "Agenda Setup: Template"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3515 rsvpmaker-for-toastmasters.php:6993
+#: rsvpmaker-for-toastmasters.php:8131
+msgid "Agenda Timing: Template"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3519
+msgid "Agenda Sidebar"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3549
+msgid "Email to me"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3579
+msgid "has recomended you for the role of"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3579
+msgid "for"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3585
+msgid ""
+"<p>Click here to <a href=\"%s\">ACCEPT</a> (no password required if you act "
+"before someone else takes this role)</p>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3587
+msgid "Note from"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3595
+msgid "Recommendation sent by email to"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3612
+msgid "Edit Agenda Roles for"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3750
+msgid ""
+"Contact details such as phone numbers and email are only displayed when you "
+"are logged into the website (and should only be used for Toastmasters "
+"business)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3752 rsvpmaker-for-toastmasters.php:6981
+#: rsvpmaker-for-toastmasters.php:6990
+msgid "Related"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3752
+msgid "Print Contact List"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3755
+msgid ""
+"These members have chosen to create public profiles. For an expanded "
+"listing, members may"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3755
+msgid "login"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3780
+msgid "Email All"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3783
+msgid "Email Officers"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3784
+msgid ""
+"Email addresses and other contact information provided for Toastmasters "
+"business only."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3881
+msgid "BuddyPress Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3892
+msgid "Joined Club"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:3894
+msgid "Joined Toastmasters"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4108 rsvpmaker-for-toastmasters.php:4161
+msgid "Add Member"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4112
+msgid "Create a website user account for a new member"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4117 rsvpmaker-for-toastmasters.php:4341
+msgid "Username"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4119
+msgid ""
+"Hint: try the part of the email before the @ sign. If you leave this blank, "
+"a username will be assigned based on first and last name."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4120
+msgid ""
+"If a member does not have an email address, or shares an email address with "
+"someone else, leave the email field blank. Since WordPress requires an email "
+"address, a nonworking address will be assigned in the format "
+"firstnamelastname@example.com (example.com is an Internet domain name "
+"reserved for examples and tests)."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4159 rsvpmaker-for-toastmasters.php:4169
+msgid ""
+"Do not send email invites (for example, if you are still testing the site)."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4164
+msgid "Batch Import From Toastmasters.org spreadsheet"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4165
+msgid ""
+"If you download the member spreadsheet from toastmasters.org, you should be "
+"able to copy the cells including member data (including the header row of "
+"column labels) and paste it here (use Ctrl-V on Windows)."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4168
+msgid ""
+"Check for missing members (if you post a complete list of current members, "
+"this checkbox triggers a check of which website users are NOT currently on "
+"the toastmasters.org list and gives you an option to delete them)."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4170
+msgid "Post"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4187
+msgid "Send"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4280
+msgid "added to this site"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4284
+msgid "adding Toastmasters ID"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4289
+msgid "educational awards updated"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4315
+msgid "registration error"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4336
+msgid "To set your password, visit the following address:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4340
+msgid "You have been registered at"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4343
+msgid ""
+"For a basic orientation to the website setup we are using, see the <a href="
+"\"http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/"
+"\">New Member Guide to WordPress for Toastmasters</a>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4347
+msgid "Email notification disabled"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4361
+msgid "Emailing notifications disabled"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4363 tm-reports.php:4345
+msgid "Emailing to"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4447
+msgid "Error: invalid email address"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4520
+msgid ""
+"The members below don't show up on the current list. Check those who should "
+"be deleted."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4529
+msgid "Submit Changes"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4643
+msgid "View Upcoming Events"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4645
+msgid "Member sign up for roles"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4656
+msgid "Show More"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4660
+msgid "Your membership"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4663
+msgid "Edit Member Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4667
+msgid "Member Dashboard"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4671
+msgid "Post to Social Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4672
+msgid "Change Profile Photo"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4676
+msgid "Login"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4684
+msgid "Activity"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4719 rsvpmaker-for-toastmasters.php:6494
+#: rsvpmaker-for-toastmasters.php:6632
+msgid "Title:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4720
+msgid "Number to Show:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4721
+msgid "Show More Link After:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4722
+msgid "Show Member Activity Log:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4724
+msgid "Date Format:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4724
+msgid ""
+"PHP <a target=\"_blank\" href=\"http://us2.php.net/manual/en/function.date."
+"php\">date</a> format string"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4751 rsvpmaker-for-toastmasters.php:4768
+#: rsvpmaker-for-toastmasters.php:4831
+msgid "Save Changes"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4754
+msgid ""
+"Drag and drop to change the order in which speakers, evaluators and other "
+"roles with multiple participants will appear on the agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4758
+msgid "Edit Sidebar"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4760 rsvpmaker-for-toastmasters.php:4827
+msgid ""
+"In this mode, members who have not taken a role will be assigned to one. You "
+"will have the opportunity to confirm or change those assignments. In "
+"addition to randomly shuffling through the unassigned members, the software "
+"attempts to filter out members who have previously filled the same role "
+"within the last three weeks, as well as those who have not attended at all "
+"recently. The formula also avoids assigning senior roles such as evaluator "
+"to members who have not yet completed 3 or more speeches."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4760 rsvpmaker-for-toastmasters.php:4827
+#: rsvpmaker-for-toastmasters.php:4830
+msgid "Show random assignments"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4767
+msgid "Edit signups and click <b>Save Changes</b> as the bottom of the form."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4767
+msgid "Return to agenda signup"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4830
+msgid ""
+"This form lets you recommend that an individual member take a specific "
+"speaking slot or other role (the member will get an email with a coded link "
+"for one-click role signup. Make your selections and click <b>Save Changes</"
+"b> at the bottom of the form."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:4993
+msgid "Open Roles"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5003
+msgid "Sign up at"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5003
+msgid "Forgot your password?"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5003
+msgid "Reset your password here"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5003
+msgid "Roster"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5043
+msgid "Agenda for"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5045
+msgid "open roles"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5049
+msgid "Add a Note"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5050
+msgid "Your note, along with the roster details, will be sent to all members."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5102
+msgid "YES, Matched changing now"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5105
+msgid "Password already reset"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5120
+msgid "Public Profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5123
+msgid ""
+"Check to allow name, social media links, photo, and the description you "
+"provided to be displayed publicly.<br /> Otherwise, your contact info will "
+"only be shown to other members who have logged in with a password. (Officer "
+"profiles are public by default)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5125
+msgid "Also show email publicly"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5128
+msgid ""
+"Check to HIDE profile from member listings. Use to hide accounts used for "
+"administration that do not represent member accounts."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5207
+msgid ""
+"Can we get a photo of you for the members listing on our Toastmasters "
+"website? With our club growing, we would like to have a member roster with "
+"photos to help everyone get to know each other."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5207
+msgid ""
+"You can also log into the website and upload a photo. Take a few minutes to "
+"review your profile, making any needed additions or corrections to the "
+"contact info we have for you."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5237
+msgid "No Phone Number"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5240
+msgid "Facebook Connection Set"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5242
+msgid "Photo Provided"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5245
+msgid "Please provide a photo."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5247
+msgid ""
+"Please add your photo to your member listiong on the Toastmasters website"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5488
+msgid "now scheduled to speak on"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5491
+msgid "Backup speaker promoted to speaker following a cancellation."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5493
+msgid "This is an automated message. Replies will be sent to"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5609 rsvpmaker-for-toastmasters.php:5631
+msgid "Theme/Words"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5735
+msgid "Delete"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5939
+msgid "Meeting Roster"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5985
+msgid "PLEASE ENTER MANUAL / SPEECH TIMING REQUIREMENT ON WEBSITE"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:5986
+msgid ""
+"Remember to supply the Toastmaster of the Day with the title of your speech "
+"and an introduction."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6050
+msgid "List of Members Without an Assignment"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6110
+msgid ""
+"For a regular Toastmasters meeting, do not worry about the parameters below. "
+"You may use this RSVP functionality to schedule other sorts of events (for "
+"example, training or open house events.)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6354 rsvpmaker-for-toastmasters.php:6373
+msgid "You must be logged in and a member of this blog to view this content"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6354
+msgid "Login to View"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6356
+msgid "Note: This is member-only content (login required)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6364
+msgid "Members only content"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6383
+msgid "Your site&#8217;s most recent members-only posts."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6384
+msgid "Members Posts"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6413
+msgid "Members Only Posts"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6497 rsvpmaker-for-toastmasters.php:6635
+msgid "Number of posts to show:"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6501 rsvpmaker-for-toastmasters.php:6639
+msgid "Display post date?"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6510
+msgid "Your site&#8217;s most recent public blog posts."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6511
+msgid "Club News Posts"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6540 rsvpmaker-for-toastmasters.php:6656
+msgid "Club News"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6770
+msgid "Read More"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6786
+msgid "Sidebar Content"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6788
+msgid ""
+"Use this space for dues reminders, previews of upcoming events and other "
+"supporting information."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6810 rsvpmaker-for-toastmasters.php:6817
+msgid "Apply edit to"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6810 rsvpmaker-for-toastmasters.php:6817
+#: rsvpmaker-for-toastmasters.php:6819
+msgid "This event only"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6810 rsvpmaker-for-toastmasters.php:6815
+#: rsvpmaker-for-toastmasters.php:6817
+msgid "Template (default for future events)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6815 rsvpmaker-for-toastmasters.php:6819
+msgid "Will be applied to"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6840
+msgid "Include officer listing"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6972 tm-reports.php:137
+msgid ""
+"You can drag-and-drop to reorder roles or add new roles using the "
+"Toastmasters Roles button. Double-click on the placeholder for a role to "
+"edit options. Setting the count for a role to more than one opens up "
+"multiple signup slots (for example, multiple speakers and multiple "
+"evaluators). Your choices determine the roles that will appear on the online "
+"signup form, the printable signup form, and the agenda."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6973
+msgid ""
+"Use the Agenda Note button to provide additional 'stage directions' that "
+"will appear on thet agenda. Entering a label such as 'Meeting Theme' in the "
+"'Editable field' blank will allow you to add meeting-specific content as "
+"part of the same process where you edit signups for roles. You can specify "
+"whether agenda notes should appear on the agenda only, on the signup form "
+"only, or both."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6978
+msgid ""
+"Changes made below will be applied to a single event. To change the agenda "
+"for all future events: "
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6978
+msgid "Edit Template"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6981
+msgid "Show Agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6996
+msgid "Edit/Agenda Setup"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6998 rsvpmaker-for-toastmasters.php:8159
+#: tm-reports.php:102
+msgid "View Agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:6999
+msgid "View Signup Form"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7068
+msgid ""
+"The Reconcile screen has been renamed Update History and can now be used to "
+"record backdated information such as speeches delivered before you started "
+"using this software. See <a target=\"_blank\" href=\"https://wp4toastmasters."
+"com/2017/05/07/updating-member-history/\">blog post</a> for explanation of "
+"this and related changes.</p><p><a href=\"%s\">Got it: stop showing this "
+"notice.</a>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7080
+msgid ""
+"The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker "
+"is installed but must be activated. <a href=\"%s#name\">Activate now</a>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7082
+msgid ""
+"The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker "
+"must be installed and activated. <a href=\"%s\">Install now</a>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7094
+msgid ""
+"The Lectern theme (recommended for Toastmasters branding) is installed but "
+"not active. <a href=\"%s\">Activate now</a> or <a href=\"%s\">No thanks,</a> "
+"I prefer another theme."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7099
+msgid ""
+"The Lectern theme (recommended for Toastmasters branding) is not installed "
+"or activated. <a href=\"%s\">Install it now</a> or <a href=\"%s\">No thanks,"
+"</a> I prefer another theme."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7133
+msgid ""
+"Imported content may include extraneous text/links, such as content of menus "
+"and sidebars."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7137
+msgid ""
+"Be sure to check imported content for formatting errors. Plan to replace "
+"photos and other images, which are included as references to your old "
+"website."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7184 rsvpmaker-for-toastmasters.php:7438
+msgid "Blog"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7194
+msgid "Edit welcome page"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7222
+msgid "Meeting role reminders need to be reset."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7226
+msgid "You have not yet set the officers list for your club."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7231
+msgid "This site is not being indexed by search engines. Set it to public?"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7235
+msgid ""
+"Make sure to set the correct timezone for your site so scheduling functions "
+"will work properly."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7239
+msgid "Visit the <a href=\"%s\">Toastmasters Settings</a> screen"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7261
+msgid ""
+"<a href=\"%s\">Add club members</a> as website users. You can import your "
+"whole roster, using the spreadsheet from toastmasters.org's Club Central. Or "
+"selectively add a few members to help you with testing."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7268
+msgid ""
+"The WP User Avatar plugin is recommended for allowing members to add a "
+"profile picture. WP User Avatar is installed but must be activated. <a href="
+"\"%s#name\">Activate now</a> or <a href=\"%s\">No thanks</a>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7272
+msgid ""
+"The WP User Avatar plugin is recommended for allowing members to add a "
+"profile picture. <a href=\"%s\">Install now</a> or <a href=\"%s\">No thanks</"
+"a>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7285
+msgid ""
+"No meetings currently published. Add based on template (standard schedule "
+"and roles):</p><ul>%s</ul>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7290
+msgid ""
+"meetings currently published. Add more based on template (standard schedule "
+"and roles):</p><ul>%s</ul>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7298
+msgid ""
+"You can choose to allow the member data on the Progress Reports screen to "
+"sync with other websites that use this software. See <a target=\"_blank\" "
+"href=\"https://wp4toastmasters.com/2017/05/13/sync-member-progress-report-"
+"data/\">blog post</a>.</p><p>Choose whether this should be on our off: <a "
+"href=\"%s\">Toastmasters Settings.</a>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7422 rsvpmaker-for-toastmasters.php:7429
+msgid "Welcome"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7445
+msgid "Calendar"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7452
+msgid "Members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7459
+msgid "Toastmasters International"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "Select Manual/Path"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528 tm-reports.php:2634 tm-reports.php:3074
+msgid "COMPETENT COMMUNICATION"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "ADVANCED MANUAL TBD"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "COMMUNICATING ON VIDEO"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "FACILITATING DISCUSSION"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "INTERPERSONAL COMMUNICATIONS"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "INTERPRETIVE READING"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "Other Manual or Non Manual Speech"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "PERSUASIVE SPEAKING"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "PUBLIC RELATIONS"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "SPEAKING TO INFORM"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "SPECIAL OCCASION SPEECHES"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "SPECIALTY SPEECHES"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "SPEECHES BY MANAGEMENT"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "STORYTELLING"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "TECHNICAL PRESENTATIONS"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "THE DISCUSSION LEADER"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "THE ENTERTAINING SPEAKER"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "THE PROFESSIONAL SALESPERSON"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528
+msgid "THE PROFESSIONAL SPEAKER"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528 tm-reports.php:1588
+msgid "BETTER SPEAKER SERIES"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528 tm-reports.php:1588 tm-reports.php:1639
+msgid "SUCCESSFUL CLUB SERIES"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7528 tm-reports.php:1639
+msgid "LEADERSHIP EXCELLENCE SERIES"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7529 rsvpmaker-for-toastmasters.php:7583
+msgid "Dynamic Leadership Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7530 rsvpmaker-for-toastmasters.php:7584
+msgid "Dynamic Leadership Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7531 rsvpmaker-for-toastmasters.php:7585
+msgid "Dynamic Leadership Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7532 rsvpmaker-for-toastmasters.php:7586
+msgid "Dynamic Leadership Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7533 rsvpmaker-for-toastmasters.php:7587
+msgid "Dynamic Leadership Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7534 rsvpmaker-for-toastmasters.php:7588
+msgid "Effective Coaching Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7535 rsvpmaker-for-toastmasters.php:7589
+msgid "Effective Coaching Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7536 rsvpmaker-for-toastmasters.php:7590
+msgid "Effective Coaching Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7537 rsvpmaker-for-toastmasters.php:7591
+msgid "Effective Coaching Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7538 rsvpmaker-for-toastmasters.php:7592
+msgid "Effective Coaching Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7539 rsvpmaker-for-toastmasters.php:7593
+msgid "Innovative Planning Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7540 rsvpmaker-for-toastmasters.php:7594
+msgid "Innovative Planning Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7541 rsvpmaker-for-toastmasters.php:7595
+msgid "Innovative Planning Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7542 rsvpmaker-for-toastmasters.php:7596
+msgid "Innovative Planning Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7543 rsvpmaker-for-toastmasters.php:7597
+msgid "Innovative Planning Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7544 rsvpmaker-for-toastmasters.php:7598
+msgid "Leadership Development Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7545 rsvpmaker-for-toastmasters.php:7599
+msgid "Leadership Development Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7546 rsvpmaker-for-toastmasters.php:7600
+msgid "Leadership Development Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7547 rsvpmaker-for-toastmasters.php:7601
+msgid "Leadership Development Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7548 rsvpmaker-for-toastmasters.php:7602
+msgid "Leadership Development Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7549 rsvpmaker-for-toastmasters.php:7603
+msgid "Motivational Strategies Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7550 rsvpmaker-for-toastmasters.php:7604
+msgid "Motivational Strategies Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7551 rsvpmaker-for-toastmasters.php:7605
+msgid "Motivational Strategies Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7552 rsvpmaker-for-toastmasters.php:7606
+msgid "Motivational Strategies Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7553 rsvpmaker-for-toastmasters.php:7607
+msgid "Motivational Strategies Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7554 rsvpmaker-for-toastmasters.php:7608
+msgid "Persuasive Influence Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7555 rsvpmaker-for-toastmasters.php:7609
+msgid "Persuasive Influence Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7556 rsvpmaker-for-toastmasters.php:7610
+msgid "Persuasive Influence Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7557 rsvpmaker-for-toastmasters.php:7611
+msgid "Persuasive Influence Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7558 rsvpmaker-for-toastmasters.php:7612
+msgid "Persuasive Influence Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7559 rsvpmaker-for-toastmasters.php:7613
+msgid "Presentation Mastery Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7560 rsvpmaker-for-toastmasters.php:7614
+msgid "Presentation Mastery Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7561 rsvpmaker-for-toastmasters.php:7615
+msgid "Presentation Mastery Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7562 rsvpmaker-for-toastmasters.php:7616
+msgid "Presentation Mastery Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7563 rsvpmaker-for-toastmasters.php:7617
+msgid "Presentation Mastery Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7564 rsvpmaker-for-toastmasters.php:7618
+msgid "Strategic Relationships Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7565 rsvpmaker-for-toastmasters.php:7619
+msgid "Strategic Relationships Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7566 rsvpmaker-for-toastmasters.php:7620
+msgid "Strategic Relationships Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7567 rsvpmaker-for-toastmasters.php:7621
+msgid "Strategic Relationships Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7568 rsvpmaker-for-toastmasters.php:7622
+msgid "Strategic Relationships Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7569 rsvpmaker-for-toastmasters.php:7623
+msgid "Team Collaboration Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7570 rsvpmaker-for-toastmasters.php:7624
+msgid "Team Collaboration Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7571 rsvpmaker-for-toastmasters.php:7625
+msgid "Team Collaboration Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7572 rsvpmaker-for-toastmasters.php:7626
+msgid "Team Collaboration Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7573 rsvpmaker-for-toastmasters.php:7627
+msgid "Team Collaboration Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7574 rsvpmaker-for-toastmasters.php:7628
+msgid "Visionary Communication Level 1 Mastering Fundamentals"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7575 rsvpmaker-for-toastmasters.php:7629
+msgid "Visionary Communication Level 2 Learning Your Style"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7576 rsvpmaker-for-toastmasters.php:7630
+msgid "Visionary Communication Level 3 Increasing Knowledge"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7577 rsvpmaker-for-toastmasters.php:7631
+msgid "Visionary Communication Level 4 Building Skills"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7578 rsvpmaker-for-toastmasters.php:7632
+msgid "Visionary Communication Level 5 Demonstrating Expertise"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7771 rsvpmaker-for-toastmasters.php:7799
+#: rsvpmaker-for-toastmasters.php:7960 tm-reports.php:171 tm-reports.php:199
+msgid "Sunday"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7771 rsvpmaker-for-toastmasters.php:7799
+#: rsvpmaker-for-toastmasters.php:7960 tm-reports.php:171 tm-reports.php:199
+msgid "Monday"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7771 rsvpmaker-for-toastmasters.php:7799
+#: rsvpmaker-for-toastmasters.php:7960 tm-reports.php:171 tm-reports.php:199
+msgid "Tuesday"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7771 rsvpmaker-for-toastmasters.php:7799
+#: rsvpmaker-for-toastmasters.php:7960 tm-reports.php:171 tm-reports.php:199
+msgid "Wednesday"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7771 rsvpmaker-for-toastmasters.php:7799
+#: rsvpmaker-for-toastmasters.php:7960 tm-reports.php:171 tm-reports.php:199
+msgid "Thursday"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7771 rsvpmaker-for-toastmasters.php:7799
+#: rsvpmaker-for-toastmasters.php:7960 tm-reports.php:171 tm-reports.php:199
+msgid "Friday"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7771 rsvpmaker-for-toastmasters.php:7799
+#: rsvpmaker-for-toastmasters.php:7960 tm-reports.php:171 tm-reports.php:199
+msgid "Saturday"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7772 rsvpmaker-for-toastmasters.php:7800
+#: rsvpmaker-for-toastmasters.php:7959 tm-reports.php:172 tm-reports.php:200
+msgid "Varies"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7772 rsvpmaker-for-toastmasters.php:7800
+#: rsvpmaker-for-toastmasters.php:7959 tm-reports.php:172 tm-reports.php:200
+msgid "Second"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7772 rsvpmaker-for-toastmasters.php:7800
+#: rsvpmaker-for-toastmasters.php:7959 tm-reports.php:172 tm-reports.php:200
+msgid "Third"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7772 rsvpmaker-for-toastmasters.php:7800
+#: rsvpmaker-for-toastmasters.php:7959 tm-reports.php:172 tm-reports.php:200
+msgid "Fourth"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7772 rsvpmaker-for-toastmasters.php:7800
+#: rsvpmaker-for-toastmasters.php:7959 tm-reports.php:172 tm-reports.php:200
+msgid "Every"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7803 tm-reports.php:203
+msgid "Schedule Varies"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7829 tm-reports.php:232
+msgid "Get Agenda For"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7829 tm-reports.php:232
+msgid "Templates"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7829 tm-reports.php:232
+msgid "Events"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7832 tm-reports.php:235
+msgid "Get Agenda"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7910
+msgid "Projected End of Meeting"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:7936
+msgid "to"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8156
+msgid "View Event"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8158
+msgid "View Template on Site"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8442
+msgid ""
+"Contact details such as phone numbers and email are displayed only for "
+"logged in members (and should only be used for Toastmasters business)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8482
+msgid "Edit my Toastmasters profile"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8591
+msgid ""
+"This tool was designed to capture a listing of videos you have uploaded to "
+"YouTube and use them as the basis of a blog post (categorized as members-"
+"only by default) and / or an email to distribute to your members."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8616
+msgid "Video"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8620
+msgid "Videos"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8638
+msgid "Edit blog post"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8640
+msgid "View blog post"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8652
+msgid "Preview/send email"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8659
+msgid "Paste YouTube content here"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8667
+msgid "Policy to include in email"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8685
+msgid "How to Use This Tool"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8687
+msgid ""
+"You can view all the videos in your account, including the unlisted ones at "
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8687
+msgid ""
+"Copy and paste the contents of the listing from YouTube into the box above "
+"labeled \"Paste YouTube content here.\""
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8688
+msgid ""
+"This will be a messy copy and paste, but the important thing is that you "
+"highlight the titles of all the videos when copying from YouTube. The "
+"program will extract the titles and associated links to YouTube and output "
+"them in a neat format."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8689
+msgid ""
+"If you check off the names of the speakers featured in the video, the title "
+"of the blog post will change from \"Videos\" to \"Videos: Speaker 1, Speaker "
+"2 ...\" and this is also used as the subject line for the email. These "
+"default posts are meant as a starting point, and you always have the option "
+"of editing them further."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8690
+msgid ""
+"You can also revise the policy message shown above, and the tool will "
+"remember your changes next time."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8693
+msgid "Create draft blog post (members only)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8695
+msgid "Create and publish blog post (members only)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8697
+msgid "Do not create blog post"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8700
+msgid "Create email message"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8703
+msgid "Reverse order (oldest videos first)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8778 rsvpmaker-for-toastmasters.php:8806
+msgid "This message was sent to you as a guest of "
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8779 rsvpmaker-for-toastmasters.php:8807
+msgid "This message was sent to you as a guest of"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8820
+msgid "Former Members"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8829
+msgid "This is an agenda layout. CSS coding can be customized below."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8829
+msgid "Reset to default"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8861
+msgid "Stoplight display, green-yellow-red times"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8863
+msgid "Bold role label"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8867
+msgid "Indented items"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8871
+msgid "Formatting for notes displayed below roles."
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8875
+msgid "Agenda role list items (by default, we do not show bullet points)"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:8935
+msgid "<p>Sidebar text not set</p>"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:9006
+msgid "RSVP List to Member"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:9354
+msgid "General Evaluator not yet assigned"
+msgstr ""
+
+#: rsvpmaker-for-toastmasters.php:9402
+msgid "Toastmasters of the Day not yet assigned"
+msgstr ""
+
+#: tm-reports.php:54 tm-reports.php:509
+msgid "Toastmasters"
+msgstr ""
+
+#: tm-reports.php:55
+msgid "Update History"
+msgstr ""
+
+#: tm-reports.php:58 tm-reports.php:559
+msgid "Progress Reports"
+msgstr ""
+
+#: tm-reports.php:59 tm-reports.php:1461
+msgid "Competent Communicator Progress Report"
+msgstr ""
+
+#: tm-reports.php:59
+msgid "CC Progress"
+msgstr ""
+
+#: tm-reports.php:60 tm-reports.php:1867
+msgid "Competent Leader Progress Report"
+msgstr ""
+
+#: tm-reports.php:60
+msgid "CL Progress"
+msgstr ""
+
+#: tm-reports.php:61
+msgid "Advanced Awards Progress Report"
+msgstr ""
+
+#: tm-reports.php:63 tm-reports.php:4278
+msgid "Evaluations"
+msgstr ""
+
+#: tm-reports.php:65 tm-reports.php:3216
+msgid "Member List"
+msgstr ""
+
+#: tm-reports.php:67 tm-reports.php:1277
+msgid "Attendance Report"
+msgstr ""
+
+#: tm-reports.php:69
+msgid "Edit Stats"
+msgstr ""
+
+#: tm-reports.php:69 tm-reports.php:2550 tm-reports.php:2577
+msgid "Edit Member Stats"
+msgstr ""
+
+#: tm-reports.php:70 tm-reports.php:329
+msgid "Add Speech"
+msgstr ""
+
+#: tm-reports.php:72 tm-reports.php:1163 tm-reports.php:1197
+msgid "Record Attendance"
+msgstr ""
+
+#: tm-reports.php:73 tm-reports.php:2482
+msgid "Mentors"
+msgstr ""
+
+#: tm-reports.php:74
+msgid "Track Dues"
+msgstr ""
+
+#: tm-reports.php:75 tm-reports.php:2951
+msgid "Activity Log"
+msgstr ""
+
+#: tm-reports.php:76 tm-reports.php:2694
+msgid "Import Free Toast Host Data"
+msgstr ""
+
+#: tm-reports.php:77
+msgid "Import/Export"
+msgstr ""
+
+#: tm-reports.php:80
+msgid "Support This Project"
+msgstr ""
+
+#: tm-reports.php:102
+msgid "Meeting Agenda updated"
+msgstr ""
+
+#: tm-reports.php:102
+msgid "View Form"
+msgstr ""
+
+#: tm-reports.php:138
+msgid ""
+"Use the Agenda Note button to provide additional 'stage directions' that "
+"will appear on thet agenda. You can specify whether this text should appear "
+"on the agenda only, on the signup form only, or both."
+msgstr ""
+
+#: tm-reports.php:156
+msgid "Enable agenda layout with sidebar"
+msgstr ""
+
+#: tm-reports.php:161
+msgid "Show times on agenda"
+msgstr ""
+
+#: tm-reports.php:239
+msgid "Make New Agenda Template"
+msgstr ""
+
+#: tm-reports.php:267
+msgid "Select Member"
+msgstr ""
+
+#: tm-reports.php:303 tm-reports.php:322
+msgid "Saved:"
+msgstr ""
+
+#: tm-reports.php:304
+msgid "Refresh speech list"
+msgstr ""
+
+#: tm-reports.php:323
+msgid "Refresh to see changes"
+msgstr ""
+
+#: tm-reports.php:331 tm-reports.php:348
+msgid "Month"
+msgstr ""
+
+#: tm-reports.php:331 tm-reports.php:348
+msgid "Day"
+msgstr ""
+
+#: tm-reports.php:346
+msgid "Add Role"
+msgstr ""
+
+#: tm-reports.php:391
+msgid "Edit Details"
+msgstr ""
+
+#: tm-reports.php:399
+msgid "Edit Overview Stats"
+msgstr ""
+
+#: tm-reports.php:504
+msgid "Show editable data for all members"
+msgstr ""
+
+#: tm-reports.php:553
+msgid "My Progress Report"
+msgstr ""
+
+#: tm-reports.php:806
+msgid "Remove"
+msgstr ""
+
+#: tm-reports.php:809
+msgid "added"
+msgstr ""
+
+#: tm-reports.php:925
+msgid "Reconcile Meeting Activity / Add History"
+msgstr ""
+
+#: tm-reports.php:927
+msgid ""
+"Use this form to reconcile and add to your record of roles filled at past "
+"meetings (members who signed up and did not attend and others who took roles "
+"at the last minute)"
+msgstr ""
+
+#: tm-reports.php:938
+msgid "Reconciliation report updated"
+msgstr ""
+
+#: tm-reports.php:959
+msgid "Updates posted for"
+msgstr ""
+
+#: tm-reports.php:968
+msgid "Advancing date +1 week"
+msgstr ""
+
+#: tm-reports.php:1033
+msgid "Choose Template"
+msgstr ""
+
+#: tm-reports.php:1069
+msgid ""
+"Use the \"Add History\" option if you want to add detailed records of "
+"meetings from before you began using this software. (To add summary data "
+"such as number of speeches per manual, use Edit tab under <a href=\"%s"
+"\">Progress Reports</a>)"
+msgstr ""
+
+#: tm-reports.php:1135
+msgid "Others attending"
+msgstr ""
+
+#: tm-reports.php:1178
+msgid "Attendance updated"
+msgstr ""
+
+#: tm-reports.php:1225
+msgid "Error: no event selected"
+msgstr ""
+
+#: tm-reports.php:1253
+msgid "YES"
+msgstr ""
+
+#: tm-reports.php:1300
+msgid "Start Month"
+msgstr ""
+
+#: tm-reports.php:1301
+msgid "Start Year"
+msgstr ""
+
+#: tm-reports.php:1302
+msgid "Set"
+msgstr ""
+
+#: tm-reports.php:1489
+msgid ""
+"Filtered by default to show members active within the last 3 months (since %"
+"s) <a href=\"%s\">(show all)"
+msgstr ""
+
+#: tm-reports.php:1579
+msgid "Advanced Communicator Bronze"
+msgstr ""
+
+#: tm-reports.php:1581
+msgid "Complete 2 advanced manuals"
+msgstr ""
+
+#: tm-reports.php:1583
+msgid "Advanced Communicator Silver"
+msgstr ""
+
+#: tm-reports.php:1585
+msgid "Complete 2 more advanced manuals (total 4)"
+msgstr ""
+
+#: tm-reports.php:1586 tm-reports.php:1637
+msgid "Deliver 2 educational presentations"
+msgstr ""
+
+#: tm-reports.php:1607
+msgid ""
+"Note: Successful Club series projects can also be applied to Advanced Leader "
+"Bronze (but same the project cannot be counted twice)"
+msgstr ""
+
+#: tm-reports.php:1622
+msgid "Advanced Communicator Gold"
+msgstr ""
+
+#: tm-reports.php:1624
+msgid "Complete 2 more advanced manuals (6 total)"
+msgstr ""
+
+#: tm-reports.php:1636
+msgid "Advanced Leader Bronze"
+msgstr ""
+
+#: tm-reports.php:1660
+msgid ""
+"Note: Successful Club series projects can also be applied to Advanced "
+"Communicator Silver (but the same project cannot be counted twice)"
+msgstr ""
+
+#: tm-reports.php:1673
+msgid "Advanced Leader Silver"
+msgstr ""
+
+#: tm-reports.php:1687
+msgid "Advanced Award Progress"
+msgstr ""
+
+#: tm-reports.php:1856
+msgid "Goal Met!"
+msgstr ""
+
+#: tm-reports.php:1888
+msgid ""
+"<p><em>Filtered by default to show members active within the last 3 months "
+"(since %s) <a href=\"%s\">(show all)</a></em></p>"
+msgstr ""
+
+#: tm-reports.php:1942 tm-reports.php:1943 tm-reports.php:1944
+#: tm-reports.php:1945 tm-reports.php:1946 tm-reports.php:1947
+#: tm-reports.php:1948 tm-reports.php:1949 tm-reports.php:1950
+#: tm-reports.php:1951 tm-reports.php:2836 tm-reports.php:3060
+#: tm-reports.php:3061 tm-reports.php:3062 tm-reports.php:3063
+#: tm-reports.php:3064 tm-reports.php:3065 tm-reports.php:3066
+#: tm-reports.php:3067 tm-reports.php:3068 tm-reports.php:3069
+msgid "Project"
+msgstr ""
+
+#: tm-reports.php:1979
+msgid "PROJECT 1: Listening"
+msgstr ""
+
+#: tm-reports.php:1980 tm-reports.php:2072
+msgid "COMPLETE 3 OF 4"
+msgstr ""
+
+#: tm-reports.php:1993 tm-reports.php:2013 tm-reports.php:2033
+#: tm-reports.php:2086 tm-reports.php:2110 tm-reports.php:2131
+#: tm-reports.php:2161 tm-reports.php:2186 tm-reports.php:2219
+msgid "Project Complete"
+msgstr ""
+
+#: tm-reports.php:1994 tm-reports.php:2034 tm-reports.php:2111
+#: tm-reports.php:2132 tm-reports.php:2162 tm-reports.php:2247
+#: tm-reports.php:2279 tm-reports.php:2323 tm-reports.php:2343
+#: tm-reports.php:2361 tm-reports.php:2385 tm-reports.php:2406
+#: tm-reports.php:2433
+msgid "Done!"
+msgstr ""
+
+#: tm-reports.php:1994 tm-reports.php:1997 tm-reports.php:2247
+#: tm-reports.php:2250
+msgid "Listening: 3 OF 4"
+msgstr ""
+
+#: tm-reports.php:1997 tm-reports.php:2017 tm-reports.php:2037
+#: tm-reports.php:2069 tm-reports.php:2090 tm-reports.php:2169
+#: tm-reports.php:2190 tm-reports.php:2223 tm-reports.php:2250
+#: tm-reports.php:2282 tm-reports.php:2309 tm-reports.php:2326
+#: tm-reports.php:2346 tm-reports.php:2364 tm-reports.php:2392
+#: tm-reports.php:2409 tm-reports.php:2436
+msgid "TO DO"
+msgstr ""
+
+#: tm-reports.php:1999
+msgid "PROJECT 2: Critical Thinking"
+msgstr ""
+
+#: tm-reports.php:2000
+msgid "COMPLETE 2 OF 3"
+msgstr ""
+
+#: tm-reports.php:2014 tm-reports.php:2017 tm-reports.php:2263
+#: tm-reports.php:2266
+msgid "Critical Thinking: 2 OF 3"
+msgstr ""
+
+#: tm-reports.php:2019
+msgid "PROJECT 3: Giving Feedback"
+msgstr ""
+
+#: tm-reports.php:2020
+msgid "COMPLETE 3 OF 3"
+msgstr ""
+
+#: tm-reports.php:2034 tm-reports.php:2037 tm-reports.php:2279
+#: tm-reports.php:2282
+msgid "Feedback: 3 OF 3"
+msgstr ""
+
+#: tm-reports.php:2039
+msgid "PROJECT 4: Time Management"
+msgstr ""
+
+#: tm-reports.php:2040
+msgid "COMPLETE TIMER"
+msgstr ""
+
+#: tm-reports.php:2047
+msgid "Other"
+msgstr ""
+
+#: tm-reports.php:2062 tm-reports.php:2069 tm-reports.php:2302
+#: tm-reports.php:2309
+msgid "Timer + One Other"
+msgstr ""
+
+#: tm-reports.php:2065 tm-reports.php:2165 tm-reports.php:2305
+#: tm-reports.php:2388
+msgid "Goal 1"
+msgstr ""
+
+#: tm-reports.php:2065
+msgid "DONE Timer TO DO + One Other"
+msgstr ""
+
+#: tm-reports.php:2067 tm-reports.php:2307 tm-reports.php:2390
+msgid "Goal 2"
+msgstr ""
+
+#: tm-reports.php:2067
+msgid "TO DO Timer DONE + One Other"
+msgstr ""
+
+#: tm-reports.php:2071
+msgid "PROJECT 5: Planning and Implementation"
+msgstr ""
+
+#: tm-reports.php:2087 tm-reports.php:2090 tm-reports.php:2323
+#: tm-reports.php:2326
+msgid "Planning & Implementation: 3 OF 4"
+msgstr ""
+
+#: tm-reports.php:2092
+msgid "PROJECT 6: Organization and Delegation"
+msgstr ""
+
+#: tm-reports.php:2093
+msgid "COMPLETE 1 OF 6"
+msgstr ""
+
+#: tm-reports.php:2111 tm-reports.php:2114 tm-reports.php:2343
+#: tm-reports.php:2346
+msgid "Organization & Delegation: 1 of 6"
+msgstr ""
+
+#: tm-reports.php:2116
+msgid "PROJECT 7: Facilitation"
+msgstr ""
+
+#: tm-reports.php:2117
+msgid "COMPLETE 2 OF 4"
+msgstr ""
+
+#: tm-reports.php:2132 tm-reports.php:2361
+msgid "Facilitation: 2 OF 4"
+msgstr ""
+
+#: tm-reports.php:2135 tm-reports.php:2364
+msgid "Facilitation: 2 of 4"
+msgstr ""
+
+#: tm-reports.php:2137
+msgid "PROJECT 8: Motivation"
+msgstr ""
+
+#: tm-reports.php:2138
+msgid "COMPLETE 1 CHAIR"
+msgstr ""
+
+#: tm-reports.php:2147
+msgid "OTHERS"
+msgstr ""
+
+#: tm-reports.php:2162 tm-reports.php:2169 tm-reports.php:2385
+#: tm-reports.php:2392
+msgid "Motivation: Chair + 1 Other"
+msgstr ""
+
+#: tm-reports.php:2165 tm-reports.php:2388
+msgid "DONE Chair TO DO + One Other"
+msgstr ""
+
+#: tm-reports.php:2167 tm-reports.php:2390
+msgid "TO DO Chair DONE + One Other"
+msgstr ""
+
+#: tm-reports.php:2171
+msgid "PROJECT 9: Mentoring"
+msgstr ""
+
+#: tm-reports.php:2172
+msgid "COMPLETE 1 OF 3"
+msgstr ""
+
+#: tm-reports.php:2187 tm-reports.php:2190 tm-reports.php:2406
+#: tm-reports.php:2409
+msgid "Mentoring: 1 of 3"
+msgstr ""
+
+#: tm-reports.php:2192
+msgid "PROJECT 10: Team Building"
+msgstr ""
+
+#: tm-reports.php:2193
+msgid "COMPLETE TOASTMASTER + GENERAL EVALUATOR"
+msgstr ""
+
+#: tm-reports.php:2203
+msgid "OR 1 OF THE FOLLOWING"
+msgstr ""
+
+#: tm-reports.php:2495
+msgid "Mentor list updated"
+msgstr ""
+
+#: tm-reports.php:2501
+msgid "Return to Report"
+msgstr ""
+
+#: tm-reports.php:2508
+msgid "Filtered by default to show members active within the last 3 months"
+msgstr ""
+
+#: tm-reports.php:2508
+msgid "since"
+msgstr ""
+
+#: tm-reports.php:2508
+msgid "AND"
+msgstr ""
+
+#: tm-reports.php:2508
+msgid "who have not yet attained an educational award such as CC or CL"
+msgstr ""
+
+#: tm-reports.php:2508
+msgid "show all"
+msgstr ""
+
+#: tm-reports.php:2556
+msgid "Choose a Project"
+msgstr ""
+
+#: tm-reports.php:2618
+msgid "Member stats updated"
+msgstr ""
+
+#: tm-reports.php:2649
+msgid "View"
+msgstr ""
+
+#: tm-reports.php:2681 tm-reports.php:3124
+msgid "Additonal Competent Leader Credits for"
+msgstr ""
+
+#: tm-reports.php:2710
+msgid "Match Users"
+msgstr ""
+
+#: tm-reports.php:2710
+msgid ""
+"Either match with a WordPress user or leave blank (Match?) if there is no "
+"match, as with a former member."
+msgstr ""
+
+#: tm-reports.php:2836
+msgid "Date"
+msgstr ""
+
+#: tm-reports.php:2843
+msgid "Import Records (step 2)"
+msgstr ""
+
+#: tm-reports.php:2850
+msgid "Recording data. Verify by checking"
+msgstr ""
+
+#: tm-reports.php:2850
+msgid "Toastmaster Reports"
+msgstr ""
+
+#: tm-reports.php:2866
+msgid "Historical Data"
+msgstr ""
+
+#: tm-reports.php:2866
+msgid "used to track events imported from Free Toast Host. Do not delete."
+msgstr ""
+
+#: tm-reports.php:2915
+msgid "Paste in the contents of"
+msgstr ""
+
+#: tm-reports.php:2916
+msgid "Member Speech Historical Report"
+msgstr ""
+
+#: tm-reports.php:2919
+msgid "Member Role Historical Report"
+msgstr ""
+
+#: tm-reports.php:2921
+msgid "Import Records (step 1)"
+msgstr ""
+
+#: tm-reports.php:2972
+msgid ""
+"Optionally, you can filter by the name of a member or by a keyword such as "
+"\"edited\" or \"withdrawn.\""
+msgstr ""
+
+#: tm-reports.php:3129 tm-reports.php:3168
+msgid "Advanced Manuals"
+msgstr ""
+
+#: tm-reports.php:3250
+msgid "Status"
+msgstr ""
+
+#: tm-reports.php:3289
+msgid "Welcome to WordPress for Toastmasters"
+msgstr ""
+
+#: tm-reports.php:3355
+msgid "Editing your member profile"
+msgstr ""
+
+#: tm-reports.php:3418
+msgid "Other Resources"
+msgstr ""
+
+#: tm-reports.php:3590
+msgid "Dues"
+msgstr ""
+
+#: tm-reports.php:3590
+msgid "New Member Fee"
+msgstr ""
+
+#: tm-reports.php:3609
+msgid "Email all unpaid members"
+msgstr ""
+
+#: tm-reports.php:3613
+msgid "Paid Members"
+msgstr ""
+
+#: tm-reports.php:3615
+msgid "Email all PAID members"
+msgstr ""
+
+#: tm-reports.php:3637
+msgid ""
+"If you want to import or sync a member spreadsheet from toastmasters.org, "
+"see the"
+msgstr ""
+
+#: tm-reports.php:3637
+msgid "Add Members page"
+msgstr ""
+
+#: tm-reports.php:3650
+msgid "Starting import on"
+msgstr ""
+
+#: tm-reports.php:3650
+msgid "lines of data"
+msgstr ""
+
+#: tm-reports.php:4155
+msgid "Possible duplicate"
+msgstr ""
+
+#: tm-reports.php:4279
+msgid ""
+"These online evaluation forms can be used by any club but were particularly "
+"intended for online Toastmasters clubs, where they can be used to eliminate "
+"the need to email, print, and scan evaluation forms. Most of the pre-"
+"Pathways manual projects are covered with specific prompts for those "
+"speeches."
+msgstr ""
+
+#: tm-reports.php:4410
+msgid "Speakers at Next Meeting"
+msgstr ""
+
+#: tm-reports.php:4443
+msgid "Show Form"
+msgstr ""
+
+#: tm-reports.php:4443
+msgid ""
+"Showing links for speakers at recent meetings where you were an evaluator."
+msgstr ""
+
+#: tm-reports.php:4575
+msgid "No Pathways projects yet"
+msgstr ""
+
+#: tm-reports.php:4584
+msgid "Added by"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "RSVPMaker for Toastmasters"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://wp4toastmasters.com"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"This Toastmasters-specific extension to the RSVPMaker events plugin adds "
+"role signups and member performance tracking. Better Toastmasters websites!"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "David F. Carr"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://www.carrcommunications.com"
+msgstr ""

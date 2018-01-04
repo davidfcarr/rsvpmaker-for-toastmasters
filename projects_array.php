@@ -2744,4 +2744,58 @@ $project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '
 $project_times["Visionary Communication Level 5 Demonstrating Expertise 2321"] = 22;
 $display_times["Visionary Communication Level 5 Demonstrating Expertise 2321"] = "18 - 22 minutes";
 
+$projects["Evaluator:CL1"] = __("Listening: Evaluator","rsvpmaker-for-toastmasters");
+$projects["Table Topics:CL1"] = __("Listening: Table Topics","rsvpmaker-for-toastmasters");
+$projects["Ah Counter:CL1"] = __("Listening: Ah Counter","rsvpmaker-for-toastmasters");
+$projects["Grammarian:CL1"] = __("Listening: Grammarian","rsvpmaker-for-toastmasters");
+$projects["Evaluator:CL2"] = __("Critical Thinking: Evaluator","rsvpmaker-for-toastmasters");
+$projects["Grammarian:CL2"] = __("Critical Thinking: Grammarian","rsvpmaker-for-toastmasters");
+$projects["General Evaluator:CL2"] = __("Critical Thinking: General Evaluator","rsvpmaker-for-toastmasters");
+
+$projects["Evaluator:CL3"] = __("Giving Feedback: Evaluator","rsvpmaker-for-toastmasters");
+$projects["Grammarian:CL3"] = __("Giving Feedback: Grammarian","rsvpmaker-for-toastmasters");
+$projects["General Evaluator:CL3"] = __("Giving Feedback: General Evaluator","rsvpmaker-for-toastmasters");
+$projects["Timer:CL3"] = __("Giving Feedback: Timer","rsvpmaker-for-toastmasters");
+
+$projects["Toastmaster of the Day:CL4"] = __("Time Management: Toastmaster of the Day","rsvpmaker-for-toastmasters");
+$projects["Speaker:CL4"] = __("Time Management: Speaker","rsvpmaker-for-toastmasters");
+$projects["Grammarian:CL4"] = __("Time Management: Grammarian","rsvpmaker-for-toastmasters");
+$projects["Topics Master:CL4"] = __("Time Management: Topics Master","rsvpmaker-for-toastmasters");
+
+$projects["Speaker:CL5"] = __("Planning and Implementation: Speaker","rsvpmaker-for-toastmasters");
+$projects["General Evaluator:CL5"] = __("Planning and Implementation: General Evaluator","rsvpmaker-for-toastmasters");
+$projects["Toastmaster of the Day:CL5"] = __("Planning and Implementation: Toastmaster of the Day","rsvpmaker-for-toastmasters");
+$projects["Topics Master:CL5"] = __("Planning and Implementation: Topics Master","rsvpmaker-for-toastmasters");
+
+$projects["Help Organize a Club Speech Contest:CL6"] = __("Organization and Delegation: Help Organize a Club Speech Contest","rsvpmaker-for-toastmasters");
+$projects["Help Organize a Club Special Event:CL6"] = __("Organization and Delegation: Help Organize a Club Special Event","rsvpmaker-for-toastmasters");
+$projects["Help Organize a Club Membership Campaign or Contest:CL6"] = __("Organization and Delegation: Help Organize a Club Membership Campaign or Contest","rsvpmaker-for-toastmasters");
+$projects["Help Organize a Club PR Campaign:CL6"] = __("Organization and Delegation: Help Organize a Club PR Campaign","rsvpmaker-for-toastmasters");
+$projects["Help Produce a Club Newsletter:CL6"] = __("Organization and Delegation: Help Produce a Club Newsletter","rsvpmaker-for-toastmasters");
+$projects["Assist the Club Webmaster:CL6"] = __("Organization and Delegation: Assist the Club Webmaster","rsvpmaker-for-toastmasters");
+
+$projects["Toastmaster of the Day:CL7"] = __("Facilitation: Toastmaster of the Day","rsvpmaker-for-toastmasters");
+$projects["General Evaluator:CL7"] = __("Facilitation: General Evaluator","rsvpmaker-for-toastmasters");
+$projects["Topics Master:CL7"] = __("Facilitation: Topics Master","rsvpmaker-for-toastmasters");
+$projects["Befriend a Guest:CL7"] = __("Facilitation: Befriend a Guest","rsvpmaker-for-toastmasters");
+
+$projects["Toastmaster of the Day:CL8"] = __("Motivation: Toastmaster of the Day","rsvpmaker-for-toastmasters");
+$projects["Evaluator:CL8"] = __("Motivation: Evaluator","rsvpmaker-for-toastmasters");
+$projects["General Evaluator:CL8"] = __("Motivation: General Evaluator","rsvpmaker-for-toastmasters");
+$projects["Membership Campaign Chair:CL8"] = __("Motivation: Membership Campaign Chair","rsvpmaker-for-toastmasters");
+$projects["Club PR Campaign Chair:CL8"] = __("Motivation: Club PR Campaign Chair","rsvpmaker-for-toastmasters");
+
+$projects["Mentor for a New Member:CL9"] = __("Mentoring: Mentor for a New Member","rsvpmaker-for-toastmasters");
+$projects["Mentor for an Existing Member:CL9"] = __("Mentoring: Mentor for an Existing Member","rsvpmaker-for-toastmasters");
+$projects["HPL Guidance Committee Member:CL9"] = __("Mentoring: HPL Guidance Committee Member","rsvpmaker-for-toastmasters");
+
+$projects["Toastmaster of the Day:CL10"] = __("Team Building: Toastmaster of the Day","rsvpmaker-for-toastmasters");
+$projects["General Evaluator:CL10"] = __("Team Building: General Evaluator","rsvpmaker-for-toastmasters");
+$projects["Membership Campaign Chair:CL10"] = __("Team Building: Membership Campaign Chair","rsvpmaker-for-toastmasters");
+$projects["PR Campaign Chair:CL10"] = __("Team Building: PR Campaign Chair","rsvpmaker-for-toastmasters");
+$projects["Club Speech Contest Chair:CL10"] = __("Team Building: Club Speech Contest Chair","rsvpmaker-for-toastmasters");
+$projects["Club Special Event Chair:CL10"] = __("Team Building: Club Special Event Chair","rsvpmaker-for-toastmasters");
+$projects["Club Newsletter Editor:CL10"] = __("Team Building: Club Newsletter Editor","rsvpmaker-for-toastmasters");
+$projects["Club Webmaster:CL10"] = __("Team Building: Club Webmaster","rsvpmaker-for-toastmasters");
+
 ?>

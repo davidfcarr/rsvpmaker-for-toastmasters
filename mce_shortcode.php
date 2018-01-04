@@ -52,7 +52,7 @@ class GWP_agenda_note_shortcode{
 	 */
 	function mce_external_plugins( $plugin_array ) {
 		global $post;
-		if($post->post_type != 'rsvpmaker')
+		if(empty($post->post_type) || $post->post_type != 'rsvpmaker')
 			return $plugin_array;
 		$plugin_array[$this->shortcode_tag] = plugins_url( 'mce/mce-button.js?v=4' , __FILE__ );
 		$plugin_array['toastmaster'] = plugins_url( 'mce/toastmaster-mce.js?v=3' , __FILE__ );
@@ -67,7 +67,7 @@ class GWP_agenda_note_shortcode{
 	 */
 	function mce_buttons( $buttons ) {
 		global $post;
-		if($post->post_type != 'rsvpmaker')
+		if(empty($post->post_type) || $post->post_type != 'rsvpmaker')
 			return $buttons;
 		array_push( $buttons, $this->shortcode_tag );
 		array_push( $buttons, 'toastmaster' );

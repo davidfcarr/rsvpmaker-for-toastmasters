@@ -198,5 +198,28 @@ $( document ).on( 'click', '.wptoast-notice .notice-dismiss', function () {
 		}
 	  } );
   } );	
+
+$( ".roleplanupdate" ).click(function( event ) {
+  event.preventDefault();
+var datepost = $(this).attr('datepost');
+var takerole = $('#takerole' + datepost + ' option:checked').val();
+var was = $('#was' + datepost).val();
+var user_id = $('#user_id').val();
+	$.ajax( ajaxurl,
+	  {
+		type: 'POST',
+		data: {
+		  action: 'wptoast_role_planner_update',
+		  datepost: datepost,
+		  takerole: takerole,
+		  was: was,
+		  user_id: user_id,
+		}
+	  } )
+	.done(function( data ) {
+		$('#change'+datepost).html(data);
+		$('#was' + datepost).val(takerole);
+  });
+});	
 	
 })( jQuery );

@@ -56,6 +56,7 @@ add_submenu_page( 'toastmasters_screen', __('Update History','rsvpmaker-for-toas
 
 add_submenu_page( 'toastmasters_screen', __('My Progress','rsvpmaker-for-toastmasters'), __('My Progress','rsvpmaker-for-toastmasters'), 'read', 'my_progress_report', 'my_progress_report');
 add_submenu_page('toastmasters_screen',__('Progress Reports','rsvpmaker-for-toastmasters'), __('Progress Reports','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_reports', 'toastmasters_reports',plugins_url('rsvpmaker-for-toastmasters/toastmasters-20.png'),'2.01');
+add_submenu_page( 'toastmasters_screen', __('Multi-Meeting Role Planner','rsvpmaker-for-toastmasters'), __('Planner','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_planner', 'toastmasters_planner');
 add_submenu_page( 'toastmasters_screen', __('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'), __('CC Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_cc', 'toastmasters_cc');
 add_submenu_page( 'toastmasters_screen', __('Competent Leader Progress Report','rsvpmaker-for-toastmasters'), __('CL Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'cl_report', 'cl_report');
 add_submenu_page( 'toastmasters_screen', __('Advanced Awards Progress Report','rsvpmaker-for-toastmasters'), __('Advanced Awards','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_advanced', 'toastmasters_advanced');
@@ -532,7 +533,7 @@ $competent_leader = array(
 "Help Organize a Club Membership Campaign or Contest",
 "Help Organize a Club PR Campaign",
 "Help Produce a Club Newsletter",
-"Assist the Club’s Webmaster",
+"Assist the Club Webmaster",
 "Befriend a Guest",
 "PR Campaign Chair",
 "Mentor for a New Member",
@@ -1362,7 +1363,7 @@ if(isset($_REQUEST["start_year"]) && $_REQUEST["start_year"])
 else
 	$start_date = '';
 
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_value as role
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_key as role
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
@@ -3256,7 +3257,7 @@ function tm_welcome_screen_assets( $hook ) {
   if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) {
     wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.2 );
   }
-    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.2', true );
+    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.9', true );
 }
 
 function tm_member_welcome_redirect() {
@@ -4200,13 +4201,32 @@ function show_evaluation_form($project, $speaker_id, $meeting_id){
 global $wpdb;
 global $current_user;
 global $rsvp_options;
+$is_speech = true;
+if(preg_match('/:CL[0-9]/',$project))
+{
+	$manual = 'Competent Leader';
+	$is_speech = false;
+}
+else
+{
+$manual = preg_replace('/\d*$/','',$project);	
+}
 $project_text = get_project_text($project);
 $speaker_user = get_userdata($speaker_id);
 $evaluator = get_userdata($current_user->ID);
-$timestamp = get_rsvp_date($meeting_id);
-$date = strftime($rsvp_options["long_date"],strtotime($timestamp));
-
+if(isset($_GET['year']))
+{
+	$t = strtotime($_GET['year'].'-'.$_GET['month'].'-'.$_GET['day']);
+	$timestamp = date('Y-m-d',$t).' 00:00:00';
+}
+else
+{
+	$timestamp = get_rsvp_date($meeting_id);
+	$t = strtotime($timestamp);
+}
+$date = strftime($rsvp_options["long_date"],$t);
 $slug = $project;
+	
 $name = $project_text;
 $intro = $prompts = '';
 
@@ -4236,11 +4256,13 @@ $name = get_project_text($project);
 
 <h3>Record Evaluation</h3>
 <p>Speaker: <?php echo $speaker_user->first_name.' '.$speaker_user->last_name;  ?><input type="hidden" name="speaker_id" value="<?php echo $speaker_id; ?>" /></p>
-<p>Manual/Path: <?php $manual = preg_replace('/\d*$/','',$project); echo $manual ?><input type="hidden" name="manual" value="<?php echo $manual; ?>" /></p>
+<p>Manual/Path: <?php echo $manual ?><input type="hidden" name="manual" value="<?php echo $manual; ?>" /></p>
 <p>Project: <?php echo $project_text; ?><input type="hidden" name="project" value="<?php echo $project; ?>" /></p>
+<?php if($is_speech) { ?>
 <p>Speech Title: <input type="text" name="speech_title" value="<?php echo $title; ?>" /></p>
+<?php } ?>
 <p>Evaluator: <input type="text" name="evaluator" value="<?php echo $evaluator->first_name.' '.$evaluator->last_name; ?>" /></p>
-<p>Date: <?php echo $date; ?><input type="hidden" name="timestamp" value="<?php echo $timestamp; ?>" /></p>
+<p>Date: <input type="text" name="timestamp" value="<?php echo $date; ?>" /></p>
 
 <?php	
 		echo wpautop($intro);
@@ -4276,45 +4298,84 @@ echo submit_button();
 
 function wp4t_evaluations () {
 $hook = tm_admin_page_top(__('Evaluations','rsvpmaker-for-toastmasters'));
-printf('<p><em>%s</em></p>',__('These online evaluation forms can be used by any club but were particularly intended for online Toastmasters clubs, where they can be used to eliminate the need to email, print, and scan evaluation forms. Most of the pre-Pathways manual projects are covered with specific prompts for those speeches.','rsvpmaker-for-toastmasters'));
+?>    <h2 class="nav-tab-wrapper">
+      <a class="nav-tab nav-tab-active" href="#pending">Give Evaluations</a>
+      <a class="nav-tab" href="#evalreq">Request Evaluation</a>
+      <a class="nav-tab" href="#myevaluations">Evaluations Received</a>
+      <a class="nav-tab" href="#others">Evaluations Given</a>
+    </h2>
+    <div id="sections" class="rsvpmaker" >
+    <section class="rsvpmaker"  id="pending">
+<?php
+printf('<p><em>%s</em></p>',__('These online evaluation forms can be used by any club but were particularly intended for online Toastmasters clubs, where they can be used to eliminate the need to email, print, and scan evaluation forms.','rsvpmaker-for-toastmasters'));
 
 global $current_user;
 global $rsvp_options;
 global $wpdb;
 $project_options = get_projects_array('options');
 
-$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=".$current_user->ID." AND meta_key LIKE 'evaluation|%' ORDER BY meta_key DESC";
-$results = $wpdb->get_results($sql);
-if($results)
+if(!empty($_POST['eval_project']))
 {
-echo '<h3>Evaluations of My Speeches</h3>';
-	foreach($results as $row)
+	$parts = explode(':ID',$_POST['eval_project']);
+	$slug = $parts[0];
+	$meeting_id = $parts[1];
+	$link = admin_url('admin.php?page=wp4t_evaluations').'&speaker='.$current_user->ID.'&meeting_id='.$meeting_id.'&project='.urlencode($slug);
+	if($meeting_id == 0)
+		$link .= '&year='.date('Y').'&month='.date('m').'&day='.date('d');
+	$link = sprintf('<p><a href="%s">%s</a></p>',$link,$link);
+	if(empty($_POST['evaluator']))
+		echo '<p>You did not specify who you want to evaluate you, so we can\'t send the request by email. You can still copy and paste the link into your own email message.</p>'.$link;
+	else
 	{
-		$key = $row->meta_key;
-		$parts = explode('|',$key);
-		//print_r($parts);
-		$timestamp = $parts[1];
-		$project = $parts[2];
-		$project_text = get_project_text($project);
-		printf('<p><a target="_blank" href="%s">%s %s</a></p>', site_url('?show_evaluation='.$key), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
+	$project_text = get_project_text($slug);
+	$message = '';
+	if(!empty($_POST['note']))
+		$message .= wpautop(stripslashes($_POST['note']))."\n\n";
+	if(strpos($slug,':CL'))
+		$message .= "<p>To evaluate this competent leader project, please follow the link below</p>\n\n";
+	else
+		$message .= "<p>To evaluate this speech project, please follow the link below.</p>\n\n";
+	$message .= $link;
+	$date = '';
+	if($meeting_id)
+	{
+		$ts = strtotime(get_rsvp_date($meeting_id));
+		$date = strftime($rsvp_options["long_date"],$ts);
+	}
+	$message .= sprintf('<p>%s <br />%s</p>',$project_text, $date);
+	$evaluator = get_userdata($_POST['evaluator']);
+	$mail["subject"] = 'Please evaluate me for '.$project_text;
+	$mail["replyto"] = $current_user->user_email;
+	$mail["html"] = "<html>\n<body>\n".$message."\n</body></html>";
+	$mail["to"] = $evaluator->user_email;
+	$mail["from"] = $current_user->user_email;
+	$mail["fromname"] = $current_user->first_name. ' '.$current_user->last_name;
+	awemailer($mail);
+	echo '<p style="color: red">Emailing to '.$evaluator->user_email.'</p>'.$message;
 	}
 }
-
+	
 if(!empty($_POST["speaker_id"]) && !empty($_POST["project"]))
 	{
 		$speaker_id = (int) $_POST["speaker_id"];
 		$speaker_user = get_userdata($speaker_id);
 		$timestamp = $_POST["timestamp"];
-		$key = 'evaluation|'.$timestamp.'|'.$_POST["project"].'|'.$_SERVER['SERVER_NAME'];
+		$t = strtotime($timestamp);
+		$key = 'evaluation|'.date('Y-m-d',$t).' 00:00:00|'.$_POST["project"].'|'.$_SERVER['SERVER_NAME'].'|'.$current_user->user_login;
 		$project = $_POST["project"];
 		$project_text = get_project_text($project);
 		$evaluator = get_userdata($current_user->ID);
-		$evaluation = sprintf('<h1>Speaker: %s %s</h1>',$speaker_user->first_name,$speaker_user->last_name)."\n";
+		$evaluation = sprintf('<h1>Member: %s %s</h1>',$speaker_user->first_name,$speaker_user->last_name)."\n";
 		$evaluation .= sprintf('<h2>Manual/Path: %s</h2>',$_POST["manual"])."\n";
 		$evaluation .= sprintf('<h2>Project: %s</h2>',$project_text)."\n";
-		$evaluation .= sprintf('<p><strong>Title</strong> %s</p>',stripslashes($_POST["speech_title"]))."\n";
+		if(!empty($_POST["speech_title"]))
+			$evaluation .= sprintf('<p><strong>Title</strong> %s</p>',stripslashes($_POST["speech_title"]))."\n";
 		$evaluation .= sprintf('<p><strong>Evaluator</strong> %s</p>',$evaluator->first_name. ' '.$evaluator->last_name)."\n";
-		$evaluation .= sprintf('<p><strong>Date</strong> %s</p>', strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
+		$evaluation .= sprintf('<p><strong>Date</strong> %s</p>', $timestamp)."\n";
+		if(preg_match('/:CL[0-9]/',$project))
+			$subject = 'CL Evaluation '.$project_text;
+		else
+			$subject = "Speech Evaluation: ".$project_text;
 
 $prompts = get_option('evalprompts:'.$project);	
 $intro = get_option('evalintro:'.$project);
@@ -4340,10 +4401,9 @@ Other Comments';
 
 		update_user_meta($speaker_id,$key, $evaluation);
 		echo '<p>Recording to Member Progress Report</p>';
-		echo $evaluation;
-	
-	printf('<p>%s %s</p>',__('Emailing to'), $speaker_user->user_email );
-	$mail["subject"] = "Speech Evaluation";
+		printf('<p style="color:red;">%s %s</p>',__('Emailing to'), $speaker_user->user_email );
+		echo $evaluation;	
+	$mail["subject"] = $subject;
 	$mail["replyto"] = $evaluator->user_email;
 	$mail["html"] = "<html>\n<body>\n".$evaluation."\n</body></html>";
 	$mail["to"] = $speaker_user->user_email;
@@ -4353,7 +4413,7 @@ Other Comments';
 
 	}
 
-if(!empty($_REQUEST["project"]) && !empty($_REQUEST["speaker"]) && !empty($_REQUEST["meeting_id"]))
+if(!empty($_REQUEST["project"]) && !empty($_REQUEST["speaker"]) && isset($_REQUEST["meeting_id"]))
 	{
 		$project = $_REQUEST["project"];
 		$speaker_id = (int) $_REQUEST["speaker"];
@@ -4437,6 +4497,7 @@ foreach($past as $past_meet)
 		$title = get_post_meta($speaker, '_title'.$role, true);
 		$past_evaluations[$past_meet->ID.'-'.$speaker] = sprintf('<p><a href="%s&speaker=%d&meeting_id=%d&project=%s">%s, %s, %s</a> %s</p>',admin_url('admin.php?page=wp4t_evaluations'),$speaker,$past_meet->ID,$project_index,$speaker_name, $project,$past_meet->date, $title);
 		}
+
 }
 if(!empty($past_evaluations))
 	{
@@ -4504,7 +4565,158 @@ if(!empty($eval_emails))
 	}
 
 }
+	
+	global $toast_roles, $competent_leader;
 
+//get_past_events	
+$past = get_past_events(" post_content LIKE '%[toastmaster%' ", 2);
+if($past)
+foreach($past as $past_meet)
+{
+	echo '<h2>Competent Leader Evaluations: '.$past_meet->date.'</h2>';
+	foreach ($toast_roles as $cl_role)
+	{
+	$key_role = str_replace(' ','_',$cl_role);
+	$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=".$past_meet->ID." AND meta_key LIKE '_".$key_role."%' ";
+	$results = $wpdb->get_results($sql);
+	if($results)
+	foreach($results as $row)
+		{
+		$speaker = $row->meta_value;
+		if(! $speaker > 0)
+			continue;
+		$role = $row->meta_key;
+		$sql = "SELECT * FROM $wpdb->options WHERE option_name LIKE 'evalintro:".$cl_role."%'";
+		$project_results = $wpdb->get_results($sql);
+		$project_links = '';
+		if(!$project_results)
+		{
+			continue;
+		}
+		foreach($project_results as $pr)
+		{
+			$project_index = str_replace('evalintro:','',$pr->option_name);
+			$project = (!empty($project_index)) ? get_project_text($project_index) : ' (project ?) ';
+			//echo '<br />$project_index: '.$project_index.' text: '.$project.'<br />';
+			if(empty($project))
+				continue;
+			$project_eval_url = admin_url(sprintf('admin.php?page=wp4t_evaluations&speaker=%d&meeting_id=%d&project=%s',$speaker,$past_meet->ID,$project_index));
+			$project_links .= sprintf('<a href="%s">CL %s</a><br />',$project_eval_url,$project);
+		}
+		$speaker_name = get_user_meta($speaker,'first_name',true).' '.get_user_meta($speaker,'last_name',true);
+		printf('<p>%s %s <br />%s</p>',$speaker_name,$cl_role,$project_links);
+		}		
+	}
+
+} // clroles
+
+$o = '';
+$projects = get_projects_array('projects');
+foreach($projects as $index => $p)
+{
+	if(!strpos($index,':CL'))
+		continue;
+	$o .= sprintf('<option value="%s">%s</option>',$index,$p);
+}
+printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">%s</select><br />%s<br /><input type="text" size="8" name="year" value="%s" /><input type="text" size="8" name="month" value="%s" /><input type="text" size="8" name="day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'))
+?>
+		</section>
+		<section class="rsvpmaker" id="evalreq">
+<?php
+	$options = '';
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_key as role
+	 FROM ".$wpdb->posts."
+	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
+	 WHERE a1.meta_value < NOW() AND a2.meta_value = $current_user->ID ORDER BY a1.meta_value DESC LIMIT 0,10";
+$results = $wpdb->get_results($sql);
+foreach($results as $row)
+{
+	$project_key = '';
+	$rawrole = $row->role;
+	$role = preg_replace('/[0-9]/','',$rawrole);
+	$role = trim(str_replace('_',' ',$role));
+	$t = strtotime($row->datetime);
+	$date = date('F j, Y',$t);
+	if($role == 'Speaker')
+	{
+		$project_key = get_post_meta($row->postID,'_project'.$rawrole,true);
+		$options .= sprintf('<option value="%s:ID%d">%s %s</option>',$project_key,$row->postID,get_project_text($project_key),$date);
+		$options .= '<option value="Speaker:CL4:ID'.$row->postID.'">Speaker: Time Management</option><option value="Speaker:CL5:ID'.$row->postID.'">Speaker: Planning &amp; Implmentation</option>';
+	}
+	else
+	{
+	foreach($projects as $index => $p)
+	{
+		if(strpos($index,$role) === false)
+		{
+			continue;
+		}
+		$options .= sprintf('<option value="%s:ID%d">%s %s</option>',$index,$row->postID,$p,$date);
+	}
+		
+	}
+}
+
+foreach($projects as $index => $p)
+{
+	if(!strpos($index,':CL'))
+		continue;
+	$role = preg_replace('/:CL.+/','',$index);
+	if(!in_array($role,$competent_leader))
+		continue;
+	$options .= sprintf('<option value="%s:ID0">%s</option>',$index,$p);
+}
+	
+	
+printf('<h2>Request Evaluation</h2><form method="post" action="%s"><select name="eval_project">%s</select><br />Send to: %s<br />Note:<br /><textarea name="note" style="width: 800px; height: 3em;"></textarea><br /><button>Send Request</button></form>',admin_url('admin.php?page=wp4t_evaluations'),$options,awe_user_dropdown('evaluator',0,true));
+
+?>		
+		</section>
+		<section class="rsvpmaker" id="myevaluations">
+<?php
+$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=".$current_user->ID." AND meta_key LIKE 'evaluation|%' ORDER BY meta_key DESC";
+$results = $wpdb->get_results($sql);
+if($results)
+{
+echo '<h3>Evaluations of My Speeches</h3>';
+	foreach($results as $row)
+	{
+		$key = $row->meta_key;
+		$parts = explode('|',$key);
+		//print_r($parts);
+		$timestamp = $parts[1];
+		$project = $parts[2];
+		$project_text = get_project_text($project);
+		printf('<p><a target="_blank" href="%s">%s %s</a></p>', site_url('?show_evaluation='.$key), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
+	}
+}
+
+?>
+		</section>
+		<section class="rsvpmaker" id="others">
+<?php
+	
+$sql = "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'evaluation|%".$current_user->user_login."' ORDER BY meta_key DESC";
+$results = $wpdb->get_results($sql);
+if($results)
+{
+echo '<h3>My Evaluations of Others</h3>';
+	foreach($results as $row)
+	{
+		$key = $row->meta_key;
+		$parts = explode('|',$key);
+		//print_r($parts);
+		$timestamp = $parts[1];
+		$project = $parts[2];
+		$project_text = get_project_text($project);
+		printf('<p><a target="_blank" href="%s">%s %s</a></p>', site_url('?show_evaluation='.$key.'&member_id='.$row->user_id), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
+	}
+}
+?>
+		</section>
+	</div>
+<?php
 tm_admin_page_bottom($hook);
 }
 

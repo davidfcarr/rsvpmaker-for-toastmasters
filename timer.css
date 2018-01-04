@@ -1,0 +1,104 @@
+﻿body
+{
+    font-family: 'Segoe UI', sans-serif
+}
+
+.label {
+  font-size: 100%;
+}
+
+body {
+    background-color: #efeeef;
+/*    clear: both;
+    padding-bottom: 35px;
+*/
+}
+
+span {
+    font-style: italic
+}
+
+#trafficlight
+{
+    height: 100%; /*1000px;*/
+	vertical-align: top;
+    line-height: 600px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#green-light, #yellow-light, #red-light
+{
+    font-size: xx-large;
+    text-align: right;
+    height: 46px;
+    line-height: 30px;
+}
+
+#red-light
+{
+    background-color:#FF4040;
+    color:white;
+}
+
+#yellow-light
+{
+    background-color:#FCDC3B;
+}
+
+#green-light
+{
+    background-color:#A7DA7E;
+}
+
+.speech-type
+{
+    padding:5px;
+    margin: 5px;
+	font-size: 15px;
+    background-color: #E0EAF1;
+    color: #3E6D8E;
+    margin-bottom: 20px;
+	margin-top: 20px;
+    border-radius: 3px;
+    box-shadow: 3px 3px 5px #535353;
+}
+
+.speech-type:hover
+{
+    background-color: #3E6D8E;
+    color: #E0EAF1;
+    cursor: pointer;
+}
+
+.active-speech
+{
+    background-color: #acf;
+}
+
+#credit {
+    background-color: #fff;
+    font-size: .8em;
+	position: absolute;
+	width: 100%;
+	top: 0;
+	text-align: right;
+	height: 1.5em;
+	overflow: hidden;
+}
+
+.content-wrapper {
+    margin: 0 0 0 200px;
+	width: 100%;
+    /*max-width: 960px;*/
+}
+
+.float-left {
+    float: left;
+}
+#timelog {
+	width: 180px;
+	position:absolute;
+	top:20px;
+	left:10px;
+}
