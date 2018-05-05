@@ -99,17 +99,15 @@
 		e.preventDefault();
 	// This does the ajax request
 	
-	alert($('#_role_meta').val());
-	
 	$.ajax({
 		url: ajaxurl,
 		method: 'POST',
 		data: {
 			'action':'add_speech',
 			'_role_meta': $('#_role_meta').val(),
-			'project_year': $('#project_year_add').val(),
-			'project_month': $('#project_month_add').val(),
-			'project_day': $('#project_day_add').val(),
+			'project_year': $('#role_year_add').val(),
+			'project_month': $('#role_month_add').val(),
+			'project_day': $('#role_day_add').val(),
 			'user_id': $('#member').val()
 		},
 		success:function(data) {

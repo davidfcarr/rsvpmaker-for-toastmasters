@@ -195,62 +195,62 @@ $project_times["INTERPRETIVE READING 5"] = 10;
 $display_times["INTERPRETIVE READING 5"] = "8 to 10 minutes";
 
 $projects["Other Manual or Non Manual Speech 1"] = __("Custom Speech 3 to 5 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] = '<option value="Other Manual or Non Manual Speech 1">'.__("Custom Speech ","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] = '<option value="Other Manual or Non Manual Speech 1">'.__("Custom Speech 3 to 5 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 1"] = 5;
 $display_times["Other Manual or Non Manual Speech 1"] = "3 to 5 minutes";
 
 $projects["Other Manual or Non Manual Speech 2"] = __("Custom Speech 5 to 7 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 2">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 2">'.__("Custom Speech 5 to 7 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 2"] = 7;
 $display_times["Other Manual or Non Manual Speech 2"] = "5 to 7 minutes";
 
 $projects["Other Manual or Non Manual Speech 3"] = __("Custom Speech 8 to 10 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 3">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 3">'.__("Custom Speech 8 to 10 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 3"] = 10;
 $display_times["Other Manual or Non Manual Speech 3"] = "8 to 10 min";
 
 $projects["Other Manual or Non Manual Speech 4"] = __("Custom Speech 10 to 12 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 4">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 4">'.__("Custom Speech 10 to 12 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 4"] = 12;
 $display_times["Other Manual or Non Manual Speech 4"] = "10 to 12 min";
 
 $projects["Other Manual or Non Manual Speech 5"] = __("Custom Speech 13 to 15 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 5">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 5">'.__("Custom Speech 13 to 15 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 5"] = 15;
 $display_times["Other Manual or Non Manual Speech 5"] = "13 to 15 min";
 
 $projects["Other Manual or Non Manual Speech 6"] = __("Custom Speech 18 to 20 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 6">'.__("Custom Speech ()","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 6">'.__("Custom Speech 18 to 20 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 6"] = 20;
 $display_times["Other Manual or Non Manual Speech 6"] = "18 to 20 min";
 
 $projects["Other Manual or Non Manual Speech 7"] = __("Custom Speech 23 to 25 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 7">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 7">'.__("Custom Speech 23 to 25 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 7"] = 25;
 $display_times["Other Manual or Non Manual Speech 7"] = "23 to 25 min";
 
 $projects["Other Manual or Non Manual Speech 8"] = __("Custom Speech 28 to 30 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 8">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 8">'.__("Custom Speech 28 to 30 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 8"] = 30;
 $display_times["Other Manual or Non Manual Speech 8"] = "28 to 30 min";
 
 $projects["Other Manual or Non Manual Speech 9"] = __("Custom Speech 35 to 40 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 9">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 9">'.__("Custom Speech 35 to 40 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 9"] = 40;
 $display_times["Other Manual or Non Manual Speech 9"] = "35 to 40 min";
 
 $projects["Other Manual or Non Manual Speech 10"] = __("Custom Speech 40 to 45 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 10">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 10">'.__("Custom Speech 40 to 45 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 10"] = 45;
 $display_times["Other Manual or Non Manual Speech 10"] = "40 to 45 min";
 
 $projects["Other Manual or Non Manual Speech 11"] = __("Custom Speech 45 to 50 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 11">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 11">'.__("Custom Speech 45 to 50 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 11"] = 50;
 $display_times["Other Manual or Non Manual Speech 11"] = "45 to 50 min";
 
 $projects["Other Manual or Non Manual Speech 12"] = __("Custom Speech 55 to 60 minutes","rsvpmaker-for-toastmasters");
-$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 12">'.__("Custom Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_options["Other Manual or Non Manual Speech"] .= '<option value="Other Manual or Non Manual Speech 12">'.__("Custom Speech 55 to 60 minutes","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Other Manual or Non Manual Speech 12"] = 60;
 $display_times["Other Manual or Non Manual Speech 12"] = "55 to 60 min";
 
@@ -597,162 +597,162 @@ $display_times["THE PROFESSIONAL SPEAKER 5"] = "15 to 20 minutes, longer if club
 $projects["BETTER SPEAKER SERIES 0"] = __("Beginning Your Speech","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] = '<option value="BETTER SPEAKER SERIES 0">'.__("Beginning Your Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 0"] = 15;
-$display_times["BETTER SPEAKER SERIES 0"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 0"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 1"] = __("Concluding Your Speech","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 1">'.__("Concluding Your Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 1"] = 15;
-$display_times["BETTER SPEAKER SERIES 1"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 1"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 2"] = __("Controlling Your Fear","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 2">'.__("Controlling Your Fear","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 2"] = 15;
-$display_times["BETTER SPEAKER SERIES 2"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 2"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 3"] = __("Impromptu Speaking","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 3">'.__("Impromptu Speaking","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 3"] = 15;
-$display_times["BETTER SPEAKER SERIES 3"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 3"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 4"] = __("Selecting Your Topic","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 4">'.__("Selecting Your Topic","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 4"] = 15;
-$display_times["BETTER SPEAKER SERIES 4"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 4"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 5"] = __("Know Your Audience","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 5">'.__("Know Your Audience","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 5"] = 15;
-$display_times["BETTER SPEAKER SERIES 5"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 5"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 6"] = __("Organizing Your Speech","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 6">'.__("Organizing Your Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 6"] = 15;
-$display_times["BETTER SPEAKER SERIES 6"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 6"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 7"] = __("Creating An Introduction","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 7">'.__("Creating An Introduction","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 7"] = 15;
-$display_times["BETTER SPEAKER SERIES 7"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 7"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 8"] = __("Preparation And Practice","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 8">'.__("Preparation And Practice","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 8"] = 15;
-$display_times["BETTER SPEAKER SERIES 8"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 8"] = "10 to 15 minutes";
 
 $projects["BETTER SPEAKER SERIES 9"] = __("Using Body Language","rsvpmaker-for-toastmasters");
 $project_options["BETTER SPEAKER SERIES"] .= '<option value="BETTER SPEAKER SERIES 9">'.__("Using Body Language","rsvpmaker-for-toastmasters")."</option>";
 $project_times["BETTER SPEAKER SERIES 9"] = 15;
-$display_times["BETTER SPEAKER SERIES 9"] = "15 minutes";
+$display_times["BETTER SPEAKER SERIES 9"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 0"] = __("Moments Of Truth","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] = '<option value="SUCCESSFUL CLUB SERIES 0">'.__("Moments Of Truth","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 0"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 0"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 0"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 1"] = __("Finding New Members For Your Club","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 1">'.__("Finding New Members For Your Club","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 1"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 1"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 1"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 2"] = __("Evaluate To Motivate","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 2">'.__("Evaluate To Motivate","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 2"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 2"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 2"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 3"] = __("Closing The Sale","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 3">'.__("Closing The Sale","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 3"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 3"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 3"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 4"] = __("Creating The Best Club Climate","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 4">'.__("Creating The Best Club Climate","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 4"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 4"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 4"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 5"] = __("Meeting Roles And Responsibilities","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 5">'.__("Meeting Roles And Responsibilities","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 5"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 5"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 5"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 6"] = __("Mentoring","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 6">'.__("Mentoring","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 6"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 6"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 6"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 7"] = __("Keeping The Commitment","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 7">'.__("Keeping The Commitment","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 7"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 7"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 7"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 8"] = __("Going Beyond Our Club","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 8">'.__("Going Beyond Our Club","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 8"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 8"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 8"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 9"] = __("How To Be A Distinguished Club","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 9">'.__("How To Be A Distinguished Club","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 9"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 9"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 9"] = "10 to 15 minutes";
 
 $projects["SUCCESSFUL CLUB SERIES 10"] = __("The Toastmasters Educational Program","rsvpmaker-for-toastmasters");
 $project_options["SUCCESSFUL CLUB SERIES"] .= '<option value="SUCCESSFUL CLUB SERIES 10">'.__("The Toastmasters Educational Program","rsvpmaker-for-toastmasters")."</option>";
 $project_times["SUCCESSFUL CLUB SERIES 10"] = 15;
-$display_times["SUCCESSFUL CLUB SERIES 10"] = "15 minutes";
+$display_times["SUCCESSFUL CLUB SERIES 10"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 0"] = __("The Visionary Leader","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] = '<option value="LEADERSHIP EXCELLENCE SERIES 0">'.__("The Visionary Leader","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 0"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 0"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 0"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 1"] = __("Developing A Mission","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 1">'.__("Developing A Mission","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 1"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 1"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 1"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 2"] = __("Values and Leadership","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 2">'.__("Values and Leadership","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 2"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 2"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 2"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 3"] = __("Goal Setting And Planning","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 3">'.__("Goal Setting And Planning","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 3"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 3"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 3"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 4"] = __("Delegate To Empower","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 4">'.__("Delegate To Empower","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 4"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 4"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 4"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 5"] = __("Building A Team","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 5">'.__("Building A Team","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 5"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 5"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 5"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 6"] = __("Giving Effective Feedback","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 6">'.__("Giving Effective Feedback","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 6"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 6"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 6"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 7"] = __("The Leader as a Coach","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 7">'.__("The Leader as a Coach","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 7"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 7"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 7"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 8"] = __("Motivating People","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 8">'.__("Motivating People","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 8"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 8"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 8"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 9"] = __("Service And Leadership","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 9">'.__("Service And Leadership","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 9"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 9"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 9"] = "10 to 15 minutes";
 
 $projects["LEADERSHIP EXCELLENCE SERIES 10"] = __("Resolving Conflict","rsvpmaker-for-toastmasters");
 $project_options["LEADERSHIP EXCELLENCE SERIES"] .= '<option value="LEADERSHIP EXCELLENCE SERIES 10">'.__("Resolving Conflict","rsvpmaker-for-toastmasters")."</option>";
 $project_times["LEADERSHIP EXCELLENCE SERIES 10"] = 15;
-$display_times["LEADERSHIP EXCELLENCE SERIES 10"] = "15 minutes";
+$display_times["LEADERSHIP EXCELLENCE SERIES 10"] = "10 to 15 minutes";
 
 $projects["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
 $project_options["Dynamic Leadership Level 1 Mastering Fundamentals"] = '<option value="Dynamic Leadership Level 1 Mastering Fundamentals 0">'.__("Ice Breaker","rsvpmaker-for-toastmasters")."</option>";

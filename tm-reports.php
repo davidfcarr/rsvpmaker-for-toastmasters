@@ -307,9 +307,9 @@ printf('<a href="%s">%s</a>',$speech_url,__('Refresh speech list','rsvpmaker-for
 elseif(isset($_POST["_role_meta"]))
 {
 $role = $_POST["_role_meta"];
-$year = $_POST['year'];
-$month = $_POST['month'];
-$day = $_POST['day'];
+$year = $_POST['project_year'];
+$month = $_POST['project_month'];
+$day = $_POST['project_day'];
 if($year && $month && $day)
 	$date = strtotime($year.'-'.$month.'-'.$day);
 else
@@ -346,7 +346,7 @@ foreach($projects as $code => $role)
 
 printf('<div id="add_role_div"><h2>%s</h2><form id="add_role_form" method="post" action="%s"><input type="hidden" name="member" id="member" value="%d" /><input type="hidden" name="add_speech" value="1" />',__('Add Role'),admin_url('admin.php?page=add_member_speech'),$user_id);
 printf('<p><select name="_role_meta" id="_role_meta">%s</select></p>',$role_list);
-printf('<div>%s: <input name="project_month" id="project_month_add" size="4" value="%s" /> %s: <input name="project_day" id="project_day_add" size="4" value="%s" /> %s: <input name="project_year" id="project_year_add" size="8" value="%s" /></div>',__('Month','rsvpmaker-for-toastmasters'), date('m'), __('Day','rsvpmaker-for-toastmasters'), date('d'), __('Year','rsvpmaker-for-toastmasters'), date('Y'));
+printf('<div>%s: <input name="project_month" id="role_month_add" size="4" value="%s" /> %s: <input name="project_day" id="role_day_add" size="4" value="%s" /> %s: <input name="role_year" id="role_year_add" size="8" value="%s" /></div>',__('Month','rsvpmaker-for-toastmasters'), date('m'), __('Day','rsvpmaker-for-toastmasters'), date('d'), __('Year','rsvpmaker-for-toastmasters'), date('Y'));
 submit_button(__('Save','rsvpmaker-for-toastmasters'));
 echo '</form></div><div id="add_role_status"></div>';
 
@@ -1281,6 +1281,12 @@ tm_reports_disclaimer();
 if(is_admin())
 {
 
+if(isset($_GET['member']))
+{
+	$user_id = (int) $_GET['member'];
+	echo awesome_get_attendance_detail($user_id);	
+}
+	
 if(isset($_REQUEST["start_month"]) && $_REQUEST["start_month"])
 	{
 		$year = (int) $_REQUEST["start_year"];
@@ -1338,16 +1344,51 @@ foreach($attendance as $user_id => $count)
 		$userdata = get_userdata($user_id);
 
 		echo '<tr><td>';
+		printf('<a href="%s&member=%d">',admin_url('admin.php?page=toastmasters_attendance_report'),$userdata->ID);
 		echo $userdata->first_name;
 		echo ' ';
 		echo $userdata->last_name;
-		echo '</td><td>';
+		echo '</a></td><td>';
 		echo $barhtml;
 		echo '</td></tr>';
 	}
 echo "</table>";
 tm_admin_page_bottom($hook);
 } // attendance report
+
+function awesome_get_attendance_detail($user_id) {
+global $wpdb;
+global $rsvp_options;
+	$sql = "SELECT a1.meta_value as datetime
+	 FROM ".$wpdb->posts."
+	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
+	 WHERE a1.meta_value < NOW() AND a2.meta_value = $user_id"; // ORDER BY a1.meta_value	
+$results = $wpdb->get_results($sql);
+$userdata = get_userdata($user_id);
+$output = sprintf('<h2>%s %s</h2>',$userdata->first_name,$userdata->last_name);
+$dates = array();
+foreach($results as $row)
+{
+	if(!in_array($row->datetime,$dates))
+		$dates[] = $row->datetime;
+}
+sort($dates);
+foreach($dates as $date)
+{
+	$t = strtotime($date);
+	$output .= '<div>'.strftime($rsvp_options['long_date'],$t).'</div>';
+	$y = date('Y',$t);
+	if(empty($peryear[$y]))
+		$peryear[$y] = 0;
+	$peryear[$y]++;
+}
+
+foreach($peryear as $year => $count)
+	$output .= '<h3>'.$year.'</h3><div>'.$count.'</div>';
+
+return $output;
+}
 
 function awesome_get_attendance($user_id) {
 global $wpdb;
@@ -3257,7 +3298,7 @@ function tm_welcome_screen_assets( $hook ) {
   if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) {
     wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.2 );
   }
-    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.0.9', true );
+    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.1.1', true );
 }
 
 function tm_member_welcome_redirect() {
@@ -4191,7 +4232,8 @@ foreach ($results as $row)
 	}
 
 ksort($editdetail);
-
+if(empty($roledates))
+	$roledates = array();
 $stats_array[$user_id] = array('count' => $count, 'pure_count' => $pure_count, 'speech_count' => $speech_count, 'speeches' => $speeches, 'speech_list' => $speech_list, 'editdetail' => implode("\n",$editdetail),'roledates' => $roledates);
 
 return $stats_array[$user_id];
@@ -4628,7 +4670,7 @@ printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" acti
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
-	 WHERE a1.meta_value < NOW() AND a2.meta_value = $current_user->ID ORDER BY a1.meta_value DESC LIMIT 0,10";
+	 WHERE a1.meta_value < DATE_ADD(NOW(), INTERVAL 12 HOUR) AND a2.meta_value = $current_user->ID ORDER BY a1.meta_value DESC LIMIT 0,10";
 $results = $wpdb->get_results($sql);
 foreach($results as $row)
 {

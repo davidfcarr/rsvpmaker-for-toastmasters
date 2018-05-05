@@ -10,27 +10,35 @@
 
   <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
   <link href="timer.css" rel="stylesheet" />
-  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css'); ?>" rel="stylesheet" />
+  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=0.2'); ?>" rel="stylesheet" />
  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<style>
+		#voting {background-color: #fff;}
+		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
+	</style>
 
-<!--script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script -->
-<!--script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script-->
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=0.1'); ?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=1.7');?>"></script>
 
 </head>
 <body>
 <div id="body">
   <div class="content-wrapper">
     <h1 style="margin-bottom: 20px;">Time for <input type="text" placeholder="Speaker Name" id="speakername" size="30"></h1>
-	  <div style="font-size: 12px; margin-bottom: 15px;"><input type="checkbox" id="playchime" > Play chime <input type="checkbox" id="showdigits"> Show digits <br /><a href="https://wp4toastmasters.com/2017/11/29/new-online-timing-lights-tool/" target="_blank">How-to use this</a></div>
+	  <div style="font-size: 12px; margin-bottom: 15px;"><input type="checkbox" id="playchime" > Play chime <input type="checkbox" id="showdigits"> Show digits <input type="radio" id="demolight" name="demolight" value="green"> Demo Green <input type="radio" id="demolight"  name="demolight" value="yellow"> Demo Yellow <input type="radio" id="demolight" value="red" name="demolight" > Demo Red <input type="radio" id="demolight" value="" checked="checked" name="demolight" > Demo Off <a href="https://wp4toastmasters.com/2017/11/29/new-online-timing-lights-tool/" target="_blank">How-to use this</a></div>
 
     <div>
       <div class="row" id="buttons" style="font-size: large"></div>
       <br/>
 
       <div class="row" id="content" style="font-size: xx-large; height:20px; line-height:20px">
+        <div style="display: inline-block">
+          <button class="btn btn-default btn-primary btn-lg" id="btnStart" type="button" value="Start">Start</button>
+        </div>
+        <div style="display: inline-block">
+          <button class="btn btn-default btn-lg" id="btnReset" type="button" value="Reset">Reset</button>
+        </div>
         <div class="col-sm-2 col-md-2 hidecount">
           <input class="form-control" id="green-light" type="text">
         </div>
@@ -42,18 +50,35 @@
           <input class="form-control" id="red-light" type="text">
         </div>
 
-        <div class="col-sm-2 col-md-2">
-          <button class="btn btn-default btn-primary btn-lg" id="btnStart" type="button" value="Start">Start</button>
-        </div>
-        <div class="col-sm-2 col-md-2">
-          <button class="btn btn-default btn-lg" id="btnReset" type="button" value="Reset">Reset</button>
-        </div>
       </div>
       <br/>
 
-		<div id="timelog" class="hidecount">
+		<div id="timelog">
+			<div id="smallcounter"></div>
 <?php
-if($post->post_type == 'rsvpmaker')
+if(isset($_GET['contest']))	{
+
+$dt = get_post_meta($post->ID,'toast_timing',true);
+if(empty($dt))
+	$dt = '5 to 7';
+	
+$contestants = get_post_meta($post->ID,'tm_scoring_contestants',true);
+if(empty($contestants))
+	echo 'Contestants list not set';
+else
+{
+$order = get_post_meta($post->ID,'tm_scoring_order',true);
+if(empty($order))
+	$order = $contestants;
+
+foreach ($order as $index => $name)
+	{
+	echo timer_display_time_stoplight ($dt, $name);
+	}
+}
+
+}				
+elseif($post->post_type == 'rsvpmaker')
 {
 
 preg_match('/role="Speaker" count="([^"])"/',$post->post_content,$matches); //  count="([^"]+)
@@ -120,11 +145,59 @@ function timer_get_stoplight ($name, $green,$red, $yellow=NULL) {
 	$green = $green .= ':00';
 	return sprintf('<p class="stoplight_block">'.$name.'<br /><span style="display: inline-block; border: thin solid #000; color: green; background-color: green; ">&#9724;</span> Green: '.$green.'<br />'.'<span style="display: inline-block; border: thin solid #000; color: yellow; background-color: yellow;">&#9724;</span> Yellow: '.$yellow.'<br />'.'<span style="display: inline-block; border: thin solid #000; color: red; background-color: red;">&#9724;</span> Red: '.$red.'</span><input class="agenda_speakers" type="hidden" value="'.$name.'" green="'.$green.'" yellow="'.$yellow.'" red="'.$red.'" /></p>');
 }
+
+if(isset($_REQUEST['contest']))
+{
+$timer_code = get_post_meta($post->ID,'tm_timer_code',true);
+if($timer_code != $_REQUEST['contest'])
+	wp_die('incorrect code');
+if(isset($_POST['time']))
+	{
+	$disqualified = (isset($_POST['disqualified'])) ? $_POST['disqualified'] : array();
+	$timereport = '';
+	foreach($_POST['time'] as $index => $value)
+	{
+		$timereport .= $order[$index] .': '.$value;
+		if(in_array($index,$disqualified))
+			$timereport .= ' (disqualified)';
+		$timereport .= '<br />';
+	}
+	if(!empty($timereport))
+	{
+		update_post_meta($post->ID,'_time_report',$timereport);
+		printf('<h2>Recorded</h2><p>%s</p>',$timereport);
+	}
+	if(!empty($disqualified))
+	{
+		update_post_meta($post->ID,'_time_disqualified',$disqualified);
+	}
+	
+	}
+$action = add_query_arg( array(
+    'timer' => '1',
+    'contest' => $timer_code,
+), get_permalink($post->ID) );
+?>
+		<form method="post" action="<?php echo $action; ?>" id="voting">
+			<h3 id="record_time">Record Time</h3>
+<?php
+foreach($order as $index => $contestant) {
+	printf('<p>%s Time: <input type="text" name="time[]" value="0:00" id="actualtime%d" ><br /><input type="checkbox" name="disqualified[]" value="%d" id="disqualified%d" /> Disqualified</p>',$contestant,$index,$index,$index);
+}
+			
+?>
+<div id="readyline"><input type="checkbox" id="readytovote" value="1" /> Check to digitally sign this as the official time record</div>
+<div id="readyprompt"></div>
+			<div id="timesend" ><button >Send</button></div>
+		</form>			
+<?php	
+}
 ?>
 		</div>
 
-            <div class="row" id="trafficlight" style="font-size: 28em;line-height:600px">
-		  0:00
+		<div id="colorlabel" ></div>			
+			<div class="row" id="trafficlight" style="font-size: 28em;line-height:600px">
+		  <img src="<?php echo plugins_url('rsvpmaker-for-toastmasters/stopwatch.png'); ?>" />
       </div>
     </div>
   </div>
@@ -151,10 +224,10 @@ sort($u);
 <?php	
 }
 ?>	
-<input type="hidden" id="stopwatchurl" value="<?php echo plugins_url('rsvpmaker-for-toastmasters/stopwatch.png'); ?>"><input type="hidden" id="chimeurl" value="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer-chime.mp3'); ?>"></script>
+<input type="hidden" id="stopwatchurl" value="<?php echo plugins_url('rsvpmaker-for-toastmasters/stopwatch.png'); ?>"><input type="hidden" id="chimeurl" value="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer-chime.mp3'); ?>">
 <div id="credit" class="hidecount">
 		<p>Based on Toastmasters Timer &copy; 2013 - Guy Ellis <a href="https://github.com/guyellis/toastmaster-timer">github.com/guyellis/toastmaster-timer</a></p>
 </div>
-
+	
 </body>
 </html>

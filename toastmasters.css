@@ -203,3 +203,54 @@ button.save_changes.focus, .save_changes:focus
     display: block !important;
   }
 }
+
+@-webkit-keyframes bounce { 
+   0%, 100% {opacity:1;} 
+    50% {opacity:0;}
+} 
+
+@keyframes bounce { 
+   0%, 100% {opacity:1;} 
+    50% {opacity:0;}
+}
+
+.bounce { 
+    -webkit-animation-name: bounce; 
+    animation-name: bounce; 
+  background:#fff;
+  transform: scale(.1);
+  -webkit-transform: scale(.1);
+  transform-origin: center;
+  -webkit-transform-origin: center;
+  
+    -webkit-animation-duration: 1.5s; 
+    animation-duration: 1.5s; 
+    -webkit-animation-fill-mode: both; 
+    animation-fill-mode: both; 
+    -webkit-animation-timing-function: ease-out; 
+    animation-timing-function: ease-out; 
+    animation-iteration-count:infinite; 
+    -webkit-animation-iteration-count:infinite; 
+  
+}
+
+.grow {
+    transition: transform 1s ease-in;
+  
+  -webkit-animation: grow 1.3s ease-in;
+  animation: grow 1.3s;
+  transform-origin: center;
+  -webkit-transform-origin: center;
+  -webkit-animation-fill-mode: forwards;
+	display: block;
+}
+
+@keyframes grow {
+	from { transform: scaleY(.1); }
+	to { transform: scaleY(1);background:#eee; }
+}
+
+@-webkit-keyframes grow {
+	from { transform: scaleY(.1); }
+	to{ transform: scaleY(1);background:#eee; }	
+}

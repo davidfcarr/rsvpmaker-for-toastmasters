@@ -25,13 +25,13 @@ var TSTimer = (function () {
 		this.audioElement.setAttribute('src', $('#chimeurl').val());
 
         $.each(this.speeches, function (indexInArray, valueOfElement) {
-            var newButton = $('<span>').attr('id', valueOfElement.id).addClass('speech-type hidecount').html(valueOfElement.name);
+            var newButton = $('<span>').attr('id', valueOfElement.id).addClass('speech-type').html(valueOfElement.name);
             newButton.click(function (event) {
                 _this.activateSpeech($(event.target).attr('id'));
             });
             newButton.appendTo('#buttons');
 			buttoncount++;
-			if((buttoncount % 6) == 0)
+			if((buttoncount % 7) == 0)
 				$('#buttons').append('<br />&nbsp;<br />');
         });
 
@@ -52,8 +52,10 @@ var TSTimer = (function () {
     TSTimer.prototype.resetButton = function () {
         if(this.started)
 			this.stop();
-	    $('#trafficlight').text('0:00');
+	    if($('#showdigits').is(':checked'))
+			$('#trafficlight').text('0:00');
         $('body').css('background-color', '#EFEEEF');
+		$('#colorlabel').html('');
         this.startTime = null;
 		greenchime = true;
 		yellowchime = true;
@@ -76,39 +78,39 @@ var TSTimer = (function () {
 
     TSTimer.prototype.setElementText = function (elapsedSeconds) {
 		this.formattedTime = this.formatTime(elapsedSeconds);
-		if(this.started && (elapsedSeconds < this.overtime) && ! $('#showdigits').is(':checked'))
-			$('#trafficlight').html('<img src="' + $('#stopwatchurl').val() + '" />');
-	    else
+		if($('#showdigits').is(':checked'))
 			$('#trafficlight').text(this.formattedTime);
-		
-        if (elapsedSeconds >= this.overtime) {
-            $('#trafficlight').text(this.formattedTime);
-        } else if (elapsedSeconds >= this.red) {
+		else
+			$('#trafficlight').html('<img src="' + $('#stopwatchurl').val() + '" />');
+		$('#smallcounter').text(this.formattedTime);
+
+		if (elapsedSeconds >= this.red) {
             $('body').css('background-color', '#FF4040');
-			if(redchime)
+			$('#colorlabel').html('Red');
+			if(redchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				redchime = false;
 				}
         } else if (elapsedSeconds >= this.yellow) {
             $('body').css('background-color', '#FCDC3B');
-			if(yellowchime)
+			$('#colorlabel').html('Yellow');
+			if(yellowchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				yellowchime = false;
 				}
         } else if (elapsedSeconds >= this.green) {
             $('body').css('background-color', '#A7DA7E');
-			if(greenchime)
+			$('#colorlabel').html('Green');
+			if(greenchime && $('#playchime').is(':checked'))
 				{
-				if($('#playchime').is(':checked'))
-					this.audioElement.play();
-				else
-					yellowchime = redchime = false;
+				this.audioElement.play();
 				greenchime = false;
 				}
-
+		
         }
+		
     };
 
     TSTimer.prototype.timerEvent = function () {
@@ -117,9 +119,27 @@ var TSTimer = (function () {
         }
         var timeNow = new Date();
         var elapsedSeconds = this.timeDiffInSeconds(this.startTime, timeNow);
+		if(($('input[name=demolight]:checked').val() == 'green') && (elapsedSeconds < this.green))
+			elapsedSeconds = elapsedSeconds + this.green;
+		if(($('input[name=demolight]:checked').val() == 'yellow') && (elapsedSeconds < this.yellow))
+			elapsedSeconds = elapsedSeconds + this.yellow;
+		if(($('input[name=demolight]:checked').val() == 'red') && (elapsedSeconds < this.red))
+			elapsedSeconds = elapsedSeconds + this.red;
+
         this.setElementText(elapsedSeconds);
     };
-
+	
+	$('#demo-green').click( function () {
+		this.startTime = new Date() - this.green;
+		alert('time' + this.startTime);
+	});
+	$('#demo-yellow').click( function () {
+		this.startTime = new Date() - this.yellow;
+	});
+	$('#demo-red').click( function () {
+		this.startTime = new Date() - this.red;
+	});
+	
     TSTimer.prototype.timeDiffInSeconds = function (earlyTime, lateTime) {
         var diff = lateTime.getTime() - earlyTime.getTime();
         return Math.floor(diff / 1000);
@@ -128,6 +148,10 @@ var TSTimer = (function () {
     TSTimer.prototype.formatTime = function (elapsedSeconds) {
         var minutes = Math.floor(elapsedSeconds / 60);
         var seconds = elapsedSeconds % 60;
+		if((elapsedSeconds > this.overtime) || (elapsedSeconds < this.undertime))
+			this.disqualified = true;
+		else
+			this.disqualified = false;
         return minutes + ":" + ((seconds < 10) ? "0" + seconds.toString() : seconds.toString());
     };
 
@@ -143,7 +167,9 @@ var TSTimer = (function () {
         this.green = this.getSecondsFromTextBox('#green-light');
         this.yellow = this.getSecondsFromTextBox('#yellow-light');
         this.red = this.getSecondsFromTextBox('#red-light');
+		this.undertime = this.green - 30;
 		this.overtime = this.red + 30;
+		this.disqualified = true;
         this.timerToken = setInterval(function () {
             return _this.timerEvent();
         }, 100);
@@ -154,14 +180,27 @@ var TSTimer = (function () {
         this.started = false;
         this.stopTime = new Date();
 		$('.hidecount').show();
-		$('#trafficlight').text(this.formattedTime);
+		if($('#showdigits').is(':checked'))
+			$('#trafficlight').text(this.formattedTime);
+		$('#smallcounter').text(this.formattedTime);
 		this.logStopTime();
         clearTimeout(this.timerToken);
     };
 
 	TSTimer.prototype.logStopTime = function () {
-        $('#timelog').append('<p>' + $('#speakername').val() + '<br />' + this.formattedTime + '</p>');
-    };
+		var speechid = $('.active-speech').attr('id');
+		var speakerName = $('#speakername').val();
+		if(!speakerName)
+			speakerName = '?';
+		speechid = speechid.replace('agenda-speech','');
+		//var checked = '';
+		if(this.disqualified)
+			{
+			$('#disqualified'+speechid).prop('checked', true);
+			}
+		$('#actualtime'+speechid).val(this.formattedTime);
+        $('#timelog').append('<p>' + speakerName + ' ' + this.formattedTime + '</p>');
+	};
 
     TSTimer.prototype.getSecondsFromTextBox = function (id) {
         var greenLight = $(id).val();
@@ -201,10 +240,21 @@ $(document).ready(function () {
     speeches.push(new SpeechType("Icebreaker", "4:00", "5:00", "6:00", "st-icebreaker"));
     speeches.push(new SpeechType("Standard", "5:00", "6:00", "7:00", "st-standard"));
     speeches.push(new SpeechType("Advanced", "8:00", "9:00", "10:00", "st-advanced"));
-    speeches.push(new SpeechType("Test", "0:02", "0:06", "0:10", "st-test"));
+    speeches.push(new SpeechType("One Minute", "0:30", "0:45", "1:00", "st-minute"));
+    speeches.push(new SpeechType("Test", "0:02", "0:04", "0:06", "st-test"));
 	$('.agenda_speakers').each(function( index ) {
   		speeches.push(new SpeechType($( this ).val(), $( this ).attr('green'), $( this ).attr('yellow'), $( this ).attr('red'), "agenda-speech" + index));
 	});
     var timer = new TSTimer(speeches);
     timer.setDefault();	
+
+$('form#voting').submit(function(){
+    if (! $('#readytovote').is(':checked')){
+       $("#readyprompt").html('<span style="color: red;">You must check the final checkbox first</span>');
+		$('#readyline').css({'border': 'thin solid red'});
+       return false;
+    }
+}); 
+
+
 });

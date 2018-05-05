@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 4.9.1
-Stable tag: 2.8.6
+Tested up to: 4.9.5
+Stable tag: 3.0.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,7 +16,9 @@ This plugin adds Toastmasters-specific functions to your WordPress website. Once
 
 https://www.youtube.com/watch?v=D1E9GMwnImM
 
-As an alternative to other club web software options that include a custom content management system, this WordPress-based solution allows website operators to take advantage of all the flexibility available on other WordPress sites. Members can sign up for roles on the website, meeting organizers can also assign members to roles, and club leaders can track member participation and performance.
+As an alternative to other club web software options that include a custom content management system, this WordPress-based solution allows website operators to take advantage of the same technology that powers major publishing websites (newyorker.com and time.com, for example) and countless blogs, small business websites, and online marketing campaigns. That makes it a more powerful tool for recruiting new members and showcasing what makes your club special.
+
+Part of a broader WordPress for Toastmasters solution, this plugin lets members sign up for roles on the website. Meeting organizers can also assign members to roles. In addition, club leaders can track member participation and performance through the administrator's dashboard.
 
 The related [Lectern WordPress theme](https://wordpress.org/themes/lectern/) makes it easy to meet Toastmasters International branding guidelines with your WordPress website, adding the logo and the required legal disclaimers.
 
@@ -59,6 +61,56 @@ The toastmost.org service was originally free and would be again if we could fin
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.0.3 =
+
+* New JavaScript animation for Take Role 
+* As members sign up for roles, they are prompted to also sign up for future meetings.
+
+= 3.0.1 =
+
+* Ajax data post for Take Role function - saves agenda data without reloading page when individual member is signing up for a role.
+* Tweaked import / sync process for updating member records based on the spreadsheet downloaded from toastmasters.org. Tried to make the process clearer. Should work better on a multisite instance like toastmost.org.
+* Fixed bug in the process for adding speeches or roles on the administrative dashboard (added roles weren't showing up with the specified date)
+* In addition to background colors, added green/yellow/red color labels for the online timer tool.
+
+= 3.0 =
+
+* Improvements to the online Toastmasters contest voting / vote counting setup, now integrated with Timer tool.
+
+= 2.9.7 =
+
+* Contest scoring tool
+
+= 2.9.3 =
+
+* Planned absences shortcode, [tm_absence], that can be added to an agenda. Allows members to record when they expect to miss a specific meeting
+* Attendance report now allows display of dates attended for a specific member (based on roles served or member recorded as attending)
+* RSVP to Guest screen now allows you to record Toastmasters ID#.
+
+= 2.9.2 =
+
+* Suggest Assignments is the new menu label for the agenda editing mode that semi-randomly selects members to fill open roles.
+
+= 2.9.1 =
+
+* Assign mode for - editing the agenda with semi-random suggestions for members to fill open roles - now disabled by default. Must be specifically enabled on the settings screen.
+* When enabled, Assign mode now requires and "Are you sure?" confirmation from the member before random assignments will be inserted on the form.
+* The link from the agenda to the member role planner tool can now be shown or hidden, depending on your choice on the Toastmasters settings screen. By default, it is displayed.
+
+= 2.9 =
+
+* Clearer notification when email-sending functions are disabled.
+* Updates for compatibility with new sponsorship program.
+
+= 2.8.9 =
+
+* Clearer notifications / instructions for editing modes and randomly suggested assignments.
+* Added Switch Template as an option on the Agenda Setup menu.
+
+= 2.8.8 =
+
+* Fixing check that RSVPMaker is installed before calling any RSVPMaker functions (better error message for plugin install)
 
 = 2.8.4 =
 

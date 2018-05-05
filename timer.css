@@ -55,11 +55,11 @@ span {
 {
     padding:5px;
     margin: 5px;
-	font-size: 15px;
+	font-size: 12px;
     background-color: #E0EAF1;
     color: #3E6D8E;
     margin-bottom: 20px;
-	margin-top: 20px;
+	margin-top: 5px;
     border-radius: 3px;
     box-shadow: 3px 3px 5px #535353;
 }

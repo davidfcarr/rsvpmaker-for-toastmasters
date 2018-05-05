@@ -191,4 +191,46 @@ $( ".delete_tm_detail" ).click(function( event ) {
 
 });
 
+$(document).on('submit', 'form.toastrole', function(event) {
+	event.preventDefault();
+	var action = $(this).attr('action') + 'tm_ajax=role';
+	var formid = $(this).attr('id');
+	var data = $(this).serialize();
+	
+  	$('#'+formid).html('<div style="line-height: 3">Saving ...</div>');
+   setTimeout( function () {
+         $('#'+formid).addClass('bounce');
+      }, 1000);	
+	
+	jQuery.post(action, data, function(response) {
+	$('#'+formid).html(response);       
+         $('#'+formid).removeClass('bounce');
+       $('#'+formid).css("opacity", '1');
+       $('#'+formid).css("display", 'block');
+       
+         $('#'+formid).addClass('grow');
+	});
+});
+
+$(document).on('submit', 'form.remove_me_form', function(event) {
+	event.preventDefault();
+	var action = $(this).attr('action') + 'tm_ajax=remove_role';
+	var formid = $(this).attr('id');
+	$('#'+formid).hide();
+	var signup_id = formid.replace('remove','');
+	var data = $(this).serialize();
+  	$('#'+signup_id).html('<div style="min-height: 3em;">Removing ...</div>');
+	setTimeout( function () {
+	 $('#'+signup_id).addClass('bounce');
+	}, 1000);	
+	jQuery.post(action, data, function(response) {
+	$('#'+signup_id).html('<div style="min-height: 3em;">'+response+'</div>');       
+         $('#'+signup_id).removeClass('bounce');
+       $('#'+signup_id).css("opacity", '1');
+       $('#'+signup_id).css("display", 'block');
+       
+         $('#'+signup_id).addClass('grow');
+	});
+});
+
 });
