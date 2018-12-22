@@ -80,9 +80,17 @@ foreach ($order as $index => $name)
 }				
 elseif($post->post_type == 'rsvpmaker')
 {
-
+$count = 0;
+if(strpos($post->post_content,'wp:wp4toastmasters'))
+{
+$data = wpt_blocks_to_data($post->post_content);
+$count = $data['Speaker']['count'];
+}
+else {
 preg_match('/role="Speaker" count="([^"])"/',$post->post_content,$matches); //  count="([^"]+)
 $count = $matches[1];
+}
+
 for($i = 1; $i <= $count; $i++) {
 	//echo 'Lookup '.'_Speaker_'.$i;
 	$member_id = get_post_meta($post->ID,'_Speaker_'.$i,true);

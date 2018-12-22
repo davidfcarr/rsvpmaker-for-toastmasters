@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 4.9.5
-Stable tag: 3.0.3
+Tested up to: 5.0
+Stable tag: 3.3.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,11 +49,11 @@ RSVPMaker includes many features you will not use in the course of a regular Toa
 
 Toastmasters clubs can get websites hosted as subdomains of [toastmost.org](https://toastmost.org/), a service of project project sponsor [Carr Communications Inc.](https://www.carrcommunications.com/toastmasters-club-website-hosting/) based on the free, open source software from the [WordPress for Toastmasters](https://wp4toastmasters.com) project. Toastmost.org uses the WordPress Multisite version of WordPress, meaning that all sites hosted in this fashion run on the same instance of the software, with the network administrator controlling what plugins and themes are available. This is similar to the way WordPress.com, the service provided by the company behind WordPress, functions.
 
-When you install this software on your own website, you have greater freedom to install other plugins or themes, including those of your own design.
+The software will run on any WordPress web hosting service.
+ 
+When you install this software on your own website, you have greater freedom to install other plugins or themes, including those of your own design. However, you must also take more responsibility for providing your own technical support and solving problems such as spam filters blocking email notifications.
 
-You can purchase hosting at your own domain through [Carr Communications Inc.](https://www.carrcommunications.com/toastmasters-club-website-hosting/), which is a way of supporting the author of this software and getting the most direct technical support. However, the software will run on any WordPress web hosting service.
-
-The toastmost.org service was originally free and would be again if we could find sufficient sponsorships or advertising to support a free service. Currently, toastmost.org sites are offered on the basis of a free trial and a lower hosting fee than for an independent website.
+The toastmost.org service is supported by sponsorships.
 
 == Screenshots ==
 
@@ -61,6 +61,84 @@ The toastmost.org service was originally free and would be again if we could fin
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.3.7 =
+
+* Tweaks to automated role reminders. More time options on dropdown, addition of [[officers]] shortcode.
+
+= 3.3.4 =
+
+* Fix to automated reminders
+
+= 3.3.3 =
+
+* Fix for random assignments feature
+
+= 3.3.2 =
+
+* Added Role Report on admin dashboard
+* Tested with WordPress 5.0 beta
+
+= 3.3 =
+
+* Import / export tweaks
+* Planned absences displayed on signup sheet
+
+= 3.2.9 =
+
+* Import / export tab now includes a utility for transferring data between websites.
+
+= 3.2.8 =
+
+* Making Agenda with Contacts screen work with Gutenberg
+* Limiting output of JavaScript on admin screens to avoid conflicts with other plugins
+
+= 3.2.4 =
+
+* Tweak Timing feature added to edit signups mode -- allows you to tweak the time allowed for each role  or agenda note without going into the editor.
+
+= 3.2 =
+
+* Added Look Ahead Editor as a submenu under Signup Sheet - an editable form arranged in a table, with 3-6 weeks worth of assignments showing
+* Agenda editor refinements
+* Fixed Planning screen so it works with new agenda format
+
+= 3.1.9 =
+
+* [[wpt_embed_agenda]] shortcode can be used to embed the print view of the agenda in any blog post or page. Optional attributes are id and style. By default, the agenda for the next upcoming meeting is displayed in an iframe with a height of 1000px and width of 100%.
+
+= 3.1.8 =
+
+* Agenda Note and Signup Note blocks support rich text
+* Fix for spacing on agenda
+
+= 3.1.3 =
+
+* Updated the YouTube video publishing / email distribution tool, which you find under Media -> YouTube Toastmasters
+
+= 3.1.1 =
+
+* More work on the agenda editor and simplifying the conversion of existing agenda templates.
+
+= 3.1.0 =
+
+* Updates to allow the agenda editor to work with the new Gutenberg editor.
+
+= 3.0.7 =
+
+* Fixed / improved functions for reactivating former members.
+
+= 3.0.6 =
+
+* Export Personal Data includes the user archive for members with no active user account.
+
+= 3.0.5 =
+
+* Integration with the new Export Personal Data and Erase Personal Data tools WordPress 4.9.6 added to simplify compliance with privacy regulations such as the EU's General Data Protection Regulation (GDPR)
+
+= 3.0.4 =
+
+* Tweaks to Agenda Timing tool.
 
 = 3.0.3 =
 

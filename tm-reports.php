@@ -57,6 +57,8 @@ add_submenu_page( 'toastmasters_screen', __('Update History','rsvpmaker-for-toas
 add_submenu_page( 'toastmasters_screen', __('My Progress','rsvpmaker-for-toastmasters'), __('My Progress','rsvpmaker-for-toastmasters'), 'read', 'my_progress_report', 'my_progress_report');
 add_submenu_page('toastmasters_screen',__('Progress Reports','rsvpmaker-for-toastmasters'), __('Progress Reports','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_reports', 'toastmasters_reports',plugins_url('rsvpmaker-for-toastmasters/toastmasters-20.png'),'2.01');
 add_submenu_page( 'toastmasters_screen', __('Multi-Meeting Role Planner','rsvpmaker-for-toastmasters'), __('Planner','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_planner', 'toastmasters_planner');
+add_submenu_page( 'toastmasters_screen', __('Role Report','rsvpmaker-for-toastmasters'), __('Role Report','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_role_report','toastmasters_role_report');
+
 add_submenu_page( 'toastmasters_screen', __('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'), __('CC Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_cc', 'toastmasters_cc');
 add_submenu_page( 'toastmasters_screen', __('Competent Leader Progress Report','rsvpmaker-for-toastmasters'), __('CL Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'cl_report', 'cl_report');
 add_submenu_page( 'toastmasters_screen', __('Advanced Awards Progress Report','rsvpmaker-for-toastmasters'), __('Advanced Awards','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_advanced', 'toastmasters_advanced');
@@ -175,7 +177,7 @@ else
 			$sql = "SELECT *, $wpdb->posts.ID as postID
 FROM $wpdb->postmeta
 JOIN $wpdb->posts ON $wpdb->postmeta.post_id = $wpdb->posts.ID
-WHERE meta_key='_sked' AND post_content LIKE '%[toastmaster%' AND post_status='publish'";
+WHERE meta_key='_sked' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish'";
 			
 		$results = $wpdb->get_results($sql);
 		if($results)
@@ -220,7 +222,7 @@ WHERE meta_key='_sked' AND post_content LIKE '%[toastmaster%' AND post_status='p
 		$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value >= '".date('Y-m')."-1' AND $wpdb->posts.post_content LIKE '%[toastmaster%' AND $wpdb->posts.post_status = 'publish' ORDER BY a1.meta_value LIMIT 0,100";
+	 WHERE a1.meta_value >= '".date('Y-m')."-1' AND ($wpdb->posts.post_content LIKE '%[toastmaster%' OR $wpdb->posts.post_content LIKE '%wp:wp4toastmasters%') AND $wpdb->posts.post_status = 'publish' ORDER BY a1.meta_value LIMIT 0,100";
 		$results = $wpdb->get_results($sql);
 		if($results)
 		foreach ($results as $r)
@@ -926,7 +928,7 @@ function toastmasters_reconcile () {
 $hook = tm_admin_page_top(__('Reconcile Meeting Activity / Add History','rsvpmaker-for-toastmasters'));
 
 echo '<p><em>'.__('Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)','rsvpmaker-for-toastmasters').'</em></p>';
-
+echo '<style>.agenda_note{display: none;}</style>';
 global $wpdb;
 global $post;
 global $rsvp_options;
@@ -1007,7 +1009,7 @@ else
 $sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.meta_value,'%M %e, %Y') as date
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value < DATE_ADD(NOW(),INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND post_content LIKE '%[toast%'  ORDER BY a1.meta_value DESC";
+	 WHERE a1.meta_value < DATE_ADD(NOW(),INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.meta_value DESC";
 
 $results = $wpdb->get_results($sql);
 if(empty($results))
@@ -1083,7 +1085,7 @@ if(isset($_REQUEST["post_id"]))
 	}
 else
 	{
-	$past = get_past_events(" post_content LIKE '%[toast%' ",1);
+	$past = get_past_events(" (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ",1);
 	$r_post = $past[0];
 	}
 	printf("<h2>%s</h2>",$r_post->date);
@@ -1094,6 +1096,20 @@ $post = get_post($r_post->ID);
 
 $content = $r_post->post_content;
 
+if(strpos($content,'wp4toastmasters/role'))
+{
+	$data = wpt_blocks_to_data($content);
+	foreach($data as $item)
+	{
+		if(!empty($item['role']))
+		echo toastmaster_short($item);
+	}
+	echo toastmaster_short(array('role' => 'Table Topics','count' => 10));
+	echo toastmaster_short(array('role' => 'Best Table Topics','count' => 1));
+	echo toastmaster_short(array('role' => 'Best Speaker','count' => 1));
+	echo toastmaster_short(array('role' => 'Best Evaluator','count' => 1));
+}
+else {
 $content .= '
 
 [toastmaster role="Table Topics" count="10"]
@@ -1105,9 +1121,8 @@ $content .= '
 [toastmaster role="Best Evaluation" count="1"]
 
 ';
-
-echo do_shortcode($content);
-
+echo do_shortcode($content);	
+}
 
 if($r_post->postID)
 {
@@ -1180,7 +1195,7 @@ printf('<div id="message" class="updated">
 
 	}
 
-	$results = get_past_events("post_content LIKE '%[toast%'");
+	$results = get_past_events(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ");
 if(empty($results))
 	{
 	echo 'No meeting data';
@@ -3296,9 +3311,9 @@ tm_admin_page_bottom($hook);
 
 function tm_welcome_screen_assets( $hook ) {
   if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) {
-    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.2 );
+    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.3 );
+    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.1.2', true );
   }
-    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.1.1', true );
 }
 
 function tm_member_welcome_redirect() {
@@ -3401,7 +3416,8 @@ global $wpdb;
 
 $count = 0;
 // lookup next meeting
-	$results = get_future_events(" post_content LIKE '%[toastmaster%' ",10,ARRAY_A);
+	$results = get_future_events(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') 
+ ",10,ARRAY_A);
 			  if($results)
 			  {
 			  foreach($results as $index => $row)
@@ -3483,16 +3499,72 @@ $hook = tm_admin_page_top(__('Other Resources','rsvpmaker-for-toastmasters'));
 tm_admin_page_bottom($hook);
 }
 
-add_action('admin_init','tm_export');
+add_action('init','tm_export');
 function tm_export() {
 if(!isset($_REQUEST["tm_export"]))
 	return;
+if(isset($_GET['jout']))
+{
+$j = $_GET['jout'];
+$parts = explode(':',$j);
+$jt = (empty($parts[1])) ? 0 : (int) $parts[1];
+if($jt < time())
+	die('import code expired');
+$joutcode = get_option('joutcode');
+if($j != $joutcode)
+	die('invalid import code');
+global $wpdb;
+$users = get_users();	
+foreach($users as $user)
+	{
+	$u = array('user_login' => $user->user_login,'user_nicename' => $user->user_nicename,'user_email' => $user->user_email,'display_name' => $user->display_name);
+	$sql = "SELECT meta_key, meta_value from $wpdb->usermeta WHERE user_id=".$user->ID;
+	$res = $wpdb->get_results($sql);
+	$meta = array();
+	foreach($res as $row)
+		$meta[$row->meta_key] = $row->meta_value;
+	$u['usermeta'] = $meta;
+	$index = (empty($meta['toastmasters_id'])) ? $user->user_email : $meta['toastmasters_id'];
+	$members[$index] = $u;
+	}
+echo json_encode($members);
+exit();
+}
+
 $nonce = $_REQUEST['tm_export'];
 if ( ! wp_verify_nonce( $nonce, 'tm_export' ) ) {
     // This nonce is not valid.
     die( 'Failed security check' ); 
-} else {
-$users = get_users();
+} 
+elseif(isset($_GET['json']) || isset($_GET['jout']))
+{
+global $wpdb;
+$users = get_users();	
+foreach($users as $user)
+	{
+	$u = array('user_login' => $user->user_login,'user_nicename' => $user->user_nicename,'user_email' => $user->user_email,'display_name' => $user->display_name);
+	$sql = "SELECT meta_key, meta_value from $wpdb->usermeta WHERE user_id=".$user->ID;
+	$u['usermeta'] = $wpdb->get_results($sql);
+	$members[] = $u;
+	}
+$json = json_encode($members);
+if(isset($_GET['jout']))
+{
+	echo $json;
+}
+else
+{
+header('Content-Type: text/json');
+header('Content-Disposition: attachment;filename="'. $_SERVER['SERVER_NAME'] . '-members-'.date('Y-m-d').'.json"');
+header('Cache-Control: max-age=0');
+$out = fopen('php://output', 'w');
+fputs($out,$json);
+fclose($out);	
+}
+exit();
+}
+	else {
+$users = get_users();	
 $contact = array();
 $urls = array('facebook_url','twitter_url','linkedin_url','business_url');
 
@@ -3671,8 +3743,9 @@ $hook = tm_admin_page_top('Import/Export');
     <div id="sections" class="rsvpmaker" >
     <section class="rsvpmaker"  id="main">
 <?php
+$nonce = wp_create_nonce('tm_export');
+$export_link = sprintf('<a href="%s?page=%s&tm_export=%s">Export</a>', admin_url('admin.php') ,'import_export',$nonce );
 
-$export_link = sprintf('<a href="%s?page=%s&tm_export=%s">Export</a>', admin_url('admin.php') ,'import_export',wp_create_nonce('tm_export') );
 
 printf('<p>Click to %s a listing of member contact info and achievements. Use this for your own reference or make corrections to the spreadsheet and import your data into the website.</p>',$export_link);
 
@@ -3790,6 +3863,87 @@ foreach($lines as $linenumber => $line)
 <br /><input type="checkbox" name="add_members" value="1"> Add members (if not already in user database)
 <br /><button>Import</button>
 </form>
+		
+		<h2>Transfer Member Accounts Between Websites</h2>		
+<?php
+//print_r($_REQUEST);
+if(isset($_POST['importurl']))
+{
+	$message = file_get_contents($_POST['importurl']);
+	if(empty($message))
+		echo '<div style="color:red">error</div>';
+	elseif(!strpos($message,'}'))
+		echo '<div style="color:red">No data returned</div>'.$message;	
+	else
+	{
+	$data = json_decode(trim($message));
+	foreach($data as $index => $user)
+	{
+		$member_id = 0;
+		$usernumber = 0;
+		$member = get_user_by('email',$user->user_email);
+		if(empty($member) &&  !strpos($index,'@'))
+			$member = get_user_by_tmid($index);
+		if(!empty($member->ID))
+			$member_id = $member->ID;
+		if($member_id)
+			printf('<p>looked up %s = user #%d</p>',$user->user_login, $member_id);
+		else
+		{
+		while(get_user_by('login',$user->user_login)) // if same login as existing user, modify login
+		{
+			printf('<p>existing user by %s</p>',$user->user_login);
+			$usernumber++;
+			$user->user_login = $user->user_login.$usernumber;
+			printf('<p>login changed to %s</p>',$user->user_login);
+		}
+		$newuser = array('user_login' => $user->user_login,'user_email' => $user->user_email, 'user_nicename' => $user->user_nicename,'display_name' => $user->display_name,'user_pass' => wp_generate_password());
+		$member_id = wp_insert_user($newuser);
+		print_r($member_id);
+		printf('<p>adding %s, user id %d</p>',$user->user_login,$member_id);
+		}
+		$record_count = 0;
+		if(!empty($user->usermeta))
+		foreach($user->usermeta as $meta_key => $meta_value)
+		{
+			//echo '<div>'.$meta_key.' value:</div>';
+			if(is_serialized($meta_value))
+				$value = unserialize($meta_value);
+			else
+				$value = $meta_value;
+			//print_r($value);
+			//echo '<br />';
+			update_user_meta($member_id,$meta_key,$value);
+			$record_count++;
+		}
+		printf('<div>%d member records</div>',$record_count);
+	}
+	}
+}
+	
+//$json_link = sprintf('<a href="%s?page=%s&tm_export=%s&json=1">Export</a>', admin_url('admin.php') ,'import_export',$nonce );
+
+$joutcode = get_option('joutcode');
+$j = explode(':',$joutcode);
+$jt = empty($j[1]) ? 0 : (int) $j[1];
+if(isset($_GET['joutcode']) || ($jt < time()))
+{
+	$jt = strtotime('+ 24 hour');
+	$joutcode = rand().':'.$jt;
+	update_option('joutcode',$joutcode);
+}
+fix_timezone();
+global $rsvp_options;
+printf('<p><strong>Step 1. Export:</strong> To move your club\'s member records to another website that also uses this software, copy this web address:</p>
+<pre>%s</pre>
+<p>This link will expire at %s. (<a href="%s">reset</a>)</p>',site_url('?jout='.$joutcode.'&tm_export='.$nonce),strftime($rsvp_options['short_date'].' '.$rsvp_options['time_format'].' %Z',$jt),admin_url('admin.php?page=import_export&joutcode=1'));
+?>
+<p>The next step will take place on your new website.</p>
+<form method="post" action="<?php echo admin_url('admin.php?page=import_export'); ?>">
+	<p><strong>Step 2. Import:</strong> After obtaining the export link from your old website, paste it here to import.<br /><input type="text" name="importurl" value="<?php if(isset($_POST['importurl'])) echo $_POST['importurl']; ?>" />
+<br /><button>Import</button>
+</form>
+
 </section>
 <section class="rsvpmaker"  id="fth">
 <?php import_fth(); ?>
@@ -4083,7 +4237,10 @@ if($user_id == -1)
 elseif($user_id)
 {
 $userdata = get_userdata($user_id);
-$name = $userdata->first_name.' '.$userdata->last_name;
+if(empty($userdata->first_name))
+	$name = $userdata->display_name;
+else
+	$name = $userdata->first_name.' '.$userdata->last_name;
 }
 else
 	$name = 'Open';
@@ -4466,7 +4623,8 @@ if(!empty($_REQUEST["project"]) && !empty($_REQUEST["speaker"]) && isset($_REQUE
 $is_current = false;
 $next_evaluations = '';
 $my_next_evaluations = '';
-$future = get_future_events (" post_content LIKE '%[toastmaster%' ", 1);
+$future = get_future_events (" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') 
+ ", 1);
 if($future)
 foreach($future as $meet)
 {
@@ -4558,7 +4716,8 @@ if(!empty($eval_emails))
 	printf('<p>Evaluation Team: <a href="mailto:%s">%s</a>',$em,$em);
 	}
 $eval_emails = array();
-$allpast = get_past_events (" post_content LIKE '%[toastmaster%' ", 5);
+$allpast = get_past_events (" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') 
+ ", 5);
 if($allpast)
 foreach($allpast as $meet)
 {
@@ -4611,7 +4770,7 @@ if(!empty($eval_emails))
 	global $toast_roles, $competent_leader;
 
 //get_past_events	
-$past = get_past_events(" post_content LIKE '%[toastmaster%' ", 2);
+$past = get_past_events(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')  ", 2);
 if($past)
 foreach($past as $past_meet)
 {
@@ -4957,7 +5116,7 @@ else
 }
 
 $json = json_encode($json_data);
-rsvpmaker_debug_log($json,'json to submit for '.$current_user->user_login);
+////rsvpmaker_debug_log($json,'json to submit for '.$current_user->user_login);
 
 $url = 'http://wp4toastmasters.com/?wpt_stats_warehouse='.$_SERVER['SERVER_NAME'];
 $ch = curl_init();
@@ -4969,9 +5128,9 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 $response  = curl_exec($ch);
-rsvpmaker_debug_log($response,'response to json submission');
+////rsvpmaker_debug_log($response,'response to json submission');
 echo '<p>curl error: '.curl_error($ch).'</p>';
-rsvpmaker_debug_log(curl_error($ch),'curl error');
+////rsvpmaker_debug_log(curl_error($ch),'curl error');
 curl_close($ch);
 $parts = explode('+++++',$response);
 echo $parts[0];
@@ -5040,9 +5199,9 @@ global $wpdb;
 $wpdb->show_errors();
 $last_wpt_json_batch_upload = (int) get_option('last_wpt_json_batch_upload');
 $sql = "SELECT * from $wpdb->usermeta WHERE umeta_id > $last_wpt_json_batch_upload AND meta_key LIKE 'tm|%".$_SERVER['SERVER_NAME']."%' ORDER BY umeta_id LIMIT 0, 200";
-rsvpmaker_debug_log($sql,'batch upload sql');
+////rsvpmaker_debug_log($sql,'batch upload sql');
 $results = $wpdb->get_results($sql);
-rsvpmaker_debug_log($results,'batch upload db result');
+////rsvpmaker_debug_log($results,'batch upload db result');
 if($results)
 	{
 		$tmids = get_toastmasters_ids();
@@ -5056,7 +5215,7 @@ if($results)
 	}
 if(isset($json_data))
 {
-	rsvpmaker_debug_log($json_data,'batch upload json');
+	////rsvpmaker_debug_log($json_data,'batch upload json');
 	$result = wpt_json_send($json_data, true);
 	global $successful_upload;
 	if($successful_upload)
@@ -5071,7 +5230,7 @@ global $wpdb;
 global $successful_upload;
 $successful_upload = false;
 $json = json_encode($json_data);
-rsvpmaker_debug_log($json,'wpt_json_send data to upload');
+////rsvpmaker_debug_log($json,'wpt_json_send data to upload');
 $p = get_option('wpt_stats_warehouse_password');
 if(empty($p))
 	{
@@ -5096,7 +5255,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 $response  = curl_exec($ch);
 curl_close($ch);
 $json_response = json_decode($response,true);
-rsvpmaker_debug_log($response,'wpt_json_send response');
+////rsvpmaker_debug_log($response,'wpt_json_send response');
 
 if(!isset($json_response["log"]))
 	{
@@ -5150,6 +5309,132 @@ foreach($download as $toastmasters_id => $keys) {
    }
 $successful_upload = true;
 return "Data sync result uploaded $uploaded records, deleted $deleted, downloaded $down for $members members";
+}
+
+function toastmasters_role_report () {
+	global $wpdb, $rsvp_options;
+$hook = tm_admin_page_top('Role Report');
+echo '<p>'.__('This page shows the number of times a member has served in a given role, followed by the month and year of the most recent occurrance','rsvpmaker-for-toastmasters'),'</p>';
+$allroles = array();
+$users = get_users('blog_id='.get_current_blog_id());
+foreach($users as $user) {
+$ud = get_userdata($user->ID);
+$userroles[$ud->last_name.$ud->first_name]['name'] = $ud->first_name.' '.$ud->last_name;
+if(isset($_GET['all']))
+	$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%' ORDER BY meta_key DESC ";
+else
+	$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%|".$_SERVER['SERVER_NAME']."|%' ORDER BY meta_key DESC ";
+$results = $wpdb->get_results($sql);
+if(!$results)
+	continue;
+foreach($results as $row)
+{
+	preg_match('/tm\|([^|]+)\|([^|]+)/',$row->meta_key,$matches);
+	if(empty($matches[1]) || empty($matches[1]))
+		continue;
+	$role = $matches[1];
+	$date = $matches[2];
+	$userroles[$ud->last_name.$ud->first_name]['roledates'][$role][] = $date;
+	if(!in_array($role,$allroles)) $allroles[] = $role;
+}
+}
+ksort($userroles);
+if(isset($_GET['details']))
+{
+foreach($userroles as $userroledata)
+{
+	echo '<h2>'.$userroledata['name'].'</h2>';
+	if(empty($userroledata['roledates']))
+		continue;
+	ksort($userroledata['roledates']);
+	foreach($userroledata['roledates'] as $role => $dates)
+	{
+		$d = '';
+		if(!empty($dates))
+		foreach($dates as $date)
+			$d .= date('M d, Y',strtotime($date)).' ';
+		printf('<div>%s: <strong>%d</strong>, %s</div>',$role,count($dates),$d);
+	}
+}
+
+	
+}
+
+	if($_POST['roles'])
+	{
+		$report_roles = $_POST['roles'];
+		update_option('roles_report_roles',$report_roles);
+	}
+	else
+		$report_roles = get_option('roles_report_roles');
+	if(empty($report_roles))
+	{
+	global $toast_roles;
+	$report_roles = $toast_roles;	
+	}
+	
+	$back6 = strtotime('-6 month');
+	
+	echo '
+	<style>
+	th.role {width: 50px;font-size: 10px;}
+	td {text-align: center;}
+	td.nope {
+	background-color: #FFFF80;
+	}
+	.notlately {
+	background-color: #FFFFE0;
+	}
+	</style>
+	<p><span class="notlately">Highlighted items are from more than 6 months ago</span></p>
+	<table border="1">';
+	echo '<tr><th>Name</th>';
+	foreach($report_roles as $index => $role)
+	{
+		if(!in_array($role,$allroles))
+			continue;
+		printf('<th class="role">%s</th>',$role);		
+	}
+	echo '</tr>';
+foreach($userroles as $userroledata)
+{
+	echo '<tr><td>'.$userroledata['name'].'</td>';
+	foreach($report_roles as $role)
+	{
+		if(!in_array($role,$allroles))
+			continue;
+		$class = '';
+		if(empty($userroledata['roledates'][$role]))
+		{
+			$out = '-<br />&nbsp;';
+			//$class = 'nope';
+		}
+		else
+		{
+			$t = strtotime($userroledata['roledates'][$role][0]);
+			$out = count($userroledata['roledates'][$role]).'<br />'.date('My',$t);
+			if($t < $back6)
+				$class = 'notlately';
+			//$out .= var_export($userroledata['roledates'][$role],true);
+		}
+		printf('<td class="%s">%s</td>',$class,$out);//var_export($userroledata['roledates'][$role],true));		
+	}
+	echo '</tr>';
+}	
+	echo '</table>';
+
+printf('<p><a href="%s">Show more detail</a></p>',admin_url('admin.php?page=toastmasters_role_report&details=1'));
+	
+printf('<h2>Set Report Roles</h2><form action="%s" method="post">',admin_url('admin.php?page=toastmasters_role_report'));
+sort($allroles);
+foreach($allroles as $role) {
+	$checked = (in_array($role,$report_roles)) ? ' checked="checked" ' : '';
+	printf('<input type="checkbox" name="roles[]" value="%s" %s > ',$role,$checked);
+	echo $role . '<br />';
+}
+submit_button('Set Roles List');
+echo '</form>';
+tm_admin_page_bottom($hook);
 }
 
 ?>

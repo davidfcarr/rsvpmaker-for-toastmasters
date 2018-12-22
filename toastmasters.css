@@ -254,3 +254,8 @@ button.save_changes.focus, .save_changes:focus
 	from { transform: scaleY(.1); }
 	to{ transform: scaleY(1);background:#eee; }	
 }
+
+.toasttime {
+	color: blue;
+	font-weight: bold;
+}

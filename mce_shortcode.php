@@ -38,7 +38,7 @@ class GWP_agenda_note_shortcode{
 		}
 		
 		// check if WYSIWYG is enabled
-		if ( 'true' == get_user_option( 'rich_editing' ) ) {
+		if ( 'true' == get_user_option( 'rich_editing' ) && !function_exists('do_blocks') ) {
 			add_filter( 'mce_external_plugins', array( $this ,'mce_external_plugins' ) );
 			add_filter( 'mce_buttons', array($this, 'mce_buttons' ) );
 		}
@@ -52,7 +52,7 @@ class GWP_agenda_note_shortcode{
 	 */
 	function mce_external_plugins( $plugin_array ) {
 		global $post;
-		if(empty($post->post_type) || $post->post_type != 'rsvpmaker')
+		if(empty($post->post_type) || $post->post_type != 'rsvpmaker' || function_exists('do_blocks') )
 			return $plugin_array;
 		$plugin_array[$this->shortcode_tag] = plugins_url( 'mce/mce-button.js?v=4' , __FILE__ );
 		$plugin_array['toastmaster'] = plugins_url( 'mce/toastmaster-mce.js?v=3' , __FILE__ );
@@ -67,7 +67,7 @@ class GWP_agenda_note_shortcode{
 	 */
 	function mce_buttons( $buttons ) {
 		global $post;
-		if(empty($post->post_type) || $post->post_type != 'rsvpmaker')
+		if(empty($post->post_type) || ($post->post_type != 'rsvpmaker') || function_exists('do_blocks') )
 			return $buttons;
 		array_push( $buttons, $this->shortcode_tag );
 		array_push( $buttons, 'toastmaster' );

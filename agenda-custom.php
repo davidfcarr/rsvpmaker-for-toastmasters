@@ -8,11 +8,21 @@ header('Content-disposition: attachment; filename='.$post->post_name.'.doc');
 wp4toastmasters_agenda_layout_check('custom'); //add layout post if doesn't already exist
 $layout = get_option('rsvptoast_agenda_layout');
 $layout_post = get_post($layout);
-$layout_css = get_post_meta($layout,'_rsvptoast_agenda_css',true);
+if(!isset($_GET['reset']))
+$layout_css = get_post_meta($layout,'_rsvptoast_agenda_css_2018-07',true);
+if(empty ($layout_css))
+{
+$layout_css = wpt_default_agenda_css();
+update_post_meta($layout,'_rsvptoast_agenda_css_2018-07',$layout_css);
+}
+if(isset($_GET['word_agenda']))
+	echo '.dateblock {margin-bottom: -1em;}';
+
 ?><html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=Windows-1252">
 <title><?php wp_title( '|', true, 'right' ); ?></title>
+<!-- Custom Agenda Template -->
 <!--[if gte mso 9]>
 <xml>
 <w:WordDocument>
@@ -24,17 +34,18 @@ $layout_css = get_post_meta($layout,'_rsvptoast_agenda_css',true);
 <![endif]-->
 <style>
 <!-- /* Style Definitions */
-<?php echo $layout_css ."\n". get_option('wp4toastmasters_agenda_css'); ?>
+<?php echo wpt_default_agenda_css(); ?>
+<?php echo get_option('wp4toastmasters_agenda_css'); ?>
 </style>
 </head>
 
 <body lang=EN-US style='tab-interval:.5in'>
 <div class="Section1">
-<?php
+<?php	
 echo wpautop(convert_chars(wptexturize(do_shortcode($layout_post->post_content))));
 ?>
 </div>
-<?php 
+<?php
 if(!isset($_GET["word_agenda"]) && !isset($_GET["no_print"]))
 {
 echo '<script type="text/javascript">

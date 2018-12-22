@@ -7,6 +7,7 @@ header('Content-disposition: attachment; filename='.$post->post_name.'.doc');
 }
 the_post();
 global $post;
+
 global $wpdb;
 global $rsvp_options;
 $custom = get_post_custom($post->ID);
@@ -47,6 +48,7 @@ foreach($wp_filter["the_content"] as $priority => $filters)
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=Windows-1252">
 <title><?php wp_title( '|', true, 'right' ); ?></title>
+<!-- Sidebar Agenda Template -->
 <!--[if gte mso 9]>
 <xml>
 <w:WordDocument>
@@ -110,14 +112,17 @@ if(isset($officers))
 ?>
 </td>
 <td id="agenda" width="*">
-<?php
-echo wpautop(do_shortcode($post->post_content));
+<?php	
+echo tm_agenda_content();
 ?>
 </td>
 </tr>
 </table>
 </div>
-<?php 
+	
+<?php
+//if(!isset($_GET["word_agenda"]))
+   //agenda_timing_footer($datestring);
 if(!isset($_GET["word_agenda"]) && !isset($_GET["no_print"]))
 {
 echo '<script type="text/javascript">

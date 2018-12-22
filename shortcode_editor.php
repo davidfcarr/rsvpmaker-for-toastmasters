@@ -180,14 +180,6 @@ if(!$_REQUEST["edit"])
 			<div id="header"></div>
             
 			<div class="menu">
-<!--
-                <button id="namebutton"><img src="images/name-img.png"/>Name</button><br>
-                <button id="emailbutton"><img src="images/email.png"/>Email</button><br>
-                <button id="notebutton"><img src="images/contact-img.png"/>note</button><br>
-                <button id="checkboxbutton"><img src="images/check-img.png"/>CheckBox</button><br>
-                <button id="radioaddbutton"><img src="images/radio-img.png"/>Radio</button>
-				<button id="reset">Reset</button>
--->
 <?php
 global $wp_filter;
 $corefilters = array('convert_chars','wpautop','wptexturize');
@@ -199,12 +191,6 @@ foreach($wp_filter["the_content"] as $priority => $filters)
 			{
 			$r = remove_filter( 'the_excerpt', $name, $priority );
 			$r = remove_filter( 'the_content', $name, $priority );
-			/*
-			if($r)
-				echo "removed $name $priority <br />";
-			else
-				echo "error $name $priority <br />";
-			*/
 			}
 		}
 
@@ -212,12 +198,6 @@ foreach($wp_filter["the_content"] as $priority => $filters)
             </div>
             
 			<div class="InputsWrapper1">
-                <!-- div id="yourhead">
-					<div id="your">
-						<h2 id="yourtitle">Your Form Title<img src="images/edit-form.png"/></h2>
-						<h4 id="justclickid">Just Click on Fields on left to start building your form. It's fast, easy & fun.</h4>
-					</div>
-				</div -->	
 
 <?php
 global $post;

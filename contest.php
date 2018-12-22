@@ -248,7 +248,10 @@ if(isset($_POST['judge']))
 			$judge[$index] = $judge_id;
 	}
 if(!empty($judge))
-	update_post_meta($post->ID,'tm_scoring_judges',$judge);
+{
+	print_r($judge);
+	update_post_meta($post->ID,'tm_scoring_judges',$judge);	
+}
 }
 
 if(empty($contestants))
@@ -356,13 +359,25 @@ else
 	<h3>Contestants</h3>
 <?php
 
+if(strpos($post->post_content,'wp:wp4toastmasters'))
+{
+$data = wpt_blocks_to_data($post->post_content);
+foreach($data as $item)
+	if(!empty($item['role']))
+		$roles[] = $item['role'];
+}
+else {
 preg_match_all('/role="([^"]+)/',$post->post_content,$matches);
-if(!empty($matches[1]))
+	$roles = (empty($matches[1])) ? array() : $matches[1];	
+}
+	
+	
+if(!empty($roles))
 {
 $track = '';
 $track_top = '<option value="">Select Role</option>';
 
-foreach($matches[1] as $role)
+foreach($roles as $role)
 {
 $s = ($role == $track_role) ? ' selected="selected" ' : '';
 if(strpos($role,'peaker') || strpos($role,'peech') || strpos($role,'ontest'))
