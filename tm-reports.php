@@ -1,45 +1,5 @@
 <?php
 
-/*
-toastmasters_reports_menu()
-tm_member_edit()
-toastmasters_screen ()
-toastmasters_reports ()
-awesome_get_stats ($userdata)
-get_latest_speeches ($user_id, $myroles = array())
-toastmasters_reconcile ()
-toastmasters_attendance ()
-toastmasters_attendance_report()
-awesome_get_attendance($user_id)
-get_speech_role_count ($user_id, $check_history = true)
-toastmasters_cc()
-tm_barhtml($count,$target)
-toastmasters_advanced ()
-get_advanced_projects ()
-is_requirement_met($user_id, $choices, $goal, $echo = true)
-cl_report ()
-cl_progress ($userdata)
-cl_project_gaps ($userdata)
-get_latest_visit ($user_id)
-last_filled_role ($user_id, $role)
-toastmasters_mentors()
-toastmasters_edit_stats()
-import_fth ()
-toastmasters_activity_log()
-toastmasters_progress_report($user_id)
-my_progress_report ()
-member_list ()
-tm_welcome_screen_assets( $hook )
-tm_member_welcome_redirect()
-tm_welcome_screen_pages()
-toastmasters_welcome()
-tm_welcome_screen_remove_menus()
-toastmasters_support()
-tm_reports_disclaimer ($extra = '')
-tm_admin_page_top($headline)
-tm_admin_page_bottom($hook = '')
-*/
-
 add_action( 'admin_menu', 'toastmasters_reports_menu' );
 add_action('admin_menu','tm_welcome_screen_pages');
 add_action( 'admin_enqueue_scripts', 'tm_welcome_screen_assets' );
@@ -57,24 +17,18 @@ add_submenu_page( 'toastmasters_screen', __('Update History','rsvpmaker-for-toas
 add_submenu_page( 'toastmasters_screen', __('My Progress','rsvpmaker-for-toastmasters'), __('My Progress','rsvpmaker-for-toastmasters'), 'read', 'my_progress_report', 'my_progress_report');
 add_submenu_page('toastmasters_screen',__('Progress Reports','rsvpmaker-for-toastmasters'), __('Progress Reports','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_reports', 'toastmasters_reports',plugins_url('rsvpmaker-for-toastmasters/toastmasters-20.png'),'2.01');
 add_submenu_page( 'toastmasters_screen', __('Multi-Meeting Role Planner','rsvpmaker-for-toastmasters'), __('Planner','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_planner', 'toastmasters_planner');
-add_submenu_page( 'toastmasters_screen', __('Role Report','rsvpmaker-for-toastmasters'), __('Role Report','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_role_report','toastmasters_role_report');
-
-add_submenu_page( 'toastmasters_screen', __('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'), __('CC Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_cc', 'toastmasters_cc');
-add_submenu_page( 'toastmasters_screen', __('Competent Leader Progress Report','rsvpmaker-for-toastmasters'), __('CL Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'cl_report', 'cl_report');
-add_submenu_page( 'toastmasters_screen', __('Advanced Awards Progress Report','rsvpmaker-for-toastmasters'), __('Advanced Awards','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_advanced', 'toastmasters_advanced');
+add_submenu_page( 'toastmasters_screen', __('Reports Dashboard','rsvpmaker-for-toastmasters'), __('Reports Dashboard','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_reports_dashboard','toastmasters_reports_dashboard');
 
 add_submenu_page( 'toastmasters_screen', __('Evaluations','rsvpmaker-for-toastmasters'), __('Evaluations','rsvpmaker-for-toastmasters'), 'read', 'wp4t_evaluations', 'wp4t_evaluations');
 
 add_submenu_page( 'toastmasters_screen', __('Member List','rsvpmaker-for-toastmasters'), __('Member List','rsvpmaker-for-toastmasters'), 'view_contact_info', 'contacts_list', 'member_list');
-
-add_submenu_page( 'toastmasters_screen', __('Attendance Report','rsvpmaker-for-toastmasters'), __('Attendance Report','rsvpmaker-for-toastmasters'), $security['view_attendance'], 'toastmasters_attendance_report', 'toastmasters_attendance_report');
 
 add_submenu_page( 'toastmasters_screen', __('Edit Stats','rsvpmaker-for-toastmasters'), __('Edit Member Stats','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'tm_member_edit', 'tm_member_edit');
 add_submenu_page( 'toastmasters_screen', __('Add Speech','rsvpmaker-for-toastmasters'), __('Add Speech','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'add_member_speech', 'add_member_speech');
 
 add_submenu_page( 'toastmasters_screen', __('Record Attendance','rsvpmaker-for-toastmasters'), __('Record Attendance','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_attendance', 'toastmasters_attendance');
 add_submenu_page( 'toastmasters_screen', __('Mentors','rsvpmaker-for-toastmasters'), __('Mentors','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_mentors', 'toastmasters_mentors');
-add_submenu_page( 'toastmasters_screen', __('Track Dues','rsvpmaker-for-toastmasters'), __('Track Dues','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_dues', 'toastmasters_dues');
+//add_submenu_page( 'toastmasters_screen', __('Track Dues','rsvpmaker-for-toastmasters'), __('Track Dues','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_dues', 'toastmasters_dues');
 add_submenu_page( 'toastmasters_screen', __('Activity Log','rsvpmaker-for-toastmasters'), __('Activity Log','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_activity_log', 'toastmasters_activity_log');
 add_submenu_page( 'toastmasters_screen', __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), 'manage_options', 'import_fth', 'import_fth');
 add_submenu_page( 'toastmasters_screen', __('Import/Export','rsvpmaker-for-toastmasters'), __('Import/Export','rsvpmaker-for-toastmasters'), 'manage_options', 'import_export', 'toastmasters_import_export');
@@ -1290,7 +1244,7 @@ tm_admin_page_bottom($hook);
 
 function toastmasters_attendance_report() {
 
-$hook = tm_admin_page_top(__('Attendance Report','rsvpmaker-for-toastmasters'));
+//$hook = tm_admin_page_top(__('Attendance Report','rsvpmaker-for-toastmasters'));
 tm_reports_disclaimer();
 
 if(is_admin())
@@ -1318,7 +1272,11 @@ else
 	}
 ?>
 <form action="admin.php" method="get">
-<input type="hidden" name="page" value="toastmasters_attendance_report" />
+<?php
+foreach($_GET as $name => $value)
+	if(($name != 'start_month') && ($name != 'start_year'))
+		printf('<input type="hidden" name="%s" value="%s" />',$name,$value);
+?>	
 <?php _e('Start Month','rsvpmaker-for-toastmasters'); ?>: <input name="start_month" size="6" value="<?php echo $month; ?>">
 <?php _e('Start Year','rsvpmaker-for-toastmasters'); ?>: <input name="start_year"  size="6" value="<?php echo $year; ?>">
 <button><?php _e('Set','rsvpmaker-for-toastmasters'); ?></button> <?php echo $startmsg; ?>
@@ -1359,7 +1317,7 @@ foreach($attendance as $user_id => $count)
 		$userdata = get_userdata($user_id);
 
 		echo '<tr><td>';
-		printf('<a href="%s&member=%d">',admin_url('admin.php?page=toastmasters_attendance_report'),$userdata->ID);
+		printf('<a href="%s&member=%d">',admin_url($_SERVER['REQUEST_URI']),$userdata->ID);
 		echo $userdata->first_name;
 		echo ' ';
 		echo $userdata->last_name;
@@ -1368,7 +1326,7 @@ foreach($attendance as $user_id => $count)
 		echo '</td></tr>';
 	}
 echo "</table>";
-tm_admin_page_bottom($hook);
+//tm_admin_page_bottom($hook);
 } // attendance report
 
 function awesome_get_attendance_detail($user_id) {
@@ -1423,9 +1381,13 @@ else
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
-	 WHERE a1.meta_value < NOW() $start_date AND a2.meta_value = $user_id";	
+	 WHERE post_status='publish' AND a1.meta_value < NOW() $start_date AND a2.meta_value = $user_id";	
+$appearances = array();
 $results = $wpdb->get_results($sql);
-return sizeof($results);
+foreach ($results as $row)
+	if(!in_array($row->ID,$appearances))
+		$appearances[] = $row->ID;	
+return sizeof($appearances);
 }
 
 function get_speech_role_count ($user_id, $check_history = true) {
@@ -1514,8 +1476,8 @@ return $counts;
 
 function toastmasters_cc() {
 
-if($_REQUEST["page"] == 'toastmasters_cc')
-$hook = tm_admin_page_top(__('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'));
+//if($_REQUEST["page"] == 'toastmasters_cc')
+//$hook = tm_admin_page_top(__('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'));
 tm_reports_disclaimer();
 
 $ccs = array();
@@ -1543,7 +1505,7 @@ print_r($ccs);
 if(!isset($_REQUEST["all"]))
 {
 $datefilter = strtotime('3 months ago');
-printf('<p><em>'.__('Filtered by default to show members active within the last 3 months (since %s) <a href="%s">(show all)','rsvpmaker-for-toastmasters').'</a></em></p>',date('m/d/Y',$datefilter),admin_url('admin.php?page=toastmasters_cc&all=1'));
+printf('<p><em>'.__('Filtered by default to show members active within the last 3 months (since %s) <a href="%s">(show all)','rsvpmaker-for-toastmasters').'</a></em></p>',date('m/d/Y',$datefilter),site_url($_SERVER['REQUEST_URI']).'&all=1');
 }
 
 echo "<table>";
@@ -1579,8 +1541,8 @@ echo "<table>";
 	}
 echo "</table>";
 
-if($_REQUEST["page"] == 'toastmasters_cc')
-tm_admin_page_bottom($hook);
+//if($_REQUEST["page"] == 'toastmasters_cc')
+//tm_admin_page_bottom($hook);
 
 }
 
@@ -1740,8 +1702,8 @@ foreach($advanced_projects as $key => $project)
 }
 
 function toastmasters_advanced () {
-if($_REQUEST["page"] == 'toastmasters_advanced')
-$hook = tm_admin_page_top(__('Advanced Award Progress','rsvpmaker-for-toastmasters'));
+//if($_REQUEST["page"] == 'toastmasters_advanced')
+//$hook = tm_admin_page_top(__('Advanced Award Progress','rsvpmaker-for-toastmasters'));
 tm_reports_disclaimer('<em>This report is still under development.</em>');
 
 $blogusers = get_users('blog_id='.get_current_blog_id());
@@ -1843,8 +1805,8 @@ sponsor performed his/her duties. World Headquarters must receive this letter no
 president sends World Headquarters a letter verifying that the mentor performed his/her duties for those six months.)
 */
 
-if($_REQUEST["page"] == 'toastmasters_advanced')
-tm_admin_page_bottom($hook);
+//if($_REQUEST["page"] == 'toastmasters_advanced')
+//tm_admin_page_bottom($hook);
 }
 
 function get_advanced_projects () {
@@ -1921,7 +1883,7 @@ foreach($choices as $choice)
 
 function cl_report () {
 
-$hook = tm_admin_page_top(__('Competent Leader Progress Report','rsvpmaker-for-toastmasters'));
+//$hook = tm_admin_page_top(__('Competent Leader Progress Report','rsvpmaker-for-toastmasters'));
 tm_reports_disclaimer('<em>Member strategy for matching activities with projects may differ from the automated method used for this report.</em>');
 
 global $project_gaps;
@@ -1942,7 +1904,7 @@ width: 150px;
 if(!isset($_REQUEST["all"]))
 {
 $datefilter = strtotime('3 months ago');
-printf(__('<p><em>Filtered by default to show members active within the last 3 months (since %s) <a href="%s">(show all)</a></em></p>','rsvpmaker-for-toastmasters'),date('m/d/Y',$datefilter),admin_url('admin.php?page=cl_report&all=1'));
+printf(__('<p><em>Filtered by default to show members active within the last 3 months (since %s) <a href="%s">(show all)</a></em></p>','rsvpmaker-for-toastmasters'),date('m/d/Y',$datefilter),site_url($_SERVER['REQUEST_URI']).'&all=1');
 }
 
 $text = '';
@@ -2016,7 +1978,7 @@ echo "<div>".implode("<br />",$nocl)."</div>";
 echo $output . implode($text2);
 
 
-tm_admin_page_bottom($hook);
+//tm_admin_page_bottom($hook);
 }
 
 function cl_progress ($userdata) {
@@ -2559,11 +2521,7 @@ if(isset($_REQUEST["edit"]))
 else
 	printf('<h2><a class="add-new-h2" href="%s">%s</a></h2>',admin_url('admin.php?page=toastmasters_mentors&edit=1'), __('Edit','rsvpmaker-for-toastmasters') );
 
-if(!isset($_REQUEST["all"]))
-{
-$datefilter = strtotime('3 months ago');
-printf('<p><em>'.__('Filtered by default to show members active within the last 3 months','rsvpmaker-for-toastmasters').' ('.__('since','rsvpmaker-for-toastmasters').' %s) <strong>'.__('AND','rsvpmaker-for-toastmasters').'</strong> '.__('who have not yet attained an educational award such as CC or CL','rsvpmaker-for-toastmasters').' <a href="%s">('.__('show all','rsvpmaker-for-toastmasters').')</a></em></p>',date('m/d/Y',$datefilter),admin_url('admin.php?page=toastmasters_mentors&all=1'));
-}
+	echo '<p>Mentor: Mentee(s)</p>';
 
 $blogusers = get_users('blog_id='.get_current_blog_id() );
     foreach ($blogusers as $user) {	
@@ -3958,55 +3916,10 @@ function tm_reports_disclaimer ($extra = '') {
 echo '<p>These reports provide guidance on member activity but are not guaranteed to be complete. Site owners can make them more accurate by reconciling meeting signup data with who actually showed up and performed roles, by adding historical data, and by recording activities that happen outside of meetings. '.$extra.'</p>';
 }
 
-function tm_admin_page_top($headline) {
-
-/*
-$hook = tm_admin_page_top(__('Headline','rsvpmaker-for-toastmasters'));
-tm_admin_page_bottom($hook);
-*/
-$hook = '';
-if(is_admin()) { // if not full screen view
-	$screen = get_current_screen();
-	$hook = $screen->id;
-}
-
-$print = (isset($_REQUEST["page"]) && !isset($_REQUEST["rsvp_print"])) ? '<div style="width: 200px; text-align: right; float: right;"><a target="_blank" href="'.admin_url(str_replace('/wp-admin/','',$_SERVER['REQUEST_URI'])).'&rsvp_print=1">Print</a></div>' : '';
-printf('<div id="wrap" class="%s toastmasters">%s<h1>%s</h1>',$hook,$print,$headline);
-return $hook;
-}
-
-function tm_admin_page_bottom($hook = '') {
-if(is_admin() && empty($hook))
-	{
-	$screen = get_current_screen();
-	$hook = $screen->id;
-	}
-printf("\n".'<hr /><p><small>%s</small></p></div>',$hook);
-}
-
 function increment_stat_button($user_id, $key ) {
 global $increment_stat_count;
 $increment_stat_count++;
 return sprintf(' <button class="increment_stat" counter="%d" user_id="%s" role="%s">+1</button></span> <span id="increment_stat_result%d"></span>', $increment_stat_count, $user_id,$key, $increment_stat_count);
-}
-
-function make_tm_speechdata_array ($roledata, $manual, $project, $title, $intro) {
-	$roledata['manual'] = $manual;
-	$roledata['project'] = $project;
-	$roledata['title'] = $title;
-	$roledata['intro'] = $intro;
-	return $roledata;
-}
-
-function make_tm_roledata_array ($function = '') {
-global $current_user;
-	return array('time_recorded' => time(), 'recorded_by' => $current_user->user_login, 'function' => $function);
-}
-
-function make_tm_usermeta_key ($role, $event_timestamp, $post_id) {
-//for statistics, we don't distinguish between speaker #1, speaker #2
-//timestamp format date('Y-m-d G:i:s')
-return 'tm|'.trim(preg_replace('/[^\sa-zA-Z]/',' ',$role)).'|'.$event_timestamp.'|'.preg_replace('/[^0-9]/','',$role).'|'.$_SERVER['SERVER_NAME'].'|'.$post_id;
 }
 
 function archive_site_user_roles () {
@@ -5313,7 +5226,7 @@ return "Data sync result uploaded $uploaded records, deleted $deleted, downloade
 
 function toastmasters_role_report () {
 	global $wpdb, $rsvp_options;
-$hook = tm_admin_page_top('Role Report');
+//$hook = tm_admin_page_top('Role Report');
 echo '<p>'.__('This page shows the number of times a member has served in a given role, followed by the month and year of the most recent occurrance','rsvpmaker-for-toastmasters'),'</p>';
 $allroles = array();
 $users = get_users('blog_id='.get_current_blog_id());
@@ -5425,7 +5338,7 @@ foreach($userroles as $userroledata)
 
 printf('<p><a href="%s">Show more detail</a></p>',admin_url('admin.php?page=toastmasters_role_report&details=1'));
 	
-printf('<h2>Set Report Roles</h2><form action="%s" method="post">',admin_url('admin.php?page=toastmasters_role_report'));
+printf('<h2>Set Report Roles</h2><form action="%s" method="post">',site_url($_SERVER['REQUEST_URI']));
 sort($allroles);
 foreach($allroles as $role) {
 	$checked = (in_array($role,$report_roles)) ? ' checked="checked" ' : '';
@@ -5434,6 +5347,146 @@ foreach($allroles as $role) {
 }
 submit_button('Set Roles List');
 echo '</form>';
+//tm_admin_page_bottom($hook);
+}
+
+function toastmasters_reports_dashboard() {
+global $wpdb, $rsvp_options;
+$titles['pathways'] = 'Pathways Progress Report';
+$titles['cc'] = 'Competent Communication Progress Report';
+$titles['cl'] = 'Competent Leader Progress Report';
+$titles['advanced'] = 'Advanced Projects Progress Report';
+$titles['speeches'] = 'Past Speeches';
+$titles['no_assignment'] = 'Members Without an Assignment';
+$titles['role'] = 'Role Report';
+$titles['attendance'] = 'Attendance';
+if(isset($_GET['report']))
+{
+	$report_slug = $_GET['report'];
+	$headline = $titles[$report_slug];
+}
+else
+	$headline = 'Report Dashboard';
+$hook =	tm_admin_page_top($headline);
+	
+if(isset($_GET['report']))
+{
+	if(!isset($_GET['rsvp_print']))
+	printf('<div style="float: right; margin-left: 20px;"><a href="%s">Back to Report Listing</a></div>',admin_url('admin.php?page=toastmasters_reports_dashboard'));
+	
+
+	if($report_slug == 'speeches')
+	{
+	$sql = "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'tm|Speaker%".$_SERVER['SERVER_NAME'].'%'."' ORDER BY meta_key DESC";
+		//die($sql);
+	$speakers = $wpdb->get_results($sql);
+	
+	foreach($speakers as $speech)
+	{
+		$speaker_id = (int) $speech->user_id;
+		$name = get_member_name($speaker_id);
+		if(empty(trim($name)))
+			continue;
+		$details = unserialize($speech->meta_value);
+		$manual = $details['manual'];
+		$project_key = $details['project'];
+		$project_text = get_project_text($project_key);
+		$title = $details['title'];
+		if(!empty($title))
+			$title = ', "'.$title.'"';
+		$keydata = explode('|',$speech->meta_key);
+		$date = strftime($rsvp_options['long_date'],strtotime($keydata[2]));
+		
+		printf('<p><strong>%s%s</strong><br />%s %s<br />%s</p>',$name,$title,$manual,$project_text, $date);
+	}
+	}//end speeches
+	elseif($report_slug == 'no_assignment') {
+		$where = " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ";
+		$future = get_future_events($where,1);
+		$next = $future[0];
+		$link = get_permalink($next->ID);
+		$link = add_query_arg('assigned_open',1,$link);
+		if(!isset($_GET['rsvp_print']))
+			echo '<p><em>'.__('Members without a role for the meeting on ','rsvpmaker-for-toastmasters').' '.$next->date.'</em> - see also <a target="_blank" href="'.$link.'">Agenda with Contacts</a></p>';
+		$ids = wp4t_unassigned_ids($next->ID);
+		foreach($ids as $id)
+			$names[] = get_member_name($id);
+		sort($names);
+		foreach($names as $name)
+			printf('<p>%s</p>',$name);
+	}
+	elseif($report_slug == 'role') {
+		toastmasters_role_report ();
+	}
+	elseif($report_slug == 'cc') {
+		toastmasters_cc();
+	}
+	elseif($report_slug == 'cl') {
+		cl_report();
+	}
+	elseif($report_slug == 'advanced') {
+		toastmasters_advanced();
+	}
+	elseif($report_slug == 'pathways') {
+		echo '<p><em>'.__('This report is intended to give club leaders a rough idea of how active each member has been in the Pathways program, based on speech projects recorded on the agenda.').'</em></p>';
+		//$where = " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ";
+		//$past = get_past_events($where);
+		
+		$members = get_club_members();
+		foreach($members as $member)
+		{
+
+			$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$member->ID AND meta_key LIKE 'tm|Speaker%' ";
+			$speakers = $wpdb->get_results($sql);
+			foreach($speakers as $speech)
+			{
+				$speechdata = unserialize($speech->meta_value);
+				$manual = $speechdata["manual"];
+				if(strpos($manual,'Level'))
+				{
+					$parts = explode('Level',$manual);
+					$name = get_member_name($speech->user_id);
+					$path = trim($parts[0]);
+					if(empty($paths[$name][$path]))
+						$paths[$name][$path] = 1;
+					else
+						$paths[$name][$path]++;	
+				}
+			}			
+			
+		}
+if(!empty($paths))
+		foreach($paths as $name => $levels)
+		{
+		printf('<h3>%s</h3>',$name);
+		//print_r($levels);
+		asort($levels);
+		foreach($levels as $level => $count)
+		{
+			$p = $count * 5;
+			if($p > 100)
+				$p = 100;
+			$line = $p . '%';
+			printf('<p>%s<div style="background-color: #fff;"><span style="display:inline-block; background-color: red; width: %s"><span style="background-color: white; padding: 2px;">%s</span></span></div></p>',$level,$line,$count);
+		}
+			
+		}
+	}
+	elseif($report_slug == 'attendance') {
+		toastmasters_attendance_report();
+	}
+/*
+add_submenu_page( 'toastmasters_screen', __('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'), __('CC Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_cc', 'toastmasters_cc');
+add_submenu_page( 'toastmasters_screen', __('Competent Leader Progress Report','rsvpmaker-for-toastmasters'), __('CL Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'cl_report', 'cl_report');
+add_submenu_page( 'toastmasters_screen', __('Advanced Awards Progress Report','rsvpmaker-for-toastmasters'), __('Advanced Awards','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_advanced', 'toastmasters_advanced');
+
+*/
+}
+else
+{
+	foreach($titles as $slug => $title)
+		printf('<p><a href="%s&report=%s">%s</a></p>',admin_url('admin.php?page=toastmasters_reports_dashboard'),$slug,$title);
+}
 tm_admin_page_bottom($hook);
 }
 
