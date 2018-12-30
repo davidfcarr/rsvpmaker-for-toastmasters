@@ -69,7 +69,8 @@ foreach($wp_filter["the_content"] as $priority => $filters)
 <body lang=EN-US style='tab-interval:.5in'>
 <div class="Section1">
 <div id="banner">
-<img src="<?php echo plugins_url('rsvpmaker-for-toastmasters/agenda-rays.png'); ?>" width="700" height="79">
+<?php echo tm_branded_image('agenda-rays.png'); ?>
+<!--img src="< ?php echo plugins_url('rsvpmaker-for-toastmasters/agenda-rays.png'); ?>" width="700" height="79" -->
 </div>
 <h2 id="title"><?php echo get_bloginfo('name'); ?><?php echo ' - ' . $date; ?></h2>
 <table id="main" width="700">

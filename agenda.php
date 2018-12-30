@@ -64,7 +64,8 @@ foreach($wp_filter["the_content"] as $priority => $filters)
 <h1><?php echo get_bloginfo('name'); ?></h1>
 <h2><?php the_title(); echo ' ' . $date; ?></h2>
 </td><td width="80">
-<img src="<?php echo plugins_url('rsvpmaker-for-toastmasters/toastmasters-75.png'); ?>" width="75" height="65" />
+<?php echo tm_branded_image('toastmasters-75.png'); ?>
+<!-- img src="< ?php echo plugins_url('rsvpmaker-for-toastmasters/toastmasters-75.png'); ?>" width="75" height="65" / -->
 </td></tr>
 </table>
 <div id="agenda">

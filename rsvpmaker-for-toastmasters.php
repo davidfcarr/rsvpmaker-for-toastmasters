@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.3.8
+Version: 3.3.9
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -3692,7 +3692,7 @@ if($option == 'custom')
 			{
 			$layout["post_type"] = 'rsvpmaker';
 			$layout["post_title"] = 'Agenda Layout';
-			$layout["post_content"] = '<div id="banner"><img src="' . plugins_url('rsvpmaker-for-toastmasters/agenda-rays.png') . '" width="700" height="79"></div>
+			$layout["post_content"] = '<div id="banner">[tm_branded_image image="agenda-rays.png"]</div>
 <h2 id="title">[tmlayout_club_name] - [tmlayout_meeting_date]</h2>
 <table id="main" width="700"><tr><td id="sidebar" width="175">[tmlayout_sidebar]</td><td id="agenda" width="*">[tmlayout_main]</td></tr></table>';
 			$layout["post_author"] = $current_user->ID;
@@ -11431,4 +11431,68 @@ function wptoast_deactivation() {
     wp_clear_scheduled_hook( 'wp4toast_reminders_dst_fix' );
 }
 
+add_shortcode('tm_branded_image','tm_branded_image');
+
+function tm_branded_image($att) {
+	if(is_array($att))
+		$image = $att["image"];
+	else
+		$image = $att;
+if(isset($_GET['reset']))
+	delete_option($image);	
+	
+if(strpos($_SERVER['SERVER_NAME'],'toastmost.org'))
+	$newurl = 'http://wp4toastmasters.com/tmbranding/'.$image;
+else
+	$newurl = get_option($image);
+
+	
+if(isset($_GET['retrieve']))
+	{
+	$wp_upload_dir = wp_upload_dir();
+	$url = 'http://wp4toastmasters.com/tmbranding/'.$image;
+	$file_path = $wp_upload_dir["path"].'/'.$image;
+	$newurl = $wp_upload_dir['url'] . '/' .$image;
+	$myhttp = new WP_Http();
+	$result = $myhttp->get($url, array('filename' => $file_path, 'stream' => true));
+	if(is_wp_error($result))
+		{
+			printf('<div class="error">%s: %s</div>',__('Error retrieving','lectern'),$url);
+			return;
+		}
+	
+	// Make sure that this file is included, as wp_generate_attachment_metadata() depends on it.
+	require_once( ABSPATH . 'wp-admin/includes/image.php' );
+	
+	$parent_post_id = 0;
+	
+	// Check the type of file. We'll use this as the 'post_mime_type'.
+	$filetype = wp_check_filetype( basename( $file_path ), null );
+	
+	// Prepare an array of post data for the attachment.
+	$attachment = array(
+		'guid'           => $newurl, 
+		'post_mime_type' => $filetype['type'],
+		'post_title'     => preg_replace( '/\.[^.]+$/', '', $basename ),
+		'post_content'   => '',
+		'post_status'    => 'inherit'
+	);
+	
+	// Insert the attachment.
+	$attach_id = wp_insert_attachment( $attachment, $file_path, $parent_post_id );
+	
+	// Generate the metadata for the attachment, and update the database record.
+	$attach_data = wp_generate_attachment_metadata( $attach_id, $file_path );
+	wp_update_attachment_metadata( $attach_id, $attach_data );
+	update_option($image,$newurl);
+}
+if(empty($newurl))
+{
+return sprintf('If you are authorized to use the Toastmasters logo, <a href="%s">click to download</a>.',add_query_arg('retrieve','1',site_url($_SERVER['REQUEST_URI'])));	
+}
+elseif($image == 'agenda-rays.png')
+	return '<img src="'.$newurl.'" width="700" height="79">';
+elseif($image == 'toastmasters-75.png')
+	return '<img src="'.$newurl.'" width="75" height="65">';
+}
 ?>
