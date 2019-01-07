@@ -5402,12 +5402,29 @@ if(isset($_GET['report']))
 	}//end speeches
 	elseif($report_slug == 'no_assignment') {
 		$where = " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ";
-		$future = get_future_events($where,1);
-		$next = $future[0];
+		$future = get_future_events($where,5);
+		if(isset($_GET['id']))
+		{
+			foreach($future as $f)
+			{
+				if($f->ID == $_GET['id'])
+					$next = $f;
+			}
+		}
+		else
+			$next = $future[0];
 		$link = get_permalink($next->ID);
 		$link = add_query_arg('assigned_open',1,$link);
-		if(!isset($_GET['rsvp_print']))
-			echo '<p><em>'.__('Members without a role for the meeting on ','rsvpmaker-for-toastmasters').' '.$next->date.'</em> - see also <a target="_blank" href="'.$link.'">Agenda with Contacts</a></p>';
+		echo '<p><em>'.__('Members without a role for the meeting on ','rsvpmaker-for-toastmasters').' '.$next->date.'</em></p>';
+		if(!isset($_GET['rsvp_print'])) {
+			echo '<p>Pick another date ';
+			foreach($future as $index => $f)
+			{
+				if($f->ID != $next->ID)
+				printf('| <a href="%s">%s</a> ',admin_url('admin.php?page=toastmasters_reports_dashboard&report=no_assignment').'&id='.$f->ID,$f->date);
+			}
+			echo ' - see also <a target="_blank" href="'.$link.'">Agenda with Contacts</a></p>';
+		}
 		$ids = wp4t_unassigned_ids($next->ID);
 		foreach($ids as $id)
 			$names[] = get_member_name($id);
