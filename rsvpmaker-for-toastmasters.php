@@ -5791,7 +5791,7 @@ function signup_sheet_editor() {
 		{
 		$t = strtotime($date->datetime);
 		$post = get_post($date->ID);
-		$head .= "<th>".date("F j",$t)."</th>";
+		$head .= "<th>".$post->post_title.'<br />'.date("F j",$t)."</th>";
 		$cell[$date->ID] = '';
 		$data = wpt_blocks_to_data($date->post_content);
 		foreach($data as $row => $item)
@@ -5958,7 +5958,7 @@ if(isset($_REQUEST["signup"]) || isset($_REQUEST["signup2"]) || isset($atts["lim
 		{
 		$t = strtotime($date->datetime);
 		$post = get_post($date->postID);
-		$head .= "<th>".date("F j",$t)."</th>";
+		$head .= "<th>".$post->post_title.'<br />'.date("F j",$t)."</th>";
 		
 		$absent_names = array();
 		$absences = get_absences_array($date->postID);
