@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 5.0.2
-Stable tag: 3.3.9
+Tested up to: 5.1
+Stable tag: 3.4.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,11 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.4.0 =
+
+* Evaluation forms updated to include additional Pathways  project, incliuding Engaging Humor path
+* Better system for fetching evaluation forms from a centralized repository.
 
 = 3.3.9 =
 

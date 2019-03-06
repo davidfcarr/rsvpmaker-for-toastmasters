@@ -4324,7 +4324,13 @@ else
 $manual = preg_replace('/\d*$/','',$project);	
 }
 $project_text = get_project_text($project);
-$speaker_user = get_userdata($speaker_id);
+if(!empty($speaker_id))
+{
+	$speaker_user = get_userdata($speaker_id);
+	$speaker_name = $speaker_user->first_name.' '.$speaker_user->last_name;
+}
+else
+	$speaker_name = 'Guest';
 $evaluator = get_userdata($current_user->ID);
 if(isset($_GET['year']))
 {
@@ -4342,8 +4348,12 @@ $slug = $project;
 $name = $project_text;
 $intro = $prompts = '';
 
-$prompts = get_option('evalprompts:'.$project);	
-$intro = get_option('evalintro:'.$project);
+$form = fetch_evaluation_form ($project);
+$intro = $form->intro;
+$prompts = $form->prompts;
+
+//$prompts = get_option('evalprompts:'.$project);	
+//$intro = get_option('evalintro:'.$project);
 $name = get_project_text($project);
 	if(empty($prompts))
 		{
@@ -4367,7 +4377,7 @@ $name = get_project_text($project);
 <form action="<?php echo admin_url('admin.php?page=wp4t_evaluations');?>" method="post">
 
 <h3>Record Evaluation</h3>
-<p>Speaker: <?php echo $speaker_user->first_name.' '.$speaker_user->last_name;  ?><input type="hidden" name="speaker_id" value="<?php echo $speaker_id; ?>" /></p>
+<p>Speaker: <input type="text" name="speaker_name" value="<?php echo $speaker_name;  ?>" /><input type="hidden" name="speaker_id" value="<?php echo $speaker_id; ?>" /></p>
 <p>Manual/Path: <?php echo $manual ?><input type="hidden" name="manual" value="<?php echo $manual; ?>" /></p>
 <p>Project: <?php echo $project_text; ?><input type="hidden" name="project" value="<?php echo $project; ?>" /></p>
 <?php if($is_speech) { ?>
@@ -4467,17 +4477,19 @@ if(!empty($_POST['eval_project']))
 	}
 }
 	
-if(!empty($_POST["speaker_id"]) && !empty($_POST["project"]))
+if(isset($_POST["comment"]) && !empty($_POST["project"]))
 	{
 		$speaker_id = (int) $_POST["speaker_id"];
-		$speaker_user = get_userdata($speaker_id);
+		$speaker_name = stripslashes($_POST['speaker_name']);
+		if($speaker_id)
+			$speaker_user = get_userdata($speaker_id);
 		$timestamp = $_POST["timestamp"];
 		$t = strtotime($timestamp);
 		$key = 'evaluation|'.date('Y-m-d',$t).' 00:00:00|'.$_POST["project"].'|'.$_SERVER['SERVER_NAME'].'|'.$current_user->user_login;
 		$project = $_POST["project"];
 		$project_text = get_project_text($project);
 		$evaluator = get_userdata($current_user->ID);
-		$evaluation = sprintf('<h1>Member: %s %s</h1>',$speaker_user->first_name,$speaker_user->last_name)."\n";
+		$evaluation = sprintf('<h1>Member: %s</h1>',$speaker_name)."\n";
 		$evaluation .= sprintf('<h2>Manual/Path: %s</h2>',$_POST["manual"])."\n";
 		$evaluation .= sprintf('<h2>Project: %s</h2>',$project_text)."\n";
 		if(!empty($_POST["speech_title"]))
@@ -4489,8 +4501,11 @@ if(!empty($_POST["speaker_id"]) && !empty($_POST["project"]))
 		else
 			$subject = "Speech Evaluation: ".$project_text;
 
-$prompts = get_option('evalprompts:'.$project);	
-$intro = get_option('evalintro:'.$project);
+$form = fetch_evaluation_form ($project);
+$intro = $form->intro;
+$prompts = $form->prompts;
+//$prompts = get_option('evalprompts:'.$project);	
+//$intro = get_option('evalintro:'.$project);
 $name = get_project_text($project);
 if(empty($prompts))
 		{
@@ -4514,22 +4529,27 @@ Other Comments';
 		update_user_meta($speaker_id,$key, $evaluation);
 		echo '<p>Recording to Member Progress Report</p>';
 		printf('<p style="color:red;">%s %s</p>',__('Emailing to'), $speaker_user->user_email );
-		echo $evaluation;	
+		echo $evaluation;
+	if($speaker_id)
+	{
 	$mail["subject"] = $subject;
 	$mail["replyto"] = $evaluator->user_email;
 	$mail["html"] = "<html>\n<body>\n".$evaluation."\n</body></html>";
 	$mail["to"] = $speaker_user->user_email;
 	$mail["from"] = $evaluator->user_email;
 	$mail["fromname"] = $evaluator->first_name. ' '.$evaluator->last_name;
-	awemailer($mail);
+	awemailer($mail);		
+	}
 
 	}
 
-if(!empty($_REQUEST["project"]) && !empty($_REQUEST["speaker"]) && isset($_REQUEST["meeting_id"]))
+if(!empty($_REQUEST["project"]) && isset($_REQUEST["meeting_id"]))
 	{
 		$project = $_REQUEST["project"];
 		$speaker_id = (int) $_REQUEST["speaker"];
 		$meeting_id = (int) $_REQUEST["meeting_id"];
+		if(empty($speaker_id))
+			echo '<h2 style="color:red;">Speaker not identified</h2>';
 		show_evaluation_form($project, $speaker_id, $meeting_id);
 	}
 
@@ -4724,15 +4744,26 @@ foreach($past as $past_meet)
 
 } // clroles
 
+if(empty($_REQUEST['project'])) {
 $o = '';
 $projects = get_projects_array('projects');
+
+foreach($projects as $index => $p)
+{
+	if(strpos($index,':CL'))
+		continue;
+	$o .= sprintf('<option value="%s">%s (%s)</option>',$index,$p,$index);
+}
+printf('<h2>Evaluate Any Speech Project</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">%s</select><br />Member: %s<br /><input type="text" size="8" name="year" value="%s" /><input type="text" size="8" name="month" value="%s" /><input type="text" size="8" name="day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'));
+$o ='';
 foreach($projects as $index => $p)
 {
 	if(!strpos($index,':CL'))
 		continue;
 	$o .= sprintf('<option value="%s">%s</option>',$index,$p);
 }
-printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">%s</select><br />%s<br /><input type="text" size="8" name="year" value="%s" /><input type="text" size="8" name="month" value="%s" /><input type="text" size="8" name="day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'))
+printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">Member: %s</select><br />%s<br /><input type="text" size="8" name="year" value="%s" /><input type="text" size="8" name="month" value="%s" /><input type="text" size="8" name="day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'));	
+}
 ?>
 		</section>
 		<section class="rsvpmaker" id="evalreq">
@@ -5506,5 +5537,479 @@ else
 }
 tm_admin_page_bottom($hook);
 }
+
+function pathways_project_map ($slug) {
+
+//projects repeated across paths
+$map = array (
+  'Dynamic Leadership Level 1 Mastering Fundamentals 0' => 'Pathways:Ice Breaker',
+  'Dynamic Leadership Level 1 Mastering Fundamentals 11' => 'Pathways:Researching and Presenting',
+  'Dynamic Leadership Level 1 Mastering Fundamentals 5' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Dynamic Leadership Level 1 Mastering Fundamentals 6' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Dynamic Leadership Level 1 Mastering Fundamentals 7' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Dynamic Leadership Level 2 Learning Your Style 20' => 'Pathways:Understanding Your Leadership Style',
+  'Dynamic Leadership Level 2 Learning Your Style 25' => 'Pathways:Understanding Your Communication Style',
+  'Dynamic Leadership Level 2 Learning Your Style 31' => 'Pathways:Mentoring',
+  'Dynamic Leadership Level 3 Increasing Knowledge 105' => 'Pathways:Using Descriptive Language',
+  'Dynamic Leadership Level 3 Increasing Knowledge 111' => 'Pathways:Using Presentation Software',
+  'Dynamic Leadership Level 3 Increasing Knowledge 117' => 'Pathways:Understanding Vocal Variety',
+  'Dynamic Leadership Level 3 Increasing Knowledge 45' => 'Pathways:Active Listening',
+  'Dynamic Leadership Level 3 Increasing Knowledge 51' => 'Pathways:Connect with Storytelling',
+  'Dynamic Leadership Level 3 Increasing Knowledge 57' => 'Pathways:Connect with Your Audience',
+  'Dynamic Leadership Level 3 Increasing Knowledge 63' => 'Pathways:Creating Effective Visual Aids',
+  'Dynamic Leadership Level 3 Increasing Knowledge 69' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Dynamic Leadership Level 3 Increasing Knowledge 70' => 'Pathways:Deliver Social Speeches - Second Speech',
+  'Dynamic Leadership Level 3 Increasing Knowledge 75' => 'Pathways:Effective Body Language',
+  'Dynamic Leadership Level 3 Increasing Knowledge 81' => 'Pathways:Focus on the Positive',
+  'Dynamic Leadership Level 3 Increasing Knowledge 87' => 'Pathways:Inspire Your Audience',
+  'Dynamic Leadership Level 3 Increasing Knowledge 89' => 'Pathways:Know Your Sense of Humor',
+  'Dynamic Leadership Level 3 Increasing Knowledge 93' => 'Pathways:Make Connections Through Networking',
+  'Dynamic Leadership Level 3 Increasing Knowledge 99' => 'Pathways:Prepare for an Interview',
+  'Dynamic Leadership Level 4 Building Skills 131' => 'Pathways:Building a Social Media Presence',
+  'Dynamic Leadership Level 4 Building Skills 137' => 'Pathways:Create a Podcast',
+  'Dynamic Leadership Level 4 Building Skills 143' => 'Pathways:Manage Online Meetings',
+  'Dynamic Leadership Level 4 Building Skills 149' => 'Pathways:Managing a Difficult Audience',
+  'Dynamic Leadership Level 4 Building Skills 155' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Dynamic Leadership Level 4 Building Skills 156' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Dynamic Leadership Level 4 Building Skills 161' => 'Pathways:Public Relations Strategies',
+  'Dynamic Leadership Level 4 Building Skills 167' => 'Pathways:Question-and-Answer Session',
+  'Dynamic Leadership Level 4 Building Skills 173' => 'Pathways:Write a Compelling Blog',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 182' => 'Pathways:Lead in Any Situation',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 187' => 'Pathways:Reflect on Your Path',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 193' => 'Pathways:Ethical Leadership',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 199' => 'Pathways:High Performance Leadership - First Speech',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 200' => 'Pathways:High Performance Leadership - Second Speech',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 205' => 'Pathways:Leading in Your Volunteer Organization',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 211' => 'Pathways:Lessons Learned',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 218' => 'Pathways:Moderate a Panel Discussion',
+  'Dynamic Leadership Level 5 Demonstrating Expertise 224' => 'Pathways:Prepare to Speak Professionally',
+  'Effective Coaching Level 1 Mastering Fundamentals 233' => 'Pathways:Ice Breaker',
+  'Effective Coaching Level 1 Mastering Fundamentals 240' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Effective Coaching Level 1 Mastering Fundamentals 241' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Effective Coaching Level 1 Mastering Fundamentals 242' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Effective Coaching Level 1 Mastering Fundamentals 246' => 'Pathways:Researching and Presenting',
+  'Effective Coaching Level 2 Learning Your Style 256' => 'Pathways:Understanding Your Leadership Style',
+  'Effective Coaching Level 2 Learning Your Style 263' => 'Pathways:Understanding Your Communication Style',
+  'Effective Coaching Level 2 Learning Your Style 269' => 'Pathways:Mentoring',
+  'Effective Coaching Level 3 Increasing Knowledge 285' => 'Pathways:Active Listening',
+  'Effective Coaching Level 3 Increasing Knowledge 291' => 'Pathways:Connect with Storytelling',
+  'Effective Coaching Level 3 Increasing Knowledge 297' => 'Pathways:Connect with Your Audience',
+  'Effective Coaching Level 3 Increasing Knowledge 303' => 'Pathways:Creating Effective Visual Aids',
+  'Effective Coaching Level 3 Increasing Knowledge 309' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Effective Coaching Level 3 Increasing Knowledge 310' => 'Pathways:Deliver Social Speeches - Second Speech',
+  'Effective Coaching Level 3 Increasing Knowledge 315' => 'Pathways:Effective Body Language',
+  'Effective Coaching Level 3 Increasing Knowledge 321' => 'Pathways:Focus on the Positive',
+  'Effective Coaching Level 3 Increasing Knowledge 327' => 'Pathways:Inspire Your Audience',
+  'Effective Coaching Level 3 Increasing Knowledge 330' => 'Pathways:Know Your Sense of Humor',
+  'Effective Coaching Level 3 Increasing Knowledge 333' => 'Pathways:Make Connections Through Networking',
+  'Effective Coaching Level 3 Increasing Knowledge 339' => 'Pathways:Prepare for an Interview',
+  'Effective Coaching Level 3 Increasing Knowledge 345' => 'Pathways:Understanding Vocal Variety',
+  'Effective Coaching Level 3 Increasing Knowledge 351' => 'Pathways:Using Descriptive Language',
+  'Effective Coaching Level 3 Increasing Knowledge 357' => 'Pathways:Using Presentation Software',
+  'Effective Coaching Level 4 Building Skills 366' => 'Pathways:Building a Social Media Presence',
+  'Effective Coaching Level 4 Building Skills 373' => 'Pathways:Create a Podcast',
+  'Effective Coaching Level 4 Building Skills 385' => 'Pathways:Manage Online Meetings',
+  'Effective Coaching Level 4 Building Skills 391' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Effective Coaching Level 4 Building Skills 392' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Effective Coaching Level 4 Building Skills 397' => 'Pathways:Managing a Difficult Audience',
+  'Effective Coaching Level 4 Building Skills 403' => 'Pathways:Public Relations Strategies',
+  'Effective Coaching Level 4 Building Skills 409' => 'Pathways:Question-and-Answer Session',
+  'Effective Coaching Level 4 Building Skills 415' => 'Pathways:Write a Compelling Blog',
+  'Effective Coaching Level 5 Demonstrating Expertise 424' => 'Pathways:High Performance Leadership - First Speech',
+  'Effective Coaching Level 5 Demonstrating Expertise 425' => 'Pathways:High Performance Leadership - Second Speech',
+  'Effective Coaching Level 5 Demonstrating Expertise 431' => 'Pathways:Reflect on Your Path',
+  'Effective Coaching Level 5 Demonstrating Expertise 437' => 'Pathways:Ethical Leadership',
+  'Effective Coaching Level 5 Demonstrating Expertise 443' => 'Pathways:Leading in Your Volunteer Organization',
+  'Effective Coaching Level 5 Demonstrating Expertise 449' => 'Pathways:Lessons Learned',
+  'Effective Coaching Level 5 Demonstrating Expertise 455' => 'Pathways:Moderate a Panel Discussion',
+  'Effective Coaching Level 5 Demonstrating Expertise 461' => 'Pathways:Prepare to Speak Professionally',
+  'Engaging Humor Level 1 Mastering Fundamentals 14004' => 'Pathways:Ice Breaker',
+  'Engaging Humor Level 1 Mastering Fundamentals 14011' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Engaging Humor Level 1 Mastering Fundamentals 14012' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Engaging Humor Level 1 Mastering Fundamentals 14013' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Engaging Humor Level 1 Mastering Fundamentals 14017' => 'Pathways:Researching and Presenting',
+  
+"Engaging Humor Level 2 Learning Your Style 14026" =>  "Pathways:Know Your Sense of Humor",
+  
+  'Engaging Humor Level 2 Learning Your Style 14033' => 'Pathways:Connect with Your Audience',
+  'Engaging Humor Level 2 Learning Your Style 14039' => 'Pathways:Mentoring',
+  'Engaging Humor Level 3 Increasing Knowledge 14055' => 'Pathways:Active Listening',
+  'Engaging Humor Level 3 Increasing Knowledge 14061' => 'Pathways:Connect with Storytelling',
+  'Engaging Humor Level 3 Increasing Knowledge 14067' => 'Pathways:Connect with Your Audience',
+  'Engaging Humor Level 3 Increasing Knowledge 14073' => 'Pathways:Creating Effective Visual Aids',
+  'Engaging Humor Level 3 Increasing Knowledge 14079' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Engaging Humor Level 3 Increasing Knowledge 14084' => 'Pathways:Effective Body Language',
+  'Engaging Humor Level 3 Increasing Knowledge 14085' => 'Pathways:Focus on the Positive',
+  'Engaging Humor Level 3 Increasing Knowledge 14091' => 'Pathways:Inspire Your Audience',
+  'Engaging Humor Level 3 Increasing Knowledge 14097' => 'Pathways:Make Connections Through Networking',
+  'Engaging Humor Level 3 Increasing Knowledge 15003' => 'Pathways:Prepare for an Interview',
+  'Engaging Humor Level 3 Increasing Knowledge 15009' => 'Pathways:Understanding Vocal Variety',
+  'Engaging Humor Level 3 Increasing Knowledge 150150' => 'Pathways:Using Descriptive Language',
+  'Engaging Humor Level 3 Increasing Knowledge 15021' => 'Pathways:Using Presentation Software',
+  'Engaging Humor Level 4 Building Skills 15030' => 'Pathways:Managing a Difficult Audience',
+  'Engaging Humor Level 4 Building Skills 15037' => 'Pathways:Building a Social Media Presence',
+  'Engaging Humor Level 4 Building Skills 15043' => 'Pathways:Create a Podcast',
+  'Engaging Humor Level 4 Building Skills 15049' => 'Pathways:Manage Online Meetings',
+  'Engaging Humor Level 4 Building Skills 15055' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Engaging Humor Level 4 Building Skills 15056' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Engaging Humor Level 4 Building Skills 15061' => 'Pathways:Public Relations Strategies',
+  'Engaging Humor Level 4 Building Skills 15067' => 'Pathways:Question-and-Answer Session',
+  'Engaging Humor Level 4 Building Skills 15073' => 'Pathways:Write a Compelling Blog',
+  'Engaging Humor Level 5 Demonstrating Expertise 15089' => 'Pathways:Reflect on Your Path',
+  'Engaging Humor Level 5 Demonstrating Expertise 15095' => 'Pathways:Ethical Leadership',
+  'Engaging Humor Level 5 Demonstrating Expertise 16001' => 'Pathways:High Performance Leadership - First Speech',
+  'Engaging Humor Level 5 Demonstrating Expertise 16002' => 'Pathways:High Performance Leadership - Second Speech',
+  'Engaging Humor Level 5 Demonstrating Expertise 16007' => 'Pathways:Leading in Your Volunteer Organization',
+  'Engaging Humor Level 5 Demonstrating Expertise 16013' => 'Pathways:Lessons Learned',
+  'Engaging Humor Level 5 Demonstrating Expertise 16019' => 'Pathways:Moderate a Panel Discussion',
+  'Engaging Humor Level 5 Demonstrating Expertise 16224' => 'Pathways:Prepare to Speak Professionally',
+  'Innovative Planning Level 1 Mastering Fundamentals 470' => 'Pathways:Ice Breaker',
+  'Innovative Planning Level 1 Mastering Fundamentals 477' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Innovative Planning Level 1 Mastering Fundamentals 478' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Innovative Planning Level 1 Mastering Fundamentals 479' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Innovative Planning Level 1 Mastering Fundamentals 483' => 'Pathways:Researching and Presenting',
+  'Innovative Planning Level 2 Learning Your Style 492' => 'Pathways:Understanding Your Leadership Style',
+  'Innovative Planning Level 2 Learning Your Style 499' => 'Pathways:Connect with Your Audience',
+  'Innovative Planning Level 2 Learning Your Style 505' => 'Pathways:Mentoring',
+  'Innovative Planning Level 3 Increasing Knowledge 521' => 'Pathways:Active Listening',
+  'Innovative Planning Level 3 Increasing Knowledge 527' => 'Pathways:Connect with Storytelling',
+  'Innovative Planning Level 3 Increasing Knowledge 533' => 'Pathways:Creating Effective Visual Aids',
+  'Innovative Planning Level 3 Increasing Knowledge 539' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Innovative Planning Level 3 Increasing Knowledge 545' => 'Pathways:Effective Body Language',
+  'Innovative Planning Level 3 Increasing Knowledge 551' => 'Pathways:Focus on the Positive',
+  'Innovative Planning Level 3 Increasing Knowledge 557' => 'Pathways:Inspire Your Audience',
+  'Innovative Planning Level 3 Increasing Knowledge 560' => 'Pathways:Know Your Sense of Humor',
+  'Innovative Planning Level 3 Increasing Knowledge 563' => 'Pathways:Make Connections Through Networking',
+  'Innovative Planning Level 3 Increasing Knowledge 569' => 'Pathways:Prepare for an Interview',
+  'Innovative Planning Level 3 Increasing Knowledge 575' => 'Pathways:Understanding Vocal Variety',
+  'Innovative Planning Level 3 Increasing Knowledge 581' => 'Pathways:Using Descriptive Language',
+  'Innovative Planning Level 3 Increasing Knowledge 587' => 'Pathways:Using Presentation Software',
+  'Innovative Planning Level 4 Building Skills 596' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Innovative Planning Level 4 Building Skills 598' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Innovative Planning Level 4 Building Skills 603' => 'Pathways:Building a Social Media Presence',
+  'Innovative Planning Level 4 Building Skills 609' => 'Pathways:Create a Podcast',
+  'Innovative Planning Level 4 Building Skills 615' => 'Pathways:Manage Online Meetings',
+  'Innovative Planning Level 4 Building Skills 621' => 'Pathways:Managing a Difficult Audience',
+  'Innovative Planning Level 4 Building Skills 627' => 'Pathways:Public Relations Strategies',
+  'Innovative Planning Level 4 Building Skills 633' => 'Pathways:Question-and-Answer Session',
+  'Innovative Planning Level 4 Building Skills 639' => 'Pathways:Write a Compelling Blog',
+  'Innovative Planning Level 5 Demonstrating Expertise 648' => 'Pathways:High Performance Leadership - First Speech',
+  'Innovative Planning Level 5 Demonstrating Expertise 649' => 'Pathways:High Performance Leadership - Second Speech',
+  'Innovative Planning Level 5 Demonstrating Expertise 655' => 'Pathways:Reflect on Your Path',
+  'Innovative Planning Level 5 Demonstrating Expertise 661' => 'Pathways:Ethical Leadership',
+  'Innovative Planning Level 5 Demonstrating Expertise 667' => 'Pathways:Leading in Your Volunteer Organization',
+  'Innovative Planning Level 5 Demonstrating Expertise 673' => 'Pathways:Lessons Learned',
+  'Innovative Planning Level 5 Demonstrating Expertise 679' => 'Pathways:Moderate a Panel Discussion',
+  'Innovative Planning Level 5 Demonstrating Expertise 685' => 'Pathways:Prepare to Speak Professionally',
+  'Leadership Development Level 1 Mastering Fundamentals 694' => 'Pathways:Ice Breaker',
+  'Leadership Development Level 1 Mastering Fundamentals 701' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Leadership Development Level 1 Mastering Fundamentals 702' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Leadership Development Level 1 Mastering Fundamentals 703' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Leadership Development Level 1 Mastering Fundamentals 707' => 'Pathways:Researching and Presenting',
+  'Leadership Development Level 2 Learning Your Style 723' => 'Pathways:Understanding Your Leadership Style',
+  'Leadership Development Level 2 Learning Your Style 729' => 'Pathways:Mentoring',
+  'Leadership Development Level 3 Increasing Knowledge 745' => 'Pathways:Active Listening',
+  'Leadership Development Level 3 Increasing Knowledge 751' => 'Pathways:Connect with Storytelling',
+  'Leadership Development Level 3 Increasing Knowledge 757' => 'Pathways:Connect with Your Audience',
+  'Leadership Development Level 3 Increasing Knowledge 763' => 'Pathways:Creating Effective Visual Aids',
+  'Leadership Development Level 3 Increasing Knowledge 769' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Leadership Development Level 3 Increasing Knowledge 775' => 'Pathways:Effective Body Language',
+  'Leadership Development Level 3 Increasing Knowledge 781' => 'Pathways:Focus on the Positive',
+  'Leadership Development Level 3 Increasing Knowledge 787' => 'Pathways:Inspire Your Audience',
+  'Leadership Development Level 3 Increasing Knowledge 789' => 'Pathways:Know Your Sense of Humor',
+  'Leadership Development Level 3 Increasing Knowledge 793' => 'Pathways:Make Connections Through Networking',
+  'Leadership Development Level 3 Increasing Knowledge 799' => 'Pathways:Prepare for an Interview',
+  'Leadership Development Level 3 Increasing Knowledge 805' => 'Pathways:Understanding Vocal Variety',
+  'Leadership Development Level 3 Increasing Knowledge 811' => 'Pathways:Using Descriptive Language',
+  'Leadership Development Level 3 Increasing Knowledge 817' => 'Pathways:Using Presentation Software',
+  'Leadership Development Level 4 Building Skills 833' => 'Pathways:Building a Social Media Presence',
+  'Leadership Development Level 4 Building Skills 839' => 'Pathways:Create a Podcast',
+  'Leadership Development Level 4 Building Skills 845' => 'Pathways:Manage Online Meetings',
+  'Leadership Development Level 4 Building Skills 851' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Leadership Development Level 4 Building Skills 852' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Leadership Development Level 4 Building Skills 857' => 'Pathways:Managing a Difficult Audience',
+  'Leadership Development Level 4 Building Skills 863' => 'Pathways:Public Relations Strategies',
+  'Leadership Development Level 4 Building Skills 869' => 'Pathways:Question-and-Answer Session',
+  'Leadership Development Level 4 Building Skills 875' => 'Pathways:Write a Compelling Blog',
+  'Leadership Development Level 5 Demonstrating Expertise 891' => 'Pathways:Reflect on Your Path',
+  'Leadership Development Level 5 Demonstrating Expertise 897' => 'Pathways:Ethical Leadership',
+  'Leadership Development Level 5 Demonstrating Expertise 903' => 'Pathways:High Performance Leadership - First Speech',
+  'Leadership Development Level 5 Demonstrating Expertise 904' => 'Pathways:High Performance Leadership - Second Speech',
+  'Leadership Development Level 5 Demonstrating Expertise 909' => 'Pathways:Leading in Your Volunteer Organization',
+  'Leadership Development Level 5 Demonstrating Expertise 915' => 'Pathways:Lessons Learned',
+  'Leadership Development Level 5 Demonstrating Expertise 921' => 'Pathways:Moderate a Panel Discussion',
+  'Leadership Development Level 5 Demonstrating Expertise 927' => 'Pathways:Prepare to Speak Professionally',
+  'Motivational Strategies Level 1 Mastering Fundamentals 937' => 'Pathways:Ice Breaker',
+  'Motivational Strategies Level 1 Mastering Fundamentals 944' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Motivational Strategies Level 1 Mastering Fundamentals 945' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Motivational Strategies Level 1 Mastering Fundamentals 946' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Motivational Strategies Level 1 Mastering Fundamentals 950' => 'Pathways:Researching and Presenting',
+  'Motivational Strategies Level 2 Learning Your Style 959' => 'Pathways:Understanding Your Communication Style',
+  'Motivational Strategies Level 2 Learning Your Style 966' => 'Pathways:Active Listening',
+  'Motivational Strategies Level 2 Learning Your Style 972' => 'Pathways:Mentoring',
+  'Motivational Strategies Level 3 Increasing Knowledge 1000' => 'Pathways:Creating Effective Visual Aids',
+  'Motivational Strategies Level 3 Increasing Knowledge 1006' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Motivational Strategies Level 3 Increasing Knowledge 1012' => 'Pathways:Effective Body Language',
+  'Motivational Strategies Level 3 Increasing Knowledge 1018' => 'Pathways:Focus on the Positive',
+  'Motivational Strategies Level 3 Increasing Knowledge 1024' => 'Pathways:Inspire Your Audience',
+  'Motivational Strategies Level 3 Increasing Knowledge 1026' => 'Pathways:Know Your Sense of Humor',
+  'Motivational Strategies Level 3 Increasing Knowledge 1030' => 'Pathways:Make Connections Through Networking',
+  'Motivational Strategies Level 3 Increasing Knowledge 1036' => 'Pathways:Prepare for an Interview',
+  'Motivational Strategies Level 3 Increasing Knowledge 1042' => 'Pathways:Understanding Vocal Variety',
+  'Motivational Strategies Level 3 Increasing Knowledge 1048' => 'Pathways:Using Descriptive Language',
+  'Motivational Strategies Level 3 Increasing Knowledge 1054' => 'Pathways:Using Presentation Software',
+  'Motivational Strategies Level 3 Increasing Knowledge 988' => 'Pathways:Connect with Storytelling',
+  'Motivational Strategies Level 3 Increasing Knowledge 994' => 'Pathways:Connect with Your Audience',
+  'Motivational Strategies Level 4 Building Skills 1063' => 'Pathways:Motivate Others',
+  'Motivational Strategies Level 4 Building Skills 1070' => 'Pathways:Building a Social Media Presence',
+  'Motivational Strategies Level 4 Building Skills 1076' => 'Pathways:Create a Podcast',
+  'Motivational Strategies Level 4 Building Skills 1082' => 'Pathways:Manage Online Meetings',
+  'Motivational Strategies Level 4 Building Skills 1088' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Motivational Strategies Level 4 Building Skills 1089' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Motivational Strategies Level 4 Building Skills 1094' => 'Pathways:Managing a Difficult Audience',
+  'Motivational Strategies Level 4 Building Skills 1100' => 'Pathways:Public Relations Strategies',
+  'Motivational Strategies Level 4 Building Skills 1106' => 'Pathways:Question-and-Answer Session',
+  'Motivational Strategies Level 4 Building Skills 1112' => 'Pathways:Write a Compelling Blog',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1128' => 'Pathways:Reflect on Your Path',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1134' => 'Pathways:Ethical Leadership',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1140' => 'Pathways:High Performance Leadership - First Speech',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1141' => 'Pathways:High Performance Leadership - Second Speech',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1146' => 'Pathways:Leading in Your Volunteer Organization',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1152' => 'Pathways:Lessons Learned',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1158' => 'Pathways:Moderate a Panel Discussion',
+  'Motivational Strategies Level 5 Demonstrating Expertise 1164' => 'Pathways:Prepare to Speak Professionally',
+  'Persuasive Influence Level 1 Mastering Fundamentals 1173' => 'Pathways:Ice Breaker',
+  'Persuasive Influence Level 1 Mastering Fundamentals 1180' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Persuasive Influence Level 1 Mastering Fundamentals 1181' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Persuasive Influence Level 1 Mastering Fundamentals 1182' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Persuasive Influence Level 1 Mastering Fundamentals 1186' => 'Pathways:Researching and Presenting',
+  'Persuasive Influence Level 2 Learning Your Style 1195' => 'Pathways:Understanding Your Leadership Style',
+  'Persuasive Influence Level 2 Learning Your Style 1202' => 'Pathways:Active Listening',
+  'Persuasive Influence Level 2 Learning Your Style 1208' => 'Pathways:Mentoring',
+  'Persuasive Influence Level 3 Increasing Knowledge 1224' => 'Pathways:Connect with Storytelling',
+  'Persuasive Influence Level 3 Increasing Knowledge 1230' => 'Pathways:Connect with Your Audience',
+  'Persuasive Influence Level 3 Increasing Knowledge 1236' => 'Pathways:Creating Effective Visual Aids',
+  'Persuasive Influence Level 3 Increasing Knowledge 1242' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Persuasive Influence Level 3 Increasing Knowledge 1248' => 'Pathways:Effective Body Language',
+  'Persuasive Influence Level 3 Increasing Knowledge 1254' => 'Pathways:Focus on the Positive',
+  'Persuasive Influence Level 3 Increasing Knowledge 1260' => 'Pathways:Inspire Your Audience',
+  'Persuasive Influence Level 3 Increasing Knowledge 1260' => 'Pathways:Know Your Sense of Humor',
+  'Persuasive Influence Level 3 Increasing Knowledge 1266' => 'Pathways:Make Connections Through Networking',
+  'Persuasive Influence Level 3 Increasing Knowledge 1272' => 'Pathways:Prepare for an Interview',
+  'Persuasive Influence Level 3 Increasing Knowledge 1278' => 'Pathways:Understanding Vocal Variety',
+  'Persuasive Influence Level 3 Increasing Knowledge 1284' => 'Pathways:Using Descriptive Language',
+  'Persuasive Influence Level 3 Increasing Knowledge 1290' => 'Pathways:Using Presentation Software',
+  'Persuasive Influence Level 4 Building Skills 1299' => 'Pathways:Building a Social Media Presence',
+  'Persuasive Influence Level 4 Building Skills 1312' => 'Pathways:Create a Podcast',
+  'Persuasive Influence Level 4 Building Skills 1318' => 'Pathways:Manage Online Meetings',
+  'Persuasive Influence Level 4 Building Skills 1324' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Persuasive Influence Level 4 Building Skills 1325' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Persuasive Influence Level 4 Building Skills 1330' => 'Pathways:Managing a Difficult Audience',
+  'Persuasive Influence Level 4 Building Skills 1336' => 'Pathways:Public Relations Strategies',
+  'Persuasive Influence Level 4 Building Skills 1342' => 'Pathways:Question-and-Answer Session',
+  'Persuasive Influence Level 4 Building Skills 1348' => 'Pathways:Write a Compelling Blog',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1357' => 'Pathways:High Performance Leadership - First Speech',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1358' => 'Pathways:High Performance Leadership - Second Speech',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1364' => 'Pathways:Reflect on Your Path',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1370' => 'Pathways:Ethical Leadership',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1376' => 'Pathways:Leading in Your Volunteer Organization',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1382' => 'Pathways:Lessons Learned',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1388' => 'Pathways:Moderate a Panel Discussion',
+  'Persuasive Influence Level 5 Demonstrating Expertise 1394' => 'Pathways:Prepare to Speak Professionally',
+  'Presentation Mastery Level 1 Mastering Fundamentals 1404' => 'Pathways:Ice Breaker',
+  'Presentation Mastery Level 1 Mastering Fundamentals 1411' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Presentation Mastery Level 1 Mastering Fundamentals 1412' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Presentation Mastery Level 1 Mastering Fundamentals 1413' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Presentation Mastery Level 1 Mastering Fundamentals 1417' => 'Pathways:Researching and Presenting',
+  'Presentation Mastery Level 2 Learning Your Style 1426' => 'Pathways:Understanding Your Communication Style',
+  'Presentation Mastery Level 2 Learning Your Style 1433' => 'Pathways:Effective Body Language',
+  'Presentation Mastery Level 2 Learning Your Style 1439' => 'Pathways:Mentoring',
+  'Presentation Mastery Level 3 Increasing Knowledge 1455' => 'Pathways:Active Listening',
+  'Presentation Mastery Level 3 Increasing Knowledge 1461' => 'Pathways:Connect with Storytelling',
+  'Presentation Mastery Level 3 Increasing Knowledge 1467' => 'Pathways:Connect with Your Audience',
+  'Presentation Mastery Level 3 Increasing Knowledge 1473' => 'Pathways:Creating Effective Visual Aids',
+  'Presentation Mastery Level 3 Increasing Knowledge 1479' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Presentation Mastery Level 3 Increasing Knowledge 1485' => 'Pathways:Focus on the Positive',
+  'Presentation Mastery Level 3 Increasing Knowledge 1491' => 'Pathways:Inspire Your Audience',
+  'Presentation Mastery Level 3 Increasing Knowledge 1495' => 'Pathways:Know Your Sense of Humor',
+  'Presentation Mastery Level 3 Increasing Knowledge 1497' => 'Pathways:Make Connections Through Networking',
+  'Presentation Mastery Level 3 Increasing Knowledge 1503' => 'Pathways:Prepare for an Interview',
+  'Presentation Mastery Level 3 Increasing Knowledge 1509' => 'Pathways:Understanding Vocal Variety',
+  'Presentation Mastery Level 3 Increasing Knowledge 1515' => 'Pathways:Using Descriptive Language',
+  'Presentation Mastery Level 3 Increasing Knowledge 1521' => 'Pathways:Using Presentation Software',
+  'Presentation Mastery Level 4 Building Skills 1530' => 'Pathways:Managing a Difficult Audience',
+  'Presentation Mastery Level 4 Building Skills 1537' => 'Pathways:Building a Social Media Presence',
+  'Presentation Mastery Level 4 Building Skills 1543' => 'Pathways:Create a Podcast',
+  'Presentation Mastery Level 4 Building Skills 1549' => 'Pathways:Manage Online Meetings',
+  'Presentation Mastery Level 4 Building Skills 1555' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Presentation Mastery Level 4 Building Skills 1556' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Presentation Mastery Level 4 Building Skills 1561' => 'Pathways:Public Relations Strategies',
+  'Presentation Mastery Level 4 Building Skills 1567' => 'Pathways:Question-and-Answer Session',
+  'Presentation Mastery Level 4 Building Skills 1573' => 'Pathways:Write a Compelling Blog',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1582' => 'Pathways:Prepare to Speak Professionally',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1589' => 'Pathways:Reflect on Your Path',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1595' => 'Pathways:Ethical Leadership',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1601' => 'Pathways:High Performance Leadership - First Speech',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1602' => 'Pathways:High Performance Leadership - Second Speech',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1607' => 'Pathways:Leading in Your Volunteer Organization',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1613' => 'Pathways:Lessons Learned',
+  'Presentation Mastery Level 5 Demonstrating Expertise 1619' => 'Pathways:Moderate a Panel Discussion',
+  'Strategic Relationships Level 1 Mastering Fundamentals 1628' => 'Pathways:Ice Breaker',
+  'Strategic Relationships Level 1 Mastering Fundamentals 1635' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Strategic Relationships Level 1 Mastering Fundamentals 1636' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Strategic Relationships Level 1 Mastering Fundamentals 1637' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Strategic Relationships Level 1 Mastering Fundamentals 1641' => 'Pathways:Researching and Presenting',
+  'Strategic Relationships Level 2 Learning Your Style 1650' => 'Pathways:Understanding Your Leadership Style',
+  'Strategic Relationships Level 2 Learning Your Style 1663' => 'Pathways:Mentoring',
+  'Strategic Relationships Level 3 Increasing Knowledge 1672' => 'Pathways:Make Connections Through Networking',
+  'Strategic Relationships Level 3 Increasing Knowledge 1679' => 'Pathways:Active Listening',
+  'Strategic Relationships Level 3 Increasing Knowledge 1685' => 'Pathways:Connect with Storytelling',
+  'Strategic Relationships Level 3 Increasing Knowledge 1691' => 'Pathways:Connect with Your Audience',
+  'Strategic Relationships Level 3 Increasing Knowledge 1697' => 'Pathways:Creating Effective Visual Aids',
+  'Strategic Relationships Level 3 Increasing Knowledge 1703' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Strategic Relationships Level 3 Increasing Knowledge 1709' => 'Pathways:Effective Body Language',
+  'Strategic Relationships Level 3 Increasing Knowledge 1715' => 'Pathways:Focus on the Positive',
+  'Strategic Relationships Level 3 Increasing Knowledge 1721' => 'Pathways:Inspire Your Audience',
+  'Strategic Relationships Level 3 Increasing Knowledge 1725' => 'Pathways:Know Your Sense of Humor',
+  'Strategic Relationships Level 3 Increasing Knowledge 1727' => 'Pathways:Prepare for an Interview',
+  'Strategic Relationships Level 3 Increasing Knowledge 1733' => 'Pathways:Understanding Vocal Variety',
+  'Strategic Relationships Level 3 Increasing Knowledge 1739' => 'Pathways:Using Descriptive Language',
+  'Strategic Relationships Level 3 Increasing Knowledge 1745' => 'Pathways:Using Presentation Software',
+  'Strategic Relationships Level 4 Building Skills 1754' => 'Pathways:Public Relations Strategies',
+  'Strategic Relationships Level 4 Building Skills 1761' => 'Pathways:Building a Social Media Presence',
+  'Strategic Relationships Level 4 Building Skills 1767' => 'Pathways:Create a Podcast',
+  'Strategic Relationships Level 4 Building Skills 1773' => 'Pathways:Manage Online Meetings',
+  'Strategic Relationships Level 4 Building Skills 1779' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Strategic Relationships Level 4 Building Skills 1780' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Strategic Relationships Level 4 Building Skills 1785' => 'Pathways:Managing a Difficult Audience',
+  'Strategic Relationships Level 4 Building Skills 1791' => 'Pathways:Question-and-Answer Session',
+  'Strategic Relationships Level 4 Building Skills 1797' => 'Pathways:Write a Compelling Blog',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1806' => 'Pathways:Leading in Your Volunteer Organization',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1813' => 'Pathways:Reflect on Your Path',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1819' => 'Pathways:Ethical Leadership',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1825' => 'Pathways:High Performance Leadership - First Speech',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1826' => 'Pathways:High Performance Leadership - Second Speech',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1831' => 'Pathways:Lessons Learned',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1837' => 'Pathways:Moderate a Panel Discussion',
+  'Strategic Relationships Level 5 Demonstrating Expertise 1843' => 'Pathways:Prepare to Speak Professionally',
+  'Team Collaboration Level 1 Mastering Fundamentals 1852' => 'Pathways:Ice Breaker',
+  'Team Collaboration Level 1 Mastering Fundamentals 1859' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Team Collaboration Level 1 Mastering Fundamentals 1860' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Team Collaboration Level 1 Mastering Fundamentals 1861' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Team Collaboration Level 1 Mastering Fundamentals 1865' => 'Pathways:Researching and Presenting',
+  'Team Collaboration Level 2 Learning Your Style 1874' => 'Pathways:Understanding Your Leadership Style',
+  'Team Collaboration Level 2 Learning Your Style 1881' => 'Pathways:Active Listening',
+  'Team Collaboration Level 2 Learning Your Style 1887' => 'Pathways:Mentoring',
+  'Team Collaboration Level 3 Increasing Knowledge 1903' => 'Pathways:Connect with Storytelling',
+  'Team Collaboration Level 3 Increasing Knowledge 1909' => 'Pathways:Connect with Your Audience',
+  'Team Collaboration Level 3 Increasing Knowledge 1915' => 'Pathways:Creating Effective Visual Aids',
+  'Team Collaboration Level 3 Increasing Knowledge 1921' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Team Collaboration Level 3 Increasing Knowledge 1927' => 'Pathways:Effective Body Language',
+  'Team Collaboration Level 3 Increasing Knowledge 1933' => 'Pathways:Focus on the Positive',
+  'Team Collaboration Level 3 Increasing Knowledge 1939' => 'Pathways:Inspire Your Audience',
+  'Team Collaboration Level 3 Increasing Knowledge 1941' => 'Pathways:Know Your Sense of Humor',
+  'Team Collaboration Level 3 Increasing Knowledge 1945' => 'Pathways:Make Connections Through Networking',
+  'Team Collaboration Level 3 Increasing Knowledge 1951' => 'Pathways:Prepare for an Interview',
+  'Team Collaboration Level 3 Increasing Knowledge 1957' => 'Pathways:Understanding Vocal Variety',
+  'Team Collaboration Level 3 Increasing Knowledge 1963' => 'Pathways:Using Descriptive Language',
+  'Team Collaboration Level 3 Increasing Knowledge 1969' => 'Pathways:Using Presentation Software',
+  'Team Collaboration Level 4 Building Skills 1978' => 'Pathways:Motivate Others',
+  'Team Collaboration Level 4 Building Skills 1985' => 'Pathways:Building a Social Media Presence',
+  'Team Collaboration Level 4 Building Skills 1991' => 'Pathways:Create a Podcast',
+  'Team Collaboration Level 4 Building Skills 1997' => 'Pathways:Manage Online Meetings',
+  'Team Collaboration Level 4 Building Skills 2003' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Team Collaboration Level 4 Building Skills 2004' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Team Collaboration Level 4 Building Skills 2009' => 'Pathways:Managing a Difficult Audience',
+  'Team Collaboration Level 4 Building Skills 2015' => 'Pathways:Public Relations Strategies',
+  'Team Collaboration Level 4 Building Skills 2021' => 'Pathways:Question-and-Answer Session',
+  'Team Collaboration Level 4 Building Skills 2027' => 'Pathways:Write a Compelling Blog',
+  'Team Collaboration Level 5 Demonstrating Expertise 2036' => 'Pathways:Lead in Any Situation',
+  'Team Collaboration Level 5 Demonstrating Expertise 2043' => 'Pathways:Reflect on Your Path',
+  'Team Collaboration Level 5 Demonstrating Expertise 2049' => 'Pathways:Ethical Leadership',
+  'Team Collaboration Level 5 Demonstrating Expertise 2055' => 'Pathways:High Performance Leadership - First Speech',
+  'Team Collaboration Level 5 Demonstrating Expertise 2056' => 'Pathways:High Performance Leadership - Second Speech',
+  'Team Collaboration Level 5 Demonstrating Expertise 2061' => 'Pathways:Leading in Your Volunteer Organization',
+  'Team Collaboration Level 5 Demonstrating Expertise 2067' => 'Pathways:Lessons Learned',
+  'Team Collaboration Level 5 Demonstrating Expertise 2073' => 'Pathways:Moderate a Panel Discussion',
+  'Team Collaboration Level 5 Demonstrating Expertise 2079' => 'Pathways:Prepare to Speak Professionally',
+  'Visionary Communication Level 1 Mastering Fundamentals 2088' => 'Pathways:Ice Breaker',
+  'Visionary Communication Level 1 Mastering Fundamentals 2095' => 'Pathways:Evaluation and Feedback - First Speech',
+  'Visionary Communication Level 1 Mastering Fundamentals 2096' => 'Pathways:Evaluation and Feedback - Second Speech',
+  'Visionary Communication Level 1 Mastering Fundamentals 2097' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
+  'Visionary Communication Level 1 Mastering Fundamentals 2101' => 'Pathways:Researching and Presenting',
+  'Visionary Communication Level 2 Learning Your Style 2110' => 'Pathways:Understanding Your Leadership Style',
+  'Visionary Communication Level 2 Learning Your Style 2117' => 'Pathways:Understanding Your Communication Style',
+  'Visionary Communication Level 2 Learning Your Style 2123' => 'Pathways:Mentoring',
+  'Visionary Communication Level 3 Increasing Knowledge 2139' => 'Pathways:Active Listening',
+  'Visionary Communication Level 3 Increasing Knowledge 2145' => 'Pathways:Connect with Storytelling',
+  'Visionary Communication Level 3 Increasing Knowledge 2151' => 'Pathways:Connect with Your Audience',
+  'Visionary Communication Level 3 Increasing Knowledge 2157' => 'Pathways:Creating Effective Visual Aids',
+  'Visionary Communication Level 3 Increasing Knowledge 2163' => 'Pathways:Deliver Social Speeches - First Speech',
+  'Visionary Communication Level 3 Increasing Knowledge 2169' => 'Pathways:Effective Body Language',
+  'Visionary Communication Level 3 Increasing Knowledge 2175' => 'Pathways:Focus on the Positive',
+  'Visionary Communication Level 3 Increasing Knowledge 2181' => 'Pathways:Inspire Your Audience',
+  'Visionary Communication Level 3 Increasing Knowledge 2185' => 'Pathways:Know Your Sense of Humor',
+  'Visionary Communication Level 3 Increasing Knowledge 2187' => 'Pathways:Make Connections Through Networking',
+  'Visionary Communication Level 3 Increasing Knowledge 2193' => 'Pathways:Prepare for an Interview',
+  'Visionary Communication Level 3 Increasing Knowledge 2199' => 'Pathways:Understanding Vocal Variety',
+  'Visionary Communication Level 3 Increasing Knowledge 2205' => 'Pathways:Using Descriptive Language',
+  'Visionary Communication Level 3 Increasing Knowledge 2211' => 'Pathways:Using Presentation Software',
+  'Visionary Communication Level 4 Building Skills 2227' => 'Pathways:Building a Social Media Presence',
+  'Visionary Communication Level 4 Building Skills 2233' => 'Pathways:Create a Podcast',
+  'Visionary Communication Level 4 Building Skills 2239' => 'Pathways:Manage Online Meetings',
+  'Visionary Communication Level 4 Building Skills 2245' => 'Pathways:Manage Projects Successfully - First Speech',
+  'Visionary Communication Level 4 Building Skills 2246' => 'Pathways:Manage Projects Successfully - Second Speech',
+  'Visionary Communication Level 4 Building Skills 2251' => 'Pathways:Managing a Difficult Audience',
+  'Visionary Communication Level 4 Building Skills 2257' => 'Pathways:Public Relations Strategies',
+  'Visionary Communication Level 4 Building Skills 2263' => 'Pathways:Question-and-Answer Session',
+  'Visionary Communication Level 4 Building Skills 2269' => 'Pathways:Write a Compelling Blog',
+  'Visionary Communication Level 5 Demonstrating Expertise 2285' => 'Pathways:Reflect on Your Path',
+  'Visionary Communication Level 5 Demonstrating Expertise 2291' => 'Pathways:Ethical Leadership',
+  'Visionary Communication Level 5 Demonstrating Expertise 2297' => 'Pathways:High Performance Leadership - First Speech',
+  'Visionary Communication Level 5 Demonstrating Expertise 2298' => 'Pathways:High Performance Leadership - Second Speech',
+  'Visionary Communication Level 5 Demonstrating Expertise 2303' => 'Pathways:Leading in Your Volunteer Organization',
+  'Visionary Communication Level 5 Demonstrating Expertise 2309' => 'Pathways:Lessons Learned',
+  'Visionary Communication Level 5 Demonstrating Expertise 2315' => 'Pathways:Moderate a Panel Discussion',
+  'Visionary Communication Level 5 Demonstrating Expertise 2321' => 'Pathways:Prepare to Speak Professionally',
+);
+if(!empty($map[$slug]))
+	return $map[$slug];
+return $slug;	
+}
+
+function fetch_evaluation_form ($slug) {
+	
+$slug = pathways_project_map($slug);	
+$slug = 'wpteval_'.$slug;
+$default = array('intro' => 'Specific evaluation form not found. The default Pathways evaluation criteria are shown below','prompts' => 'You excelled at:
+You may want to work on:
+To challenge yourself:
+Clarity: Spoken language is clear and is easily understood|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
+Vocal Variety: Uses t one, speed, and volume as tools|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
+Eye Contact: Effectively uses eye contact to engage audience|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
+Gestures: Uses physical gestures effectively|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
+Audience Awareness: Demonstrates awareness of audience engagement and needs|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
+Comfort Level: Appears comfortable with the audience|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
+Interest: Engages audience with interesting, well-constructed content|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)');
+	
+$form = get_transient($slug);
+if(!empty($form))
+	return $form;
+$url = 'http://wp4toastmasters.com/wp-json/evaluation/v1/form/'.urlencode($slug);
+printf('<p>Look up %s</a>',$url);
+$request = wp_remote_get( $url );
+
+if( is_wp_error( $request ) ) {
+	return $default; // Bail early
+}
+$body = wp_remote_retrieve_body( $request );
+
+if($body == 'false')
+	return $default;
+$form = json_decode($body);
+set_transient($slug,$form,WEEK_IN_SECONDS);
+return $form;
+}
+
 
 ?>

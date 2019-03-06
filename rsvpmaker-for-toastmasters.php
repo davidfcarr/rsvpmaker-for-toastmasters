@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.3.9
+Version: 3.4.1
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -34,7 +34,6 @@ if(is_admin())
 	global $rsvp_options;
 	if(!function_exists('do_blocks'))
 		include 'mce_shortcode.php';
-	include 'evaluation_forms.php';	
 }
 
 if(isset($_GET['email_agenda']))
@@ -8968,6 +8967,13 @@ return array("Select Manual/Path" => __("Select Manual/Path",'rsvpmaker-for-toas
 ,'Effective Coaching Level 3 Increasing Knowledge'=> __('Effective Coaching Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
 ,'Effective Coaching Level 4 Building Skills'=> __('Effective Coaching Level 4 Building Skills','rsvpmaker-for-toastmasters')
 ,'Effective Coaching Level 5 Demonstrating Expertise'=> __('Effective Coaching Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')
+
+,'Engaging Humor Level 1 Mastering Fundamentals'=> __('Engaging Humor Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+,'Engaging Humor Level 2 Learning Your Style'=> __('Engaging Humor Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+,'Engaging Humor Level 3 Increasing Knowledge'=> __('Engaging Humor Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+,'Engaging Humor Level 4 Building Skills'=> __('Engaging Humor Level 4 Building Skills','rsvpmaker-for-toastmasters')
+,'Engaging Humor Level 5 Demonstrating Expertise'=> __('Engaging Humor Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')
+			 
 ,'Innovative Planning Level 1 Mastering Fundamentals'=> __('Innovative Planning Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
 ,'Innovative Planning Level 2 Learning Your Style'=> __('Innovative Planning Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
 ,'Innovative Planning Level 3 Increasing Knowledge'=> __('Innovative Planning Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
@@ -11438,8 +11444,11 @@ function tm_branded_image($att) {
 		$image = $att["image"];
 	else
 		$image = $att;
+	//if($image=='agenda-rays.png')
+		return '<img src="https://wp4toastmasters.com/tmbranding/agenda-rays.png" />';
+		
 if(isset($_GET['reset']))
-	delete_option($image);	
+	delete_option($image);
 	
 if(strpos($_SERVER['SERVER_NAME'],'toastmost.org'))
 	$newurl = 'http://wp4toastmasters.com/tmbranding/'.$image;
