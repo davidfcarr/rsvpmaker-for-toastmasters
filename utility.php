@@ -455,4 +455,35 @@ function extract_usermeta_key_data($key) {
 	return $data;
 }
 
+function cache_assignments ($post_id,$refresh=false) {
+global $assign_cache;
+if($refresh)
+	$assign_cache = array();
+else
+	$assign_cache = get_transient('assign_cache');
+if(empty($assign_cache[$post_id]))
+	{
+		$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_value REGEXP '^[0-9]+$'";
+		$results = $wpdb->get_results($sql);
+		foreach($results as $row) {
+			$assign_cache[$post_id][$row->meta_key] = $row->meta_value;
+		}
+	set_transient('assign_cache',$assign_cache, DAY_IN_SECONDS);
+	}
+}
+
+function get_wpt_assignment($post_id,$key) {
+global $assign_cache;
+if(isset($assign_cache[$post_id][$key]))
+	return $assign_cache[$post_id][$key];
+return get_post_meta($post_id,$key,true);
+}
+
+function set_wpt_assignment($post_id,$key,$value,$update_cache = true) {
+global $assign_cache;
+$assign_cache[$post_id][$key] = $value;
+update_post_meta($post_id,$key,$value);
+if($update_cache) // unless we're told not to, update the cache transient
+	set_transient('assign_cache',$assign_cache, DAY_IN_SECONDS);
+}
 ?>

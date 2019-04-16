@@ -6703,6 +6703,10 @@ function ajax_reorder() {
 }
 
 function get_speaker_array($assigned, $post_id=0, $backup=false) {
+	global $speaker_arrays;
+	$key = $assigned.':'.$post_id;
+	if(!empty($speaker_arrays[$key]))
+		return $speaker_arrays[$key];		
 if(empty($assigned))
 	return array("ID" => 0, "manual" => '', "project" => '', "maxtime" => '', "display_time"=> '', "title" => '', "intro" => '');
 global $wpdb;
@@ -6717,7 +6721,8 @@ elseif(!is_numeric($assigned)) //guest speaker
 	return array('ID' => '','manual' => '','project' => '', 'maxtime' => 0, 'display_time' => '', 'title' => '', 'intro' => '');
 else
 	$field = $wpdb->get_var("SELECT meta_key from $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '%Speaker%' AND meta_value='".$assigned."' ");
-return get_speaker_array_by_field($field,$assigned,$post_id);
+	$speaker_arrays[$key] = get_speaker_array_by_field($field,$assigned,$post_id);
+return $speaker_arrays[$key];
 }
 
 function get_speaker_array_by_field($field,$assigned,$post_id=0) {
