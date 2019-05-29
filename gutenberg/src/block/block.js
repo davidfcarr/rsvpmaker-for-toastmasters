@@ -224,10 +224,14 @@ attributes: {
             type: 'string',
             default: '',
         },
+        backup: {
+            type: 'string',
+            default: '',
+        },
     },
 	edit: function( props ) {
 
-	const { attributes: { role, custom_role, count, agenda_note, time_allowed, padding_time }, setAttributes, isSelected } = props;
+	const { attributes: { role, custom_role, count, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected } = props;
 
 	function showHideOptions () {
 		const selected = document.querySelector( '#role option:checked' );
@@ -271,6 +275,11 @@ attributes: {
 		setAttributes( { count: selected.value } );
 		event.preventDefault();
 	}	
+	function setBackup( event ) {
+		const selected = event.target.querySelector( '#backup option:checked' );
+		setAttributes( { backup: selected.value } );
+		event.preventDefault();
+	}
 	function setAgendaNote( event ) {
 		var note = document.getElementById('agenda_note').value;
 		setAttributes( { agenda_note: note } );
@@ -422,6 +431,12 @@ return (<form onSubmit={ setRole, setCustomRole, setCount, setTime, setPaddingTi
 </div>
 {showPaddingTime()}
 <p><label>Agenda Note:</label> <input type="text" id="agenda_note" onChange={setAgendaNote} defaultValue={agenda_note} /></p>
+
+<div><label>Backup for This Role:</label> <select id="backup" value={ backup } onChange={ setBackup }>
+<option value="0">No</option>
+<option value="1">Yes</option>
+</select>
+</div>
 
 </form>);		
 		}

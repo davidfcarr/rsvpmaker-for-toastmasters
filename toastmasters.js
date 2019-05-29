@@ -233,4 +233,58 @@ $(document).on('submit', 'form.remove_me_form', function(event) {
 	});
 });
 
+$('.absences').on('change', function(){
+	var user_id = this.value;
+	if(user_id < 1)
+		return;
+	var id = this.id;
+	var security = $('#toastcode').val();
+	var post_id = $('#'+id).attr('post_id');
+	var statusid = 'status_absences'+post_id;
+	$('#'+statusid).html('Saving ...');
+	var editor_id = $('#editor_id').val();
+	if(security && (post_id > 0))
+	{
+		var data = {
+			'action': 'editor_absences',
+			'user_id': user_id,
+			'editor_id': editor_id,
+			'security': security,
+			'post_id': post_id
+		};
+		jQuery.post(ajaxurl, data, function(response) {
+		console.log(response);
+		$('#'+statusid).html(response);
+		$('#'+statusid).fadeIn(200);
+		});
+	}
+});	
+
+$('.absences_remove').on('click', function(){
+	var user_id = this.value;
+	if(user_id < 1)
+		return;
+	var id = this.id;
+	var security = $('#toastcode').val();
+	var post_id = $('#'+id).attr('post_id');
+	var statusid = 'current_absences'+post_id+user_id;
+	$('#'+statusid).html('Saving ...');
+	var editor_id = $('#editor_id').val();
+	if(security && (post_id > 0))
+	{
+		var data = {
+			'action': 'absences_remove',
+			'user_id': user_id,
+			'editor_id': editor_id,
+			'security': security,
+			'post_id': post_id
+		};
+		jQuery.post(ajaxurl, data, function(response) {
+		console.log(response);
+		$('#'+statusid).html(response);
+		$('#'+statusid).fadeIn(200);
+		});
+	}
+});
+
 });

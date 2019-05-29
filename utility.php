@@ -410,6 +410,13 @@ function wpt_blocks_to_data($content) {
 				$key = 'other'.$index;
 			$data[$key] = $thisdata;
 			}
+
+			if(!empty($thisdata['backup']))
+			{
+				$key = $backup['role'] = 'Backup '.$thisdata['role'];
+				$backup['count'] = 1;
+				$data[$key] = $backup;
+			}
 		}
 	}
 	//printf('<pre>%s</pre>',var_export($data,true));
@@ -442,7 +449,10 @@ global $current_user;
 	return array('time_recorded' => time(), 'recorded_by' => $current_user->user_login, 'function' => $function);
 }
 function make_tm_usermeta_key ($role, $event_timestamp, $post_id) {
-return 'tm|'.trim(preg_replace('/[^\sa-zA-Z]/',' ',$role)).'|'.$event_timestamp.'|'.preg_replace('/[^0-9]/','',$role).'|'.$_SERVER['SERVER_NAME'].'|'.$post_id;
+$slug = preg_replace('/[^0-9]/','',$role);
+if(isset($_GET['project_year']))
+	$slug = $_GET['project_year'].$_GET['project_month'].$_GET['project_day'];
+return 'tm|'.trim(preg_replace('/[^\sa-zA-Z]/',' ',$role)).'|'.$event_timestamp.'|'.$slug.'|'.$_SERVER['SERVER_NAME'].'|'.$post_id;
 }
 
 function extract_usermeta_key_data($key) {

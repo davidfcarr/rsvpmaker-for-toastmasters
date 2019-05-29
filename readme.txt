@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 5.1
-Stable tag: 3.4.1
+Tested up to: 5.2.1
+Stable tag: 3.4.4
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,14 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.4.3 =
+
+* Optional rules for managing the agenda, including a points system for tracking members who sign up to speak but don't regularly fill other supporting roles.
+
+= 3.4.2 =
+
+* Rules tab under Settings allows for setting optional rules. First optional rule makes it possible to set meeting roles that confer the ability to edit agenda signups, in addition to security roles. For example, if you limit the edit signups capability to the Administrator and Manager roles, you can specify that a regular member serving as Toastmaster of the Day should still be able to edit the agenda.
 
 = 3.4.0 =
 

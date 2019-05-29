@@ -230,20 +230,22 @@ function tm_select_member ($page,$field) {
 function add_member_speech ($user_id = 0) {
 if(!$user_id)
 	{
-		echo 'Select member from the list above';
 		return;
 	}
 global $rsvp_options;
-if(isset($_POST["_manual_meta"]))
+if(isset($_REQUEST["_manual_meta"]))
 {
-$manual = $_POST["_manual_meta"];
-$p = $_POST['_project_meta'];
-$speech_title = $_POST['_title_meta'];
-$intro = $_POST['_intro_meta'];
+$manual = $_REQUEST["_manual_meta"];
+if(isset($_REQUEST['_project_meta']))
+	$p = $_REQUEST['_project_meta'];
+elseif(isset($_REQUEST['project']))
+	$p = $_REQUEST['project'];
+$speech_title = $_REQUEST['_title_meta'];
+$intro = $_REQUEST['_intro_meta'];
 $projectslug = preg_replace('/[ _]/','',$manual)."_project";
-$year = $_POST['project_year'];
-$month = $_POST['project_month'];
-$day = $_POST['project_day'];
+$year = $_REQUEST['project_year'];
+$month = $_REQUEST['project_month'];
+$day = $_REQUEST['project_day'];
 if($year && $month && $day)
 	$date = strtotime($year.'-'.$month.'-'.$day);
 else
@@ -260,12 +262,15 @@ $speech_url = admin_url('admin.php?page=toastmasters_reports&tab=speeches&toastm
 echo '<em>'.__('Saved:','rsvpmaker-for-toastmasters').' '.$manual.' '.$project_text.' '.$speech_title.' for '.date('F j, Y',$date).'</em> ';
 printf('<a href="%s">%s</a>',$speech_url,__('Refresh speech list','rsvpmaker-for-toastmasters'));
 }
-elseif(isset($_POST["_role_meta"]))
+elseif(isset($_REQUEST["_role_meta"]) || isset($_REQUEST["project"]))
 {
-$role = $_POST["_role_meta"];
-$year = $_POST['project_year'];
-$month = $_POST['project_month'];
-$day = $_POST['project_day'];
+if(isset($_REQUEST["project"]))
+	$role = $_REQUEST["project"];
+else
+	$role = $_REQUEST["_role_meta"];
+$year = $_REQUEST['project_year'];
+$month = $_REQUEST['project_month'];
+$day = $_REQUEST['project_day'];
 if($year && $month && $day)
 	$date = strtotime($year.'-'.$month.'-'.$day);
 else
@@ -4123,7 +4128,7 @@ add_action( 'wp_ajax_delete_tm_detail', 'wp_ajax_delete_tm_detail' );
 function wp_ajax_editor_assign () {
 global $wpdb;
 $post_id = (int) $_POST["post_id"];
-$user_id = (int) $_POST["user_id"];
+$user_id = $_POST["user_id"];
 $role = $_POST["role"];
 $editor_id = (int) $_POST["editor_id"];
 $timestamp = get_rsvp_date($post_id);
@@ -4147,7 +4152,7 @@ if(time() > strtotime($timestamp))
 	}
 if($user_id == -1)
 	$name = 'Not Available';
-elseif($user_id)
+elseif(is_numeric($user_id))
 {
 $userdata = get_userdata($user_id);
 if(empty($userdata->first_name))
@@ -4155,6 +4160,8 @@ if(empty($userdata->first_name))
 else
 	$name = $userdata->first_name.' '.$userdata->last_name;
 }
+elseif(!empty($user_id))
+	$name = $user_id;
 else
 	$name = 'Open';
 printf('%s assigned to %s',preg_replace('/[\_0-9]/',' ',$role),$name);
@@ -4168,6 +4175,42 @@ wp_die();
 }
 
 add_action( 'wp_ajax_editor_assign', 'wp_ajax_editor_assign' );
+
+function wp_ajax_absences_remove () {
+	global $wpdb;
+	$post_id = (int) $_POST["post_id"];
+	$user_id = (int) $_POST["user_id"];
+	if($user_id < 1)
+		wp_die('user id was empty');
+	$userdata = get_userdata($user_id);
+	if(empty($userdata->first_name))
+		$name = $userdata->display_name;
+	else
+		$name = $userdata->first_name.' '.$userdata->last_name;
+	printf('%s removed from absences list',$name);
+	delete_post_meta($post_id,'tm_absence',$user_id);
+	wp_die();
+}
+
+add_action( 'wp_ajax_absences_remove', 'wp_ajax_absences_remove' );
+
+function wp_ajax_editor_absences () {
+	global $wpdb;
+	$post_id = (int) $_POST["post_id"];
+	$user_id = (int) $_POST["user_id"];
+	if($user_id < 1)
+		wp_die('user id was empty');
+	$userdata = get_userdata($user_id);
+	if(empty($userdata->first_name))
+		$name = $userdata->display_name;
+	else
+		$name = $userdata->first_name.' '.$userdata->last_name;
+	printf('%s added to absences list',$name);
+	add_post_meta($post_id,'tm_absence',$user_id);
+	wp_die();
+}
+
+add_action( 'wp_ajax_editor_absences', 'wp_ajax_editor_absences' );
 
 function get_tm_stats($user_id = 0) {
 global $current_user;
@@ -4314,6 +4357,7 @@ global $wpdb;
 global $current_user;
 global $rsvp_options;
 $is_speech = true;
+
 if(preg_match('/:CL[0-9]/',$project))
 {
 	$manual = 'Competent Leader';
@@ -4332,10 +4376,11 @@ if(!empty($speaker_id))
 else
 	$speaker_name = 'Guest';
 $evaluator = get_userdata($current_user->ID);
-if(isset($_GET['year']))
+if(isset($_GET['project_year']))
 {
-	$t = strtotime($_GET['year'].'-'.$_GET['month'].'-'.$_GET['day']);
+	$t = strtotime($_GET['project_year'].'-'.$_GET['project_month'].'-'.$_GET['project_day']);
 	$timestamp = date('Y-m-d',$t).' 00:00:00';
+	add_member_speech($speaker_id);
 }
 else
 {
@@ -4357,7 +4402,14 @@ $prompts = $form->prompts;
 $name = get_project_text($project);
 	if(empty($prompts))
 		{
-		$intro = '<h4>We do not yet have a form with specific prompts for this project, but you can record your notes below.</h4>
+		if($project == 'undefined')
+			$intro = '<h4>The specific speech project was not defined, but you can record yur notes below.</h4>';
+		else
+			{
+				$intro = '<h4>We do not yet have a form with specific prompts for this project, but you can record your notes below.</h4>';
+				do_action('log_evaluation_form_miss',$project);
+			}
+		$intro .= '
 <p><strong>You excelled at</strong></p>
 <p><textarea name="comment[0]" style="width: 100%; height: 3em;"></textarea></p>
 <p><strong>You may want to work on</strong></p>
@@ -4373,6 +4425,27 @@ $name = get_project_text($project);
 		$sql = "SELECT meta_key from $wpdb->postmeta WHERE post_id=".$meeting_id. " AND meta_key LIKE '_Speaker%' AND meta_value=".$speaker_id;
 		$field = $wpdb->get_var($sql);
 		$title = get_post_meta($meeting_id, '_title'.$field, true);
+
+if(isset($_GET['_title_meta']))
+		{
+		$title =stripslashes($_GET['_title_meta']);
+		if($meeting_id) {
+			update_post_meta($meeting_id,'_title'.$field,$title);
+			update_post_meta($meeting_id,'_manual'.$field,$manual);
+			update_post_meta($meeting_id,'_project'.$field,$project);
+			}
+		}
+
+		if($project == 'unspecified')
+		{
+		$project_widget = str_replace('[]','_meta',speaker_details('',0,array() ));
+		$project_widget = str_replace('name="_project_meta"','name="project"',$project_widget);
+		printf('<h2>Add Project Details</h2><form action="%s" method="get"><input type="hidden" name="page" value="wp4t_evaluations">
+		<input type="hidden" name="speaker" value="%s" />
+		<input type="hidden" name="meeting_id" value="%s" /><div>%s</div><p><button>Save</button></p></form>',admin_url('admin.php'),$speaker_id,$meeting_id,$project_widget);
+	echo '<h2>Or use the generic form shown below</h2>';	
+	}	
+
 ?>
 <form action="<?php echo admin_url('admin.php?page=wp4t_evaluations');?>" method="post">
 
@@ -4745,24 +4818,21 @@ foreach($past as $past_meet)
 } // clroles
 
 if(empty($_REQUEST['project'])) {
-$o = '';
-$projects = get_projects_array('projects');
 
-foreach($projects as $index => $p)
-{
-	if(strpos($index,':CL'))
-		continue;
-	$o .= sprintf('<option value="%s">%s (%s)</option>',$index,$p,$index);
-}
-printf('<h2>Evaluate Any Speech Project</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">%s</select><br />Member: %s<br /><input type="text" size="8" name="year" value="%s" /><input type="text" size="8" name="month" value="%s" /><input type="text" size="8" name="day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'));
+$project_widget = str_replace('[]','_meta',speaker_details('',0,array() ));
+$project_widget = str_replace('name="_project_meta"','name="project"',$project_widget);
+
+printf('<h2>Evaluate Any Speech Project</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0">Member: %s<br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),awe_user_dropdown('speaker',0,true),$project_widget,date('Y'),date('m'),date('d'));
+
 $o ='';
+$projects = get_projects_array('projects');
 foreach($projects as $index => $p)
 {
 	if(!strpos($index,':CL'))
 		continue;
 	$o .= sprintf('<option value="%s">%s</option>',$index,$p);
 }
-printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">Member: %s</select><br />%s<br /><input type="text" size="8" name="year" value="%s" /><input type="text" size="8" name="month" value="%s" /><input type="text" size="8" name="day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'));	
+printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">Member: %s</select><br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'));	
 }
 ?>
 		</section>
@@ -5367,7 +5437,7 @@ foreach($userroles as $userroledata)
 }	
 	echo '</table>';
 
-printf('<p><a href="%s">Show more detail</a></p>',admin_url('admin.php?page=toastmasters_role_report&details=1'));
+printf('<p><a href="%s">Show more detail</a></p>',admin_url('admin.php?page=toastmasters_reports_dashboard&report=role&details=1'));
 	
 printf('<h2>Set Report Roles</h2><form action="%s" method="post">',site_url($_SERVER['REQUEST_URI']));
 sort($allroles);
@@ -5381,6 +5451,147 @@ echo '</form>';
 //tm_admin_page_bottom($hook);
 }
 
+function get_speech_points ($user_id) {
+global $wpdb, $rsvp_options;
+$rules = get_option('toastmasters_rules');
+if(empty($rules))
+	{
+		$rules['cost'] = 2;
+		$rules['start'] = 4;
+		$rules['start_date'] = date('Y').'-01-01';
+	}
+$start_date = $rules['start_date'].' 00:00:00';
+
+$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user_id AND meta_key LIKE 'tm|%|".$_SERVER['SERVER_NAME']."|%' ORDER BY meta_key DESC ";
+$results = $wpdb->get_results($sql);
+if(!$results)
+	return $rules['start'];
+
+$userroles = array();
+
+foreach($results as $row)
+{
+	preg_match('/tm\|([^|]+)\|([^|]+)/',$row->meta_key,$matches);
+	if(empty($matches[1]) || empty($matches[1]))
+		continue;
+	$role = $matches[1];
+	$date = $matches[2];
+	if($date < $start_date)
+		continue;
+	if(empty($userroles[$role]) || !in_array($date,$userroles[$role]))
+		$userroles[$role][] = $date;
+	//if(!in_array($role,$allroles)) $allroles[] = $role;
+}
+	
+	$speaking = 0;
+	$other_role = (int) $rules['start']; //starting score
+	foreach($userroles as $role => $occurrences)
+		{
+			if(strpos($role,'ackup'))
+				;
+			elseif($role == 'Speaker')
+				{
+					$speaking = $speaking  + sizeof($occurrences);
+					//print_r($occurrences);
+				}
+			else
+				{
+					$other_role = $other_role + sizeof($occurrences);
+				}
+		}
+
+	$speakingpoints = $speaking * $rules['cost'];
+	$score = $other_role - $speakingpoints;
+	return $score;
+}
+
+function speech_points_report () {
+	global $wpdb, $rsvp_options;
+echo '<p>'.__('This report shows how often a member speaks, versus serving the club in other supporting roles.','rsvpmaker-for-toastmasters'),'</p>';
+
+$rules = get_option('toastmasters_rules');
+if(empty($rules))
+	{
+		$rules['cost'] = 2;
+		$rules['start'] = 4;
+		$rules['start_date'] = date('Y').'-01-01';
+	}
+$prettystart = date('M j, Y',strtotime($rules['start_date']));
+printf('<p>Members start with %s points. They <em>earn</em> 1 point for each supporting role filled and <em>use %s points</em> for each speech. Statistics gathered from %s.</p>',$rules['start'],$rules['cost'],$prettystart);
+if(current_user_can('manage_options'))
+	printf('<p>You can change these parameters on the Rules tab of the <a href="%s">Toastmasters Settings</a> screen.</p>',admin_url('http://beta.local/wp-admin/options-general.php?page=wp4toastmasters_settings'));
+else
+	echo '<p>These parameters can be changed by a site administrator.</p>';
+
+$start_date = $rules['start_date'].' 00:00:00';
+
+$allroles = array();
+$users = get_users('blog_id='.get_current_blog_id());
+foreach($users as $user) {
+$ud = get_userdata($user->ID);
+$userroles[$ud->last_name.$ud->first_name]['name'] = $ud->first_name.' '.$ud->last_name;
+$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%|".$_SERVER['SERVER_NAME']."|%' ORDER BY meta_key DESC ";
+$results = $wpdb->get_results($sql);
+if(!$results)
+	continue;
+
+foreach($results as $row)
+{
+	preg_match('/tm\|([^|]+)\|([^|]+)/',$row->meta_key,$matches);
+	if(empty($matches[1]) || empty($matches[1]))
+		continue;
+	$role = $matches[1];
+	$date = $matches[2];
+	if($date < $start_date)
+		continue;
+	if(!in_array($date,$userroles[$ud->last_name.$ud->first_name]['roledates'][$role]))
+		$userroles[$ud->last_name.$ud->first_name]['roledates'][$role][] = $date;
+	//if(!in_array($role,$allroles)) $allroles[] = $role;
+}
+}
+ksort($userroles);
+
+	if($_POST['roles'])
+	{
+		$report_roles = $_POST['roles'];
+		update_option('roles_report_roles',$report_roles);
+	}
+	else
+		$report_roles = get_option('roles_report_roles');
+	if(empty($report_roles))
+	{
+	global $toast_roles;
+	$report_roles = $toast_roles;	
+	}
+	
+foreach($userroles as $userroledata)
+{
+	echo '<p><strong>'.$userroledata['name'].'</strong>';
+	$speaking = 0;
+	$other_role = (int) $rules['start']; //starting score
+	foreach($userroledata['roledates'] as $role => $occurrences)
+		{
+			if(strpos($role,'ackup'))
+				;
+			elseif($role == 'Speaker')
+				{
+					$speaking = $speaking  + sizeof($occurrences);
+					//print_r($occurrences);
+				}
+			else
+				{
+					$other_role = $other_role + sizeof($occurrences);
+				}
+		}
+
+	$speakingpoints = $speaking * $rules['cost'];
+	$score = $other_role - $speakingpoints;
+	$color = ($score >= 0) ? '#000' : 'red';
+	printf(' Spoke %s times (%s points used), filled other roles %s times<br /><span style="color: %s">point balance %s</span>',$speaking, $speakingpoints, $other_role, $color, $score );
+	echo '</p>';
+}
+}
+
 function toastmasters_reports_dashboard() {
 global $wpdb, $rsvp_options;
 $titles['pathways'] = 'Pathways Progress Report';
@@ -5390,6 +5601,7 @@ $titles['advanced'] = 'Advanced Projects Progress Report';
 $titles['speeches'] = 'Past Speeches';
 $titles['no_assignment'] = 'Members Without an Assignment';
 $titles['role'] = 'Role Report';
+$titles['speaker'] = 'Speaker Points System Report';
 $titles['attendance'] = 'Attendance';
 if(isset($_GET['report']))
 {
@@ -5465,6 +5677,9 @@ if(isset($_GET['report']))
 	}
 	elseif($report_slug == 'role') {
 		toastmasters_role_report ();
+	}
+	elseif($report_slug == 'speaker') {
+		speech_points_report();
 	}
 	elseif($report_slug == 'cc') {
 		toastmasters_cc();
