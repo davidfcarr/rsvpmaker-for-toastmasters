@@ -3232,24 +3232,57 @@ toastmasters_reports();
 return;
 }
 
+function tm_sync_fields($user) {
+//don't override during sync with TI member spreadsheet
+unset($user['home_phone']);
+unset($user['work_phone']);
+unset($user['mobile_phone']);
+unset($user['user_email']);
+return $user;	
+}
+
 function member_list () {
 $hook = tm_admin_page_top(__('Member List','rsvpmaker-for-toastmasters'));
 
-$blogusers = get_users('blog_id='.get_current_blog_id());
+
+$q = 'blog_id='.get_current_blog_id();
+$joinedslug = 'joined'.get_current_blog_id();
+if(isset($_GET['new']))
+	printf('<div>Sorted to show new members first - <a href="%s">Sort alphabetically</a></div>',admin_url('admin.php?page=contacts_list'));
+else
+	printf('<div><a href="%s">Sort newest to oldest</a></div>',admin_url('admin.php?page=contacts_list&new=1'));
+
+$missing = false;
+
+$blogusers = get_users($q);
     foreach ($blogusers as $user) {
 	$userdata = get_userdata($user->ID);
 	if($userdata->hidden_profile)
 		continue;
 	$index = preg_replace('/[^A-Za-z]/','',$userdata->last_name.$userdata->first_name.$userdata->user_login);
+	if(isset($_GET['new']))
+			{
+				if(!empty($userdata->$joinedslug))
+					$index = date('Y-m-d',strtotime($userdata->$joinedslug)).$index;
+				elseif(!empty($userdata->club_member_since))
+					$index = date('Y-m-d',strtotime($userdata->club_member_since)).$index;
+				else
+					{
+						$index = '0000-00-00'.$index;
+						$missing = true;
+					}
+			}
 	$members[$index] = $userdata;
 	}
-	
-	ksort($members);
-	foreach($members as $userdata) {
+	if(isset($_GET['new']))
+		krsort($members);
+	else	
+		ksort($members);
+	foreach($members as $index => $userdata) {
 ?>	
 
 
-<h3><?php echo $userdata->first_name.' '.$userdata->last_name?></h3>
+<h3><?php echo $userdata->first_name.' '.$userdata->last_name; ?></h3>
 
 <?php
 $contactmethods['home_phone'] = __("Home Phone",'rsvpmaker-for-toastmasters');
@@ -3268,7 +3301,16 @@ $contactmethods['user_email'] = __("Email",'rsvpmaker-for-toastmasters');
 		$status = wp4t_get_member_status($userdata->ID);
 		if( !empty($status) )
 			printf('<div>'.__("Status",'rsvpmaker-for-toastmasters').': %s</div>'."\n",$status);
+		if(isset($_GET['new']))
+			{
+				if(empty($userdata->$joinedslug))
+					printf('<div>Joined: %s</div>',$userdata->club_member_since);
+				else
+					printf('<div>Joined: %s</div>',$userdata->$joinedslug);
+			}	
 	}
+if($missing)
+	echo '<p>Some entries missing join date. Sync with member roster spreadsheet from toastmasters.org to add the dates.</p>';
 tm_admin_page_bottom($hook);
 }
 
@@ -4420,7 +4462,6 @@ $name = get_project_text($project);
 <p><textarea name="comment[3]" style="width: 100%; height: 6em;"></textarea></p>
 ';
 		}
-		
 		//lookup role field, title
 		$sql = "SELECT meta_key from $wpdb->postmeta WHERE post_id=".$meeting_id. " AND meta_key LIKE '_Speaker%' AND meta_value=".$speaker_id;
 		$field = $wpdb->get_var($sql);
@@ -4471,7 +4512,7 @@ if(isset($_GET['_title_meta']))
 				continue;
 			$options = explode("|",$line);
 			$prompt = array_shift($options);
-			echo wpautop('<strong>'.$prompt.'</strong>');
+			echo wpautop('<strong>'.str_replace("!","",$prompt).'</strong>');
 				if(!empty($options))
 				{
 					echo '<p>';
@@ -4482,7 +4523,10 @@ if(isset($_GET['_title_meta']))
 					}
 					echo '</p>';
 				}
-			echo '<p><textarea name="comment['.$index.']" style="width: 100%; height: 3em;"></textarea></p>';
+			if(strpos($prompt,'!'))
+				echo '<input type="hidden" name="comment['.$index.']" value="">';
+			else
+				echo '<p><textarea name="comment['.$index.']" style="width: 100%; height: 3em;"></textarea></p>';
 			}
 		}
 echo submit_button();
@@ -4502,7 +4546,9 @@ $hook = tm_admin_page_top(__('Evaluations','rsvpmaker-for-toastmasters'));
     <div id="sections" class="rsvpmaker" >
     <section class="rsvpmaker"  id="pending">
 <?php
-printf('<p><em>%s</em></p>',__('These online evaluation forms can be used by any club but were particularly intended for online Toastmasters clubs, where they can be used to eliminate the need to email, print, and scan evaluation forms.','rsvpmaker-for-toastmasters'));
+$link = (isset($_GET['project'])) ? sprintf(' <a target="_blank" href="mailto:david@wp4toastmasters.com?subject=evaluation form issue: %s">Report errors and omissions</a>',$_GET['project']) : '';
+
+printf('<p><em>%s</em> %s</p>',__('These online evaluation forms mirror the prompts on the evaluation forms from Toastmasters International for Pathways as well as older speech manual projects.','rsvpmaker-for-toastmasters'),$link);
 
 global $current_user;
 global $rsvp_options;
@@ -4591,7 +4637,7 @@ Other Comments';
 		foreach($lines as $index => $line)
 			{
 			$parts = explode("|",$line);
-			$prompt = array_shift($parts);
+			$prompt = str_replace('!','',array_shift($parts));
 			$evaluation .= wpautop('<strong>'.$prompt.'</strong>');
 			if(!empty($_POST["check"][$index]))
 				$evaluation .= wpautop($_POST["check"][$index]);

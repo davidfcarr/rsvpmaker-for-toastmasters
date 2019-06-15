@@ -1011,10 +1011,15 @@ $project_options["Effective Coaching Level 2 Learning Your Style"] .= '<option v
 $project_times["Effective Coaching Level 2 Learning Your Style 269"] = 7;
 $display_times["Effective Coaching Level 2 Learning Your Style 269"] = "5 - 7 minutes";
 
-$projects["Effective Coaching Level 3 Increasing Knowledge 278"] = __("Reaching Consensus","rsvpmaker-for-toastmasters");
-$project_options["Effective Coaching Level 3 Increasing Knowledge"] = '<option value="Effective Coaching Level 3 Increasing Knowledge 278">'.__("Reaching Consensus","rsvpmaker-for-toastmasters")."</option>";
+$projects["Effective Coaching Level 3 Increasing Knowledge 278"] = __("Reaching Consensus - Assignment Option 1","rsvpmaker-for-toastmasters");
+$project_options["Effective Coaching Level 3 Increasing Knowledge"] = '<option value="Effective Coaching Level 3 Increasing Knowledge 278">'.__("Reaching Consensus - Assignment Option 1","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Effective Coaching Level 3 Increasing Knowledge 278"] = 7;
 $display_times["Effective Coaching Level 3 Increasing Knowledge 278"] = "5 - 7 minutes";
+
+$projects["Effective Coaching Level 3 Increasing Knowledge 279"] = __("Reaching Consensus - Assignment Option 2","rsvpmaker-for-toastmasters");
+$project_options["Effective Coaching Level 3 Increasing Knowledge"] = '<option value="Effective Coaching Level 3 Increasing Knowledge 279">'.__("Reaching Consensus - Assignment Option 2","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Effective Coaching Level 3 Increasing Knowledge 279"] = 7;
+$display_times["Effective Coaching Level 3 Increasing Knowledge 279"] = "5 - 7 minutes";
 
 $projects["Effective Coaching Level 3 Increasing Knowledge 285"] = __("Active Listening","rsvpmaker-for-toastmasters");
 $project_options["Effective Coaching Level 3 Increasing Knowledge"] .= '<option value="Effective Coaching Level 3 Increasing Knowledge 285">'.__("Active Listening","rsvpmaker-for-toastmasters")."</option>";
@@ -2974,10 +2979,15 @@ $project_options["Visionary Communication Level 4 Building Skills"] .= '<option 
 $project_times["Visionary Communication Level 4 Building Skills 2269"] = 3;
 $display_times["Visionary Communication Level 4 Building Skills 2269"] = "2 - 3 minutes";
 
-$projects["Visionary Communication Level 5 Demonstrating Expertise 2278"] = __("Develop Your Vision","rsvpmaker-for-toastmasters");
-$project_options["Visionary Communication Level 5 Demonstrating Expertise"] = '<option value="Visionary Communication Level 5 Demonstrating Expertise 2278">'.__("Develop Your Vision","rsvpmaker-for-toastmasters")."</option>";
+$projects["Visionary Communication Level 5 Demonstrating Expertise 2278"] = __("Develop Your Vision - First Speech","rsvpmaker-for-toastmasters");
+$project_options["Visionary Communication Level 5 Demonstrating Expertise"] = '<option value="Visionary Communication Level 5 Demonstrating Expertise 2278">'.__("Develop Your Vision - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Visionary Communication Level 5 Demonstrating Expertise 2278"] = 7;
 $display_times["Visionary Communication Level 5 Demonstrating Expertise 2278"] = "5 - 7 minutes";
+
+$projects["Visionary Communication Level 5 Demonstrating Expertise 2279"] = __("Develop Your Vision - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2279">'.__("Develop Your Vision - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Visionary Communication Level 5 Demonstrating Expertise 2279"] = 7;
+$display_times["Visionary Communication Level 5 Demonstrating Expertise 2279"] = "5 - 7 minutes";
 
 $projects["Visionary Communication Level 5 Demonstrating Expertise 2285"] = __("Reflect on Your Path","rsvpmaker-for-toastmasters");
 $project_options["Visionary Communication Level 5 Demonstrating Expertise"] .= '<option value="Visionary Communication Level 5 Demonstrating Expertise 2285">'.__("Reflect on Your Path","rsvpmaker-for-toastmasters")."</option>";

@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.4.4
+Version: 3.4.6
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -20,6 +20,7 @@ include "tm-reports.php";
 include "contest.php";
 include "utility.php";
 include 'toastmasters-privacy.php';
+include 'tm-online-application.php';
 
 function wpt_gutenberg_check () {
 global $carr_gut_test;
@@ -4730,7 +4731,11 @@ if(!empty($title))
 				echo '<p>'.$status.'</p>';
 			printf('<p><a href="%s">%s</a></p>',admin_url('profile.php?page=wp4t_set_status_form&member_id=').$userdata->ID,__('Set Away Message','rsvpmaker-for-toastmasters'));
 			}
-if(!empty($userdata->club_member_since))
+
+$joinedslug = 'joined'.get_current_blog_id();
+if(!empty($userdata->$joinedslug))
+	printf('<div class="club_join_date">%s: %s</div>',__('Joined Club','rsvpmaker-for-toastmasters'),$userdata->$joinedslug);
+elseif(!empty($userdata->club_member_since))
 	printf('<div class="club_join_date">%s: %s</div>',__('Joined Club','rsvpmaker-for-toastmasters'),$userdata->club_member_since);
 if(!empty($userdata->original_join_date))
 	printf('<div class="original_join_date">%s: %s</div>',__('Joined Toastmasters','rsvpmaker-for-toastmasters'),$userdata->original_join_date);
@@ -5266,6 +5271,7 @@ function add ($user)
 		if(!empty($user["club_member_since"]))
 			{
 			update_user_meta($member_id,"club_member_since",$user["club_member_since"]);
+			update_user_meta($member_id,"joined".get_current_blog_id(),$user["club_member_since"]);
 			}
 		if(!empty($user["original_join_date"]))
 			{
@@ -5283,6 +5289,10 @@ function add ($user)
 			$this->active_ids[] = $user_id;
     // Generate something random for a password reset key.
 			$this->sendWelcome($user);
+			if(empty($user["club_member_since"]))
+				update_user_meta($user_id,"joined".get_current_blog_id(),date('m/d/Y'));
+			else
+				update_user_meta($user_id,"joined".get_current_blog_id(),$user["club_member_since"]);
 			}
 		else
 			 {
@@ -5384,7 +5394,8 @@ function check ($user)
 			{
 			$this->confirmations[] = $user["first_name"].' '.$user["last_name"].' recognized by user ID'; 
 			$this->active_ids[] = $member_exists->ID;
-			return;
+			$user['ID'] = $member_exists->ID;
+			return $user;
 			}
 		}
 	else
@@ -5397,8 +5408,9 @@ function check ($user)
 		{
 		$this->confirmations[] = $user["first_name"].' '.$user["last_name"].' recognized by Toastmasters ID'; 
 		$this->active_ids[] = $member_exists->ID;
-		return;
-		}
+		$user['ID'] = $member_exists->ID;
+		return tm_sync_fields($user);
+	}
 	}
 	$login_exists = get_user_by('login',$user["user_login"] );
 	$email_exists = get_user_by('email',$user["user_email"] );
@@ -5406,7 +5418,7 @@ function check ($user)
 		{
 		$user["ID"] = $login_exists->ID;
 		$this->confirmations[] = get_member_name($login_exists->ID).' recognized by name and email';
-		return $user; // add the toastmasters ID
+		return tm_sync_fields($user); // add the toastmasters ID
 		}
 	elseif($email_exists)
 		{
@@ -5414,14 +5426,14 @@ function check ($user)
 			if(empty($tmid) && !empty($user["toastmasters_id"]))
 				{
 					$user["ID"] = $email_exists->ID;
-					return $user; // right user, no tmid
+					return tm_sync_fields($user); // right user, no tmid
 				}
 			elseif(!empty($tmid) && !empty($user["toastmasters_id"]) && ($tmid != $user["toastmasters_id"]))
 				{
 					//different person with same email address
 					$user["user_email"] = $user["user_login"].'@example.com';
 					$this->confirmations[] = '<span style="color: red;">'.$user["first_name"].' '.$user["last_name"].' appears to have the same email address as '.get_member_name($email_exists->ID). ': '.$email_exists->user_email. '(set to '.$user["user_email"].' instead to keep records distinct)</span>';
-					return $user;
+					return tm_sync_fields($user);
 				}
 			else
 				{
@@ -5572,8 +5584,8 @@ $contactmethods['linkedin_url'] = __("LinkedIn Profile",'rsvpmaker-for-toastmast
 $contactmethods['business_url'] = __("Business Web Address",'rsvpmaker-for-toastmasters');
 $contactmethods['toastmasters_id'] = "Toastmasters ID";
 $contactmethods['education_awards'] = "Toastmasters Awards (DTM etc)";
-$contactmethods['club_member_since'] = "Joined Club";
-$contactmethods['original_join_date'] = "Joined Toastmasters";
+//$contactmethods['club_member_since'] = "Joined Club";
+//$contactmethods['original_join_date'] = "Joined Toastmasters";
 
   // Remove Yahoo IM
   unset($contactmethods['yim']);
@@ -8288,10 +8300,141 @@ class WP_Widget_Club_News_Posts extends WP_Widget {
 	}
 }
 
+//widget for posts excluding members only
+class NewestMembersWidget extends WP_Widget {
+
+	public function __construct() {
+		$widget_ops = array('classname' => 'newest_members', 'description' => __( "Newest Members of Club.",'rsvpmaker-for-toastmasters') );
+		parent::__construct('newest_members', __('Newest Members','rsvpmaker-for-toastmasters'), $widget_ops);
+		$this->alt_option_name = 'widget_newest_members';
+	}
+
+	public function widget($args, $instance) {
+		$cache = array();
+		if ( ! $this->is_preview() ) {
+			$cache = wp_cache_get( 'widget_newest_members', 'widget' );
+		}
+
+		if ( ! is_array( $cache ) ) {
+			$cache = array();
+		}
+
+		if ( ! isset( $args['widget_id'] ) ) {
+			$args['widget_id'] = $this->id;
+		}
+
+		if ( isset( $cache[ $args['widget_id'] ] ) ) {
+			echo $cache[ $args['widget_id'] ];
+			return;
+		}
+
+		ob_start();
+
+		$title = ( ! empty( $instance['title'] ) ) ? $instance['title'] : __( 'Newest Members','rsvpmaker-for-toastmasters' );
+
+		/** This filter is documented in wp-includes/default-widgets.php */
+		$title = apply_filters( 'widget_title', $title, $instance, $this->id_base );
+
+		$number = ( ! empty( $instance['number'] ) ) ? absint( $instance['number'] ) : 5;
+		if ( ! $number )
+			$number = 5;
+
+		/**
+		 * Filter the arguments for the newest_members widget.
+		 *
+		 * @since 3.4.0
+		 *
+		 * @see WP_Query::get_posts()
+		 *
+		 * @param array $args An array of arguments used to retrieve the club_news posts.
+		 */
+//fetch user list and sort
+$joinedslug = 'joined'.get_current_blog_id();
+$q = 'blog_id='.get_current_blog_id();
+$blogusers = get_users($q);
+foreach($blogusers as $user) {
+	$userdata = get_userdata($user->ID);
+if(!empty($userdata->$joinedslug))
+		$index = date('Y-m-d',strtotime($userdata->$joinedslug));
+elseif(!empty($userdata->club_member_since))
+	$index = date('Y-m-d',strtotime($userdata->club_member_since));
+else
+		continue; // don't include if no join date
+$month = date('F Y',strtotime($index));
+$index .= $userdata->user_registered;
+$members[$index] = $userdata->first_name.' '.$userdata->last_name.' ('.$month.')';
+}
+
+?>
+		<?php echo $args['before_widget']; ?>
+		<?php if ( $title ) {
+			echo $args['before_title'] . $title . $args['after_title'];
+		$count = 1;
+		if(!empty($members))
+			{
+				krsort($members);
+				echo '<ul>';
+				foreach($members as $index => $member)
+					{
+						printf('<li>%s</li>',$member);
+						$count++;
+						if($count > $number)
+							break;
+					}
+				echo '</ul>';
+			}
+		
+		}
+		//display list
+		 ?>
+		<?php echo $args['after_widget']; ?>
+<?php
+		// Reset the global $the_post as this query will have stomped on it
+
+		if ( ! $this->is_preview() ) {
+			$cache[ $args['widget_id'] ] = ob_get_flush();
+			wp_cache_set( 'widget_newest_members', $cache, 'widget' );
+		} else {
+			ob_end_flush();
+		}
+	}
+
+	public function update( $new_instance, $old_instance ) {
+		$instance = $old_instance;
+		$instance['title'] = strip_tags($new_instance['title']);
+		$instance['number'] = (int) $new_instance['number'];
+		$this->flush_widget_cache();
+
+		$alloptions = wp_cache_get( 'alloptions', 'options' );
+		if ( isset($alloptions['widget_newest_members']) )
+			delete_option('widget_newest_members');
+
+		return $instance;
+	}
+
+	public function flush_widget_cache() {
+		wp_cache_delete('widget_newest_members', 'widget');
+	}
+
+	public function form( $instance ) {
+		$title     = isset( $instance['title'] ) ? esc_attr( $instance['title'] ) : '';
+		$number    = isset( $instance['number'] ) ? absint( $instance['number'] ) : 5;
+?>
+		<p><label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" /></p>
+
+		<p><label for="<?php echo $this->get_field_id( 'number' ); ?>"><?php _e( 'Number of posts to show:' ); ?></label>
+		<input id="<?php echo $this->get_field_id( 'number' ); ?>" name="<?php echo $this->get_field_name( 'number' ); ?>" type="text" value="<?php echo $number; ?>" size="3" /></p>
+
+<?php
+	}
+}
+
 function wptoast_widgets () {
 	register_widget("AwesomeWidget");
 	register_widget( 'WP_Widget_Members_Posts' );
 	register_widget( 'WP_Widget_Club_News_Posts' );
+	register_widget("NewestMembersWidget");
 }
 
 function club_news($args) {
