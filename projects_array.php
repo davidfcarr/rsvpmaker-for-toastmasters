@@ -1258,6 +1258,11 @@ $project_options["Engaging Humor Level 3 Increasing Knowledge"] .= '<option valu
 $project_times["Engaging Humor Level 3 Increasing Knowledge 14079"] = 7;
 $display_times["Engaging Humor Level 3 Increasing Knowledge 14079"] = "5 - 7 minutes";
 
+$projects["Engaging Humor Level 3 Increasing Knowledge 14080"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Engaging Humor Level 3 Increasing Knowledge"] .= '<option value="Engaging Humor Level 3 Increasing Knowledge 14080">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Engaging Humor Level 3 Increasing Knowledge 14080"] = 7;
+$display_times["Engaging Humor Level 3 Increasing Knowledge 14080"] = "5 - 7 minutes";
+
 $projects["Engaging Humor Level 3 Increasing Knowledge 14084"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Engaging Humor Level 3 Increasing Knowledge"] .= '<option value="Engaging Humor Level 3 Increasing Knowledge 14085">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Engaging Humor Level 3 Increasing Knowledge 14084"] = 7;
@@ -1457,6 +1462,11 @@ $projects["Innovative Planning Level 3 Increasing Knowledge 539"] = __("Deliver 
 $project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 539">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Innovative Planning Level 3 Increasing Knowledge 539"] = 7;
 $display_times["Innovative Planning Level 3 Increasing Knowledge 539"] = "5 - 7 minutes";
+//second
+$projects["Innovative Planning Level 3 Increasing Knowledge 540"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 540">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Innovative Planning Level 3 Increasing Knowledge 540"] = 7;
+$display_times["Innovative Planning Level 3 Increasing Knowledge 540"] = "5 - 7 minutes";
 
 $projects["Innovative Planning Level 3 Increasing Knowledge 545"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Innovative Planning Level 3 Increasing Knowledge"] .= '<option value="Innovative Planning Level 3 Increasing Knowledge 545">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
@@ -1659,6 +1669,11 @@ $projects["Leadership Development Level 3 Increasing Knowledge 769"] = __("Deliv
 $project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 769">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Leadership Development Level 3 Increasing Knowledge 769"] = 7;
 $display_times["Leadership Development Level 3 Increasing Knowledge 769"] = "5 - 7 minutes";
+
+$projects["Leadership Development Level 3 Increasing Knowledge 770"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 770">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Leadership Development Level 3 Increasing Knowledge 770"] = 7;
+$display_times["Leadership Development Level 3 Increasing Knowledge 770"] = "5 - 7 minutes";
 
 $projects["Leadership Development Level 3 Increasing Knowledge 775"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Leadership Development Level 3 Increasing Knowledge"] .= '<option value="Leadership Development Level 3 Increasing Knowledge 775">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
@@ -1866,6 +1881,11 @@ $projects["Motivational Strategies Level 3 Increasing Knowledge 1006"] = __("Del
 $project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1006">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Motivational Strategies Level 3 Increasing Knowledge 1006"] = 7;
 $display_times["Motivational Strategies Level 3 Increasing Knowledge 1006"] = "5 - 7 minutes";
+//second
+$projects["Motivational Strategies Level 3 Increasing Knowledge 1007"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1007">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Motivational Strategies Level 3 Increasing Knowledge 1007"] = 7;
+$display_times["Motivational Strategies Level 3 Increasing Knowledge 1007"] = "5 - 7 minutes";
 
 $projects["Motivational Strategies Level 3 Increasing Knowledge 1012"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Motivational Strategies Level 3 Increasing Knowledge"] .= '<option value="Motivational Strategies Level 3 Increasing Knowledge 1012">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
@@ -2073,6 +2093,11 @@ $projects["Persuasive Influence Level 3 Increasing Knowledge 1242"] = __("Delive
 $project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1242">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Persuasive Influence Level 3 Increasing Knowledge 1242"] = 7;
 $display_times["Persuasive Influence Level 3 Increasing Knowledge 1242"] = "5 - 7 minutes";
+//second
+$projects["Persuasive Influence Level 3 Increasing Knowledge 1243"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
+$project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1243">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Persuasive Influence Level 3 Increasing Knowledge 1243"] = 7;
+$display_times["Persuasive Influence Level 3 Increasing Knowledge 1243"] = "5 - 7 minutes";
 
 $projects["Persuasive Influence Level 3 Increasing Knowledge 1248"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Persuasive Influence Level 3 Increasing Knowledge"] .= '<option value="Persuasive Influence Level 3 Increasing Knowledge 1248">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
@@ -2280,6 +2305,11 @@ $projects["Presentation Mastery Level 3 Increasing Knowledge 1479"] = __("Delive
 $project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1479">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Presentation Mastery Level 3 Increasing Knowledge 1479"] = 7;
 $display_times["Presentation Mastery Level 3 Increasing Knowledge 1479"] = "5 - 7 minutes";
+//second
+$projects["Presentation Mastery Level 3 Increasing Knowledge 1480"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1480">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Presentation Mastery Level 3 Increasing Knowledge 1480"] = 7;
+$display_times["Presentation Mastery Level 3 Increasing Knowledge 1480"] = "5 - 7 minutes";
 
 $projects["Presentation Mastery Level 3 Increasing Knowledge 1485"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
 $project_options["Presentation Mastery Level 3 Increasing Knowledge"] .= '<option value="Presentation Mastery Level 3 Increasing Knowledge 1485">'.__("Focus on the Positive","rsvpmaker-for-toastmasters")."</option>";
@@ -2477,6 +2507,11 @@ $projects["Strategic Relationships Level 3 Increasing Knowledge 1703"] = __("Del
 $project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1703">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Strategic Relationships Level 3 Increasing Knowledge 1703"] = 7;
 $display_times["Strategic Relationships Level 3 Increasing Knowledge 1703"] = "5 - 7 minutes";
+//second
+$projects["Strategic Relationships Level 3 Increasing Knowledge 1704"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1704">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Strategic Relationships Level 3 Increasing Knowledge 1704"] = 7;
+$display_times["Strategic Relationships Level 3 Increasing Knowledge 1704"] = "5 - 7 minutes";
 
 $projects["Strategic Relationships Level 3 Increasing Knowledge 1709"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Strategic Relationships Level 3 Increasing Knowledge"] .= '<option value="Strategic Relationships Level 3 Increasing Knowledge 1709">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
@@ -2669,6 +2704,11 @@ $projects["Team Collaboration Level 3 Increasing Knowledge 1921"] = __("Deliver 
 $project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1921">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Team Collaboration Level 3 Increasing Knowledge 1921"] = 7;
 $display_times["Team Collaboration Level 3 Increasing Knowledge 1921"] = "5 - 7 minutes";
+
+$projects["Team Collaboration Level 3 Increasing Knowledge 1922"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1922">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Team Collaboration Level 3 Increasing Knowledge 1922"] = 7;
+$display_times["Team Collaboration Level 3 Increasing Knowledge 1922"] = "5 - 7 minutes";
 
 $projects["Team Collaboration Level 3 Increasing Knowledge 1927"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Team Collaboration Level 3 Increasing Knowledge"] .= '<option value="Team Collaboration Level 3 Increasing Knowledge 1927">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";
@@ -2881,6 +2921,11 @@ $projects["Visionary Communication Level 3 Increasing Knowledge 2163"] = __("Del
 $project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2163">'.__("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters")."</option>";
 $project_times["Visionary Communication Level 3 Increasing Knowledge 2163"] = 7;
 $display_times["Visionary Communication Level 3 Increasing Knowledge 2163"] = "5 - 7 minutes";
+
+$projects["Visionary Communication Level 3 Increasing Knowledge 2164"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
+$project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2164">'.__("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters")."</option>";
+$project_times["Visionary Communication Level 3 Increasing Knowledge 2164"] = 7;
+$display_times["Visionary Communication Level 3 Increasing Knowledge 2164"] = "5 - 7 minutes";
 
 $projects["Visionary Communication Level 3 Increasing Knowledge 2169"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_options["Visionary Communication Level 3 Increasing Knowledge"] .= '<option value="Visionary Communication Level 3 Increasing Knowledge 2169">'.__("Effective Body Language","rsvpmaker-for-toastmasters")."</option>";

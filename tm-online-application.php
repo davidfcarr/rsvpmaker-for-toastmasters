@@ -2,6 +2,7 @@
 add_shortcode('tm_member_application','tm_member_application');
 
 function tm_member_application ($atts) {
+fix_timezone();
 if(isset($_GET['rsvpstripeconfirm']))
     return; // let rsvpmaker show payment message
 
@@ -201,8 +202,11 @@ function tm_application_form_field($slug) {
         if(!empty($defaults[$slug]) )
             $value = $defaults[$slug];
         elseif(strpos($slug,'date'))
-            $value = $defaults['date'];        
-        printf(' <input type="text" name="%s" id="%s" value="%s" />',$slug,$slug,$value);
+            $value = $defaults['date'];
+        if(empty($value))
+            printf(' <input type="text" name="%s" id="%s" value="" />',$slug,$slug);
+        else
+            printf(' <input type="hidden" name="%s" id="%s" value="%s" /> <strong>%s</strong>',$slug,$slug,$value,$value);        
         }
 }
     
@@ -312,6 +316,7 @@ submit_button(); ?>
 }
 
 function verification_by_officer () {
+fix_timezone();
 ob_start();
 ?>
 <p><strong>Verification of Club Officer</strong></p>
@@ -462,20 +467,113 @@ if(isset($_GET['app']))
 }
 
 $results = $wpdb->get_results('SELECT ID, post_title, post_modified FROM '.$wpdb->posts.' WHERE post_status="private" AND post_type="tmapplication" ORDER BY ID DESC');
-foreach($results as $post) {
-    $verified = '';
-    $approval = get_post_meta($post->ID,'officer_signature',true);
-    if($approval)
-        $verified = sprintf('(Approved %s)',get_post_meta($post->ID,'officer_signature_date',true));
-    else
-        $verified = check_application_payment($post->ID);
-    printf('<p><a href="%s">%s</a> %s %s</p>',admin_url('admin.php?page=member_application_approval&app='.$post->ID),$post->post_title, $post->post_modified, $verified);
+if($results)
+{
+echo '<div style="border: thin solid #333; padding: 10px;">';
+    foreach($results as $post) {
+        $verified = '';
+        $approval = get_post_meta($post->ID,'officer_signature',true);
+        if($approval)
+            $verified = sprintf('(Approved %s)',get_post_meta($post->ID,'officer_signature_date',true));
+        else
+            $verified = check_application_payment($post->ID);
+        printf('<p><a href="%s">%s</a> %s %s</p>',admin_url('admin.php?page=member_application_approval&app='.$post->ID),$post->post_title, $post->post_modified, $verified);
+        }
+echo '<div>';    
+}
+
+}
+
+function member_application_upload () {
+if(!empty($_POST)) {
+    $upload_overrides = array(
+        'test_form' => false
+    );
+    $content = '';
+    //print_r($_POST);
+    //print_r($_FILES);
+    foreach($_FILES as $file) {
+        if(!empty($file[tmp_name]))
+        {
+            $result = wp_handle_upload($file,$upload_overrides);
+            //echo '<br />upload result';
+            //print_r($result);
+            if($result['url'])
+            {
+                if(strpos($result['type'],'png') || strpos($result['type'],'jpg') || strpos($result['type'],'gif'))
+                    $content .= sprintf('<p><img src="%s" style="max-width: %s" /></p>',$result['url'],'95%');
+                else
+                    $content .= sprintf('<p><a target="_blank" href="%s">Application file</a></p>',$result['url']);
+            }
+            else
+            {
+                echo '<p>Upload error ';
+                print_r($result);
+                echo '</p>';
+            }
+
+        }
     }
+
+    if(!empty($_POST['application3'])) {
+        $content .= sprintf('<p><a target="_blank" href="%s">Application file (external link)</a></p>',$_POST['application3']);
+    }
+
+    if(!empty($content)) {
+        $newpost['post_type'] = 'tmapplication';
+        $newpost['post_status'] = 'private';
+        $newpost['post_content'] = $content;
+        $newpost['post_title'] = 'Membership Application: '.$_POST['first_name'].' '.$_POST['last_name'];
+        $post_id = wp_insert_post($newpost);
+        add_post_meta($post_id,'first_name',$_POST['first_name']);
+        add_post_meta($post_id,'last_name',$_POST['last_name']);
+        add_post_meta($post_id,'user_email',$_POST['user_email']);
+        add_post_meta($post_id,'toastmasters_id',$_POST['toastmasters_id']);
+        printf('<p><a href="%s">Application posted</a></p>',admin_url('admin.php?page=member_application_approval&app='.$post_id));    
+        if(!empty($_POST['approved']))
+            {
+                echo '<p>Marking approved</p>';
+                global $current_user;
+                update_post_meta($post_id,'officer_signature',get_user_meta($current_user->ID,'first_name',false).' '.get_user_meta($current_user->ID,'last_name',false));
+                update_post_meta($post_id,'officer_signature_date',date('F j, Y'));            
+                $member_factory = new Toastmasters_Member();
+                $user["first_name"] = get_post_meta($post_id,'first_name',true);		
+                $user["last_name"] = get_post_meta($post_id,'last_name',true);		
+                $user["user_email"] = get_post_meta($post_id,'user_email',true);
+                $user["toastmasters_id"] = get_post_meta($post_id,'toastmasters_id',true);
+                $member_factory->check($user);
+                $member_factory->show_prompts();            
+            }
+    }
+}
+
+?>
+<style>
+label {
+    display: inline-block;
+    width: 125px;
+}
+</style>
+<h1>Member Application Manual Upload</h1>
+<p>When you receive an application as a PDF or image file, you can upload it to be tracked along with applications submitted as HTML. Alternatively, you can provide a link to a file sharing service like Dropbox or Google Drive.</p>
+<form action="<?php echo admin_url('admin.php?page=member_application_upload');?>" method="post" enctype="multipart/form-data">
+<p><label>First name:</label> <input type="text" name="first_name"></p>
+<p><label>Last name:</label> <input type="text" name="last_name"></p>
+<p><label>Email:</label> <input type="text" name="user_email"></p>
+<p><label>Toastmasters ID:</label> <input type="text" name="toastmasters_id"> <br />(optional, if available)</p>
+<p>File: <input type="file" name="application" id="application"></p>
+<p>File: <input type="file" name="application2" id="application2"> <br />(2nd page, if captured separately)</p>
+<p><label>Link:</label> <input type="text" name="application3" id="application3"></p>
+<p><input type="checkbox" name="approved"> Mark approved (signed by current user, today's date)</p>
+<p><input type="submit" value="Submit" name="submit"></p>
+</form>
+<?php    
 }
 
 function tm_application_menus () {
     add_options_page( 'TM Application Form', 'TM Application Form', 'manage_options', 'member_application_settings', 'member_application_settings');
     add_menu_page( 'Review/Approve Applications', 'Review/Approve Applications', 'edit_users', 'member_application_approval', 'member_application_approval');
+    add_submenu_page( 'member_application_approval','Add File or Link', 'Add File or Link', 'edit_users', 'member_application_upload', 'member_application_upload');
 }
 add_action('admin_menu','tm_application_menus');
 ?>

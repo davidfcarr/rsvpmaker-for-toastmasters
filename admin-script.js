@@ -8,6 +8,13 @@
 	});
 	
 	$('.speech_update').hide();
+
+	var activetab = $('a.nav-tab-active').attr('href');
+	if(activetab)
+	{
+		$('.toastmasters section').hide();
+		$('section' + activetab).show();	
+	}
 		
 	$(document).on( 'click', '.nav-tab-wrapper a', function() {
 		$('section').hide();
@@ -49,7 +56,7 @@
 	var user_id = $('#tm_select_member select').val();
 	var member_url = location.href;
 	var urlparts = member_url.split('&toastmaster');
-	var member_url = urlparts[0] + '&toastmaster=' + user_id;
+	var member_url = urlparts[0] + '&toastmaster=' + user_id + '&active=' + tab;
 	location.href = member_url;
 	});
 
@@ -180,13 +187,14 @@ $('#add_speech_form').on( "change", ".manual", function() {
 $("#checkAllDelete").click(function(){
     $('#deleterecords input:checkbox').not(this).prop('checked', this.checked);
 });
-
-$( document ).on( 'click', '.wptoast-notice .notice-dismiss', function () {
+ 
+$( document ).on( 'click', 'div.wptoast-notice button.notice-dismiss', function () {
 	// Read the "data-notice" information to track which notice
 	// is being dismissed and send it via AJAX
 	var type = $( this ).closest( '.wptoast-notice' ).data( 'notice' );
 	// Make an AJAX call
 	// Since WP 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+	console.log('notice dismiss: '+type);
 	$.ajax( ajaxurl,
 	  {
 		type: 'POST',

@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.4.6
+Version: 3.5.7
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -21,7 +21,8 @@ include "contest.php";
 include "utility.php";
 include 'toastmasters-privacy.php';
 include 'tm-online-application.php';
-
+include 'api.php';
+include 'mailster.php';
 function wpt_gutenberg_check () {
 global $carr_gut_test;
 if(function_exists('register_block_type') && !isset($carr_gut_test))
@@ -41,7 +42,6 @@ if(isset($_GET['email_agenda']))
 	global $email_context;
 	$email_context = true;
 }
-
 
 add_filter( 'login_message', 'wp4toast_login_message' );
 add_filter('the_content','awesome_event_content');
@@ -96,7 +96,7 @@ add_action( 'admin_head', 'profile_richtext' );
 
 function profile_richtext () {
 if(strpos($_SERVER['REQUEST_URI'],'profile.php') || strpos($_SERVER['REQUEST_URI'],'user-edit.php')) 
-echo '<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script> 
+echo '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
 <script>
         tinymce.init({selector:"textarea#description",plugins: "code,link"});		
 </script>';
@@ -196,11 +196,10 @@ if(!empty($wp4toastmasters_member_message))
 <br /></p>
 
 <?php
-
-printf('<p><a href="%s">%s</a> (%s)</p>',admin_url('profile.php?page=wp4t_set_status_form'),__('Set Away Message','rsvpmaker-for-toastmasters'),__('on vacation or unavailable','rsvpmaker-for-toastmasters'));
-
-if(current_user_can('edit_signups'))
-	printf('<p><a href="%s">%s</a></p>',site_url('?signup_sheet_editor=1'),__('Look ahead editor (edit signups for several weeks)','rsvpmaker-for-toastmasters'));
+$status = wp4t_get_member_status($current_user->ID);
+if(!empty($status))
+	$status = ' - Current status: '.$status;
+printf('<p><a href="%s">%s</a> (%s) %s</p>',admin_url('profile.php?page=wp4t_set_status_form'),__('Set Away Message','rsvpmaker-for-toastmasters'),__('on vacation or unavailable','rsvpmaker-for-toastmasters'),$status);
 
 if(function_exists('bp_core_get_userlink'))
 	printf('<p>%s: %s</p>',__('Post a message on your club social profile'),bp_core_get_userlink( $current_user->ID ) );
@@ -208,6 +207,7 @@ if(function_exists('bp_core_get_userlink'))
   $count = 0;
 	
 $allow_assign = get_option('allow_assign');
+$history = new role_history($current_user->ID);
 
 	$results = get_future_events(" ( post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%' ) ",3, OBJECT, 4);
 		if($results)
@@ -220,12 +220,23 @@ $allow_assign = get_option('allow_assign');
 					$permalink = rsvpmaker_permalink_query($row->postID);
 					$sql = "SELECT * FROM `$wpdb->postmeta` where post_id=".$row->postID."  AND meta_value=".$current_user->ID." AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
 					$role_results = $wpdb->get_results($sql);
-					if($role_results)
+					$roles = array();
+					$absences = get_absences_array($row->postID);
+					if(in_array($current_user->ID,$absences))
+						$roles[] = 'planned abscence';
+				if($role_results)
 					foreach($role_results as $role_row)
 						{
-						$role = preg_replace('/[^A-Za-z]/',' ',$role_row->meta_key);
+						$role = trim(preg_replace('/[^A-Za-z]/',' ',$role_row->meta_key));
+						$roles[] = $role;
 						$upcoming_roles .= sprintf('<p><a href="%s">%s %s</a></p>',$permalink,$role, $title);
 						}
+					if(empty($roles))
+						$r = 'None';
+					else
+						$r = implode(", ",$roles);
+					$title .= ' (Role: '.$r.')';
+
 					if(strpos($row->post_content,'role'))
 					{
 						$link = '<a href="'.$permalink.'">'.__('Sign Up','rsvpmaker-for-toastmasters').'</a>';
@@ -247,14 +258,19 @@ $allow_assign = get_option('allow_assign');
 	$link .= '<a target="_blank" href="'.$permalink.'print_agenda=1&no_print=1">'.__('Show','rsvpmaker-for-toastmasters').'</a> | ';
 	$link .= '<a href="'.$permalink.'assigned_open=1">'.__('Show with Contacts','rsvpmaker-for-toastmasters').'</a>';
 
+	if(current_user_can($security['agenda_setup']))
+	$link .= '<br /><a href="'.$permalink.'edit_sidebar=1">'.__('Edit Agenda Sidebar','rsvpmaker-for-toastmasters').'</a>';	
 	printf('<p><strong>%s</strong></p> %s', $title, $link);
 					}
 				}			  
 			  }
+printf('<p><a href="%s" target="_blank">%s</a>
+<br /></p>',site_url('/?signup2=1'),__("Print Signup Sheet",'rsvpmaker-for-toastmasters'));
 
-?>
+if(current_user_can('edit_signups'))
+	printf('<p><a href="%s">%s</a></p>',site_url('?signup_sheet_editor=1'),__('Edit Signups (multiple weeks)','rsvpmaker-for-toastmasters'));
 
-<?php
+
 
 $link = get_rsvpmaker_archive_link();
 printf('<p><a href="%s">%s</a></p>',$link,__('View future events'));
@@ -267,8 +283,6 @@ if(!empty($upcoming_roles))
 }
 
 ?>
-<p><a href="<?php echo site_url('/?signup2=1'); ?>" target="_blank"><?php _e("Print Signup Sheet",'rsvpmaker-for-toastmasters');?></a>
-<br /></p>
 <p><a href="./profile.php#user_login"><?php _e("Edit My Member Profile",'rsvpmaker-for-toastmasters');?></a>
 <br /></p>
 <!-- p><a href="< ?php echo site_url('/members/'); ?>">Member Directory</a>
@@ -278,7 +292,9 @@ if(!empty($upcoming_roles))
 <p><a href="<?php echo site_url(); ?>"><?php _e("Home Page",'rsvpmaker-for-toastmasters');?></a>
 <br /></p>
 <?php
-if(current_user_can('email_list') && isset($wp4toastmasters_mailman["members"]) && !empty($wp4toastmasters_mailman["members"]) )
+if(current_user_can('email_list') && function_exists('wpt_mailster_get_email') && $list_email = wpt_mailster_get_email() )
+	printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$list_email,$list_email);
+elseif(current_user_can('email_list') && isset($wp4toastmasters_mailman["members"]) && !empty($wp4toastmasters_mailman["members"]) )
 	printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$wp4toastmasters_mailman["members"],$wp4toastmasters_mailman["members"]);
 elseif(current_user_can('email_list'))
 	printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s?subject=%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',wp4t_emails(),get_bloginfo('name'),__('Mailing list','rsvpmaker-for-toastmasters'));
@@ -299,7 +315,7 @@ printf('<p><a href="%s">%s</a>',admin_url('admin.php?page=cl_report'), __('Compe
 printf('<p><a href="%s">%s</a>',admin_url('admin.php?page=toastmasters_advanced'), __('Advanced Awards','rsvpmaker-for-toastmasters') );
 printf('<p><a href="%s">%s</a>',admin_url('admin.php?page=toastmasters_attendance_report'), __('Attendance','rsvpmaker-for-toastmasters') );
 	
-tm_goal_form();
+//tm_goal_form();
 }
 
 if(current_user_can('edit_others_posts'))
@@ -411,7 +427,6 @@ if ($attachments) {
 
 function toastmasters_admin_widget () {
 ?>
-<p><strong><a class="wp-first-item" href="admin.php?page=toastmasters_screen">Toastmasters</a></strong> - Reports and Tools for Updating Speech and Role Records</p>
 <p><strong><a class="wp-first-item" href="edit.php">Posts</a></strong> - listing of blog posts</p>
 <ul>
  	<li><a href="post-new.php">Add New</a> - new blog post (club news or article)</li>
@@ -440,7 +455,7 @@ if(current_user_can('manage_options'))
 ?>
 <p><strong>Appearance</strong></p>
 <ul>
- 	<li id="menu-posts-rsvpmaker"><a class="hide-if-no-customize" href="customize.php">Customize</a> - tweak website design</li>
+ 	<li id="menu-posts-rsvpmaker"><a class="hide-if-no-customize" href="customize.php">Customize</a> - tweak website design, including menu at top of the page, page header/banner, background color or image</li>
  	<li><a href="widgets.php">Widgets</a> - add/update sidebar widgets</li>
  	<li><a href="nav-menus.php">Menus</a> - update menu of pages, other links</li>
 <?php
@@ -451,7 +466,7 @@ if(current_user_can('manage_options'))
 </ul>
 <?php
 }
-if(current_user_can('add_members'))
+if(current_user_can('edit_users'))
 {
 ?>
 <p><strong><a href="users.php?page=add_awesome_member">Users</strong> - list users/members</p>
@@ -470,7 +485,14 @@ if(current_user_can('manage_options'))
 </ul>
 <?php
 }
+if(function_exists('mailster_install'))
+	printf('<p><strong>Mailing List</strong></p>
+	<ul>
+	<li><a href="%s">Manage Mailster Mailing List</a> - add addresses to whitelist, tweak settings</li>
+	<li><a href="%s">Unsubscribe List</a></li>
+	</ul>',admin_url('admin.php?page=mailster_toastmasters'),admin_url('edit.php?post_type=rsvpemail&page=unsubscribed_list'));
 
+do_action('toastmasters_admin_widget_end');
 }
 
 function awesome_add_dashboard_widgets() {
@@ -794,7 +816,7 @@ function wpt_remind_unassigned($args = array())
 	global $post;
 	$post = $event_post = next_toastmaster_meeting();
 	$toastmaster = get_post_meta($post->ID,"_Toastmaster_of_the_Day_1",true);
-	if(is_numeric($toastmasters) && ($toastmaster > 1))
+	if(is_numeric($toastmaster) && ($toastmaster > 1))
 	{
 		$user = get_userdata($toastmaster);
 		$from_email = $user->user_email;
@@ -1008,6 +1030,9 @@ if(!empty($atts["editable"]))
 		$editid = 'agenda_note_'.$atts["editable"];
 		$editable = get_post_meta($post->ID,'agenda_note_'.$atts["editable"],true);
 		}
+
+		$slug = preg_replace('/[^a-zA-Z_]/','',$editid);
+
 		if(rsvpmaker_is_template())
 		{
 			$editable .= '<p>Editable note block will appear here</p>';
@@ -1017,15 +1042,14 @@ if(!empty($atts["editable"]))
 			$editable = '<div class="agenda_note_editable"><textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="'.$editid.'" /></div>';
 			$display = 'both';
 			}
-		elseif(empty($editable) && is_club_member() && (current_user_can('edit_signups') || edit_signups_role()) && !isset($_REQUEST["print_agenda"]) && !is_email_context())
-			{
-			$permalink = get_permalink($post->ID);
-			$permalink .= (strpos($permalink,'?')) ? '&edit_roles=1' : '?edit_roles=1'; 
-			$editable = sprintf('%s %s %s <a href="%s">%s</a>',__('To add','rsvpmaker-for-toastmasters'),$atts["editable"],__('content, switch to ','rsvpmaker-for-toastmasters'),$permalink, __('Edit Signups mode'));
-			}
 		elseif(empty($editable))
 			$editable = __('Not set','rsvpmaker-for-toastmasters');
-		$content .= '<h3>'.$atts["editable"].'</h3>'.wpautop($editable);
+		if(is_club_member() && !isset($_REQUEST["edit_roles"]) && (current_user_can('edit_signups') || edit_signups_role()) && !isset($_REQUEST["print_agenda"]) && !is_email_context())
+			{
+			$permalink = get_permalink($post->ID).'#'.$slug;
+			$edit_editable = '<div class="agenda_note_editable_editone_wrapper"><a class="agenda_note_editable_editone_on">Edit</a></div><form method="post" action="'.$permalink.'" class="agenda_note_editable_editone"><div class="agenda_note_editable"><textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="'.$editid.'" /></div><button>Update</button><input type="hidden" name="post_id" value="'.$post->ID.'" /> </form>';
+			}
+		$content .= '<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.wpautop($editable).'</div>'.$edit_editable;
 	}
 
 	$maxtime = (!empty($atts["time_allowed"])) ? $atts["time_allowed"] : '';
@@ -1261,8 +1285,13 @@ function toastmaster_short($atts=array(),$content="") {
 		return '<div class="role-block role-agenda-item"><p><strong>'.$atts["special"].'</strong></p></div>';	
 	elseif(empty($atts["role"]) )
 		return;
-	if($atts["role"] == 'custom')
-		$atts["role"] = $atts["custom_role"];
+	if(($atts["role"] == 'custom') )
+		{
+		if(empty($atts["custom_role"]))
+			$atts['role'] = 'Custom role undefined';
+		else
+			$atts["role"] = $atts["custom_role"];
+		}
 	
 	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
 	$count = (int) (isset($atts["count"])) ? $atts["count"] : 1;
@@ -1283,7 +1312,7 @@ function toastmaster_short($atts=array(),$content="") {
 		{
 		if($count == 1)
 			return;
-		$output .= '<input type="hidden" id="post_id" value="'.$post->ID.'">';
+		$output .= '<input type="hidden" id="_'.$field_base.'post_id" value="'.$post->ID.'">';
 		$output .= '<h3>'.$atts["role"].'</h3><ul id="'.$field_base.'" class="tmsortable sortable">';
 		for($i = 1; $i <= $count; $i++)
 			{
@@ -1401,7 +1430,7 @@ function toastmaster_short($atts=array(),$content="") {
 		$output .= $atts["role"].': </div><div class="role-data"> ';
 		$ajaxclass = 'toastrole'; // ($assigned) ? 'toastupdate' : 
 		if(is_club_member() && !(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]) || (isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'toastmasters_reconcile') ) )  ) 
-			$output .= sprintf(' <form id="%s_form" method="post" class="%s" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="role" id="role" value="%s"><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$ajaxclass,$permalink, $current_user->ID, $field, $post->ID,wp_create_nonce($field));
+			$output .= sprintf(' <form id="%s_form" method="post" class="%s" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="role" value="%s"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$ajaxclass,$permalink, $current_user->ID, $field, $post->ID,wp_create_nonce($field));
 				
 		if($assigned == '-1')
 				{
@@ -1501,19 +1530,19 @@ function toastmaster_short($atts=array(),$content="") {
 								$points_warning = true;
 								}
 								$output .= sprintf('<div class="update_form" id="update'.$field.'">%s</div>',$detailsform);	
-								$output .= '<button name="take_role" id="take_role" value="1">Take Role</button>';
+								$output .= '<button name="take_role" id="take_role'.$field.'" value="1">Take Role</button>';
 								
 							}
 						}
 					else
 						{
 							$output .= sprintf('<div class="update_form" id="update'.$field.'">%s</div>',$detailsform);	
-							$output .= '<button name="take_role" id="take_role" value="1">Take Role</button>';
+							$output .= '<button name="take_role" id="take_role'.$field.'" value="1">Take Role</button>';
 						}
 				}
 				else
 					{
-							$output .= '<button name="take_role" id="take_role" value="1">Take Role</button>';
+							$output .= '<button name="take_role" id="take_role'.$field.'" value="1">Take Role</button>';
 					}
 				}
 
@@ -1548,7 +1577,10 @@ function toastmaster_short($atts=array(),$content="") {
 				elseif(is_numeric($speaker_id))
 					{
 					$member = get_userdata( $speaker_id );
-					$speaker_name = $member->first_name.' '.$member->last_name;
+					if(empty($member))
+						$speaker_name = 'Name? user: '.$speaker_id;
+					else
+						$speaker_name = $member->first_name.' '.$member->last_name;
 					if(!empty($member->education_awards)) $speaker_name .= ', '.$member->education_awards;
 					}
 				else
@@ -1562,10 +1594,17 @@ function toastmaster_short($atts=array(),$content="") {
 		{
 			$output .= '</form>';
 			if($assigned == $current_user->ID)
-			
-			$output .= sprintf('<form id="remove%s_form" method="post" class="remove_me_form" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="remove_role" id="remove_role%s" value="%s"><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$permalink, $current_user->ID, $field, $field, $post->ID,wp_create_nonce('remove'.$field)).'<button name="delete_role" id="delete_role'.$field.'" value="1">'.__('Remove Me','rsvpmaker-for-toastmasters').'</button></form>';
+			$output .= sprintf('<form id="remove%s_form" method="post" class="remove_me_form" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="remove_role" id="remove_role%s" value="%s"><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$permalink, $current_user->ID, $field, $field, $post->ID,wp_create_nonce('remove'.$field)).'<button name="delete_role" id="delete_role'.$field.'" value="1">'.__('Remove Me','rsvpmaker-for-toastmasters').'</button></form>';
+			//hidden edit field
+			if(current_user_can('edit_signups')) { 
+				$awe_user_dropdown = awe_user_dropdown($field, $assigned);
+				$editone = 'Member: '.$awe_user_dropdown;
+				if(strpos($field,'Speaker') )
+					$editone .= str_replace('id="','id="editone',$detailsform);
+				$output .= sprintf('<div id="editonewrapper%s""><a class="editonelink" editone="%s">Edit</a></div><form id="editone%s" method="post" class="edit_one_form" action="%s" style="display: block;"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s"><input type="hidden" name="role" value="%s"><div>%s</div>',$field,$field,$field,$permalink,$post->ID,wp_create_nonce($field),$field,$editone).'<button name="edit_one" id="edit_one_button'.$field.'" value="1">'.__('Submit','rsvpmaker-for-toastmasters').'</button></form>';	
+			}
 		}
-					
+
 		$output .= '</div></div><!-- end role block -->';			
 			} //end for loop
 
@@ -1749,7 +1788,7 @@ update_user_meta($member_id,'status',stripslashes($status));
 
 function wp4t_set_status_form() {
 $hook = tm_admin_page_top('Set Away Status');
-printf('<p>%s</p>',__('Set a temporary message for the members page letting people know when you are on vacation or unavailable to attend.','rsvpmaker-for-toastmasters'));
+printf('<p>%s</p>',__('Set a temporary message for the members page letting people know when you are  to attend.','rsvpmaker-for-toastmasters'));
 
 if(isset($_POST["month"][0]) && is_club_member() )
 	{
@@ -2157,7 +2196,7 @@ if($is_past)
 
 function wpt_tweak_notes_x ($matches) {
 	$data = json_decode($matches[1]);
-	$time = $data->time_allowed;
+	$time = (empty($data->time_allowed)) ? '' : $data->time_allowed;
 	$timeopt = '';
 	for($ii = 0; $ii <= 60; $ii++)
 	{
@@ -2249,7 +2288,7 @@ global $current_user;
 $output = "";
 
 		$manual = get_post_meta($post->ID, '_manual'.$field, true);
-		if(empty($manual) || strpos($manual,'hoose Manual'))
+		if(empty($manual) || strpos($manual,'hoose Manual') || strpos($manual,'elect Manual'))
 			{
 			if(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]) || is_admin() )
 				$current_manual = '';
@@ -2960,8 +2999,6 @@ $security = get_tm_security ();
 if(!function_exists('do_blocks'))
 add_submenu_page('edit.php?post_type=rsvpmaker', __("Agenda Timing",'rsvpmaker-for-toastmasters'), __("Agenda Timing",'rsvpmaker-for-toastmasters'), $security['edit_signups'], "agenda_timing", "agenda_timing");
 
-//add_submenu_page('tools.php', __("Cron Email Tester",'rsvpmaker-for-toastmasters'), __("Cron Email Tester",'rsvpmaker-for-toastmasters'), 'manage_options', "cron_email_tester", "cron_email_tester");
-	
 add_submenu_page('profile.php', __("Add Members",'rsvpmaker-for-toastmasters'), __("Add Members",'rsvpmaker-for-toastmasters'), 'edit_others_posts', "add_awesome_member", "add_awesome_member" );
 
 add_submenu_page('profile.php', __("Set Away Status",'rsvpmaker-for-toastmasters'), __("Set Away Status",'rsvpmaker-for-toastmasters'), 'read', "wp4t_set_status_form", "wp4t_set_status_form" );
@@ -3142,8 +3179,15 @@ if(!empty($administrators))
 	printf('<p>Administrators: %s</p>',implode(', ',$administrators));
 if(!empty($managers))
 	printf('<p>Managers: %s</p>',implode(', ',$managers));
+$contributor_notification = get_option('wpt_contributor_notification');
+if(empty($contributor_notification))
+	$contributor_notification = get_option('admin_email');
+echo '<h3>Contributor Notifications</h3><p>'.__('Users assigned the Contributor role may submit blog posts for publication, but they must be approved by an author or editor. Who should be notified when contributor posts are submitted for review?','rsvpmaker-for-toastmasters').'<p>';
+printf('<p><input type="text" name="wpt_contributor_notification" value="%s" size="150" /><br /><em>%s</em></p>',$contributor_notification, __('One or more email addresses, separated by commas. If you do not want these notifications, enter "none"','rsvpmaker-for-toastmasters'));
 
-if(current_user_can('update_core'))
+if(function_exists('mailster_install'))
+	printf('<h3>Mailster Mailing List</h3><p><a href="%s">Manage Mailster Mailing List</a> - add addresses to whitelist, tweak settings</p>',admin_url('admin.php?page=mailster_toastmasters'));
+elseif(current_user_can('update_core'))
 {
 // restrict this to network admin on multisite
 $wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
@@ -3545,6 +3589,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_agenda_timezone' );
 	register_setting( 'wp4toastmasters-settings-group', 'allow_assign' );
 	register_setting( 'wp4toastmasters-settings-group', 'hide_planner_promo' );
+	register_setting( 'wp4toastmasters-settings-group', 'wpt_contributor_notification' );
 
 	if(isset($_POST['wp4toast_reminder']))
 		{
@@ -4362,11 +4407,11 @@ if(!empty($agenda_menu)) {
 		}
 
 	if(current_user_can('edit_signups'))	
-	$link .= '<li class="has-sub"><a target="_blank" href="'.site_url('?signup2=1').'">'.__('Signup Sheet','rsvpmaker-for-toastmasters').'</a><ul><li class="last"><a target="_blank" href="'.site_url('?signup_sheet_editor=1').'">'.__('Look Ahead Editor','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
+	$link .= '<li class="has-sub"><a target="_blank" href="'.site_url('?signup2=1').'">'.__('Signup Sheet','rsvpmaker-for-toastmasters').'</a><ul><li class="last"><a target="_blank" href="'.site_url('?signup_sheet_editor=1').'">'.__('Edit Signups (multiple weeks)','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
 	else
 	$link .= '<li class="last"><a target="_blank" href="'.site_url('?signup2=1').'">'.__('Signup Sheet','rsvpmaker-for-toastmasters').'</a></li>';
 
-	$link .= '<li class="last"><a  target="_blank" href="'.admin_url('admin.php?page=toastmasters_planner').'">'.__('Planner','rsvpmaker-for-toastmasters').'</a></li>';
+	$link .= '<li class="last"><a  target="_blank" href="'.admin_url('admin.php?page=toastmasters_planner').'">'.__('Role Planner','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '</ul></div>';
 
 if(isset($_REQUEST["assigned_open"]) && current_user_can($security['edit_signups']))
@@ -5321,6 +5366,8 @@ function sendWelcome($user) {
 		$set_password_msg = __('To set your password, visit the following address:');
 		$set_password = site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user["user_login"]), 'login');
 
+		$set_password = apply_filters('welcome_message_set_password',$set_password, $key, $user['user_login']);
+
 		$profile_url = admin_url('profile.php#user_login');
 		$message = '<p>'.__('You have been registered at').': '.site_url().'</p>';
 		$message .= '<p>'.__('Username').': '.$user["user_login"].'</p>';
@@ -5649,9 +5696,17 @@ class AwesomeWidget extends WP_Widget {
 					$t = strtotime($row->datetime);
 					$title = $row->post_title .' '. strftime($dateformat,$t );
 					$permalink = get_permalink($row->postID);
-					if(!isset($signup))
-						$signup = login_redirect($permalink);
-					$ev[ $row->postID ] = sprintf('<a href="%s">%s', login_redirect($permalink), $title);
+					//if(!isset($signup))
+						//$signup = login_redirect($permalink);
+					//$ev[ $row->postID ] = sprintf('<a href="%s">%s', login_redirect($permalink), $title);
+					if(is_user_logged_in())
+					$ev[ $row->postID ] = sprintf('<a class="meeting" href="%s">%s</a>', $permalink, $title);
+					else
+					{
+						$ev[ $row->postID ] = sprintf('<a class="meeting" href="%s">%s</a>', $permalink, $title);
+						$ev[ $row->postID ] .= sprintf('<div class="login_signup">&nbsp;&#8594; <a href="%s">%s</a>', login_redirect($permalink), __('Login/Sign Up','rsvpmaker-for-toastmasters'));	
+					}
+					$ev[ $row->postID ] = '<div class="meetinglinks">'.$ev[ $row->postID ].'</div>';
 					}
 				}
 			  }// end if dates
@@ -5659,14 +5714,14 @@ class AwesomeWidget extends WP_Widget {
 			if(isset($ev) && !empty($ev) )
 			{
 			
-			echo '<li class="widgetrsvpview"><a href="'.get_post_type_archive_link( 'rsvpmaker' ).'">'.__('View Upcoming Events','rsvpmaker-for-toastmasters').'</a></li>';
+			//echo '<li class="widgetrsvpview"><a href="'.get_post_type_archive_link( 'rsvpmaker' ).'">'.__('View Upcoming Events','rsvpmaker-for-toastmasters').'</a></li>';
 			
 			echo '<li class="widgetsignup">'.__('Member sign up for roles','rsvpmaker-for-toastmasters').":";			
 			$class = '';
 			$count = 1;
 			  foreach($ev as $id => $e)
 			  	{
-			  	printf('<div %s>%s</a></div>',$class, $e);
+			  	printf('<div %s>%s</div>',$class, $e);
 				if($count == $showmore)
 					$class = ' class="moremeetings" ';
 				$count++;
@@ -5752,7 +5807,6 @@ global $wp_roles;
 $wp_roles->add_cap('contributor','upload_files');
 }
 
-
 //translate
 function edit_toast_roles( $content ) {
 global $post;
@@ -5762,17 +5816,20 @@ if(isset($_POST["_tm_sidebar"]))
 if(isset($_REQUEST["edit_sidebar"]))
 	{
 	$sidebar_editor = agenda_sidebar_editor($post->ID);
-return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script> 
+return sprintf('<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
 <script>
         tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
 </script>
 <form id="edit_roles_form" method="post" action="%s"">
-%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>%s',rsvpmaker_permalink_query($post->ID),$sidebar_editor,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),$content);
+%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>%s',rsvpmaker_permalink_query($post->ID),$sidebar_editor,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),$content);
 	}
 if(isset($_REQUEST["reorder"]))
 	return '<p><em>'.__('Drag and drop to change the order in which speakers, evaluators and other roles with multiple participants will appear on the agenda').'</em></p>'.$content;
 if(!isset($_REQUEST["edit_roles"]) || (!current_user_can('edit_signups') && !edit_signups_role()))
-	return $content;
+	return '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
+	<script>
+			tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
+	</script>'."\n".$content;
 	
 $r = 'x'.rand();
 $content .= '<p><span id="time'.$r.'" class="toasttime" "></span><select class="tweakminutes" timetarget="'.$r.'" style="display:none;"><option value="0" selected="selected">0</option></select> End of meeting</p>';
@@ -5780,13 +5837,13 @@ $content .= '<p><span id="time'.$r.'" class="toasttime" "></span><select class="
 if(current_user_can('agenda_setup'))
 $content .= sprintf('<p><a href="%sedit_sidebar=1">%s</a></p>',rsvpmaker_permalink_query($post->ID),__('Edit Sidebar','rsvpmaker-for-toastmasters'));//agenda_sidebar_editor($post->ID);
 	
-return sprintf('<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script> 
+return sprintf('<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
 <script>
         tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
 </script>
 <form id="edit_roles_form" method="post" action="%s"">
 %s
-<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"><input type="hidden" id="editor_id" name="editor_id" value="%d" /><input type="hidden" id="toastcode" value="%s"></form> %s',rsvpmaker_permalink_query($post->ID),$content,$post->ID,$current_user->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),time_tally_include($post->ID));
+<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="editor_id" name="editor_id" value="%d" /><input type="hidden" id="toastcode" value="%s"></form> %s',rsvpmaker_permalink_query($post->ID),$content,$post->ID,$current_user->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),time_tally_include($post->ID));
 }
 
 function time_tally_include ($post_id) {
@@ -5917,7 +5974,7 @@ $permalink = rsvpmaker_permalink_query($post->ID);
 	$date = get_rsvp_date($post->ID);
 
 $output .= sprintf('<form id="edit_roles_form" method="post" action="%s">
-%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" id="post_id" value="%d"></form>',$permalink,$content,$post->ID);
+%s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"></form>',$permalink,$content,$post->ID);
 
 return $output;
 
@@ -5980,7 +6037,8 @@ function signup_sheet_editor() {
 		if(strpos($date->post_content,'wp4toastmasters/absences'))
 			$cell[$date->ID] .= tm_absence(array());
 		$cell[$date->ID] .= sprintf('<p><a href="%s?edit_roles=1">Edit</a></p>',get_permalink($post->ID));
-		
+		$cell[$date->ID] .= sprintf('<div id="norole%d"></div>',$date->ID);
+		$norole_call[] = sprintf('norole(%d);',$date->ID);
 		$datecount++;
 		if($datecount == $limit)
 			break;
@@ -6061,6 +6119,7 @@ $('.editor_assign').on('change', function(){
 		jQuery.post(ajaxurl, data, function(response) {
 		$('#'+statusid).html(response);
 		$('#'+statusid).fadeIn(200);
+		norole(post_id);
 		});
 	}
 });	
@@ -6089,6 +6148,7 @@ $('.absences').on('change', function(){
 		console.log(response);
 		$('#'+statusid).html(response);
 		$('#'+statusid).fadeIn(200);
+		norole(post_id);
 		});
 	}
 });	
@@ -6146,13 +6206,21 @@ $('.absences_remove').on('click', function(){
 		console.log(response);
 		$('#'+statusid).html(response);
 		$('#'+statusid).fadeIn(200);
+		norole(post_id);
 		});
 	}
 });	
 
-
+function norole(post_id) {
+	$('#norole'+post_id).html('updating list of members with no role');
+	$.getJSON('/wp-json/rsvptm/v1/norole/'+post_id,function(data) {
+		$('#norole'+post_id).html('<strong>Members with No Role</strong><br />'+data.join('<br />'));
+    });
+}
+".implode("\n",$norole_call)."
 });
 </script>
+
 <input id='toastcode' type='hidden' value='".wp_create_nonce( "rsvpmaker-for-toastmasters" )."' />
 <input id='editor_id' type='hidden' value='".$current_user->ID."' />
 
@@ -6608,7 +6676,7 @@ $wp4toastmasters_mailman = get_option("wp4toastmasters_mailman");
 		$output = '<div id="message">'.stripslashes($_POST["note"])."</div>\n<p>Sent by: ".$current_user->display_name.' <a href="mailto:'.$current_user->user_email.'">'.$current_user->user_email."</a>\n".$output;		
 	$mail["html"] = $header. $output . '</body></html>';
 	$mail["from"] = $current_user->user_email;
-	$mail["fromname"] = get_bloginfo('name') . '('.$current_user->display_name.')';
+	$mail["fromname"] = get_bloginfo('name') . ' / '.$current_user->display_name;
 	$mail["subject"] = stripslashes($_POST["subject"]);
 	if(isset($emails) && is_array($emails))
 	{
@@ -6636,7 +6704,7 @@ $wp4toastmasters_mailman = get_option("wp4toastmasters_mailman");
 
 	$mailform = '<h3>'.__("Add a Note",'rsvpmaker-for-toastmasters').'</h3>
 	<p>'.__("Your note will be emailed along with the agenda and details about which roles are filled or open. You can change the subject line to emphasize the roles you need filled or special plans for a meeting (such as a contest).",'rsvpmaker-for-toastmasters').'</p>
-<script src="//tinymce.cachefly.net/4.1/tinymce.min.js"></script><br />
+<script src="//cdn.tinymce.com/4/tinymce.min.js"></script><br />
 <script>
         tinymce.init({selector:"textarea",plugins: "code, link"});	
 </script>
@@ -6721,6 +6789,15 @@ function awesome_user_profile_fields( $user ) { ?>
 <th><label for="public_profile"><?php _e("Email Notifications",'rsvpmaker-for-toastmasters');?></label></th>
 <td>
 <?php
+
+if(isset($_GET['debug']) && current_user_can('manage_options'))
+{
+	$data = get_userdata($user->ID);
+	echo '<pre>';
+	print_r($data);
+	echo '</pre>';
+}
+
 $e = strtolower($user->user_email);
 $unsub = get_option('rsvpmail_unsubscribed');
 if(empty($unsub))
@@ -7372,14 +7449,19 @@ function member_not_user() {
 echo '<p style="color: red;"><b>For Toastmasters members, please use the <a href="'.admin_url('users.php?page=add_awesome_member').'">Add Member</a> form instead.</b></p>';
 }
 
-
-add_action('init','add_awesome_roles');
+//want this to run ASAP, even before init
+add_action('plugins_loaded','add_awesome_roles');
 
 function add_awesome_roles() {
 $manager = get_role('manager');
-if(!$manager)
+/*
+if($manager)
+	fix_user_levels_manager ();
+else
+*/
 
-add_role( 'manager', 'Manager', array( 'delete_others_pages' => true,
+if(!$manager)
+	add_role( 'manager', 'Manager', array( 'delete_others_pages' => true,
 'read' => true,
 'upload_files' => true,
 'delete_others_posts' => true,
@@ -7425,19 +7507,30 @@ add_role( 'manager', 'Manager', array( 'delete_others_pages' => true,
 "add_member" => true,
 "edit_members" => true
  ) );
+}
 
-// fix legacy role
-$officer_users = get_users( 'blog_id='.get_current_blog_id().'&role=officer' );
-if(!empty($officer_users))
-{
-// Array of WP_User objects.
-foreach ( $officer_users as $officer ) {
-	$user = array('ID' => $officer->ID, 'role' => 'manager', 'user_email' => $officer->user_email);
-	wp_update_user($user);    
+function manager_author_editor () {
+	$users = get_users([ 'role__in' => [ 'manager' ], 'role__not_in' => [ 'editor' ], 'blog_id' => get_current_blog_id() ]);
+	foreach ($users as $user) {
+		$user->add_role('editor'); //set_role('manager');
 	}
 }
-remove_role('officer');
+add_action('admin_init','manager_author_editor');
+/*
+function manager_fix_authors_dropdown($args) {
+	if(!empty($args['who']) && ($args['who'] == 'authors') )
+	{
+		if(empty($args['role__in']))
+			$args['role__in'] = array('contributor','author','editor','manager','administrator','network_administrator');
+		else
+			$args['role__in'][] = 'manager';
+	}
+	rsvpmaker_debug_log($args,'modified args author dropdown');
+	return $args;
 }
+*/
+
+add_filter('wp_dropdown_users_args','manager_fix_authors_dropdown');
 
 function awesome_role_activation_wrapper() {
 
@@ -7488,18 +7581,25 @@ if(isset($_POST['wp4toastmasters_admin_ids']) )
 
 }
 
+add_shortcode('jstest','jstest');
+
+function jstest() {
+	global $post;
+	if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && (($_REQUEST["page"] == 'toastmasters_reconcile') || ($_REQUEST["page"] == 'my_progress_report') || ($_REQUEST["page"] == 'wp4t_evaluations') || ($_REQUEST["page"] == 'toastmasters_reports') )  ) )
+		return 'js yes';
+	else
+		return 'jsno';
+}
 
 function toastmasters_css_js() {
 	global $post;
-	if( (isset($post->post_content) && (is_wp4t() || strpos($post->post_content,'rsvpmaker') ) ) || (isset($_REQUEST["page"]) && (($_REQUEST["page"] == 'toastmasters_reconcile') || ($_REQUEST["page"] == 'my_progress_report') || ($_REQUEST["page"] == 'wp4t_evaluations') || ($_REQUEST["page"] == 'toastmasters_reports') )  ) )
-	{
 	if(isset($_GET['action']) || (is_admin() && !isset($_GET['page'])) )
 		return; // don't load all this in editor or post listings
+	if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && (($_REQUEST["page"] == 'toastmasters_reconcile') || ($_REQUEST["page"] == 'my_progress_report') || ($_REQUEST["page"] == 'wp4t_evaluations') || ($_REQUEST["page"] == 'toastmasters_reports') )  ) )
+	{
 	wp_enqueue_style( 'jquery' );
 	wp_enqueue_style( 'jquery-ui-core' );
 	wp_enqueue_style( 'jquery-ui-sortable' );
-	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.6' );
-	wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css');
 	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.7.5');
 	wp_enqueue_script( 'script-toastmasters');
 	$manuals = get_manuals_options();
@@ -7511,6 +7611,7 @@ function toastmasters_css_js() {
 	$display_times = get_projects_array('display_times');
 	wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
 	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
+	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.6.2' );
 	}
 }
 
@@ -7593,19 +7694,13 @@ function get_absences_array($post_id) {
 			$exp = get_user_meta($user->ID,'status_expires',true);
 			if(empty($exp))
 				continue;
-			if($exp < $time)
-			{
-			delete_user_meta($user->ID,'status_expires');
-			delete_user_meta($user->ID,'status');			
-			}
-			else
+			if($exp > $time)
 			{
 			$absences[] = $user->ID;
 			}
 		}
 	return array_unique($absences);
 }
-
 
 function wp4_email_contacts( $has_assignment = array() ) {
 
@@ -7721,7 +7816,9 @@ if(function_exists('do_blocks'))
 <p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
-<!-- wp:wp4toastmasters/agendaedit {"editable":"Theme"} /-->';
+<!-- wp:wp4toastmasters/agendaedit {"editable":"Theme"} /-->
+
+<!-- wp:wp4toastmasters/absences /-->';
 
 else
 	$default = '[agenda_note padding_time="0"  agenda_display="agenda" strong="" italic="" size="" style="" alink="" editable="" time_allowed="1"]Sgt of Arms opens the meeting.[/agenda_note]
@@ -8709,7 +8806,8 @@ $cleared = get_option('cleared_rsvptoast_notices');
 $cleared = is_array($cleared) ? $cleared : array();
     // Pick up the notice "type" - passed via jQuery (the "data-notice" attribute on the notice)
     $cleared[] = $_REQUEST['type'];
-    update_option('cleared_rsvptoast_notices',$cleared);
+	update_option('cleared_rsvptoast_notices',$cleared);
+	print_r($cleared);
 }
 
 function rsvptoast_admin_notice() {
@@ -8889,39 +8987,13 @@ if($theme_name != 'Lectern')
 
 if(!get_option('page_on_front') && !in_array('front',$cleared))
 	{
+	
 	if(isset($_REQUEST["create_welcome_page"]) && $_REQUEST["create_welcome_page"])
 	{
 		echo '<div class="updated">';
 		global $current_user;
 		
-		if(isset($_REQUEST["oldsite"]) && !empty($_REQUEST["oldsite"]))
-		{
-		$response = wp_remote_get( $_REQUEST["oldsite"] );
-			if( is_array($response) ) {
-			  $header = $response['headers']; // array of http header lines
-			  $html = $response['body']; // use the content
-			} 
-		$chunks = preg_split('/<div id="[^"]+" class="MainAccordion">/',$html);
-		if(sizeof($chunks) > 1)
-			$html = $chunks[1];
-		else
-			{
-		    $html = preg_replace(array(// Remove invisible content
-            '@<head[^>]*?>.*?</head>@siu',
-            '@<style[^>]*?>.*?</style>@siu',
-            '@<script[^>]*?.*?</script>@siu',
-            '@<noscript[^>]*?.*?</noscript>@siu',
-            ),
-        "", //replace above with nothing
-        $html );
-		echo '<p>'.__('Imported content may include extraneous text/links, such as content of menus and sidebars.','rsvpmaker-for-toastmasters').'</p>';
-			}
-		$welcome = preg_replace('/(<[^>]+) style=".*?"/i', '$1', strip_tags($html,'<p><a><h1><h2><h3><b><strong><i><em><img>'));
-		$welcome = str_replace('&nbsp;',' ',$welcome);
-		echo '<p>'.__('Be sure to check imported content for formatting errors. Plan to replace photos and other images, which are included as references to your old website.','rsvpmaker-for-toastmasters').'</p>';
-		}
-		else
-			$welcome = '<span style="color: #ff0000;"><strong>Your custom welcome message here:</strong></span> Delete this and replace it with what YOU want to say about your club.
+		$welcome = '<span style="color: #ff0000;"><strong>Your custom welcome message here:</strong></span> Delete this and replace it with what YOU want to say about your club.
 
 Some boilerplate content from toastmasters.org is concluded below to get you started, but right up at the top of the page here you should say <em>what makes your club special</em>. Don\'t be afraid to <a href="http://wp4toastmasters.com/2014/11/16/your-toastmasters-club-website-show-some-personality/">show some personality</a>!
 
@@ -8976,25 +9048,56 @@ Anyone who is a strong leader has to first be an effective communicator. In Toas
 	update_option('page_on_front',$home_id);
 	update_option('page_for_posts',$blog_id);
 	printf('<p><a href="%s">'.__('Edit welcome page','rsvpmaker-for-toastmasters').'</a></p>',admin_url('post.php?action=edit&post=').$home_id);
-	if(isset($_REQUEST["addpages"]))
-		rsvptoast_pages($current_user->ID);
 	echo "</div>";
 	}
+
+	if(isset($_REQUEST["create_welcome_page"]))
+		{ // even if set to 0, clear the reminder
+		$cleared[] = 'front';
+		update_option('cleared_rsvptoast_notices',$cleared);
+		}
 	else {
+	ob_start();
 	?>
-    <div class="error">
-    <p>Do you want to create a welcome page as the front page (rather than having a blog listing as the front page)? Optionally, you can import content from an existing site on (such as Free Toast Host / toastmastersclubs.org site).</p>
+    <p>Do you want to create a welcome page as the front page (rather than having a blog listing as the front page)?</p>
     <form action="<?php echo admin_url('edit.php?post_type=page'); ?>" method="get">
-    <p><input type="radio" name="create_welcome_page" value="1" checked="checked">Yes - import from <input type="text" name="oldsite" size="60" placeholder="http://"> </p>
+    <p><input type="radio" name="create_welcome_page" value="1" checked="checked">Yes - create welcome page based on default content. Show blog listing on a separate page.</p>
     <p><input type="radio" name="create_welcome_page" value="0">No, I prefer the blog listing as front page.</p>
+    <p><input type="checkbox" name="addpages" value="1" checked="checked" /> Add pages for calendar, member directory, Toastmasters International info; set up menu.</p>
+    <button><?php _e('Submit','rsvpmaker-for-toastmasters') ?></button>
+    </form>
+	<?php
+	$message = ob_get_clean();
+	rsvptoast_admin_notice_format($message, 'front', $cleared, 'info');
+	}
+	return;
+	} // end page on front routine
+
+if(isset($_REQUEST["addpages"]))
+	{
+		rsvptoast_pages($current_user->ID);
+		if(!in_array('front',$cleared)) {
+			$cleared[] = 'front';
+			update_option('cleared_rsvptoast_notices',$cleared);	
+		}		
+	}
+
+/*
+if(!in_array('front',$cleared)) { // if a static front page is not set, or registered as cleared, check to see if other default pages are installed
+$found = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%srsvpmaker_upcoming%' OR post_content LIKE '%rsvpmaker/upcoming%' ");
+if(!$found) {
+?>
+    <div class="error">
+    <p>Do you want to add these default pages?</p>
+    <form action="<?php echo admin_url('edit.php?post_type=page'); ?>" method="get">
     <p><input type="checkbox" name="addpages" value="1" checked="checked" /> Add pages for calendar, member directory, Toastmasters Internation info; set up menu.</p>
     <button><?php _e('Submit','rsvpmaker-for-toastmasters') ?></button>
     </form>
     </div>
 	<?php
 	}
-	return;
-	} // end page on front routine
+}
+*/
 
 if(!in_array('settings',$cleared))
 {
@@ -9139,6 +9242,9 @@ return 'http://wp4toastmasters.com/tmbranding/toastmasters3.jpg';
 }
 
 function rsvptoast_pages ($user_id) {
+	$pages = get_pages();
+	foreach($pages as $page)
+		$titles[] = $page->page_title;
 	$post = array(
 	  'post_content'   => '[awesome_members comment="This placeholder code displays the member listing"]',
 	  'post_name'      => 'members',
@@ -9148,6 +9254,7 @@ function rsvptoast_pages ($user_id) {
 	  'post_author'    => $user_id,
 	  'ping_status'    => 'closed'
 	);
+	if(!in_array('Members',$titles))
 	$members = wp_insert_post($post);
 	$post = array(
 	  'post_content'   => '[rsvpmaker_upcoming calendar="1" comment="This placeholder code displays the calendar of events."]',
@@ -9158,6 +9265,7 @@ function rsvptoast_pages ($user_id) {
 	  'post_author'    => $user_id,
 	  'ping_status'    => 'closed'
 	);
+	if(!in_array('Calendar',$titles))
 	$calendar = wp_insert_post($post);
 
 	$post = array(
@@ -9183,6 +9291,7 @@ https://www.youtube.com/watch?v=AykYRO5d_lI',
 	  'post_author'    => $user_id,
 	  'ping_status'    => 'closed'
 	);
+	if(!in_array('Toastmasters International',$titles))
 	$tm = wp_insert_post($post);
 
 $name = 'Primary Menu';
@@ -9244,7 +9353,6 @@ if($blog_id)
   $locations['primary-menu'] = $menu->term_id;
   $locations['primary'] = $menu->term_id;
   set_theme_mod( 'nav_menu_locations', $locations );
-
 }
 
 function placeholder_image () {
@@ -10726,7 +10834,7 @@ function tmlayout_main($atts) {
 	if($post->ID == $layout)
 		{
 		$meetings = future_toastmaster_meetings(1);
-		if(!$meetings[0]->ID)
+		if(empty($meetings[0]->ID))
 			return 'View the agenda of a current meeting to test this';
 		$permalink = get_permalink($meetings[0]->ID);
 		$permalink .= (strpos($permalink,'?')) ? '&' : '?';
@@ -11010,7 +11118,10 @@ foreach($results as $row)
 	if(strpos($slug,'_Evaluator') !== false)
 		{
 		$userdata = get_userdata($assigned);
-		$evaluator[$p] = $userdata->first_name.' '.$userdata->last_name;
+		if(empty($userdata))
+			$evaluator[$p] = $assigned;
+		else	
+			$evaluator[$p] = $userdata->first_name.' '.$userdata->last_name;
 		$high = ($p > $high) ? $p : $high;
 		}
 	}
@@ -11121,6 +11232,11 @@ foreach($results as $row)
 	$assigned = $row->meta_value;
 	$slug = $row->meta_key;
 $userdata = get_userdata($assigned);
+if(empty($userdata))
+{
+	//might be a guest or member record removed
+	$tmagendadata['wpt_evaluators'] .= sprintf('<div><strong>Evaluator: %s</strong></div>',$assigned);	
+}
 $contact = '';
 $contactmethods['home_phone'] = __("Home Phone",'rsvpmaker-for-toastmasters');
 $contactmethods['work_phone'] = __("Work Phone",'rsvpmaker-for-toastmasters');
@@ -11133,8 +11249,8 @@ if(strpos($name,'phone') && !empty($userdata->$name) )
 	$contact .= sprintf("<div>%s: %s</div>\n",$value,$userdata->$name);
 	}
 }
-$contact .= sprintf('<div>'.__("Email",'rsvpmaker-for-toastmasters').': <a href="mailto:%s">%s</a></div>'."\n",$userdata->user_email,$userdata->user_email);
-$tmagendadata['wpt_evaluators'] .= sprintf('<div><strong>Evaluator: %s %s</strong></div>',$userdata->first_name, $userdata->last_name).$contact;
+	$contact .= sprintf('<div>'.__("Email",'rsvpmaker-for-toastmasters').': <a href="mailto:%s">%s</a></div>'."\n",$userdata->user_email,$userdata->user_email);
+	$tmagendadata['wpt_evaluators'] .= sprintf('<div><strong>Evaluator: %s %s</strong></div>',$userdata->first_name, $userdata->last_name).$contact;	
 	}
 return $tmagendadata['wpt_evaluators'];
 }
@@ -11551,7 +11667,7 @@ function toastmasters_init () {
 		$post_id = $_POST['post_id'];
 		$check = $_POST['check'];
 		if(!wp_verify_nonce($check,$role))
-			die('Security error');
+			die('Security error: '.var_export($_REQUEST, true));
 		
 		update_post_meta($post_id,$role,$user_id);
 		if(strpos($role,'Speaker'))
@@ -11561,10 +11677,10 @@ function toastmasters_init () {
 			update_post_meta($post_id,'_title'.$role,stripslashes($_POST["_title"][$role]));
 			update_post_meta($post_id,'_intro'.$role,stripslashes($_POST["_intro"][$role]));			
 		}
-		$o = 'Updated';
+		$o = 'Assigned to: '.get_member_name($user_id);
 		foreach($_POST as $name => $value)
 		{
-			if(($name == 'user_id') || ($name == 'post_id') || ($name == 'check'))
+			if(($name == 'user_id') || ($name == 'post_id') || ($name == 'check')  || ($name == 'editor_assign')  )
 				continue;
 			if(is_array($value))
 			{
@@ -11593,7 +11709,7 @@ function toastmasters_init () {
 		 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 		 WHERE a1.meta_value > ".$startfrom." AND post_status='publish' AND (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ORDER BY a1.meta_value ";
 		$next = $wpdb->get_row($sql);
-		if($next)
+		if($next && !isset($_REQUEST['editor_assign']))
 		$o .= sprintf('<p>Would you also like to sign up for <a href="%s">%s</a>?</p>',get_permalink($next->ID),$next->date);
 
 		die($o);
@@ -11860,7 +11976,6 @@ function edit_signups_role($post_id = 0)
 	if(!$post_id)
 		$post_id = $post->ID;
 	$signup_roles = get_option('edit_signups_meeting_roles');
-	$output .= var_export($signup_roles, true);
 	if(empty($signup_roles) || !is_array($signup_roles))
 		return false;
 	foreach($signup_roles as $role => $key) {
@@ -11872,5 +11987,26 @@ function edit_signups_role($post_id = 0)
 	}
 	return false;
 }
+
+function wpt_contributor_notification ($new_status, $old_status, $post) {
+		if ( ( $new_status != $old_status ) && ($new_status == 'pending') ) {
+		global $current_user;
+		$result = '';
+		$contributor_notification = get_option('wpt_contributor_notification');
+			if(empty($contributor_notification))
+				$contributor_notification = get_option('admin_email');
+				$emails = explode(',',$contributor_notification);
+				foreach($emails as $email)
+				{
+					$email = trim($email);
+					if(is_email($email))
+						{
+							mail($email,'Contributor Post: '.$post->post_title,admin_url('post.php?action=edit&post='.$post->ID),'From: '.$current_user->user_email);
+						}
+				}
+			}
+}
+
+add_action(  'transition_post_status',  'wpt_contributor_notification', 10, 3 );
 
 ?>

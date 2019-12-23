@@ -3,8 +3,8 @@ Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
-Tested up to: 5.2.1
-Stable tag: 3.4.6
+Tested up to: 5.3.2
+Stable tag: 3.5.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,46 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.5.6 =
+
+* Fix to member application form (prevent user editing of club name / number)
+* Edit signups for individual roles
+* Edit editable fields without switching to edit signups mode
+
+= 3.5.4 =
+
+* Adding a missing project that wasn't showing up on all paths (Deliver Social Speeches - Second Speech)
+* Optimizations
+
+= 3.5.3 =
+
+* Added integration with the WP Mailster for email discussion lists (alternative to integration with Mailman)
+
+= 3.5.2 =
+
+* Multi-meeting signup editor now shows list of members without a role
+* New API endpoint for determining which members do not have a meeting role - /wp-json/rsvptm/v1/norole/331 where 331 is the post ID
+
+= 3.5.1 =
+
+* Dashboard shows current assignment (or planned absence) for next several dates.
+* Bug fixes related to away messages, contest tool
+
+= 3.5 =
+
+* Overhaul of the performance reports screen, with less emphasis on the traditional program vs. Pathways, more on measuring active participation (6-month snapshot report)
+
+= 3.4.9 =
+
+* Added a setting for an editor or administrator to be notified when a Contributor submits a blog post for review.
+
+= 3.4.7 =
+
+* Split the Toastmasters menu on the dashboard in two, with basic functions and reports in the Toastmasters and administrative functions on a separate TM Administration menu.
+* Cleaned up the Toastmasters-specific widgets on the main Dashboard screen.
+* Refined the functions for adding a default home page (rather than a blog listing on front) and/or adding default pages for calendar, member listing etc.
+* Improved the Member Access widget, making it easier to view any of the upcoming events listed with the option of logging in on your way to that page. Previously, the link was always to a login page, which some users found confusing when they were trying to view the event listing without necessarily signing up for a role.
 
 = 3.4.6 =
 

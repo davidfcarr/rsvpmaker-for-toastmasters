@@ -1,7 +1,7 @@
 <?php
 
 function awe_user_dropdown ($role, $assigned = 0, $settings = false, $openlabel = 'Open') {
-	
+
 if(rsvpmaker_is_template())
 	return 'Member dropdown will appear here';
 	
@@ -115,13 +115,13 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	}
 	
 if($settings)
-	return '<select name="'.$role.'">'.$options.'</select>';
+	return '<select name="'.$role.'" >'.$options.'</select>';
 elseif(isset($_GET['recommend_roles']))
-	return '<select name="editor_suggest['.$role.']" id="editor_suggest'.$role.'" class="editor_suggest">'.$options.'</select>';
+	return '<select name="editor_suggest['.$role.']" id="editor_suggest'.$role.'" class="editor_suggest" >'.$options.'</select>';
 elseif(isset($_GET['edit_roles']))
-	return '<input type="checkbox" class="recommend_instead" name="recommend_instead'.$role.'" id="recommend_instead'.$role.'" value="_rm'.$role.'" /> '.__('Recommend instead of assign','rsvpmaker-for-toastmasters').'<br /><select name="editor_assign['.$role.']" id="editor_assign'.$role.'" class="editor_assign">'.$options.'</select><span id="_rm'.$role.'"></span>';
+	return "\n\n".'<input type="checkbox" class="recommend_instead" name="recommend_instead'.$role.'" id="recommend_instead'.$role.'" class="editor_assign" post_id="'.$post->ID.'" value="_rm'.$role.'" /> '.__('Recommend instead of assign','rsvpmaker-for-toastmasters').'<br /><select name="editor_assign['.$role.']" id="editor_assign'.$role.'" class="editor_assign"  post_id="'.$post->ID.'">'.$options.'</select><span id="_rm'.$role.'"></span>';
 else
-	return '<select name="editor_assign['.$role.']" id="editor_assign'.$role.$post->ID.'" class="editor_assign" post_id="'.$post->ID.'" role="'.$role.'">'.$options.'</select>';
+	return "\n\n".'<select name="editor_assign['.$role.']" id="editor_assign'.$role.$post->ID.'" class="editor_assign" post_id="'.$post->ID.'" role="'.$role.'">'.$options.'</select>';
 }
 
 function awe_assign_dropdown ($role, $random_assigned) {
@@ -176,7 +176,10 @@ function get_member_name($user_id, $credentials = true) {
 	elseif($user_id == -1)
 		return 'Not Available';
 	$member = get_userdata($user_id);
-	$name = $member->first_name.' '.$member->last_name;
+	if(empty($member->first_name) && empty($member->last_name))
+		$name = $member->display_name;
+	else
+		$name = $member->first_name.' '.$member->last_name;
 	if($credentials && !empty($member->education_awards))
 		$name .= ', <span class="education_awards">'.$member->education_awards.'</span>';
 	return $name;

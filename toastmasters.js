@@ -4,10 +4,14 @@ $('.tmsortable').sortable({
   containment: "parent",
   cursor: "move",
   update: function (event, ui) {
-  var datastr = 'action=wpt_reorder&reorder_nonce=' + $('#reorder_nonce').val()+'&post_id=' + $('#post_id').val();
+  var datastr = 'action=wpt_reorder&reorder_nonce=' + $('#reorder_nonce').val()+'&post_id=' + this.closest('.post_id');// $('#post_id').val();
+  //$('#post_id').val();
   var order = $(this).sortable('toArray');
   var assigned = 0;
-  var field = order[0].replace(/_[0-9]+/,'[]');
+  var basefield = order[0].replace(/_[0-9]+/,'');
+  var field = basefield + '[]';
+  var post_id = $('#'+basefield+'post_id').val();
+  var datastr = 'action=wpt_reorder&reorder_nonce=' + $('#reorder_nonce').val()+'&post_id=' + post_id;
 var arrayLength = order.length;
 for (var i = 0; i < arrayLength; i++) {
 	assigned = $('#'+order[i]+'_assigned').val();
@@ -84,7 +88,7 @@ $('.editor_assign').on('change', function(){
 	$('#_project_'+role).html('<option value="">Pick Manual for Project List</option>');
 	$('#title_text'+role).val('');
 	$('#_intro_'+role).val('');
-	var post_id = $('#post_id').val();
+	var post_id = $(this).attr('post_id');
 	var editor_id = $('#editor_id').val();
 	if(security && (post_id > 0))
 	{
@@ -285,6 +289,50 @@ $('.absences_remove').on('click', function(){
 		$('#'+statusid).fadeIn(200);
 		});
 	}
+});
+
+$('.edit_one_form').hide();
+
+$('.editonelink').on('click', function(e){
+	e.preventDefault();
+	var field = $(this).attr('editone');
+	$('#editone' + field).show();
+	$('#editonewrapper' + field).hide();
+	$('#' + field + '_form').hide();
+	$('#remove' + field + '_form').hide();
+});
+
+$('.agenda_note_editable_editone').hide();
+
+$('.agenda_note_editable_editone_on').on('click', function(e){
+	e.preventDefault();
+	$('.agenda_note_editable_editone').show();
+	$('.agenda_note_editable_editone_wrapper').hide();
+	$('.editable_content').hide();
+});
+
+$(document).on('submit', 'form.edit_one_form', function(event) {
+	event.preventDefault();
+	var action = $(this).attr('action') + 'tm_ajax=role';
+	var formid = $(this).attr('id');
+	var data = $(this).serialize();
+	var user_id = $('#'+formid+' .editor_assign').val();
+	data = data.concat('&user_id='+user_id);
+	console.log(user_id);
+	console.log(data);
+  	$('#'+formid).html('<div style="line-height: 3">Saving ...</div>');
+   setTimeout( function () {
+         $('#'+formid).addClass('bounce');
+      }, 1000);	
+	
+	jQuery.post(action, data, function(response) {
+	$('#'+formid).html(response);       
+         $('#'+formid).removeClass('bounce');
+       $('#'+formid).css("opacity", '1');
+       $('#'+formid).css("display", 'block');
+       
+         $('#'+formid).addClass('grow');
+	});
 });
 
 });

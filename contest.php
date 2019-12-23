@@ -1,14 +1,17 @@
 <?php
 
 function toast_contest ($mode) {
-	if($mode == 'dashboard')
+	global $post, $rsvp_options;
+	$date = get_rsvp_date($post->ID);
+	$date = strftime($rsvp_options['long_date'],strtotime($date));
+		if($mode == 'dashboard')
 	{
-		$output = '<div id="scoring"><h1>Scoring Dashboard</h1>';
+		$output = '<div id="scoring"><h1>Scoring Dashboard - '.$date.' Contest</h1>';
 		$output .= toast_scoring_dashboard();
 	}
 	elseif($mode == 'voting')
 	{
-		$output = '<div id="scoring"><h1>Voting</h1>';
+		$output = '<div id="scoring"><h1>Voting - '.$date.' Contest</h1>';
 		$output .= toast_scoring_sheet();	
 	}
 	else
@@ -231,7 +234,8 @@ if(!empty($contestants))
 	foreach($_POST['contestant'] as $contestant)
 		if(!empty($contestant))
 			$order[] = $contestant;
-		update_post_meta($post->ID,'tm_scoring_order',$order);				
+		update_post_meta($post->ID,'tm_scoring_order',$order);
+		delete_post_meta($post->ID,'tm_track_role');			
 	}
 }
 
@@ -443,7 +447,9 @@ for($i= 0; $i < 10; $i++)
 	printf('<p>%s or guest: <input type="text" name="judge_name[%d]" value=""><br /><input type="radio" name="tm_tiebreaker" value="%s" />Tiebreaker</p>',$drop, $index,$index);
 	}
 ?>
-	<h3>Dashboard Users</h3>
+<p><em>You can assign up to 10 judges at a time. If you have more than 10 judges to assign, first submit the form with the first 10 assignments. When the page reloads, additional blanks will be displayed.</em></p>
+
+<h3>Dashboard Users</h3>
 	<p>Add chief judge, ballot counters</p>
 <?php
 for($i= 0; $i < 5; $i++)
@@ -457,7 +463,7 @@ for($i= 0; $i < 5; $i++)
 </form>
 </div>
 
-<p style="margin-top: 200px;"><a href="<?php echo $actionlink. '&reset_scoring=1'; ?>">Change Contest</a></p>
+<p style="margin-top: 200px;"><a href="<?php echo $actionlink. '&reset_scoring=1'; ?>">Change Contest Type</a></p>
 
 <script>
 jQuery(document).ready(function($) {
