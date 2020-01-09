@@ -33,6 +33,7 @@ span {
     text-align: right;
     height: 46px;
     line-height: 30px;
+    display: inline-block;
 }
 
 #red-light
@@ -101,4 +102,7 @@ span {
 	position:absolute;
 	top:20px;
 	left:10px;
+}
+.col-md-2 {
+    width: 130px;
 }

@@ -135,33 +135,15 @@ return trim($role);
 }
 
 function future_toastmaster_meetings ($limit = 10, $buffer=4) {
-	$datewhere = ($buffer) ? sprintf('DATE_SUB(NOW(),INTERVAL %d HOUR)',$buffer) : 'NOW()';
-global $wpdb;
-$wpdb->show_errors();
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a1.meta_value as datetime, date_format(a1.meta_value,'%M %e, %Y') as date
-	 FROM ".$wpdb->posts."
-	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value > ".$datewhere." AND post_status='publish' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ";
-	$sql .= ' ORDER BY a1.meta_value ';
-	 if( !empty($limit) )
-		$sql .= ' LIMIT 0,'.$limit.' ';
-	$r = $wpdb->get_results($sql);
-	if(!empty($_REQUEST["debug_sql"]))
-		{
-		echo $sql;
-		print_r($r);
-		}
-	return $r;
+	return get_future_events ($where = "(post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')", $limit, OBJECT, $buffer);
+}
+
+function past_toastmaster_meetings ($limit = 10000, $buffer=0) {
+	return get_past_events ($where = "(post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')", $limit, OBJECT, $buffer);
 }
 
 function next_toastmaster_meeting () {
-global $wpdb;
-$wpdb->show_errors();
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a1.meta_value as datetime, date_format(a1.meta_value,'%M %e, %Y') as date
-	 FROM ".$wpdb->posts."
-	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value > NOW() AND post_status='publish' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ORDER BY a1.meta_value ";
-	return $wpdb->get_row($sql);
+return get_next_rsvpmaker(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ");
 }
 
 function get_club_members () {

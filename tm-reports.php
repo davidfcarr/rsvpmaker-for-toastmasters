@@ -978,7 +978,7 @@ else
 $sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.meta_value,'%M %e, %Y') as date
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value < DATE_ADD(NOW(),INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.meta_value DESC";
+	 WHERE a1.meta_value < DATE_ADD('".get_sql_now()."',INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.meta_value DESC";
 
 $results = $wpdb->get_results($sql);
 if(empty($results))
@@ -1351,7 +1351,7 @@ global $rsvp_options;
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
-	 WHERE a1.meta_value < NOW() AND a2.meta_value = $user_id"; // ORDER BY a1.meta_value	
+	 WHERE a1.meta_value < '".get_sql_now()."' AND a2.meta_value = $user_id"; // ORDER BY a1.meta_value	
 $results = $wpdb->get_results($sql);
 $userdata = get_userdata($user_id);
 $output = sprintf('<h2>%s %s</h2>',$userdata->first_name,$userdata->last_name);
@@ -1396,7 +1396,7 @@ else
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
-	 WHERE post_status='publish' AND a1.meta_value < NOW() $start_date AND a2.meta_value = $user_id";	
+	 WHERE post_status='publish' AND a1.meta_value < '".get_sql_now()."' $start_date AND a2.meta_value = $user_id";	
 $appearances = array();
 $results = $wpdb->get_results($sql);
 foreach ($results as $row)
@@ -1417,7 +1417,7 @@ $role_count_projects = array();
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=".$user_id." 
-	 WHERE a1.meta_value < NOW() AND post_status='publish'
+	 WHERE a1.meta_value < '".get_sql_now()."' AND post_status='publish'
 	 ORDER BY a1.meta_value DESC ";
 
 if(isset($_REQUEST["debug"]))
@@ -2483,7 +2483,7 @@ $wpdb->show_errors();
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND a2.meta_value=".$user_id." AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$'  
-	 WHERE a1.meta_value < NOW() 
+	 WHERE a1.meta_value < '".get_sql_now()."' 
 	 ORDER BY a1.meta_value DESC";
 $date = $wpdb->get_var($sql);
 if($date)
@@ -2502,7 +2502,7 @@ $role = preg_replace('/[0-9]/','',$role);
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND a2.meta_value=".$user_id." AND a2.meta_key LIKE '".$role."%'   
-	 WHERE a1.meta_value < NOW() 
+	 WHERE a1.meta_value < '".get_sql_now()."' 
 	 ORDER BY a1.meta_value DESC";
 $date = $wpdb->get_var($sql);
 if($date)
@@ -4057,7 +4057,7 @@ $wpdb->show_errors();
 if(!empty($start))
 	$start = " AND a2.meta_value > '$start' ";
 
-	$sql = "SELECT a1.meta_key as role, a2.meta_value as event_timestamp, a1.post_id as postID FROM `$wpdb->postmeta` a1 JOIN  `$wpdb->postmeta` a2 ON a1.post_id = a2.post_id AND a2.meta_key='_rsvp_dates' where a1.meta_value=".$user_id." AND BINARY a1.meta_key RLIKE '^_[A-Z].+[0-9]$' $start AND a2.meta_value < NOW() ORDER BY a1.meta_key DESC";//
+	$sql = "SELECT a1.meta_key as role, a2.meta_value as event_timestamp, a1.post_id as postID FROM `$wpdb->postmeta` a1 JOIN  `$wpdb->postmeta` a2 ON a1.post_id = a2.post_id AND a2.meta_key='_rsvp_dates' where a1.meta_value=".$user_id." AND BINARY a1.meta_key RLIKE '^_[A-Z].+[0-9]$' $start AND a2.meta_value < '".get_sql_now()."' ORDER BY a1.meta_key DESC";//
 
 $results = $wpdb->get_results($sql);
 if($results)
@@ -4901,7 +4901,7 @@ printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" acti
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
-	 WHERE a1.meta_value < DATE_ADD(NOW(), INTERVAL 12 HOUR) AND a2.meta_value = $current_user->ID ORDER BY a1.meta_value DESC LIMIT 0,10";
+	 WHERE a1.meta_value < DATE_ADD('".get_sql_now()."', INTERVAL 12 HOUR) AND a2.meta_value = $current_user->ID ORDER BY a1.meta_value DESC LIMIT 0,10";
 $results = $wpdb->get_results($sql);
 foreach($results as $row)
 {

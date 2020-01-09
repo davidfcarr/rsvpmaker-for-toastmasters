@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.5.7
+Version: 3.5.8
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -613,16 +613,13 @@ add_action('wp4toast_reminders_cron','wp4toast_reminders_cron',10,1);
 
 function wp4toast_reminders_cron ($interval_hours) {
 wpt_timecheck ();
-$fudge = $interval_hours + 1;
-$where = " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') AND meta_value < DATE_ADD(NOW(), INTERVAL $fudge HOUR) ";
-$future = get_future_events($where,1);
+$future = future_toastmaster_meetings(1,$interval_hours + 1);
 if(sizeof($future))
 	$next = $future[0];
 else
 	die('no meeting within timeframe');
 
 echo __("Next meeting",'rsvpmaker-for-toastmasters')." $next->datetime <br />";	
-//rsvpmaker_debug_log($next,'reminders cron post');
 
 wp4_speech_prompt($next, strtotime($next->datetime));
 die();
@@ -646,6 +643,9 @@ if(isset($_REQUEST["reminders_test"]))
 	add_action('init','wp4toast_reminders_test');
 
 function wp4_speech_prompt($event_post, $datetime, $preview = false) {
+	//rsvpmaker_debug_log($event_post,'speech prompt post');
+	//rsvpmaker_debug_log($datetime,'speech prompt datetime');
+
 	global $wpdb;
 	global $post;
 	wpt_timecheck ();
@@ -665,7 +665,8 @@ function wp4_speech_prompt($event_post, $datetime, $preview = false) {
 			}
 		else
 			$toastmaster_email = $admin_email;
-	foreach($signup as $key => $values)
+		//rsvpmaker_debug_log($signup,'speech prompt signup');
+		foreach($signup as $key => $values)
 		{
 		$role = trim(preg_replace('/[_[0-9]/',' ',$key));
 		$assign = $values[0];
@@ -700,6 +701,7 @@ function wp4_speech_prompt($event_post, $datetime, $preview = false) {
 				$mail["from"] = $toastmaster_email;
 			$mail["fromname"] = $blog_name;
 			$mail["subject"] = $subject;
+			//rsvpmaker_debug_log($mail,'reminder');
 			if($preview)
 			{
 				printf('<h1>Preview: %s</h1><div>To: %s</div><div>Subject: %s</div>%s',$role,$mail["to"],$mail["subject"],$mail["html"]);
@@ -789,13 +791,14 @@ function wpt_remind_queue ($args) {
 	if(is_array($mails))
 	while($mail = array_shift($mails))
 	{
-	rsvpmailer($mail);
+	$result = rsvpmailer($mail);
 	//rsvpmaker_debug_log($mail,'sending role reminder');
+	//rsvpmaker_debug_log($result,'rsvpmailer result');
 	printf('<pre> sending %s</pre>',var_export($mail,true));
 	$elapsed = wpt_timecheck ();
 	//printf('<p>Elapsed time %s</p>',$elapsed);
 	if($elapsed > 20) {
-		rsvpmaker_debug_log($mail,'wpt_remind_queue timeout danger');
+		//rsvpmaker_debug_log($mail,'wpt_remind_queue timeout danger');
 		break;
 	}		
 	}
@@ -1044,7 +1047,7 @@ if(!empty($atts["editable"]))
 			}
 		elseif(empty($editable))
 			$editable = __('Not set','rsvpmaker-for-toastmasters');
-		if(is_club_member() && !isset($_REQUEST["edit_roles"]) && (current_user_can('edit_signups') || edit_signups_role()) && !isset($_REQUEST["print_agenda"]) && !is_email_context())
+		if(is_single() && is_club_member() && !isset($_REQUEST["edit_roles"]) && (current_user_can('edit_signups') || edit_signups_role()) && !isset($_REQUEST["print_agenda"]) && !is_email_context())
 			{
 			$permalink = get_permalink($post->ID).'#'.$slug;
 			$edit_editable = '<div class="agenda_note_editable_editone_wrapper"><a class="agenda_note_editable_editone_on">Edit</a></div><form method="post" action="'.$permalink.'" class="agenda_note_editable_editone"><div class="agenda_note_editable"><textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="'.$editid.'" /></div><button>Update</button><input type="hidden" name="post_id" value="'.$post->ID.'" /> </form>';
@@ -1596,11 +1599,11 @@ function toastmaster_short($atts=array(),$content="") {
 			if($assigned == $current_user->ID)
 			$output .= sprintf('<form id="remove%s_form" method="post" class="remove_me_form" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="remove_role" id="remove_role%s" value="%s"><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$permalink, $current_user->ID, $field, $field, $post->ID,wp_create_nonce('remove'.$field)).'<button name="delete_role" id="delete_role'.$field.'" value="1">'.__('Remove Me','rsvpmaker-for-toastmasters').'</button></form>';
 			//hidden edit field
-			if(current_user_can('edit_signups')) { 
+			if(is_single() && current_user_can('edit_signups')) { 
 				$awe_user_dropdown = awe_user_dropdown($field, $assigned);
 				$editone = 'Member: '.$awe_user_dropdown;
 				if(strpos($field,'Speaker') )
-					$editone .= str_replace('id="','id="editone',$detailsform);
+					$editone .= str_replace('speaker_details maxtime','speaker_details',str_replace('id="','id="editone',$detailsform));
 				$output .= sprintf('<div id="editonewrapper%s""><a class="editonelink" editone="%s">Edit</a></div><form id="editone%s" method="post" class="edit_one_form" action="%s" style="display: block;"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s"><input type="hidden" name="role" value="%s"><div>%s</div>',$field,$field,$field,$permalink,$post->ID,wp_create_nonce($field),$field,$editone).'<button name="edit_one" id="edit_one_button'.$field.'" value="1">'.__('Submit','rsvpmaker-for-toastmasters').'</button></form>';	
 			}
 		}
@@ -2496,13 +2499,15 @@ foreach($results as $row)
 		printf('<p>%s - %s</p>',$role,$date);
 	}
 
-$wpdb->show_errors();
 
+$wpdb->show_errors();
+fix_timezone();
+$now = date('Y-m-d H:i:s');
 	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_value as template
 	 FROM ".$wpdb->posts."
 	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND a2.meta_key LIKE '_Speaker%' AND a2.meta_value=".$user_id."  AND concat('',a2.meta_value * 1) = a2.meta_value
-	 WHERE a1.meta_value < NOW()
+	 WHERE a1.meta_value < '".$now."'
 	 ORDER BY a1.meta_value DESC";
 
 $results = $wpdb->get_results($sql);
@@ -6952,7 +6957,8 @@ $blogusers = get_users('blog_id=1&orderby=nicename');
 
 function awesome_rating () {
 global $wpdb;
-$sql = "SELECT * FROM `".$wpdb->prefix."postmeta` JOIN ".$wpdb->prefix."rsvp_dates ON ".$wpdb->prefix."rsvp_dates.postID = ".$wpdb->prefix."postmeta.post_id WHERE `meta_key` LIKE '%1' OR  `meta_key` LIKE '%2' OR  `meta_key` LIKE '%3' AND ( (meta_key IS NOT NULL) AND (meta_value IS NOT NULL) AND (datetime > DATE_SUB(NOW(), INTERVAL 3 MONTH)) AND (datetime < NOW()) )";
+global $wpdb;
+$sql = "SELECT * FROM `".$wpdb->prefix."postmeta` JOIN ".$wpdb->prefix."rsvp_dates ON ".$wpdb->prefix."rsvp_dates.postID = ".$wpdb->prefix."postmeta.post_id WHERE `meta_key` LIKE '%1' OR  `meta_key` LIKE '%2' OR  `meta_key` LIKE '%3' AND ( (meta_key IS NOT NULL) AND (meta_value IS NOT NULL) AND (datetime > DATE_SUB('".get_sql_now()."', INTERVAL 3 MONTH)) AND (datetime < '".get_sql_now()."') )";
 $r = $wpdb->get_results($sql);
 foreach($r as $row)
 	{
@@ -7217,8 +7223,8 @@ function awemailer($mail) {
 		}
 
 	$result = rsvpmailer($mail);
-	rsvpmaker_debug_log($mail,'Toastmasters notification');	
-	rsvpmaker_debug_log($result,'Toastmasters notification result');	
+	//rsvpmaker_debug_log($mail,'Toastmasters notification');	
+	//rsvpmaker_debug_log($result,'Toastmasters notification result');	
 	return $result;
 }
 
@@ -7516,19 +7522,6 @@ function manager_author_editor () {
 	}
 }
 add_action('admin_init','manager_author_editor');
-/*
-function manager_fix_authors_dropdown($args) {
-	if(!empty($args['who']) && ($args['who'] == 'authors') )
-	{
-		if(empty($args['role__in']))
-			$args['role__in'] = array('contributor','author','editor','manager','administrator','network_administrator');
-		else
-			$args['role__in'][] = 'manager';
-	}
-	rsvpmaker_debug_log($args,'modified args author dropdown');
-	return $args;
-}
-*/
 
 add_filter('wp_dropdown_users_args','manager_fix_authors_dropdown');
 

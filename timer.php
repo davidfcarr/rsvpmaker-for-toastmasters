@@ -10,7 +10,7 @@
 
   <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
   <link href="timer.css" rel="stylesheet" />
-  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=0.2'); ?>" rel="stylesheet" />
+  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=0.3'); ?>" rel="stylesheet" />
  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -33,10 +33,10 @@
       <br/>
 
       <div class="row" id="content" style="font-size: xx-large; height:20px; line-height:20px">
-        <div style="display: inline-block">
+        <div  class="col-sm-2 col-md-2">
           <button class="btn btn-default btn-primary btn-lg" id="btnStart" type="button" value="Start">Start</button>
         </div>
-        <div style="display: inline-block">
+        <div class="col-sm-2 col-md-2">
           <button class="btn btn-default btn-lg" id="btnReset" type="button" value="Reset">Reset</button>
         </div>
         <div class="col-sm-2 col-md-2 hidecount">
@@ -110,7 +110,24 @@ for($i = 1; $i <= $count; $i++) {
 		echo timer_display_time_stoplight ($dt, $name);
 	}
 }
-	
+
+for($i = 1; $i <= $count; $i++) {
+	//echo 'Lookup '.'_Speaker_'.$i;
+	$member_id = get_post_meta($post->ID,'_Evaluator_'.$i,true);
+	//echo ' id '.$member_id;
+	if($member_id)
+	{
+		if(is_numeric($member_id))
+		{
+		$member = get_userdata($member_id);
+		$name = $member->first_name.' '.$member->last_name;
+		}
+		else $name = 'Guest: '.$member_id;
+		//print_r($member);
+		echo timer_display_time_stoplight ('2 to 3', 'Evaluator: '.$name);
+	}
+}
+
 }
 
 function timer_display_time_stoplight ($content, $name) {
