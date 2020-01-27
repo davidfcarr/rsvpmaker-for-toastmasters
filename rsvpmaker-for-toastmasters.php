@@ -93,6 +93,7 @@ add_action('toastmasters_agenda_notification','bp_toastmasters', 10, 3);
 add_action('toastmasters_agenda_notification','wp4t_intro_notification', 10, 5);
 add_action( 'bp_profile_header_meta', 'display_toastmasters_profile' );
 add_action( 'admin_head', 'profile_richtext' );
+add_action('admin_init','wp4t_cron_nudge_setup');
 
 function profile_richtext () {
 if(strpos($_SERVER['REQUEST_URI'],'profile.php') || strpos($_SERVER['REQUEST_URI'],'user-edit.php')) 
@@ -613,11 +614,16 @@ add_action('wp4toast_reminders_cron','wp4toast_reminders_cron',10,1);
 
 function wp4toast_reminders_cron ($interval_hours) {
 wpt_timecheck ();
-$future = future_toastmaster_meetings(1,$interval_hours + 1);
-if(sizeof($future))
-	$next = $future[0];
-else
+$next = next_toastmaster_meeting();
+if(empty($next))//else
 	die('no meeting within timeframe');
+fix_timezone();
+$limit = strtotime($next->datetime . ' -' . $interval_hours . ' hours');
+if($limit > time())
+	{
+		echo 'Next meeting ' . $next->datetime .' not within limit of '.$interval_hours.' hours '.date('r',$limit);
+		return;
+	}
 
 echo __("Next meeting",'rsvpmaker-for-toastmasters')." $next->datetime <br />";	
 
@@ -627,113 +633,112 @@ die();
 
 function wp4toast_reminders_test () {
 wpt_timecheck ();
-$future = get_future_events('',1);
-if(sizeof($future))
-	$next = $future[0];
-else
-	die('no meeting within timeframe');
-
-echo __("Next meeting",'rsvpmaker-for-toastmasters')." $next->datetime <br />";
-
-$nexttime = $next->datetime;
-wp4_speech_prompt($next, strtotime($next->datetime), isset($_GET['preview']));
+wp4toast_reminders_cron($_REQUEST["reminders_test"]);
 die('running test');
 }
+
 if(isset($_REQUEST["reminders_test"]))
 	add_action('init','wp4toast_reminders_test');
 
 function wp4_speech_prompt($event_post, $datetime, $preview = false) {
-	//rsvpmaker_debug_log($event_post,'speech prompt post');
-	//rsvpmaker_debug_log($datetime,'speech prompt datetime');
-
-	global $wpdb;
-	global $post;
-	wpt_timecheck ();
-	$post = $event_post;
-	$signup = get_post_custom($event_post->ID);
-	$emails = wpt_get_member_emails ();
-	$admin_email = get_bloginfo('admin_email');
-	$blog_name = get_bloginfo('name');
-	$data = wpt_blocks_to_data($event_post->post_content);
-	$templates = get_rsvpmaker_notification_templates();
-	$rsvpdata["[rsvptitle]"] = $event_post->post_title;
-	$rsvpdata["[rsvpdate]"] = $event_post->date;
-		$toastmaster = (!empty($signup["_Toastmaster_of_the_Day_1"][0])) ? $signup["_Toastmaster_of_the_Day_1"][0] : 0;
-		if($toastmaster)
-			{
-			$toastmaster_email = $emails[$toastmaster];
-			}
-		else
-			$toastmaster_email = $admin_email;
-		//rsvpmaker_debug_log($signup,'speech prompt signup');
-		foreach($signup as $key => $values)
-		{
-		$role = trim(preg_replace('/[_[0-9]/',' ',$key));
-		$assign = $values[0];
-
-		if(!$assign || !is_numeric($assign))
-			continue;//role not assigned, or assigned to a guest
-		if(!empty($data[$role]))//confirm this meta key is a role from the document
-			{
-			$subject = (!empty($templates[$role]['subject'])) ? $templates[$role]['subject'] : $templates['role_reminder']['subject'];
-			$body = (!empty($templates[$role]['body'])) ? $templates[$role]['body'] : $templates['role_reminder']['body'];
-			if($role == 'Speaker')
+		//rsvpmaker_debug_log($event_post,'speech prompt post');
+		//rsvpmaker_debug_log($datetime,'speech prompt datetime');
+	
+		global $wpdb;
+		global $post;
+		wpt_timecheck ();
+		$post = $event_post;
+		$signup = get_post_custom($event_post->ID);
+		$emails = wpt_get_member_emails ();
+		$admin_email = get_bloginfo('admin_email');
+		$blog_name = get_bloginfo('name');
+		$data = wpt_blocks_to_data($event_post->post_content);
+		$templates = get_rsvpmaker_notification_templates();
+		$rsvpdata["[rsvptitle]"] = $event_post->post_title;
+		$rsvpdata["[rsvpdate]"] = $event_post->date;
+			$toastmaster = (!empty($signup["_Toastmaster_of_the_Day_1"][0])) ? $signup["_Toastmaster_of_the_Day_1"][0] : 0;
+			if($toastmaster)
 				{
-				$speech_details = (empty($signup['_manual'.$key][0])) ? 'Manual: ' : 'Manual: '.$signup['_manual'.$key][0];
-				$speech_details .= "\n";
-				$speech_details .= (empty($signup['_project'.$key][0])) ? 'Project: ' : 'Project: '.get_project_text($signup['_project'.$key][0]);
-				$speech_details .= "\n";
-				$speech_details .= (empty($signup['_title'.$key][0])) ? 'Title: ' : 'Title: '.$signup['_title'.$key][0];
-				$speech_details .= "\n";
-				$speech_details .= (empty($signup['_intro'.$key][0])) ? 'Introduction: ' : 'Introduction:<br />'.wpautop($signup['_intro'.$key][0]);
-				if(empty($signup['_manual'.$key][0]) || empty($signup['_project'.$key][0]))
-					$speech_details .= "\n\n".__("PLEASE ENTER MANUAL / SPEECH TIMING REQUIREMENT ON WEBSITE",'rsvpmaker-for-toastmasters')."\n\n";
-				$speech_details .= "\n\n".__("Remember to supply the Toastmaster of the Day with the title of your speech and an introduction.",'rsvpmaker-for-toastmasters');
-				$body = str_replace('[wpt_speech_details]',$speech_details,$body);
+				$toastmaster_email = $emails[$toastmaster];
 				}
-			$subject = do_shortcode(str_replace('[wptrole]',$role,str_replace(array_keys($rsvpdata),$rsvpdata,$subject)));
-			$body = do_shortcode(str_replace('[wptrole]',$role,str_replace(array_keys($rsvpdata),$rsvpdata,$body)));
-			$mail["html"] = wpautop($body);
-			$mail["to"] = $emails[$assign];
-			if($emails[$assign] == $toastmaster_email)
-				$mail["from"] = $admin_email;
 			else
-				$mail["from"] = $toastmaster_email;
-			$mail["fromname"] = $blog_name;
-			$mail["subject"] = $subject;
-			//rsvpmaker_debug_log($mail,'reminder');
-			if($preview)
+				$toastmaster_email = $admin_email;
+			//rsvpmaker_debug_log($signup,'speech prompt signup');
+			foreach($signup as $key => $values)
 			{
-				printf('<h1>Preview: %s</h1><div>To: %s</div><div>Subject: %s</div>%s',$role,$mail["to"],$mail["subject"],$mail["html"]);
+			$role = trim(preg_replace('/[_[0-9]/',' ',$key));
+			$assign = $values[0];
+	
+			if(!$assign || !is_numeric($assign))
+				continue;//role not assigned, or assigned to a guest
+			if(!empty($data[$role]))//confirm this meta key is a role from the document
+				{
+				$subject = (!empty($templates[$role]['subject'])) ? $templates[$role]['subject'] : $templates['role_reminder']['subject'];
+				$body = (!empty($templates[$role]['body'])) ? $templates[$role]['body'] : $templates['role_reminder']['body'];
+				if($role == 'Speaker')
+					{
+					$speech_details = (empty($signup['_manual'.$key][0])) ? 'Manual: ' : 'Manual: '.$signup['_manual'.$key][0];
+					$speech_details .= "\n";
+					$speech_details .= (empty($signup['_project'.$key][0])) ? 'Project: ' : 'Project: '.get_project_text($signup['_project'.$key][0]);
+					$speech_details .= "\n";
+					$speech_details .= (empty($signup['_title'.$key][0])) ? 'Title: ' : 'Title: '.$signup['_title'.$key][0];
+					$speech_details .= "\n";
+					$speech_details .= (empty($signup['_intro'.$key][0])) ? 'Introduction: ' : 'Introduction:<br />'.wpautop($signup['_intro'.$key][0]);
+					if(empty($signup['_manual'.$key][0]) || empty($signup['_project'.$key][0]))
+						$speech_details .= "\n\n".__("PLEASE ENTER MANUAL / SPEECH TIMING REQUIREMENT ON WEBSITE",'rsvpmaker-for-toastmasters')."\n\n";
+					$speech_details .= "\n\n".__("Remember to supply the Toastmaster of the Day with the title of your speech and an introduction.",'rsvpmaker-for-toastmasters');
+					$body = str_replace('[wpt_speech_details]',$speech_details,$body);
+					}
+				$subject = do_shortcode(str_replace('[wptrole]',$role,str_replace(array_keys($rsvpdata),$rsvpdata,$subject)));
+				$body = do_shortcode(str_replace('[wptrole]',$role,str_replace(array_keys($rsvpdata),$rsvpdata,$body)));
+				$mail["html"] = wpautop($body);
+				$mail["to"] = $emails[$assign];
+				if($emails[$assign] == $toastmaster_email)
+					$mail["from"] = $admin_email;
+				else
+					$mail["from"] = $toastmaster_email;
+				$mail["fromname"] = $blog_name;
+				$mail["subject"] = $subject;
+				//rsvpmaker_debug_log($mail,'reminder');
+				if($preview)
+				{
+					printf('<h1>Preview: %s</h1><div>To: %s</div><div>Subject: %s</div>%s',$role,$mail["to"],$mail["subject"],$mail["html"]);
+				}
+				else
+				{
+					rsvpmaker_tx_email($event_post, $mail);
+					//$mails[] = $mail; //rsvpmaker_tx_email($event_post, $mail);
+					//rsvpmaker_debug_log($mail,'role reminder added to array');
+				}
+	
+				}
+			//$elapsed = wpt_timecheck ();
+			//printf('<p>Elapsed time %s</p>',$elapsed);
+			//if($elapsed > 25)
+				//rsvpmaker_debug_log($key,'wp4_speech_prompt timeout danger');
 			}
+		
+		/*    if(!empty($mails))
+		{
+			update_option('wpt_remind_queue',$mails);
+			if($elapsed < 20)
+				wpt_remind_queue(array('post_id'=> $event_post->ID));
 			else
-			{
-				$mails[] = $mail; //rsvpmaker_tx_email($event_post, $mail);
-				//rsvpmaker_debug_log($mail,'role reminder added to array');
-			}
-
-			}
-		$elapsed = wpt_timecheck ();
-		//printf('<p>Elapsed time %s</p>',$elapsed);
-		if($elapsed > 25)
-			rsvpmaker_debug_log($key,'wp4_speech_prompt timeout danger');
+				wp_schedule_single_event(strtotime('+1 minutes'),'wpt_remind_queue',array('post_id'=> $event_post->ID));
 		}
-	if(!empty($mails))
-	{
-		update_option('wpt_remind_queue',$mails);
-		if($elapsed < 20)
-			wpt_remind_queue(array('post_id'=> $event_post->ID));
 		else
-			wp_schedule_single_event(strtotime('+1 minutes'),'wpt_remind_queue',array('post_id'=> $event_post->ID));
-	}
-	elseif(get_option('wpt_remind_all') && !$preview)
-	{
-		wp_schedule_single_event(strtotime('+5 minutes'),'wpt_remind_unassigned',array('post_id'=> $event_post->ID));
-		echo '<p>Setting reminder for unassigned members</p>';
-	}
+		*/
+		
+		add_post_meta(1,'_rsvpmaker_email_log',array('wp4_speech_prompt' => $mail['to'],'subject' => $mail['subject']));
+		
+		if(get_option('wpt_remind_all') && !$preview)
+		{
+			wp_schedule_single_event(strtotime('+5 minutes'),'wpt_remind_unassigned',array('post_id'=> $event_post->ID));
+			echo '<p>Setting reminder for unassigned members</p>';
+		}
 }
-
-add_action('wpt_remind_queue','wpt_remind_queue',10,1);
+	
+//add_action('wpt_remind_queue','wpt_remind_queue',10,1);
 add_action('wpt_remind_unassigned','wpt_remind_unassigned',10,1);
 
 function cron_email_test ($args = array()) {
@@ -784,6 +789,9 @@ echo '</pre>';
 
 function wpt_remind_queue ($args) {
 	$mails = get_option('wpt_remind_queue');
+	$log['type'] = 'wpt_remind_queue';
+	$log['first_recipient'] = (empty($mail[0]['to'])) ? 'empty' : $mail[0]['to'];
+	$log['subject'] = (empty($mail[0]['subject'])) ? 'empty' : $mail[0]['subject'];
 	echo 'remind queue ';
 	print_r($mails);
 	echo '<br />';
@@ -802,6 +810,11 @@ function wpt_remind_queue ($args) {
 		break;
 	}		
 	}
+	$log['next_recipient'] = (empty($mail[0]['to'])) ? 'empty' : $mail[0]['to'];
+	$log['elapsed'] = $elapsed;
+	$log['timestamp'] = date('Y-m-d H:i');
+	fix_timezone();
+	add_post_meta(1, '_rsvpmaker_email_log',$log);
 	update_option('wpt_remind_queue',$mails);
 	if(!empty($mails))
 	{
@@ -12001,5 +12014,41 @@ function wpt_contributor_notification ($new_status, $old_status, $post) {
 }
 
 add_action(  'transition_post_status',  'wpt_contributor_notification', 10, 3 );
+
+function wp4t_cron_nudge_setup () {
+	wp_schedule_event( strtotime('+1 hour'), 'daily', 'wp4t_reminders_nudge' );
+}
+add_action('wp4t_reminders_nudge','wp4t_reminders_nudge');
+function wp4t_reminders_nudge () {
+	$temp = get_option('wp4toast_reminder');
+	if(!empty($temp))
+	$reminders[] = $temp;
+	$temp = get_option('wp4toast_reminder2');
+	if(!empty($temp))
+	$reminders[] = $temp;
+	if(empty($reminders))
+		return;
+	fix_timezone();
+	wptoast_reminder_clear();
+	$future = future_toastmaster_meetings(5);
+	foreach($future as $meeting) {
+		//print_r($meeting);
+		$time = $meeting->datetime;
+		foreach($reminders as $hours)
+		{
+			$string = $time.' -'.$hours;
+			printf('<p>%s</p>',$string);
+			$timestamp = strtotime($string);
+			printf('<h3>%s %s</h3>',$time,date('r',$timestamp));
+			$hours = trim(str_replace('hours','',$hours));
+			if($timestamp > time())
+			{
+				$result = wp_schedule_single_event( $timestamp, 'wp4toast_reminders_cron', array( $hours ) );
+				rsvpmaker_debug_log($result,"wp_schedule_single_event( $timestamp, 'wp4toast_reminders_cron', array( $hours ) )");
+			}
+			
+		}
+	}
+}
 
 ?>

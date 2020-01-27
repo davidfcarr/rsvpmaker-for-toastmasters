@@ -34,6 +34,7 @@ add_submenu_page( 'toastmasters_admin_screen', __('Activity Log','rsvpmaker-for-
 add_submenu_page( 'toastmasters_admin_screen', __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), 'manage_options', 'import_fth', 'import_fth');
 add_submenu_page( 'toastmasters_admin_screen', __('Import/Export','rsvpmaker-for-toastmasters'), __('Import/Export','rsvpmaker-for-toastmasters'), 'manage_options', 'import_export', 'toastmasters_import_export');
 //add_submenu_page( 'toastmasters_screen', __('Sync','rsvpmaker-for-toastmasters'), __('Sync','rsvpmaker-for-toastmasters'), 'manage_options', 'wpt_json', 'wpt_json');
+add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
 
 add_submenu_page( 'toastmasters_admin', __('Support This Project','rsvpmaker-for-toastmasters'), __('Support This Project','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_support', 'toastmasters_support');
 
@@ -5190,7 +5191,22 @@ else
 $json = json_encode($json_data);
 ////rsvpmaker_debug_log($json,'json to submit for '.$current_user->user_login);
 
-$url = 'http://wp4toastmasters.com/?wpt_stats_warehouse='.$_SERVER['SERVER_NAME'];
+$url = 'https://wp4toastmasters.com/?wpt_stats_warehouse='.$_SERVER['SERVER_NAME'];
+$args = array(
+	'method' => 'PUT',
+    'body'        => $json,
+    'headers'     => [
+        'Content-Type' => 'application/json',
+    ],
+    'timeout'     => 60,
+    'redirection' => 5,
+    'blocking'    => true,
+    'httpversion' => '1.0',
+    'sslverify'   => false,
+    'data_format' => 'body',
+);
+$response = wp_remote_request( $url, $args );
+/*
 $ch = curl_init();
 curl_setopt($ch,  CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
@@ -5204,7 +5220,8 @@ $response  = curl_exec($ch);
 echo '<p>curl error: '.curl_error($ch).'</p>';
 ////rsvpmaker_debug_log(curl_error($ch),'curl error');
 curl_close($ch);
-$parts = explode('+++++',$response);
+*/
+$parts = explode('+++++',$response['body']);
 echo $parts[0];
 $json = trim($parts[1]);
 $download = json_decode($json,true);
@@ -5312,6 +5329,21 @@ if(empty($p))
 $url = 'https://wp4toastmasters.com/?wpt_stats_warehouse='.$_SERVER['SERVER_NAME']."&p=".$p;
 if($upload_only)
 	$url .= '&upload_only=1';
+	$args = array(
+		'method' => 'POST',
+		'body'        => $json,
+		'headers'     => [
+			'Content-Type' => 'application/json',
+		],
+		'timeout'     => 60,
+		'redirection' => 5,
+		'blocking'    => true,
+		'httpversion' => '1.0',
+		'sslverify'   => false,
+		'data_format' => 'body',
+	);
+$response = wp_remote_request( $url, $args );
+/*
 $ch = curl_init();
 curl_setopt($ch,  CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -5326,7 +5358,8 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 $response  = curl_exec($ch);
 curl_close($ch);
-$json_response = json_decode($response,true);
+*/
+$json_response = json_decode($response['body'],true);
 ////rsvpmaker_debug_log($response,'wpt_json_send response');
 
 if(!isset($json_response["log"]))
@@ -5807,6 +5840,7 @@ foreach($userroles as $index => $userroledata)
 	printf('<p><label>Other Roles: </label><span class="%s" style="width: %s">%s</span><br />%s</p>',$class,$bar.'px',$other_role,$other);
 }
 
+if(!empty($ms))
 if($toastmaster)
 	{
 		foreach($ms as $manual => $titles)
