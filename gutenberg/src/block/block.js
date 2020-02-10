@@ -12,6 +12,8 @@ import './editor.scss';
 const { __ } = wp.i18n; // Import __() from wp.i18n
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
 const { RichText } = wp.editor;
+const { Component, Fragment } = wp.element;
+const { InspectorControls } = wp.editor;
 
 /**
  * Register: aa Gutenberg Block.
@@ -32,6 +34,7 @@ registerBlockType( 'wp4toastmasters/agendanoterich2', {
 	title: __( 'Toastmasters Agenda Note' ), // Block title.
 	icon: 'admin-comments', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
 	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	description: __('Displays "stage directions" for the organization of your meetings.','rsvpmaker'),
 	keywords: [
 		__( 'Toastmasters' ),
 		__( 'Agenda' ),
@@ -70,7 +73,10 @@ attributes: {
 		event.preventDefault();
 	}		
 	
-	return (<div className={ props.className }>
+	return (
+<Fragment>
+<DocInspector />	
+<div className={ props.className }>
 <form onSubmit={ setTime } ><strong>Toastmasters Agenda Note</strong> <select id="time_allowed"  value={ time_allowed } onChange={ setTime }>
 <option value="">Minutes Allowed (optional)</option>
 <option value="1">1</option>
@@ -139,7 +145,9 @@ attributes: {
 	value={attributes.content}
 	multiline=' '
 	onChange={(content) => setAttributes({ content })}
-/></div>);
+/></div>
+</Fragment>
+);
 	
     },
     save: function( { attributes, className } ) {
@@ -153,6 +161,7 @@ registerBlockType( 'wp4toastmasters/signupnote', {
 	title: __( 'Toastmasters Signup Form Note' ), // Block title.
 	icon: 'admin-comments', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
 	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	description: __('A text block that appears only on the signup form, not on the agenda.'),
 	keywords: [
 		__( 'Toastmasters' ),
 		__( 'Signup' ),
@@ -169,7 +178,9 @@ attributes: {
     edit: function( props ) {	
 	const { attributes, setAttributes } = props;
 
-	return (<div className={ props.className }>
+	return (<Fragment>
+		<DocInspector />	
+		<div className={ props.className }>
 				<strong>Toastmasters Signup Form Note</strong><RichText
                 tagName="p"
                 className={props.className}
@@ -177,6 +188,7 @@ attributes: {
                 onChange={(content) => setAttributes({ content })}
             />
 			</div>
+			</Fragment>
 );
 	
     },
@@ -194,6 +206,7 @@ registerBlockType( 'wp4toastmasters/role', {
 	title: __( 'Toastmasters Agenda Role' ), // Block title.
 	icon: 'groups', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
 	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	description: __('Defines a meeting role that will appear on the signup form and the agenda.'),
 	keywords: [
 		__( 'Toastmasters' ),
 		__( 'Agenda' ),
@@ -293,7 +306,8 @@ attributes: {
 		
 	function showPaddingTime () {
 		
-		return (<div id="paddingline">
+		return (
+		<div id="paddingline">
 			<label>Padding Time:</label> <select id="padding_time"  value={ padding_time } onChange={ setPaddingTime }>
 						<option value="">Minutes Allowed (optional)</option>
 <option value="1">1</option>
@@ -438,14 +452,18 @@ return (<form onSubmit={ setRole, setCustomRole, setCount, setTime, setPaddingTi
 </select>
 </div>
 
-</form>);		
+</form>
+);		
 		}
 		
 		return (
+<Fragment>
+<DocInspector />				
 <div className={ props.className }>
 <strong>Toastmasters Role {role} {custom_role}</strong>
 { showForm() }
 </div>
+</Fragment>
 		);
 	},
     save: function (props) { return null; },
@@ -463,7 +481,8 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
 		__( 'Agenda' ),
 		__( 'Editable' ),
 	],
-attributes: {
+	description: __('A note that can be edited by a meeting organizer'),
+	attributes: {
         editable: {
             type: 'string',
             default: '',
@@ -504,10 +523,13 @@ return (<form onSubmit={ setAgendaEdit } >
 		}
 		
 		return (
+			<Fragment>
+<DocInspector />	
 <div className={ props.className }>
 <p class="dashicons-before dashicons-welcome-write-blog"><strong>Toastmasters Editable Note</strong></p>
 { showForm() }
 </div>
+</Fragment>
 		);
 	},
     save: function (props) { return null; },
@@ -524,6 +546,7 @@ registerBlockType( 'wp4toastmasters/absences', {
 		__( 'Agenda' ),
 		__( 'Absences' ),
 	],
+	description: __('A button on the signup form where members can record a planned absence.'),
 	attributes: {
        show_on_agenda: {
             type: 'int',
@@ -546,10 +569,14 @@ return (<form onSubmit={ setShowOnAgenda } >
 </select></form>);		
 		}
 
-	return (<div className={ props.className }>
+	return (
+		<Fragment>
+		<DocInspector />
+		<div className={ props.className }>
 				<strong>Toastmasters Absences</strong> placeholder for widget that tracks planned absences
 			{showForm()}
 			</div>
+		</Fragment>
 );
 	
     },
@@ -557,3 +584,19 @@ return (<form onSubmit={ setShowOnAgenda } >
     return null;
     }
 } ); 
+
+class DocInspector extends Component {
+
+	render() {
+		return (
+			<InspectorControls><p><a href="https://wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/" target="_blank">{__('Agenda Setup Documentation','rsvpmaker')}</a></p>
+			<p>Add additional agenda notes roles and other elements by clicking the + button (top left of the screen or adjacent to other blocks of content). If the appropriate blocks aren't visible, start typing "toastmasters" in the search blank as shown below.</p>
+			<p><img src="/wp-content/plugins/rsvpmaker-for-toastmasters/images/gutenberg-blocks.png" /></p>
+			<p>Most used agenda content blocks:</p>
+			<ul>
+			<li><a target="_blank" href="https://wp4toastmasters.com/knowledge-base/add-or-edit-an-agenda-role/">Agenda Role</a></li><li><a target="_blank" href="https://wp4toastmasters.com/knowledge-base/add-an-agenda-note/">Agenda Note</a></li><li><a target="_blank" href="https://wp4toastmasters.com/knowledge-base/editable-agenda-blocks/">Editable Note</a></li><li><a target="_blank" href="https://wp4toastmasters.com/2018/04/11/tracking-planned-absences-agenda/">Toastmasters Absences</a></li>
+			</ul>
+			</InspectorControls>
+		);
+	}
+}

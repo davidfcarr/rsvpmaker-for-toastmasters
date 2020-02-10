@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.5.8
+Version: 3.6.0
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -1065,6 +1065,8 @@ if(!empty($atts["editable"]))
 			$permalink = get_permalink($post->ID).'#'.$slug;
 			$edit_editable = '<div class="agenda_note_editable_editone_wrapper"><a class="agenda_note_editable_editone_on">Edit</a></div><form method="post" action="'.$permalink.'" class="agenda_note_editable_editone"><div class="agenda_note_editable"><textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="'.$editid.'" /></div><button>Update</button><input type="hidden" name="post_id" value="'.$post->ID.'" /> </form>';
 			}
+		else
+			$edit_editable = '';
 		$content .= '<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.wpautop($editable).'</div>'.$edit_editable;
 	}
 
@@ -12016,7 +12018,8 @@ function wpt_contributor_notification ($new_status, $old_status, $post) {
 add_action(  'transition_post_status',  'wpt_contributor_notification', 10, 3 );
 
 function wp4t_cron_nudge_setup () {
-	wp_schedule_event( strtotime('+1 hour'), 'daily', 'wp4t_reminders_nudge' );
+	wp_unschedule_hook('wp4t_reminders_nudge');
+	wp_schedule_event( strtotime('tomorrow 1 am'), 'daily', 'wp4t_reminders_nudge' );
 }
 add_action('wp4t_reminders_nudge','wp4t_reminders_nudge');
 function wp4t_reminders_nudge () {

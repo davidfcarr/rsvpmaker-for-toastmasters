@@ -115,6 +115,8 @@ if(!empty($officers) && is_array($officers))
 foreach($officers as $officer)
     {
         $user = get_userdata($officer);
+        if(empty($user))
+            continue;
         $sql = $wpdb->prepare("SELECT user_id FROM `".$wpdb->prefix."mailster_list_members` WHERE user_id=%d AND list_id=%d AND is_core_user=1 ",$user->ID, $officer_list );
         $onlist = $wpdb->get_var($sql);
         //check if already on list

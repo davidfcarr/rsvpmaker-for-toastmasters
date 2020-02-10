@@ -4,7 +4,7 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
 Tested up to: 5.3.2
-Stable tag: 3.5.8
+Stable tag: 3.6.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,11 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.5.9 =
+
+* Documentation tips for editing the agenda
+* Fix to scheduling functions
 
 = 3.5.8 =
 
