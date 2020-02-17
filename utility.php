@@ -158,6 +158,8 @@ function get_member_name($user_id, $credentials = true) {
 	elseif($user_id == -1)
 		return 'Not Available';
 	$member = get_userdata($user_id);
+	if(empty($member))
+		return __('Member not found','rsvpmaker-for-toastmasters');
 	if(empty($member->first_name) && empty($member->last_name))
 		$name = $member->display_name;
 	else

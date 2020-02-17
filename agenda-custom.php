@@ -41,7 +41,9 @@ if(isset($_GET['word_agenda']))
 
 <body lang=EN-US style='tab-interval:.5in'>
 <div class="Section1">
-<?php	
+<?php
+if(function_exists('do_blocks'))
+	$layout_post->post_content = do_blocks($layout_post->post_content);
 echo wpautop(convert_chars(wptexturize(do_shortcode($layout_post->post_content))));
 ?>
 </div>

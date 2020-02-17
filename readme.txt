@@ -4,7 +4,7 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
 Tested up to: 5.3.2
-Stable tag: 3.6.0
+Stable tag: 3.6.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,11 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.6.1 =
+
+* Option to have speech introductions appear on the agenda by default. If not set to default, a Show with Introductions item appears on the agenda menu.
+* Updated Agenda Layout document to use Gutenberg blocks for layout with or without sidebar.
 
 = 3.5.9 =
 

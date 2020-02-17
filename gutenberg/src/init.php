@@ -69,11 +69,13 @@ function wpt_cgb_editor_assets() {
 add_action( 'enqueue_block_editor_assets', 'wpt_cgb_editor_assets' );
 
 function wpt_server_block_render(){
-	if(is_admin())
+	if(wp_is_json_request())
 		return;
 	register_block_type('wp4toastmasters/role', ['render_callback' => 'toastmaster_short']);
 	register_block_type('wp4toastmasters/agendaedit', ['render_callback' => 'editable_note']);	
 	register_block_type('wp4toastmasters/absences', ['render_callback' => 'tm_absence']);	
+	register_block_type('wp4toastmasters/agendasidebar', ['render_callback' => 'tmlayout_sidebar']);	
+	register_block_type('wp4toastmasters/agendamain', ['render_callback' => 'tmlayout_main']);
 }
 
 add_action('init','wpt_server_block_render');
