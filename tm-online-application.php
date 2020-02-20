@@ -1,5 +1,4 @@
 <?php
-add_shortcode('tm_member_application','tm_member_application');
 
 function tm_member_application ($atts) {
 fix_timezone();

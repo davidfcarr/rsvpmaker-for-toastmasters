@@ -895,5 +895,4 @@ $output .= sprintf('<form action="%s" method="post"><h3>Create Contest Page</h3>
 return $output;
 }
 
-add_shortcode('contest_demo','contest_demo');
 ?>

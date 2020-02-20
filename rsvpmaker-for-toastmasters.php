@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.6.3
+Version: 3.6.4
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -875,7 +875,6 @@ function wpt_remind_unassigned($args = array())
 	}
 
 
-add_shortcode('wpt_open_roles','wpt_open_roles');
 function wpt_open_roles ($atts = array()) {
 	global $post;
 	$output = '';
@@ -1710,9 +1709,6 @@ function tm_agenda_content () {
 return $content;
 }
 
-add_shortcode( 'agenda_role', 'toastmaster_short' );
-add_shortcode( 'toastmaster', 'toastmaster_short' );
-add_shortcode( 'agenda_note', 'agenda_note' );
 
 function toastmasters_officer_single($atts) {
 $title = (isset($atts['title'])) ? $atts['title'] : 'VP of Education';
@@ -1744,7 +1740,6 @@ $contact .= sprintf('<div>'.__("Email",'rsvpmaker-for-toastmasters').': <a href=
 }	
 return $contact;
 }
-add_shortcode('officer','toastmasters_officer_single');
 
 function toastmaster_officers ($atts) {
 if(!isset($_REQUEST["print_agenda"]) && !is_email_context())
@@ -1770,8 +1765,6 @@ else
 $buffer .= "</div>\n";
 return $buffer;
 }
-
-add_shortcode( 'toastmaster_officers', 'toastmaster_officers' );
 
 function tm_get_histories () {
 	global $post;
@@ -4577,8 +4570,6 @@ function stoplight_shortcode($atts) {
 	return get_stoplight($green,$red,$yellow);
 }
 
-add_shortcode('stoplight','stoplight_shortcode');
-
 function wp4toastmasters_agenda_layout_check ($option) {
 global $current_user;
 if($option == 'custom')
@@ -5539,8 +5530,6 @@ if(!empty($userdata->original_join_date))
 <?php
 
 }
-
-add_shortcode('awesome_members','awesome_members');
 
 function add_awesome_member() {
 
@@ -6729,8 +6718,6 @@ $output .= sprintf('<form id="edit_roles_form" method="post" action="%s">
 return $output;
 
 }
-
-add_shortcode('signup_sheet','signup_sheet');
 
 function signup_sheet_editor() {
 	if(!current_user_can('edit_signups'))
@@ -8094,8 +8081,6 @@ else
 return ob_get_clean();
 }
 
-add_shortcode('themewords','themewords');
-
 function simplify_html($text, $allowable_tags="<p><br><div><b><strong><em><i><h1><h2><h3><h4><h5><h6><ol><ul><li>") {
 	$text = strip_tags($text, $allowable_tags);
 	$text = preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/i",'<$1$2>', $text);
@@ -8318,8 +8303,6 @@ if(isset($_POST['wp4toastmasters_admin_ids']) )
 	}
 
 }
-
-add_shortcode('jstest','jstest');
 
 function jstest() {
 	global $post;
@@ -9387,9 +9370,6 @@ ob_start();
 		endif;
 return ob_get_clean();
 }
-
-add_shortcode('club_news','club_news');
-add_shortcode('members_only','members_only');
 
 function toast_excerpt_more( $more ) {
 	return ' <a class="read-more" href="'. get_permalink( get_the_ID() ) . '">[' . __('Read More', 'your-text-domain') . ']</a>';
@@ -11594,13 +11574,6 @@ function tmlayout_main($atts) {
 	return tm_agenda_content();
 }
 
-add_shortcode('tmlayout_club_name','tmlayout_club_name');
-add_shortcode('tmlayout_tag_line','tmlayout_tag_line');
-add_shortcode('tmlayout_meeting_date','tmlayout_meeting_date');
-add_shortcode('tmlayout_sidebar','tmlayout_sidebar');
-add_shortcode('tmlayout_main','tmlayout_main');
-add_shortcode('tmlayout_intros','speech_intros_shortcode');
-
 add_action('rsvp_recorded','rsvp_to_member_auto');
 
 function rsvp_to_member_auto($rsvp) {
@@ -11841,7 +11814,6 @@ $tmagendadata['wpt_officers'] .= sprintf('<div><strong>%s: %s %s</strong></div>'
 	}
 return $tmagendadata['wpt_officers'];
 }
-add_shortcode('wpt_officers','wpt_officers');
 
 function speaker_evaluator () {
 global $tmagendadata;
@@ -11892,7 +11864,6 @@ for($i = 1; $i <= $high; $i++)
 	$tmagendadata['speaker_evaluator'] .= '</table>';
 return $tmagendadata['speaker_evaluator'];
 }
-add_shortcode('speaker_evaluator','speaker_evaluator');
 
 function evaluation_links() {
 global $wpdb;
@@ -11932,8 +11903,6 @@ foreach($future as $meet)
 return $tmagendadata['evaluation_links'];
 }
 
-add_shortcode('evaluation_links','evaluation_links');
-
 function wpt_speakers () {
 global $tmagendadata;
 global $post;
@@ -11965,7 +11934,6 @@ $tmagendadata['wpt_speakers'] .= sprintf('<div><strong>Speaker: %s %s</strong></
 	}
 return $tmagendadata['wpt_speakers'];
 }
-add_shortcode('wpt_speakers','wpt_speakers');
 
 function wpt_evaluators () {
 global $tmagendadata;
@@ -12003,7 +11971,6 @@ if(strpos($name,'phone') && !empty($userdata->$name) )
 	}
 return $tmagendadata['wpt_evaluators'];
 }
-add_shortcode('wpt_evaluators','wpt_evaluators');
 
 function wpt_general_evaluator () {
 global $tmagendadata;
@@ -12033,7 +12000,6 @@ $contact .= sprintf('<div>'.__("Email",'rsvpmaker-for-toastmasters').': <a href=
 
 return $tmagendadata['wpt_general_evaluator'] = sprintf('<div><strong>General Evaluator %s %s</strong></div>',$userdata->first_name, $userdata->last_name).$contact;
 }
-add_shortcode('wpt_general_evaluator','wpt_general_evaluator');
 
 function wpt_tod () {
 global $tmagendadata;
@@ -12064,7 +12030,6 @@ return $tmagendadata['wpt_tod'] = sprintf('<div><strong>Toastmaster of the Day %
 else
 	return __('Toastmasters of the Day not yet assigned','rsvpmaker-for-toastmasters');
 }
-add_shortcode('wpt_tod','wpt_tod');
 
 function wptagendalink () {
 global $tmagendadata;
@@ -12074,9 +12039,6 @@ if(isset($tmagendadata['wptagendalink']))
 $permalink = get_permalink($post->ID);
 return $tmagendadata['wptagendalink'] = sprintf('%s<br /><a href="%s">%s</a>',__('Agenda','rsvpmaker-for-toastmasters'),$permalink,$permalink);
 }
-add_shortcode('wptagendalink','wptagendalink');
-
-add_shortcode('wp4t_assigned_open','wp4t_assigned_open');
 
 if(!function_exists('pre_print_test')) {
 function pre_print_test ($var,$label,$return=false)
@@ -12209,8 +12171,6 @@ function role_history_demo () {
 		echo 'recent roles '. var_export($history->recent_history,true) . '</p>';
 	}
 }
-
-add_shortcode('role_history_demo','role_history_demo');
 
 function tm_goal_form () {
 global $wpdb, $rsvp_options, $current_user;
@@ -12401,8 +12361,6 @@ function tm_absence ($atts) {
 
 return $output;
 }
-
-add_shortcode('tm_absence','tm_absence');
 
 function toastmasters_init () {
 	global $wpdb;
@@ -12601,7 +12559,6 @@ function wpt_embed_agenda ($atts) {
 	return sprintf('<iframe src="%sprint_agenda=1&no_print=1" style="%s"></iframe>',$permalink,$style);
 }
 
-add_shortcode('wpt_embed_agenda','wpt_embed_agenda');
 
 function agenda_note_upgrade_helper($matches) {
 	if(empty($matches[1]))
@@ -12650,8 +12607,6 @@ function wptoast_deactivation() {
     wp_clear_scheduled_hook( 'wp4toast_reminders_cron' );
     wp_clear_scheduled_hook( 'wp4toast_reminders_dst_fix' );
 }
-
-add_shortcode('tm_branded_image','tm_branded_image');
 
 function tm_branded_image($att) {
 	if(is_array($att))
@@ -12795,4 +12750,40 @@ function wp4t_reminders_nudge () {
 	}
 }
 
+if(!wp_is_json_request()) {
+	add_shortcode('wpt_open_roles','wpt_open_roles');
+	add_shortcode('contest_demo','contest_demo');
+	add_shortcode( 'agenda_role', 'toastmaster_short' );
+	add_shortcode( 'toastmaster', 'toastmaster_short' );
+	add_shortcode( 'agenda_note', 'agenda_note' );
+	add_shortcode('officer','toastmasters_officer_single');
+	add_shortcode( 'toastmaster_officers', 'toastmaster_officers' );
+	add_shortcode('stoplight','stoplight_shortcode');
+	add_shortcode('awesome_members','awesome_members');
+	add_shortcode('signup_sheet','signup_sheet');
+	add_shortcode('themewords','themewords');
+	add_shortcode('jstest','jstest');
+	add_shortcode('club_news','club_news');
+	add_shortcode('members_only','members_only');
+	add_shortcode('tmlayout_club_name','tmlayout_club_name');
+	add_shortcode('tmlayout_tag_line','tmlayout_tag_line');
+	add_shortcode('tmlayout_meeting_date','tmlayout_meeting_date');
+	add_shortcode('tmlayout_sidebar','tmlayout_sidebar');
+	add_shortcode('tmlayout_main','tmlayout_main');
+	add_shortcode('tmlayout_intros','speech_intros_shortcode');
+	add_shortcode('wpt_officers','wpt_officers');
+	add_shortcode('speaker_evaluator','speaker_evaluator');
+	add_shortcode('evaluation_links','evaluation_links');
+	add_shortcode('wpt_speakers','wpt_speakers');
+	add_shortcode('wpt_evaluators','wpt_evaluators');
+	add_shortcode('wpt_general_evaluator','wpt_general_evaluator');
+	add_shortcode('wpt_tod','wpt_tod');
+	add_shortcode('wptagendalink','wptagendalink');
+	add_shortcode('wp4t_assigned_open','wp4t_assigned_open');
+	add_shortcode('role_history_demo','role_history_demo');
+	add_shortcode('tm_absence','tm_absence');
+	add_shortcode('wpt_embed_agenda','wpt_embed_agenda');
+	add_shortcode('tm_branded_image','tm_branded_image');
+	add_shortcode('tm_member_application','tm_member_application');				
+}
 ?>

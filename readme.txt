@@ -4,7 +4,7 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires at least: 3.0
 Tested up to: 5.3.2
-Stable tag: 3.6.3
+Stable tag: 3.6.4
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,10 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.6.4 =
+
+Avoid issues with document save JSON confirmation by checking that wp_is_json_request is false before init of shortcodes / dynamic blocks 
 
 = 3.6.1 =
 
