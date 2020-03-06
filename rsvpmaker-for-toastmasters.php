@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.6.4
+Version: 3.6.5
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -1060,7 +1060,7 @@ if(!empty($atts["editable"]))
 			$display = 'both';
 			}
 		elseif(empty($editable))
-			$editable = __('Not set','rsvpmaker-for-toastmasters');
+			$editable = '';
 		if(is_single() && is_club_member() && !isset($_REQUEST["edit_roles"]) && (current_user_can('edit_signups') || edit_signups_role()) && !isset($_REQUEST["print_agenda"]) && !is_email_context())
 			{
 			$permalink = get_permalink($post->ID).'#'.$slug;
@@ -1343,6 +1343,10 @@ function toastmaster_short($atts=array(),$content="") {
 				{
 				$assignedto = __('Not Available','rsvpmaker-for-toastmasters');
 				}
+			elseif($assigned == '-2')
+				{
+				$assignedto = __('To Be Announced','rsvpmaker-for-toastmasters');
+				}
 			elseif($assigned)
 				{
 					if(is_numeric($assigned))
@@ -1376,6 +1380,10 @@ function toastmaster_short($atts=array(),$content="") {
 			if($assigned == '-1')
 				{
 				$assignedto = __('Not Available','rsvpmaker-for-toastmasters');
+				}
+			elseif($assigned == '-2')
+				{
+				$assignedto = __('To Be Announced','rsvpmaker-for-toastmasters');
 				}
 			elseif($assigned)
 				{
@@ -1456,6 +1464,10 @@ function toastmaster_short($atts=array(),$content="") {
 		if($assigned == '-1')
 				{
 				$output .= __('Not Available','rsvpmaker-for-toastmasters');
+				}
+		if($assigned == '-2')
+				{
+				$output .= __('To Be Announced','rsvpmaker-for-toastmasters');
 				}
 		elseif($assigned  && !(isset($_REQUEST["edit_roles"]) || (isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'toastmasters_reconcile') ) ) )
 			{

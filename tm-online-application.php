@@ -438,6 +438,19 @@ elseif(!empty($_POST['notes']))
     wp_update_post($update);
 }
 
+if(isset($_POST['add_account'])) {
+    $app_id = (int) $_POST['add_account'];
+    $member_factory = new Toastmasters_Member();
+    $user["first_name"] = get_post_meta($app_id,'first_name',true);		
+    $user["last_name"] = get_post_meta($app_id,'last_name',true);		
+    $user["user_email"] = get_post_meta($app_id,'user_email',true);
+    $user["home_phone"] = get_post_meta($app_id,'home_phone',true);
+    $user["mobile_phone"] = get_post_meta($app_id,'mobile_phone',true);
+    $user["toastmasters_id"] = get_post_meta($app_id,'toastmasters_id',true);
+    $member_factory->check($user);
+    $member_factory->show_prompts();    
+}
+
 if(isset($_GET['app']))
 {
     echo '<div style="background-color: #fff; padding: 10px; margin: 10px; border: thin solid #000;">';
@@ -465,11 +478,37 @@ if(isset($_GET['app']))
     echo $application->post_content;
 }
 
+$emailopt = '';
+$emails = Array();
+$results = $wpdb->get_results('SELECT ID, post_title, meta_value FROM '.$wpdb->posts.' JOIN '.$wpdb->postmeta.' on '.$wpdb->posts.'.ID = '.$wpdb->postmeta.'.post_id WHERE post_status="private" AND post_type="tmapplication" AND meta_key="user_email" ORDER BY ID DESC');
+if($results) {
+    foreach($results as $row) {
+        $p = explode(': ',$row->post_title);
+        if(empty($p[1]))
+            continue;
+        $name = $p[1];
+        $email = $row->meta_value;
+        if(in_array($email,$emails))
+            continue;
+        $emails[] = $email;
+        $user = get_user_by('email',$email);
+        if($user)
+            continue;
+        $emailopt .= sprintf('<option value="%d">%s %s</option>',$row->ID,$name,$email);
+    }
+}
+
+$last = '';
 $results = $wpdb->get_results('SELECT ID, post_title, post_modified FROM '.$wpdb->posts.' WHERE post_status="private" AND post_type="tmapplication" ORDER BY ID DESC');
 if($results)
 {
+if(!empty($emailopt))
+    printf('<form method="post" action="%s"><p>%s <select name="add_account">%s</select> <button>%s</button></p></form>',admin_url('admin.php?page=member_application_approval'),__('Create user account for','rsvpmaker-for-toastmasters'),$emailopt,__('Add','rsvpmaker-for-toastmasters'));
 echo '<div style="border: thin solid #333; padding: 10px;">';
     foreach($results as $post) {
+        if($post->post_title == $last)
+            continue;
+        $last = $post->post_title;
         $verified = '';
         $approval = get_post_meta($post->ID,'officer_signature',true);
         if($approval)

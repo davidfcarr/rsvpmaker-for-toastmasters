@@ -41,6 +41,15 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	
 	$fnamesort["AAA"] = $sortmember["AAA"] = $member;
 
+	$member = new stdClass();
+	$member->ID = -2;
+	$member->last_name = __("Announced",'rsvpmaker-for-toastmasters');
+	$member->first_name = __("To Be",'rsvpmaker-for-toastmasters');
+	$member->display_name = __("To Be Announced",'rsvpmaker-for-toastmasters');
+	$member->user_login = 'tobe';
+	
+	$fnamesort["AAB"] = $sortmember["AAB"] = $member;
+
 	ksort($sortmember);
 	ksort($fnamesort);
 
@@ -153,10 +162,12 @@ function get_club_members () {
 function get_member_name($user_id, $credentials = true) {
 	if(!empty($user_id) && !is_numeric($user_id))
 		return $user_id.' ('.__('guest','rsvpmaker-for-toastmasters').')'; // guest ?
-	elseif($user_id == 0)
+	elseif(empty($user_id))
 		return 'Open';
 	elseif($user_id == -1)
 		return 'Not Available';
+	elseif($user_id == -2)
+		return 'To Be Announced';
 	$member = get_userdata($user_id);
 	if(empty($member))
 		return __('Member not found','rsvpmaker-for-toastmasters');

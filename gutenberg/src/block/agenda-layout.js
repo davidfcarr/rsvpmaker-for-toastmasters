@@ -12,6 +12,8 @@ const { registerBlockType } = wp.blocks;
 const { InnerBlocks} = wp.editor;
 const { FormToggle } = wp.components;
 
+if((typeof toastmasters_special !== 'undefined') && (toastmasters_special == 'Agenda Layout'))
+{ // only initialize these blocks for Agenda Layout document
 registerBlockType( 'wp4toastmasters/agenda-wrapper', {
 	title: ( 'Agenda Layout Wrapper' ), // Block title.
 	icon: 'admin-comments', 
@@ -31,6 +33,7 @@ attributes: {
     edit: function( props ) {	
 	const TEMPLATE = [ ['wp4toastmasters/agendasidebar'] ];
 	const { attributes, className, setAttributes, isSelected } = props;
+
 	if(attributes.sidebar)
 	return (
 		<div className={className}>
@@ -40,7 +43,7 @@ attributes: {
 <td id="agenda-sidebar" width="175">
 <InnerBlocks template={TEMPLATE} />
 </td>
-<td id="agenda-main" width="*">[tmlayout_main note="Placeholder for role info, agenda notes, etc."]
+<td id="agenda-main" width="*">Placeholder for role info, agenda notes, etc. {rsvpmaker_ajax.special}
 <p>Include sidebar: <FormToggle checked={attributes.sidebar} 
 		onChange={ function(  ) {
 				setAttributes( {sidebar: !attributes.sidebar} );
@@ -55,7 +58,7 @@ attributes: {
 	// no sidebar
 	return (
 			<div className={className}>
-[tmlayout_main  note="Placeholder for role info, agenda notes, etc."]
+Placeholder for role info, agenda notes, etc.
 	<p>Include sidebar: <FormToggle checked={attributes.sidebar} 
 			onChange={ function(  ) {
 					setAttributes( {sidebar: !attributes.sidebar} );
@@ -132,3 +135,6 @@ registerBlockType( 'wp4toastmasters/agendamain', {
     return null;
     }
 } ); 
+
+	
+} // end of check that this is an Agenda Layout document

@@ -55,6 +55,9 @@ function wpt_cgb_editor_assets() {
 		filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: filemtime — Gets file modification time.
 		true // Enqueue the script in the footer.
 	);
+
+	$rsvpmaker_special = get_post_meta($post->ID,'_rsvpmaker_special',true);
+	wp_localize_script( 'wpt-cgb-block-js', 'toastmasters_special', $rsvpmaker_special);
 	
 	// Styles.
 	wp_enqueue_style(

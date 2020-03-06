@@ -4206,7 +4206,11 @@ if(time() > strtotime($timestamp))
 	$wpdb->query($sql);
 	}
 if($user_id == -1)
-	$name = 'Not Available';
+	$name = __('Not Available','rsvpmaker-for-toastmasters');
+elseif($user_id == '-2')
+	{
+	$name = __('To Be Announced','rsvpmaker-for-toastmasters');
+	}
 elseif(is_numeric($user_id))
 {
 $userdata = get_userdata($user_id);
