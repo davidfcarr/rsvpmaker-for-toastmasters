@@ -2,10 +2,10 @@
 Contributors: davidfcarr
 Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
-Requires at least: 5.0
 Requires PHP: 5.6
-Tested up to: 5.3.2
-Stable tag: 3.6.5
+Requires at least: 5.0
+Tested up to: 5.4
+Stable tag: 3.6.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,15 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.6.7 =
+
+* Improvements to contest scoring dashboard.
+
+= 3.6.6 =
+
+* Multiple updates to the scoring dashboard for contests (particularly contests conducted online)
+* Added the ability to open a separate browser window displaying only the green/yellow/red colors. Can be used in combination with a virtual webcam to show timing colors in a Zoom meeting without sharing other information.
 
 = 3.6.5 =
 

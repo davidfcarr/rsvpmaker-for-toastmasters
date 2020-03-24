@@ -43,8 +43,36 @@ public function get_items($request) {
   }
 }
 
+class WPTContest_Order_Controller extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'wptcontest/v1';
+	  $path = 'order/(?P<post_id>[0-9]+)';///(?P<nonce>.+)
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'get_items' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+			  ),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;
+	}
+  
+  public function get_items($request) {
+	  global $wpdb;
+	  $order = get_post_meta($request['post_id'],'tm_scoring_order',true);
+	  return new WP_REST_Response($order, 200);
+	}
+}
+
+
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
-} );
+     $order_controller = new WPTContest_Order_Controller();
+     $order_controller->register_routes();
+   } );
 ?>

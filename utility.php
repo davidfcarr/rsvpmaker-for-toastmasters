@@ -176,7 +176,8 @@ function get_member_name($user_id, $credentials = true) {
 	else
 		$name = $member->first_name.' '.$member->last_name;
 	if($credentials && !empty($member->education_awards))
-		$name .= ', <span class="education_awards">'.$member->education_awards.'</span>';
+		$name .= ', '.$member->education_awards;
+	$name = strip_tags($name);
 	return $name;
 }
 

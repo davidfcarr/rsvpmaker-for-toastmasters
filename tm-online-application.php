@@ -346,30 +346,17 @@ function check_application_payment($app_id) {
 		$paylink = add_query_arg('paydues',$app_id,get_permalink($app_page));
 		$paylink = sprintf(' Payment link: <a href="%s">%s</a>',$paylink,$paylink);
 	}
-	
     if($paid)
         return sprintf('<strong>Paid online: %s</strong>',number_format($paid->meta_value,2));
     else
         {
             $email = strtolower(get_post_meta($app_id,'user_email',true));
-            $sql = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='stripepay_$email' ORDER BY meta_id DESC";
-            $results = $wpdb->get_results($sql);
-            if($results)
-            {
-                $output .= sprintf('Payments for %s ',$email);
-                foreach($results as $row)
-                {
-                    $pay = unserialize($row->meta_value);
-                    //echo "data: ";
-                    //print_r($pay);
-                    $output .= sprintf(' %s %s',$pay['amount'],$pay['date']);
-                }
-                return $output;
-            }
+            if(!empty($email))
+            $log = stripe_log_by_email ($email);
+            if(empty($log))
+                return '<span style="color: red;">No online payment recorded.</span>'.$paylink;
             else
-			{			
-            return '<span style="color: red;">No online payment recorded.</span>'.$paylink;
-			}
+                return '<span style="color: red;">Possible payment matches:</span></p>'.$log.'<p>'.$paylink;
         }
 }
 
@@ -515,6 +502,7 @@ echo '<div style="border: thin solid #333; padding: 10px;">';
             $verified = sprintf('(Approved %s)',get_post_meta($post->ID,'officer_signature_date',true));
         else
             $verified = check_application_payment($post->ID);
+        echo $log;
         printf('<p><a href="%s">%s</a> %s %s</p>',admin_url('admin.php?page=member_application_approval&app='.$post->ID),$post->post_title, $post->post_modified, $verified);
         }
 echo '<div>';    

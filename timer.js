@@ -1,6 +1,8 @@
 var greenchime = true;
 var yellowchime = true;
 var redchime = true;
+var colorWin;
+var colorWinOpened = false;
 
 var SpeechType = (function () {
     function SpeechType(name, greenTime, yellowTime, redTime, id) {
@@ -55,6 +57,10 @@ var TSTimer = (function () {
 	    if($('#showdigits').is(':checked'))
 			$('#trafficlight').text('0:00');
         $('body').css('background-color', '#EFEEEF');
+        if(colorWinOpened) {
+            colorWin.document.body.style.backgroundColor = '#EFEEEF';
+            colorWin.document.getElementById('popuplabel').innerHTML = 'Ready';
+        }
 		$('#colorlabel').html('');
         this.startTime = null;
 		greenchime = true;
@@ -64,9 +70,16 @@ var TSTimer = (function () {
 
     TSTimer.prototype.startButton = function () {
         if (this.started) {
+            if(colorWinOpened) {
+                colorWin.document.getElementById('popuplabel').innerHTML = 'Stopped';
+            }
             this.stop();
         } else {
+            if(colorWinOpened) {
+                colorWin.document.getElementById('popuplabel').innerHTML = 'Timing ...';
+            }
             this.start();
+
         }
     };
 
@@ -86,7 +99,11 @@ var TSTimer = (function () {
 
 		if (elapsedSeconds >= this.red) {
             $('body').css('background-color', '#FF4040');
-			$('#colorlabel').html('Red');
+            if(colorWinOpened) {
+                colorWin.document.body.style.backgroundColor = '#FF4040';
+                colorWin.document.getElementById('popuplabel').innerHTML = 'Red';    
+            }
+            $('#colorlabel').html('Red');
 			if(redchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
@@ -95,15 +112,23 @@ var TSTimer = (function () {
         } else if (elapsedSeconds >= this.yellow) {
             $('body').css('background-color', '#FCDC3B');
 			$('#colorlabel').html('Yellow');
-			if(yellowchime && $('#playchime').is(':checked'))
+            if(colorWinOpened) {
+                colorWin.document.body.style.backgroundColor = '#FCDC3B';
+                colorWin.document.getElementById('popuplabel').innerHTML = 'Yellow';
+            }
+                if(yellowchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				yellowchime = false;
 				}
         } else if (elapsedSeconds >= this.green) {
             $('body').css('background-color', '#A7DA7E');
-			$('#colorlabel').html('Green');
-			if(greenchime && $('#playchime').is(':checked'))
+            $('#colorlabel').html('Green');
+            if(colorWinOpened) {
+            colorWin.document.body.style.backgroundColor = '#A7DA7E';
+            colorWin.document.getElementById('popuplabel').innerHTML = 'Green';
+            }
+            if(greenchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				greenchime = false;
@@ -148,8 +173,14 @@ var TSTimer = (function () {
     TSTimer.prototype.formatTime = function (elapsedSeconds) {
         var minutes = Math.floor(elapsedSeconds / 60);
         var seconds = elapsedSeconds % 60;
-		if((elapsedSeconds > this.overtime) || (elapsedSeconds < this.undertime))
-			this.disqualified = true;
+		if(elapsedSeconds > this.overtime) {
+            this.disqualified = true;
+            console.log('elapsed '+elapsedSeconds+' over '+ this.overtime);
+        }
+        else if (elapsedSeconds < this.undertime) {
+            this.disqualified = true;
+            console.log('elapsed '+elapsedSeconds+' under '+ this.undertime);
+        }
 		else
 			this.disqualified = false;
         return minutes + ":" + ((seconds < 10) ? "0" + seconds.toString() : seconds.toString());
@@ -195,9 +226,9 @@ var TSTimer = (function () {
 		speechid = speechid.replace('agenda-speech','');
 		//var checked = '';
 		if(this.disqualified)
-			{
 			$('#disqualified'+speechid).prop('checked', true);
-			}
+        else
+            $('#disqualified'+speechid).prop('checked', false);
 		$('#actualtime'+speechid).val(this.formattedTime);
         $('#timelog').append('<p>' + speakerName + ' ' + this.formattedTime + '</p>');
 	};
@@ -248,6 +279,15 @@ $(document).ready(function () {
     var timer = new TSTimer(speeches);
     timer.setDefault();	
 
+$('#popup').click(function(){
+    colorWin = window.open("about:blank", "Color Light", "width=200,height=200");
+    colorWinOpened = true;
+    colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 20vw; text-align: center; margin-top: 20vw\">Ready</h1><body>");
+colorWin.document.body.style.backgroundColor = '#DDDDDD';
+colorWin.document.title = 'Timing Light';
+return false;
+}); 
+
 $('form#voting').submit(function(){
     if (! $('#readytovote').is(':checked')){
        $("#readyprompt").html('<span style="color: red;">You must check the final checkbox first</span>');
@@ -255,6 +295,5 @@ $('form#voting').submit(function(){
        return false;
     }
 }); 
-
 
 });

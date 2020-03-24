@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.6.5
+Version: 3.6.7
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -5708,9 +5708,16 @@ foreach($lines as $linenumber => $line)
 		$user["toastmasters_id"] = $cells[$label["Customer Id"]];
 	if(!empty($user["toastmasters_id"]))
 		$user["toastmasters_id"] = (int) $user["toastmasters_id"];//get rid of zero padding
-	
+	$blog_id = get_current_blog_id();
 	if(isset($label["Member of Club Since"]))
-		$user["club_member_since"] = $cells[$label["Member of Club Since"]];
+		{
+			$user["club_member_since"] = $cells[$label["Member of Club Since"]];
+			$user["club_member_since_".$blog_id] = $cells[$label["Member of Club Since"]];
+		}
+	if(isset($label["Paid Until"]))
+		{
+			$user["paid_until_".$blog_id] = $cells[$label["Member of Club Since"]];
+		}
 	if(isset($label["Original Join Date"]))
 		$user["original_join_date"] = $cells[$label["Original Join Date"]];
 	

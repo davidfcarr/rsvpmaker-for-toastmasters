@@ -9,7 +9,6 @@
   <meta name="viewport" content="width=device-width"/>
 
   <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="timer.css" rel="stylesheet" />
   <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=0.3'); ?>" rel="stylesheet" />
  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -19,15 +18,14 @@
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=1.7');?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=2.11');?>"></script>
 
 </head>
 <body>
 <div id="body">
   <div class="content-wrapper">
     <h1 style="margin-bottom: 20px;">Time for <input type="text" placeholder="Speaker Name" id="speakername" size="30"></h1>
-	  <div style="font-size: 12px; margin-bottom: 15px;"><input type="checkbox" id="playchime" > Play chime <input type="checkbox" id="showdigits"> Show digits <input type="radio" id="demolight" name="demolight" value="green"> Demo Green <input type="radio" id="demolight"  name="demolight" value="yellow"> Demo Yellow <input type="radio" id="demolight" value="red" name="demolight" > Demo Red <input type="radio" id="demolight" value="" checked="checked" name="demolight" > Demo Off <a href="https://wp4toastmasters.com/2017/11/29/new-online-timing-lights-tool/" target="_blank">How-to use this</a></div>
-
+	  <div style="font-size: 12px; margin-bottom: 15px;"><a href="#" id="popup">Color popup</a> <input type="checkbox" id="playchime" > Play chime <input type="checkbox" id="showdigits"> Show digits <a href="https://wp4toastmasters.com/knowledge-base/online-timer-tool/" target="_blank">How-to use this</a> </div>
     <div>
       <div class="row" id="buttons" style="font-size: large"></div>
       <br/>
@@ -119,8 +117,7 @@ for($i = 1; $i <= $count; $i++) {
 	{
 		if(is_numeric($member_id))
 		{
-		$member = get_userdata($member_id);
-		$name = $member->first_name.' '.$member->last_name;
+		$name = get_member_name($member_id);
 		}
 		else $name = 'Guest: '.$member_id;
 		//print_r($member);
@@ -202,9 +199,17 @@ $action = add_query_arg( array(
     'timer' => '1',
     'contest' => $timer_code,
 ), get_permalink($post->ID) );
+global $current_user;
+$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
+$dashboard_users = get_post_meta($post->ID,'tm_contest_dashboard_users',true);
+if($timer_user && ($current_user->ID != $timer_user) && !in_array($current_user->ID,$dashboard_users))
+{
+	printf('<p>You must <a href="%s">login</a> use the timer\'s report form.</p>',wp_login_url($_SERVER['REQUEST_URI']));
+}
+else {
 ?>
-		<form method="post" action="<?php echo $action; ?>" id="voting">
-			<h3 id="record_time">Record Time</h3>
+<form method="post" action="<?php echo $action; ?>" id="voting">
+<h3 id="record_time">Record Time</h3>
 <?php
 foreach($order as $index => $contestant) {
 	printf('<p>%s Time: <input type="text" name="time[]" value="0:00" id="actualtime%d" ><br /><input type="checkbox" name="disqualified[]" value="%d" id="disqualified%d" /> Disqualified</p>',$contestant,$index,$index,$index);
@@ -216,7 +221,9 @@ foreach($order as $index => $contestant) {
 			<div id="timesend" ><button >Send</button></div>
 		</form>			
 <?php	
-}
+}// end display of form
+
+} // end contest output
 ?>
 		</div>
 

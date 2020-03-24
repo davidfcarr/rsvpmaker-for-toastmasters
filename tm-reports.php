@@ -29,7 +29,7 @@ add_submenu_page( 'toastmasters_admin_screen', __('Add Speech','rsvpmaker-for-to
 
 add_submenu_page( 'toastmasters_admin_screen', __('Record Attendance','rsvpmaker-for-toastmasters'), __('Record Attendance','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_attendance', 'toastmasters_attendance');
 add_submenu_page( 'toastmasters_admin_screen', __('Mentors','rsvpmaker-for-toastmasters'), __('Mentors','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_mentors', 'toastmasters_mentors');
-//add_submenu_page( 'toastmasters_screen', __('Track Dues','rsvpmaker-for-toastmasters'), __('Track Dues','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_dues', 'toastmasters_dues');
+add_submenu_page( 'toastmasters_admin_screen', __('Track Dues','rsvpmaker-for-toastmasters'), __('Track Dues','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'wpt_dues_report', 'wpt_dues_report');
 add_submenu_page( 'toastmasters_admin_screen', __('Activity Log','rsvpmaker-for-toastmasters'), __('Activity Log','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_activity_log', 'toastmasters_activity_log');
 add_submenu_page( 'toastmasters_admin_screen', __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), 'manage_options', 'import_fth', 'import_fth');
 add_submenu_page( 'toastmasters_admin_screen', __('Import/Export','rsvpmaker-for-toastmasters'), __('Import/Export','rsvpmaker-for-toastmasters'), 'manage_options', 'import_export', 'toastmasters_import_export');
@@ -6491,6 +6491,47 @@ $form = json_decode($body);
 set_transient($slug,$form,WEEK_IN_SECONDS);
 return $form;
 }
+
+function wpt_dues_report () {
+	global $wpdb;
+	$paidkey = 'paid_until_'.get_current_blog_id();
+
+	if(isset($_POST['markpaid'])) {
+		foreach($_POST['markpaid'] as $member_id => $value) {
+			$until = $_POST['until'][$member_id];
+			update_user_meta($member_id,$paidkey,$until);
+		}
+	}
+
+	echo '<h1>Member Dues Status</h1>';
+	echo '<p>Shows online payments received within the last 4 months.</p>';
+	$month = (int) date('n');
+	$year = (int) date('Y');
+	if($month < 5)
+		$paid_until = '9/30/'.$year;
+	else {
+		$paid_until = '3/31/'.$year++;
+	}
+
+	$members = get_club_members ();
+	foreach($members as $member) {
+		$member = get_userdata($member->ID);
+		$index = $member->display_name;
+		$log = '<h3>'.$member->display_name.' '.$member->user_email.'</h3>';
+		if(!empty($member->$paidkey))
+		{
+			$log .= sprintf('<p>Paid until: %s</p>',$member->$paidkey);
+		}
+		if(empty($member->$paidkey) || ($member->$paidkey != $paid_until))
+			$log .= sprintf('<p><input type="checkbox" name="markpaid[%d]" value="1" /> Mark paid until <input type="text" name="until[%d]" value="%s"></p>',$member->ID,$member->ID,$paid_until);
+		//print_r($member);
+		//echo '<br />';
+		$log .= stripe_log_by_email ($member->user_email, 4);
+		$logs[$index] = $log;
+	}
+	sort($logs);
+	printf('<form method="post" action="%s">%s<p><button>Save</button></p></form>',admin_url('admin.php?page=wpt_dues_report'), implode("\n",$logs));
+}// end function
 
 
 ?>
