@@ -88,7 +88,7 @@ return $output;
 
 function toast_scoring_dashboard () {
 ob_start();
-global $post;
+global $post, $wpdb;
 global $current_user;
 
 if(isset($_POST['dashboardvote']))
@@ -98,8 +98,6 @@ if(isset($_POST['dashboardvote']))
 	add_post_meta($post->ID,'dashboard_vote',$id);
 	//print_r($_POST);
 }
-
-do_action('wpt_scoring_dashboard_top');
 $output = '';
 $votinglink = $actionlink = get_permalink($post->ID);
 if(strpos($actionlink,'?'))
@@ -111,6 +109,8 @@ else {
 $actionlink .= '?scoring=dashboard';
 $votinglink .= '?scoring=voting';	
 }
+
+do_action('wpt_scoring_dashboard_top');
 $link = sprintf('<div id="agendalogin"><a href="%s">'.__('Login','rsvpmaker-for-toastmasters').'</a></div>',site_url().'/wp-login.php?redirect_to='.urlencode($actionlink));
 
 $contest_selection['International Speech Contest'] = array('Speech Development' => 20,'Effectiveness' => 15,'Speech Value' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 10);
@@ -496,6 +496,33 @@ else
 
 if(!$is_locked)
 {
+if(isset($_POST['importfrom']))
+{
+	echo 'Copying setup from event post #'.$import = (int) $_POST['importfrom'];
+	$users = get_post_meta($import,'contest_user');
+	if($users)
+	foreach($users as $user)
+		add_post_meta($post->ID,'contest_user',$user);
+	$judges = get_post_meta($import,'tm_scoring_judges',true);
+	if($judges)
+		update_post_meta($post->ID,'tm_scoring_judges',$judges);
+	$dashboard_users = get_post_meta($import,'tm_contest_dashboard_users',true);
+	if($dashboard_users)
+		update_post_meta($post->ID,'tm_contest_dashboard_users',$dashboard_users);
+	$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
+	if($timer_user)
+		update_post_meta($post_id,'contest_timer',$timer_user);
+		
+	$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$import AND meta_key LIKE 'contest_link%' ";
+	$results = $wpdb->get_results($sql);
+	if($results)
+	foreach($results as $row)
+		{
+		update_post_meta($post->ID,$row->meta_key,$row->meta_value);
+		//printf('<p>Setting %s %s %s</p>',$post->ID,$row->meta_key,$row->meta_value);
+		}
+}
+judge_import_form($actionlink);
 ?>
 <div>
 <form method="post" action="<?php echo $actionlink ?>" >
@@ -1240,5 +1267,53 @@ $output .= sprintf('<form action="%s" method="post"><h3>Create Contest Page</h3>
 return $output;
 }
 
+$myusers_indexed = array();
+
+function check_contest_collaborators () {
+	global $wpdb, $current_user, $myusers_indexed;
+	$myusers = array();
+	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE meta_key='contest_user' AND meta_value='".$current_user->ID."' ORDER BY meta_id");
+	foreach($results as $row) {
+		$sql = "SELECT * FROM $wpdb->postmeta WHERE meta_key='contest_user' AND post_id=".$row->post_id;
+		$myresults = $wpdb->get_results($sql);
+		
+		foreach($myresults as $urow) {
+			if(is_numeric($urow->meta_value) && !in_array($urow->meta_value,$myusers))
+				$myusers[] = $urow->meta_value;
+		}
+	
+		}
+	if(empty($myusers) || (sizeof($myusers) == 1))
+		return $options;
+	foreach($myusers as $user_id) {
+		$user = get_userdata($user_id);
+		if(empty($user) || empty($user->user_email))
+			continue;
+		//$output .= sprintf('<div>%s %s %s</div>',$user->first_name,$user->last_name,$user->user_email);
+		$index = preg_replace('/[^a-zA-Z]/','',$user->first_name.$user->last_name.$user->user_email).':'.$user->ID;
+		$myusers_indexed[$index] = sprintf('%s %s (%s)',$user->first_name,$user->last_name,$user->user_login);
+		}
+	ksort($myusers_indexed);
+	return $myusers_indexed;
+}
+
+function judge_import_form($action) {
+	global $post, $wpdb, $current_user;
+	$judges = get_post_meta($post->ID,'tm_scoring_judges',true);
+	if(empty($judges) && check_contest_collaborators ()) {
+		$opt = '<option value="">Choose Contest</option>';
+		$results = $wpdb->get_results("SELECT * FROM $wpdb->posts JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id WHERE meta_key='tm_scoring_judges' AND post_status='publish' ORDER BY ID DESC");
+		if($results)
+		foreach($results as $event) {
+			$contest_users = get_post_meta($event->ID,'contest_user');
+			if(!in_array($current_user->ID,$contest_users))
+				continue;
+			$date = get_rsvp_date($event->ID);
+			$opt .= sprintf('<option value="%d">%s %s</option>',$event->ID,$event->post_title,rsvpmaker_strftime('',$date));
+		}
+		if(!empty($opt))
+			printf('<form action="%s" method="post">Import judges/settings from:<br ><select name="importfrom">%s</select><button>Import</button></form>',$action,$opt);
+	}	
+}
 
 ?>
