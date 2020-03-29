@@ -123,6 +123,8 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	$options .= '</optgroup>';		
 	}
 	
+	$options = apply_filters('awe_dropdown_options',$options);
+
 if($settings)
 	return '<select name="'.$role.'" >'.$options.'</select>';
 elseif(isset($_GET['recommend_roles']))
@@ -156,7 +158,7 @@ return get_next_rsvpmaker(" (post_content LIKE '%[toastmaster%' OR post_content 
 }
 
 function get_club_members () {
-	return get_users('blog_id='.get_current_blog_id() );
+	return get_users(array('blog_id' => get_current_blog_id(),'orderby' => 'display_name') );
 }
 
 function get_member_name($user_id, $credentials = true) {
@@ -187,6 +189,8 @@ function is_wp4t($content = '') {
 	{
 		$content = $post->post_content;
 	}
+	if(strpos($content,'wp4t_evaluations_demo2020'))
+		return true;
 	
 	if((strpos($content,'[toastmaster') === false) && (strpos($content,'wp:wp4toastmasters/') === false))
 		return false;

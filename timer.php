@@ -18,7 +18,7 @@
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=2.11');?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=2.59');?>"></script>
 
 </head>
 <body>
@@ -37,6 +37,9 @@
         <div class="col-sm-2 col-md-2">
           <button class="btn btn-default btn-lg" id="btnReset" type="button" value="Reset">Reset</button>
         </div>
+        <!--div class="col-sm-2 col-md-2 nudge">
+          <button class="btn btn-default btn-lg" id="btnNudge" type="button" value="Nudge">+5 sec</button><div id="nudged"></div>
+        </div -->
         <div class="col-sm-2 col-md-2 hidecount">
           <input class="form-control" id="green-light" type="text">
         </div>

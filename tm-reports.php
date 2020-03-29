@@ -4411,11 +4411,12 @@ $stats_array[$user_id] = array('count' => $count, 'pure_count' => $pure_count, '
 return $stats_array[$user_id];
 }
 
-function show_evaluation_form($project, $speaker_id, $meeting_id){
+function show_evaluation_form($project, $speaker_id, $meeting_id, $demo = false){
 global $wpdb;
 global $current_user;
 global $rsvp_options;
 $is_speech = true;
+$speaker_email = '';
 
 if(preg_match('/:CL[0-9]/',$project))
 {
@@ -4431,11 +4432,14 @@ if(!empty($speaker_id))
 {
 	$speaker_user = get_userdata($speaker_id);
 	$speaker_name = $speaker_user->first_name.' '.$speaker_user->last_name;
+	$speaker_email = $speaker_user->user_email;
 }
+elseif($demo)
+	$speaker_name = '';
 else
 	$speaker_name = 'Guest';
 $evaluator = get_userdata($current_user->ID);
-if(isset($_GET['project_year']))
+if(isset($_GET['project_year']) && !$demo)
 {
 	$t = strtotime($_GET['project_year'].'-'.$_GET['project_month'].'-'.$_GET['project_day']);
 	$timestamp = date('Y-m-d',$t).' 00:00:00';
@@ -4444,7 +4448,7 @@ if(isset($_GET['project_year']))
 else
 {
 	$timestamp = get_rsvp_date($meeting_id);
-	$t = strtotime($timestamp);
+	$t = (empty($timestamp)) ? time() : strtotime($timestamp);
 }
 $date = strftime($rsvp_options["long_date"],$t);
 $slug = $project;
@@ -4462,7 +4466,7 @@ $name = get_project_text($project);
 	if(empty($prompts))
 		{
 		if($project == 'undefined')
-			$intro = '<h4>The specific speech project was not defined, but you can record yur notes below.</h4>';
+			$intro = '<h4>The specific speech project was not defined, but you can record your notes below.</h4>';
 		else
 			{
 				$intro = '<h4>We do not yet have a form with specific prompts for this project, but you can record your notes below.</h4>';
@@ -4496,7 +4500,7 @@ if(isset($_GET['_title_meta']))
 
 		if($project == 'unspecified')
 		{
-		$project_widget = str_replace('[]','_meta',speaker_details('',0,array() ));
+		$project_widget = str_replace('[]','_meta',speaker_details('',0,array('demo' => 1) ));
 		$project_widget = str_replace('name="_project_meta"','name="project"',$project_widget);
 		printf('<h2>Add Project Details</h2><form action="%s" method="get"><input type="hidden" name="page" value="wp4t_evaluations">
 		<input type="hidden" name="speaker" value="%s" />
@@ -4505,7 +4509,7 @@ if(isset($_GET['_title_meta']))
 	}	
 
 ?>
-<form action="<?php echo admin_url('admin.php?page=wp4t_evaluations');?>" method="post">
+<form action="<?php if($demo) echo get_permalink(); else echo admin_url('admin.php?page=wp4t_evaluations');?>" method="post">
 
 <h3>Record Evaluation</h3>
 <p>Speaker: <input type="text" name="speaker_name" value="<?php echo $speaker_name;  ?>" /><input type="hidden" name="speaker_id" value="<?php echo $speaker_id; ?>" /></p>
@@ -4514,10 +4518,14 @@ if(isset($_GET['_title_meta']))
 <?php if($is_speech) { ?>
 <p>Speech Title: <input type="text" name="speech_title" value="<?php echo $title; ?>" /></p>
 <?php } ?>
-<p>Evaluator: <input type="text" name="evaluator" value="<?php echo $evaluator->first_name.' '.$evaluator->last_name; ?>" /></p>
+<p>Evaluator: <input type="text" name="evaluator" value="<?php if(!$demo) echo $evaluator->first_name.' '.$evaluator->last_name; ?>" /></p>
 <p>Date: <input type="text" name="timestamp" value="<?php echo $date; ?>" /></p>
 
-<?php	
+<?php
+printf('<p>Speaker Email Address: <input type="text" name="speaker_email" value="%s"></p>',$speaker_email);
+if($demo)
+	echo '<p>Evaluator Email Address: <input type="text" name="evaluator_email"></p>';
+
 		echo wpautop($intro);
 		if(!empty($prompts))
 		{
@@ -4546,13 +4554,26 @@ if(isset($_GET['_title_meta']))
 				echo '<p><textarea name="comment['.$index.']" style="width: 100%; height: 3em;"></textarea></p>';
 			}
 		}
-echo submit_button();
+echo '<p><button>Submit</button></p>';
 ?>
 </form>
 <?php
 }
 
-function wp4t_evaluations () {
+add_shortcode('wp4t_evaluations_demo2020','wp4t_evaluations_demo2020');
+
+function wp4t_evaluations_demo2020 () {
+if(is_admin())
+return;
+	ob_start();
+	//printf('<script src="%s"></script>',plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'));
+	wp4t_evaluations(true); // show in demo mode
+	return ob_get_clean();
+}
+
+function wp4t_evaluations ($demo = false) {
+if(!$demo)
+{
 $hook = tm_admin_page_top(__('Evaluations','rsvpmaker-for-toastmasters'));
 ?>    <h2 class="nav-tab-wrapper">
       <a class="nav-tab nav-tab-active" href="#pending">Give Evaluations</a>
@@ -4563,6 +4584,8 @@ $hook = tm_admin_page_top(__('Evaluations','rsvpmaker-for-toastmasters'));
     <div id="sections" class="rsvpmaker" >
     <section class="rsvpmaker"  id="pending">
 <?php
+}
+
 $link = (isset($_GET['project'])) ? sprintf(' <a target="_blank" href="mailto:david@wp4toastmasters.com?subject=evaluation form issue: %s">Report errors and omissions</a>',$_GET['project']) : '';
 
 printf('<p><em>%s</em> %s</p>',__('These online evaluation forms mirror the prompts on the evaluation forms from Toastmasters International for Pathways as well as older speech manual projects.','rsvpmaker-for-toastmasters'),$link);
@@ -4615,9 +4638,10 @@ if(!empty($_POST['eval_project']))
 	
 if(isset($_POST["comment"]) && !empty($_POST["project"]))
 	{
-		$speaker_id = (int) $_POST["speaker_id"];
+		if(!$demo)
+			$speaker_id = (int) $_POST["speaker_id"];
 		$speaker_name = stripslashes($_POST['speaker_name']);
-		if($speaker_id)
+		if(isset($speaker_id))
 			$speaker_user = get_userdata($speaker_id);
 		$timestamp = $_POST["timestamp"];
 		$t = strtotime($timestamp);
@@ -4630,7 +4654,7 @@ if(isset($_POST["comment"]) && !empty($_POST["project"]))
 		$evaluation .= sprintf('<h2>Project: %s</h2>',$project_text)."\n";
 		if(!empty($_POST["speech_title"]))
 			$evaluation .= sprintf('<p><strong>Title</strong> %s</p>',stripslashes($_POST["speech_title"]))."\n";
-		$evaluation .= sprintf('<p><strong>Evaluator</strong> %s</p>',$evaluator->first_name. ' '.$evaluator->last_name)."\n";
+		$evaluation .= sprintf('<p><strong>Evaluator</strong> %s</p>',$_POST['evaluator_name']."\n");
 		$evaluation .= sprintf('<p><strong>Date</strong> %s</p>', $timestamp)."\n";
 		if(preg_match('/:CL[0-9]/',$project))
 			$subject = 'CL Evaluation '.$project_text;
@@ -4661,19 +4685,19 @@ Other Comments';
 			if(!empty($_POST["comment"][$index]))
 				$evaluation .= wpautop(stripslashes($_POST["comment"][$index]));
 			}
-
-		update_user_meta($speaker_id,$key, $evaluation);
+		if(!$demo)
+			update_user_meta($speaker_id,$key, $evaluation);
 		echo '<p>Recording to Member Progress Report</p>';
-		printf('<p style="color:red;">%s %s</p>',__('Emailing to'), $speaker_user->user_email );
+		printf('<p style="color:red;">%s %s</p>',__('Emailing to'), (isset($_POST['speaker_email'])) ? $_POST['speaker_email'] : $speaker_user->user_email );
 		echo $evaluation;
-	if($speaker_id)
+	if($speaker_id || $_POST['speaker_email'])
 	{
 	$mail["subject"] = $subject;
-	$mail["replyto"] = $evaluator->user_email;
+	$mail["replyto"] = (isset($_POST['evaluator_email'])) ? $_POST['evaluator_email'] : $evaluator->user_email;
 	$mail["html"] = "<html>\n<body>\n".$evaluation."\n</body></html>";
-	$mail["to"] = $speaker_user->user_email;
-	$mail["from"] = $evaluator->user_email;
-	$mail["fromname"] = $evaluator->first_name. ' '.$evaluator->last_name;
+	$mail["to"] = (isset($_POST['speaker_email'])) ? $_POST['speaker_email'] : $speaker_user->user_email;
+	$mail["from"] = (isset($_POST['evaluator_email'])) ? $_POST['evaluator_email'] : $evaluator->user_email;
+	$mail["fromname"] = (isset($_POST['evaluator_name'])) ? $_POST['evaluator_name'] : $evaluator->first_name. ' '.$evaluator->last_name;
 	awemailer($mail);		
 	}
 
@@ -4682,13 +4706,15 @@ Other Comments';
 if(!empty($_REQUEST["project"]) && isset($_REQUEST["meeting_id"]))
 	{
 		$project = $_REQUEST["project"];
-		$speaker_id = (int) $_REQUEST["speaker"];
+		$speaker_id = ($demo) ? 0 : (int) $_REQUEST["speaker"];
 		$meeting_id = (int) $_REQUEST["meeting_id"];
-		if(empty($speaker_id))
+		if(empty($speaker_id) && !$demo)
 			echo '<h2 style="color:red;">Speaker not identified</h2>';
-		show_evaluation_form($project, $speaker_id, $meeting_id);
+		show_evaluation_form($project, $speaker_id, $meeting_id, $demo);
 	}
 
+if(!$demo)
+{
 $is_current = false;
 $next_evaluations = '';
 $my_next_evaluations = '';
@@ -4880,12 +4906,15 @@ foreach($past as $past_meet)
 
 } // clroles
 
+} // end if demo test
+
 if(empty($_REQUEST['project'])) {
 
-$project_widget = str_replace('[]','_meta',speaker_details('',0,array() ));
+$project_widget = str_replace('[]','_meta',speaker_details('',0,array('demo' => 1) ));
 $project_widget = str_replace('name="_project_meta"','name="project"',$project_widget);
-
-printf('<h2>Evaluate Any Speech Project</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0">Member: %s<br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),awe_user_dropdown('speaker',0,true),$project_widget,date('Y'),date('m'),date('d'));
+$action_url = ($demo) ? get_permalink() : admin_url('admin.php?page=wp4t_evaluations');
+$member_prompt = ($demo) ? '' : "Member: ".awe_user_dropdown('speaker',0,true);
+printf('<h2>Evaluate Any Speech Project</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0">%s<br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button></form>', $action_url,$member_prompt,$project_widget,date('Y'),date('m'),date('d'));
 
 $o ='';
 $projects = get_projects_array('projects');
@@ -4895,8 +4924,11 @@ foreach($projects as $index => $p)
 		continue;
 	$o .= sprintf('<option value="%s">%s</option>',$index,$p);
 }
+
+if(!$demo) 
+{
 printf('<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">Member: %s</select><br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button></form>',admin_url('admin.php'),$o,awe_user_dropdown('speaker',0,true),date('Y'),date('m'),date('d'));	
-}
+
 ?>
 		</section>
 		<section class="rsvpmaker" id="evalreq">
@@ -4946,7 +4978,6 @@ foreach($projects as $index => $p)
 	$options .= sprintf('<option value="%s:ID0">%s</option>',$index,$p);
 }
 	
-	
 printf('<h2>Request Evaluation</h2><form method="post" action="%s"><select name="eval_project">%s</select><br />Send to: %s<br />Note:<br /><textarea name="note" style="width: 800px; height: 3em;"></textarea><br /><button>Send Request</button></form>',admin_url('admin.php?page=wp4t_evaluations'),$options,awe_user_dropdown('evaluator',0,true));
 
 ?>		
@@ -4995,6 +5026,9 @@ echo '<h3>My Evaluations of Others</h3>';
 		</section>
 	</div>
 <?php
+} // end test if demo
+} // end project not specified
+if(!$demo)
 tm_admin_page_bottom($hook);
 }
 
@@ -6477,7 +6511,8 @@ $form = get_transient($slug);
 if(!empty($form))
 	return $form;
 $url = 'http://wp4toastmasters.com/wp-json/evaluation/v1/form/'.urlencode($slug);
-printf('<p>Look up %s</a>',$url);
+if(isset($_GET['debug']))
+	printf('<p>Look up %s</a>',$url);
 $request = wp_remote_get( $url );
 
 if( is_wp_error( $request ) ) {

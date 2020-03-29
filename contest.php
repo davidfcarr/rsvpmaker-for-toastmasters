@@ -60,6 +60,32 @@ function toast_contest ($mode) {
 return $output;
 }
 
+function wpt_mycontests() {
+if(!is_user_logged_in()) {
+	echo 'Not logged in';
+	return;
+}
+	global $wpdb, $current_user;
+	$output = '';
+	$now = time();
+	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE meta_key='contest_user' AND meta_value='".$current_user->ID."' ORDER BY meta_id");
+	foreach($results as $row) {
+			$post = get_post($row->post_id);
+			if(empty($post) || ($post->post_status != 'publish'))
+				continue;
+			$t = strtotime(get_rsvp_date($row->post_id));
+			if($t < $now)
+				continue;
+			$date = date('F j, Y',$t);
+			$link = get_post_meta($row->post_id,'contest_link_'.$current_user->ID,true);
+			$output .= sprintf('<p><a href="%s">%s - %s</a></p>',$link,$post->post_title,$date);
+		}
+if(empty($output))
+	$output = '<p>None</p>';
+$output = '<p>Contest links you have access to:</p>'.$output;
+return $output;
+}	
+
 function toast_scoring_dashboard () {
 ob_start();
 global $post;
@@ -105,9 +131,9 @@ else
 	if(!current_user_can('edit_others_posts'))
 	{
 	if(!is_array($dashboard_users))
-		return '<p>Logged in user not recognized as a site administrator, chief judge, or ballot counter.</p>';
+		return '<p>Logged in user not recognized as a site administrator, chief judge, or ballot counter.</p>'.wpt_mycontests();
 	if(!in_array($current_user->ID,$dashboard_users))
-		return '<p>Logged in user not recognized as a site administrator, chief judge, or ballot counter.</p>';
+		return '<p>Logged in user not recognized as a site administrator, chief judge, or ballot counter.</p>'.wpt_mycontests();
 	}
 }
 
@@ -332,6 +358,7 @@ else
 
 if(isset($_POST['resetit']))
 {
+	//print_r($_POST['resetit']);
 	rsvpmaker_debug_log($_POST['resetit'],'contest reset');
 	rsvpmaker_debug_log(wp_get_current_user(),'contest reset by');
 
@@ -344,6 +371,7 @@ if(isset($_POST['resetit']))
 				delete_post_meta($post->ID,'tm_scoring_vote'.$i);
 				delete_post_meta($post->ID,'tm_subscore'.$i);	
 			}
+		echo '<p>Scores reset</p>';			
 		}
 		
 		if($reset == 'judges')
@@ -352,7 +380,8 @@ if(isset($_POST['resetit']))
 		{
 		$order = $contestants;
 		shuffle($order);
-		update_post_meta($post->ID,'tm_scoring_order',$order);			
+		update_post_meta($post->ID,'tm_scoring_order',$order);
+		echo '<p>Speaking order reset</p>';			
 		}
 	}
 }
@@ -779,13 +808,14 @@ if(isset($_REQUEST['judge']))
 {
 	$id = (int) $_REQUEST['judge'];
 	if(!isset($judges[$id]))
-		return 'Invalid judge code';
+		return 'Invalid judge code'.wpt_mycontests();
 	$judge_name = $judges[$id];
 	if(is_numeric($judge_name))
 	{
 	$dashboard_users = get_post_meta($post->ID,'tm_contest_dashboard_users',true);
 	if(($current_user->ID != $judge_name) && !in_array($current_user->ID,$dashboard_users))
 	{
+	echo wpt_mycontests();
 	printf('<p>You must <a href="%s">login</a> to access this judge\'s voting form.</p>',wp_login_url($_SERVER['REQUEST_URI']));
 	return;
 	}
@@ -806,7 +836,7 @@ $votinglink .= '&judge='.$id;
 $link = sprintf('<div id="agendalogin"><a href="%s">'.__('Login','rsvpmaker-for-toastmasters').'</a></div>',site_url().'/wp-login.php?redirect_to='.urlencode($votinglink));
 
 if(! $id )
-	return sprintf('<p>Before voting, you must either log in as a user authorized as a judge or access this page with a code provided for guest judges. %s</p>',$link);
+	return sprintf('<p>Before voting, you must either log in as a user authorized as a judge or access this page with a code provided for guest judges. %s</p>',$link).wpt_mycontests();
 do_action('wpt_voting_form_top');
 printf('<p><em>Voting Form for %s</em></p>',$judge_name);
 
@@ -827,12 +857,19 @@ if(is_array($votes) && !isset($_GET['judge_id']))
 	{
 		printf('<p>#%d %s</p>',$index + 1, $vote);
 		printf('<input type="hidden" name="vote[]" value="%s">',$vote);
-		if(empty($vote))
+		if(empty($vote)) {
+			$blanks = true;
 			echo '<div style="color: red;">Vote left blank</div>';
+		}
 	}
-echo '<p>Keep this page open until you confirm your votes have been received properly.</p>';
-echo '<p><button>Resubmit</button></form></p>';
-return ob_get_clean();
+if(empty($blanks))
+{
+	echo '<p>Keep this page open until you confirm your votes have been received properly.</p>';
+	echo '<p><button>Resubmit</button></form></p>';
+	return ob_get_clean();	
+}
+else
+	echo '<p>Please correct errors and re-submit.</p>';
 }
 
 $order = get_post_meta($post->ID,'tm_scoring_order',true);
@@ -886,7 +923,6 @@ if(isset($_GET["clear_scores"]))
 else
 	$tm_subscores = get_post_meta($post->ID,'tm_subscore'.$id,true);
 echo '<style>th {font-size: 10px;} .criteria {width: 50px;} .max {width: 25px} .score {width: 25px;} select {min-width: 50px;} table {max-width: 400px;}</style>';
-echo '<form id="voting" method="post" action="'.$votinglink.'">';
 
 foreach($order as $index => $name)
 {
@@ -973,7 +1009,7 @@ echo '</tr></table>';
 
 <h2>Vote</h2>
 <?php 
-	
+echo '<form id="voting" method="post" action="'.$votinglink.'">';	
 $vote_opt = '';
 if(!empty($contestants))
 {
@@ -985,7 +1021,7 @@ if(!empty($contestants))
 $contestant_count = sizeof($contestants);
 if($tiebreaker == $id)
 	echo '<h3>As the tiebreaking judge, you should rank order ALL contestants.</h3>';
-$max = ($tiebreaker == $id) ? $contestant_count : 3;
+$max = (($tiebreaker == $id) || ($contestant_count < 3)) ? $contestant_count : 3;
 
 for($i= 1; $i <= $max; $i++)
 	printf('<div><select class="voteselect" name="vote[]"><option value="">Vote #%d</option>%s</select></div>',$i,$vote_opt);
@@ -1039,7 +1075,6 @@ scoreArr[contestant] = {
 }
 
 scoreArr[contestant].score = score;
-
 });
 
 let findDuplicates = arr => arr.filter((item, index) => arr.indexOf(item) != index);
@@ -1090,7 +1125,7 @@ $('form#voting').submit(function(){
 		console.log(dups);
 		return false;
 	}
-}); 
+});
 
 });
 </script>

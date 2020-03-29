@@ -2310,11 +2310,13 @@ Title: %s',$manual,$project,$title);
 
 
 function speaker_details ($field, $assigned = 0, $atts) {
+$demo = (isset($atts['demo']));
 global $post;
 global $current_user;
-$output = "";
+$post_id = (isset($post) && isset($post->ID)) ? $post->ID : 0;
+$output = $title = "";
 
-		$manual = get_post_meta($post->ID, '_manual'.$field, true);
+		$manual = (isset($post->ID)) ? get_post_meta($post->ID, '_manual'.$field, true) : '';
 		if(empty($manual) || strpos($manual,'hoose Manual') || strpos($manual,'elect Manual'))
 			{
 			if(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]) || is_admin() )
@@ -2374,17 +2376,21 @@ $output = "";
 			$maxclass = 'maxtime';
 			
 		$output .= '<div>
-		<input type="hidden" name="post_id" value="'.$post->ID.'" />
+		<input type="hidden" name="post_id" value="'.$post_id.'" />
 		<select class="speaker_details manual" name="_manual['.$field.']" id="_manual_'.$field.'"">'.get_manuals_options($manual).'</select><br /><select class="speaker_details project" name="_project['.$field.']" id="_project_'.$field.'">'.$project_options.'</select>';
 		$output .= '<div id="_tmsg_'.$field.'"></div></div>';
-		$display_time = get_post_meta($post->ID, '_display_time'.$field,true);
-		$output .= '<div class="time_required">Timing: <input type="text"class="speaker_details" name="_display_time['.$field.']" id="_display_time_'.$field.'" size="10" value="'.$display_time.'">';
-		$output .= ' Maximum Time: <input type="text"class="speaker_details '.$maxclass.'" name="_maxtime['.$field.']" id="_maxtime_'.$field.'" size="4" value="'.$time.'"></div>';
+		if(!$demo)
+		{
+			$display_time = get_post_meta($post_id, '_display_time'.$field,true);
+			$output .= '<div class="time_required">Timing: <input type="text"class="speaker_details" name="_display_time['.$field.']" id="_display_time_'.$field.'" size="10" value="'.$display_time.'">';
+			$output .= ' Maximum Time: <input type="text"class="speaker_details '.$maxclass.'" name="_maxtime['.$field.']" id="_maxtime_'.$field.'" size="4" value="'.$time.'"></div>';
+			$title = get_post_meta($post_id, '_title'.$field, true);
+			$intro = get_post_meta($post_id, '_intro'.$field, true);	
+		}
 
-		$title = get_post_meta($post->ID, '_title'.$field, true);
 		$output .= '<div class="speech_title">Title: <input type="text" class="speaker_details title_text" id="title_text'.$field.'" name="_title['.$field.']" value="'.$title.'" /></div>';
-		$intro = get_post_meta($post->ID, '_intro'.$field, true);
-		$output .= '<div class="speaker_introduction">Introduction: <br /><textarea class="intro_'.$field.'" name="_intro['.$field.']" id="_intro_'.$field.'" style="width: 100%; height: 4em;">'.$intro.'</textarea></div>';
+		if(!$demo)
+			$output .= '<div class="speaker_introduction">Introduction: <br /><textarea class="intro_'.$field.'" name="_intro['.$field.']" id="_intro_'.$field.'" style="width: 100%; height: 4em;">'.$intro.'</textarea></div>';
 		$output = apply_filters('speaker_form_extra',$output,$field);	
 
 return $output;
