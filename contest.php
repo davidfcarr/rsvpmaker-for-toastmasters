@@ -841,7 +841,11 @@ do_action('wpt_voting_form_top');
 printf('<p><em>Voting Form for %s</em></p>',$judge_name);
 
 if(isset($_POST['vote']))
-	update_post_meta($post->ID,'tm_scoring_vote'.$id,$_POST['vote']);
+	{
+		update_post_meta($post->ID,'tm_scoring_vote'.$id,$_POST['vote']);
+		rsvpmaker_debug_log($_POST,'contest_vote_submitted');
+		//print_r($_POST);
+	}
 if(isset($_POST['scores']))
 	update_post_meta($post->ID,'tm_subscore'.$id,$_POST['scores']);
 
@@ -865,11 +869,15 @@ if(is_array($votes) && !isset($_GET['judge_id']))
 if(empty($blanks))
 {
 	echo '<p>Keep this page open until you confirm your votes have been received properly.</p>';
-	echo '<p><button>Resubmit</button></form></p>';
+	echo '<p><button>Resubmit</button></p>';
 	return ob_get_clean();	
 }
 else
-	echo '<p>Please correct errors and re-submit.</p>';
+	{
+		delete_post_meta($post->ID,'tm_scoring_vote'.$id);
+		echo '<p>Please correct errors and re-submit.</p>';
+	}
+echo '</form>';
 }
 
 $order = get_post_meta($post->ID,'tm_scoring_order',true);
