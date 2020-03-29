@@ -68,11 +68,37 @@ class WPTContest_Order_Controller extends WP_REST_Controller {
 	}
 }
 
+class WPTContest_VoteCheck extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'wptcontest/v1';
+	  $path = 'votecheck/(?P<post_id>[0-9]+)';///(?P<nonce>.+)
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'get_items' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+			  ),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;
+	}
+  
+  public function get_items($request) {
+	  global $wpdb;
+	  $votes = toast_scores_check($request['post_id']);
+	  return new WP_REST_Response($votes, 200);
+	}
+}
 
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
      $order_controller = new WPTContest_Order_Controller();
      $order_controller->register_routes();
+     $votecheck_controller = new WPTContest_VoteCheck();
+     $votecheck_controller->register_routes();
    } );
 ?>

@@ -90,6 +90,15 @@ function toast_scoring_dashboard () {
 ob_start();
 global $post;
 global $current_user;
+
+if(isset($_POST['dashboardvote']))
+{
+	$id = $_POST['judge_id'];
+	update_post_meta($post->ID,'tm_scoring_vote'.$id,$_POST['vote']);
+	add_post_meta($post->ID,'dashboard_vote',$id);
+	//print_r($_POST);
+}
+
 do_action('wpt_scoring_dashboard_top');
 $output = '';
 $votinglink = $actionlink = get_permalink($post->ID);
@@ -395,7 +404,7 @@ if(!empty($judges))
 
 if(!empty($judges))
 {
-echo '<h2>Voting Links</h2><p>Share these personalized voting links with the judges. If judges report problems with the online voting, you can record votes on their behalf by following these same links.</p>';
+echo '<h2>Voting Links</h2><p>Share these personalized voting links with the judges. If judges have problems with the online voting, you can record votes on their behalf.</p>';
 foreach($judges as $key => $value)
 {
 	$v = $votinglink . '&judge='.$key;
@@ -404,13 +413,14 @@ foreach($judges as $key => $value)
 	{
 		$userdata = get_userdata($value);
 		$name = $userdata->first_name.' '.$userdata->last_name;
-		printf('<p>Use this link to record scores for %s <br /><a target="_blank" href="%s">%s</a></p>',$name,$v,$v);
 	}
 	else
 	{
 		$name = $value;
-		printf('<p>Use this link to record scores for %s <br /><a target="_blank" href="%s">%s</a></p>',$name,$v,$v);
 	}
+	printf('<p>Voting link for %s <br /><a target="_blank" href="%s">%s</a></p><div id="votestatus%s"></div>',$name,$v,$v,$key);
+	$is_tiebreaker = ($key == $tiebreaker);
+	echo dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
 }
 
 $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
@@ -425,7 +435,9 @@ $timer_link = add_query_arg( array(
 ), get_permalink($post->ID) );
 
 printf("<h3>Timer</h3><p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>',$timer_link,$timer_link);
-	
+
+echo '<p>If judges provide their votes in some other way, you can record scores on their behalf here.</p>'.$dashboard_votes.'</div>';
+
 }
 if(empty($contestants))
 	;
@@ -613,7 +625,23 @@ $('#score_status').html('Checking for new scores ...');
 $.get( "<?php echo site_url('?toast_scoring_update='.$post->ID); ?>", function( data ) {
   $( "#scores" ).html( data );
   $('#score_status').html('Updated');
+});
+
+$.get( "<?php echo site_url('/wp-json/wptcontest/v1/votecheck/'.$post->ID); ?>", function( data ) {
+  //console.log( data );
+  var hasvoted = '';
+  var status = '';
+  for (const property in data) {
+	hasvoted = '#votestatus'+`${property}`;
+if(data[property])
+status = ' Has voted';
+else
+status = ' Has <span style="color:red;">NOT</span> voted';
+$(hasvoted).html(status);
+}
+  //data.forEach(function(value, index) { console.log(index+': ');console.log(element+': '); });
 });	
+
 }
 $('#scoreupdate').click(function() {
   refreshScores();
@@ -775,6 +803,21 @@ else
 return $output;
 }
 
+function toast_scores_check($post_id) {
+	$judges = get_post_meta($post_id,'tm_scoring_judges',true);
+	if(empty($judges))
+		return array();
+	$contestants = get_post_meta($post_id,'tm_scoring_contestants',true);
+	if(empty($contestants))
+		return array();
+	
+		foreach($judges as $index => $judge) {
+			$votes = get_post_meta($post_id,'tm_scoring_vote'.$index,true);
+			$vote_array[$index] = !empty($votes);
+		}
+	return $vote_array;
+}//end toast_scores_check
+	
 function toast_scoring_update () {
 	if(!isset($_GET['toast_scoring_update']))
 		return;
@@ -1137,6 +1180,34 @@ $('form#voting').submit(function(){
 
 });
 </script>
+<?php
+return ob_get_clean();
+}
+
+function dashboard_vote($contestants, $id, $judge_name, $votinglink, $tiebreaker=false) {
+	ob_start();
+	
+	echo '<form class="dashboard_votes" id="voting" method="post" action="'.$votinglink.'">';	
+	$vote_opt = '';
+	if(!empty($contestants))
+	{
+		sort($contestants);
+		foreach ($contestants as $contestant)
+			$vote_opt .= sprintf('<option value="%s">%s</option>',$contestant,$contestant);	
+	}
+		
+	$contestant_count = sizeof($contestants);
+	if($tiebreaker == $id)
+		echo '<h3>As the tiebreaking judge, you should rank order ALL contestants.</h3>';
+	$max = (($tiebreaker) || ($contestant_count < 3)) ? $contestant_count : 3;
+	
+	for($i= 1; $i <= $max; $i++)
+		printf('<div><select class="voteselect" name="vote[]"><option value="">Vote #%d</option>%s</select></div>',$i,$vote_opt);
+	?>
+	<p><input type="checkbox" name="dashboardvote" value="1" /> Record these choices on behalf of <?php echo $judge_name; ?></p>
+	<input type="hidden" name="judge_id" value="<?php echo $id; ?>" />
+	<button>Vote</button>
+	</form>
 <?php
 return ob_get_clean();
 }
