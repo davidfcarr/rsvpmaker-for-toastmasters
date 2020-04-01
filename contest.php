@@ -44,16 +44,27 @@ function toast_contest ($mode) {
 	$date = get_rsvp_date($post->ID);
 	$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
 	$date = strftime($rsvp_options['long_date'],strtotime($date));
+	$mycontests = get_permalink().'?scoring=mycontests';
+	if(!is_user_logged_in())
+		$mycontests = wp_login_url($mycontests);
+	$output = '<div id="scoring">';		
 	if($mode == 'dashboard')
 	{
-		$output = '<div id="scoring"><h1>Scoring Dashboard - '.$date.' '.$contest_name.'</h1>';
+		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="'.$mycontests.'">My Contests</a></div>';
+		$output .= '<h1>Scoring Dashboard - '.$date.' '.$post->post_title.'</h1>';
 		$output .= toast_scoring_dashboard();
 	}
 	elseif($mode == 'voting')
 	{
-		$output = '<div id="scoring"><h1>Voting - '.$date.' '.$post->post_title.'</h1>';;
+		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="'.$mycontests.'">My Contests</a></div>';
+		$output .= '<h1>Voting - '.$date.' '.$post->post_title.'</h1>';
 		$output .= toast_scoring_sheet();	
 	}
+	elseif($mode == 'mycontests')
+		{
+		$output .= '<h1>My Contests</h1>';
+		$output .= wpt_mycontests();
+		}
 	else
 		return "<div>Error: scoring mode not recognized</div>";
 	$output .= '</div>';// close wrapper		
@@ -67,9 +78,13 @@ if(!is_user_logged_in()) {
 }
 	global $wpdb, $current_user;
 	$output = '';
+	$displayed = array();
 	$now = time();
 	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE meta_key='contest_user' AND meta_value='".$current_user->ID."' ORDER BY meta_id");
 	foreach($results as $row) {
+			if(in_array($row->post_id,$displayed))
+				continue;
+			$displayed[] = $row->post_id;
 			$post = get_post($row->post_id);
 			if(empty($post) || ($post->post_status != 'publish'))
 				continue;
@@ -78,13 +93,29 @@ if(!is_user_logged_in()) {
 				continue;
 			$date = date('F j, Y',$t);
 			$link = get_post_meta($row->post_id,'contest_link_'.$current_user->ID,true);
-			$output .= sprintf('<p><a href="%s">%s - %s</a></p>',$link,$post->post_title,$date);
+			$permalink = get_permalink($row->post_id);
+			if(strpos($link,$permalink) === false)
+			{
+				$p = explode('?',$link);
+				$link = $permalink.'?'.$p[1];
+				update_post_meta($row->post_id,$row->meta_key,$link);
+			}
+			$label = '';
+			if(strpos($link,'dashboard'))
+				$label = '(dashboard)';
+			if(strpos($link,'judge'))
+				$label = '(judge)';
+			if(strpos($link,'timer'))
+				$label = '(timer)';
+			
+			//echo $row->post_id.'<br />';
+			$output .= sprintf('<p><a href="%s">%s - %s %s</a></p>',$link,$post->post_title,$date,$label);
 		}
 if(empty($output))
 	$output = '<p>None</p>';
 $output = '<p>Contest links you have access to:</p>'.$output;
 return $output;
-}	
+}
 
 function toast_scoring_dashboard () {
 ob_start();
@@ -404,6 +435,7 @@ if(!empty($judges))
 
 if(!empty($judges))
 {
+$dashboard_forms = '';
 echo '<h2>Voting Links</h2><p>Share these personalized voting links with the judges. If judges have problems with the online voting, you can record votes on their behalf.</p>';
 foreach($judges as $key => $value)
 {
@@ -413,16 +445,22 @@ foreach($judges as $key => $value)
 	{
 		$userdata = get_userdata($value);
 		$name = $userdata->first_name.' '.$userdata->last_name;
+		$username = $userdata->user_login;
 	}
 	else
 	{
 		$name = $value;
+		$username = '';
 	}
-	printf('<p>Voting link for %s <br /><a target="_blank" href="%s">%s</a></p><div id="votestatus%s"></div>',$name,$v,$v,$key);
+	echo '<h4>Voting Link for '.$name.'</h4>';
+	if(!empty($username))
+		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($v),wp_login_url().'?action=lostpassword');
+	printf('<p><a target="_blank" href="%s">%s</a></p>',$v,$v);
 	$is_tiebreaker = ($key == $tiebreaker);
-	echo dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
+	$dashboard_forms .= dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
 }
 
+echo '<h3>Timer</h3>';
 $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
 if(empty($timer_code))
 {
@@ -434,10 +472,18 @@ $timer_link = add_query_arg( array(
     'contest' => $timer_code,
 ), get_permalink($post->ID) );
 
-printf("<h3>Timer</h3><p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>',$timer_link,$timer_link);
+$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
+if($timer_user)
+	{
+		$user = get_userdata($timer_user);
+		$username = $user->user_login;
+		$name = $userdata->first_name.' '.$userdata->last_name;
+		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($timer_link),wp_login_url().'?action=lostpassword');
+	}
+printf("<p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>',$timer_link,$timer_link);
 
 echo '<p>If judges provide their votes in some other way, you can record scores on their behalf here.</p>'.$dashboard_votes.'</div>';
-
+echo $dashboard_forms;
 }
 if(empty($contestants))
 	;
@@ -518,7 +564,9 @@ if(isset($_POST['importfrom']))
 	if($results)
 	foreach($results as $row)
 		{
-		update_post_meta($post->ID,$row->meta_key,$row->meta_value);
+		$p = explode('?',$row->meta_value);
+		$url = get_permalink().'?'.$p[1];
+		update_post_meta($post->ID,$row->meta_key,$url);
 		//printf('<p>Setting %s %s %s</p>',$post->ID,$row->meta_key,$row->meta_value);
 		}
 }
@@ -635,7 +683,18 @@ for($i= 0; $i < 5; $i++)
 	$drop = awe_user_dropdown ('tm_scoring_dashboard_users[]', $user, true);//, $open);
 	echo '<div>'.$drop.'</div>';
 }
+if(isset($_POST['ballot_no_password']))
+{
+	$ballot_no_password = (int) $_POST['ballot_no_password'];
+	update_post_meta($post->ID,'ballot_no_password',$ballot_no_password);
+}
+else
+	$ballot_no_password = get_post_meta($post->ID,'ballot_no_password',true);
 ?>
+<h3>Security Options</h3>
+<p><input type="radio" name="ballot_no_password" value="0" <?php if(empty($ballot_no_password)) echo ' checked="checked" '; ?> /> User password required for access to ballot, timer's report form</p>
+<p><input type="radio" name="ballot_no_password" value="1" <?php if(!empty($ballot_no_password)) echo ' checked="checked" '; ?> /> No password. Ballots protected by coded links</p>
+<p><em>By default, a password is required for all voting forms associated with a user account. You may turn off password protection to make it easier for judges to access thier ballots, which will still be private as long as the link is only shared with the individual judges. This setting also applies to the timer's report. Guest judge links, created by entering a name rather than choosing a user account, are not password protected. The contest dashboard is always password protected.</em></p>
 	<p><button>Submit</button></p>
 </form>
 </div>
@@ -873,6 +932,7 @@ $votinglink .= '?scoring=voting';
 $contestants = get_post_meta($post->ID,'tm_scoring_contestants',true);
 $judges = get_post_meta($post->ID,'tm_scoring_judges',true);
 $tiebreaker = get_post_meta($post->ID,'tm_scoring_tiebreaker',true);
+$ballot_no_password = get_post_meta($post->ID,'ballot_no_password',true);
 
 if(isset($_REQUEST['judge']))
 {
@@ -883,7 +943,8 @@ if(isset($_REQUEST['judge']))
 	if(is_numeric($judge_name))
 	{
 	$dashboard_users = get_post_meta($post->ID,'tm_contest_dashboard_users',true);
-	if(($current_user->ID != $judge_name) && !in_array($current_user->ID,$dashboard_users))
+	//empty($ballot_no_password) && 
+	if(empty($ballot_no_password) && ($current_user->ID != $judge_name) && !in_array($current_user->ID,$dashboard_users))
 	{
 	echo wpt_mycontests();
 	printf('<p>You must <a href="%s">login</a> to access this judge\'s voting form.</p>',wp_login_url($_SERVER['REQUEST_URI']));
@@ -1213,7 +1274,7 @@ return ob_get_clean();
 
 function dashboard_vote($contestants, $id, $judge_name, $votinglink, $tiebreaker=false) {
 	ob_start();
-	
+	echo '<h3>'.$judge_name.'</h3><div id="votestatus'.$id.'"></div>';
 	echo '<form class="dashboard_votes" id="voting" method="post" action="'.$votinglink.'">';	
 	$vote_opt = '';
 	if(!empty($contestants))

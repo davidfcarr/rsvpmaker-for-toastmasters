@@ -5078,7 +5078,7 @@ $permalink = rsvpmaker_permalink_query($post->ID);
 if(isset($_REQUEST["print_agenda"]) || is_email_context() )
 	;
 elseif( !is_club_member() )
-	$link .= sprintf('<div id="agendalogin"><a href="%s">'.__('Login to Sign Up for Roles','rsvpmaker-for-toastmasters').'</a></div>',site_url().'/wp-login.php?redirect_to='.urlencode($permalink));
+	$link .= sprintf('<div id="agendalogin"><a href="%s">'.__('Login to Sign Up for Roles','rsvpmaker-for-toastmasters').'</a> or <a href="%s">'.__('View Agenda','rsvpmaker-for-toastmasters').'</a></div>',site_url().'/wp-login.php?redirect_to='.urlencode($permalink),$permalink.'print_agenda=1&no_print=1');
 else
 	{
 	$link .= rsvpmaker_agenda_notifications($permalink);
