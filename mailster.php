@@ -3,6 +3,8 @@
 add_action('rsvpmail_unsubscribe','wpt_mailster_unsubscribe',1);
 
 function wpt_mailster_unsubscribe ($email) {
+    if( !function_exists( 'mailster_install' ) )
+        return;
     global $wpdb;
     $user = get_user_by('email',$email);
     if($user) {
@@ -156,10 +158,14 @@ if(!empty($add_to_whitelist) && is_array($add_to_whitelist))
 add_action('admin_menu','toast_mailster_menu',55);
 
 function toast_mailster_menu() {
+    if( !function_exists( 'mailster_install' ) )
+        return;
     add_submenu_page('wpmst_mailster_intro', __("Toastmasters Lists",'rsvpmaker-for-toastmasters'), __("Toastmasters Lists",'rsvpmaker-for-toastmasters'), 'edit_posts', "mailster_toastmasters", "mailster_toastmasters" );
 }
 
 function mailster_toastmasters () {
+if( !function_exists( 'mailster_install' ) )
+    return;
 echo '<h1>Toastmasters Lists in Mailster</h1>';
 global $wpdb;
 $member_list = get_option('wpt_mailster_memberlist');

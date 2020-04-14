@@ -57,7 +57,8 @@ var TSTimer = (function () {
     }
     TSTimer.prototype.resetButton = function () {
         if(this.started)
-			this.stop();
+            this.stop();
+        $('#correction').val('0');
 	    if($('#showdigits').is(':checked'))
 			$('#trafficlight').text('0:00');
         $('body').css('background-color', '#EFEEEF');
@@ -147,7 +148,7 @@ var TSTimer = (function () {
             this.startTime = new Date();
         }
         var timeNow = new Date();
-        var elapsedSeconds = this.timeDiffInSeconds(this.startTime, timeNow);
+        var elapsedSeconds = this.timeDiffInSeconds(this.startTime, timeNow)+parseInt($("#correction").val());
 		if(($('input[name=demolight]:checked').val() == 'green') && (elapsedSeconds < this.green))
 			elapsedSeconds = elapsedSeconds + this.green;
 		if(($('input[name=demolight]:checked').val() == 'yellow') && (elapsedSeconds < this.yellow))

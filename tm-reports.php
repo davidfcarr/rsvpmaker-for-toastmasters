@@ -4571,6 +4571,12 @@ return;
 	return ob_get_clean();
 }
 
+function get_evaluator_postdata() {
+	$evaluator['display_name'] = (isset($_POST['evaluator'])) ? $_POST['evaluator'] : '';
+	$evaluator['user_email'] = (isset($_POST['evaluator_email'])) ? $_POST['evaluator_email'] : '';
+	return (object) $evaluator;
+}
+
 function wp4t_evaluations ($demo = false) {
 if(!$demo)
 {
@@ -4648,13 +4654,16 @@ if(isset($_POST["comment"]) && !empty($_POST["project"]))
 		$key = 'evaluation|'.date('Y-m-d',$t).' 00:00:00|'.$_POST["project"].'|'.$_SERVER['SERVER_NAME'].'|'.$current_user->user_login;
 		$project = $_POST["project"];
 		$project_text = get_project_text($project);
-		$evaluator = get_userdata($current_user->ID);
+		if(is_user_logged_in())
+			$evaluator = get_userdata($current_user->ID);
+		else
+			$evaluator = get_evaluator_postdata();//when used outside of club website context
 		$evaluation = sprintf('<h1>Member: %s</h1>',$speaker_name)."\n";
 		$evaluation .= sprintf('<h2>Manual/Path: %s</h2>',$_POST["manual"])."\n";
 		$evaluation .= sprintf('<h2>Project: %s</h2>',$project_text)."\n";
 		if(!empty($_POST["speech_title"]))
 			$evaluation .= sprintf('<p><strong>Title</strong> %s</p>',stripslashes($_POST["speech_title"]))."\n";
-		$evaluation .= sprintf('<p><strong>Evaluator</strong> %s</p>',$_POST['evaluator_name']."\n");
+		$evaluation .= sprintf('<p><strong>Evaluator</strong> %s</p>',$evaluator->display_name."\n");
 		$evaluation .= sprintf('<p><strong>Date</strong> %s</p>', $timestamp)."\n";
 		if(preg_match('/:CL[0-9]/',$project))
 			$subject = 'CL Evaluation '.$project_text;
@@ -4683,21 +4692,21 @@ Other Comments';
 			if(!empty($_POST["check"][$index]))
 				$evaluation .= wpautop($_POST["check"][$index]);
 			if(!empty($_POST["comment"][$index]))
-				$evaluation .= wpautop(stripslashes($_POST["comment"][$index]));
+				$evaluation .= wpautop(strip_tags(stripslashes($_POST["comment"][$index])));
 			}
 		if(!$demo)
 			update_user_meta($speaker_id,$key, $evaluation);
 		echo '<p>Recording to Member Progress Report</p>';
 		printf('<p style="color:red;">%s %s</p>',__('Emailing to'), (isset($_POST['speaker_email'])) ? $_POST['speaker_email'] : $speaker_user->user_email );
 		echo $evaluation;
-	if($speaker_id || $_POST['speaker_email'])
+	if(!empty($_POST['speaker_email']) && is_email($_POST['speaker_email']))
 	{
 	$mail["subject"] = $subject;
-	$mail["replyto"] = (isset($_POST['evaluator_email'])) ? $_POST['evaluator_email'] : $evaluator->user_email;
+	$mail["replyto"] = $evaluator->user_email;
 	$mail["html"] = "<html>\n<body>\n".$evaluation."\n</body></html>";
 	$mail["to"] = (isset($_POST['speaker_email'])) ? $_POST['speaker_email'] : $speaker_user->user_email;
-	$mail["from"] = (isset($_POST['evaluator_email'])) ? $_POST['evaluator_email'] : $evaluator->user_email;
-	$mail["fromname"] = (isset($_POST['evaluator_name'])) ? $_POST['evaluator_name'] : $evaluator->first_name. ' '.$evaluator->last_name;
+	$mail["from"] = $evaluator->user_email;
+	$mail["fromname"] = $evaluator->display_name;
 	awemailer($mail);		
 	}
 

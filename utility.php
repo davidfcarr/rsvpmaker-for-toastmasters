@@ -161,6 +161,12 @@ function get_club_members () {
 	return get_users(array('blog_id' => get_current_blog_id(),'orderby' => 'display_name') );
 }
 
+function is_officer() {
+	global $current_user;
+	$officer_ids = get_option('wp4toastmasters_officer_ids');
+	return (is_array($officer_ids) && in_array($current_user->ID,$officer_ids));
+}
+
 function get_member_name($user_id, $credentials = true) {
 	if(!empty($user_id) && !is_numeric($user_id))
 		return $user_id.' ('.__('guest','rsvpmaker-for-toastmasters').')'; // guest ?

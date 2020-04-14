@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.6.8
+Version: 3.6.9
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -295,7 +295,14 @@ if(!empty($upcoming_roles))
 <p><a href="<?php echo site_url(); ?>"><?php _e("Home Page",'rsvpmaker-for-toastmasters');?></a>
 <br /></p>
 <?php
-if(current_user_can('email_list') && function_exists('wpt_mailster_get_email') && $list_email = wpt_mailster_get_email() )
+if(current_user_can('email_list') && function_exists('rsvpmaker_relay_active_lists') && $lists = rsvpmaker_relay_active_lists() )
+	{
+		if(!empty($lists['member']))
+		printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$lists['member'],$lists['member']);
+		if(!empty($lists['officer']) && is_officer())
+		printf('<p>'.__("Officers email list",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$lists['officer'],$lists['officer']);
+	}
+elseif(current_user_can('email_list') && function_exists('wpt_mailster_get_email') && $list_email = wpt_mailster_get_email() )
 	printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$list_email,$list_email);
 elseif(current_user_can('email_list') && isset($wp4toastmasters_mailman["members"]) && !empty($wp4toastmasters_mailman["members"]) )
 	printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$wp4toastmasters_mailman["members"],$wp4toastmasters_mailman["members"]);
@@ -317,8 +324,6 @@ printf('<p><a href="%s">%s</a>',admin_url('admin.php?page=toastmasters_cc'), __(
 printf('<p><a href="%s">%s</a>',admin_url('admin.php?page=cl_report'), __('Competent Leader','rsvpmaker-for-toastmasters') );
 printf('<p><a href="%s">%s</a>',admin_url('admin.php?page=toastmasters_advanced'), __('Advanced Awards','rsvpmaker-for-toastmasters') );
 printf('<p><a href="%s">%s</a>',admin_url('admin.php?page=toastmasters_attendance_report'), __('Attendance','rsvpmaker-for-toastmasters') );
-	
-//tm_goal_form();
 }
 
 if(current_user_can('edit_others_posts'))
@@ -3220,17 +3225,40 @@ if(empty($contributor_notification))
 echo '<h3>Contributor Notifications</h3><p>'.__('Users assigned the Contributor role may submit blog posts for publication, but they must be approved by an author or editor. Who should be notified when contributor posts are submitted for review?','rsvpmaker-for-toastmasters').'<p>';
 printf('<p><input type="text" name="wpt_contributor_notification" value="%s" size="150" /><br /><em>%s</em></p>',$contributor_notification, __('One or more email addresses, separated by commas. If you do not want these notifications, enter "none"','rsvpmaker-for-toastmasters'));
 
+echo '<h2>Communications Options</h2>';
+do_action('wpt_mailing_list_message');
+if(function_exists('rsvpmaker_relay_init'))
+{
+	$vars = get_option('rsvpmaker_discussion_member');
+	$member_list = (!empty($vars['user']) && !empty($vars['password'])) ? $vars['user'] : '(not set)';
+	$vars = get_option('rsvpmaker_discussion_officer');	
+	$officer_list = (!empty($vars['user']) && !empty($vars['password'])) ? $vars['user'] : '(not set)';
+	$active = get_option('rsvpmaker_discussion_active');	
+	printf('<h3>Member and Officer Email Lists (RSVPMaker)</h3><p>The Group Email function in RSVPMaker allows you to create email discussion lists. Previously, we recommended integrations with WP Mailster and the Mailman utility.</p><p><a href="%s">View Options</a></p><p>Status: %s</p><p>Member List: %s</p><p>Officer List: %s</p>',admin_url('options-general.php?page=rsvpmaker-admin.php&tab=groupemail'),($active) ? 'On' : 'Off',$member_list,$officer_list);
+	echo '<h3>Mailing Lists: Other Options</h3>';
+}
+do_action('wpt_mailing_list_message');
+
+$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
+
 if(function_exists('mailster_install'))
 	printf('<h3>Mailster Mailing List</h3><p><a href="%s">Manage Mailster Mailing List</a> - add addresses to whitelist, tweak settings</p>',admin_url('admin.php?page=mailster_toastmasters'));
 elseif(current_user_can('update_core'))
 {
-// restrict this to network admin on multisite
-$wp4toastmasters_mailman = get_option('wp4toastmasters_mailman');
+	if(empty($wp4toastmasters_mailman) && !isset($_GET['show_mailman']))
+	{
+	printf('<p>Click to see options for integration with <a href="%s">Mailman</a>. Current recommendation: use the RSVPMaker Group Mail feature instead.</p>',admin_url('options-general.php?page=wp4toastmasters_settings&show_mailman=1'));
+	}
+	else {
+	// restrict this to network admin on multisite
 echo get_option('wp4toastmasters_mailman_default');
 
 ?>
-<h3><?php _e("Member Email List",'rsvpmaker-for-toastmasters');?></h3>
+<h3><?php _e("Member Email List (Mailman)",'rsvpmaker-for-toastmasters');?></h3>
 <p>(See <a href="http://wp4toastmasters.com/2016/11/28/email-list-integration-for-your-toastmasters-club/" target="_blank"><?php _e("Documentation",'rsvpmaker-for-toastmasters');?></a>)</p>
+<?php
+
+?>
 <p><?php _e("List email address",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[members]" value="<?php if(isset($wp4toastmasters_mailman["members"])) echo $wp4toastmasters_mailman["members"]; ?>" /></p>
 <p><?php _e("Path",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[mpath]" value="<?php if(isset($wp4toastmasters_mailman["mpath"])) echo $wp4toastmasters_mailman["mpath"]; ?>" /> <?php _e("Password",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[mpass]" value="<?php if(isset($wp4toastmasters_mailman["mpass"])) echo $wp4toastmasters_mailman["mpass"]; ?>" /></p>
 <?php if(isset($wp4toastmasters_mailman["mpass"])) {
@@ -3254,7 +3282,7 @@ if(isset($_REQUEST["mailman_add_officers"]))
 
 ?>
 
-<h3><?php _e("Officer Email List",'rsvpmaker-for-toastmasters');?></h3>
+<h3><?php _e("Officer Email List (Mailman)",'rsvpmaker-for-toastmasters');?></h3>
 <p><?php _e("List email address",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[officers]" value="<?php if(isset($wp4toastmasters_mailman["officers"])) echo $wp4toastmasters_mailman["officers"]; ?>" /></p>
 <p><?php _e("Path",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[opath]" value="<?php if(isset($wp4toastmasters_mailman["opath"])) echo $wp4toastmasters_mailman["opath"]; ?>" /> <?php _e("Password",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[opass]" value="<?php if(isset($wp4toastmasters_mailman["opass"])) echo $wp4toastmasters_mailman["opass"]; ?>" />
 
@@ -3263,22 +3291,23 @@ if(isset($_REQUEST["mailman_add_officers"]))
 	}
 ?>
 
-<h3><?php _e("Guest Email List",'rsvpmaker-for-toastmasters');?></h3>
+<h3><?php _e("Guest Email List (Mailman)",'rsvpmaker-for-toastmasters');?></h3>
 <p><?php _e("List email address",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[guest]" value="<?php if(isset($wp4toastmasters_mailman["guest"])) echo $wp4toastmasters_mailman["guest"]; ?>" /></p>
 <p><?php _e("Path",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[gpath]" value="<?php if(isset($wp4toastmasters_mailman["gpath"])) echo $wp4toastmasters_mailman["gpath"]; ?>" /> <?php _e("Password",'rsvpmaker-for-toastmasters');?>: <input type="text" name="wp4toastmasters_mailman[gpass]" value="<?php if(isset($wp4toastmasters_mailman["gpass"])) echo $wp4toastmasters_mailman["gpass"]; ?>" />
 
 <?php
+	}//end show mailman options
 }
 ?>
-
+<h3>Messages</h3>
 <p><?php _e("Message for Login Page",'rsvpmaker-for-toastmasters');?><br />
-<textarea name="wp4toastmasters_login_message" rows="5" cols="80"><?php echo get_option('wp4toastmasters_login_message'); ?></textarea></p>
+<textarea name="wp4toastmasters_login_message" rows="3" cols="80"><?php echo get_option('wp4toastmasters_login_message'); ?></textarea></p>
 
 <p><?php _e("Message To Members on Dashboard",'rsvpmaker-for-toastmasters');?><br />
-<textarea name="wp4toastmasters_member_message" rows="5" cols="80"><?php echo $wp4toastmasters_member_message; ?></textarea></p>
+<textarea name="wp4toastmasters_member_message" rows="3" cols="80"><?php echo $wp4toastmasters_member_message; ?></textarea></p>
 
 <p><?php _e("Message To Officers on Dashboard",'rsvpmaker-for-toastmasters');?><br />
-<textarea name="wp4toastmasters_officer_message" rows="5" cols="80"><?php echo $wp4toastmasters_officer_message; ?></textarea></p>
+<textarea name="wp4toastmasters_officer_message" rows="3" cols="80"><?php echo $wp4toastmasters_officer_message; ?></textarea></p>
 
 <h3><?php _e("Include Time/Timezone on Agenda Email",'rsvpmaker-for-toastmasters');?></h3>
 <p><input type="radio" name="wp4toastmasters_agenda_timezone" value="1" <?php if($wp4toastmasters_agenda_timezone) echo ' checked="checked" '; ?> /> <?php _e("Yes",'rsvpmaker-for-toastmasters');?> <input type="radio" name="wp4toastmasters_agenda_timezone" value="0" <?php if(!$wp4toastmasters_agenda_timezone) echo ' checked="checked" '; ?> /> <?php _e("No",'rsvpmaker-for-toastmasters');?>.</p>
@@ -3559,6 +3588,15 @@ foreach($meeting_roles as $role)
 <p>Members start with <input type="text" name="toastmasters_rules[start]" value="<?php echo $rules["start"]; ?>" > points</p>
 <p>Each speech signup uses <input type="text" name="toastmasters_rules[cost]" value="<?php echo $rules["cost"]; ?>" > points<br />
 <em>Example: If you would like members to fill supporting roles about twice as often as they speak, you would make the value above 2. If you give each member 4 points to start with, an eager new member can still give an Ice Breaker and another speech without immediately needing to fill other roles.</em></p>
+<?php
+if(isset($_REQUEST['tab']) && $_REQUEST['tab'] == 'rules')
+{
+?>
+<input type="hidden" id="activetab" value="rules" />
+<?php	
+}
+?>
+<input type="hidden" name="tab" value="rules">
 <?php
 submit_button();
 echo '</form>';
@@ -10939,6 +10977,9 @@ else
 	$tm_security = tm_security_setup (false,false);
 
 $action = admin_url('options-general.php?page=tm_security_caps');
+
+$action = admin_url('options-general.php?page=wp4toastmasters_settings');
+
 $security_roles = array('manager','editor','author','contributor','subscriber');
 
 if(isset($_POST["tm_caps"]) && $_POST["tm_caps"])
@@ -10988,7 +11029,16 @@ printf('<form method="post" action="%s"><h3>%s</h3><input type="hidden" name="us
 				$opt = ($user->has_cap($cap)) ? '<option value="1" selected="selected">'.__('Yes','rsvpmaker-for-toastmasters').'</option><option value="0">'.__('No','rsvpmaker-for-toastmasters').'</option>' : '<option value="1">'.__('Yes','rsvpmaker-for-toastmasters').'</option><option value="0" selected="selected">'.__('No','rsvpmaker-for-toastmasters').'</option>';
 				printf('<p><select name="user_caps[%s]">%s</select> %s</p>',$cap,$opt,$cap);
 			}
-submit_button();
+			if(isset($_REQUEST['tab']) && $_REQUEST['tab'] == 'security')
+			{
+			?>
+			<input type="hidden" id="activetab" value="security" />
+			<?php	
+			}
+			?>
+			<input type="hidden" name="tab" value="security">
+			<?php
+			submit_button();
 
 echo '</form>';
 	}
@@ -11022,6 +11072,16 @@ foreach($security_roles as $role)
 	}
 
 echo '<div style="clear: both;">';
+if(isset($_REQUEST['tab']) && $_REQUEST['tab'] == 'security')
+{
+?>
+<input type="hidden" id="activetab" value="security" />
+<?php	
+}
+?>
+<input type="hidden" name="tab" value="security">
+<?php
+
 submit_button();
 echo '</div>';
 echo '</form>';
@@ -11029,6 +11089,15 @@ echo '</form>';
 printf('<form method="post" action="%s"><h2>Set for User</h2>',$action);
 echo awe_user_dropdown ('user_id',0, true);
 submit_button();
+if(isset($_REQUEST['tab']) && $_REQUEST['tab'] == 'security')
+{
+?>
+<input type="hidden" id="activetab" value="security" />
+<?php	
+}
+?>
+<input type="hidden" name="tab" value="security">
+<?php
 echo '</form>';
 ?>
 </div>

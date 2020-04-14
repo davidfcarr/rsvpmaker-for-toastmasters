@@ -1,11 +1,13 @@
 <?php
 
-function add_contest_userlink($user_id, $link) {
+function add_contest_userlink($user_id, $link, $post_id = 0) {
 	global $post;
-	$contest_users = get_post_meta($post->ID,'contest_user');
+	if(!$post_id && isset($post->ID))
+		$post_id = $post->ID;
+	$contest_users = get_post_meta($post_id,'contest_user');
 	if(!in_array($user_id,$contest_users))
-		add_post_meta($post->ID,'contest_user',$user_id);
-	update_post_meta($post->ID,'contest_link_'.$user_id,$link);
+		add_post_meta($post_id,'contest_user',$user_id);
+	update_post_meta($post_id,'contest_link_'.$user_id,$link);
 }
 
 function set_contest_parameters($post_id,$contest) {
@@ -71,13 +73,57 @@ function toast_contest ($mode) {
 return $output;
 }
 
+//todo remove this after current crisis
+function contest_user_fix() {
+$future = get_future_events();
+foreach($future as $event) {
+	printf('<h1>%s %s</h1><div>%s</div>',$event->post_title,$event->date,var_export($event, true));
+
+	$permalink = get_permalink($event->ID);
+	$users = get_post_meta($event->ID,'tm_contest_dashboard_users',true);
+	echo '<br />dashboard users';
+	print_r($users);
+	$users[] = $event->post_author;
+	foreach($users as $user_id) {
+		$userdata = get_userdata($user_id);
+		$link = $permalink.'?scoring=dashboard';
+		add_contest_userlink($user_id,$link,$event->ID);
+		printf('<p>%s %s</p>',$userdata->display_name,$link);
+		//update_post_meta($event->ID,'contest_link_'.$user_id,$permalink.'?scoring=dashboard');
+	}
+	$judges = get_post_meta($event->ID,'tm_scoring_judges',true);
+	foreach($judges as $key => $user_id) {
+		if(is_numeric($user_id))
+			{
+				$userdata = get_userdata($user_id);
+				$link = $permalink.'?scoring=voting&judge='.$key;
+				printf('<p>%s %s</p>',$userdata->display_name,$link);
+				add_contest_userlink($user_id,$link,$event->ID);
+				$users[] = $user_id;
+			}
+	}
+
+	$timer = get_post_meta($event->ID,'contest_timer',true);
+	if($timer) {
+		$code = get_post_meta($event->ID,'tm_timer_code',true);
+		$link = $permalink.'?timer=1&contest='.$code;
+		add_contest_userlink($timer,$link,$event->ID);
+		$userdata = get_userdata($timer);
+		printf('<p>%s %s</p>',$userdata->display_name,$link);
+		$users[] = $timer;
+	}
+	print_r($users);
+}//end future
+}
+
 function wpt_mycontests() {
 if(!is_user_logged_in()) {
 	echo 'Not logged in';
 	return;
 }
+	//if(current_user_can('manage_network')) contest_user_fix();
 	global $wpdb, $current_user;
-	$output = '';
+	$output = $past = '';
 	$displayed = array();
 	$now = time();
 	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE meta_key='contest_user' AND meta_value='".$current_user->ID."' ORDER BY meta_id");
@@ -88,9 +134,12 @@ if(!is_user_logged_in()) {
 			$post = get_post($row->post_id);
 			if(empty($post) || ($post->post_status != 'publish'))
 				continue;
-			$t = strtotime(get_rsvp_date($row->post_id));
-			if($t < $now)
-				continue;
+			$datetime = get_rsvp_date($row->post_id);
+			$t = strtotime($datetime);
+		//if($_GET['debug'])
+			//print_r($row);
+			if($_GET['debug'])
+				print_r($row);
 			$date = date('F j, Y',$t);
 			$link = get_post_meta($row->post_id,'contest_link_'.$current_user->ID,true);
 			$permalink = get_permalink($row->post_id);
@@ -107,12 +156,17 @@ if(!is_user_logged_in()) {
 				$label = '(judge)';
 			if(strpos($link,'timer'))
 				$label = '(timer)';
+			$item = sprintf('<p><a href="%s">%s - %s %s</a></p>',$link,$post->post_title,$date,$label);//.$datetime;
 			
-			//echo $row->post_id.'<br />';
-			$output .= sprintf('<p><a href="%s">%s - %s %s</a></p>',$link,$post->post_title,$date,$label);
+			if($t < $now)
+				$past .= $item;
+			else
+				$output .= $item;
 		}
 if(empty($output))
 	$output = '<p>None</p>';
+if(!empty($past)) 
+	$output .= '<h3>Past Events</h3>'.$past;
 $output = '<p>Contest links you have access to:</p>'.$output;
 return $output;
 }

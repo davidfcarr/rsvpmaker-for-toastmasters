@@ -18,14 +18,28 @@
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=2.59');?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=2.6');?>"></script>
 
 </head>
 <body>
 <div id="body">
   <div class="content-wrapper">
     <h1 style="margin-bottom: 20px;">Time for <input type="text" placeholder="Speaker Name" id="speakername" size="30"></h1>
-	  <div style="font-size: 12px; margin-bottom: 15px;"><a href="#" id="popup">Color popup</a> <input type="checkbox" id="playchime" > Play chime <input type="checkbox" id="showdigits"> Show digits <a href="https://wp4toastmasters.com/knowledge-base/online-timer-tool/" target="_blank">How-to use this</a> </div>
+	  <div style="font-size: 12px; margin-bottom: 15px;"><a href="#" id="popup">Color popup</a> <input type="checkbox" id="playchime" > Play chime <input type="checkbox" id="showdigits"> Show digits 
+	  <a href="https://wp4toastmasters.com/knowledge-base/online-timer-tool/" target="_blank">How-to use this</a> 
+	  <br />Correction 	<select id="correction">
+	  <option value="0" selected="selected">0</option>
+	  <?php 
+	for($min = 0; $min < 11; $min++)
+		for($seconds = 0; $seconds < 60; $seconds += 5)
+		{
+			if(($min == 0) && ($seconds == 0))
+			continue;
+			printf('<option value="%s">+ %s:%s%s</option>',$seconds+($min*60),$min,($seconds<10)? '0':'',$seconds);
+		}
+	  ?>
+	  </select> 
+	  </div>
     <div>
       <div class="row" id="buttons" style="font-size: large"></div>
       <br/>
@@ -50,7 +64,6 @@
         <div class="col-sm-2 col-md-2 hidecount">
           <input class="form-control" id="red-light" type="text">
         </div>
-
       </div>
       <br/>
 
