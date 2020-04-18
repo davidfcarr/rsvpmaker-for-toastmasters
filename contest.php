@@ -486,10 +486,18 @@ if(empty($order))
 if(!empty($judges))
 	echo '<div id="score_status"></div><div id="scores">'.toast_scoring_update_get($post->ID).'</div>';
 	//<button id="scoreupdate">Update</button>
+if(isset($_POST['hide_ballot_links']))
+{
+	$nolinks = (int) $_POST['hide_ballot_links'];
+	update_post_meta($post->ID,'hide_ballot_links',$nolinks);
+}
+else
+	$nolinks = get_post_meta($post->ID,'hide_ballot_links',true);
 
 if(!empty($judges))
 {
 $dashboard_forms = '';
+if(empty($nolinks))
 echo '<h2>Voting Links</h2><p>Share these personalized voting links with the judges. If judges have problems with the online voting, you can record votes on their behalf.</p>';
 foreach($judges as $key => $value)
 {
@@ -506,14 +514,25 @@ foreach($judges as $key => $value)
 		$name = $value;
 		$username = '';
 	}
+	$is_tiebreaker = ($key == $tiebreaker);
+	if($is_tiebreaker)
+		{
+			$name = 'Tie Breaker';
+			if(!empty($username))
+				$username = "(tiebreaker's username)";
+		}
+	if(empty($nolinks))
+	{
 	echo '<h4>Voting Link for '.$name.'</h4>';
 	if(!empty($username))
 		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($v),wp_login_url().'?action=lostpassword');
 	printf('<p><a target="_blank" href="%s">%s</a></p>',$v,$v);
-	$is_tiebreaker = ($key == $tiebreaker);
-	$dashboard_forms .= dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
+	}
+$dashboard_forms .= dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
 }
 
+if(empty($nolinks))
+{
 echo '<h3>Timer</h3>';
 $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
 if(empty($timer_code))
@@ -535,8 +554,10 @@ if($timer_user)
 		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($timer_link),wp_login_url().'?action=lostpassword');
 	}
 printf("<p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>',$timer_link,$timer_link);
+}
 
-echo '<p>If judges provide their votes in some other way, you can record scores on their behalf here.</p>'.$dashboard_votes.'</div>';
+if(empty($nolinks))
+	echo '<p>You can record scores on their behalf here.</p>'.$dashboard_votes.'</div>';
 echo $dashboard_forms;
 }
 if(empty($contestants))
@@ -737,6 +758,12 @@ for($i= 0; $i < 5; $i++)
 	$drop = awe_user_dropdown ('tm_scoring_dashboard_users[]', $user, true);//, $open);
 	echo '<div>'.$drop.'</div>';
 }
+
+?>
+<h3>Judging Links</h3>
+<p><input type="radio" name="hide_ballot_links" value="0" <?php if(empty($nolinks)) echo ' checked="checked" '; ?> /> Show judge ballot links</p>
+<p><input type="radio" name="hide_ballot_links" value="1" <?php if(!empty($nolinks)) echo ' checked="checked" '; ?> /> Hide judge ballot links (if they're not being used)</p>
+<?php
 if(isset($_POST['ballot_no_password']))
 {
 	$ballot_no_password = (int) $_POST['ballot_no_password'];
@@ -1328,6 +1355,8 @@ return ob_get_clean();
 
 function dashboard_vote($contestants, $id, $judge_name, $votinglink, $tiebreaker=false) {
 	ob_start();
+	if($tiebreaker)
+		$judge_name = 'Tie Breaker';
 	echo '<h3>'.$judge_name.'</h3><div id="votestatus'.$id.'"></div>';
 	echo '<form class="dashboard_votes" id="voting" method="post" action="'.$votinglink.'">';	
 	$vote_opt = '';

@@ -6064,7 +6064,9 @@ if(!is_user_member_of_blog($user_id,$blog_id))
 			$mail["cc"] = $admin_email;			
 			$mail["from"] = $admin_email;
 			$mail["fromname"] = get_bloginfo('name');
-			$return = awemailer($mail);
+			echo $return = awemailer($mail);
+	if($return)
+	printf('<p style="color: red;">Emailing to %s</p>',$userdata->user_email);
 	echo $message;
 	}	
 	
