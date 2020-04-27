@@ -80,6 +80,11 @@ if(isset($_GET['demo'])) {
         $email = 'testy@example.com';
     }
 }
+if($post->post_type != 'rsvpmaker')
+{
+    $name = 'Testy Tester';
+    $email = 'testy@example.com';
+}
 
 if(isset($_GET['claim_timer']))
     $is_timer = true;
@@ -369,6 +374,8 @@ const api = new JitsiMeetExternalAPI(domain, options);
 api.executeCommand('displayName', '<?php echo $name;?>');
 api.executeCommand('email', '<?php echo $email;?>');
 
+var gotvotetimer;
+
  function refreshView() {
      var view = $('#view').children("option:selected").val();
      console.log('view: '+view);
@@ -376,10 +383,9 @@ api.executeCommand('email', '<?php echo $email;?>');
      {
     $('iframe').css("height", window.innerHeight - 50);
     $('iframe').css("width", window.innerWidth - 50);
-    api.executeCommand('width', window.innerWidth - 50);
     $('#jitsi').css("left", '30px');
     $('.timer-controls').hide();
-    var gotvotetimer = setInterval(function(){
+    gotvotetimer = setInterval(function(){
     checkColorChange();	
     }, 200);
 
@@ -387,7 +393,6 @@ api.executeCommand('email', '<?php echo $email;?>');
      else {
     $('iframe').css("height", window.innerHeight - 50);
     $('iframe').css("width", window.innerWidth - 100);
-    api.executeCommand('width', window.innerWidth - 100);
     $('.timer-controls').show();
     $('#jitsi').css("left", '100px');
         if(gotvotetimer)

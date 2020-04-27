@@ -335,6 +335,7 @@ else {
         $meeting_id = (empty($online['personal_meeting_id'])) ? '' : $online['personal_meeting_id'];    
     }
     if($meeting_id) {
+        $meeting_id = preg_replace('/[^0-9]/','',$meeting_id); // remove any dashes
         echo '<div id="jitsi">'.do_shortcode('[zoom_api_link meeting_id="'.$meeting_id.'" link_only="no"]').'
         <p>To start meeting as host, log in at <a href="https://zoom.us/signin" target="_blank">zoom.us/signin</a>, then refresh this page.</p></div>';    
     }
@@ -363,6 +364,8 @@ var color = '';
     });
   } );
 
+  var gotvotetimer;
+
  function refreshView() {
      var view = $('#view').children("option:selected").val();
      console.log('view: '+view);
@@ -372,7 +375,7 @@ var color = '';
     $('iframe').css("width", window.innerWidth - 50);
     $('#jitsi').css("left", '30px');
     $('.timer-controls').hide();
-    var gotvotetimer = setInterval(function(){
+    gotvotetimer = setInterval(function(){
     checkColorChange();	
     }, 200);
 

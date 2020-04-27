@@ -3521,35 +3521,33 @@ do_action('toastmasters_settings_extra');
 }
 
 function online_meeting_settings () {
+?>
+<p>Jitsi online meeting integration, with a speaker timing lights function, is enabled by default. With a little extra configuration, Zoom integration can also be enabled.</p>
+<?php
+if(isset($_POST['zoomon']))
+{
+	activate_plugin('wp-zoom-addon/wp-zoom-addon.php');
+	update_option('tm_online_meeting',array('platform' => 'Zoom'));
+}
 if(isset($_POST['tm_online_meeting']))
-	$online = $_POST['tm_online_meeting'];
+	{
+		$online = $_POST['tm_online_meeting'];
+		update_option('tm_online_meeting',$online);
+		echo '<div class="updated"><p>Online meeting settings updated</p></div>';
+	}
 else
 {
 	$online = get_option('tm_online_meeting');
-	echo '<div class="updated"><p>Online meeting settings updated</p></div>';
 }
-if(isset($_POST['zoomon']))
-	activate_plugin('wp-zoom-addon/wp-zoom-addon.php');
+
+if(!empty($_POST['zoom_api_key']))
+	update_option('zoom_api_key',$_POST['zoom_api_key']);
+if(!empty($_POST['zoom_api_secret']))
+	update_option('zoom_api_secret',$_POST['zoom_api_secret']);
 
 $platform = (empty($online['platform'])) ? 'Jitsi' : $online['platform'];
 $personal_meeting_id = (empty($online['personal_meeting_id'])) ? '' : $online['personal_meeting_id'];
 $password = (empty($online['password'])) ? '' : $online['password'];
-?>
-<form action="<?php echo admin_url('options-general.php?page=wp4toastmasters_settings');?>" method="post">
-<p>Platform
-<br /><select name="tm_online_meeting[platform]">
-<option value="Jitsi" <?php if($platform == 'Jitsi') echo ' selected="selected" '; ?> >Jitsi</option>
-<option value="Zoom" <?php if($platform == 'Zoom') echo ' selected="selected" '; ?>>Zoom</option>
-<option value="Both" <?php if($platform == 'Both') echo ' selected="selected" '; ?> >Both</option>
-</select>
-</p>
-<p>Zoom Personal Meeting ID
-<br /><input name="tm_online_meeting[personal_meeting_id]" value="<?php echo $personal_meeting_id;?>" />
-</p>
-
-<p><button>Submit</button></p>
-</form>
-<?php
 
 if ( is_plugin_active( 'wp-zoom-addon/wp-zoom-addon.php' ) ) {
 echo '<h3>Zoom add-on enabled</h3>';
@@ -3561,21 +3559,43 @@ $zoom_alternative_join          = get_option( 'zoom_alternative_join' );
 $zoom_help_text_disable         = get_option( 'zoom_help_text_disable' );
 $zoom_compatiblity_text_disable = get_option( 'zoom_compatiblity_text_disable' );
 $zoom_subscribe_link            = get_option( 'zoom_subscribe_link' );
-printf('<p>key %s</p>',$zoom_api_key);
-printf('<p>zoom_api_secret %s</p>',$zoom_api_secret);
-printf('<p>zoom_url_enable %s</p>',$zoom_url_enable);
-printf('<p>zoom_vanity_url %s</p>',$zoom_vanity_url);
-printf('<p>zoom_alternative_join %s</p>',$zoom_alternative_join);
-printf('<p>zoom_help_text_disable %s</p>',$zoom_help_text_disable);
-printf('<p>zoom_compatiblity_text_disable %s</p>',$zoom_compatiblity_text_disable);
-printf('<p>zoom_subscribe_link %s</p>',$zoom_subscribe_link);
-    //plugin is activated
+$settings_url = admin_url('admin.php?page=zoom-video-conferencing-settings');
+if($zoom_api_key)
+	echo '<p>API key is set</p>';
+else
+	printf('<p>API key NOT set. <a href="%s">Settings</a></p>',$settings_url);
+if($zoom_api_secret)
+	echo '<p>API secret is set</p>';
+else
+	printf('<p>API secret NOT set. <a href="%s">Settings</a></p>',$settings_url);
+	?>
+	<form action="<?php echo admin_url('options-general.php?page=wp4toastmasters_settings');?>" method="post">
+	<p>Platform
+	<br /><select name="tm_online_meeting[platform]">
+	<option value="Jitsi" <?php if($platform == 'Jitsi') echo ' selected="selected" '; ?> >Jitsi</option>
+	<option value="Zoom" <?php if($platform == 'Zoom') echo ' selected="selected" '; ?>>Zoom</option>
+	<option value="Both" <?php if($platform == 'Both') echo ' selected="selected" '; ?> >Both</option>
+	</select>
+	</p>
+	<p>Zoom Personal Meeting ID
+	<br /><input name="tm_online_meeting[personal_meeting_id]" value="<?php echo $personal_meeting_id;?>" />
+	</p>
+	
+	<p><button>Submit</button></p>
+	</form>
+	<?php	
 } 
 else {
 	if(file_exists(WP_PLUGIN_DIR.'/wp-zoom-addon/wp-zoom-addon.php')) {
 		echo '<p>The plugin required for Zoom integration is installed but not activated.</p>';
-		printf('<form method="post" action="%s"><input type="hidden" name="zoomon" value="1"><button>Activate</button></form>',admin_url('options-general.php?page=wp4toastmasters_settings'));
-	}
+		echo '<p>Before activating the plugin, you will need to optain the required integration credentials, a "key" and a "secret." You do that by visiting the <a href="https://marketplace.zoom.us/develop/create">Create App</a> screen in the Zoom marketplace and choosing JTW (see image below).</p>';
+		printf('<form method="post" action="%s"><input type="hidden" name="zoomon" value="1">
+		<p>Key<br /><input type="text" name="zoom_api_key"></p>
+		<p>Secret<br /><input type="text" name="zoom_api_secret"></p>
+		<button>Activate</button></form>',admin_url('options-general.php?page=wp4toastmasters_settings'));
+		$imageurl = plugins_url('/rsvpmaker-for-toastmasters/images/zoom-jwt.png');
+		echo '<p><img src="'.$imageurl.'" width="600" height="450" /></p>';
+		}
 	else
 		echo '<p>To enable Zoom integration you must download and install <a href="https://elearningevolve.com/products/category/wordpress-plugins/" target="_blank">Zoom integration plugin</a> by eLearning evolve</p>';
 }
