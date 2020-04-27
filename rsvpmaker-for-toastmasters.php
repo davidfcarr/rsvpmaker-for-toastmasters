@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.6.9
+Version: 3.7.1
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -3073,6 +3073,7 @@ add_awesome_roles();
       <a class="nav-tab nav-tab-active" href="#basic">Basic Settings</a>
       <a class="nav-tab" href="#security">Security</a>
       <a class="nav-tab" href="#rules">Rules</a>
+      <a class="nav-tab" href="#onlinemeetings">Online Meetings</a>
     </h2>
 
     <div id="sections" class="rsvpmaker" >
@@ -3510,10 +3511,75 @@ do_action('toastmasters_settings_extra');
 <p><em>Optional rules for how your club operates.</em></p>
 <?php toastmasters_rule_setting(); ?>
 </section>
+<section class="rsvpmaker"  id="onlinemeetings">
+<?php online_meeting_settings(); ?>
+</section>
 </div>
 
 </div>
 <?php 
+}
+
+function online_meeting_settings () {
+if(isset($_POST['tm_online_meeting']))
+	$online = $_POST['tm_online_meeting'];
+else
+{
+	$online = get_option('tm_online_meeting');
+	echo '<div class="updated"><p>Online meeting settings updated</p></div>';
+}
+if(isset($_POST['zoomon']))
+	activate_plugin('wp-zoom-addon/wp-zoom-addon.php');
+
+$platform = (empty($online['platform'])) ? 'Jitsi' : $online['platform'];
+$personal_meeting_id = (empty($online['personal_meeting_id'])) ? '' : $online['personal_meeting_id'];
+$password = (empty($online['password'])) ? '' : $online['password'];
+?>
+<form action="<?php echo admin_url('options-general.php?page=wp4toastmasters_settings');?>" method="post">
+<p>Platform
+<br /><select name="tm_online_meeting[platform]">
+<option value="Jitsi" <?php if($platform == 'Jitsi') echo ' selected="selected" '; ?> >Jitsi</option>
+<option value="Zoom" <?php if($platform == 'Zoom') echo ' selected="selected" '; ?>>Zoom</option>
+<option value="Both" <?php if($platform == 'Both') echo ' selected="selected" '; ?> >Both</option>
+</select>
+</p>
+<p>Zoom Personal Meeting ID
+<br /><input name="tm_online_meeting[personal_meeting_id]" value="<?php echo $personal_meeting_id;?>" />
+</p>
+
+<p><button>Submit</button></p>
+</form>
+<?php
+
+if ( is_plugin_active( 'wp-zoom-addon/wp-zoom-addon.php' ) ) {
+echo '<h3>Zoom add-on enabled</h3>';
+$zoom_api_key                   = get_option( 'zoom_api_key' );
+$zoom_api_secret                = get_option( 'zoom_api_secret' );
+$zoom_url_enable                = get_option( 'zoom_url_enable' );
+$zoom_vanity_url                = get_option( 'zoom_vanity_url' );
+$zoom_alternative_join          = get_option( 'zoom_alternative_join' );
+$zoom_help_text_disable         = get_option( 'zoom_help_text_disable' );
+$zoom_compatiblity_text_disable = get_option( 'zoom_compatiblity_text_disable' );
+$zoom_subscribe_link            = get_option( 'zoom_subscribe_link' );
+printf('<p>key %s</p>',$zoom_api_key);
+printf('<p>zoom_api_secret %s</p>',$zoom_api_secret);
+printf('<p>zoom_url_enable %s</p>',$zoom_url_enable);
+printf('<p>zoom_vanity_url %s</p>',$zoom_vanity_url);
+printf('<p>zoom_alternative_join %s</p>',$zoom_alternative_join);
+printf('<p>zoom_help_text_disable %s</p>',$zoom_help_text_disable);
+printf('<p>zoom_compatiblity_text_disable %s</p>',$zoom_compatiblity_text_disable);
+printf('<p>zoom_subscribe_link %s</p>',$zoom_subscribe_link);
+    //plugin is activated
+} 
+else {
+	if(file_exists(WP_PLUGIN_DIR.'/wp-zoom-addon/wp-zoom-addon.php')) {
+		echo '<p>The plugin required for Zoom integration is installed but not activated.</p>';
+		printf('<form method="post" action="%s"><input type="hidden" name="zoomon" value="1"><button>Activate</button></form>',admin_url('options-general.php?page=wp4toastmasters_settings'));
+	}
+	else
+		echo '<p>To enable Zoom integration you must download and install <a href="https://elearningevolve.com/products/category/wordpress-plugins/" target="_blank">Zoom integration plugin</a> by eLearning evolve</p>';
+}
+
 }
 
 function toastmasters_rule_setting () {
@@ -5155,6 +5221,12 @@ else
 	$link .= '<li class="last"><a href="'.$permalink.'assigned_open=1">'.__('Agenda with Contacts','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'intros=show">'.__('Speech Introductions','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'scoring=dashboard">'.__('Contest Scoring Dashboard','rsvpmaker-for-toastmasters').'</a></li>';
+	$online = get_option('tm_online_meeting');
+	$platform = (empty($online['platform'])) ? 'Jitsi' : $online['platform'];
+	if($platform != 'Zoom')
+	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'jitsi=1">'.__('Online Meeting (Jitsi)','rsvpmaker-for-toastmasters').'</a></li>';
+	if(($platform == 'Zoom') || ($platform == 'Both'))
+		$link .= '<li class="last"><a target="_blank" href="'.$permalink.'zoom=1">'.__('Online Meeting (Zoom)','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1">'.__('Online Timer','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
 
 	$template_id = get_post_meta($post->ID,'_meet_recur',true);
@@ -8043,6 +8115,16 @@ global $post;
 			include(WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/timer.php');
 			die();
 		}
+		elseif(isset($_REQUEST["jitsi"]))
+		{
+			include(WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/jitsi.php');
+			die();
+		}
+		elseif(isset($_REQUEST["zoom"]))
+		{
+			include(WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/zoom.php');
+			die();
+		}
 		elseif(isset($_REQUEST["scoring"]))
 		{
 			include(WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/scoring.php');
@@ -10191,7 +10273,7 @@ exit();
 }
 
 function get_manuals_array() {
-return array("Select Manual/Path" => __("Select Manual/Path",'rsvpmaker-for-toastmasters'),"COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
+return array("Select Manual/Path" => __("Select Manual/Path",'rsvpmaker-for-toastmasters'),"COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 1 Mastering Fundamentals'=> __('Dynamic Leadership Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 2 Learning Your Style'=> __('Dynamic Leadership Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 3 Increasing Knowledge'=> __('Dynamic Leadership Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
@@ -10332,6 +10414,10 @@ return array_search($project, $projects);
 function get_projects_array ($choice = 'projects')
 {
 include 'projects_array.php';
+if(isset($_GET['debug'])) {
+	rsvpmaker_debug_log($projects,'projects');
+	rsvpmaker_debug_log($project_options,'options');	
+}
 
 if($choice == 'projects')
 	return $projects;

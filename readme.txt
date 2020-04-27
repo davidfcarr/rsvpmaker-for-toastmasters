@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.4
-Stable tag: 3.6.9
+Stable tag: 3.7.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,15 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.7.1 =
+
+* Updates to the contest voting / vote counting tools.
+
+= 3.7 =
+
+* Fixes to project list. Adding speeches for HPL (Advanced Leadership Silver version) and fixing glitch with display of Engaging Humor projects.
+* Minor tweaks to contest tool
 
 = 3.6.9 =
 

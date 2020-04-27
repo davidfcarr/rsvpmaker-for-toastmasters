@@ -15,6 +15,7 @@ add_menu_page(__('Toastmasters','rsvpmaker-for-toastmasters'), __('Toastmasters'
 
 add_submenu_page( 'toastmasters_screen', __('My Progress','rsvpmaker-for-toastmasters'), __('My Progress','rsvpmaker-for-toastmasters'), 'read', 'my_progress_report', 'my_progress_report');
 add_submenu_page('toastmasters_screen',__('Progress Reports','rsvpmaker-for-toastmasters'), __('Progress Reports','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_reports', 'toastmasters_reports');
+add_submenu_page('toastmasters_screen',__('Pathways Progress','rsvpmaker-for-toastmasters'), __('Pathways Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'pathways_report', 'pathways_report');
 add_submenu_page( 'toastmasters_screen', __('Multi-Meeting Role Planner','rsvpmaker-for-toastmasters'), __('Role Planner','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_planner', 'toastmasters_planner');
 add_submenu_page( 'toastmasters_screen', __('Reports Dashboard','rsvpmaker-for-toastmasters'), __('Reports Dashboard','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_reports_dashboard','toastmasters_reports_dashboard');
 
@@ -5075,37 +5076,88 @@ add_action('init','show_evaluation');
 function pathways_report($toastmaster = 0) {
 global $current_user;
 global $rsvp_options;
-
+if($_GET['page'] == 'pathways_report')
+	echo '<h1>Pathways Progress Report</h1>';
+?>
+<p>This report is based on speech projects recorded through the agenda system. Check it against the reports in BaseCamp.</p>
+<?php
 if(isset($_REQUEST["toastmaster"]))
 	{
 		$toastmaster = (int) $_REQUEST["toastmaster"];
 	}
+elseif($_GET['page'] == 'my_progress_report')
+	$toastmaster = $current_user->ID;
 if(empty($toastmaster))
 	{
 	$users = get_users();
 	foreach($users as $user)
 		{
+		$userdata = get_userdata($user->ID);
+		$key = preg_replace('/[^A-Za-z]/','',$userdata->last_name.$userdata->first_name);
+		$indexeduser[$key] = sprintf('<h3>%s %s (<a href="%s">details</a>)</h3>',$userdata->first_name,$userdata->last_name,admin_url('admin.php?page=toastmasters_reports&active=pathways&toastmaster=').$user->ID);;
 		$stats = get_tm_stats($user->ID);
+		$pathgraph = array();
 		$p = '';
 		foreach($stats["count"] as $mkey => $count)
 			{
 				if(strpos($mkey,'Level'))
-					$p .= sprintf('<p><strong>%s</strong> %s</p>',$count,$mkey);
+					{
+						$p .= sprintf('<p><strong>%s</strong> %s</p>',$count,$mkey);
+						$parts = explode(' Level ',$mkey);
+						$graphpath = $parts[0];
+						$graphlevel = (int) $parts[1];
+						if(empty($pathgraph[$graphpath][0]) || ($pathgraph[$graphpath][0] < $graphlevel))
+							$pathgraph[$graphpath][0] = $graphlevel;//highest level recorded
+						$pathgraph[$graphpath][$graphlevel] = $count;
+					}
 			}
 		if(!empty($p))
 			{
 				$userdata = get_userdata($user->ID);
-				$key = preg_replace('/[^A-Za-z]/','',$userdata->last_name.$userdata->first_name);
-				$path[$key] = sprintf('<h3>%s %s (<a href="%s">details</a>)</h3>%s',$userdata->first_name,$userdata->last_name,admin_url('admin.php?page=toastmasters_reports&active=pathways&toastmaster=').$user->ID,$p);
+				$pathgraphsort[$key] = $pathgraph;
 			}
 		}
-	if(!empty($path))
-	{
-		ksort($path);
-		echo implode("\n",$path);
-	}
-	else
-	_e('No Pathways projects yet','rsvpmaker-for-toastmasters');
+		//echo implode("\n",$path);
+		echo '<style>
+		.pathlevel {
+			width: 19%;
+			border: thin solid red;
+			display: inline-block;
+			height: 15px;
+			text-align: center;
+			padding: 5px;
+		}
+		.pathprogress {
+			background-color: red;
+		}
+		.pathdata {
+			background-color: #fff;
+		}
+		</style>';
+		ksort($indexeduser);
+		foreach($indexeduser as $key => $name)
+		{
+			printf('<h3>%s</h3>',$name);
+			if(empty($pathgraphsort[$key]))
+				{
+					echo '<p>'.__('No Pathways projects recorded','rsvpmaker-for-toastmasters').'</p>';
+					continue;
+				}
+			$data = $pathgraphsort[$key];
+			foreach($data as $manual => $levelprojects)
+				{
+					printf('<p>%s</p><div>',$manual);
+					for($i = 1; $i <= 5; $i++) {
+						if(empty($levelprojects[$i])) {
+							$otherclass = ($levelprojects[0] > $i) ? 'pathprogress' : 'other:'.$levelprojects[0].':'.$i;
+							echo '<div class="pathlevel '.$otherclass.'">-</div>';
+						}
+						else
+							printf('<div class="pathlevel pathprogress"><span class="pathdata">Level %d: %d</span></div>',$i,$levelprojects[$i]);
+					}
+					echo '</div>';
+				}
+		}
 	return;
 	}
 
@@ -5998,48 +6050,7 @@ if(isset($_GET['report']))
 	}
 	elseif($report_slug == 'pathways') {
 		echo '<p><em>'.__('This report is intended to give club leaders a rough idea of how active each member has been in the Pathways program, based on speech projects recorded on the agenda.').'</em></p>';
-		//$where = " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ";
-		//$past = get_past_events($where);
-		
-		$members = get_club_members();
-		foreach($members as $member)
-		{
-
-			$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$member->ID AND meta_key LIKE 'tm|Speaker%' ";
-			$speakers = $wpdb->get_results($sql);
-			foreach($speakers as $speech)
-			{
-				$speechdata = unserialize($speech->meta_value);
-				$manual = $speechdata["manual"];
-				if(strpos($manual,'Level'))
-				{
-					$parts = explode('Level',$manual);
-					$name = get_member_name($speech->user_id);
-					$path = trim($parts[0]);
-					if(empty($paths[$name][$path]))
-						$paths[$name][$path] = 1;
-					else
-						$paths[$name][$path]++;	
-				}
-			}			
-			
-		}
-if(!empty($paths))
-		foreach($paths as $name => $levels)
-		{
-		printf('<h3>%s</h3>',$name);
-		//print_r($levels);
-		asort($levels);
-		foreach($levels as $level => $count)
-		{
-			$p = $count * 5;
-			if($p > 100)
-				$p = 100;
-			$line = $p . '%';
-			printf('<p>%s<div style="background-color: #fff;"><span style="display:inline-block; background-color: red; width: %s"><span style="background-color: white; padding: 2px;">%s</span></span></div></p>',$level,$line,$count);
-		}
-			
-		}
+		pathways_report();	
 	}
 	elseif($report_slug == 'attendance') {
 		toastmasters_attendance_report();

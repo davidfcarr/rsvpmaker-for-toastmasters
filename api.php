@@ -93,6 +93,63 @@ class WPTContest_VoteCheck extends WP_REST_Controller {
 	}
 }
 
+
+class WPTContest_GotVote extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'wptcontest/v1';
+	  $path = 'votereceived/(?P<post_id>[0-9]+)/(?P<judge_id>[0-9]+)';///(?P<nonce>.+)
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'get_items' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+			  ),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;
+	}
+  
+  public function get_items($request) {
+    global $wpdb;
+    $confirmed = (boolean) get_post_meta($request['post_id'],'tm_vote_received'.$request['judge_id'],true);
+	  return new WP_REST_Response($confirmed, 200);
+	}
+}
+//check for update_post_meta($post_id,'tm_vote_received'.$index,true);
+
+class WPT_Timer_Color extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'toasttimer/v1';
+	  $path = 'color/(?P<post_id>[0-9]+)';///(?P<nonce>.+)
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => array('GET','POST'),
+		  'callback'            => array( $this, 'get_items' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+			  ),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;
+	}
+  
+  public function get_items($request) {
+	if(isset($_POST['color']))
+		{
+			$color = $_POST['color'];
+			update_post_meta($request['post_id'],'timing_light_color',$color);
+		}
+	else
+		$color = get_post_meta($request['post_id'],'timing_light_color',true);
+	  return new WP_REST_Response($color, 200);
+	}
+}
+
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
@@ -100,5 +157,9 @@ add_action('rest_api_init', function () {
      $order_controller->register_routes();
      $votecheck_controller = new WPTContest_VoteCheck();
      $votecheck_controller->register_routes();
+     $gotvote_controller = new WPTContest_GotVote();
+     $gotvote_controller->register_routes();
+     $timer_controller = new WPT_Timer_Color();
+     $timer_controller->register_routes();
    } );
 ?>

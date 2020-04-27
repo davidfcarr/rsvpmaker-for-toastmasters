@@ -1,0 +1,135 @@
+﻿body
+{
+    font-family: 'Segoe UI', sans-serif
+}
+
+.label {
+  font-size: 100%;
+}
+
+body {
+    background-color: #efeeef;
+}
+
+span {
+    font-style: italic
+}
+
+#trafficlight
+{
+    height: 100%; /*1000px;*/
+	vertical-align: top;
+    line-height: 100px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#green-light, #yellow-light, #red-light
+{
+    font-size: 18px;
+    text-align: right;
+    height: 25px;
+    line-height: 20px;
+    display: inline-block;
+}
+
+#red-light, button#rednow
+{
+    background-color:#FF4040;
+    color:white;
+}
+
+#yellow-light, button#yellownow
+{
+    background-color:#FCDC3B;
+}
+
+#green-light, button#greennow
+{
+    background-color:#A7DA7E;
+}
+
+.greenyellowred, .timefield {
+    width: 50px;
+}
+
+#dropdowntime, #speakername {
+    width: 100px;
+}
+
+#correction {
+    width: 90px;
+}
+
+#buttons {
+    display: none;
+}
+.speech-type
+{
+    padding:3px;
+    margin: 3px;
+	font-size: 10px;
+    background-color: #E0EAF1;
+    color: #3E6D8E;
+    border-radius: 3px;
+    box-shadow: 3px 3px 5px #535353;
+}
+
+.speech-type:hover
+{
+    background-color: #3E6D8E;
+    color: #E0EAF1;
+    cursor: pointer;
+}
+
+.active-speech
+{
+    background-color: #acf;
+}
+
+#credit {
+    background-color: #fff;
+    font-size: .8em;
+	position: absolute;
+	width: 100%;
+	top: 0;
+	text-align: right;
+	height: 1.5em;
+	overflow: hidden;
+}
+
+.content-wrapper {
+    margin: 0 0 0 200px;
+	width: 100%;
+    /*max-width: 960px;*/
+}
+
+#colorlabel {
+    width: 200px;
+    float: right;
+}
+.float-left {
+    float: left;
+}
+
+#jitsi {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    min-width: 700px;
+    min-height: 500px;
+}
+
+#timelog {
+	width: 95px;
+	position:absolute;
+	top:30px;
+    left:5px;
+    font-size: 10px;
+}
+.speech-type {
+    margin-bottom: 1px;
+    margin-left: 10px;
+    display: block;
+    width: 60px;
+}

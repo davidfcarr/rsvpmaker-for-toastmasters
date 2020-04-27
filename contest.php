@@ -29,16 +29,6 @@ function set_contest_parameters($post_id,$contest) {
 	update_post_meta($post_id,'toast_contest_scoring',$contest_selection[$contest]);
 	update_post_meta($post_id,'toast_timing',$contest_timing[$contest]);
 	update_post_meta($post_id,'tm_contest_dashboard_users',array($current_user->ID));
-/*
-[toast_contest_scoring] => Array
-[toast_timing] => Array
-[tm_contest_dashboard_users] => Array
-[tm_scoring_contestants] => Array
-[tm_scoring_judges] => Array
-[tm_timer_code] => Array
-[tm_scoring_order] => Array
-*/
-	
 }
 
 function toast_contest ($mode) {
@@ -321,7 +311,6 @@ $output .= ob_get_clean();
 return $output;
 }
 
-
 if(isset($_POST['track_role']))
 {
 	$track_role = $_POST['track_role'];
@@ -437,18 +426,19 @@ if(empty($contestants))
 	$contestants = get_post_meta($post->ID,'tm_scoring_contestants',true);
 $judges = get_post_meta($post->ID,'tm_scoring_judges',true);
 
+$is_locked = get_post_meta($post->ID,'contest_locked', true);
+
 if(isset($_POST['contest_locked']))
 	{
 		$is_locked = true;
-		update_post_meta($post->ID,'contest_locked',true);
+		update_post_meta($post->ID,'contest_locked',$current_user->ID);
 	}
-elseif(isset($_POST['contest_unlock']) && current_user_can('manage_options') )
+elseif(isset($_POST['contest_unlock']) && (($is_locked == $current_user->ID) || current_user_can('manage_options')) )
 	{
 		$is_locked = false;
 		update_post_meta($post->ID,'contest_locked',false);
 	}
-else
-	$is_locked = get_post_meta($post->ID,'contest_locked', true);
+
 
 if(isset($_POST['resetit']))
 {
@@ -463,6 +453,7 @@ if(isset($_POST['resetit']))
 			foreach($judges as $i => $value)
 			{
 				delete_post_meta($post->ID,'tm_scoring_vote'.$i);
+				delete_post_meta($post->ID,'tm_vote_received'.$i);
 				delete_post_meta($post->ID,'tm_subscore'.$i);	
 			}
 		echo '<p>Scores reset</p>';			
@@ -492,13 +483,13 @@ if(isset($_POST['hide_ballot_links']))
 	update_post_meta($post->ID,'hide_ballot_links',$nolinks);
 }
 else
-	$nolinks = get_post_meta($post->ID,'hide_ballot_links',true);
+	$nolinks = (int) get_post_meta($post->ID,'hide_ballot_links',true);
 
 if(!empty($judges))
 {
 $dashboard_forms = '';
-if(empty($nolinks))
-echo '<h2>Voting Links</h2><p>Share these personalized voting links with the judges. If judges have problems with the online voting, you can record votes on their behalf.</p>';
+$checked = ($nolinks) ? '' : ' checked="checked" ';
+echo '<h2>Voting Links</h2><p><input type="checkbox" id="showlinks" value="1" '. $checked .' /> Show Links</p><p class="votinglink">Share these personalized voting links with the judges.</p>';
 foreach($judges as $key => $value)
 {
 	$v = $votinglink . '&judge='.$key;
@@ -521,19 +512,16 @@ foreach($judges as $key => $value)
 			if(!empty($username))
 				$username = "(tiebreaker's username)";
 		}
-	if(empty($nolinks))
-	{
+	echo '<div class="votinglink">';
 	echo '<h4>Voting Link for '.$name.'</h4>';
 	if(!empty($username))
 		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($v),wp_login_url().'?action=lostpassword');
 	printf('<p><a target="_blank" href="%s">%s</a></p>',$v,$v);
-	}
+	echo '</div>';
 $dashboard_forms .= dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
 }
 
-if(empty($nolinks))
-{
-echo '<h3>Timer</h3>';
+echo '<div class="votinglink"><h3>Timer</h3>';
 $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
 if(empty($timer_code))
 {
@@ -553,11 +541,9 @@ if($timer_user)
 		$name = $userdata->first_name.' '.$userdata->last_name;
 		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($timer_link),wp_login_url().'?action=lostpassword');
 	}
-printf("<p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>',$timer_link,$timer_link);
-}
+printf("<p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p></div>',$timer_link,$timer_link);
 
-if(empty($nolinks))
-	echo '<p>You can record scores on their behalf here.</p>'.$dashboard_votes.'</div>';
+echo "<p>If judges have problems with the online voting, you can record votes on their behalf using the forms below.</p>";
 echo $dashboard_forms;
 }
 if(empty($contestants))
@@ -582,8 +568,8 @@ else
 	}
 if($is_locked)
 	{
-	echo '<h3>Settings Locked</h3><p>Contest settings are locked. Only a website administrator can remove the lock.</p>';
-	if(current_user_can('manage_options'))
+	echo '<h3>Settings Locked</h3><p>Contest settings are locked. Only a website administrator, or the user who locked the form, can remove the lock.</p>';
+	if(($is_locked == $current_user->ID) || current_user_can('manage_options') )
 		{
 			?>
 			<form method="post" action="<?php echo $actionlink; ?>">
@@ -633,7 +619,10 @@ if(isset($_POST['importfrom']))
 	$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
 	if($timer_user)
 		update_post_meta($post_id,'contest_timer',$timer_user);
-		
+	$tie_breaker = get_post_meta($post->ID,'tm_scoring_tiebreaker',true);
+	if($tie_breaker)
+		update_post_meta($post_id,'tm_scoring_tiebreaker',$tie_breaker);
+
 	$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$import AND meta_key LIKE 'contest_link%' ";
 	$results = $wpdb->get_results($sql);
 	if($results)
@@ -787,6 +776,19 @@ do_action('wpt_scoring_dashboard_bottom'); ?>
 <script>
 jQuery(document).ready(function($) {
 
+function votingLinkToggle () {
+	if($( "input#showlinks:checked" ).val()) {
+	  $('.votinglink').show();
+  }
+  else {
+	$('.votinglink').hide();
+  }
+}
+
+//check initial state of voting links
+votingLinkToggle();
+$( "input#showlinks" ).on( "click", votingLinkToggle);
+
 function refreshScores() {
 $('#score_status').html('Checking for new scores ...');
 $.get( "<?php echo site_url('?toast_scoring_update='.$post->ID); ?>", function( data ) {
@@ -861,6 +863,8 @@ $missing_votes = '';
 			$tiebreaker_status = '<h3>Tiebreaker Ranking</h3>';
 	foreach($judges as $index => $judge) {
 		$votes = get_post_meta($post_id,'tm_scoring_vote'.$index,true);
+		if(!empty($votes))
+			update_post_meta($post_id,'tm_vote_received'.$index,true);
 		if(is_numeric($judge))
 		{
 			$userdata = get_userdata($judge);
@@ -957,7 +961,7 @@ else
 	foreach($ranking as $contestant => $points)
 	{
 		if(($topcount < 3) && ($points > 0))
-			$top .= sprintf('<div>%s</div>',$contestant);
+			$top .= sprintf('<div>#%d %s</div>',$topcount+1,$contestant);
 		if($points >= 0)
 			$topscores .= sprintf('<div>%s (%d points)</div>',$contestant,$points);
 		else
@@ -1069,6 +1073,7 @@ if(is_array($votes) && !isset($_GET['judge_id']))
 {
 	printf('<form action="%s" method="post">',site_url($_SERVER['REQUEST_URI']));
 	echo '<h2>Recorded</h2>';
+	echo '<div id="gotvote_result" style="font-style: italic; font-weight: bold; padding: 20px;"></div>';
 	foreach($votes as $index => $vote)
 	{
 		printf('<p>#%d %s</p>',$index + 1, $vote);
@@ -1082,6 +1087,41 @@ if(empty($blanks))
 {
 	echo '<p>Keep this page open until you confirm your votes have been received properly.</p>';
 	echo '<p><button>Resubmit</button></p>';
+?>
+<script>
+jQuery(document).ready(function($) {
+
+var dotdot = '...';
+
+function refreshReceived() {
+$.get( "<?php echo site_url('/wp-json/wptcontest/v1/votereceived/'.$post->ID.'/'.$id); ?>", function( data ) {
+console.log(data);
+if(data) {
+	$('#gotvote_result').html('Votes received on ballot counting dashboard');
+	stopRefreshReceived();
+}
+else
+  $('#gotvote_result').html('Checking whether vote has been received'+dotdot);
+  dotdot = dotdot.concat('.');
+});	
+}
+
+//execute once
+refreshReceived();
+
+//then set timer
+var gotvotetimer = setInterval(function(){
+  refreshReceived();	
+}, 2000);
+
+function stopRefreshReceived() {
+  clearInterval(gotvotetimer);
+}
+
+});
+</script>
+<?php
+	//check for update_post_meta($post_id,'tm_vote_received'.$index,true);
 	return ob_get_clean();	
 }
 else
