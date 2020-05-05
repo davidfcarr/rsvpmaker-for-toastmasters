@@ -36,6 +36,7 @@ add_submenu_page( 'toastmasters_admin_screen', __('Import Free Toast Host Data',
 add_submenu_page( 'toastmasters_admin_screen', __('Import/Export','rsvpmaker-for-toastmasters'), __('Import/Export','rsvpmaker-for-toastmasters'), 'manage_options', 'import_export', 'toastmasters_import_export');
 //add_submenu_page( 'toastmasters_screen', __('Sync','rsvpmaker-for-toastmasters'), __('Sync','rsvpmaker-for-toastmasters'), 'manage_options', 'wpt_json', 'wpt_json');
 add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
+add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
 
 add_submenu_page( 'toastmasters_admin', __('Support This Project','rsvpmaker-for-toastmasters'), __('Support This Project','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_support', 'toastmasters_support');
 
@@ -3983,9 +3984,18 @@ $increment_stat_count++;
 return sprintf(' <button class="increment_stat" counter="%d" user_id="%s" role="%s">+1</button></span> <span id="increment_stat_result%d"></span>', $increment_stat_count, $user_id,$key, $increment_stat_count);
 }
 
+function wp4t_stats_check ($display = true) {
+	$users = get_club_members();//get_members ?
+	//print_r($users);
+	foreach($users as $user) {
+		printf('<h3>%s</h3>',$user->display_name);
+		archive_legacy_roles_usermeta($user->ID,'',true);
+	}
+}
+
 function archive_site_user_roles () {
-$last = get_option('archive_site_user_roles');
-$users = get_users();
+$last = (isset($_REQUEST["archive"])) ? '' : get_option('archive_site_user_roles');
+$users = get_club_members();//get_members ?
 foreach($users as $user)
 	archive_legacy_roles_usermeta($user->ID,$last);
 fix_timezone();
@@ -4052,7 +4062,7 @@ foreach($results as $row)
 	}
 }
 
-function archive_legacy_roles_usermeta ($user_id, $start = '') {
+function archive_legacy_roles_usermeta ($user_id, $start = '', $display=false) {
 global $wpdb;
 global $current_user;
 $wpdb->show_errors();
@@ -4065,6 +4075,8 @@ $results = $wpdb->get_results($sql);
 if($results)
 foreach($results as $row)
 	{
+		if($display)
+			printf('<p>Meeting record %s</p>',var_export($row));
 		$key = make_tm_usermeta_key ($row->role, $row->event_timestamp, $row->postID);
 		$roledata = make_tm_roledata_array ('archive_legacy_roles_usermeta');
 		if(strpos($row->role,'Speaker'))
@@ -4075,6 +4087,8 @@ foreach($results as $row)
 		$intro = get_post_meta($row->postID, '_intro'.$row->role, true);
 		$roledata = make_tm_speechdata_array ($roledata, $manual, $project_index, $title, $intro);
 		}
+		if($display)
+			printf('<p>User meta record %s %s</p>',$key,var_export($roledata,true));
 		update_user_meta($user_id,$key,$roledata);
 	}
 
@@ -4130,10 +4144,10 @@ if($post_id && ($domain = $_SERVER['SERVER_NAME']))
 	$p = get_post($post_id); // make sure it exists
 	if($p)
 		{
-			update_post_meta($post_id,'_manual_Speaker_'.$rolecount,$_POST["manual"]);
-			update_post_meta($post_id,'_project_Speaker_'.$rolecount,$_POST["project"]);
-			update_post_meta($post_id,'_title_Speaker_'.$rolecount,stripslashes($_POST["title"]));
-			update_post_meta($post_id,'_intro_Speaker_'.$rolecount,stripslashes($_POST["intro"]));
+			update_post_meta($post_id,'_manual_Speaker_'.$rolecount,strip_tags($_POST["manual"]));
+			update_post_meta($post_id,'_project_Speaker_'.$rolecount,strip_tags($_POST["project"]));
+			update_post_meta($post_id,'_title_Speaker_'.$rolecount,strip_tags(stripslashes($_POST["title"])));
+			update_post_meta($post_id,'_intro_Speaker_'.$rolecount,strip_tags(stripslashes($_POST["intro"]),'<p><br><em><strong><a>' ));
 		}
 	}
 if(empty($date))
@@ -4493,9 +4507,9 @@ if(isset($_GET['_title_meta']))
 		{
 		$title =stripslashes($_GET['_title_meta']);
 		if($meeting_id) {
-			update_post_meta($meeting_id,'_title'.$field,$title);
-			update_post_meta($meeting_id,'_manual'.$field,$manual);
-			update_post_meta($meeting_id,'_project'.$field,$project);
+			update_post_meta($meeting_id,'_title'.$field,strip_tags($title));
+			update_post_meta($meeting_id,'_manual'.$field,strip_tags($manual));
+			update_post_meta($meeting_id,'_project'.$field,strip_tags($project));
 			}
 		}
 

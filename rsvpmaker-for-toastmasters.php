@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.7.1
+Version: 3.7.2
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -2109,16 +2109,16 @@ if(isset($_POST["_manual"]))
 				if($intro != $wasintro)
 					do_action('toastmasters_agenda_notification',$post_id,__('Speaker Introduction: ','rsvpmaker-for-toastmasters')."\n\n".$intro,$user_id,$basefield,'intro');
 				}
-			update_user_meta($user_id,'current_manual',$manual);
-			update_post_meta($post_id,'_manual'.$basefield,$manual);
-			update_post_meta($post_id,'_title'.$basefield,$title);
-			update_post_meta($post_id,'_project'.$basefield,$project);
+			update_user_meta($user_id,'current_manual',strip_tags($manual));
+			update_post_meta($post_id,'_manual'.$basefield,strip_tags($manual));
+			update_post_meta($post_id,'_title'.$basefield,strip_tags($title));
+			update_post_meta($post_id,'_project'.$basefield,strip_tags($project));
 			if(isset($_POST["_display_time"][$basefield]))
 				update_post_meta($post_id,'_display_time'.$basefield,$display_time);
 			if(isset($_POST["_maxtime"][$basefield]))
 				update_post_meta($post_id,'_maxtime'.$basefield,$time);
 			if(isset($_POST["_intro"][$basefield]))
-				update_post_meta($post_id,'_intro'.$basefield,$intro);
+				update_post_meta($post_id,'_intro'.$basefield,strip_tags($intro,'<p><br><a><strong><em>'));
 			do_action('save_speaker_extra',$post_id,$basefield);
 			}
 	}
@@ -3523,6 +3523,7 @@ do_action('toastmasters_settings_extra');
 function online_meeting_settings () {
 ?>
 <p>Jitsi online meeting integration, with a speaker timing lights function, is enabled by default. With a little extra configuration, Zoom integration can also be enabled.</p>
+<p><em>Zoom support is a work in progress. So far, users must authenticate at zoom.us first before accessing the page, or the video feed is not displayed.</em></p>
 <?php
 if(isset($_POST['zoomon']))
 {
@@ -6712,20 +6713,13 @@ if(isset($_POST["_tm_sidebar"]))
 if(isset($_REQUEST["edit_sidebar"]))
 	{
 	$sidebar_editor = agenda_sidebar_editor($post->ID);
-return sprintf('<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
-<script>
-        tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
-</script>
-<form id="edit_roles_form" method="post" action="%s"">
+return sprintf('<form id="edit_roles_form" method="post" action="%s"">
 %s<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>%s',rsvpmaker_permalink_query($post->ID),$sidebar_editor,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),$content);
 	}
 if(isset($_REQUEST["reorder"]))
 	return '<p><em>'.__('Drag and drop to change the order in which speakers, evaluators and other roles with multiple participants will appear on the agenda').'</em></p>'.$content;
 if(!isset($_REQUEST["edit_roles"]) || (!current_user_can('edit_signups') && !edit_signups_role()))
-	return '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
-	<script>
-			tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
-	</script>'."\n".$content;
+	return $content;
 	
 $r = 'x'.rand();
 $content .= '<p><span id="time'.$r.'" class="toasttime" "></span><select class="tweakminutes" timetarget="'.$r.'" style="display:none;"><option value="0" selected="selected">0</option></select> End of meeting</p>';
@@ -6733,11 +6727,7 @@ $content .= '<p><span id="time'.$r.'" class="toasttime" "></span><select class="
 if(current_user_can('agenda_setup'))
 $content .= sprintf('<p><a href="%sedit_sidebar=1">%s</a></p>',rsvpmaker_permalink_query($post->ID),__('Edit Sidebar','rsvpmaker-for-toastmasters'));//agenda_sidebar_editor($post->ID);
 	
-return sprintf('<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
-<script>
-        tinymce.init({selector:"textarea.mce",plugins: "code, link"});		
-</script>
-<form id="edit_roles_form" method="post" action="%s"">
+return sprintf('<form id="edit_roles_form" method="post" action="%s"">
 %s
 <button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="editor_id" name="editor_id" value="%d" /><input type="hidden" id="toastcode" value="%s"></form> %s',rsvpmaker_permalink_query($post->ID),$content,$post->ID,$current_user->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),time_tally_include($post->ID));
 }
@@ -7598,10 +7588,6 @@ $wp4toastmasters_mailman = get_option("wp4toastmasters_mailman");
 
 	$mailform = '<h3>'.__("Add a Note",'rsvpmaker-for-toastmasters').'</h3>
 	<p>'.__("Your note will be emailed along with the agenda and details about which roles are filled or open. You can change the subject line to emphasize the roles you need filled or special plans for a meeting (such as a contest).",'rsvpmaker-for-toastmasters').'</p>
-<script src="//cdn.tinymce.com/4/tinymce.min.js"></script><br />
-<script>
-        tinymce.init({selector:"textarea",plugins: "code, link"});	
-</script>
 	<form method="post" action="'.$permalink.'email_agenda=1">
 Subject: <input type="text" name="subject" value="'.$subject.'" size="60"><br />
 <textarea name="note" rows="5" cols="80"></textarea><br />
@@ -7991,7 +7977,7 @@ foreach($speaker as $name => $value)
 	{
 	if($name =='ID')
 		continue;
-	update_post_meta($post_id, '_'.$name.$field, $value);
+	update_post_meta($post_id, '_'.$name.$field, strip_tags($value,'<p><br><strong><em><a>'));
 	}
 }
 
@@ -12581,10 +12567,10 @@ function toastmasters_init () {
 		update_post_meta($post_id,$role,$user_id);
 		if(strpos($role,'Speaker'))
 		{
-			update_post_meta($post_id,'_manual'.$role,$_POST["_manual"][$role]);
-			update_post_meta($post_id,'_project'.$role,$_POST["_project"][$role]);
-			update_post_meta($post_id,'_title'.$role,stripslashes($_POST["_title"][$role]));
-			update_post_meta($post_id,'_intro'.$role,stripslashes($_POST["_intro"][$role]));			
+			update_post_meta($post_id,'_manual'.$role,strip_tags($_POST["_manual"][$role]));
+			update_post_meta($post_id,'_project'.$role,strip_tags($_POST["_project"][$role]));
+			update_post_meta($post_id,'_title'.$role,strip_tags(stripslashes($_POST["_title"][$role])));
+			update_post_meta($post_id,'_intro'.$role,strip_tags(stripslashes($_POST["_intro"][$role]),'<p><br><strong><em><a>').'was filtered by strip tags');
 		}
 		$o = 'Assigned to: '.get_member_name($user_id);
 		foreach($_POST as $name => $value)
@@ -12594,10 +12580,11 @@ function toastmasters_init () {
 			if(is_array($value))
 			{
 				foreach($value as $v)
-					$showv = stripslashes($v);				
+					$showv = strip_tags(stripslashes($v),'<p><br><strong><em><a>');				
 			}
 			else
 				$showv = $value;
+			
 		if(!empty($showv))
 		{
 		if(strpos($name,'project'))
@@ -12988,4 +12975,25 @@ if(!wp_is_json_request()) {
 	add_shortcode('tm_branded_image','tm_branded_image');
 	add_shortcode('tm_member_application','tm_member_application');				
 }
+
+add_action('wp_head','wpt_richtext');
+function wpt_richtext() {
+global $post;
+if($post->post_type != 'rsvpmaker')
+	return;
+if(!strpos($post->post_content,'wp:wp4toastmasters') && !strpos($post->post_content,'agenda_role')  )
+	return;
+
+echo '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<script>
+        tinymce.init({selector:"textarea",plugins: "code, link"});	
+</script>';	
+}
+
+function rsvpmaker4t_deactivate() {
+	wp_unschedule_hook('wp4toast_reminders_cron');
+	wp_unschedule_hook('wp4toast_reminders_dst_fix');
+	wp_unschedule_hook('wp4t_reminders_nudge');
+}
+register_deactivation_hook( __FILE__, 'rsvpmaker4t_deactivate' );
 ?>

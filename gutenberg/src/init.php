@@ -79,6 +79,19 @@ function wpt_server_block_render(){
 	register_block_type('wp4toastmasters/absences', ['render_callback' => 'tm_absence']);	
 	register_block_type('wp4toastmasters/agendasidebar', ['render_callback' => 'tmlayout_sidebar']);	
 	register_block_type('wp4toastmasters/agendamain', ['render_callback' => 'tmlayout_main']);
+	register_block_type('wp4toastmasters/agendanoterich2', ['render_callback' => 'agendanoterich2']);
+}
+
+function agendanoterich2($atts, $content) {
+$output = false;
+global $emailcontext;
+if($emailcontext)
+	$output = true;
+if(isset($_GET['print_agenda']) || isset($_GET['email_agenda']))
+	$output = true;
+if($output)
+	return $content;
+return;
 }
 
 add_action('init','wpt_server_block_render');

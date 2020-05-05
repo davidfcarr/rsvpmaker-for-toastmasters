@@ -4,10 +4,6 @@
  * CSS for both Frontend+Backend.
  */
 
-.hideonsignup {
-	display: none;
-}
-
 .wp-block-cgb-block-wpt  {
   background: $red;
   border: 0.2rem solid $black;
@@ -16,6 +12,10 @@
   max-width: 740px;
   padding: 2rem;
 }
-.hideonsignup, .wp-block-wp4toastmasters-agendanoterich2 {
+.hideonsignup {
 	display: none;
+}
+
+p.wp-block-wp4toastmasters-agendanoterich2, p.wp-block-wp4toastmasters-agendanoterich, p.wp-block-wp4toastmasters-agendanote {
+  display: none;
 }

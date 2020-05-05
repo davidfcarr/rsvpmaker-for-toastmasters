@@ -457,8 +457,11 @@ function make_tm_roledata_array ($function = '') {
 global $current_user;
 	return array('time_recorded' => time(), 'recorded_by' => $current_user->user_login, 'function' => $function);
 }
+
 function make_tm_usermeta_key ($role, $event_timestamp, $post_id) {
 $slug = preg_replace('/[^0-9]/','',$role);
+$role = str_replace('Contest_Speaker','Speaker',$role);
+// Contest Speaker = Speaker
 if(isset($_GET['project_year']))
 	$slug = $_GET['project_year'].$_GET['project_month'].$_GET['project_day'];
 return 'tm|'.trim(preg_replace('/[^\sa-zA-Z]/',' ',$role)).'|'.$event_timestamp.'|'.$slug.'|'.$_SERVER['SERVER_NAME'].'|'.$post_id;
@@ -504,5 +507,12 @@ $assign_cache[$post_id][$key] = $value;
 update_post_meta($post_id,$key,$value);
 if($update_cache) // unless we're told not to, update the cache transient
 	set_transient('assign_cache',$assign_cache, DAY_IN_SECONDS);
+}
+
+//do_action( 'add_user_to_blog', $user_id, $role, $blog_id );
+add_action('add_user_to_blog','add_joined_club_date');
+
+function add_joined_club_date($user_id) {
+	update_user_meta($user_id,'joined'.get_current_blog_id(),date('n/j/Y'));
 }
 ?>
