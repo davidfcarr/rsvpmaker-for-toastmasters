@@ -1,15 +1,107 @@
+<?php
+global $post, $current_user, $wpdb;
+show_admin_bar(false);
+$is_timer = false;
+$contest_timer = '';
+function timer_display_time_stoplight ($content, $name,$speechid) {
+    preg_match_all('/\d{1,3}/',$content,$matches);
+        //return var_export($matches[0],true);
+        $output = '';
+        if(!empty($matches))
+        {
+        $green = array_shift($matches[0]);
+        $red = array_shift($matches[0]);
+    /*	if(sizeof($matches[0]) > 2)
+        {
+            $output = $content.'<br />';
+        }
+    */
+        $output .= timer_get_stoplight_options($name,$green,$red,$speechid);
+        }
+        return $output;
+    }
+    
+function timer_get_stoplight_options ($name, $green,$red, $speechid='') {
+        if(empty($yellow))
+        {
+            $diff = $red - $green;
+            $plus_minutes = ($diff - $diff % 2) / 2;
+            $yellow = $green + $plus_minutes;
+            if($diff % 2)
+            {
+                if(($green > 5) && ($diff > 2)) // go to next minute 
+                {
+                    $yellow++;
+                }
+                else
+                    $yellow = $yellow .= ':30';
+            }
+            else
+                $yellow = $yellow .= ':00';
+    
+        }
+        $red = $red .= ':00';
+        $green = $green .= ':00';
+        return sprintf('<option value="%s|%s|%s|%s|%s">%s (%s - %s)</option>',$name,$green,$yellow,$red,$speechid,$name,$green,$red);
+    }
+
+if(is_user_logged_in()) {
+    $sql = "SELECT * FROM `$wpdb->postmeta` where post_id=".$post->ID."  AND meta_value=".$current_user->ID." AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
+    $role_row = $wpdb->get_row($sql);
+    if($role_row)
+        {
+        $role = trim(preg_replace('/[^A-Za-z]/',' ',$role_row->meta_key));
+        }
+    else
+        $role = '';
+    $name = $role.' '.$current_user->display_name;
+    $email = $current_user->user_email;
+    $is_timer = (($role == 'Timer') && !isset($_GET['exit_timer']) );
+}
+elseif(isset($_GET['email']) && is_email($_GET['email']))
+    {
+        $email = $_GET['email'];
+        $sql = $wpdb->prepare("SELECT * FROM ".$wpdb->prefix.'rsvpmaker WHERE email LIKE %s AND event=%d',$email,$post->ID);
+        $row = $wpdb->get_row($sql);
+        if($row)
+        {
+            $name = 'Guest:'.$row->first.' '.$row->last;
+        }
+    }
+if(isset($_GET['demo'])) {
+    if(current_user_can('manage_options'))
+        {
+            update_post_meta($post->ID,'jitsi_demo',true);
+            $name = 'Testy Tester';
+            $email = 'testy@example.com';
+        }
+    elseif(get_post_meta($post->ID,'jitsi_demo',true)){
+        $name = 'Testy Tester';
+        $email = 'testy@example.com';
+    }
+}
+if($post->post_type != 'rsvpmaker')
+{
+    $name = 'Testy Tester';
+    $email = 'testy@example.com';
+}
+
+if(isset($_GET['claim_timer']))
+    $is_timer = true;
+
+$widthadj = ($is_timer) ? 100 : 50;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
   <?php global $post; ?>
-  <title>Toastmaster Speech Timer <?php if($post->post_type != 'rsvpmaker') echo '- stand-alone version' ?></title>
-  <meta description="Practice your speech with confidence. This timer can be used to practice any speech type. It was originally created for practicing Toastmaster speeches. Large font and big colors enable you to see it from a distance."
+  <title>Toastmasters Online Meeting</title>
 
   <meta name="viewport" content="width=device-width"/>
 
   <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=0.3'); ?>" rel="stylesheet" />
+  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/jitsi-timer.css?v='.time()); ?>" rel="stylesheet" />
  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -18,58 +110,51 @@
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=2.6');?>"></script>
-
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/jitsi-timer.js?v='.time());?>"></script>
+<style>
+<?php 
+if(isset($_GET['embed']) && ($_GET['embed'] == 'zoom'))
+{
+?>
+.zoom-window-wrap h1, .zoom-window-wrap h2, .zoom-window-wrap h3,
+.zoom-window-wrap a.button, .zoom-window-wrap a.start-meeting-btn,
+.zoom-app-notice, .zoom-links  {
+display: none;
+}
+<?php    
+}
+?>
+#viewcontrol {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 250px;
+}
+</style>
+<?php 
+if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
+{
+?>
+<script src='https://meet.jit.si/external_api.js'></script>
+<?php
+}
+?>
 </head>
 <body>
 <div id="body">
-  <div class="content-wrapper">
-    <h1 style="margin-bottom: 20px;">Time for <input type="text" placeholder="Speaker Name" id="speakername" size="30"></h1>
-	  <div style="font-size: 12px; margin-bottom: 15px;"><a href="#" id="popup">Color popup</a> <input type="checkbox" id="playchime" > Play chime <input type="checkbox" id="showdigits"> Show digits 
-	  <a href="https://wp4toastmasters.com/knowledge-base/online-timer-tool/" target="_blank">How-to use this</a> 
-	  <br />Correction 	<select id="correction">
-	  <option value="0" selected="selected">0</option>
-	  <?php 
-	for($min = 0; $min < 11; $min++)
-		for($seconds = 0; $seconds < 60; $seconds += 5)
-		{
-			if(($min == 0) && ($seconds == 0))
-			continue;
-			printf('<option value="%s">+ %s:%s%s</option>',$seconds+($min*60),$min,($seconds<10)? '0':'',$seconds);
-		}
-	  ?>
-	  </select> 
-	  </div>
     <div>
-      <div class="row" id="buttons" style="font-size: large"></div>
-      <br/>
+<div id="viewcontrol">View <select id="view">
+        <option value="normal">Normal</option>
+        <option value="self">Self Timer</option>
+        <option value="timer" <?php if($is_timer) echo ' selected="selected"' ?> >Timer</option>
+</select><button id="popup">Popup Light</button> <!--button id="timerpopup">Timer</button--></div>
 
-      <div class="row" id="content" style="font-size: xx-large; height:20px; line-height:20px">
-        <div  class="col-sm-2 col-md-2">
-          <button class="btn btn-default btn-primary btn-lg" id="btnStart" type="button" value="Start">Start</button>
-        </div>
-        <div class="col-sm-2 col-md-2">
-          <button class="btn btn-default btn-lg" id="btnReset" type="button" value="Reset">Reset</button>
-        </div>
-        <!--div class="col-sm-2 col-md-2 nudge">
-          <button class="btn btn-default btn-lg" id="btnNudge" type="button" value="Nudge">+5 sec</button><div id="nudged"></div>
-        </div -->
-        <div class="col-sm-2 col-md-2 hidecount">
-          <input class="form-control" id="green-light" type="text">
-        </div>
-        <div class="col-sm-2 col-md-2 hidecount">
-          <input class="form-control" id="yellow-light" type="text">
-        </div>
+<p id="explanation">The background of this page (and the Popup Timer window) act as timing lights.</p>
 
-        <div class="col-sm-2 col-md-2 hidecount">
-          <input class="form-control" id="red-light" type="text">
-        </div>
-      </div>
-      <br/>
-
-		<div id="timelog">
-			<div id="smallcounter"></div>
+<div class="timer-controls">
 <?php
+$options = '';
+
 if(isset($_GET['contest']))	{
 
 $dt = get_post_meta($post->ID,'toast_timing',true);
@@ -85,9 +170,9 @@ $order = get_post_meta($post->ID,'tm_scoring_order',true);
 if(empty($order))
 	$order = $contestants;
 
-foreach ($order as $index => $name)
+foreach ($order as $index => $speakername)
 	{
-	echo timer_display_time_stoplight ($dt, $name);
+	$options .= timer_display_time_stoplight ($dt, $speakername, $index);
 	}
 }
 
@@ -98,7 +183,7 @@ $count = 0;
 if(strpos($post->post_content,'wp:wp4toastmasters'))
 {
 $data = wpt_blocks_to_data($post->post_content);
-$count = $data['Speaker']['count'];
+$count = (isset($data['Speaker']['count'])) ? $data['Speaker']['count'] : 0;
 }
 else {
 preg_match('/role="Speaker" count="([^"])"/',$post->post_content,$matches); //  count="([^"]+)
@@ -114,14 +199,14 @@ for($i = 1; $i <= $count; $i++) {
 		if(is_numeric($member_id))
 		{
 		$member = get_userdata($member_id);
-		$name = $member->first_name.' '.$member->last_name;
+		$speakername = $member->first_name.' '.$member->last_name;
 		}
 		else $name = 'Guest'; // guest
 		//print_r($member);
 		$dt = get_post_meta($post->ID, '_display_time_Speaker_'.$i, true);
 		if(empty($dt))
 			$dt = '5 to 7';
-		echo timer_display_time_stoplight ($dt, $name);
+		$options .= timer_display_time_stoplight ($dt, $speakername, $i);
 	}
 }
 
@@ -133,56 +218,62 @@ for($i = 1; $i <= $count; $i++) {
 	{
 		if(is_numeric($member_id))
 		{
-		$name = get_member_name($member_id);
+            $speakername = get_member_name($member_id);
 		}
 		else $name = 'Guest: '.$member_id;
 		//print_r($member);
-		echo timer_display_time_stoplight ('2 to 3', 'Evaluator: '.$name);
+		$options .= timer_display_time_stoplight ('2 to 3', 'Evaluator: '.$speakername,$i);
 	}
 }
 
 }
+?>
+    <select id="dropdowntime">
+    <option value="">Speech Type</option>
+    <?php echo $options; ?>
+    <option value="Speech (5-7)|5:00|6:00|7:00|standard">Speech (5-7)</option>
+    <option value="Table Topics|1:00|1:30|2:00|tt">Table Topics</option>
+    <option value="Evaluation|2:00|2:30|3:00|eval">Evaluation</option>
+    <option value="Speech (3-4)|3:00|3:30|4:00|6to8">Speech (3-4)</option>
+    <option value="Speech (6-8)|6:00|7:00|8:00|6to8">Speech (6-8)</option>
+    <option value="Speech (8-10)|8:00|9:00|10:00|8to10">Speech (8-10)</option>
+    <option value="Speech (10-15)|10:00|12:30|15:00|10to15">Speech (10-15)</option>
+    <option value="Speech (15-20)|15:00|17:30|20:00|15to20">Speech (15-20)</option>
+    <option value="Speech (20-30)|20:00|22:30|30:00|20to30">Speech (20-30)</option>
+    <option value="One Minute|0:30|0:45|1:00|minute">One Minute</option>
+    <option value="Test|0:05|0:10|0:15|test">Test</option>
+    </select>
+    <input type="hidden" id="speechid" />    
+    <input type="text" placeholder="Speaker Name" id="speakername" size="30"> 
+    <span class="hidecount">
+          <input id="green-light" type="text" class="greenyellowred">
+          <input id="yellow-light" type="text" class="greenyellowred">
+          <input id="red-light" type="text" class="greenyellowred">
+    </span>
 
-function timer_display_time_stoplight ($content, $name) {
-preg_match_all('/\d{1,3}/',$content,$matches);
-	//return var_export($matches[0],true);
-	$output = '';
-	if(!empty($matches))
-	{
-	$green = array_shift($matches[0]);
-	$red = array_shift($matches[0]);
-	if(sizeof($matches[0]) > 2)
-	{
-		$output = $content.'<br />';
-	}
-	$output .= timer_get_stoplight($name,$green,$red);
-	}
-	return $output;
-}
-
-function timer_get_stoplight ($name, $green,$red, $yellow=NULL) {
-	if(empty($yellow))
-	{
-		$diff = $red - $green;
-		$plus_minutes = ($diff - $diff % 2) / 2;
-		$yellow = $green + $plus_minutes;
-		if($diff % 2)
+    <button class="btn-primary btnStart" id="btnStart" type="button" value="Start">Start</button>
+    <button class=" btn-default btnReset" id="btnReset" type="button" value="Reset">Reset</button>
+	<select id="correction">
+	  <option value="0" selected="selected">Correction (0)</option>
+	  <?php 
+	for($min = 0; $min < 11; $min++)
+		for($seconds = 0; $seconds < 60; $seconds += 5)
 		{
-			if(($green > 5) && ($diff > 2)) // go to next minute 
-			{
-				$yellow++;
-			}
-			else
-				$yellow = $yellow .= ':30';
+			if(($min == 0) && ($seconds == 0))
+			continue;
+			printf('<option value="%s">+ %s:%s%s</option>',$seconds+($min*60),$min,($seconds<10)? '0':'',$seconds);
 		}
-		else
-			$yellow = $yellow .= ':00';
+	  ?>
+	  </select>
+      <button id="greennow">Green</button> 
+      <button id="yellownow">Yellow</button> 
+      <button id="rednow">Red</button> 
+	</div>
 
-	}
-	$red = $red .= ':00';
-	$green = $green .= ':00';
-	return sprintf('<p class="stoplight_block">'.$name.'<br /><span style="display: inline-block; border: thin solid #000; color: green; background-color: green; ">&#9724;</span> Green: '.$green.'<br />'.'<span style="display: inline-block; border: thin solid #000; color: yellow; background-color: yellow;">&#9724;</span> Yellow: '.$yellow.'<br />'.'<span style="display: inline-block; border: thin solid #000; color: red; background-color: red;">&#9724;</span> Red: '.$red.'</span><input class="agenda_speakers" type="hidden" value="'.$name.'" green="'.$green.'" yellow="'.$yellow.'" red="'.$red.'" /></p>');
-}
+		<div id="timelog">
+        <div class="row" id="buttons" ></div>
+			<div id="smallcounter"></div>
+<?php
 
 if(isset($_REQUEST['contest']))
 {
@@ -215,7 +306,6 @@ $action = add_query_arg( array(
     'timer' => '1',
     'contest' => $timer_code,
 ), get_permalink($post->ID) );
-global $current_user;
 $timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
 $dashboard_users = get_post_meta($post->ID,'tm_contest_dashboard_users',true);
 if($timer_user && ($current_user->ID != $timer_user) && !in_array($current_user->ID,$dashboard_users))
@@ -223,34 +313,78 @@ if($timer_user && ($current_user->ID != $timer_user) && !in_array($current_user-
 	printf('<p>You must <a href="%s">login</a> use the timer\'s report form.</p>',wp_login_url($_SERVER['REQUEST_URI']));
 }
 else {
+ob_start();
 ?>
 <form method="post" action="<?php echo $action; ?>" id="voting">
-<h3 id="record_time">Record Time</h3>
+<p><strong>Record Time</strong></p>
 <?php
 foreach($order as $index => $contestant) {
-	printf('<p>%s Time: <input type="text" name="time[]" value="0:00" id="actualtime%d" ><br /><input type="checkbox" name="disqualified[]" value="%d" id="disqualified%d" /> Disqualified</p>',$contestant,$index,$index,$index);
+	printf('<p>%s <br /><input type="text" class="timefield" name="time[]" value="0:00" id="actualtime%d" ><br /><input type="checkbox" name="disqualified[]" value="%d" id="disqualified%d" /> Disqualified</p>',$contestant,$index,$index,$index);
 }
-			
+		
 ?>
 <div id="readyline"><input type="checkbox" id="readytovote" value="1" /> Check to digitally sign this as the official time record</div>
 <div id="readyprompt"></div>
 			<div id="timesend" ><button >Send</button></div>
 		</form>			
-<?php	
+<?php
+$contest_timer = ob_get_clean();
 }// end display of form
 
 } // end contest output
+echo $contest_timer;
 ?>
+</div><!-- end timer controls -->
 		</div>
 
-		<div id="colorlabel" ></div>			
-			<div class="row" id="trafficlight" style="font-size: 28em;line-height:600px">
-		  <img src="<?php echo plugins_url('rsvpmaker-for-toastmasters/stopwatch.png'); ?>" />
-      </div>
     </div>
   </div>
+  <input type="hidden" id="seturl" value="<?php echo site_url('/wp-json/toasttimer/v1/color/'.$post->ID); ?>" />
 </div>
 <?php
+if(!empty($_GET['embed']) && empty($name))
+    {
+    printf('<h1>%s</h1><p>To join the online meeting</p><ul>',$post->post_title);
+    printf('<li>Members please <a href="%s">login</a></li>',wp_login_url($_SERVER['REQUEST_URI']));
+    printf('<li>Guests, please enter the email you used to RSVP</li></ul><form action="%s" method="get"><p>Email <input type="text" name="email"></p><input type="hidden" name="jitsi" value="1"><p><button>Submit</button></p></form></p>',site_url($_SERVER['REQUEST_URI']));
+    }
+elseif(empty($_GET['embed']))
+    {
+        ?>
+<div id="jitsi" style="background-color: #fff; width: 800px;">
+<p>This screen displays in 3 views: Normal (speaker view), Self Timer, and Timer (the person showing timing lights to others). In Timer view, the green, yellow, and red colors are broadcast to everyone watching the Normal view (with a delay of about 1 second).</p>
+<p>If you are listed on the agenda as Timer, the screen will open in Timer mode. Or you can use the dropdown list in the upper right hand corner to claim that role.</p>
+<p>How to set this up as a speaker:</p>
+<ul><li>In Normal view, click the Popup Light button in the upper right hand corner of the screen to get a small popup window that will change colors.</li><li>You can now minimize the bigger browser window and leave the timing light window parked in a corner of your screen.</li><li>In Zoom, exit full screen and size the Zoom window so you can still see the timing light.</li><li>For screen sharing, share individual applications rather than your whole desktop.</li></ul>
+<figure class="wp-block-image size-large"><img src="https://i2.wp.com/wp4toastmasters.com/wp-content/uploads/2020/05/timer-zoom-screensharing.jpg?fit=614%2C345&amp;ssl=1" alt="" class="wp-image-1138251"/></figure>
+<br />
+<p>Below: Use Reading Mode in PowerPoint to show slides without taking up the whole screen. Size the PowerPoint window so you can still see the timing light.</p>
+<figure class="wp-block-image size-large"><img src="https://wp4toastmasters.com/wp-content/uploads/2020/05/powerpoint-reading.png" alt="" class="wp-image-1138253"/></figure>
+</div>
+        <?php
+    }
+elseif(($_GET['embed'] == 'zoom') && empty($_GET['zoom_login_confirmed']))
+    printf('<h1>Confirm Your Zoom Login</h1><p>To use the web-based version of Zoom, you must first <a href="https://zoom.us/signin" target="_blank">login at zoom.us</a></p><p><a href="%s">Refresh this page</a> when you have confirmed you are logged into Zoom.</p>',get_permalink().'?timer=1&embed=zoom&zoom_login_confirmed=1');
+elseif($_GET['embed'] == 'zoom')
+    {
+        $meeting_id = get_post_meta($post->ID,'zoom_meeting_id',true);
+        if(empty($meeting_id))
+        {
+            $online = get_option('tm_online_meeting');
+            $meeting_id = (empty($online['personal_meeting_id'])) ? '' : $online['personal_meeting_id'];    
+        }
+        if($meeting_id) {
+            $meeting_id = preg_replace('/[^0-9]/','',$meeting_id); // remove any dashes
+            echo '<div id="jitsi">'.do_shortcode('[zoom_api_link meeting_id="'.$meeting_id.'" link_only="no"]').'
+            <p>To start meeting as host, log in at <a href="https://zoom.us/signin" target="_blank">zoom.us/signin</a>, then refresh this page.</p></div>';    
+        }
+        else {
+            echo '<p>Zoom meeting ID not set</p>';
+        }    
+    }
+else 
+    echo '<div id="jitsi"></div>';
+
 $users = get_users();
 foreach($users as $user)
 {
@@ -268,14 +402,35 @@ sort($u);
       source: members
     });
   } );
-  </script>	
+<?php 
+if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
+{
+?>
+const domain = 'meet.jit.si';
+const options = {
+    roomName: '<?php 
+    $room_name = get_post_meta($post->ID,'jitsi_room_name',true);
+    if(empty($room_name))
+    {
+        $room_name = $post->post_title.' '.rand();
+        update_post_meta($post->ID,'jitsi_room_name',$room_name);
+    }    
+    echo $room_name; ?>',
+    width: window.innerWidth - <?php echo $widthadj;?>,
+    height: window.innerHeight - 50,
+    parentNode: document.querySelector('#jitsi')
+};
+const api = new JitsiMeetExternalAPI(domain, options);
+api.executeCommand('displayName', '<?php echo $name;?>');
+api.executeCommand('email', '<?php echo $email;?>');
+<?php
+}//end jitsi only
+?>
+
+</script>
+
 <?php	
 }
-?>	
-<input type="hidden" id="stopwatchurl" value="<?php echo plugins_url('rsvpmaker-for-toastmasters/stopwatch.png'); ?>"><input type="hidden" id="chimeurl" value="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer-chime.mp3'); ?>">
-<div id="credit" class="hidecount">
-		<p>Based on Toastmasters Timer &copy; 2013 - Guy Ellis <a href="https://github.com/guyellis/toastmaster-timer">github.com/guyellis/toastmaster-timer</a></p>
-</div>
-	
+?>
 </body>
 </html>

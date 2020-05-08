@@ -1,4 +1,7 @@
 <?php
+wp_safe_redirect(get_permalink().'?timer=1&embed=jitsi');
+exit();
+
 global $post, $current_user, $wpdb;
 show_admin_bar(false);
 $is_timer = false;
@@ -121,7 +124,7 @@ display: none;
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 200px;
+    width: 250px;
 }
 </style>
 <script src='https://meet.jit.si/external_api.js'></script>
@@ -133,7 +136,7 @@ display: none;
         <option value="normal">Normal</option>
         <option value="self">Self Timer</option>
         <option value="timer" <?php if($is_timer) echo ' selected="selected"' ?> >Timer</option>
-</select></div>
+</select><button id="popup">Popup Colors</button></div>
 
 <div class="timer-controls">
 <?php

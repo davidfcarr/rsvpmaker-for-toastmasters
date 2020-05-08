@@ -289,7 +289,10 @@ $(document).ready(function () {
     timer.setDefault();	
 
 $('#popup').click(function(){
+    console.log(rect);
     colorWin = window.open("about:blank", "Color Light", "width=200,height=200");
+    //colorWin.onblur = () => colorWin.focus();
+    //colorWin.onblur = () => console.log('color popup lost focus');
     colorWinOpened = true;
     colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 20vw; text-align: center; margin-top: 20vw\">Ready</h1><body>");
 colorWin.document.body.style.backgroundColor = '#DDDDDD';

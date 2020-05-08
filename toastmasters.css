@@ -263,7 +263,11 @@ button.save_changes.focus, .save_changes:focus
 div.login_signup {
   display: none;
 }
-  
+
+span.role {
+	font-weight: bold;
+}
+
 div.meetinglinks:hover div.login_signup {
   display: block;
 }

@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.7.2
+Version: 3.7.8
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -1408,7 +1408,7 @@ function toastmaster_short($atts=array(),$content="") {
 		return $output.$backup;
 		}
 
-	if(isset($_REQUEST["print_agenda"]) || is_email_context())
+	if(isset($_REQUEST["print_agenda"]) || is_email_context() || is_agenda_locked())
 		return toastmasters_agenda_display($atts);
 
 	global $random_available;
@@ -3463,6 +3463,21 @@ $last_attended_option .= '<option value="'.$i.'" '.$s.'>'.$i.'</option>';
 	</p>
 <p><?php _e('Avoid selecting members who have','rsvpmaker-for-toastmasters'); ?><ul><li><?php _e('not attended in more than','rsvpmaker-for-toastmasters'); ?> <select name="last_attended_limit"><?php echo $last_attended_option; ?></select> <?php _e('days'); echo '</li><li>'; _e('or who have filled the same role within','rsvpmaker-for-toastmasters'); ?> <select name="last_filled_limit"><?php echo $last_filled_option; ?></select> <?php _e('days');?></li></ul> <p><?php _e('Note: If you use the random assignment of members to roles, you may wish to have the software favor members who have attended the club recently but have not filled the same role within the last few weeks. This works best after your club has built up some history recording meetings in the software. Recommended reasonable settings: members who have attended more recently than 56 days (2 months) but have not filled the same role in the last 14 days.','rsvpmaker-for-toastmasters'); ?></p>
 
+<h3><?php _e("Automatically Lock Agenda",'rsvpmaker-for-toastmasters');?> </h3>
+<p><select name="wpt_agenda_lock_policy">
+<?php 
+$lock = (int) get_option("wpt_agenda_lock_policy");
+for($i=0; $i <= 24; $i++)
+	{
+	$s = ($i == $lock) ? ' selected="selected" ' : '';
+	$label = ($i == 0) ? 'No lock' : $i.' hours before meeting';
+	printf('<option value="%s" %s>%s</option>',$i,$s,$label);
+	}
+?>
+</select>
+<br /><em>You can set the agenda to be locked against changes one or more hours before the meeting start time. An administrator can remove the lock.</em>
+</p>
+
 <h3><?php _e("Member Role Planner",'rsvpmaker-for-toastmasters');?> </h3>
 <p>The planner allows members to sign up for roles several weeks in advance.</p>
 	<p>Promote planner on agenda signup pages? <select name="hide_planner_promo"><option value="">Yes</option><option value="no" <?php if(!empty(get_option('hide_planner_promo'))) echo ' selected="selected" ' ?> >No</option></select>
@@ -3758,6 +3773,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'allow_assign' );
 	register_setting( 'wp4toastmasters-settings-group', 'hide_planner_promo' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_contributor_notification' );
+	register_setting( 'wp4toastmasters-settings-group', 'wpt_agenda_lock_policy' );
 
 	if(isset($_POST['wp4toast_reminder']))
 		{
@@ -5207,6 +5223,7 @@ elseif( !is_club_member() )
 else
 	{
 	$link .= rsvpmaker_agenda_notifications($permalink);
+	$agenda_lock = is_agenda_locked();
 
 	// defaults 'edit_signups' => 'read','email_list' => 'read','edit_member_stats' => 'edit_others_posts','view_reports' => 'read','view_attendance' => 'read','agenda_setup' => 'edit_others_posts'
 	$security = get_tm_security ();	
@@ -5245,9 +5262,9 @@ else
 	$online = get_option('tm_online_meeting');
 	$platform = (empty($online['platform'])) ? 'Jitsi' : $online['platform'];
 	if($platform != 'Zoom')
-	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'jitsi=1">'.__('Online Meeting (Jitsi)','rsvpmaker-for-toastmasters').'</a></li>';
+	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1&embed=jitsi">'.__('Online Meeting (Jitsi)','rsvpmaker-for-toastmasters').'</a></li>';
 	if(($platform == 'Zoom') || ($platform == 'Both'))
-		$link .= '<li class="last"><a target="_blank" href="'.$permalink.'zoom=1">'.__('Online Meeting (Zoom)','rsvpmaker-for-toastmasters').'</a></li>';
+		$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1&embed=zoom">'.__('Online Meeting (Zoom)','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1">'.__('Online Timer','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
 
 	$template_id = get_post_meta($post->ID,'_meet_recur',true);
@@ -5258,6 +5275,20 @@ else
 		if($template_id)
 			$agenda_menu[__('Agenda Setup: Template','rsvpmaker-for-toastmasters')] = admin_url('post.php?action=edit&post='.$template_id);
 		}
+	if(current_user_can('manage_options'))
+	{
+		if($agenda_lock) {
+			$agenda_menu[__('Unlock Agenda','rsvpmaker-for-toastmasters')] = $permalink.'lock=unlockall';
+			$agenda_menu[__('Unlock Agenda (Admin Only)','rsvpmaker-for-toastmasters')] = $permalink.'lock=unlockadmin';
+		}
+		else {
+			$post_lock = get_post_meta($post->ID,'agenda_lock',true);
+			if(strpos($post_lock,'admin'))
+			$agenda_menu[__('Unlock Agenda for All','rsvpmaker-for-toastmasters')] = $permalink.'lock=unlockall';
+			$agenda_menu[__('Lock Agenda','rsvpmaker-for-toastmasters')] = $permalink.'lock=on';
+			$agenda_menu[__('Lock Agenda (Except for Admin)','rsvpmaker-for-toastmasters')] = $permalink.'lock=lockexceptadmin';
+		}
+	}
 	if(current_user_can($security['edit_signups']))
 		{
 		//if(!function_exists('do_blocks'))
@@ -5303,6 +5334,12 @@ if(!empty($agenda_menu)) {
 
 	$link .= '<li class="last"><a  target="_blank" href="'.admin_url('admin.php?page=toastmasters_planner').'">'.__('Role Planner','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '</ul></div>';
+
+	if($agenda_lock)
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked against changes and can only be unlocked by an administrator.</p>';
+	elseif(!empty($post_lock) && strpos($post_lock,'admin'))
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator).</p>';
+
 
 if(isset($_REQUEST["assigned_open"]) && current_user_can($security['edit_signups']))
 	{
@@ -8485,7 +8522,7 @@ function toastmasters_css_js() {
 	$display_times = get_projects_array('display_times');
 	wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
 	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
-	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.6.2' );
+	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.6.3' );
 	}
 }
 
@@ -9620,50 +9657,9 @@ function show_wpt_promo($atts = array()) {
 $width = (isset($atts["width"])) ? $atts["width"] : 1030;
 $height = (isset($atts["height"])) ? $atts["height"] : 300;
 ?>
-
-<div style="background-color: #000; padding: 15px; width: <?php echo $width; ?>px;"><h1 style="color: #fff;">Support the WordPress for Toastmasters Project</h1>
-
-<div style="float: left; width: 250px; height: <?php echo $height; ?>px; background-color: #fff; padding: 10px; margin-right: 5px; margin-top: 5px;">
-<h3>Web Developer's Tip Jar</h3>
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="CF5QHBWBNG7AY">
-<table>
-<tr><td><input type="hidden" name="on0" value="Happiness Scale">Happiness Scale</td></tr><tr><td><select name="os0">
-	<option value="Happy">Happy $50.00 USD</option>
-	<option value="Very Happy">Very Happy $100.00 USD</option>
-	<option value="Extremely Happy">Extremely Happy $200.00 USD</option>
-	<option value="Project Sponsor">Project Sponsor $500.00 USD</option>
-</select> </td></tr>
-</table>
-<input type="hidden" name="currency_code" value="USD">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form>
-<p>Financial contributions offset project expenses such as web hosting and security.</p>
-<?php do_action('rsvptoast_tip_jar'); ?>
+<div style="background-color: #fff; padding: 10px;"><p>Learn more about <a href="https://wp4toastmasters.com" target="_blank">WordPress for Toastmasters</a>. This open source software project was created by <a target="_blank" href="https://davidfcarr.com">David F. Carr, DTM</a>, and receives no financial or logistical support from Toastmasters International. The Toastmasters-branded theme <a href="https://wordpress.org/themes/lectern/" target="_blank">Lectern</a> has been reviewed for conformance to Toastmasters branding requirements.</p>
+<p>Thanks to the volunteers, donors, and toastmost.org subscribers who lend their support.</p>
 </div>
-
-<div style="float: left; width: 300px; height: <?php echo $height; ?>px; background-color: #fff; padding: 10px; margin-right: 5px; margin-top: 5px;">
-<h3>Advertise on Toastmost.org</h3>
-
-<p>Advertise to Toastmasters leaders in the clubs who take advantage of the ad-supported club websites at toastmost.org (example: <a target="_blank" href="https://demo.toastmost.org">demo.toastmost.org</a>). Ads appear in the sidebar of the page.</p>
-
-	<p>See <a href="https://wp4toastmasters.com/support/">wp4toastmasters.com/support/</a> for details on available sponsorship levels.</p>
-
-</div>
-
-<div style="float: left; width: 400px; height: <?php echo $height; ?>px; background-color: #fff; padding: 10px; margin-top: 5px;">
-<h3>Contribute Time, Talent, Connections</h3>
-<p>This project started as a one-man show, a solution for a single club, but it needs to grow. Can you help spread the word about this project? Contribute documentation or training resources? Do you have web development or design skills to offer?</p>
-<p>Contact David F. Carr, founder and chief developer, <a target="_blank" href="https://wp4toastmasters.com">WordPress for Toastmasters</a>, <a target="_blank" href="mailto:david@wp4toastmasters.com">david@wp4toastmasters.com</a>, <a target="_blank" href="https://www.facebook.com/wp4toastmasters">Project Facebook page</a></p>
-<ul><li>Business website: <a target="_blank" href="http://www.carrcommunications.com">Carr Communications Inc.</a></li><li>Blog on digital business topics: <a target="_blank" href="http://blogs.forbes.com/davidcarr/">blogs.forbes.com/davidcarr/</a></li><li><a target="_blank" href="https://twitter.com/davidfcarr">Twitter @davidfcarr</a> <a target="_blank" href="http://www.linkedin.com/in/davidfcarr">LinkedIn</a></li></ul>
-</div>
-
-<div style="clear: left"></div>
-
-</div>
-<div style="text-align: center; margin-top: 5px; width: 1030px;">WordPress for Toastmasters is a project of <a target="_blank" href="https://www.carrcommunications.com">Carr Communications Inc.</a> and receives no financial or logistical support from Toastmasters International.<br />The Toastmasters-branded theme Lectern has been reviewed for conformance to Toastmasters branding requirements.</div>
 <?php
 }
 
@@ -9704,16 +9700,11 @@ return; // if this is not configured, the rest doesn't matter
 }	
 	
 $next_show_promo = (int) get_user_meta($current_user->ID,'next_show_promo',true);
-if(($next_show_promo == 0) && sizeof(get_past_events()) < 10 )
-	{
-		//newish site, too soon
-		$next_show_promo = strtotime('+ 2 month');
-		update_user_meta($current_user->ID,'next_show_promo',$next_show_promo);
-	}
+
 if((time() > $next_show_promo ) || isset($_REQUEST["show_ad"]) )
 {
 show_wpt_promo();
-$next_show_promo = strtotime('+ 1 month');
+$next_show_promo = strtotime('+ 1 day');
 update_user_meta($current_user->ID,'next_show_promo',$next_show_promo);
 }
 
@@ -12570,7 +12561,7 @@ function toastmasters_init () {
 			update_post_meta($post_id,'_manual'.$role,strip_tags($_POST["_manual"][$role]));
 			update_post_meta($post_id,'_project'.$role,strip_tags($_POST["_project"][$role]));
 			update_post_meta($post_id,'_title'.$role,strip_tags(stripslashes($_POST["_title"][$role])));
-			update_post_meta($post_id,'_intro'.$role,strip_tags(stripslashes($_POST["_intro"][$role]),'<p><br><strong><em><a>').'was filtered by strip tags');
+			update_post_meta($post_id,'_intro'.$role,strip_tags(stripslashes($_POST["_intro"][$role]),'<p><br><strong><em><a>'));
 		}
 		$o = 'Assigned to: '.get_member_name($user_id);
 		foreach($_POST as $name => $value)

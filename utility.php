@@ -515,4 +515,41 @@ add_action('add_user_to_blog','add_joined_club_date');
 function add_joined_club_date($user_id) {
 	update_user_meta($user_id,'joined'.get_current_blog_id(),date('n/j/Y'));
 }
+
+function is_agenda_locked () {
+	global $post;
+	if(is_admin()) // do not apply to the history screen
+		return false;
+	$locked = false;
+	$date = get_rsvp_date($post->ID);
+	$policy_lock = get_option('wpt_agenda_lock_policy');
+	if($policy_lock)
+	{
+	$now = time();
+	$string = $date.' -'.$policy_lock.' hours';
+	$deadline = rsvpmaker_strtotime($string);
+	if($now > $deadline)
+		$locked = true;
+	}
+	if(isset($_GET['lock']))
+		{
+		$post_lock = $_GET['lock'];
+		update_post_meta($post->ID,'agenda_lock',$post_lock);
+		}
+	else
+		$post_lock = get_post_meta($post->ID,'agenda_lock',true);
+	if($post_lock == 'unlockall')
+		$locked = false;
+	elseif(($post_lock == 'unlockadmin') && current_user_can('manage_options') )
+		$locked = false;
+	elseif($post_lock == 'lockexceptadmin') {
+		if(current_user_can('manage_options') )
+			$locked = false;
+		else
+			$locked = true;
+	} 
+	elseif($post_lock == 'on')
+		$locked = true;
+	return $locked;
+}
 ?>
