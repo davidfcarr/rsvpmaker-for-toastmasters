@@ -1106,13 +1106,15 @@ else
 });	
 }
 
+var checkinterval = 1500 + Math.floor(Math.random()*1000);
+
 //execute once
 refreshReceived();
 
 //then set timer
 var gotvotetimer = setInterval(function(){
   refreshReceived();	
-}, 2000);
+}, checkinterval);
 
 function stopRefreshReceived() {
   clearInterval(gotvotetimer);

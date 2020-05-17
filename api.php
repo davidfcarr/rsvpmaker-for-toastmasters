@@ -141,7 +141,8 @@ class WPT_Timer_Color extends WP_REST_Controller {
   public function get_items($request) {
 	if(isset($_POST['color']))
 		{
-			$color = $_POST['color'];
+			$color = sanitize_text_field($_POST['color']);
+			if(strlen($color) < 15)
 			update_post_meta($request['post_id'],'timing_light_color',$color);
 		}
 	else

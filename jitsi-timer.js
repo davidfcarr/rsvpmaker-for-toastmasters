@@ -7,6 +7,7 @@ var colorWin;
 var colorWinOpened = false;
 var colorNow = 'default';
 var gotvotetimer;
+var checkinterval = 1500 + Math.floor(Math.random()*1000);
 
 //timer send
 function colorChange(colorNow) {
@@ -50,7 +51,7 @@ function setBackgroundColor(color) {
 
 //audience check
 function checkColorChange() {
-    var url = jQuery('#seturl').val();
+    var url = jQuery('#seturl').val()+'?rand='+Math.random();
     //console.log('get url '+url);
     $.get( url, function( data ) {
     if(colorNow == data)
@@ -63,6 +64,7 @@ function checkColorChange() {
 
  function refreshView() {
      var view = $('#view').children("option:selected").val();
+     var interval = 1500 + Math.floor(Math.random()*1000);
      console.log('view: '+view);
      if(view == 'normal')
      {
@@ -72,7 +74,7 @@ function checkColorChange() {
     $('.timer-controls').hide();
     gotvotetimer = setInterval(function(){
     checkColorChange();	
-    }, 1000);
+    }, checkinterval);
 
      }
      else {
@@ -423,6 +425,12 @@ $('#greennow').click(
         colorNow = 'green';
         colorChange(colorNow);
         setBackgroundColor(colorNow);
+    }
+);
+
+$('#hideit').click (
+    function() {
+        $('#jitsi').hide();
     }
 );
 

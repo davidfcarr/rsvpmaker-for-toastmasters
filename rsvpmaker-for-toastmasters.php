@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.7.8
+Version: 3.7.9
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -4741,7 +4741,7 @@ if($option == 'custom')
 			$layout["post_title"] = 'Agenda Layout';
 			if(function_exists('do_blocks'))
 			$layout["post_content"] = '<!-- wp:image {"sizeSlug":"large"} -->
-			<figure class="wp-block-image size-large"><img src="https://wp4toastmasters.com/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></figure>
+			<figure class="wp-block-image size-large"><img src="https://toastmost.org/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></figure>
 			<!-- /wp:image -->
 
 			<!-- wp:heading -->
@@ -4752,7 +4752,7 @@ if($option == 'custom')
 			<div class="wp-block-wp4toastmasters-agenda-wrapper"><table id="agenda-main" width="700"><tbody><tr><td id="agenda-sidebar" width="175"><!-- wp:wp4toastmasters/agendasidebar /--></td><td id="agenda-main" width="*">[tmlayout_main]</td></tr></tbody></table></div>
 			<!-- /wp:wp4toastmasters/agenda-wrapper -->';
 			else
-			$layout["post_content"] = '<img src="https://wp4toastmasters.com/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></div>
+			$layout["post_content"] = '<img src="https://toastmost.org/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></div>
 <h2 id="title">'.get_bloginfo('name').' - [tmlayout_meeting_date]</h2>
 <table id="main" width="700"><tr><td id="sidebar" width="175">[tmlayout_sidebar]</td><td id="agenda" width="*">[tmlayout_main]</td></tr></table>';
 			$layout["post_author"] = $current_user->ID;
@@ -4768,7 +4768,7 @@ if($option == 'custom')
 					{
 						$postdata['ID'] = $layout->ID;
 						$postdata["post_content"] = '<!-- wp:image {"sizeSlug":"large"} -->
-						<figure class="wp-block-image size-large"><img src="https://wp4toastmasters.com/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></figure>
+						<figure class="wp-block-image size-large"><img src="https://toastmost.org/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></figure>
 						<!-- /wp:image -->
 			
 						<!-- wp:heading -->
@@ -7545,7 +7545,7 @@ $content = apply_filters('email_agenda',$content);
 	fix_timezone();
 	$date = strftime($time_format, strtotime($row->datetime) );
 	
-	$header = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	$header = '<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <style>
@@ -7622,8 +7622,10 @@ $wp4toastmasters_mailman = get_option("wp4toastmasters_mailman");
 		$subject .= " (".$openings." ".__("open roles",'rsvpmaker-for-toastmasters').")";
 	if(empty($wp4toastmasters_mailman["members"]))
 		$subject = get_bloginfo('name').' '.$subject;
-
-	$mailform = '<h3>'.__("Add a Note",'rsvpmaker-for-toastmasters').'</h3>
+	$mailform = '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
+	<script>
+			tinymce.init({selector:"textarea",plugins: "code,link"});		
+	</script><h3>'.__("Add a Note",'rsvpmaker-for-toastmasters').'</h3>
 	<p>'.__("Your note will be emailed along with the agenda and details about which roles are filled or open. You can change the subject line to emphasize the roles you need filled or special plans for a meeting (such as a contest).",'rsvpmaker-for-toastmasters').'</p>
 	<form method="post" action="'.$permalink.'email_agenda=1">
 Subject: <input type="text" name="subject" value="'.$subject.'" size="60"><br />
@@ -10100,7 +10102,7 @@ return $templates_projected;
 
 // make lectern default to Toastmasters branding
 function wp4t_header($default) {
-return 'http://wp4toastmasters.com/tmbranding/toastmasters3.jpg';
+return 'https://toastmost.org/tmbranding/toastmasters3.jpg';
 }
 
 function rsvptoast_pages ($user_id) {
@@ -12794,21 +12796,20 @@ function tm_branded_image($att) {
 	else
 		$image = $att;
 	//if($image=='agenda-rays.png')
-		return '<img src="https://wp4toastmasters.com/tmbranding/agenda-rays.png" />';
+		return '<img src="https://toastmost.org/tmbranding/agenda-rays.png" />';
 		
 if(isset($_GET['reset']))
 	delete_option($image);
 	
 if(strpos($_SERVER['SERVER_NAME'],'toastmost.org'))
-	$newurl = 'http://wp4toastmasters.com/tmbranding/'.$image;
+	$newurl = 'https://toastmost.org/tmbranding/'.$image;
 else
 	$newurl = get_option($image);
-
 	
 if(isset($_GET['retrieve']))
 	{
 	$wp_upload_dir = wp_upload_dir();
-	$url = 'http://wp4toastmasters.com/tmbranding/'.$image;
+	$url = 'http://toastmost.org/tmbranding/'.$image;
 	$file_path = $wp_upload_dir["path"].'/'.$image;
 	$newurl = $wp_upload_dir['url'] . '/' .$image;
 	$myhttp = new WP_Http();

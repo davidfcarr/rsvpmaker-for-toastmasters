@@ -17,7 +17,7 @@ span {
 
 #trafficlight
 {
-    height: 100%; /*1000px;*/
+    height: 100%;
 	vertical-align: top;
     line-height: 100px;
     width: 100%;
@@ -30,7 +30,19 @@ span {
     text-align: right;
     height: 25px;
     line-height: 20px;
+    width: 95px;
     display: inline-block;
+}
+
+button.colorbuttons {
+display: block;
+width: 95px;
+text-align: center;
+margin-top: 2px;
+}
+
+select {
+    width: 95px;
 }
 
 #red-light, button#rednow
@@ -50,11 +62,11 @@ span {
 }
 
 .greenyellowred, .timefield {
-    width: 50px;
+    width: 95px;
 }
 
 #dropdowntime, #speakername {
-    width: 100px;
+    width: 95px;
 }
 
 #correction {
@@ -98,12 +110,6 @@ span {
 	overflow: hidden;
 }
 
-.content-wrapper {
-    margin: 0 0 0 200px;
-	width: 100%;
-    /*max-width: 960px;*/
-}
-
 #colorlabel {
     width: 200px;
     float: right;
@@ -116,15 +122,10 @@ span {
     position: absolute;
     top: 30px;
     left: 30px;
-    min-width: 700px;
-    min-height: 500px;
 }
 
 #timelog {
 	width: 95px;
-	position:absolute;
-	top:30px;
-    left:5px;
     font-size: 10px;
 }
 .speech-type {

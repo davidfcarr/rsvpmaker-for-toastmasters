@@ -5,17 +5,11 @@ $is_timer = false;
 $contest_timer = '';
 function timer_display_time_stoplight ($content, $name,$speechid) {
     preg_match_all('/\d{1,3}/',$content,$matches);
-        //return var_export($matches[0],true);
         $output = '';
         if(!empty($matches))
         {
         $green = array_shift($matches[0]);
         $red = array_shift($matches[0]);
-    /*	if(sizeof($matches[0]) > 2)
-        {
-            $output = $content.'<br />';
-        }
-    */
         $output .= timer_get_stoplight_options($name,$green,$red,$speechid);
         }
         return $output;
@@ -82,8 +76,14 @@ if(isset($_GET['demo'])) {
 }
 if($post->post_type != 'rsvpmaker')
 {
+    //test configuration, not associated with an event or club
     $name = 'Testy Tester';
     $email = 'testy@example.com';
+    //if last used more than 2 hours ago
+    $colorts = (int) get_post_meta($post->ID,'timing_timestamp',true);
+    if($colorts < strtotime('-2 hours'))
+        update_post_meta($post->ID,'timing_light_color','default');
+    update_post_meta($post->ID,'timing_timestamp',time());
 }
 
 if(isset($_GET['claim_timer']))
@@ -124,12 +124,22 @@ display: none;
 <?php    
 }
 ?>
+
 #viewcontrol {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 250px;
+    float: right;
+    max-width: 250px;
 }
+
+@media only screen and (max-width: 400px) {
+  #viewcontrol {
+    display: none;
+  }
+  #jitsi {
+      display: none;
+      width: 5px;
+  }
+}
+
 </style>
 <?php 
 if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
@@ -151,7 +161,8 @@ if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
 
 <p id="explanation">The background of this page (and the Popup Timer window) act as timing lights.</p>
 
-<div class="timer-controls">
+		<div id="timelog">
+        <div class="timer-controls">
 <?php
 $options = '';
 
@@ -265,13 +276,11 @@ for($i = 1; $i <= $count; $i++) {
 		}
 	  ?>
 	  </select>
-      <button id="greennow">Green</button> 
-      <button id="yellownow">Yellow</button> 
-      <button id="rednow">Red</button> 
+      <button id="greennow" class="colorbuttons">Green</button>
+      <button id="yellownow" class="colorbuttons">Yellow</button>
+      <button id="rednow" class="colorbuttons">Red</button>
 	</div>
 
-		<div id="timelog">
-        <div class="row" id="buttons" ></div>
 			<div id="smallcounter"></div>
 <?php
 
@@ -351,7 +360,8 @@ if(!empty($_GET['embed']) && empty($name))
 elseif(empty($_GET['embed']))
     {
         ?>
-<div id="jitsi" style="background-color: #fff; width: 800px;">
+<div id="jitsi" style="background-color: #fff;">
+<div style="width: 100px; float: right;"><button id="hideit">Hide Instructions</button></div>
 <p>This screen displays in 3 views: Normal (speaker view), Self Timer, and Timer (the person showing timing lights to others). In Timer view, the green, yellow, and red colors are broadcast to everyone watching the Normal view (with a delay of about 1 second).</p>
 <p>If you are listed on the agenda as Timer, the screen will open in Timer mode. Or you can use the dropdown list in the upper right hand corner to claim that role.</p>
 <p>How to set this up as a speaker:</p>
