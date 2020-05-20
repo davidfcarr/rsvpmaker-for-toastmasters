@@ -160,7 +160,7 @@ add_action('rest_api_init', function () {
      $votecheck_controller->register_routes();
      $gotvote_controller = new WPTContest_GotVote();
      $gotvote_controller->register_routes();
-     $timer_controller = new WPT_Timer_Color();
-     $timer_controller->register_routes();
+     //$timer_controller = new WPT_Timer_Color();
+     //$timer_controller->register_routes();
    } );
 ?>

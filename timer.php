@@ -96,7 +96,7 @@ $widthadj = ($is_timer) ? 100 : 50;
 <head>
   <meta charset="utf-8"/>
   <?php global $post; ?>
-  <title>Toastmasters Online Meeting</title>
+  <title>Timer: Toastmasters Online Meeting</title>
 
   <meta name="viewport" content="width=device-width"/>
 
@@ -362,6 +362,9 @@ elseif(empty($_GET['embed']))
         ?>
 <div id="jitsi" style="background-color: #fff;">
 <div style="width: 100px; float: right;"><button id="hideit">Hide Instructions</button></div>
+<h2>Normal / Speaker View of Timer Light Disabled</h2>
+<p><em>A redesigned version is under development. Our original design caused problems with the hosting service that serves toastmost.org and wp4toastmasters.com.</em></p>
+<hr />
 <p>This screen displays in 3 views: Normal (speaker view), Self Timer, and Timer (the person showing timing lights to others). In Timer view, the green, yellow, and red colors are broadcast to everyone watching the Normal view (with a delay of about 1 second).</p>
 <p>If you are listed on the agenda as Timer, the screen will open in Timer mode. Or you can use the dropdown list in the upper right hand corner to claim that role.</p>
 <p>How to set this up as a speaker:</p>

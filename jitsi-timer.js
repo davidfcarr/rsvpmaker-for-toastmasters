@@ -18,7 +18,7 @@ function colorChange(colorNow) {
         return;
     var url = jQuery('#seturl').val();
     console.log('send color '+colorNow+' to ' + url);
-    jQuery.post( url, { color: colorNow } );
+    //jQuery.post( url, { color: colorNow } );
 }
 
 function setBackgroundColor(color) {
@@ -51,6 +51,8 @@ function setBackgroundColor(color) {
 
 //audience check
 function checkColorChange() {
+    //todo - fix this
+    return;
     var url = jQuery('#seturl').val()+'?rand='+Math.random();
     //console.log('get url '+url);
     $.get( url, function( data ) {
@@ -72,10 +74,11 @@ function checkColorChange() {
     $('iframe').css("width", window.innerWidth - 50);
     $('#jitsi').css("left", '30px');
     $('.timer-controls').hide();
+    /*
     gotvotetimer = setInterval(function(){
     checkColorChange();	
     }, checkinterval);
-
+    */
      }
      else {
     $('#explanation').hide();
