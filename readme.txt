@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.4.1
-Stable tag: 3.8
+Stable tag: 3.8.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,11 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.8.1 =
+
+* It is now possible to have multiple blocks of roles with the same name -- for example, 2 Speaker blocks separated by Table Topics or a break in the agenda -- without messing up the Speaker counts and data. So the first block might be Speaker 1, 2, and 3 while the second is 4, 5, and 6 (assuming both have the count parameter set to 3).
+* Items from the agenda menu now mirrored on the dashboard (more complete access to agenda functions)
 
 = 3.8 =
 

@@ -227,5 +227,18 @@ var user_id = $('#user_id').val();
 		$('#was' + datepost).val(takerole);
   });
 });	
-	
+
+$('.dashdate').mouseover(
+	function () {
+		var dateid = $(this).attr('id');
+		$('#'+dateid+' .has-sub li').show();
+	}
+);
+$('.dashdate').mouseout(
+	function () {
+		var dateid = $(this).attr('id');
+		$('#'+dateid+' .has-sub li').hide();
+	}
+);
+
 })( jQuery );

@@ -1,10 +1,103 @@
+jQuery(document).ready(function($) {
+
 var greenchime = true;
 var yellowchime = true;
 var redchime = true;
 var colorWin;
 var colorWinOpened = false;
+var colorNow = 'default';
+var gotvotetimer;
+var checkinterval = 1500 + Math.floor(Math.random()*1000);
 
-//$('.nudge').hide();
+//timer send
+function colorChange(colorNow) {
+    var view = $('#view').children("option:selected").val();
+    console.log('color change:'+colorNow);
+    console.log('view:'+view);
+    if(view != 'timer')
+        return;
+    var url = jQuery('#seturl').val();
+    console.log('send color '+colorNow+' to ' + url);
+    //jQuery.post( url, { color: colorNow } );
+}
+
+function setBackgroundColor(color) {
+    var colorCode = $('body').css('background-color');
+    var colorLabel;
+    if(color == 'green') {
+        colorCode = '#A7DA7E';
+        colorLabel = 'Green';
+    } else if (color == 'yellow') {
+        colorCode = '#FCDC3B';
+        colorLabel = 'Yellow';
+    } else if (color == 'red') {
+        colorCode = '#FF4040';
+        colorLabel = 'Red';
+    }
+    else if(color == 'start') {
+        colorLabel = 'Timing...';        
+    }
+    else {
+        colorCode = '#EFEEEF';
+        colorLabel = 'Ready';
+    }
+
+    $('body').css('background-color', colorCode);
+    if(colorWinOpened) {
+        colorWin.document.body.style.backgroundColor = colorCode;
+        colorWin.document.getElementById('popuplabel').innerHTML = colorLabel;
+    }
+} 
+
+//audience check
+function checkColorChange() {
+    //todo - fix this
+    return;
+    var url = jQuery('#seturl').val()+'?rand='+Math.random();
+    //console.log('get url '+url);
+    $.get( url, function( data ) {
+    if(colorNow == data)
+        return;
+    colorNow = data;
+    setBackgroundColor(colorNow);
+    //console.log(data);
+    });
+}
+
+ function refreshView() {
+     var view = $('#view').children("option:selected").val();
+     var interval = 1500 + Math.floor(Math.random()*1000);
+     console.log('view: '+view);
+     if(view == 'normal')
+     {
+    $('iframe').css("height", window.innerHeight - 50);
+    $('iframe').css("width", window.innerWidth - 50);
+    $('#jitsi').css("left", '30px');
+    $('.timer-controls').hide();
+    /*
+    gotvotetimer = setInterval(function(){
+    checkColorChange();	
+    }, checkinterval);
+    */
+     }
+     else {
+    $('#explanation').hide();
+    $('iframe').css("height", window.innerHeight - 50);
+    $('iframe').css("width", window.innerWidth - 100);
+    $('.timer-controls').show();
+    $('#jitsi').css("left", '100px');
+        if(gotvotetimer)
+           stopRefreshReceived();
+     }
+
+} 
+
+function stopRefreshReceived() {
+  clearInterval(gotvotetimer);
+}
+
+refreshView(); // initial load
+$('#view').change(refreshView);
 
 var SpeechType = (function () {
     function SpeechType(name, greenTime, yellowTime, redTime, id) {
@@ -34,9 +127,9 @@ var TSTimer = (function () {
                 _this.activateSpeech($(event.target).attr('id'));
             });
             newButton.appendTo('#buttons');
-			buttoncount++;
-			if((buttoncount % 9) == 0)
-				$('#buttons').append('<br />&nbsp;<br />');
+			//buttoncount++;
+			//if((buttoncount % 9) == 0)
+				$('#buttons').append('<br />');
         });
 
         $(window).resize(function () {
@@ -45,11 +138,11 @@ var TSTimer = (function () {
 
         this.resizeTime();
 		
-        $('#btnReset').click(function () {
+        $('.btnReset').click(function () {
             _this.resetButton();
         });
 
-        $('#btnStart').click(function () {
+        $('.btnStart').click(function () {
             _this.startButton();
         });
 
@@ -58,15 +151,15 @@ var TSTimer = (function () {
     TSTimer.prototype.resetButton = function () {
         if(this.started)
             this.stop();
+        if(colorNow != 'default')
+        {
+            colorNow = 'default';
+            colorChange(colorNow);
+            setBackgroundColor(colorNow);
+        }
         $('#correction').val('0');
 	    if($('#showdigits').is(':checked'))
 			$('#trafficlight').text('0:00');
-        $('body').css('background-color', '#EFEEEF');
-        if(colorWinOpened) {
-            colorWin.document.body.style.backgroundColor = '#EFEEEF';
-            colorWin.document.getElementById('popuplabel').innerHTML = 'Ready';
-        }
-		$('#colorlabel').html('');
         this.startTime = null;
 		greenchime = true;
 		yellowchime = true;
@@ -76,7 +169,7 @@ var TSTimer = (function () {
     TSTimer.prototype.startButton = function () {
         if (this.started) {
             if(colorWinOpened) {
-                colorWin.document.getElementById('popuplabel').innerHTML = 'Stopped';
+                colorWin.document.getElementById('popuplabel').innerHTML = 'Paused';
             }
             this.stop();
         } else {
@@ -84,7 +177,7 @@ var TSTimer = (function () {
                 colorWin.document.getElementById('popuplabel').innerHTML = 'Timing ...';
             }
             this.start();
-
+            colorChange('start');
         }
     };
 
@@ -103,44 +196,42 @@ var TSTimer = (function () {
 		$('#smallcounter').text(this.formattedTime);
 
 		if (elapsedSeconds >= this.red) {
-            $('body').css('background-color', '#FF4040');
-            if(colorWinOpened) {
-                colorWin.document.body.style.backgroundColor = '#FF4040';
-                colorWin.document.getElementById('popuplabel').innerHTML = 'Red';    
-            }
-            $('#colorlabel').html('Red');
+            if(colorNow != 'red')
+                {
+                    colorNow = 'red';
+                    colorChange(colorNow);
+                    setBackgroundColor(colorNow);
+                }
 			if(redchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				redchime = false;
 				}
         } else if (elapsedSeconds >= this.yellow) {
-            $('body').css('background-color', '#FCDC3B');
-			$('#colorlabel').html('Yellow');
-            if(colorWinOpened) {
-                colorWin.document.body.style.backgroundColor = '#FCDC3B';
-                colorWin.document.getElementById('popuplabel').innerHTML = 'Yellow';
-            }
+            if(colorNow != 'yellow')
+                {
+                    colorNow = 'yellow';
+                    colorChange(colorNow);
+                    setBackgroundColor(colorNow);
+                }
                 if(yellowchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				yellowchime = false;
 				}
         } else if (elapsedSeconds >= this.green) {
-            $('body').css('background-color', '#A7DA7E');
-            $('#colorlabel').html('Green');
-            if(colorWinOpened) {
-            colorWin.document.body.style.backgroundColor = '#A7DA7E';
-            colorWin.document.getElementById('popuplabel').innerHTML = 'Green';
-            }
+            if(colorNow != 'green')
+                {
+                    colorNow = 'green';
+                    colorChange(colorNow);
+                    setBackgroundColor(colorNow);                    
+                }
             if(greenchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				greenchime = false;
-				}
-		
+				}		
         }
-		
     };
 
     TSTimer.prototype.timerEvent = function () {
@@ -159,17 +250,6 @@ var TSTimer = (function () {
         this.setElementText(elapsedSeconds);
     };
     
-	$('#demo-green').click( function () {
-		this.startTime = new Date() - this.green;
-		alert('time' + this.startTime);
-	});
-	$('#demo-yellow').click( function () {
-		this.startTime = new Date() - this.yellow;
-	});
-	$('#demo-red').click( function () {
-		this.startTime = new Date() - this.red;
-	});
-	
     TSTimer.prototype.timeDiffInSeconds = function (earlyTime, lateTime) {
         var diff = lateTime.getTime() - earlyTime.getTime();
         return Math.floor(diff / 1000);
@@ -193,7 +273,7 @@ var TSTimer = (function () {
 
     TSTimer.prototype.start = function () {
         var _this = this;
-        $('#btnStart').html('Stop');
+        $('.btnStart').html('Pause');
         $('.hidecount').hide();
         
         this.started = true;
@@ -213,7 +293,7 @@ var TSTimer = (function () {
     };
 
     TSTimer.prototype.stop = function () {
-        $('#btnStart').html('Start');
+        $('.btnStart').html('Start');
         this.started = false;
         this.stopTime = new Date();
         $('.hidecount').show();
@@ -226,7 +306,7 @@ var TSTimer = (function () {
     };
 
 	TSTimer.prototype.logStopTime = function () {
-		var speechid = $('.active-speech').attr('id');
+		var speechid = $('#speechid').val();
 		var speakerName = $('#speakername').val();
 		if(!speakerName)
 			speakerName = '?';
@@ -273,30 +353,37 @@ var TSTimer = (function () {
 
 $(document).ready(function () {
     var speeches = [];
+    speeches.push(new SpeechType("Standard", "5:00", "6:00", "7:00", "st-standard"));
     speeches.push(new SpeechType("Table&nbsp;Topics", "1:00", "1:30", "2:00", "st-table-topics"));
     speeches.push(new SpeechType("Evaluation", "2:00", "2:30", "3:00", "st-evaluation"));
     speeches.push(new SpeechType("Icebreaker", "4:00", "5:00", "6:00", "st-icebreaker"));
-    speeches.push(new SpeechType("Standard", "5:00", "6:00", "7:00", "st-standard"));
-    speeches.push(new SpeechType("8-10 min", "8:00", "9:00", "10:00", "st-advanced"));
-    speeches.push(new SpeechType("10-15 min", "10:00", "13:00", "15:00", "st-fifteen"));
-    speeches.push(new SpeechType("15-20 min", "15:00", "18:00", "20:00", "st-twenty"));
-    speeches.push(new SpeechType("One Minute", "0:30", "0:45", "1:00", "st-minute"));
-    speeches.push(new SpeechType("Test", "0:02", "0:04", "0:06", "st-test"));
-	$('.agenda_speakers').each(function( index ) {
-  		speeches.push(new SpeechType($( this ).val(), $( this ).attr('green'), $( this ).attr('yellow'), $( this ).attr('red'), "agenda-speech" + index));
-	});
     var timer = new TSTimer(speeches);
     timer.setDefault();	
 
 $('#popup').click(function(){
-    console.log(rect);
-    colorWin = window.open("about:blank", "Color Light", "width=200,height=200");
-    //colorWin.onblur = () => colorWin.focus();
-    //colorWin.onblur = () => console.log('color popup lost focus');
-    colorWinOpened = true;
-    colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 20vw; text-align: center; margin-top: 20vw\">Ready</h1><body>");
-colorWin.document.body.style.backgroundColor = '#DDDDDD';
-colorWin.document.title = 'Timing Light';
+    if(colorWinOpened)
+        colorWin.focus();
+    else {
+        colorWin = window.open("about:blank", "Color Light", "width=200,height=100,top=50,left=0");
+        colorWinOpened = true;
+        colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 20vw; text-align: center; margin-top: 10vw\">Ready</h1></body>");
+        colorWin.document.body.style.backgroundColor = '#DDDDDD';
+        colorWin.document.title = 'Timing Light';
+        //window.resizeBy(window.innerWidth,50);
+    }
+return false;
+}); 
+
+$('#timerpopup').click(function(){
+    if(typeof timerWin !== 'undefined')
+        timerWin.focus();
+    else {
+        timerWin = window.open("about:blank", "Timer", "width=200,height=200,top=300,left=0");
+        timerWin.document.write("<body><p><button class=\"btn-primary btnStart\" type=\"button\" value=\"Start\">Start</button></p><p><button class=\"btn-default btnReset\" type=\"button\" value=\"Reset\">Reset</button></p></body>");
+        timerWin.document.body.style.backgroundColor = '#DDDDDD';
+        timerWin.document.title = 'Timer';
+        //window.resizeBy(window.innerWidth,50);
+    }
 return false;
 }); 
 
@@ -308,4 +395,48 @@ $('form#voting').submit(function(){
     }
 }); 
 
+$(document).on( 'change', '#dropdowntime', function() {
+    var timevars = $('#dropdowntime').val();
+    var parts = timevars.split('|');
+    $('#speakername').val(parts[0]);
+    $('#green-light').val(parts[1]);
+    $('#yellow-light').val(parts[2]);
+    $('#red-light').val(parts[3]);
+    $('#speechid').val(parts[4]);
 });
+
+$('#rednow').click(
+    function () {
+        $('body').css('background-color', '#FF4040');
+        colorNow = 'red';
+        colorChange(colorNow);
+        setBackgroundColor(colorNow);
+    }
+);
+$('#yellownow').click(
+    function () {
+        $('body').css('background-color', '#FCDC3B');
+        colorNow = 'yellow';
+        colorChange(colorNow);
+        setBackgroundColor(colorNow);
+    }
+);
+
+$('#greennow').click(
+    function () {
+        $('body').css('background-color', '#A7DA7E');
+        colorNow = 'green';
+        colorChange(colorNow);
+        setBackgroundColor(colorNow);
+    }
+);
+
+$('#hideit').click (
+    function() {
+        $('#jitsi').hide();
+    }
+);
+
+});
+
+});//end jquery closure

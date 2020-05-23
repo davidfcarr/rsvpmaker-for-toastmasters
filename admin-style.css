@@ -67,3 +67,12 @@ section#edit td {
 text-align: left;
 border: none;
 }
+
+.has-sub li {
+	display: none;
+	margin-left: 15px;
+}
+
+.dashdate {
+	padding-bottom: 5px;
+}

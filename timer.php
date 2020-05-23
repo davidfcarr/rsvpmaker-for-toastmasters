@@ -101,7 +101,7 @@ $widthadj = ($is_timer) ? 100 : 50;
   <meta name="viewport" content="width=device-width"/>
 
   <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/jitsi-timer.css?v='.time()); ?>" rel="stylesheet" />
+  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=202005'); ?>" rel="stylesheet" />
  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -110,7 +110,7 @@ $widthadj = ($is_timer) ? 100 : 50;
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/jitsi-timer.js?v='.time());?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=202005');?>"></script>
 <style>
 <?php 
 if(isset($_GET['embed']) && ($_GET['embed'] == 'zoom'))
