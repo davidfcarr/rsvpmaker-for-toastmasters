@@ -121,7 +121,7 @@ select {
 #jitsi {
     position: absolute;
     top: 30px;
-    left: 30px;
+    left: 100px;
 }
 
 #timelog {

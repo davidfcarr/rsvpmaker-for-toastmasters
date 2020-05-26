@@ -120,10 +120,10 @@ class WPTContest_GotVote extends WP_REST_Controller {
 }
 //check for update_post_meta($post_id,'tm_vote_received'.$index,true);
 
-class WPT_Timer_Color extends WP_REST_Controller {
+class WPT_Timer_Control extends WP_REST_Controller {
 	public function register_routes() {
 	  $namespace = 'toasttimer/v1';
-	  $path = 'color/(?P<post_id>[0-9]+)';///(?P<nonce>.+)
+	  $path = 'control/(?P<post_id>[0-9]+)';///(?P<nonce>.+)
   
 	  register_rest_route( $namespace, '/' . $path, [
 		array(
@@ -139,15 +139,17 @@ class WPT_Timer_Color extends WP_REST_Controller {
 	}
   
   public function get_items($request) {
-	if(isset($_POST['color']))
+	if(!empty($_POST))
 		{
-			$color = sanitize_text_field($_POST['color']);
-			if(strlen($color) < 15)
-			update_post_meta($request['post_id'],'timing_light_color',$color);
+			$control = $_POST;
+			update_post_meta($request['post_id'],'timing_light_control',$control);
 		}
-	else
-		$color = get_post_meta($request['post_id'],'timing_light_color',true);
-	  return new WP_REST_Response($color, 200);
+	//else
+		$control = get_post_meta($request['post_id'],'timing_light_control',true);
+	rsvpmaker_debug_log($request,'timing light API request');
+	rsvpmaker_debug_log($_REQUEST,'timing light server request');
+	rsvpmaker_debug_log($control,'timing light control');
+	  return new WP_REST_Response($control, 200);
 	}
 }
 
@@ -160,7 +162,7 @@ add_action('rest_api_init', function () {
      $votecheck_controller->register_routes();
      $gotvote_controller = new WPTContest_GotVote();
      $gotvote_controller->register_routes();
-     //$timer_controller = new WPT_Timer_Color();
-     //$timer_controller->register_routes();
+     $timer_controller = new WPT_Timer_Control();
+     $timer_controller->register_routes();
    } );
 ?>

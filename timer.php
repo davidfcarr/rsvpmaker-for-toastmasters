@@ -101,7 +101,7 @@ $widthadj = ($is_timer) ? 100 : 50;
   <meta name="viewport" content="width=device-width"/>
 
   <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=202005'); ?>" rel="stylesheet" />
+  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=0525'); ?>" rel="stylesheet" />
  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -110,7 +110,7 @@ $widthadj = ($is_timer) ? 100 : 50;
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=202005');?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=202005'.time());?>"></script>
 <style>
 <?php 
 if(isset($_GET['embed']) && ($_GET['embed'] == 'zoom'))
@@ -162,6 +162,10 @@ if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
 <p id="explanation">The background of this page (and the Popup Timer window) act as timing lights.</p>
 
 		<div id="timelog">
+        <div id="checkcontrols">
+        <div id="checkstatus"></div>
+        <p><button id="checknow">Check Now</button></p>
+        </div>
         <div class="timer-controls">
 <?php
 $options = '';
@@ -276,9 +280,11 @@ for($i = 1; $i <= $count; $i++) {
 		}
 	  ?>
 	  </select>
+      <div class="hidecount">
       <button id="greennow" class="colorbuttons">Green</button>
       <button id="yellownow" class="colorbuttons">Yellow</button>
       <button id="rednow" class="colorbuttons">Red</button>
+      </div>
 	</div>
 
 			<div id="smallcounter"></div>
@@ -348,7 +354,7 @@ echo $contest_timer;
 
     </div>
   </div>
-  <input type="hidden" id="seturl" value="<?php echo site_url('/wp-json/toasttimer/v1/color/'.$post->ID); ?>" />
+  <input type="hidden" id="seturl" value="<?php echo site_url('/wp-json/toasttimer/v1/control/'.$post->ID); ?>" />
 </div>
 <?php
 if(!empty($_GET['embed']) && empty($name))
