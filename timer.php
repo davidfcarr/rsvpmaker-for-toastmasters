@@ -110,7 +110,7 @@ $widthadj = ($is_timer) ? 100 : 50;
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=202005'.time());?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=777').time();?>"></script>
 <style>
 <?php 
 if(isset($_GET['embed']) && ($_GET['embed'] == 'zoom'))
@@ -288,6 +288,7 @@ for($i = 1; $i <= $count; $i++) {
 	</div>
 
 			<div id="smallcounter"></div>
+            <div id="logentries"></div>
 <?php
 
 if(isset($_REQUEST['contest']))
@@ -368,10 +369,10 @@ elseif(empty($_GET['embed']))
         ?>
 <div id="jitsi" style="background-color: #fff;">
 <div style="width: 100px; float: right;"><button id="hideit">Hide Instructions</button></div>
-<h2>Normal / Speaker View of Timer Light Disabled</h2>
-<p><em>A redesigned version is under development. Our original design caused problems with the hosting service that serves toastmost.org and wp4toastmasters.com.</em></p>
+<h2>May 2020 Update</h2>
+<p><em>In normal view, this tool checks the server for updates every 15 seconds and calculates the difference between the viewer's clock and the Timer's clock. Display of green, yellow, and red will be synchronized. The message that the timer has stopped the clock may be delayed by up to 15 seconds (in other words, you may see red even if the Timer has already stopped the clock).</em></p>
 <hr />
-<p>This screen displays in 3 views: Normal (speaker view), Self Timer, and Timer (the person showing timing lights to others). In Timer view, the green, yellow, and red colors are broadcast to everyone watching the Normal view (with a delay of about 1 second).</p>
+<p>This screen displays in 3 views: Normal (speaker view), Self Timer, and Timer (the person showing timing lights to others). In Timer view, the green, yellow, and red colors are broadcast to everyone watching the Normal view (with a delay of about 1 second). Only one person should act as Timer.</p>
 <p>If you are listed on the agenda as Timer, the screen will open in Timer mode. Or you can use the dropdown list in the upper right hand corner to claim that role.</p>
 <p>How to set this up as a speaker:</p>
 <ul><li>In Normal view, click the Popup Light button in the upper right hand corner of the screen to get a small popup window that will change colors.</li><li>You can now minimize the bigger browser window and leave the timing light window parked in a corner of your screen.</li><li>In Zoom, exit full screen and size the Zoom window so you can still see the timing light.</li><li>For screen sharing, share individual applications rather than your whole desktop.</li></ul>

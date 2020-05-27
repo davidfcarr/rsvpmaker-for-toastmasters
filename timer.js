@@ -7,60 +7,30 @@ var colorWin;
 var colorWinOpened = false;
 var colorNow = 'default';
 var gotvotetimer;
-var checksequence = [];
-var checkstart;
-var checkelapsed;
-var nextcheck = 1;
 var timer;
-var timerstarted = false;
 var speeches = [];
 var timeNow = 0;
 var correction = 0;
+var lastdata;
+var lastupdate = 0;
 
-function setChecksequence() {
-    checksequence = [];
-    //semi random sequence up to 8 minutes in seconds, slowing toward the end
-    for(i = 5; i < 480; i+= (5 + Math.ceil(Math.random()*10)) ) {
-        //next = Math.ceil(Math.random()*(2 * i)) + 1 + next;
-        checksequence.push(i);
+function timeoutCheck() {
+    var beenwaiting = new Date().getTime();
+    var diff = beenwaiting - lastupdate;
+    console.log('beenwaiting '+beenwaiting+' - lastupdate '+lastupdate+' = ' + diff);
+    if(lastupdate) {
+        if(diff >  1200000) //1200000 = 20 minutes
+            {
+                $('#checkstatus').html('Timed out. Click <strong>Check Now</strong> to restart');
+                return true;
+            } 
     }
-    console.log(checksequence);
-    checkstart = Math.floor(new Date().getTime() / 1000);
-    checkelapsed = 0;
-    nextcheck = 1;
+    return false;
 }
 
-function setTimerViewIntervals(start,green,yellow,red) {
-    checksequence = [];
-    //semi random sequence up to 8 minutes in seconds, slowing toward the end
-    for(i = 5; i < green; i+= (5 + Math.ceil(Math.random()*10)) ) {
-        //next = Math.ceil(Math.random()*(2 * i)) + 1 + next;
-        checksequence.push(i);
-    }
-    if(green > 60)
-    {
-        checksequence.push(green - 5);
-        checksequence.push(green);
-        checksequence.push(green + 5);
-    }
-    if(yellow > 60)
-    {
-        checksequence.push(yellow - 5);
-        checksequence.push(yellow);
-        checksequence.push(yellow + 5);
-    }
-    if(red > 60)
-    {
-        checksequence.push(red - 5);
-        checksequence.push(red);
-        checksequence.push(red + 5);
-    }
-    for(i=10; i < 120; i+=5)
-        checksequence.push(red + i);
-        console.log(checksequence);
-        checkstart = Math.floor(start/1000);
-        checkelapsed = 0;
-        nextcheck = 5;
+function isTimerView() {
+    var view = $('#view').children("option:selected").val();
+    return (view == 'timer');
 }
 
 function sendTimerSignal(signal) {
@@ -76,11 +46,6 @@ function sendTimerSignal(signal) {
 //timer send
 function colorChange(colorNow) {
     var view = $('#view').children("option:selected").val();
-    console.log('color change:'+colorNow);
-    console.log('elapsed seconds '+checkelapsed);
-    console.log(timer.green);
-    console.log(timer.yellow);
-    console.log(timer.red);
     setBackgroundColor(colorNow);
 }
 
@@ -99,6 +64,7 @@ function setBackgroundColor(color) {
     }
     else if(color == 'start') {
         colorLabel = 'Timing...';        
+        colorCode = '#EFEEEF';
     }
     else {
         colorCode = '#EFEEEF';
@@ -106,151 +72,103 @@ function setBackgroundColor(color) {
     }
 
     $('body').css('background-color', colorCode);
-    if(colorWinOpened) {
+    if(colorWin) {
         colorWin.document.body.style.backgroundColor = colorCode;
         colorWin.document.getElementById('popuplabel').innerHTML = colorLabel;
     }
 } 
 
-function checkCheck () {
-    var view = $('#view').children("option:selected").val();
-    if(view != 'normal')
-        return;
-    var now;
-    var nowTime;
-    //var checkelapsed;
-    //console.log('checkColorChange() '+nextcheck);
-    if(!nextcheck)
-        {
-            console.log('timeout stop');
-            stopRefreshReceived();
-            return false;
-        }
-    if((view == 'normal') && !nowTime )
-        nowTime = new Date();
-    if(timer.startTime)
-    {
-        console.log('timer.startTime '+timer.startTime.toString());
+function audienceStartTimer(data) {
+    $('#green-light').val(data.green);
+    $('#yellow-light').val(data.yellow);
+    $('#red-light').val(data.red);
+    var ts = Date.parse(data.start);
+    timer = new TSTimer(speeches);
+    timer.start();
+    console.log('timer from server '+data.start);
+    console.log('start now set to '+timer.startTime.toTimeString());
+    correction = Math.round((timer.startTime.getTime() - ts)/1000);
+    console.log('local correction '+correction);
+    if(data.correction) {
+        correction += parseInt(data.correction);
+        console.log('remote correction '+data.correction);
     }
-    else {
-        nowTime = new Date();
-        now = Math.floor(nowTime.getTime() / 1000);
-        console.log('observertime '+ nowTime.toString());
-        checkelapsed = now - checkstart;
-    }
-    //console.log('checkColorChange() start '+checkstart);
-    //console.log('checkColorChange() now '+now);
-    //console.log('checkColorChange() next '+ nextcheck +' elapsed '+checkelapsed);
-    var countdown = nextcheck - checkelapsed;
-    console.log('nextcheck/elapsed '+nextcheck+':'+checkelapsed+' checkstart '+checkstart);
-    console.log('countdown '+countdown);
-    var thirtyplus = nextcheck + 30;
-    if(countdown < 0)
-    {
-        nextcheck = checksequence.shift();
-        if(!nextcheck)
-            nextcheck = thirtyplus;
-    }
-    if(checkelapsed == nextcheck) {
-        nextcheck = checksequence.shift();
-        return true; 
-    }
-    else {
-        console.log('nextcheck/elapsed '+nextcheck+':'+checkelapsed+' checkstart '+checkstart);
-        if( (countdown < -60 ) || (countdown > 500) )
-            {
-                nextcheck = checksequence.shift();
-                //console.log('sequence error next '+nextcheck+' elapsed' + checkelapsed);
-                if(timerstarted || timer.started) {
-                stopRefreshReceived();
-                checkelapsed = 0;
-                timer.stop();
-                timerstarted = false;
-                }
-                $('#checkstatus').html('timed out');
-            }
-            else {
-                if(timer.started || timerstarted)
-                    $('#checkstatus').html('checking in ' + countdown);
-                else
-                    $('#checkstatus').html('');
-                console.log('checking in ' + countdown);                  
-            }
-            return false;
-    }
+    console.log('correction '+correction);
+    $('#checkstatus').text('Timer started with '+correction+' second adjustment');
 }
 
 //audience check
 function checkColorChange() {
-    if(checkCheck())
-    {
-    console.log('checking at '+checkelapsed);
-    //todo - fix this
+    if(timeoutCheck())
+        {
+            stopRefreshReceived();
+            return;
+        }
+    $('checkstatus').html('Checking server for updates');
     var url = jQuery('#seturl').val();
-        console.log('get url '+url);
         $.get( url, function( data ) {
-        console.log(data);
-        console.log('timer started '+timer.started);
-        if(data.status && (data.status=='start') )
+        if(!lastdata || (data.status=='keepalive') || (lastdata.status && (lastdata.status != data.status)) )
+            lastupdate = new Date().getTime();
+        //console.log(data);
+        if(data.status && ((data.status=='start') || (data.status=='keepalive')) )
             {
-                if(timerstarted)
+                if(timer && timer.started)
                     {
                         console.log('timer already started');
-                        return;
+                        if(lastdata.green) {
+                            if((data.green != lastdata.green) || (data.yellow != lastdata.yellow) || (data.red != lastdata.red) || (data.correction != lastdata.correction) ) {
+                                audienceStartTimer(data);
+                                //adjust as necessary
+                                console.log('data CHANGED');
+                                console.log(data);
+                                lastdata = data;
+                                lastupdate = new Date().getTime();
+                            }
+                            else
+                                console.log('data unchanged');
+                        }
                     }
                 else {
-                $('#smallcounter').text('Timer started');    
-                //stopRefreshReceived();
                 console.log('start timer');
-                $('#green-light').val(data.green);
-                $('#yellow-light').val(data.yellow);
-                $('#red-light').val(data.red);
-                //timer.setStart(data.start);
-                //timer.startTime = new Date();
-                var ts = Date.parse(data.start);
-                /*
-                var newstarttime = new Date();
-                newstarttime.setTime(ts);
-                nowTime = newstarttime;
-                */
-                timer = new TSTimer(speeches);
-                timer.start();
-                console.log('timer from server '+data.start);
-                console.log('start now set to '+timer.startTime.toTimeString());
-                //console.log('start time' + ts);
-                correction = Math.round((timer.startTime.getTime() - ts)/1000);
-                console.log('correction '+correction);
-                setTimerViewIntervals(ts,timer.green,timer.yellow,timer.red);
-                timerstarted = true;
+                colorChange('start');
+                audienceStartTimer(data);
+                lastdata = data;
                 }
             }
         else if(data.status && (data.status=='stop'))
             {
-                timestarted = false;
-                stopRefreshReceived();
+            if(timer && timer.started)
+                timer.resetButton();
+                $('#checkstatus').text('Timer reset');
            }
     });
-
-    }
+    if(timer && timer.started)
+        setTimeout(function(){ $('#checkstatus').text('Timing ...'); }, 2000);
+    else
+        setTimeout(function(){ $('#checkstatus').text('Waiting ...'); }, 2000);
 }
 
- function refreshView() {
+function refreshView() {
      var view = $('#view').children("option:selected").val();
-     stopRefreshReceived();
      console.log('switch view: '+view);
      if(view == 'normal')
      {
     if(timer && timer.started)
         window.location.replace(window.location.href);
-    timerstarted = false;
+    $('#smallcounter').html('');
+    $('#logentries').html('');
     $('iframe').css("height", window.innerHeight - 50);
     $('iframe').css("width", window.innerWidth - 100);
     $('.timer-controls').hide();
     $('#checkcontrols').show();
-    setChecksequence();
-    gotvotetimer = setInterval(function(){
+    checkColorChange(); // check now
+/*    gotvotetimer = setInterval(function(){
     checkColorChange();	
-    }, 1000);
+    }, 15000);
+*/
+    $('#checkstatus').html('Click <strong>Check Now</strong> to start checking for Timer updates');
+    if(timer)
+        timer.resetButton();
      }
      else {
     $('#explanation').hide();
@@ -258,9 +176,8 @@ function checkColorChange() {
     $('iframe').css("height", window.innerHeight - 50);
     $('iframe').css("width", window.innerWidth - 100);
     $('.timer-controls').show();
-    timerstarted = false;
-        if(gotvotetimer)
-           stopRefreshReceived();
+    if(gotvotetimer)
+        stopRefreshReceived();
      }
      if(timer)
         timer.stop();
@@ -268,32 +185,16 @@ function checkColorChange() {
 
 function stopRefreshReceived() {
   clearInterval(gotvotetimer);
-  if(timer && timer.started)
-    {
-        timer.resetButton();
-    }
-  checkelapsed = checkstart = 0;
-  console.log('stop timer');
-  $('#smallcounter').text('Timer reset');
-  $('#checkstatus').text('');
-  var view = $('#view').children("option:selected").val();
-  if(view == 'normal') {
-    setChecksequence();
-    gotvotetimer = setInterval(function(){
-    checkColorChange();	
-    }, 1000);  
-  }
 }
 
 refreshView(); // initial load
 $('#view').change(refreshView);
 
 $('#popup').click(function(){
-    if(colorWinOpened)
+    if(colorWin)
         colorWin.focus();
     else {
         colorWin = window.open("about:blank", "Color Light", "width=200,height=100,top=50,left=0");
-        colorWinOpened = true;
         colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 20vw; text-align: center; margin-top: 10vw\">Ready</h1></body>");
         colorWin.document.body.style.backgroundColor = '#DDDDDD';
         colorWin.document.title = 'Timing Light';
@@ -333,6 +234,15 @@ $(document).on( 'change', '#dropdowntime', function() {
     $('#speechid').val(parts[4]);
 });
 
+$(document).on( 'change', '#correction', function() {
+    correction = parseInt($('#correction').val());
+    if(timer && timer.started)
+    {
+        var signal = {status: 'start', start: timer.startTime.toString(), green: $('#green-light').val(), yellow: $('#yellow-light').val(),red: $('#red-light').val(), correction: $('#correction').val() };
+        sendTimerSignal(signal);    
+    }
+});
+
 $('#rednow').click(
     function () {
         $('body').css('background-color', '#FF4040');
@@ -361,10 +271,11 @@ $('#greennow').click(
 
 $('#checknow').click(
     function () {
-setChecksequence();
+lastupdate = 0;
+checkColorChange();
 gotvotetimer = setInterval(function(){
 checkColorChange();	
-}, 1000);
+}, 15000);
 }
 );
 
@@ -384,8 +295,6 @@ var TSTimer = (function () {
             console.log('initialize start time');    
             console.log(this.startTime);
         }
-		var buttoncount = 0;
-		var current_name = null;
 		this.audioElement = document.createElement('audio');
 		this.audioElement.setAttribute('src', $('#chimeurl').val());
 
@@ -395,8 +304,6 @@ var TSTimer = (function () {
                 _this.activateSpeech($(event.target).attr('id'));
             });
             newButton.appendTo('#buttons');
-			//buttoncount++;
-			//if((buttoncount % 9) == 0)
 				$('#buttons').append('<br />');
         });
 
@@ -414,7 +321,6 @@ var TSTimer = (function () {
             _this.startButton();
         });
 
-        //$('#btnNudge').click(function() { _this.startTime = _this.startTime -5; console.log('start: '+ _this.startTime); });
     }
     TSTimer.prototype.resetButton = function () {
         if(this.started)
@@ -423,7 +329,6 @@ var TSTimer = (function () {
         {
             colorNow = 'default';
             colorChange(colorNow);
-            //setBackgroundColor(colorNow);
         }
         correction = 0;
 	    if($('#showdigits').is(':checked'))
@@ -432,7 +337,6 @@ var TSTimer = (function () {
 		greenchime = true;
 		yellowchime = true;
         redchime = true;
-        checkelapsed = 0;
     };
 
     TSTimer.prototype.startButton = function () {
@@ -457,24 +361,54 @@ var TSTimer = (function () {
     };
 
     TSTimer.prototype.setElementText = function (elapsedSeconds) {
-        checkelapsed = elapsedSeconds;
 		this.formattedTime = this.formatTime(elapsedSeconds);
-		if($('#showdigits').is(':checked'))
-			$('#trafficlight').text(this.formattedTime);
-		else
-			$('#trafficlight').html('<img src="' + $('#stopwatchurl').val() + '" />');
-            var view = $('#view').children("option:selected").val();
+        var view = $('#view').children("option:selected").val();
             if(view == 'timer') {
                 $('#smallcounter').text(this.formattedTime);
             }
-            else 
-                console.log(this.formattedTime);
-		if (elapsedSeconds >= this.red) {
+            //else 
+                //console.log(this.formattedTime);
+            if((this.red > 4000) && ( elapsedSeconds == 4000 ) ) {//about 64 minutes
+                    if(colorNow != 'keepalive4000') {
+                        console.log(4000);
+                        var signal = {status: 'keepalive', start: timer.startTime.toString(), green: $('#green-light').val(), yellow: $('#yellow-light').val(),red: $('#red-light').val(), correction: $('#correction').val() };
+                        sendTimerSignal(signal);
+                    }
+                    colorNow = 'keepalive4000';
+                    //for long speeches, prevent timeout
+                }
+            else if((this.red > 3000) && ( elapsedSeconds == 3000 ) ) {//about 48 minutes
+                if(colorNow != 'keepalive3000') {
+                    console.log(3000);
+                    var signal = {status: 'keepalive', start: timer.startTime.toString(), green: $('#green-light').val(), yellow: $('#yellow-light').val(),red: $('#red-light').val(), correction: $('#correction').val() };
+                    sendTimerSignal(signal);
+                }
+                colorNow = 'keepalive3000';
+                //for long speeches, prevent timeout
+            }
+            else if((this.red > 2000) && ( elapsedSeconds == 2000 ) ) {//about 32 minutes
+                if(colorNow != 'keepalive2000') {
+                    console.log(2000);
+                    var signal = {status: 'keepalive', start: timer.startTime.toString(), green: $('#green-light').val(), yellow: $('#yellow-light').val(),red: $('#red-light').val(), correction: $('#correction').val() };
+                    sendTimerSignal(signal);
+                }
+                colorNow = 'keepalive2000';
+                //for long speeches, prevent timeout
+            }
+            else if ((elapsedSeconds == 1000)) {//about 16 minutes
+                if(colorNow != 'keepalive') {
+                    console.log(1000);
+                    var signal = {status: 'keepalive', start: timer.startTime.toString(), green: $('#green-light').val(), yellow: $('#yellow-light').val(),red: $('#red-light').val(), correction: $('#correction').val() };
+                    sendTimerSignal(signal);
+                }
+                colorNow = 'keepalive';
+                //for long speeches, prevent timeout
+            }
+            else if (elapsedSeconds >= this.red) {
             if(colorNow != 'red')
                 {
                     colorNow = 'red';
                     colorChange(colorNow);
-                    //setBackgroundColor(colorNow);
                 }
 			if(redchime && $('#playchime').is(':checked'))
 				{
@@ -486,7 +420,6 @@ var TSTimer = (function () {
                 {
                     colorNow = 'yellow';
                     colorChange(colorNow);
-                    //setBackgroundColor(colorNow);
                 }
                 if(yellowchime && $('#playchime').is(':checked'))
 				{
@@ -498,38 +431,31 @@ var TSTimer = (function () {
                 {
                     colorNow = 'green';
                     colorChange(colorNow);
-                    //setBackgroundColor(colorNow);                    
                 }
             if(greenchime && $('#playchime').is(':checked'))
 				{
 				this.audioElement.play();
 				greenchime = false;
 				}		
-        }
+        } 
+        
     };
 
     TSTimer.prototype.timerEvent = function () {
         if (!this.startTime) {
             this.startTime = new Date();
         }
-        if(!timeNow)
-            {
-            timeNow = this.startTime;
-            }
-        else {
-            timeNow = new Date(); //.setTime( timeNow.getTime() + 1000 );
-        }
-        console.log('time now');
-        console.log(timeNow);
+        timeNow = new Date();
+        if(isTimerView())
+            correction = parseInt( $("#correction").val() );
         var elapsedSeconds = this.timeDiffInSeconds(this.startTime, timeNow)  + correction;
-        this.setElementText(elapsedSeconds);
+        var timetest = new Date().getTime() % 1000;
+        //console.log('time since last second' + timetest);
+        if(timetest < 100)
+            this.setElementText(elapsedSeconds);
     };
     
     TSTimer.prototype.timeDiffInSeconds = function (earlyTime, lateTime) {
-        //console.log('145');
-        //console.log(earlyTime);
-        //console.log('147');
-        //console.log(lateTime);
         var diff = lateTime.getTime() - earlyTime.getTime();
         return Math.floor(diff / 1000);
     };
@@ -539,11 +465,9 @@ var TSTimer = (function () {
         var seconds = elapsedSeconds % 60;
 		if(elapsedSeconds > this.overtime) {
             this.disqualified = true;
-            //console.log('elapsed '+elapsedSeconds+' over '+ this.overtime);
         }
         else if (elapsedSeconds < this.undertime) {
             this.disqualified = true;
-            //console.log('elapsed '+elapsedSeconds+' under '+ this.undertime);
         }
 		else
 			this.disqualified = false;
@@ -564,14 +488,16 @@ var TSTimer = (function () {
         this.green = this.getSecondsFromTextBox('#green-light');
         this.yellow = this.getSecondsFromTextBox('#yellow-light');
         this.red = this.getSecondsFromTextBox('#red-light');
-        var signal = {status: 'start', start: new Date().toString(), green: $('#green-light').val(), yellow: $('#yellow-light').val(),red: $('#red-light').val() };
+        var signal = {status: 'start', start: new Date().toString(), green: $('#green-light').val(), yellow: $('#yellow-light').val(),red: $('#red-light').val(), correction: $('#correction').val() };
         sendTimerSignal(signal);
+        $('#explanation').html($('#green-light').val() + ' - '+$('#red-light').val());
+        $('#explanation').show();
 		this.undertime = this.green - 30;
 		this.overtime = this.red + 30;
 		this.disqualified = true;
         this.timerToken = setInterval(function () {
             return _this.timerEvent();
-        }, 1000);
+        }, 100);
     };
 
     TSTimer.prototype.stop = function () {
@@ -580,7 +506,6 @@ var TSTimer = (function () {
         this.stopTime = new Date();
         clearInterval(this.timerToken);
         $('.hidecount').show();
-        //$('.nudge').hide();
 		if($('#showdigits').is(':checked'))
 			$('#trafficlight').text(this.formattedTime);
         var view = $('#view').children("option:selected").val();
@@ -593,6 +518,8 @@ var TSTimer = (function () {
     };
 
 	TSTimer.prototype.logStopTime = function () {
+        if((typeof this.formattedTime == 'undefined') || (this.formattedTime == 'undefined') )
+            return;
 		var speechid = $('#speechid').val();
 		var speakerName = $('#speakername').val();
 		if(!speakerName)
@@ -604,7 +531,7 @@ var TSTimer = (function () {
         else
             $('#disqualified'+speechid).prop('checked', false);
 		$('#actualtime'+speechid).val(this.formattedTime);
-        $('#timelog').append('<p>' + speakerName + ' ' + this.formattedTime + '</p>');
+        $('#logentries').append('<p>' + speakerName + ' ' + this.formattedTime + '</p>');
 	};
 
     TSTimer.prototype.getSecondsFromTextBox = function (id) {
