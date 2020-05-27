@@ -4,7 +4,7 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.8.3
+Version: 3.8.5
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
@@ -42,6 +42,7 @@ if(isset($_GET['email_agenda']))
 	global $email_context;
 	$email_context = true;
 }
+
 
 add_filter( 'login_message', 'wp4toast_login_message' );
 add_filter('the_content','awesome_event_content');
@@ -1181,10 +1182,11 @@ function speaker_details_agenda ($field,$assigned) {
 function toastmasters_agenda_display($atts) {
 	if(function_exists('toastmasters_agenda_display_custom'))
 		return  toastmasters_agenda_display_custom($atts);
-	global $post, $open, $rolestart;
-	$count = (empty($atts["count"])) ? 1 : $atts["count"];;
-	$start = (empty($rolestart[$atts['role']])) ? 1 : $rolestart[$atts['role']];
-
+	global $post, $open;
+	$count = (empty($atts["count"])) ? 1 : $atts["count"];
+	$start = (empty($atts['start'])) ? 1 : $atts['start'];
+	$start = 1;
+	
 		$field = $output = $startdiv = '';
 		$maxtime = (isset($atts["time_allowed"]) ) ? (int) $atts["time_allowed"] : 0;
 		$padding_time = (isset($atts["padding_time"])) ? (int) $atts["padding_time"] : 0;
@@ -1192,7 +1194,6 @@ function toastmasters_agenda_display($atts) {
 		$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
 		for($i = $start; $i < ($count + $start); $i++)
 			{
-			$rolestart[$atts['role']] = $i + 1;
 		if(isset($atts["indent"]) && $atts["indent"])
 			$output  .= "\n".'<div class="role-agenda-item indent">';
 		else
@@ -1277,12 +1278,10 @@ function toastmasters_agenda_display($atts) {
 		return $output;			
 }
 
-$rolestart = array();
-
 function toastmaster_short($atts=array(),$content="") {
 	if(isset($_GET['convert']))
 		return toastmaster_short_convert($atts);
-	global $tmroles, $rolestart;
+	global $tmroles;
 	$assigned = 0;
 	if(isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'agenda_timing') )
 		return timeplanner($atts, $content);
@@ -1303,11 +1302,10 @@ function toastmaster_short($atts=array(),$content="") {
 		else
 			$atts["role"] = $atts["custom_role"];
 		}
-	
+	$backup = $output = '';	
 	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
 	$count = (int) (isset($atts["count"])) ? $atts["count"] : 1;
-	$start = (empty($rolestart[$atts['role']])) ? 1 : $rolestart[$atts['role']];
-	$backup = $output = '';
+	$start = (empty($atts['start'])) ? 1 : $atts['start'];
 
 	if($atts["role"] == 'Speaker')
 		pack_speakers($count);
@@ -1328,7 +1326,6 @@ function toastmaster_short($atts=array(),$content="") {
 		$output .= '<h3>'.$atts["role"].'</h3><ul id="'.$field_base.'" class="tmsortable sortable">';
 		for($i = $start; $i < ($count + $start); $i++)
 			{
-			$rolestart[$atts['role']] = $i + 1;
 			$field = '_' . $field_base . '_' . $i;
 			$assigned = get_post_meta($post->ID, $field, true);
 			if($assigned == '-1')
@@ -1367,7 +1364,6 @@ function toastmaster_short($atts=array(),$content="") {
 		{
 		for($i = $start; $i < ($count + $start); $i++)
 			{
-			$rolestart[$atts['role']] = $i + 1;
 			$field = '_' . $field_base . '_' . $i;
 			$assigned = get_post_meta($post->ID, $field, true);
 			if($assigned == '-1')
@@ -1442,7 +1438,6 @@ function toastmaster_short($atts=array(),$content="") {
 
 	for($i = $start; $i < ($count + $start); $i++)
 		{
-		$rolestart[$atts['role']] = $i + 1;
 		$field = '_' . $field_base . '_' . $i;
 		$assigned = get_post_meta($post->ID, $field, true);
 		if(isset($_GET['debugagenda']))
@@ -5237,26 +5232,8 @@ if($logged > time())
 	//displayed up to 2 minutes after updates logged
 	$output .= sprintf('<p style="border: thin dotted #000; padding: 5px;"><a href="%s">%s</a></p>',admin_url('admin.php?page=toastmasters_activity_log'),__('View log of assignments and recommendations.','rsvpmaker-for-toastmasters'));
 }
-/*
-if(isset($_POST["editor_assign"]) && current_user_can('edit_posts') )
-	{
-	global $wpdb;
-	$wpdb->show_errors();
-	$date = get_rsvp_date($post->ID);
-	$results = get_future_events(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND meta_value > '$date' ",3);
-	foreach($results as $row)
-		{
-		if(isset($row->eventdate))
-			$eventdate = $row->eventdate;
-		else
-			$eventdate = date('F j',strtotime($row->datetime));
-		$random_q = (isset($_POST["random"])) ? '&rm=1' : '';
-		$link .= sprintf('<div id="agenda_print"><a href="%s">'.__('Edit Agenda Roles for','rsvpmaker-for-toastmasters').' %s</a></div>',rsvpmaker_permalink_query($row->postID).'edit_roles=1'.$random_q,$eventdate);
-		}
-	
-	}
-*/
-	}
+
+}
 
 return $output.$link.$content;
 

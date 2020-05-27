@@ -405,6 +405,10 @@ attributes: {
             type: 'int',
             default: 1,
         },
+        start: {
+            type: 'int',
+            default: 1,
+        },
         agenda_note: {
             type: 'string',
             default: '',
@@ -424,7 +428,7 @@ attributes: {
     },
 	edit: function( props ) {
 
-	const { attributes: { role, custom_role, count, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected } = props;
+	const { attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected } = props;
 
 	function showHideOptions () {
 		const selected = document.querySelector( '#role option:checked' );
@@ -468,6 +472,11 @@ attributes: {
 		setAttributes( { count: selected.value } );
 		event.preventDefault();
 	}	
+	function setStart( event ) {
+		const selected = event.target.querySelector( '#start option:checked' );
+		setAttributes( { start: selected.value } );
+		event.preventDefault();
+	}	
 	function setBackup( event ) {
 		const selected = event.target.querySelector( '#backup option:checked' );
 		setAttributes( { backup: selected.value } );
@@ -508,7 +517,7 @@ attributes: {
 		function showForm() {
 		if(!isSelected)
 			return (<em> Click to show options</em>);
-return (<form onSubmit={ setRole, setCustomRole, setCount, setTime, setPaddingTime, setAgendaNote } >
+return (<form onSubmit={ setRole, setCustomRole, setCount, setStart, setTime, setPaddingTime, setAgendaNote } >
 <div><label>Role:</label> 
 <select id="role" value={ role } onChange={ setRole }>
 <option value=""></option>
@@ -534,7 +543,28 @@ return (<form onSubmit={ setRole, setCustomRole, setCount, setTime, setPaddingTi
 </select>			
 </div>
 <p id="customline"><label>Custom Role:</label> <input type="text" id="custom_role" onChange={setCustomRole} defaultValue={custom_role} /></p>
-<div>			<label>Count:</label> <select id="count"  value={ count } onChange={ setCount }>
+<div><label>Count:</label> <select id="count"  value={ count } onChange={ setCount }>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+<option value="11">11</option>
+<option value="12">12</option>
+<option value="13">13</option>
+<option value="14">14</option>
+<option value="15">15</option>
+<option value="16">16</option>
+<option value="17">17</option>
+<option value="18">18</option>
+<option value="19">19</option>
+<option value="20">20</option>
+</select> Start: <select id="start"  value={ start } onChange={ setStart }>
 <option value="1">1</option>
 <option value="2">2</option>
 <option value="3">3</option>
@@ -556,6 +586,7 @@ return (<form onSubmit={ setRole, setCustomRole, setCount, setTime, setPaddingTi
 <option value="19">19</option>
 <option value="20">20</option>
 </select>
+<br /><em>Example: If you have two blocks of 3 speeches, separated by a break or Table Topics, Count would be 3 for both and you would set Start to 4 for the second block.</em>
 </div>
 			
 <div>			<label>Time Allowed:</label> <select id="time_allowed"  value={ time_allowed } onChange={ setTime }>

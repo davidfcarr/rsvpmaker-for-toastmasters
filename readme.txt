@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.4.1
-Stable tag: 3.8.3
+Stable tag: 3.8.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,10 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.8.4 =
+
+* Adding Start to the options available in editor for role blocks. Corrects a potential issue with role enumeration.
 
 = 3.8.3 =
 
