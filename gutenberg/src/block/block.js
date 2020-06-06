@@ -20,15 +20,17 @@ function timing_summary() {
 	let output = [];
 	let add = 0;
 	let newtime = 0;
+	let start_time = 0;
 	let row;
 	for(const index in agenda_timing) {
 		row = agenda_timing[index];
 		add = row.time_allowed + row.padding_time;
 		if(add == 0)
 			continue;
-		newtime = row.start_time + add;
-		var newstring = row.start_time+' to '+newtime+' minutes '+row.label;
+		newtime = start_time + add;
+		var newstring = start_time+' to '+newtime+' minutes '+row.label;
 		output.push(newstring);
+		start_time = newtime;
 	}
 	return output;
 }
