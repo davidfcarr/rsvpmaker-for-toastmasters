@@ -110,7 +110,7 @@ $widthadj = ($is_timer) ? 100 : 50;
 		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 	</style>
 
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=777').time();?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=').date('Ymd');?>"></script>
 <style>
 <?php 
 if(isset($_GET['embed']) && ($_GET['embed'] == 'zoom'))

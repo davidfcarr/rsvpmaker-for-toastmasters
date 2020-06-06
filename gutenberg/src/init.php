@@ -57,7 +57,9 @@ function wpt_cgb_editor_assets() {
 	);
 
 	$rsvpmaker_special = get_post_meta($post->ID,'_rsvpmaker_special',true);
+	$timing = get_agenda_timing($post->ID);
 	wp_localize_script( 'wpt-cgb-block-js', 'toastmasters_special', $rsvpmaker_special);
+	wp_localize_script( 'wpt-cgb-block-js', 'agenda_timing', $timing);
 	
 	// Styles.
 	wp_enqueue_style(

@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.4.1
-Stable tag: 3.8.5
+Stable tag: 3.8.9
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,10 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.8.9 =
+
+* Timing for segments of the meeting now displayed in the inspector sidebar for roles and agenda notes. Timing summary updates as "time allowed" and "padding time" are changed.
 
 = 3.8.4 =
 

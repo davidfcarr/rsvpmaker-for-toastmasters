@@ -24,8 +24,8 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
     foreach ($blogusers as $user) {		
 
 		$member = get_userdata($user->ID);
-		if($member->hidden_profile)
-			continue;
+		//if($member->hidden_profile)
+			//continue;
 		$index = preg_replace('/[^a-zA-Z]/','',$member->last_name.$member->first_name.$member->user_login);
 		$findex = preg_replace('/[^a-zA-Z]/','',$member->first_name.$member->last_name.$member->user_login);
 		$sortmember[$index] = $member;
@@ -167,6 +167,32 @@ function is_officer() {
 	return (is_array($officer_ids) && in_array($current_user->ID,$officer_ids));
 }
 
+function get_role_assignments($post_id, $atts) {
+	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
+	$count = (int) (isset($atts["count"])) ? $atts["count"] : 1;
+	$start = (empty($atts['start'])) ? 1 : $atts['start'];
+	if($atts["role"] == 'Speaker')
+		pack_speakers($count);
+	elseif($count > 1)
+		pack_roles($count,$field_base);
+	for($i = $start; $i < ($count + $start); $i++)
+		{
+		$field = '_' . $field_base . '_' . $i;
+		$assigned = get_post_meta($post_id, $field, true);
+		$name = get_member_name($assigned);
+		$assignments[$field] = array('role' => $atts['role'],'assigned' => $assigned, 'name' => $name, 'iteration' => $i);
+		}
+	if(!empty($atts['backup']))
+		{
+			$field = '_'.preg_replace('/[^a-zA-Z0-9]/','_','Backup '.$atts["role"]).'_1';	
+			$assigned = get_post_meta($post_id, $field, true);
+			$name = get_member_name($assigned);
+			$assignments[$field] = array('role' => __('Backup','rsvpmaker-for-toastmasters').' '.$atts['role'],'assigned' => $assigned, 'name' => $name, 'iteration' => 1);
+		}
+
+	return $assignments;
+}
+
 function get_member_name($user_id, $credentials = true) {
 	if(!empty($user_id) && !is_numeric($user_id))
 		return $user_id.' ('.__('guest','rsvpmaker-for-toastmasters').')'; // guest ?
@@ -176,15 +202,19 @@ function get_member_name($user_id, $credentials = true) {
 		return 'Not Available';
 	elseif($user_id == -2)
 		return 'To Be Announced';
-	$member = get_userdata($user_id);
-	if(empty($member))
-		return __('Member not found','rsvpmaker-for-toastmasters');
-	if(empty($member->first_name) && empty($member->last_name))
-		$name = $member->display_name;
+	if(is_numeric($user_id)) {
+		$member = get_userdata($user_id);
+		if(empty($member))
+			return __('Member not found','rsvpmaker-for-toastmasters');
+		if(empty($member->first_name) && empty($member->last_name))
+			$name = $member->display_name;
+		else
+			$name = $member->first_name.' '.$member->last_name;
+		if($credentials && !empty($member->education_awards))
+			$name .= ', '.$member->education_awards;	
+	}
 	else
-		$name = $member->first_name.' '.$member->last_name;
-	if($credentials && !empty($member->education_awards))
-		$name .= ', '.$member->education_awards;
+		$name = $user_id.' ('.__('guest','rsvpmaker-for-toastmasters').')';
 	$name = strip_tags($name);
 	return $name;
 }
@@ -551,5 +581,50 @@ function is_agenda_locked () {
 	elseif($post_lock == 'on')
 		$locked = true;
 	return $locked;
+}
+
+function toastmasters_rsvpmailer_rule($content, $email, $message_type) {
+	if(empty($message_type))
+		return;
+	$user = get_user_by('email',$email);
+	if(!$user)
+		return '';
+	return get_user_meta($user->ID,'email_rule_'.$message_type,true);
+}
+
+add_filter('rsvpmailer_rule','toastmasters_rsvpmailer_rule',10,3);
+
+function get_agenda_timing($post_id) {
+	global $rsvp_options;
+	$time_format = str_replace('%Z','',$rsvp_options['time_format']);
+	$post = get_post($post_id);
+	$date = get_rsvp_date($post_id);
+	$data = wpt_blocks_to_data($post->post_content);
+	$elapsed = 0;
+	$time_array = array();
+	foreach($data as $d) {
+		$t = strtotime($date.' +'.$elapsed.' minutes');
+		$start_time_text = strftime($time_format,$t);
+		$start_time = $elapsed;
+		$time_allowed = (empty($d['time_allowed'])) ? 0 : (int) $d['time_allowed'];
+		$padding_time = (empty($d['padding_time'])) ? 0 : (int) $d['padding_time'];
+		$add = $time_allowed + $padding_time;
+		$elapsed += $add;
+		if(!empty($d['role']))
+			{
+				$start = (empty($d['start'])) ? 1 : $d['start'];
+				$index = str_replace(' ','_',$d['role']).$start;
+				$label = $d['role'];
+			}
+		elseif(!empty($d['uid']))
+			{
+			$index = $d['uid'];
+			$label = (empty($d['content'])) ? $index : 'Note: '.substr(trim(strip_tags($d['content'])),0,15).'...';
+			}
+		else
+			continue;
+		$time_array[$index] = array('label' => $label, 'start_time' => $start_time, 'elapsed' => $elapsed, 'time_allowed' => $time_allowed, 'padding_time' => $padding_time);
+	}
+	return $time_array;
 }
 ?>

@@ -13,6 +13,7 @@ var timeNow = 0;
 var correction = 0;
 var lastdata;
 var lastupdate = 0;
+var checktimer = 15;
 
 function timeoutCheck() {
     var beenwaiting = new Date().getTime();
@@ -104,7 +105,15 @@ function checkColorChange() {
             stopRefreshReceived();
             return;
         }
-    $('checkstatus').html('Checking server for updates');
+    console.log('check '+checktimer);
+    var statuslabel = (timer && timer.started) ? 'Timing ... ' : 'Waiting ... ';
+    if(checktimer) {
+        $('#checkstatus').html(statuslabel + '<br />Polling server in '+checktimer+' seconds');
+        checktimer--;
+        return;
+    }
+    checktimer = 15;
+    $('checkstatus').html(statuslabel + '<br />Checking server for updates');
     var url = jQuery('#seturl').val();
         $.get( url, function( data ) {
         if(!lastdata || (data.status=='keepalive') || (lastdata.status && (lastdata.status != data.status)) )
@@ -139,13 +148,9 @@ function checkColorChange() {
             {
             if(timer && timer.started)
                 timer.resetButton();
-                $('#checkstatus').text('Timer reset');
+                console.log('Timer reset');
            }
     });
-    if(timer && timer.started)
-        setTimeout(function(){ $('#checkstatus').text('Timing ...'); }, 2000);
-    else
-        setTimeout(function(){ $('#checkstatus').text('Waiting ...'); }, 2000);
 }
 
 function refreshView() {
@@ -161,7 +166,7 @@ function refreshView() {
     $('iframe').css("width", window.innerWidth - 100);
     $('.timer-controls').hide();
     $('#checkcontrols').show();
-    checkColorChange(); // check now
+    //checkColorChange(); // check now
 /*    gotvotetimer = setInterval(function(){
     checkColorChange();	
     }, 15000);
@@ -199,6 +204,7 @@ $('#popup').click(function(){
         colorWin.document.body.style.backgroundColor = '#DDDDDD';
         colorWin.document.title = 'Timing Light';
         //window.resizeBy(window.innerWidth,50);
+        setBackgroundColor(colorNow);
     }
 return false;
 }); 
@@ -275,7 +281,7 @@ lastupdate = 0;
 checkColorChange();
 gotvotetimer = setInterval(function(){
 checkColorChange();	
-}, 15000);
+}, 1000);
 }
 );
 

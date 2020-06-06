@@ -4,11 +4,11 @@ Plugin Name: RSVPMaker for Toastmasters
 Plugin URI: http://wp4toastmasters.com
 Description: This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking. Better Toastmasters websites!
 Author: David F. Carr
-Version: 3.8.5
 Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
+Version: 3.8.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -688,6 +688,7 @@ function wp4_speech_prompt($event_post, $datetime, $preview = false) {
 					$mail["from"] = $toastmaster_email;
 				$mail["fromname"] = $blog_name;
 				$mail["subject"] = $subject;
+				$mail['message_type'] = 'email_rule_reminder';
 				//rsvpmaker_debug_log($mail,'reminder');
 				if($preview)
 				{
@@ -1059,7 +1060,8 @@ if(!empty($atts["editable"]))
 	}
 
 	$maxtime = (!empty($atts["time_allowed"])) ? $atts["time_allowed"] : '';
-	$timeblock = '<span class="time_allowed" maxtime="'.$maxtime.'"></span>';
+	
+	$timeblock = ($maxtime) ? '<span class="time_allowed" maxtime="'.$maxtime.'"></span>' : '';
 
 if(isset($_REQUEST["print_agenda"]) || isset($_REQUEST["email_agenda"]))
 	{
@@ -1166,9 +1168,9 @@ function speaker_details_agenda ($field,$assigned) {
 		}
 	else
 		$manual .= evaluation_form_link($assigned, $post->ID, '');
-	$output .= '<div class="manual-project">'.$manual.'</div>';
-	if(!empty($speaker["title"]))
-		$output .= '<div class="title">&quot;'.$speaker["title"].'&quot;</div>';
+	
+	$title = (empty($speaker["title"])) ? '' : '<span class="title">&quot;'.$speaker["title"].'&quot;</span> ';
+	$output .= '<div>'.$title.'<span class="manual-project">'.$manual.'</span></div>';
 	if(!empty($dt))
 		$output .= '<div class="speechtime">'.$dt.'</div>';
 	if(!empty($speaker["intro"]) && (isset($_GET['showintros']) || get_option('wp4toastmasters_intros_on_agenda')) )
@@ -1179,40 +1181,39 @@ function speaker_details_agenda ($field,$assigned) {
 	return $output;
 }
 
-function toastmasters_agenda_display($atts) {
+function toastmasters_agenda_display($atts, $assignments) {
 	if(function_exists('toastmasters_agenda_display_custom'))
 		return  toastmasters_agenda_display_custom($atts);
 	global $post, $open;
 	$count = (empty($atts["count"])) ? 1 : $atts["count"];
 	$start = (empty($atts['start'])) ? 1 : $atts['start'];
-	$start = 1;
 	
 		$field = $output = $startdiv = '';
 		$maxtime = (isset($atts["time_allowed"]) ) ? (int) $atts["time_allowed"] : 0;
 		$padding_time = (isset($atts["padding_time"])) ? (int) $atts["padding_time"] : 0;
 		$speaktime = 0;
-		$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
-		for($i = $start; $i < ($count + $start); $i++)
+		foreach($assignments as $field => $values)
 			{
+			$role = $values['role'];
+			//if(strpos($role,'ackup'))
+				//continue;
+			$assigned = $values['assigned'];
+			$assignedto = $values['name'];
+			$i = $values['iteration'];
 		if(isset($atts["indent"]) && $atts["indent"])
 			$output  .= "\n".'<div class="role-agenda-item indent">';
 		else
 			$output .= "\n".'<div class="role-agenda-item">';
-			$field = '_' . $field_base . '_' . $i;
-			$assigned = get_post_meta($post->ID, $field, true);
-			
 			if(isset($_GET['agendadebug']))
 			$output .= '<div style="color: red">Assigned: '.$assigned.'</div>';
 				
-			if(!empty($atts["time_allowed"]) && strpos($field,'Speaker'))
+			if(!empty($atts["time_allowed"]) && strpos($field,'Speaker') && !strpos($field,'Backup'))
 				{
 					$speaktime += (int) get_post_meta($post->ID,'_maxtime'.$field,true);
 				}
-			if($i == 1)
+			if(($i == 1) && !strpos($field,'Backup'))
 				$output .= 'TIMEBLOCKHERE';
-			else
-				$output .= '<span class="timeblock"></span>';				
-			$output .= '<span class="role">'.$atts["role"];
+			$output .= '<span class="role">'.$role;
 			if (!empty($atts["count"]) && ($atts["count"] > 1))
 			    {
             $output .= ' <span class="role_number">'.$i.'</span>';
@@ -1231,7 +1232,7 @@ function toastmasters_agenda_display($atts) {
             $output .= '</span>';
 			$output .= ' <span class="member-role">';
 			if(isset($_GET['debug'])) $output .= 'assigned: '.$assigned .' ';
-			$output .= get_member_name($assigned);	
+			$output .= $assignedto;	
 			$output .= '</span>';
 			if(empty($assigned))
 				{
@@ -1272,16 +1273,19 @@ function toastmasters_agenda_display($atts) {
 		if($padding_time)
 			$maxtime += $padding_time;
 		$timeblock = '<span class="time_allowed" maxtime="'.$maxtime.'"></span>';
-		$output = str_replace('TIMEBLOCKHERE',$timeblock,$output);
+		if($maxtime)
+			$output = str_replace('TIMEBLOCKHERE',$timeblock,$output);
+		else
+			$output = str_replace('TIMEBLOCKHERE','',$output);
 		if(isset($_REQUEST['word_agenda'])) // word doesn't handle the list numbering well
 			$output = preg_replace('/(<\/ul>|<\/li>|<ul>|<li>)/','',$output);
-		return $output;			
+return $output;			
 }
 
 function toastmaster_short($atts=array(),$content="") {
 	if(isset($_GET['convert']))
 		return toastmaster_short_convert($atts);
-	global $tmroles;
+	global $tmroles, $post, $current_user, $open;
 	$assigned = 0;
 	if(isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'agenda_timing') )
 		return timeplanner($atts, $content);
@@ -1302,20 +1306,13 @@ function toastmaster_short($atts=array(),$content="") {
 		else
 			$atts["role"] = $atts["custom_role"];
 		}
-	$backup = $output = '';	
+	$backup = $output = '';
 	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
-	$count = (int) (isset($atts["count"])) ? $atts["count"] : 1;
-	$start = (empty($atts['start'])) ? 1 : $atts['start'];
-
-	if($atts["role"] == 'Speaker')
-		pack_speakers($count);
-	elseif($count > 1)
-		pack_roles($count,$field_base);
 	
-	if(!empty($atts['backup']))
-		$backup = toastmaster_short(array('role'=>'Backup '.$atts['role']));
+	$assignments = get_role_assignments($post->ID, $atts);
+	//$output .= '<pre>'.var_export($assignments,true).'</pre>';
+	//return $output;
 	//$backup .= var_export($atts,true);
-	global $post, $current_user, $open;
 	$permalink = rsvpmaker_permalink_query($post->ID);
 	
 	if(isset($_REQUEST["reorder"]))
@@ -1324,31 +1321,11 @@ function toastmaster_short($atts=array(),$content="") {
 			return;
 		$output .= '<input type="hidden" id="_'.$field_base.'post_id" value="'.$post->ID.'">';
 		$output .= '<h3>'.$atts["role"].'</h3><ul id="'.$field_base.'" class="tmsortable sortable">';
-		for($i = $start; $i < ($count + $start); $i++)
+		foreach($assignments as $field => $values)
 			{
-			$field = '_' . $field_base . '_' . $i;
-			$assigned = get_post_meta($post->ID, $field, true);
-			if($assigned == '-1')
-				{
-				$assignedto = __('Not Available','rsvpmaker-for-toastmasters');
-				}
-			elseif($assigned == '-2')
-				{
-				$assignedto = __('To Be Announced','rsvpmaker-for-toastmasters');
-				}
-			elseif($assigned)
-				{
-					if(is_numeric($assigned))
-						{
-					$member = get_userdata( $assigned );
-					$assignedto = (isset($member->first_name) && isset($member->first_name)) ? $member->first_name." ".$member->last_name : __('member name not found','rsvpmaker-for-toastmasters');
-					if(!empty($member->education_awards)) $assignedto .= ', '.$member->education_awards;
-						}
-					else
-						$assignedto = $assigned . ' (guest)';
-				}
-			else
-				$assignedto = "&nbsp;";
+			$role = $values['role'];
+			$assigned = $values['assigned'];
+			$assignedto = $values['name'];
 			$output .= '<li class="sortableitem sortable_'.$field_base.'" id="'.$field.'" >'.$assignedto.'<input type="hidden" id="'.$field.'_assigned" value="'.$assigned.'"></li>';
 			}
 		$output .= '<li><div id="'.$field_base.'_sortresult" class="sortresult">'.__('Drag and drop assignments into the desired agenda order','rsvpmaker-for-toastmasters').'</div></li></ul>';
@@ -1362,38 +1339,19 @@ function toastmaster_short($atts=array(),$content="") {
 		return; // don't need to output empty backup speaker slot on agenda
 	if(isset($_REQUEST["signup2"]))
 		{
-		for($i = $start; $i < ($count + $start); $i++)
+		foreach($assignments as $field => $values)
 			{
-			$field = '_' . $field_base . '_' . $i;
-			$assigned = get_post_meta($post->ID, $field, true);
-			if($assigned == '-1')
-				{
-				$assignedto = __('Not Available','rsvpmaker-for-toastmasters');
-				}
-			elseif($assigned == '-2')
-				{
-				$assignedto = __('To Be Announced','rsvpmaker-for-toastmasters');
-				}
-			elseif($assigned)
-				{
-					if(is_numeric($assigned))
-						{
-					$member = get_userdata( $assigned );
-					$assignedto = (isset($member->first_name) && isset($member->first_name)) ? $member->first_name." ".$member->last_name : __('member name not found','rsvpmaker-for-toastmasters');
-					if(!empty($member->education_awards)) $assignedto .= ', '.$member->education_awards;
-						}
-					else
-						$assignedto = $assigned . ' (guest)';
-				}
-			else
-				$assignedto = "&nbsp;";
-			$output .= "\n".'<div class="signuprole">'.$atts["role"].'<div class="assignedto">'.$assignedto.'</div></div>';
+			$role = $values['role'];
+			$assigned = $values['assigned'];
+			$assignedto = $values['name'];
+			if($assignedto == 'Open') $assignedto = '&nbsp;';
+			$output .= "\n".'<div class="signuprole">'.$role.'<div class="assignedto">'.$assignedto.'</div></div>';
 			}
 		return $output.$backup;
 		}
 
 	if(isset($_REQUEST["print_agenda"]) || is_email_context() || is_agenda_locked())
-		return toastmasters_agenda_display($atts);
+		return toastmasters_agenda_display($atts,$assignments);
 
 	global $random_available;
 	global $last_attended;
@@ -1436,48 +1394,27 @@ function toastmaster_short($atts=array(),$content="") {
 			}
 		}
 
-	for($i = $start; $i < ($count + $start); $i++)
+	foreach($assignments as $field => $values)
 		{
-		$field = '_' . $field_base . '_' . $i;
-		$assigned = get_post_meta($post->ID, $field, true);
-		if(isset($_GET['debugagenda']))
-			$output .= '<div style="color:red;">assigned: '.$assigned.'</div>';
+		$role = $values['role'];
+		$assigned = $values['assigned'];
+		$assignedto = $values['name'];
 		if(is_numeric($assigned) && ($assigned > 0))
 			$tmroles[$field] = $assigned;
 		$output .= '<div class="role-block" id="'.$field.'"><div class="role-title" style="font-weight: bold;">';
-		$output .= $atts["role"].': </div><div class="role-data"> ';
+		$output .= $role.': </div><div class="role-data"> ';
+		//rsvpmaker_debug_log($output,'start role content');
 		$ajaxclass = 'toastrole'; // ($assigned) ? 'toastupdate' : 
 		if(is_club_member() && !(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]) || (isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'toastmasters_reconcile') ) )  ) 
 			$output .= sprintf(' <form id="%s_form" method="post" class="%s" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="role" value="%s"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$ajaxclass,$permalink, $current_user->ID, $field, $post->ID,wp_create_nonce($field));
-				
-		if($assigned == '-1')
-				{
-				$output .= __('Not Available','rsvpmaker-for-toastmasters');
-				}
-		if($assigned == '-2')
-				{
-				$output .= __('To Be Announced','rsvpmaker-for-toastmasters');
-				}
-		elseif($assigned  && !(isset($_REQUEST["edit_roles"]) || (isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'toastmasters_reconcile') ) ) )
-			{
-			if(is_numeric($assigned))
-				{
-				$member = get_userdata( $assigned );
-				if(!$member)
-					return;
-				$name = $member->first_name.' '.$member->last_name;
-				if(!empty($member->education_awards)) $name .= ', '.$member->education_awards;
-				$output .= sprintf('<div class="member-role">%s</div>',$name);	
-				}
-			else
-				$output .= sprintf('<div class="member-role">%s (%s)</div>',$assigned,__('guest','rsvpmaker-for-toastmasters'));
-			}
-		
+		//rsvpmaker_debug_log($output,'start form output');
+		$output .= '<div class="member-role">'.$assignedto.'</div>';
+
 			if(is_club_member() )
 			{
 			if( strpos($field,'Speaker') && ($assigned != '-1' ) )
 				{
-				$detailsform = speaker_details($field, $assigned, $atts);
+				$detailsform = speaker_details($field, $atts);
 				}
 			else
 				$detailsform = '';
@@ -1596,17 +1533,7 @@ function toastmaster_short($atts=array(),$content="") {
 				$speaker_id = get_post_meta($post->ID,'_Speaker_'.$i,true);
 				if(empty($speaker_id))
 					$speaker_name = '?';
-				elseif(is_numeric($speaker_id))
-					{
-					$member = get_userdata( $speaker_id );
-					if(empty($member))
-						$speaker_name = 'Name? user: '.$speaker_id;
-					else
-						$speaker_name = $member->first_name.' '.$member->last_name;
-					if(!empty($member->education_awards)) $speaker_name .= ', '.$member->education_awards;
-					}
-				else
-					$speaker_name = $speaker_id.' ('.__('guest','rsvpmaker-for-toastmasters').')';
+				$speaker_name = get_member_name($speaker_id);
 				$note = str_replace('{Speaker}',$speaker_name,$note);
 				}
 			$output .=  "<div><em>".$note."</em></div>";
@@ -1693,9 +1620,12 @@ function decode_timeblock ($matches) {
 function agendanoterich2_timeblock($matches) {
 	$props = json_decode($matches[1]);
 	$time = empty($props->time_allowed) ? 0 : $props->time_allowed;
-	$timed = str_replace('<p class="wp-block-wp4toastmasters-agendanoterich2"','<p  class="wp-block-wp4toastmasters-agendanoterich2" maxtime="'.$time.'"',$matches[0]);
-	return $timed;
-}
+	$timed = str_replace('<p class="wp-block-wp4toastmasters-agendanoterich2"','<p class="wp-block-wp4toastmasters-agendanoterich2" maxtime="'.$time.'"',$matches[0]);
+	if($time)
+		return $timed;
+	else
+		return $matches[0];
+}	
 
 function tm_agenda_content () {
 	global $post;
@@ -2298,7 +2228,7 @@ Title: %s',$manual,$project,$title);
 }
 
 
-function speaker_details ($field, $assigned = 0, $atts) {
+function speaker_details ($field, $atts) {
 $demo = (isset($atts['demo']));
 global $post;
 global $current_user;
@@ -7736,16 +7666,30 @@ else
 ?>
 </td>
 </tr>
+<?php 
+if(current_user_can('manage_options')) {
+printf('<tr>
+<th><label for="joined_club">Date Joined Club</label></th>
+<td><input type="text" id="joined_club" name="joined_club" value="%s" /> MM/DD/YYYY </td>
+</tr>',get_user_meta($user->ID,'joined'.get_current_blog_id(),true));
+printf('<tr>
+<th><label for="joined_club">Original Join Date</label></th>
+<td><input type="text" id="original_join_date" name="original_join_date" value="%s" /> MM/DD/YYYY </td>
+</tr>',get_user_meta($user->ID,'original_join_date',true));	
+}
+?>
 </table>
 <?php }
 
 function save_awesome_user_profile_fields( $user_id ) {
- 
 if ( !current_user_can( 'edit_user', $user_id ) ) { return false; }
- 
 update_user_meta( $user_id, 'public_profile', !empty($_POST['public_profile']) );
 update_user_meta( $user_id, 'public_email', !empty($_POST['public_email']) );
 update_user_meta( $user_id, 'hidden_profile', !empty($_POST['hidden_profile']) );
+if(isset($_POST['joined_club'])) {
+	update_user_meta($user_id,'joined'.get_current_blog_id(),$_POST['joined_club']);
+	update_user_meta($user_id,'original_join_date',$_POST['original_join_date']);
+	}
 }
 
 function speech_intros_shortcode($atts) {
