@@ -153,6 +153,30 @@ class WPT_Timer_Control extends WP_REST_Controller {
 	}
 }
 
+class Toast_Agenda_Timing extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'agendatime/(?P<post_id>[0-9]+)';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'get_items' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+			  ),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;
+	}
+  
+  public function get_items($request) {
+	$timing = get_agenda_timing($request['post_id']);
+	  return new WP_REST_Response($timing, 200);
+	}
+  }
+  
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
@@ -163,6 +187,8 @@ add_action('rest_api_init', function () {
      $gotvote_controller = new WPTContest_GotVote();
      $gotvote_controller->register_routes();
      $timer_controller = new WPT_Timer_Control();
-     $timer_controller->register_routes();
+	 $timer_controller->register_routes();
+	 $agendatime = new Toast_Agenda_Timing();
+	 $agendatime->register_routes();
    } );
 ?>

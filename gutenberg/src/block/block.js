@@ -15,8 +15,11 @@ const { RichText } = wp.blockEditor;
 const { Component, Fragment } = wp.element;
 const { InspectorControls, PanelBody } = wp.editor;
 const { TextareaControl, SelectControl } = wp.components;
+const { subscribe } = wp.data;
 
-function timing_summary() {
+function timing_summary( newtiming = null ) {
+	if(newtiming)
+		agenda_timing = newtiming;
 	let output = [];
 	let add = 0;
 	let newtime = 0;
@@ -445,6 +448,38 @@ class RoleInspector extends Component {
 			array240.push({value: i.toString(), label: i.toString()});
 		}
 
+		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+		// determine whether to show notice
+		subscribe( () => {
+			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
+			var checktimingurl = wpApiSettings.root + 'rsvptm/v1/agendatime/' + wp.data.select('core/editor').getCurrentPostId();
+			// Save metaboxes on save completion, except for autosaves that are not a post preview.
+			const shouldTriggerTimingUpdate = (
+					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
+					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
+				);
+	
+			// Save current state for next inspection.
+			wasSavingPost = isSavingPost;
+			wasAutosavingPost = isAutosavingPost;
+			wasPreviewingPost = isPreviewingPost;
+	
+			if ( shouldTriggerTimingUpdate ) {
+				console.log('check for agenda timing updates '+checktimingurl);
+				fetch(checktimingurl)
+				.then(response => response.json())
+				.then(data => function (data) { 
+					agenda_time_array = timing_summary(data);
+					setAttributes({timing: agenda_time_array});
+				});
+			}
+	} );
+
 return (	
 <InspectorControls key="roleinspector">
 <div style={ {width: '45%', float: 'left'} }>	<SelectControl
@@ -536,7 +571,43 @@ class NoteInspector extends Component {
 		for(var i = 1; i <= 240; i++) {
 			array240.push({value: i.toString(), label: i.toString()});
 		}
+
+		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+		// determine whether to show notice
+		subscribe( () => {
+			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
+			var checktimingurl = wpApiSettings.root + 'rsvptm/v1/agendatime/' + wp.data.select('core/editor').getCurrentPostId();
+			// Save metaboxes on save completion, except for autosaves that are not a post preview.
+			const shouldTriggerTimingUpdate = (
+					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
+					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
+				);
 	
+			// Save current state for next inspection.
+			wasSavingPost = isSavingPost;
+			wasAutosavingPost = isAutosavingPost;
+			wasPreviewingPost = isPreviewingPost;
+	
+			if ( shouldTriggerTimingUpdate ) {
+				console.log('check for agenda timing updates '+checktimingurl);
+				fetch(checktimingurl)
+				.then(response => response.json())
+				.then(data => function (data) {
+					console.log('agenda_time_array start');
+					console.log($data); 
+					agenda_time_array = timing_summary(data);
+					console.log('agenda_time_array');
+					console.log(agenda_time_array);
+					setAttributes({timing: agenda_time_array});
+				});
+			}
+	} );
+			
 		return (
 		<InspectorControls key="noteinspector">
 			<SelectControl
@@ -564,4 +635,3 @@ class DocInspector extends Component {
 		);
 	}
 }
-
