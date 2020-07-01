@@ -87,6 +87,28 @@ function paydues_later () {
 	return sprintf('<h2>Pay dues for %s</h2>',$vars['name']).$payprompt;
 }
 
+add_shortcode('club_fee_schedule','club_fee_schedule');
+
+function club_fee_schedule () {
+    $ti_dues = get_option('ti_dues');
+    $club_dues = get_option('club_dues');
+    $output = '';
+    $months = array('January','February','March','April','May','June','July','August','September','October','November','December');
+    if(empty($ti_dues))
+        return 'not set';
+    else {
+        $output .= '<style>.feeschedule th {text-align: left;} .feeschedule td {text-align: center; min-width: 100px;}</style>';
+        $output .= sprintf('<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>',__('Month','rsvpmaker-for-toastmasters'),__('TI Dues','rsvpmaker-for-toastmasters'),__('Club Dues','rsvpmaker-for-toastmasters'),__('Total','rsvpmaker-for-toastmasters'),__('+ New Member Fee','rsvpmaker-for-toastmasters'));
+        foreach($months as $index => $month) {
+            $total = number_format($ti_dues[$index]+$club_dues[$index],2);
+            $new = number_format($total + 20,2);
+            $output .= sprintf('<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$month,number_format($ti_dues[$index],2),number_format($club_dues[$index],2),$total,$new);
+        }
+        $output .= '</table>';
+    }
+return $output;
+}
+
 function tm_application_fee() {
 global $post;
 if(isset($_POST['membership_type']))
@@ -310,7 +332,8 @@ else
     printf('<p>Application page: <a target="_blank" href="%s">View</a> or <a target="_blank" href="%s">Edit</a>',get_permalink($apppage),admin_url('post.php?action=edit&post='.$apppage));
 submit_button(); ?>
 </form>
-
+<?php echo club_fee_schedule(); ?>
+<p>To display web page, use the shortcode [club_fee_schedule]</p>
 <?php
 }
 

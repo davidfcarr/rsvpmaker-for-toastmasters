@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 3.9
+Version: 3.9.3
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -100,7 +100,18 @@ function profile_richtext () {
 if(strpos($_SERVER['REQUEST_URI'],'profile.php') || strpos($_SERVER['REQUEST_URI'],'user-edit.php')) 
 echo '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
 <script>
-        tinymce.init({selector:"textarea#description",plugins: "code,link"});		
+tinymce.init({
+	selector:"textarea#description",plugins: "link",
+	block_formats: "Paragraph=p",
+	menu: {
+	format: { title: "Format", items: "bold italic | removeformat" },
+	style_formats: [
+	{ title: "Inline", items: [
+		{ title: "Bold", format: "bold" },
+		{ title: "Italic", format: "italic" },
+	]},]},
+	toolbar: "bold italic link",
+	});	
 </script>';
 }
 
@@ -1211,7 +1222,7 @@ function toastmasters_agenda_display($atts, $assignments) {
 				{
 					$speaktime += (int) get_post_meta($post->ID,'_maxtime'.$field,true);
 				}
-			if(($i == 1) && !strpos($field,'Backup'))
+			if(($i == $start) && !strpos($field,'Backup'))
 				$output .= 'TIMEBLOCKHERE';
 			$output .= '<span class="role">'.$role;
 			if (!empty($atts["count"]) && ($atts["count"] > 1))
@@ -2978,7 +2989,7 @@ add_submenu_page('upload.php', __("YouTube Toastmasters",'rsvpmaker-for-toastmas
 }
 
 function wp4toastmasters_settings() {
-global $wpdb;
+global $wpdb, $current_user;
 add_awesome_roles();
 ?>
 <div class="wrap">
@@ -3098,8 +3109,9 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 		//	continue;
 		
 		$index = preg_replace('/[^a-zA-Z]/','',$member->last_name.$member->first_name.$member->user_login);
-		if(user_can($user->ID,'manage_options'))
-			$administrators[] = $member->first_name.' '.$member->last_name;
+		if(user_can($user->ID,'manage_options')) {
+			$administrators[$user->ID] = $member->first_name.' '.$member->last_name;
+		}
 		else
 			{
 			$sortmember[$index] = $member;
@@ -3130,8 +3142,45 @@ printf('<h3>%s</h3>
 <p><select name="wp4toastmasters_manager_ids[]">%s</select></p>',__('Make Manager','rsvpmaker-for-toastmasters'),$candidates,$candidates,$candidates);
 }
 
-if(!empty($administrators))
+$is_primary = false;
+$primary = wpt_primary_admin ();
+if(!$primary)
+{
+	echo '<p>No primary administrator set</p>';
+}
+elseif($current_user->ID == $primary) {
+	echo '<p>You are the primary administrator until you delegate that role to someone else.</p>';
+	$is_primary = true;
+}
+else {
+	$userdata = get_userdata($primary);
+	printf('<p>Primary site administrator: %s</p>',$userdata->display_name);
+}
+
+echo '<p>Only the primary site administrator can remove administrator rights from other administrator.</p>';
+
+if(!empty($administrators)) {
 	printf('<p>Administrators: %s</p>',implode(', ',$administrators));
+	if($is_primary) {
+		$remove_admin = '';
+		foreach($administrators as $user_id => $name) {
+			if(($user_id != $current_user->ID) && !user_can($user_id,'manage_network')) {
+				$remove_admin .= sprintf('<option value="%d">%s</option>',$user_id, $name);
+			}
+		}
+		if(!empty($remove_admin))
+			printf('<p>%s <select name="wpt_remove_admin"><option value="0">%s</option>%s</select></p><p>%s</p>',__('Remove administrator','rsvpmaker-for-toastmasters'),__('No change','rsvpmaker-for-toastmasters'),$remove_admin,__('The additional administrator will be demoted to Manager. You can change the roles of users other than administrators on the Users screen.'));	
+	}
+	if( ( (sizeof($administrators) > 1) || !$is_primary ) && ( $is_primary || ($primary == 0) ) ) {
+		$primary_admin_options = '';
+		foreach($administrators as $user_id => $name) {
+				$primary_admin_options .= sprintf('<option value="%d">%s</option>',$user_id, $name);
+		}
+		if(!empty($primary_admin_options))
+			printf('<p>%s <select name="set_wpt_primary_admin"><option value="0">%s</option>%s</select></p>',__('Make primary administrator','rsvpmaker-for-toastmasters'),__('No change','rsvpmaker-for-toastmasters'),$primary_admin_options);
+	}
+}
+
 if(!empty($managers))
 	printf('<p>Managers: %s</p>',implode(', ',$managers));
 $contributor_notification = get_option('wpt_contributor_notification');
@@ -3223,6 +3272,15 @@ if(isset($_REQUEST["mailman_add_officers"]))
 
 <p><?php _e("Message To Officers on Dashboard",'rsvpmaker-for-toastmasters');?><br />
 <textarea name="wp4toastmasters_officer_message" rows="3" cols="80"><?php echo $wp4toastmasters_officer_message; ?></textarea></p>
+
+<?php
+$reserved_label = get_option('wpt_reserved_role_label');
+if(empty($reserved_label))
+	$reserved_label = 'Ask VPE';
+?>
+
+<h3><?php _e("Reserved Role Label",'rsvpmaker-for-toastmasters');?></h3>
+<p>Reserved <input type="text" name="wpt_reserved_role_label" value="<?php echo $reserved_label;?>" /></p>
 
 <h3><?php _e("Include Time/Timezone on Agenda Email",'rsvpmaker-for-toastmasters');?></h3>
 <p><input type="radio" name="wp4toastmasters_agenda_timezone" value="1" <?php if($wp4toastmasters_agenda_timezone) echo ' checked="checked" '; ?> /> <?php _e("Yes",'rsvpmaker-for-toastmasters');?> <input type="radio" name="wp4toastmasters_agenda_timezone" value="0" <?php if(!$wp4toastmasters_agenda_timezone) echo ' checked="checked" '; ?> /> <?php _e("No",'rsvpmaker-for-toastmasters');?>.</p>
@@ -3683,6 +3741,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toast_reminder' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toast_reminder2' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_remind_all' );	
+	register_setting( 'wp4toastmasters-settings-group', 'wpt_reserved_role_label' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_agenda_timezone' );
 	register_setting( 'wp4toastmasters-settings-group', 'allow_assign' );
 	register_setting( 'wp4toastmasters-settings-group', 'hide_planner_promo' );
@@ -3752,20 +3811,18 @@ function wp4toast_reminders_cron_status() {
 global $rsvp_options;
 $cron = get_option('cron');
 $output = '';
-fix_timezone();
+//fix_timezone();
 $post = next_toastmaster_meeting();
 if(empty($post))
 	return 'No future meeting events registered';
-$output .= sprintf('<p>Next meeting: %s</p>',strftime($rsvp_options['long_date'].' '.$rsvp_options['time_format'],strtotime($post->datetime)));
+$output .= sprintf('<p>Next meeting: %s</p>',rsvpmaker_strftime($rsvp_options['long_date'].' '.$rsvp_options['time_format'],strtotime($post->datetime)));
 foreach($cron as $ts => $item)
 {
 if(isset($item['wp4toast_reminders_cron']))
-	$output .= sprintf("<p>Scheduled reminder %s</p>",strftime($rsvp_options['long_date'].' '.$rsvp_options['time_format'],(int) $ts));
+	$output .= sprintf("<p>Scheduled reminder %s</p>",rsvpmaker_strftime($rsvp_options['long_date'].' '.$rsvp_options['time_format'],(int) $ts));
 }
 	return $output;
 }
-
-
 
 add_action('wp4toast_reminders_dst_fix','wp4toast_reminders_dst_fix',10,1);
 function wp4toast_reminders_dst_fix ($args = array()) {
@@ -7538,7 +7595,18 @@ $wp4toastmasters_mailman = get_option("wp4toastmasters_mailman");
 		$subject = get_bloginfo('name').' '.$subject;
 	$mailform = '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
 	<script>
-			tinymce.init({selector:"textarea",plugins: "code,link"});		
+	tinymce.init({
+		selector:"textarea",plugins: "link",
+		block_formats: "Paragraph=p",
+		menu: {
+		format: { title: "Format", items: "bold italic | removeformat" },
+		style_formats: [
+		{ title: "Inline", items: [
+			{ title: "Bold", format: "bold" },
+			{ title: "Italic", format: "italic" },
+		]},]},
+		toolbar: "bold italic link",
+		});	
 	</script><h3>'.__("Add a Note",'rsvpmaker-for-toastmasters').'</h3>
 	<p>'.__("Your note will be emailed along with the agenda and details about which roles are filled or open. You can change the subject line to emphasize the roles you need filled or special plans for a meeting (such as a contest).",'rsvpmaker-for-toastmasters').'</p>
 	<form method="post" action="'.$permalink.'email_agenda=1">
@@ -8380,12 +8448,12 @@ function manager_author_editor () {
 }
 add_action('admin_init','manager_author_editor');
 
-add_filter('wp_dropdown_users_args','manager_fix_authors_dropdown');
-
 function awesome_role_activation_wrapper() {
 
 	global $current_user;
-	
+
+	//print_r($_REQUEST);
+
    register_activation_hook( __FILE__, 'add_awesome_roles' );
    if(isset($_REQUEST["add_awesome_roles"]))
    	add_awesome_roles();
@@ -8409,7 +8477,26 @@ if(isset($_POST['wp4toastmasters_manager_ids']) )
 						wp_update_user($user);
 					}
 			}
+		//exit();
+		}
+
+if(!empty($_POST['wpt_remove_admin']) ) {
+	$primary = wpt_primary_admin ();
+	
+	if(($current_user->ID == $primary) && current_user_can('manage_options'))
+	{
+		$id = (int) $_POST['wpt_remove_admin'];
+		if(user_can($id,'manage_network'))
+			return; // don't mess with the network admin
+		$userdata = get_userdata($id);
+		$user = array('ID' => $id, 'role' => 'manager', 'user_email' => $userdata->user_email);
+		wp_update_user($user);
 	}
+}
+if(!empty($_POST['set_wpt_primary_admin']) ) {
+	$id = (int) $_POST['set_wpt_primary_admin'];
+	set_wpt_primary_admin($id); //this function will check rights
+}
 
 if(isset($_POST['wp4toastmasters_admin_ids']) )
 	{
@@ -8429,6 +8516,33 @@ if(isset($_POST['wp4toastmasters_admin_ids']) )
 			}
 	}
 
+}
+
+function set_wpt_primary_admin ($user_id) {
+	if(current_user_can('manage_options'))
+	{
+		update_option('wpt_primary_admin',$user_id);
+	}
+}
+
+function wpt_primary_admin () {
+	$primary = (int) get_option('wpt_primary_admin');
+	if($primary) {
+		$user = get_userdata($primary);
+		update_option('wpt_primary_admin',$primary);
+	}
+	if(empty($user))
+	{
+		$admin_email = get_option('admin_email');
+		$user = get_user_by('email',$admin_email);
+		if($user)
+			$primary = $user->ID;
+		update_option('wpt_primary_admin',$primary);
+	}
+
+	if($user && $primary) //if this is set and matches an active user record
+		return $primary;
+	return false;
 }
 
 function jstest() {
@@ -11266,20 +11380,107 @@ if(current_user_can('manage_options'))
 
 add_filter('editable_roles', 'officers_limit_promotion',99);
 
+add_shortcode('blogs_by_member_tag','blogs_by_member_tag');
+function blogs_by_member_tag($atts) {
+global $wp_query,$post;
+
+$original_query = $wp_query;
+$wp_query = null;
+$index = $output = '';
+//$output .= sprintf('<form method="get" action="%s">',get_permalink());
+if(isset($_GET['altslug']))
+{
+	foreach($_GET['altslug'] as $user_id => $slug) {
+		if(!empty($slug)) {
+			add_user_meta($user_id,'blogs_by_member_tag',$slug);
+			$output .= sprintf('<p>Adding %s to %s</p>',$slug,$user_id);
+		}
+	}
+}
+
+$members = get_club_members();
+	foreach($members as $member) {
+	$user_id = $member->ID;
+	$m = get_userdata($member->ID);
+	$name = trim($m->first_name.' '.$m->last_name);
+	$slug = strtolower(preg_replace('/[^a-zA-Z0-9]+/','-',$name));
+	$slugs = get_user_meta($user_id,'blogs_by_member_tag');
+	if(empty($slugs) || !in_array($slug,$slugs)) {
+		add_user_meta($user_id,'blogs_by_member_tag',$slug);
+		$slugs[] = $slug;
+	}
+	$output .= sprintf('<h2 id="member%d">%s</h2>',$user_id,$name);
+	$index .= sprintf('<a href="#member%d">%s</a> * ',$user_id,$m->first_name.'&nbsp;'.$m->last_name);
+	$taggedposts = array();
+	foreach($slugs as $slug) {
+		$args=array('posts_per_page'=>500, 'tag' => $slug);
+		$wp_query = new WP_Query( $args );
+		if ( have_posts() ) :
+			while (have_posts()) : the_post();
+				$t = rsvpmaker_strtotime($post->post_date);
+				$date = date('M d, Y',$t);
+				$members_only = (has_category('Members Only',$post->ID)) ? ' (members only)' : '';
+				/*
+				$excerpt = strip_tags($post->post_content);
+				$p = explode("\n",$excerpt);
+				$excerpt = $p[0];
+				$excerpt = preg_replace('|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)|','',$excerpt);
+				//$excerpt = preg_replace('/\n{2,}/',"\n",$excerpt);
+				if(strlen($excerpt) > 800)
+					$excerpt = substr($excerpt,0,800).'...';
+				$excerpt = wpautop($excerpt);
+				*/
+				$link = sprintf('<h3><a href="%s">%s</a> Posted: %s %s</h3>',get_permalink($post->ID),get_the_title(),$date,$members_only);
+				$excerpt = strip_tags($post->post_content);
+				$p = explode("\n",$excerpt);
+				$excerpt = '';
+				foreach($p as $line) {
+					$pos = strpos($line, $name);
+					if($pos !== false)
+						$excerpt .= '<p>'.$line.'</p>';
+				}
+				if(empty($excerpt) && (sizeof($slugs) > 1)) {
+					$slugname = ucwords(str_replace('-',' ',$slug));
+					//$output .= $slugname;
+					if($slugname != $name) {
+						foreach($p as $line) {
+							$pos = strpos($line, $slugname);
+							if($pos !== false)
+								$excerpt .= '<p>'.$line.'</p>';
+						}								
+					}
+				}
+				$taggedposts[$post->post_date] = $link.$excerpt;
+			endwhile;
+		endif;
+		$wp_query = null;
+	}
+	if(!empty($taggedposts)) {
+		krsort($taggedposts);
+		$output .= implode("\n",$taggedposts);
+	}
+	
+	}
+//$output .= "<button>Add</button></form>";
+$wp_query = $original_query;
+wp_reset_postdata();
+return '<p>* '.$index.'</p>' . $output;
+}
+
 function tm_youtube_tool () {
 
 echo '<h1>Toastmasters YouTube Video Tool</h1>';
 echo "<p>";
  _e('This tool was designed to capture a listing of videos you have uploaded to YouTube and use them as the basis of a blog post (categorized as members-only by default) and / or an email to distribute to your members.','rsvpmaker-for-toastmasters');
-echo "</p>";
+printf(' <a href="https://wp4toastmasters.com/knowledge-base/youtube/">%s</a>.',__("Documentation",'rsvpmaker-for-toastmasters'));
+ echo "</p>";
  
 global $current_user;
 global $wpdb;
 $wpdb->show_errors();
 
 if(!empty($_POST["speakers"]))
-	{
-	
+	{	
 $blog = $_POST["blog"];
 $email = $_POST["email"];
 $policy = stripslashes($_POST["policy"]);
@@ -11287,49 +11488,76 @@ update_option('tm_video_blog',$blog);
 update_option('tm_video_email',$email);
 update_option('tm_video_policy',$policy);
 
-$members_category = get_category_by_slug('members-only');
-$members_cat_id = (empty($members_category->term_id)) ? wp_create_category('Members Only') : $members_category->term_id;
 $video_cat = wp_create_category(__('Video','rsvpmaker-for-toastmasters'));
 
+$categories = array($video_cat);
+if(($blog == 'publish') || ($blog == 'draft'))
+{
+	$members_category = get_category_by_slug('members-only');
+	$members_cat_id = (empty($members_category->term_id)) ? wp_create_category('Members Only') : $members_category->term_id;
+	$categories[] = $members_cat_id;	
+}
+
+$status = (($blog == 'publish') || ($blog == 'publish_public')) ? 'publish' : $draft;
 	// Create post object
 $my_post = array(
   'post_title'    => __('Videos','rsvpmaker-for-toastmasters'),
   'post_content'  => '',
-  'post_status'   => $blog,
+  'post_status'   => $status,
   'post_author'   => $current_user->ID,
-  'post_category' => array($members_cat_id,$video_cat) //video, members only
+  'post_category' => $categories
 );
 
 	$speakers = array();
-	foreach($_POST["speakers"] as $index => $speaker)
+	foreach($_POST["speakers"] as $index => $speaker) {
 		if(!empty($speaker))
 		{
-			if(empty($_POST["link"][$index])){
-				printf('<div class="notice notice-error wptoast-notice" >
-<p>Error: no link provided for speech by %s</p></div>',$speaker);
-				continue;
-			}
 			$speakers[] = $speaker;
-			$link = $_POST["link"][$index];
 			if(!empty($_POST["speech"][$index]))
 				$speaker .= ": ".stripslashes($_POST["speech"][$index]);
-			$my_post['post_content'] .= sprintf("\n\n<p>".'<a href="%s">%s</a>%s',$link,$speaker,"</p>\n\n".$link."\n\n");
+			if(empty($_POST["link"][$index])){
+				$my_post['post_content'] .= sprintf("<!-- wp:paragraph -->\n<p>%s</p>\n<!-- /wp:paragraph -->\n\n",$speaker);
+			}
+			else {
+				$link = $_POST["link"][$index];
+				$my_post['post_content'] .= sprintf("<!-- wp:paragraph -->\n<p>".'<a href="%s">%s</a>%s',$link,$speaker,"</p>\n<!-- /wp:paragraph -->\n\n");
+				$my_post['post_content'] .= sprintf('<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
+<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
+%s
+</div></figure>
+<!-- /wp:core-embed/youtube -->'."\n\n",$link,$link);				
+			}
 		}
-	
+	}
+
 	if(!empty($speakers))
 	{
 	$my_post['tags_input'] = $speakers;
 	$my_post['post_title'] .= ': '.stripslashes(implode(', ',$speakers));
 	}
 
+foreach($_POST['wrapuplink'] as $index => $link) {
+	if(!empty($link))
+	{
+		$text = $_POST['wrapuptext'][$index];
+		$my_post['post_content'] .= sprintf("<!-- wp:paragraph -->\n<p>".'<a href="%s">%s</a>'."</p>\n<!-- /wp:paragraph -->\n\n",$link,$text);	
+		$my_post['post_content'] .= sprintf('<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
+		<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
+		%s
+		</div></figure>
+		<!-- /wp:core-embed/youtube -->'."\n\n",$link,$link);				
+	}
+}
+
+$my_post['post_content'] .= rsvpautog($policy);
+
 // Insert the post into the database
 if($blog != 'none')
 	{
-	$my_post['post_content'] .= wpautop($policy);
 	$id = wp_insert_post( $my_post );
 if($id)
 	printf('<p><a href="%s?post=%d&action=edit">%s</a></p>',admin_url('post.php'),$id,__('Edit blog post','rsvpmaker-for-toastmasters'));
-	if($blog == 'publish')
+	if($status == 'publish')
 		printf('<p><a href="%s">%s</a></p>',get_permalink($id),__('View blog post','rsvpmaker-for-toastmasters'));
 	}
 
@@ -11345,9 +11573,7 @@ if($id)
 	printf('<p><a href="%s?post=%d&action=edit">%s</a></p>',admin_url('post.php'),$id,__('Edit email','rsvpmaker-for-toastmasters'));
 		printf('<p><a href="%s">%s</a></p>',get_permalink($id),__('Preview/send email','rsvpmaker-for-toastmasters'));
 		}
-
-	echo wpautop($my_post['post_content']);
-	
+	echo wpautop($my_post['post_content']);	
 	}
 $blog = get_option('tm_video_blog');
 if(empty($blog))
@@ -11356,6 +11582,10 @@ $email = (int) get_option('tm_video_email');
 ?>
 <form method="post" action="<?php echo admin_url('upload.php?page=tm_youtube_tool'); ?>">
 <p>
+<input type="radio" name="blog" value="draft_public" <?php if($blog == 'draft_public') echo ' checked="checked" '; ?> ><?php _e('Create draft blog post (public)','rsvpmaker-for-toastmasters');?>
+<br />
+<input type="radio" name="blog" value="publish_public" <?php if($blog == 'publish_public') echo ' checked="checked" '; ?> ><?php _e('Create and publish blog post (public)','rsvpmaker-for-toastmasters');?>
+<br />
 <input type="radio" name="blog" value="draft" <?php if($blog == 'draft') echo ' checked="checked" '; ?> ><?php _e('Create draft blog post (members only)','rsvpmaker-for-toastmasters');?>
 <br />
 <input type="radio" name="blog" value="publish" <?php if($blog == 'publish') echo ' checked="checked" '; ?> ><?php _e('Create and publish blog post (members only)','rsvpmaker-for-toastmasters');?>
@@ -11395,6 +11625,8 @@ $past = get_past_events(" (post_content LIKE '%[toastmaster%' OR post_content LI
 if($past)
 foreach($past as $pst)
 	{
+		$wrapup[] = $pst->post_title.' '.$pst->date;
+		$alldetails[] = '<strong>'.$pst->date.'</strong>';
 		$ptext .= '<strong>'.$pst->date."</strong>\n";
 		$sql = "SELECT *, meta_value as user_id FROM $wpdb->postmeta WHERE post_id=$pst->ID AND meta_key LIKE '_Speaker%' ORDER BY meta_key";
 		$speakers = $wpdb->get_results($sql);
@@ -11404,7 +11636,8 @@ foreach($past as $pst)
 				if(!empty($row->user_id) && is_numeric($row->user_id))
 				{
 				$user = get_userdata($row->user_id);
-				$ptext .= sprintf('<input type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ',$count,$count,$user->first_name.' '.$user->last_name);
+				$name = (empty($user->first_name)) ? "User ".$row->user_id : $user->first_name.' '.$user->last_name;
+				$ptext .= sprintf('<input type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ',$count,$count,$name);
 				$title = get_post_meta($pst->ID,'_title'.$row->meta_key,true);
 				$details = '';
 				if(!empty($title))
@@ -11416,7 +11649,8 @@ foreach($past as $pst)
 					$details .= ", ";
 				$details .= __('Project:','rsvpmaker-for-toastmasters').' '.$project;
 				}
-				$ptext .= sprintf('%s: %s<br />Details: <input type="text" name="speech[%d]" value="%s"> YouTube Link: <input type="text" name="link[%d]" class="checkboxlink" i="%d">',$user->first_name.' '.$user->last_name,$details,$count,htmlentities($details.' '.$pst->date),$count,$count);
+				//$alldetails[] = '<strong>'.$user->first_name.' '.$user->last_name.'</strong> '.$details;
+				$ptext .= sprintf('%s: %s<br />Details: <input type="text" name="speech[%d]" value="%s"> YouTube Link: <input type="text" name="link[%d]" class="checkboxlink" i="%d">',$name,$details,$count,htmlentities($details.' '.$pst->date),$count,$count);
 				$ptext .= "\n\n";
 				$count++;
 				}
@@ -11435,6 +11669,11 @@ $stop = $count + 2;
 while($count < $stop) {
 	$ptext .= sprintf('<p>Name: <input type="text" name="speakers[%d]"> Details: <input type="text" name="speech[%d]"> YouTube Link: <input type="text" name="link[%d]"></p>',$count,$count,$count);
 	$count++;
+}
+
+$ptext .= '<p>Wrapup video, for example of Zoom recording of a whole meeting</p>';
+foreach($wrapup as $wrap) {
+	$ptext .= sprintf('<p><input type="text" name="wrapuptext[]" value="%s" style="width: %s" /><br />YouTube link <input name="wrapuplink[]" />',$wrap,'80%;');
 }
 
 echo wpautop($ptext);
@@ -11457,6 +11696,8 @@ $( ".checkboxlink" ).change(function() {
 </script>
 <?php
 
+//foreach($alldetails as $line)
+	//printf('<p>%s</p>',$line);
 }
 
 function rsvptoast_email ($postdata, $rsvp_html, $rsvp_text) {
@@ -12913,7 +13154,18 @@ if(!strpos($post->post_content,'wp:wp4toastmasters') && !strpos($post->post_cont
 
 echo '<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
 <script>
-        tinymce.init({selector:"textarea",plugins: "code, link"});	
+tinymce.init({
+	selector:"textarea",plugins: "link",
+	block_formats: "Paragraph=p",
+	menu: {
+	format: { title: "Format", items: "bold italic | removeformat" },
+	style_formats: [
+	{ title: "Inline", items: [
+		{ title: "Bold", format: "bold" },
+		{ title: "Italic", format: "italic" },
+	]},]},
+	toolbar: "bold italic link",
+});	
 </script>';	
 }
 

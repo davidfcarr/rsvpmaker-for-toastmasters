@@ -4,8 +4,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 5.4.1
-Stable tag: 3.9
+Tested up to: 5.4.2
+Stable tag: 3.9.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,18 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.9.3 =
+
+* Update to YouTube tool - simplifies creating blog posts and emails with embedded speech (or online meeting replay) videos.
+
+= 3.9.2 =
+
+* Another timing bug fix.
+
+= 3.9.1 =
+
+* Fix agenda timing UI bug
 
 = 3.8.9 =
 

@@ -1115,7 +1115,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 		$email[] = $userdata->user_email;
 		continue;
 		}
-	$index = preg_replace('/[^A-Za-z]/','',$userdata->last_name.$userdata->first_name.$userdata->user_login);
+	$index = preg_replace('/[^A-Za-z]/','',$userdata->first_name.$userdata->last_name.$userdata->user_login);
 	$members[$index] = $userdata;
 	}
 ksort($members);
@@ -4220,24 +4220,7 @@ if(time() > strtotime($timestamp))
 	$sql = $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE meta_key=%s AND user_id != %d",$key,$user_id);
 	$wpdb->query($sql);
 	}
-if($user_id == -1)
-	$name = __('Not Available','rsvpmaker-for-toastmasters');
-elseif($user_id == '-2')
-	{
-	$name = __('To Be Announced','rsvpmaker-for-toastmasters');
-	}
-elseif(is_numeric($user_id))
-{
-$userdata = get_userdata($user_id);
-if(empty($userdata->first_name))
-	$name = $userdata->display_name;
-else
-	$name = $userdata->first_name.' '.$userdata->last_name;
-}
-elseif(!empty($user_id))
-	$name = $user_id;
-else
-	$name = 'Open';
+$name = get_member_name($user_id);
 printf('%s assigned to %s',preg_replace('/[\_0-9]/',' ',$role),$name);
 $log = get_member_name($editor_id) .' assigned '.clean_role($role).' to '.get_member_name($user_id).' for '.date('F jS, Y',strtotime($timestamp));
 if($was)

@@ -50,6 +50,18 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	
 	$fnamesort["AAB"] = $sortmember["AAB"] = $member;
 
+	$member = new stdClass();
+	$reserved_role_label = get_option('wpt_reserved_role_label');
+	if(empty($reserved_role_label))
+		$reserved_role_label = 'Ask VPE';
+	$member->ID = -3;
+	$member->last_name = __($reserved_role_label,'rsvpmaker-for-toastmasters');
+	$member->first_name = __("Reserved",'rsvpmaker-for-toastmasters');
+	$member->display_name = __("Reserved",'rsvpmaker-for-toastmasters').' '.$reserved_role_label;
+	$member->user_login = 'tobe';
+	
+	$fnamesort["AAC"] = $sortmember["AAC"] = $member;
+
 	ksort($sortmember);
 	ksort($fnamesort);
 
@@ -202,6 +214,12 @@ function get_member_name($user_id, $credentials = true) {
 		return 'Not Available';
 	elseif($user_id == -2)
 		return 'To Be Announced';
+	elseif($user_id == -3) {
+		$reserved_role_label = get_option('wpt_reserved_role_label');
+		if(empty($reserved_role_label))
+			$reserved_role_label = 'Ask VPE';
+		return 'Reserved ' . $reserved_role_label;	
+	}
 	if(is_numeric($user_id)) {
 		$member = get_userdata($user_id);
 		if(empty($member))
@@ -411,7 +429,7 @@ function is_club_member() {
 return apply_filters('is_club_member',is_user_member_of_blog());	
 }
 
-function wpt_blocks_to_data($content) {
+function wpt_blocks_to_data($content, $include_backup = true) {
 	$data = array();
 	if(strpos($content,'wp:wp4toast'))
 	{
@@ -442,6 +460,7 @@ function wpt_blocks_to_data($content) {
 				$key = $thisdata['role'];
 				if($key == 'custom')
 					$key = $thisdata['role'] = $thisdata['custom_role'];
+				$key .= (empty($thisdata['start'])) ? 1 : $thisdata['start'];
 			}
 			elseif(!empty($thisdata['uid']))
 				$key = $thisdata['uid'];
@@ -450,7 +469,7 @@ function wpt_blocks_to_data($content) {
 			$data[$key] = $thisdata;
 			}
 
-			if(!empty($thisdata['backup']))
+			if(!empty($thisdata['backup']) && $include_backup)
 			{
 				$key = $backup['role'] = 'Backup '.$thisdata['role'];
 				$backup['count'] = 1;
@@ -599,7 +618,7 @@ function get_agenda_timing($post_id) {
 	$time_format = str_replace('%Z','',$rsvp_options['time_format']);
 	$post = get_post($post_id);
 	$date = get_rsvp_date($post_id);
-	$data = wpt_blocks_to_data($post->post_content);
+	$data = wpt_blocks_to_data($post->post_content, false);
 	$elapsed = 0;
 	$time_array = array();
 	foreach($data as $d) {

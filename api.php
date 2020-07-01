@@ -188,7 +188,7 @@ add_action('rest_api_init', function () {
      $gotvote_controller->register_routes();
      $timer_controller = new WPT_Timer_Control();
 	 $timer_controller->register_routes();
-	 $agendatime = new Toast_Agenda_Timing();
-	 $agendatime->register_routes();
+	 //$agendatime = new Toast_Agenda_Timing();
+	 //$agendatime->register_routes();
    } );
 ?>

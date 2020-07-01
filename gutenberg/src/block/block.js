@@ -15,7 +15,6 @@ const { RichText } = wp.blockEditor;
 const { Component, Fragment } = wp.element;
 const { InspectorControls, PanelBody } = wp.editor;
 const { TextareaControl, SelectControl } = wp.components;
-const { subscribe } = wp.data;
 
 function timing_summary( newtiming = null ) {
 	if(newtiming)
@@ -434,12 +433,7 @@ class RoleInspector extends Component {
 			agenda_time_array = timing_summary();
 			setAttributes({timing: agenda_time_array});
 		}	
-		function maptiming(timing) {
-			return timing.map(function (x) {return <div>{x}</div>});
-		}
-
-		maptiming(timing);
-		var array20 = [];
+		var array20 = [{value: '0', label: __('Minutes allowed (optional)') }];
 		var array240 = [{value: '0', label: __('Minutes allowed (optional)') }];
 		for(var i = 1; i <= 20; i++) {
 			array20.push({value: i.toString(), label: i.toString() });
@@ -447,38 +441,6 @@ class RoleInspector extends Component {
 		for(var i = 1; i <= 240; i++) {
 			array240.push({value: i.toString(), label: i.toString()});
 		}
-
-		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-		// determine whether to show notice
-		subscribe( () => {
-			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
-			var checktimingurl = wpApiSettings.root + 'rsvptm/v1/agendatime/' + wp.data.select('core/editor').getCurrentPostId();
-			// Save metaboxes on save completion, except for autosaves that are not a post preview.
-			const shouldTriggerTimingUpdate = (
-					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
-					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
-				);
-	
-			// Save current state for next inspection.
-			wasSavingPost = isSavingPost;
-			wasAutosavingPost = isAutosavingPost;
-			wasPreviewingPost = isPreviewingPost;
-	
-			if ( shouldTriggerTimingUpdate ) {
-				console.log('check for agenda timing updates '+checktimingurl);
-				fetch(checktimingurl)
-				.then(response => response.json())
-				.then(data => function (data) { 
-					agenda_time_array = timing_summary(data);
-					setAttributes({timing: agenda_time_array});
-				});
-			}
-	} );
 
 return (	
 <InspectorControls key="roleinspector">
@@ -520,7 +482,7 @@ return (
 <p><em><strong>Time Allowed</strong>: Total minutes allowed on the agenda. In the case of speeches, limits the time that can be booked for speeches without a warning. Example: 24 minutes for 3 speeches, one of which might be longer than 7 minutes.</em></p>
 <p><em><strong>Padding Time</strong>: Typical use is extra time for introductions, beyond the time allowed for speeches.</em></p>
 <p><strong>Timing Summary</strong></p>
-<p>{maptiming(timing)}</p>
+<p>{timing.map(function (x) {return <div>{x}</div>})}</p>
 </div>
 
 <TextareaControl
@@ -571,42 +533,6 @@ class NoteInspector extends Component {
 		for(var i = 1; i <= 240; i++) {
 			array240.push({value: i.toString(), label: i.toString()});
 		}
-
-		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-		// determine whether to show notice
-		subscribe( () => {
-			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
-			var checktimingurl = wpApiSettings.root + 'rsvptm/v1/agendatime/' + wp.data.select('core/editor').getCurrentPostId();
-			// Save metaboxes on save completion, except for autosaves that are not a post preview.
-			const shouldTriggerTimingUpdate = (
-					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
-					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
-				);
-	
-			// Save current state for next inspection.
-			wasSavingPost = isSavingPost;
-			wasAutosavingPost = isAutosavingPost;
-			wasPreviewingPost = isPreviewingPost;
-	
-			if ( shouldTriggerTimingUpdate ) {
-				console.log('check for agenda timing updates '+checktimingurl);
-				fetch(checktimingurl)
-				.then(response => response.json())
-				.then(data => function (data) {
-					console.log('agenda_time_array start');
-					console.log($data); 
-					agenda_time_array = timing_summary(data);
-					console.log('agenda_time_array');
-					console.log(agenda_time_array);
-					setAttributes({timing: agenda_time_array});
-				});
-			}
-	} );
 			
 		return (
 		<InspectorControls key="noteinspector">
