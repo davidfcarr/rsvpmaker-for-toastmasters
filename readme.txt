@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.4.2
-Stable tag: 3.9.3
+Stable tag: 3.9.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,17 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.9.5 =
+
+* Speaker selection defaults show Pathways options more prominently
+* JavaScript for picking manuals list by path or list of old manuals
+* When an editor changes assignments, path and level (or manual) are set based on what member did last
+* Better security for JavaScript actions
+
+= 3.9.4 =
+
+* More updates to YouTube tool.
 
 = 3.9.3 =
 

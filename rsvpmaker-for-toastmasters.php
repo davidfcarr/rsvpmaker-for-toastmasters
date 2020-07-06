@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 3.9.3
+Version: 3.9.5
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1453,7 +1453,6 @@ function toastmaster_short($atts=array(),$content="") {
 					$output .= '<br />Or guest: <input type="text" name="edit_guest['.$field.']" value="'.$guest.'" />';
 					if(strpos($field,'Speaker') )
 						$output .= $detailsform;
-				$output .= '<div class="ajax_status" id="status'.$field.'"></div>';
 				}
 			elseif(isset($_REQUEST["recommend_roles"]) &&  (current_user_can('edit_roles') || edit_signups_role()) ) // && current_user_can('edit_posts') )
 				{
@@ -1562,6 +1561,7 @@ function toastmaster_short($atts=array(),$content="") {
 				if(strpos($field,'Speaker') )
 					$editone .= str_replace('speaker_details maxtime','speaker_details',str_replace('id="','id="editone',$detailsform));
 				$output .= sprintf('<div id="editonewrapper%s""><a class="editonelink" editone="%s">Edit</a></div><form id="editone%s" method="post" class="edit_one_form" action="%s" style="display: block;"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s"><input type="hidden" name="role" value="%s"><div>%s</div>',$field,$field,$field,$permalink,$post->ID,wp_create_nonce($field),$field,$editone).'<button name="edit_one" id="edit_one_button'.$field.'" value="1">'.__('Submit','rsvpmaker-for-toastmasters').'</button></form>';	
+				$output .= '<div class="ajax_status" id="status'.$field.'"></div>';
 			}
 		}
 
@@ -2238,6 +2238,15 @@ Title: %s',$manual,$project,$title);
 		awemailer($mail); // notify member
 }
 
+function manual_type_options($field,$type) {
+	$manuals_by_type = get_manuals_by_type();
+	$options = '';
+	foreach($manuals_by_type as $index => $mtype) {
+	$s = ($type == $index) ? ' selected="selected" ' : '';
+	$options .= sprintf('<option value="%s" %s>%s</option>',$index,$s,$index);
+	}
+	return sprintf('<div><select id="_manualtype_%s" class="manualtype">%s</select></div>',$field,$options);
+}
 
 function speaker_details ($field, $atts) {
 $demo = (isset($atts['demo']));
@@ -2250,9 +2259,13 @@ $output = $title = "";
 		if(empty($manual) || strpos($manual,'hoose Manual') || strpos($manual,'elect Manual'))
 			{
 			if(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]) || is_admin() )
-				$current_manual = '';
+				$track = get_speaking_track(0);
 			else
-				$current_manual = get_user_meta($current_user->ID,'current_manual',true);
+				$track = get_speaking_track($current_user->ID);
+			$current_manual = $track["manual"];
+
+			$output .= manual_type_options($field,$track["type"]);
+
 			if(empty($current_manual))
 			{
 				$manual = "Select Manual/Path";
@@ -2304,7 +2317,7 @@ $output = $title = "";
 			$maxclass = '';
 		else
 			$maxclass = 'maxtime';
-			
+		
 		$output .= '<div>
 		<input type="hidden" name="post_id" value="'.$post_id.'" />
 		<select class="speaker_details manual" name="_manual['.$field.']" id="_manual_'.$field.'"">'.get_manuals_options($manual).'</select><br /><select class="speaker_details project" name="_project['.$field.']" id="_project_'.$field.'">'.$project_options.'</select>';
@@ -2321,7 +2334,7 @@ $output = $title = "";
 		$output .= '<div class="speech_title">Title: <input type="text" class="speaker_details title_text" id="title_text'.$field.'" name="_title['.$field.']" value="'.$title.'" /></div>';
 		if(!$demo)
 			$output .= '<div class="speaker_introduction">Introduction: <br /><textarea class="intro_'.$field.'" name="_intro['.$field.']" id="_intro_'.$field.'" style="width: 100%; height: 4em;">'.$intro.'</textarea></div>';
-		$output = apply_filters('speaker_form_extra',$output,$field);	
+		$output = apply_filters('speaker_form_extra',$output,$field);
 
 return $output;
 }
@@ -5194,6 +5207,7 @@ elseif( !is_club_member() )
 else
 	{
 	$link .= agenda_menu($post->ID);
+	$link .= sprintf('<input type="hidden" id="editor_id" value="%s" />',$current_user->ID);
 
 if(isset($_REQUEST["assigned_open"]) && current_user_can($security['edit_signups']))
 	{
@@ -6737,7 +6751,7 @@ $content .= sprintf('<p><a href="%sedit_sidebar=1">%s</a></p>',rsvpmaker_permali
 	
 return sprintf('<form id="edit_roles_form" method="post" action="%s"">
 %s
-<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="editor_id" name="editor_id" value="%d" /><input type="hidden" id="toastcode" value="%s"></form> %s',rsvpmaker_permalink_query($post->ID),$content,$post->ID,$current_user->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),time_tally_include($post->ID));
+<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form> %s',rsvpmaker_permalink_query($post->ID),$content,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),time_tally_include($post->ID));
 }
 
 function time_tally_include ($post_id) {
@@ -6986,6 +7000,12 @@ function signup_sheet_editor() {
 	
 	<script>
 jQuery(document).ready(function($) {
+
+$.ajaxSetup({
+	headers: {
+		'X-WP-Nonce': '". wp_create_nonce( 'wp_rest' )."',
+	}
+});
 
 $('.editor_assign').on('change', function(){
 	var user_id = this.value;
@@ -8555,6 +8575,7 @@ function jstest() {
 
 function toastmasters_css_js() {
 	global $post;
+	$version = '3.35';
 	if(isset($_GET['action']) || (is_admin() && !isset($_GET['page'])) )
 		return; // don't load all this in editor or post listings
 	if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && (($_REQUEST["page"] == 'toastmasters_reconcile') || ($_REQUEST["page"] == 'my_progress_report') || ($_REQUEST["page"] == 'wp4t_evaluations') || ($_REQUEST["page"] == 'toastmasters_reports') )  ) )
@@ -8562,7 +8583,7 @@ function toastmasters_css_js() {
 	wp_enqueue_style( 'jquery' );
 	wp_enqueue_style( 'jquery-ui-core' );
 	wp_enqueue_style( 'jquery-ui-sortable' );
-	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), '2.7.5');
+	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), $version);
 	wp_enqueue_script( 'script-toastmasters');
 	$manuals = get_manuals_options();
 	wp_localize_script( 'script-toastmasters', 'manuals_list', $manuals );
@@ -8573,7 +8594,8 @@ function toastmasters_css_js() {
 	$display_times = get_projects_array('display_times');
 	wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
 	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
-	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), '2.6.3' );
+	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
+	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), $version );
 	}
 }
 
@@ -10320,8 +10342,102 @@ imagedestroy($im);
 exit();
 }
 
+function get_manuals_by_type_options($type) {
+	$types = get_manuals_by_type();
+	$manuals = $types[$type];
+	$o = '';
+	foreach($manuals as $manual => $label)
+		$o .= sprintf('<option value="%s">%s</option>',$manual,$label);
+	return $o;
+}
+
+function get_manuals_by_type() {
+	return array(
+	"Path Not Set" => array('Path Not Set Level 1 Mastering Fundamentals'=> __('Path Not Set Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')),
+	"Dynamic Leadership" => array(
+		'Dynamic Leadership Level 1 Mastering Fundamentals'=> __('Dynamic Leadership Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Dynamic Leadership Level 2 Learning Your Style'=> __('Dynamic Leadership Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Dynamic Leadership Level 3 Increasing Knowledge'=> __('Dynamic Leadership Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Dynamic Leadership Level 4 Building Skills'=> __('Dynamic Leadership Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Dynamic Leadership Level 5 Demonstrating Expertise'=> __('Dynamic Leadership Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Effective Coaching" => array(
+		'Effective Coaching Level 1 Mastering Fundamentals'=> __('Effective Coaching Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Effective Coaching Level 2 Learning Your Style'=> __('Effective Coaching Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Effective Coaching Level 3 Increasing Knowledge'=> __('Effective Coaching Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Effective Coaching Level 4 Building Skills'=> __('Effective Coaching Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Effective Coaching Level 5 Demonstrating Expertise'=> __('Effective Coaching Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Engaging Humor" => array(
+		'Engaging Humor Level 1 Mastering Fundamentals'=> __('Engaging Humor Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Engaging Humor Level 2 Learning Your Style'=> __('Engaging Humor Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Engaging Humor Level 3 Increasing Knowledge'=> __('Engaging Humor Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Engaging Humor Level 4 Building Skills'=> __('Engaging Humor Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Engaging Humor Level 5 Demonstrating Expertise'=> __('Engaging Humor Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Innovative Planning" => array(
+		'Innovative Planning Level 1 Mastering Fundamentals'=> __('Innovative Planning Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Innovative Planning Level 2 Learning Your Style'=> __('Innovative Planning Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Innovative Planning Level 3 Increasing Knowledge'=> __('Innovative Planning Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Innovative Planning Level 4 Building Skills'=> __('Innovative Planning Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Innovative Planning Level 5 Demonstrating Expertise'=> __('Innovative Planning Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Leadership Development" => array(
+		'Leadership Development Level 1 Mastering Fundamentals'=> __('Leadership Development Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Leadership Development Level 2 Learning Your Style'=> __('Leadership Development Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Leadership Development Level 3 Increasing Knowledge'=> __('Leadership Development Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Leadership Development Level 4 Building Skills'=> __('Leadership Development Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Leadership Development Level 5 Demonstrating Expertise'=> __('Leadership Development Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	'Motivational Strategies' => array(
+		'Motivational Strategies Level 1 Mastering Fundamentals'=> __('Motivational Strategies Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Motivational Strategies Level 2 Learning Your Style'=> __('Motivational Strategies Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Motivational Strategies Level 3 Increasing Knowledge'=> __('Motivational Strategies Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Motivational Strategies Level 4 Building Skills'=> __('Motivational Strategies Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Motivational Strategies Level 5 Demonstrating Expertise'=> __('Motivational Strategies Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Persuasive Influence" => array(
+		'Persuasive Influence Level 1 Mastering Fundamentals'=> __('Persuasive Influence Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Persuasive Influence Level 2 Learning Your Style'=> __('Persuasive Influence Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Persuasive Influence Level 3 Increasing Knowledge'=> __('Persuasive Influence Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Persuasive Influence Level 4 Building Skills'=> __('Persuasive Influence Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Persuasive Influence Level 5 Demonstrating Expertise'=> __('Persuasive Influence Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Presentation Mastery" => array(
+		'Presentation Mastery Level 1 Mastering Fundamentals'=> __('Presentation Mastery Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Presentation Mastery Level 2 Learning Your Style'=> __('Presentation Mastery Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Presentation Mastery Level 3 Increasing Knowledge'=> __('Presentation Mastery Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Presentation Mastery Level 4 Building Skills'=> __('Presentation Mastery Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Presentation Mastery Level 5 Demonstrating Expertise'=> __('Presentation Mastery Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Strategic Relationships" => array(
+		'Strategic Relationships Level 1 Mastering Fundamentals'=> __('Strategic Relationships Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Strategic Relationships Level 2 Learning Your Style'=> __('Strategic Relationships Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Strategic Relationships Level 3 Increasing Knowledge'=> __('Strategic Relationships Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Strategic Relationships Level 4 Building Skills'=> __('Strategic Relationships Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Strategic Relationships Level 5 Demonstrating Expertise'=> __('Strategic Relationships Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	'Team Collaboration' => array(
+		'Team Collaboration Level 1 Mastering Fundamentals'=> __('Team Collaboration Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Team Collaboration Level 2 Learning Your Style'=> __('Team Collaboration Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Team Collaboration Level 3 Increasing Knowledge'=> __('Team Collaboration Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Team Collaboration Level 4 Building Skills'=> __('Team Collaboration Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Team Collaboration Level 5 Demonstrating Expertise'=> __('Team Collaboration Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	'Visionary Communication' => array(
+		'Visionary Communication Level 1 Mastering Fundamentals'=> __('Visionary Communication Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
+		,'Visionary Communication Level 2 Learning Your Style'=> __('Visionary Communication Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
+		,'Visionary Communication Level 3 Increasing Knowledge'=> __('Visionary Communication Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
+		,'Visionary Communication Level 4 Building Skills'=> __('Visionary Communication Level 4 Building Skills','rsvpmaker-for-toastmasters')
+		,'Visionary Communication Level 5 Demonstrating Expertise'=> __('Visionary Communication Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
+	),
+	"Manual" => array("COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')) 
+	);
+}
+
 function get_manuals_array() {
 return array("Select Manual/Path" => __("Select Manual/Path",'rsvpmaker-for-toastmasters'),"COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
+,'Path Not Set Level 1 Mastering Fundamentals'=> __('Path Not Set Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 1 Mastering Fundamentals'=> __('Dynamic Leadership Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 2 Learning Your Style'=> __('Dynamic Leadership Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 3 Increasing Knowledge'=> __('Dynamic Leadership Level 3 Increasing Knowledge','rsvpmaker-for-toastmasters')
@@ -11461,7 +11577,17 @@ $members = get_club_members();
 	}
 	
 	}
-//$output .= "<button>Add</button></form>";
+
+$tags = get_tags();
+if ( $tags ) {
+$output .= "<h3>".__('All Blog Tags','rsvpmaker-for-toastmasters')."</h3>\n<p>* ";
+foreach ( $tags as $tag )
+{
+		$output .= sprintf('<a href="%s" title="%s">%s</a> * ',esc_url( get_tag_link( $tag->term_id ) ), esc_attr( $tag->name ), esc_html( $tag->name ));
+}
+$output .= '</p>';
+}
+
 $wp_query = $original_query;
 wp_reset_postdata();
 return '<p>* '.$index.'</p>' . $output;
@@ -11500,7 +11626,7 @@ if(($blog == 'publish') || ($blog == 'draft'))
 
 $status = (($blog == 'publish') || ($blog == 'publish_public')) ? 'publish' : $draft;
 	// Create post object
-$my_post = array(
+$email_post = $my_post = array(
   'post_title'    => __('Videos','rsvpmaker-for-toastmasters'),
   'post_content'  => '',
   'post_status'   => $status,
@@ -11516,16 +11642,37 @@ $my_post = array(
 			if(!empty($_POST["speech"][$index]))
 				$speaker .= ": ".stripslashes($_POST["speech"][$index]);
 			if(empty($_POST["link"][$index])){
-				$my_post['post_content'] .= sprintf("<!-- wp:paragraph -->\n<p>%s</p>\n<!-- /wp:paragraph -->\n\n",$speaker);
+				$speakerline = sprintf("<!-- wp:paragraph -->\n<p>%s</p>\n<!-- /wp:paragraph -->\n\n",$speaker);
+				$email_post['post_content'] .= $speakerline;
+				$my_post['post_content'] .= $speakerline;
 			}
 			else {
 				$link = $_POST["link"][$index];
-				$my_post['post_content'] .= sprintf("<!-- wp:paragraph -->\n<p>".'<a href="%s">%s</a>%s',$link,$speaker,"</p>\n<!-- /wp:paragraph -->\n\n");
+				$speakerline = sprintf("<!-- wp:paragraph -->\n<p>".'<a href="%s">%s</a>%s',$link,$speaker,"</p>\n<!-- /wp:paragraph -->\n\n");
+				$my_post['post_content'] .= $speakerline;
+				$email_post['post_content'] .= $speakerline;
 				$my_post['post_content'] .= sprintf('<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
 <figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
 %s
 </div></figure>
-<!-- /wp:core-embed/youtube -->'."\n\n",$link,$link);				
+<!-- /wp:core-embed/youtube -->'."\n\n",$link,$link);
+				if(strpos($link,'?v='))
+					{
+					$parts = explode('?v=',$link);
+					$video_id = $parts[1];
+					}
+				else {
+					$parts = explode('/',$link); //https://youtu.be/ONGUlUB0ho4
+					$video_id = array_pop($parts);
+				}
+				$email_post['post_content'] .= sprintf('<!-- wp:paragraph -->
+<p><a rel="noreferrer noopener" href="%s" target="_blank">Watch on YouTube</a></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image -->
+<figure class="wp-block-image"><a href="%s" target="_blank"><img src="https://img.youtube.com/vi/%s/hqdefault.jpg" alt=""/></a></figure>
+<!-- /wp:image -->
+',$link,$link,$video_id);
 			}
 		}
 	}
@@ -11534,22 +11681,47 @@ $my_post = array(
 	{
 	$my_post['tags_input'] = $speakers;
 	$my_post['post_title'] .= ': '.stripslashes(implode(', ',$speakers));
+	$email_post['post_title'] .= ': '.stripslashes(implode(', ',$speakers));
 	}
 
 foreach($_POST['wrapuplink'] as $index => $link) {
 	if(!empty($link))
 	{
 		$text = $_POST['wrapuptext'][$index];
-		$my_post['post_content'] .= sprintf("<!-- wp:paragraph -->\n<p>".'<a href="%s">%s</a>'."</p>\n<!-- /wp:paragraph -->\n\n",$link,$text);	
+		$separator = empty($speakers) ? ' ' : ' - ';
+		$my_post['post_title'] .= $separator.$text;
+		$email_post['post_title'] .= $separator.$text;
+		$speakerline = sprintf("<!-- wp:paragraph -->\n<p>".'<a href="%s">%s</a>'."</p>\n<!-- /wp:paragraph -->\n\n",$link,$text);
+		$my_post['post_content'] .= $speakerline;
+		$email_post['post_content'] .= $speakerline;
 		$my_post['post_content'] .= sprintf('<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
 		<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
 		%s
 		</div></figure>
 		<!-- /wp:core-embed/youtube -->'."\n\n",$link,$link);				
+		if(strpos($link,'?v='))
+		{
+		$parts = explode('?v=',$link);
+		$video_id = $parts[1];
+		}
+	else {
+		$parts = explode('/',$link); //https://youtu.be/ONGUlUB0ho4
+		$video_id = array_pop($parts);
+		}
+	$email_post['post_content'] .= sprintf('<!-- wp:paragraph -->
+<p><a rel="noreferrer noopener" href="%s" target="_blank">Watch on YouTube</a></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:image -->
+<figure class="wp-block-image"><a href="%s" target="_blank"><img src="https://img.youtube.com/vi/%s/hqdefault.jpg" alt=""/></a></figure>
+<!-- /wp:image -->
+',$link,$link,$video_id);
 	}
 }
 
-$my_post['post_content'] .= rsvpautog($policy);
+$policy = rsvpautog($policy);
+$my_post['post_content'] .= $policy;
+$email_post['post_content'] .= $policy;
 
 // Insert the post into the database
 if($blog != 'none')
@@ -11563,13 +11735,9 @@ if($id)
 
 	if($email)
 		{
-		$my_email = array(
-  'post_title'    => $my_post["post_title"],
-  'post_content'  => $my_post['post_content'],
-  'post_status'   => 'publish',
-  'post_type' => 'rsvpemail',
-  'post_author'   => $current_user->ID);
-	$id = wp_insert_post( $my_email );
+		$email_post['post_type'] = 'rsvpemail';
+		$email_post['post_status'] = 'publish';
+	$id = wp_insert_post( $email_post );
 	printf('<p><a href="%s?post=%d&action=edit">%s</a></p>',admin_url('post.php'),$id,__('Edit email','rsvpmaker-for-toastmasters'));
 		printf('<p><a href="%s">%s</a></p>',get_permalink($id),__('Preview/send email','rsvpmaker-for-toastmasters'));
 		}
@@ -11625,9 +11793,10 @@ $past = get_past_events(" (post_content LIKE '%[toastmaster%' OR post_content LI
 if($past)
 foreach($past as $pst)
 	{
-		$wrapup[] = $pst->post_title.' '.$pst->date;
+		$wrapup[] = $pst->date;
 		$alldetails[] = '<strong>'.$pst->date.'</strong>';
 		$ptext .= '<strong>'.$pst->date."</strong>\n";
+		$nameanddetails = '';
 		$sql = "SELECT *, meta_value as user_id FROM $wpdb->postmeta WHERE post_id=$pst->ID AND meta_key LIKE '_Speaker%' ORDER BY meta_key";
 		$speakers = $wpdb->get_results($sql);
 		if($speakers)
@@ -11642,6 +11811,7 @@ foreach($past as $pst)
 				$details = '';
 				if(!empty($title))
 					$details = trim($title);
+				$nameanddetails .= '<p>'.$name.': '.$details.'</p>';
 				$pkey = get_post_meta($pst->ID,'_project'.$row->meta_key,true);
 				if(!empty($pkey)) {
 				$project = get_project_text($pkey);
@@ -11655,6 +11825,7 @@ foreach($past as $pst)
 				$count++;
 				}
 			}
+	$summaries[] = $nameanddetails;
 	}
 
 $stop = $count + 3;
@@ -11671,27 +11842,39 @@ while($count < $stop) {
 	$count++;
 }
 
-$ptext .= '<p>Wrapup video, for example of Zoom recording of a whole meeting</p>';
-foreach($wrapup as $wrap) {
-	$ptext .= sprintf('<p><input type="text" name="wrapuptext[]" value="%s" style="width: %s" /><br />YouTube link <input name="wrapuplink[]" />',$wrap,'80%;');
+$ptext .= '<p>Wrapup video, for example Zoom recording of a whole meeting</p>';
+foreach($wrapup as $index => $wrap) {
+	$ptext .= sprintf('<p><input type="text" name="wrapuptext[]" value="%s" /> YouTube link <input name="wrapuplink[]" /></p>',$wrap);
+	$ptext .= '<div class="speech-summaries">'.$summaries[$index].'</div>';
 }
+$ptext .= '<p id="show-summaries-wrapper"><input type="checkbox" id="show-summaries" > Show speech summaries for each week.</p>';
 
-echo wpautop($ptext);
+echo $ptext; //wpautop($ptext);
 	$policy = get_option('tm_video_policy');
 	if(empty($policy) )
 		$policy = "<strong>Video policy</strong>: speech videos are intended as a tool for speakers to see their own performances and think about how they can improve. Even though these are on YouTube, they are published as \"unlisted\" by default, meaning they won't show up in search results. Don't forward these links or post them on Facebook or in any other forum without the speaker's permission. From time to time, we may ask a speaker for permission to use a video as part of our marketing of the club. Volunteers are also welcome - if you're proud of a particular speech, let us know.";
 ?>
 <h3><?php _e('Policy to include in email','rsvpmaker-for-toastmasters'); ?></h3>
-<p><textarea name="policy" rows="3" style="width: 100%"><?php echo $policy;?></textarea></p>
+<p><textarea name="policy" rows="3" style="width: 90%"><?php echo $policy;?></textarea></p>
 <?php submit_button(); ?>
 </form>
+
+<p>To display a listing of videos and blog posts indexed by member name on your website, include the code [blogs_by_member_tag] on the page where you want it to appear.</p>
+
 <script>
 jQuery(document).ready(function($) {
 $( ".checkboxlink" ).change(function() {
-//get value of speakerx
 	var count = $(this).attr('i');
 	$('#speaker'+count).prop('checked', true);
 });
+
+$('.speech-summaries').hide();
+
+$( "#show-summaries" ).click(function() {
+	$('.speech-summaries').show();
+	$( "#show-summaries-wrapper").hide();
+});
+
 });
 </script>
 <?php

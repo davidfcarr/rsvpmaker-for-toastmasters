@@ -603,6 +603,26 @@ $projects["LEADERSHIP EXCELLENCE SERIES 10"] = __("Resolving Conflict","rsvpmake
 $project_times["LEADERSHIP EXCELLENCE SERIES 10"] = 15;
 $display_times["LEADERSHIP EXCELLENCE SERIES 10"] = "10 to 15 minutes";
 
+$projects["Path Not Set Level 1 Mastering Fundamentals 0"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
+$project_times["Path Not Set Level 1 Mastering Fundamentals 0"] = 6;
+$display_times["Path Not Set Level 1 Mastering Fundamentals 0"] = "4 - 6 minutes";
+
+$projects["Path Not Set Level 1 Mastering Fundamentals 5"] = __("Evaluation and Feedback - First Speech","rsvpmaker-for-toastmasters");
+$project_times["Path Not Set Level 1 Mastering Fundamentals 5"] = 7;
+$display_times["Path Not Set Level 1 Mastering Fundamentals 5"] = "5-7 minutes";
+
+$projects["Path Not Set Level 1 Mastering Fundamentals 6"] = __("Evaluation and Feedback - Second Speech","rsvpmaker-for-toastmasters");
+$project_times["Path Not Set Level 1 Mastering Fundamentals 6"] = 7;
+$display_times["Path Not Set Level 1 Mastering Fundamentals 6"] = "5-7 minutes";
+
+$projects["Path Not Set Level 1 Mastering Fundamentals 7"] = __("Evaluation and Feedback - Evaluator Speech","rsvpmaker-for-toastmasters");
+$project_times["Path Not Set Level 1 Mastering Fundamentals 7"] = 3;
+$display_times["Path Not Set Level 1 Mastering Fundamentals 7"] = "2-3 minutes";
+
+$projects["Path Not Set Level 1 Mastering Fundamentals 11"] = __("Researching and Presenting","rsvpmaker-for-toastmasters");
+$project_times["Path Not Set Level 1 Mastering Fundamentals 11"] = 7;
+$display_times["Path Not Set Level 1 Mastering Fundamentals 11"] = "5 - 7 minutes";
+
 $projects["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
 $project_times["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = 6;
 $display_times["Dynamic Leadership Level 1 Mastering Fundamentals 0"] = "4 - 6 minutes";

@@ -799,6 +799,59 @@ $tmstats = get_tm_stats($user_id);
 return $tmstats["count"];
 }
 
+add_shortcode('latest_manual_test','latest_manual_test');
+
+function latest_manual_test () {
+	$output = '';
+	$members = get_club_members();
+	foreach($members as $m) {
+		$l = get_speaking_track($m->ID);
+		$output .= sprintf('<p>%s %s</p>',$m->user_login,var_export($l,true));
+	}
+	return $output;
+}
+
+function get_speaking_track($user_id) {
+	global $wpdb;
+	global $current_user;
+	$manuals = get_manuals_options();
+	$projects = get_projects_array('options');
+
+	$wpdb->show_errors();
+		if($user_id) {
+			$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_key as speech
+			FROM ".$wpdb->posts."
+			JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+			JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=".$user_id." 
+			WHERE a1.meta_value < CURDATE() AND post_status='publish'
+			ORDER BY a1.meta_value DESC
+			LIMIT 0, 10";	
+			$speeches = $wpdb->get_results($sql);
+   
+			foreach($speeches as $s)
+			{
+				$manual = get_post_meta($s->post_id,'_manual'.$s->speech,true);
+				if(!empty($manual) && ($manual != 'Select Manual/Path'))
+					break;
+			}   
+		}
+		 if(empty($manual)) {
+			 $manual_type = 'Path Not Set';
+			 $manual_label = 'Level 1 Mastering Fundamentals';
+			 $manual = $manual_type.' '.$manual_label; 
+		 }
+		 else {
+			$parts = explode(' Level ',$manual);
+			if(empty($parts[1])) {
+			   $manual_type = 'Manual';
+			}
+			else {
+			   $manual_type = $parts[0];
+			}   
+		 }
+		 return array('type' => $manual_type,'manual' => $manual,'projects' => $projects[$manual]);
+}
+
 function get_latest_speeches ($user_id, $myroles = array()) {
 global $wpdb;
 global $current_user;
@@ -3331,7 +3384,7 @@ function tm_welcome_screen_assets( $hook ) {
 //everywhere except posts screen
   if(!strpos($_SERVER['REQUEST_URI'],'post.php')) //if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) 
    {
-    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.74 );
+    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.75 );
     wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.96', true );
   }
 }
@@ -4196,6 +4249,8 @@ wp_die();
 add_action( 'wp_ajax_delete_tm_detail', 'wp_ajax_delete_tm_detail' );
 
 function wp_ajax_editor_assign () {
+if(!current_user_can('edit_signups'))
+	wp_die('security error');
 global $wpdb;
 $post_id = (int) $_POST["post_id"];
 $user_id = $_POST["user_id"];

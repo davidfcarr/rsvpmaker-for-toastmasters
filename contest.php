@@ -776,6 +776,12 @@ do_action('wpt_scoring_dashboard_bottom'); ?>
 <script>
 jQuery(document).ready(function($) {
 
+$.ajaxSetup({
+	headers: {
+		'X-WP-Nonce': '<?php echo wp_create_nonce( 'wp_rest' );?>',
+	}
+});
+
 function votingLinkToggle () {
 	if($( "input#showlinks:checked" ).val()) {
 	  $('.votinglink').show();

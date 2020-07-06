@@ -1,5 +1,11 @@
 jQuery(document).ready(function($) {
 
+$.ajaxSetup({
+	headers: {
+		'X-WP-Nonce': wpt_rest.nonce,
+	}
+});
+
 $('.tmsortable').sortable({
   containment: "parent",
   cursor: "move",
@@ -80,30 +86,49 @@ $('.recommend_instead').on('click', function(){
 // delegation code? $('.role_data').on('change', '.manual', function(){
 $('.editor_assign').on('change', function(){
 	var user_id = this.value;
+	//alert('user_id '+user_id);
 	var id = this.id;
-	var role = id.replace('editor_assign','');
+	var parts = id.split('editor_assign');
+	var role = parts[1];
 	if ( $('input[name="recommend_instead'+role+'"]').is(':checked') ) {return false;}
-	var security = $('#toastcode').val();
 	$('#_manual_'+role).html(manuals_list);
 	$('#_project_'+role).html('<option value="">Pick Manual for Project List</option>');
 	$('#title_text'+role).val('');
 	$('#_intro_'+role).val('');
 	var post_id = $(this).attr('post_id');
 	var editor_id = $('#editor_id').val();
-	if(security && (post_id > 0))
+	$('#status'+role).html('Saving ... '+role);
+	console.log('post_id '+post_id);
+	console.log('role '+role);
+	if(post_id > 0)
 	{
 		var data = {
 			'action': 'editor_assign',
 			'role': role,
 			'user_id': user_id,
 			'editor_id': editor_id,
-			'security': security,
 			'post_id': post_id
 		};
-		jQuery.post(ajaxurl, data, function(response) {
-		$('#status'+role).html(response);
-		$('#status'+role).fadeIn(200);
+		$.post(wpt_rest.url+'rsvptm/v1/editor_assign', data, function(response) {
+			console.log(response);
+			if(response.status){
+				$('#status'+role).html(response.status);
+			}
+			if(response.list) {
+				var test = $('#_manual_'+role).val();
+				if(typeof test !== 'undefined') {
+					$('#_manual_'+role).html(response.list);
+					$('#_project_'+role).html(response.projects);
+					$('#_manualtype_'+role).val(response.type);
+				}
+				else {
+					$('#editone_manual_'+role).html(response.list);
+					$('#editone_project_'+role).html(response.projects);
+					$('#editone_manualtype_'+role).val(response.type);	
+				}
+			}
 		});
+		
 	}
 });
 
@@ -112,6 +137,25 @@ $('.manual').on('change', function(){
 	var target = this.id.replace('manual','project');
 	var list = project_list[manual];
 	$('#'+target).html('<option value="">Pick a Project</option>' + list);
+});
+
+$('.manualtype').on('change', function(){
+	var manualtype = this.value;
+	var target = this.id.replace('manualtype','manual');
+	var projects_target = this.id.replace('manualtype','project');
+	console.log('type '+manualtype);
+	console.log('target '+target);
+	var current = $('#'+target).val();
+	console.log('current '+current);
+	$.get(wpt_rest.url+'rsvptm/v1/type_to_manual/'+manualtype, function(data) {
+		console.log(data);
+		if(data.list) {
+			$('#'+target).html(data.list);
+			$('#'+projects_target).html(data.projects);
+		}
+	} );
+	//var list = project_list[manual];
+	//$('#'+target).html('<option value="">Pick a Project</option>' + list);
 });
 
 $('.project').on('change', function(){

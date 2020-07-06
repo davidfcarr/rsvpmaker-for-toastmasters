@@ -176,7 +176,103 @@ class Toast_Agenda_Timing extends WP_REST_Controller {
 	  return new WP_REST_Response($timing, 200);
 	}
   }
+
+class Toast_Manual_Lookup extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'type_to_manual/(?P<type>.+)';
   
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'get_items' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+			  ),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;
+	}
+  
+  public function get_items($request) {
+	$type = urldecode($request['type']);
+	$options = get_manuals_by_type_options($type);
+	$projects = '';
+	$pa = get_projects_array('options');
+	$manual = ($type == 'Manual') ? "COMPETENT COMMUNICATION" : $type .' Level 1 Mastering Fundamentals';
+	$projects = $pa[$manual];	
+	  return new WP_REST_Response(array('list' => $options, 'projects' => $projects), 200);
+	}
+}
+
+class Editor_Assign extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'editor_assign';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'POST',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return (is_user_logged_in() && current_user_can('edit_signups'));
+	}
+  
+  public function handle($request) {
+	global $wpdb;
+	$post_id = (int) $_POST["post_id"];
+	$user_id = $_POST["user_id"];
+	$role = $_POST["role"];
+	$editor_id = (int) $_POST["editor_id"];
+	$timestamp = get_rsvp_date($post_id);
+	$was = get_post_meta($post_id,$role,true);
+	update_post_meta($post_id,$role,$user_id);
+	if(strpos($role,'Speaker'))
+		{
+		delete_post_meta($post_id,'_manual'.$role);
+		delete_post_meta($post_id,'_project'.$role);
+		delete_post_meta($post_id,'_title'.$role);
+		delete_post_meta($post_id,'_intro'.$role);
+		}
+	if(time() > strtotime($timestamp))
+		{
+		$key = make_tm_usermeta_key ($role, $timestamp, $post_id);
+		$roledata = make_tm_roledata_array ('wp_ajax_editor_assign');
+		if($user_id)
+			update_user_meta($user_id,$key,$roledata);
+		$sql = $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE meta_key=%s AND user_id != %d",$key,$user_id);
+		$wpdb->query($sql);
+		}
+	$name = get_member_name($user_id);
+	$status = sprintf('%s assigned to %s',preg_replace('/[\_0-9]/',' ',$role),$name);
+	$log = get_member_name($editor_id) .' assigned '.clean_role($role).' to '.get_member_name($user_id).' for '.date('F jS, Y',strtotime($timestamp));
+	if($was)
+		$log .= ' (was: '.get_member_name($was).')';
+	$log .= ' <small><em>(Posted: '.date('m/d/y H:i').')</em></small>';
+	
+	add_post_meta($post_id,'_activity_editor', $log );
+	$type = '';
+	$manual = '';
+	$projects = '';
+	$options = '';
+	if(strpos($role,'peaker')) {
+		$track = get_speaking_track($user_id);
+		$type = $track["type"];
+		$manual = $track["manual"];
+		$options = sprintf('<option value="%s">%s</option>',$track['manual'],$track['manual']);
+		$options .= get_manuals_by_type_options($type);
+		$projects = '<option value="">Select Project</option>'.$track["projects"];
+	}
+	  return new WP_REST_Response(array('status' => $status, 'type' => $type, 'list' => $options, 'projects' => $projects), 200);
+	}
+}
+
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
@@ -188,7 +284,9 @@ add_action('rest_api_init', function () {
      $gotvote_controller->register_routes();
      $timer_controller = new WPT_Timer_Control();
 	 $timer_controller->register_routes();
-	 //$agendatime = new Toast_Agenda_Timing();
-	 //$agendatime->register_routes();
+	 $manual = new Toast_Manual_Lookup();
+	 $manual->register_routes();
+	 $assign = new Editor_Assign();
+	 $assign->register_routes();
    } );
 ?>
