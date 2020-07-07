@@ -125,6 +125,8 @@ $('.editor_assign').on('change', function(){
 					$('#editone_manual_'+role).html(response.list);
 					$('#editone_project_'+role).html(response.projects);
 					$('#editone_manualtype_'+role).val(response.type);	
+					$('#editone_title_text'+role).val('');
+					$('#editone_intro_'+role).val('');
 				}
 			}
 		});

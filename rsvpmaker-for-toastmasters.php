@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 3.9.5
+Version: 3.9.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1558,12 +1558,14 @@ function toastmaster_short($atts=array(),$content="") {
 			if(is_single() && current_user_can('edit_signups')) { 
 				$awe_user_dropdown = awe_user_dropdown($field, $assigned);
 				$editone = 'Member: '.$awe_user_dropdown;
+				$guest = is_numeric($assigned) ? '' : $assigned;
+				$editone .= sprintf('<br />Or guest: <input id="%d_edit_guest%s" name="guest" value="%s">',$post->ID,$role,esc_attr($guest));
 				if(strpos($field,'Speaker') )
 					$editone .= str_replace('speaker_details maxtime','speaker_details',str_replace('id="','id="editone',$detailsform));
 				$output .= sprintf('<div id="editonewrapper%s""><a class="editonelink" editone="%s">Edit</a></div><form id="editone%s" method="post" class="edit_one_form" action="%s" style="display: block;"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s"><input type="hidden" name="role" value="%s"><div>%s</div>',$field,$field,$field,$permalink,$post->ID,wp_create_nonce($field),$field,$editone).'<button name="edit_one" id="edit_one_button'.$field.'" value="1">'.__('Submit','rsvpmaker-for-toastmasters').'</button></form>';	
-				$output .= '<div class="ajax_status" id="status'.$field.'"></div>';
 			}
 		}
+		$output .= '<div class="ajax_status" id="status'.$field.'"></div>';
 
 		$output .= '</div></div><!-- end role block -->';			
 			} //end for loop
@@ -10431,7 +10433,9 @@ function get_manuals_by_type() {
 		,'Visionary Communication Level 4 Building Skills'=> __('Visionary Communication Level 4 Building Skills','rsvpmaker-for-toastmasters')
 		,'Visionary Communication Level 5 Demonstrating Expertise'=> __('Visionary Communication Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
 	),
-	"Manual" => array("COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')) 
+	"Manual" => array("COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
+	),
+	"Other" => array("Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters')) 
 	);
 }
 
@@ -11806,22 +11810,22 @@ foreach($past as $pst)
 				{
 				$user = get_userdata($row->user_id);
 				$name = (empty($user->first_name)) ? "User ".$row->user_id : $user->first_name.' '.$user->last_name;
-				$ptext .= sprintf('<input type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ',$count,$count,$name);
+				$ptext .= sprintf('<div><input type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ',$count,$count,$name);
 				$title = get_post_meta($pst->ID,'_title'.$row->meta_key,true);
 				$details = '';
 				if(!empty($title))
 					$details = trim($title);
-				$nameanddetails .= '<p>'.$name.': '.$details.'</p>';
 				$pkey = get_post_meta($pst->ID,'_project'.$row->meta_key,true);
 				if(!empty($pkey)) {
 				$project = get_project_text($pkey);
 				if(!empty($details))
 					$details .= ", ";
 				$details .= __('Project:','rsvpmaker-for-toastmasters').' '.$project;
+				$nameanddetails .= '<p>'.$name.': '.$details.'</p>';
 				}
 				//$alldetails[] = '<strong>'.$user->first_name.' '.$user->last_name.'</strong> '.$details;
 				$ptext .= sprintf('%s: %s<br />Details: <input type="text" name="speech[%d]" value="%s"> YouTube Link: <input type="text" name="link[%d]" class="checkboxlink" i="%d">',$name,$details,$count,htmlentities($details.' '.$pst->date),$count,$count);
-				$ptext .= "\n\n";
+				$ptext .= "</div>\n\n";
 				$count++;
 				}
 			}
@@ -12910,6 +12914,8 @@ function toastmasters_init () {
 	if($aj == 'role')
 		{
 		$user_id = $_POST['user_id'];
+		if(!empty(trim($_POST['guest'])))
+			$user_id = sanitize_text_field($_POST['guest']);
 		$role = $_POST['role'];
 		$post_id = $_POST['post_id'];
 		$check = $_POST['check'];

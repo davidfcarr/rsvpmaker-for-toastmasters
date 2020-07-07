@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.4.2
-Stable tag: 3.9.5
+Stable tag: 3.9.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,11 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 3.9.7 =
+
+* Fix to formatting on the YouTube Toastmasters screen.
+* Added "Other" category to list of Path / Manual types
 
 = 3.9.5 =
 

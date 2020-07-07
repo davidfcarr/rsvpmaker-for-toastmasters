@@ -823,7 +823,7 @@ function get_speaking_track($user_id) {
 			FROM ".$wpdb->posts."
 			JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
 			JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=".$user_id." 
-			WHERE a1.meta_value < CURDATE() AND post_status='publish'
+			WHERE a1.meta_value < DATE_ADD(CURDATE(), INTERVAL 6 MONTH) AND post_status='publish'
 			ORDER BY a1.meta_value DESC
 			LIMIT 0, 10";	
 			$speeches = $wpdb->get_results($sql);

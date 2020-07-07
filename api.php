@@ -200,7 +200,12 @@ class Toast_Manual_Lookup extends WP_REST_Controller {
 	$options = get_manuals_by_type_options($type);
 	$projects = '';
 	$pa = get_projects_array('options');
-	$manual = ($type == 'Manual') ? "COMPETENT COMMUNICATION" : $type .' Level 1 Mastering Fundamentals';
+	if($type == 'Other')
+		$manual = 'Other Manual or Non Manual Speech';
+	elseif($type == 'Manual')
+		$manual = "COMPETENT COMMUNICATION";
+	else
+		$manual = $type .' Level 1 Mastering Fundamentals';
 	$projects = $pa[$manual];	
 	  return new WP_REST_Response(array('list' => $options, 'projects' => $projects), 200);
 	}
@@ -265,6 +270,8 @@ class Editor_Assign extends WP_REST_Controller {
 		$track = get_speaking_track($user_id);
 		$type = $track["type"];
 		$manual = $track["manual"];
+		if(!empty($manual) && !strpos($manual,'Manual') )
+			update_post_meta($post_id,'_manual'.$role,$manual);
 		$options = sprintf('<option value="%s">%s</option>',$track['manual'],$track['manual']);
 		$options .= get_manuals_by_type_options($type);
 		$projects = '<option value="">Select Project</option>'.$track["projects"];
