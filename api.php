@@ -204,9 +204,14 @@ class Toast_Manual_Lookup extends WP_REST_Controller {
 		$manual = 'Other Manual or Non Manual Speech';
 	elseif($type == 'Manual')
 		$manual = "COMPETENT COMMUNICATION";
+	elseif($type == 'Pathways 360')
+		$manual = "Pathways 360 Level 5 Demonstrating Expertise";
 	else
 		$manual = $type .' Level 1 Mastering Fundamentals';
-	$projects = $pa[$manual];	
+	if($manual == 'Pathways 360')
+		$projects = $pa[$manual];
+	else
+		$projects = '<option value="">Select Project</option>'.$pa[$manual];
 	  return new WP_REST_Response(array('list' => $options, 'projects' => $projects), 200);
 	}
 }
@@ -295,5 +300,7 @@ add_action('rest_api_init', function () {
 	 $manual->register_routes();
 	 $assign = new Editor_Assign();
 	 $assign->register_routes();
+	 $rsvpexp = new RSVP_Export();
+	 $rsvpexp->register_routes();
    } );
 ?>

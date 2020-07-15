@@ -603,6 +603,10 @@ $projects["LEADERSHIP EXCELLENCE SERIES 10"] = __("Resolving Conflict","rsvpmake
 $project_times["LEADERSHIP EXCELLENCE SERIES 10"] = 15;
 $display_times["LEADERSHIP EXCELLENCE SERIES 10"] = "10 to 15 minutes";
 
+$projects["Pathways 360 Level 5 Demonstrating Expertise 99"] = __("Pathways 360° Evaluation","rsvpmaker-for-toastmasters");
+$project_times["Pathways 360 Level 5 Demonstrating Expertise 99"] = 7;
+$display_times["Pathways 360 Level 5 Demonstrating Expertise 99"] = "5-7 minutes";
+
 $projects["Path Not Set Level 1 Mastering Fundamentals 0"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
 $project_times["Path Not Set Level 1 Mastering Fundamentals 0"] = 6;
 $display_times["Path Not Set Level 1 Mastering Fundamentals 0"] = "4 - 6 minutes";

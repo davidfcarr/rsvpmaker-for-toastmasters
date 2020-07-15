@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 3.9.7
+Version: 3.9.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -23,6 +23,8 @@ include 'toastmasters-privacy.php';
 include 'tm-online-application.php';
 include 'api.php';
 include 'mailster.php';
+include 'enqueue.php';
+
 function wpt_gutenberg_check () {
 global $carr_gut_test;
 if(function_exists('register_block_type') && !isset($carr_gut_test))
@@ -2250,7 +2252,7 @@ function manual_type_options($field,$type) {
 	return sprintf('<div><select id="_manualtype_%s" class="manualtype">%s</select></div>',$field,$options);
 }
 
-function speaker_details ($field, $atts) {
+function speaker_details ($field, $atts = array()) {
 $demo = (isset($atts['demo']));
 global $post;
 global $current_user;
@@ -2260,7 +2262,7 @@ $output = $title = "";
 		$manual = (isset($post->ID)) ? get_post_meta($post->ID, '_manual'.$field, true) : '';
 		if(empty($manual) || strpos($manual,'hoose Manual') || strpos($manual,'elect Manual'))
 			{
-			if(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]) || is_admin() )
+			if(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]))
 				$track = get_speaking_track(0);
 			else
 				$track = get_speaking_track($current_user->ID);
@@ -5211,7 +5213,7 @@ else
 	$link .= agenda_menu($post->ID);
 	$link .= sprintf('<input type="hidden" id="editor_id" value="%s" />',$current_user->ID);
 
-if(isset($_REQUEST["assigned_open"]) && current_user_can($security['edit_signups']))
+if(isset($_REQUEST["assigned_open"]) && current_user_can('edit_signups'))
 	{
 	$link .= "\n".sprintf('<div style="margin-top: 10px; margin-bottom: 10px;"><a href="%s">%s</a></div>',$permalink.'assigned_open=1&email_me=1',__('Email to me','rspmaker-for-toastmasters'))."\n";
 	
@@ -7348,14 +7350,32 @@ function wp_ajax_wptoast_role_planner_update () {
 	update_post_meta($post_id,$role,$user_id);
 	printf('<p>Added %s</p>',clean_role($role));
 	if(strpos($role,'Speaker'))
-		printf('<p><a href="%s#%s">* Add speech details</a></p>',get_permalink($post_id),$role);
+		printf('<p><a href="%s#%s">* Edit speech details</a></p>',get_permalink($post_id),$role);
 	$actiontext = __("signed up for",'rsvpmaker-for-toastmasters').' '.clean_role($role);
 	do_action('toastmasters_agenda_notification',$post_id,$actiontext,$user_id);
+	if(!empty($_POST['project']) && strpos($role,'Speaker')) {
+		update_post_meta($post_id,'_manual'.$role,$_POST['manual']);
+		update_post_meta($post_id,'_project'.$role,$_POST['project']);
+		update_post_meta($post_id,'_display_time'.$role,$_POST['display_time']);
+		update_post_meta($post_id,'_maxtime'.$role,$_POST['maxtime']);
+		if(!empty($_POST['title']))
+			update_post_meta($post_id,'_title'.$role,$_POST['title']);
+		if(!empty($_POST['intro']))
+			update_post_meta($post_id,'_intro'.$role,$_POST['intro']);
+	}
+
 	awesome_wall($actiontext,$post_id, $user_id);		
 	}
 	if(!empty($_POST["was"]) && ($_POST["was"] != $_POST["takerole"])) {
 		$was = $_POST["was"];
-		delete_post_meta($post_id,$was);				
+		delete_post_meta($post_id,$was);
+		if(strpos($was,'Speaker'))
+			{
+				delete_post_meta($post_id,'_manual'.$was);
+				delete_post_meta($post_id,'_project'.$was);
+				delete_post_meta($post_id,'_title'.$was);
+				delete_post_meta($post_id,'_intro'.$was);
+			}			
 		printf('<p>Dropped %s</p>',clean_role($was));
 		$actiontext = __("withdrawn:",'rsvpmaker-for-toastmasters').' '.clean_role($was);
 		do_action('toastmasters_agenda_notification',$post_id,$actiontext,$user_id);
@@ -7403,7 +7423,7 @@ printf('<form method="post" action="%s">',admin_url('admin.php?page=toastmasters
 			printf('<p>Added %s for %s</p>',clean_role($role),$d);
 			add_post_meta($post_id,'_activity_editor',$userdata->display_name.' added '.clean_role($_POST['wasrole'][$post_id]).' for '.$d);
 			if(strpos($role,'Speaker'))
-				printf('<p><a href="%s">* Add speech details</a></p>',get_permalink($post_id));
+				printf('<p><a href="%s">* Edit speech details</a></p>',get_permalink($post_id));
 			$actiontext = __("signed up for",'rsvpmaker-for-toastmasters').' '.clean_role($role);
 			do_action('toastmasters_agenda_notification',$post_id,$actiontext,$user_id);
 			$mdate[] = $d;
@@ -7483,8 +7503,12 @@ printf('<form method="post" action="%s">',admin_url('admin.php?page=toastmasters
 			//printf('<p>Suggested %s</p>',$clean_role);
 			$picked = true;
 		}
-		if(!empty($suggest) || !empty($olow) || $picked)
-		printf('<p>%s <select id="takerole%d" name="takerole[%d]">%s</select> <button class="roleplanupdate" datepost="%d">%s</button></p>',__('Choices','rsvpmaker-for_toastmasters'),$date->ID,$date->ID,$suggest.$o.$olow,$date->ID,__('Update','rsvpmaker-for_toastmasters'));
+		if(!empty($suggest) || !empty($olow) || $picked) {
+			printf('<p>%s <select class="takerole" id="takerole%d" name="takerole[%d]" post_id="%d">%s</select></p>',__('Choices','rsvpmaker-for_toastmasters'),$date->ID,$date->ID,$date->ID,$suggest.$o.$olow);
+			printf('<div class="takerole_speaker" id="takerolespeaker%d">%s</div>',$date->ID,speaker_details('_Speaker_'.$date->ID));	
+			printf('<p><button class="roleplanupdate button button-primary" datepost="%d">%s</button></p>',$date->ID,__('Update','rsvpmaker-for_toastmasters'));
+			//submit_button('Update');
+		}
 		echo '<div id="change'.$date->ID.'">'.$prompt.'</div>';
 		}
 
@@ -8575,31 +8599,6 @@ function jstest() {
 		return 'jsno';
 }
 
-function toastmasters_css_js() {
-	global $post;
-	$version = '3.35';
-	if(isset($_GET['action']) || (is_admin() && !isset($_GET['page'])) )
-		return; // don't load all this in editor or post listings
-	if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && (($_REQUEST["page"] == 'toastmasters_reconcile') || ($_REQUEST["page"] == 'my_progress_report') || ($_REQUEST["page"] == 'wp4t_evaluations') || ($_REQUEST["page"] == 'toastmasters_reports') )  ) )
-	{
-	wp_enqueue_style( 'jquery' );
-	wp_enqueue_style( 'jquery-ui-core' );
-	wp_enqueue_style( 'jquery-ui-sortable' );
-	wp_register_script('script-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), $version);
-	wp_enqueue_script( 'script-toastmasters');
-	$manuals = get_manuals_options();
-	wp_localize_script( 'script-toastmasters', 'manuals_list', $manuals );
-	$projects = get_projects_array('options');
-	wp_localize_script( 'script-toastmasters', 'project_list', $projects );
-	$times = get_projects_array('times');
-	wp_localize_script( 'script-toastmasters', 'project_times', $times );
-	$display_times = get_projects_array('display_times');
-	wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
-	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
-	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
-	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), $version );
-	}
-}
 
 function wp4t_assigned_open () {
 	global $post;
@@ -9383,7 +9382,6 @@ class WP_Widget_Club_News_Posts extends WP_Widget {
 	}
 }
 
-//widget for posts excluding members only
 class NewestMembersWidget extends WP_Widget {
 
 	public function __construct() {
@@ -10433,6 +10431,7 @@ function get_manuals_by_type() {
 		,'Visionary Communication Level 4 Building Skills'=> __('Visionary Communication Level 4 Building Skills','rsvpmaker-for-toastmasters')
 		,'Visionary Communication Level 5 Demonstrating Expertise'=> __('Visionary Communication Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')	
 	),
+	"Pathways 360" => array('Pathways 360 Level 5 Demonstrating Expertise'=> __('Pathways 360 Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')),
 	"Manual" => array("COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
 	),
 	"Other" => array("Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters')) 
@@ -10441,6 +10440,7 @@ function get_manuals_by_type() {
 
 function get_manuals_array() {
 return array("Select Manual/Path" => __("Select Manual/Path",'rsvpmaker-for-toastmasters'),"COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
+,'Pathways 360 Level 5 Demonstrating Expertise'=> __('Pathways 360 Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')
 ,'Path Not Set Level 1 Mastering Fundamentals'=> __('Path Not Set Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 1 Mastering Fundamentals'=> __('Dynamic Leadership Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
 ,'Dynamic Leadership Level 2 Learning Your Style'=> __('Dynamic Leadership Level 2 Learning Your Style','rsvpmaker-for-toastmasters')
@@ -12914,7 +12914,7 @@ function toastmasters_init () {
 	if($aj == 'role')
 		{
 		$user_id = $_POST['user_id'];
-		if(!empty(trim($_POST['guest'])))
+		if(!empty($_POST['guest']))
 			$user_id = sanitize_text_field($_POST['guest']);
 		$role = $_POST['role'];
 		$post_id = $_POST['post_id'];

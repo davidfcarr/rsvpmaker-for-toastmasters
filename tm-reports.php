@@ -3380,15 +3380,6 @@ if($missing)
 tm_admin_page_bottom($hook);
 }
 
-function tm_welcome_screen_assets( $hook ) {
-//everywhere except posts screen
-  if(!strpos($_SERVER['REQUEST_URI'],'post.php')) //if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) 
-   {
-    wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), 1.75 );
-    wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), '1.96', true );
-  }
-}
-
 function tm_member_welcome_redirect() {
 	global $current_user;
 	if(isset($_REQUEST["forget_welcome"]))
@@ -3807,6 +3798,7 @@ tm_admin_page_bottom($hook);
 
 function toastmasters_import_export() {
 $hook = tm_admin_page_top('Import/Export');
+global $wpdb;
 
 ?>
     <h2 class="nav-tab-wrapper">
@@ -3939,6 +3931,8 @@ foreach($lines as $linenumber => $line)
 		
 		<h2>Transfer Member Accounts Between Websites</h2>		
 <?php
+
+
 //print_r($_REQUEST);
 if(isset($_POST['importurl']))
 {
@@ -4016,7 +4010,6 @@ printf('<p><strong>Step 1. Export:</strong> To move your club\'s member records 
 	<p><strong>Step 2. Import:</strong> After obtaining the export link from your old website, paste it here to import.<br /><input type="text" name="importurl" value="<?php if(isset($_POST['importurl'])) echo $_POST['importurl']; ?>" />
 <br /><button>Import</button>
 </form>
-
 </section>
 <section class="rsvpmaker"  id="fth">
 <?php import_fth(); ?>
@@ -4588,6 +4581,11 @@ if($demo)
 			$line = trim($line);
 			if(empty($line))
 				continue;
+			if(strpos($line,'</h'))
+			{
+				echo $line;
+				continue;
+			}
 			$options = explode("|",$line);
 			$prompt = array_shift($options);
 			echo wpautop('<strong>'.str_replace("!","",$prompt).'</strong>');
@@ -4739,9 +4737,17 @@ Other Comments';
 		$lines = explode("\n",$prompts);
 		foreach($lines as $index => $line)
 			{
-			$parts = explode("|",$line);
-			$prompt = str_replace('!','',array_shift($parts));
-			$evaluation .= wpautop('<strong>'.$prompt.'</strong>');
+			if(strpos($line,'</h'))
+			{
+				$parts = array();
+				$prompt = $line;
+				$evaluation .= $prompt;
+			}
+			else {
+				$parts = explode("|",$line);
+				$prompt = str_replace('!','',array_shift($parts));
+				$evaluation .= wpautop('<strong>'.$prompt.'</strong>');	
+			}
 			if(!empty($_POST["check"][$index]))
 				$evaluation .= wpautop($_POST["check"][$index]);
 			if(!empty($_POST["comment"][$index]))

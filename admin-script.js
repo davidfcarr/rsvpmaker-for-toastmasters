@@ -211,6 +211,22 @@ var datepost = $(this).attr('datepost');
 var takerole = $('#takerole' + datepost + ' option:checked').val();
 var was = $('#was' + datepost).val();
 var user_id = $('#user_id').val();
+var manual = '';
+var project = '';
+var title = '';
+var display_time ='';
+var maxtime = '';
+var intro = '';
+if(takerole.search('Speaker') > -1)
+{
+manual = $('#_manual__Speaker_'+datepost).val();
+project = $('#_project__Speaker_'+datepost).val();
+title = $('#title_text_Speaker_'+datepost).val();
+intro = $('#_intro__Speaker_'+datepost).val();
+display_time = $('#_display_time__Speaker_'+datepost).val();
+maxtime = $('#_maxtime__Speaker_'+datepost).val();
+console.log(manual+' '+project+' '+title+' '+intro+' '+display_time+' '+maxtime);
+}
 	$.ajax( ajaxurl,
 	  {
 		type: 'POST',
@@ -220,13 +236,32 @@ var user_id = $('#user_id').val();
 		  takerole: takerole,
 		  was: was,
 		  user_id: user_id,
+		  manual: manual,
+		  project: project,
+		  title: title,
+		  intro: intro,
+		  display_time: display_time,
+		  maxtime: maxtime,
 		}
 	  } )
 	.done(function( data ) {
 		$('#change'+datepost).html(data);
 		$('#was' + datepost).val(takerole);
+		$('#takerolespeaker' + datepost).hide();
   });
 });	
+$( ".takerole_speaker" ).hide();
+$( ".takerole" ).change(function(  ) {
+  var role = $(this).val();
+  var datepost = $(this).attr('post_id');
+  	if(role.search('Speaker') > -1) {
+		$('#takerolespeaker'+datepost).show();
+	  }
+	else
+		$('#takerolespeaker'+datepost).hide();
+
+});	
+  
 
 $('.dashdate').mouseover(
 	function () {
