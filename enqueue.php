@@ -2,11 +2,12 @@
 
 function tm_welcome_screen_assets( $hook ) {
 //everywhere except posts screen
-$ver = '2.4';
+$ver = '2.5';
   if(!strpos($_SERVER['REQUEST_URI'],'post.php')) //if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) 
    {
     wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), $ver );
     wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), $ver, true );
+	wp_localize_script('tm_welcome_screen_js', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
   }
 }
 
@@ -37,6 +38,13 @@ function toastmasters_css_js() {
 	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
 	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), $version );
 	}
+}
+
+function wpt_fetch_report($report, $user_id) {
+printf('<div id="%s_content">Loading ...</div>',$report);
+//echo "\n<script>\n(function($) {\n";
+//printf("wpt_fetch_report('%s',%d);",$report,$user_id);
+//echo "\n})( jQuery );\n</script>";
 }
 
 ?>

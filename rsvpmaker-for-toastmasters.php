@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 3.9.8
+Version: 3.9.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -710,27 +710,10 @@ function wp4_speech_prompt($event_post, $datetime, $preview = false) {
 				else
 				{
 					rsvpmaker_tx_email($event_post, $mail);
-					//$mails[] = $mail; //rsvpmaker_tx_email($event_post, $mail);
-					//rsvpmaker_debug_log($mail,'role reminder added to array');
 				}
 	
 				}
-			//$elapsed = wpt_timecheck ();
-			//printf('<p>Elapsed time %s</p>',$elapsed);
-			//if($elapsed > 25)
-				//rsvpmaker_debug_log($key,'wp4_speech_prompt timeout danger');
 			}
-		
-		/*    if(!empty($mails))
-		{
-			update_option('wpt_remind_queue',$mails);
-			if($elapsed < 20)
-				wpt_remind_queue(array('post_id'=> $event_post->ID));
-			else
-				wp_schedule_single_event(strtotime('+1 minutes'),'wpt_remind_queue',array('post_id'=> $event_post->ID));
-		}
-		else
-		*/
 		
 		add_post_meta(1,'_rsvpmaker_email_log',array('wp4_speech_prompt' => $mail['to'],'subject' => $mail['subject']));
 		
@@ -1055,7 +1038,7 @@ if(!empty($atts["editable"]))
 		{
 			$editable .= '<p>Editable note block will appear here</p>';
 		}
-		elseif(is_club_member() && isset($_REQUEST["edit_roles"]))
+		elseif(is_club_member() && is_edit_roles())
 			{
 			$editable = '<div class="agenda_note_editable"><textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="'.$editid.'" /></div>';
 			$display = 'both';
@@ -1363,14 +1346,14 @@ function toastmaster_short($atts=array(),$content="") {
 		return $output.$backup;
 		}
 
-	if(isset($_REQUEST["print_agenda"]) || is_email_context() || is_agenda_locked())
+	if(!is_edit_roles() && ((isset($_REQUEST["print_agenda"]) || is_email_context() || is_agenda_locked()) ) )
 		return toastmasters_agenda_display($atts,$assignments);
 
 	global $random_available;
 	global $last_attended;
 	global $last_filled;
 	
-	if(isset($_GET['edit_roles']) && (current_user_can('edit_roles') || edit_signups_role()) )
+	if(is_edit_roles() && (current_user_can('edit_roles') || edit_signups_role()) )
 		{
 			if(function_exists('do_blocks'))
 			{
@@ -1418,7 +1401,7 @@ function toastmaster_short($atts=array(),$content="") {
 		$output .= $role.': </div><div class="role-data"> ';
 		//rsvpmaker_debug_log($output,'start role content');
 		$ajaxclass = 'toastrole'; // ($assigned) ? 'toastupdate' : 
-		if(is_club_member() && !(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]) || (isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'toastmasters_reconcile') ) )  ) 
+		if(is_club_member() && !(is_edit_roles() || isset($_REQUEST["recommend_roles"]) )  ) 
 			$output .= sprintf(' <form id="%s_form" method="post" class="%s" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="role" value="%s"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$ajaxclass,$permalink, $current_user->ID, $field, $post->ID,wp_create_nonce($field));
 		//rsvpmaker_debug_log($output,'start form output');
 		$output .= '<div class="member-role">'.$assignedto.'</div>';
@@ -1437,7 +1420,7 @@ function toastmaster_short($atts=array(),$content="") {
                 echo 'random check</br>';
                 print_r($random_available);
             }
-			if((isset($_REQUEST["edit_roles"]) &&  (current_user_can('edit_signups') || edit_signups_role()) ) || (isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'toastmasters_reconcile') ) ) // && current_user_can('edit_posts') )
+			if(is_edit_roles() &&  (current_user_can('edit_signups') || edit_signups_role()) ) // && current_user_can('edit_posts') )
 				{
 				    $assign_ok = get_user_meta($current_user->ID,'assign_okay',true);
 				    if(empty($assign_ok) || ($assign_ok < time()))
@@ -2170,7 +2153,7 @@ function wpt_tweak_notes_x ($matches) {
 
 function wpt_tweak_notes ($content)
 {
-	if(!isset($_GET['edit_roles']))
+	if(!is_edit_roles())
 		return $content;
 	if(!current_user_can('edit_signups') && !edit_signups_role() )
 		return $content;
@@ -2262,7 +2245,7 @@ $output = $title = "";
 		$manual = (isset($post->ID)) ? get_post_meta($post->ID, '_manual'.$field, true) : '';
 		if(empty($manual) || strpos($manual,'hoose Manual') || strpos($manual,'elect Manual'))
 			{
-			if(isset($_REQUEST["edit_roles"]) || isset($_REQUEST["recommend_roles"]))
+			if(is_edit_roles() || isset($_REQUEST["recommend_roles"]))
 				$track = get_speaking_track(0);
 			else
 				$track = get_speaking_track($current_user->ID);
@@ -5126,7 +5109,7 @@ function rsvpmaker_agenda_notifications ($permalink) {
 		$permalink = add_query_arg($_GET,$permalink);
 	if(isset($_GET['rm']))
 	{
-		if(isset($_GET['edit_roles']))
+		if(is_edit_roles())
 		{
 		$notify['rmedit'] = sprintf('<span style="color:red; font-weight: bold">Caution:</span> Open roles are shown below with suggested assignments. These are <strong>NOT yet</strong> saved to the agenda. To make assignments, accept or change each suggestion, then scroll to the bottom and click Save Changes.<br />Switch Mode:<ul><li><a href="%s">Edit Signups</a> (no suggestions)</li><li><a href="%s">Recommend</a> (suggestions, members must confirm)</li><li><a href="%s">Member Signup</a></li></ul>.',$edlink, $reclink,$signup);
 		
@@ -5146,7 +5129,7 @@ function rsvpmaker_agenda_notifications ($permalink) {
 		else
 		$notify['rmrec'] = sprintf('<strong>Recommend</strong> mode shows suggested assignments for open roles. If you scroll to the bottom and click Save Changes, these members will receive an email saying you have recommended them for the role. The assignment is <strong>NOT</strong> saved to the agenda until the member confirms acceptance.<br />Switch Mode:<ul><li><a href="%s">Edit Signups (no suggestions)</a></li><li>%s</li><li><a href="%s">Member Signup</a></li></ul>',$edlink, $assignlink,$signup);;		
 	}
-	elseif(isset($_GET['edit_roles']))
+	elseif(is_edit_roles())
 	{
 		$notify['edit'] = sprintf('Edit Signups mode allows you to assign other members to roles or change assignments. When done, scroll to the bottom and click <strong>Save Changes</strong>. <br />Switch Mode:<ul><li>%s</li><li><a href="%s">Recommend (suggestions, member must confirm)</a></li><li><a href="%s">Member Signup</a></li></ul>',$assignlink, $reclink,$signup);
 	}
@@ -6744,7 +6727,7 @@ return sprintf('<form id="edit_roles_form" method="post" action="%s"">
 	}
 if(isset($_REQUEST["reorder"]))
 	return '<p><em>'.__('Drag and drop to change the order in which speakers, evaluators and other roles with multiple participants will appear on the agenda').'</em></p>'.$content;
-if(!isset($_REQUEST["edit_roles"]) || (!current_user_can('edit_signups') && !edit_signups_role()))
+if(!is_edit_roles() || (!current_user_can('edit_signups') && !edit_signups_role()))
 	return $content;
 	
 $r = 'x'.rand();
@@ -8287,7 +8270,7 @@ if(isset($_POST["themewords"]))
 
 ob_start();
 
-if(is_club_member() && isset($_REQUEST["edit_roles"]))
+if(is_club_member() && is_edit_roles())
 {
 ?>
                     <div id="themewords">
@@ -12790,7 +12773,7 @@ function tm_goal_save () {
 add_action('admin_init','tm_goal_save');
 
 function rsvptoast_showbutton ($showbutton) {
-if(isset($_GET['recommend_roles']) || isset($_GET['edit_roles']))
+if(isset($_GET['recommend_roles']) || is_edit_roles())
 	return true;
 else
 	return $showbutton;
@@ -12831,7 +12814,7 @@ function tm_absence ($atts) {
 	if(is_array($absences))
 		$absences = array_unique($absences);
 
-	if(isset($_GET['edit_roles']) || isset($_GET['recommend_roles']) || isset($_GET['signup_sheet_editor']) )
+	if(is_edit_roles() || isset($_GET['recommend_roles']) || isset($_GET['signup_sheet_editor']) )
 	{
 	if(!empty($absences) && is_array($absences))
 	{

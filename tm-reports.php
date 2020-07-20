@@ -22,6 +22,7 @@ add_submenu_page( 'toastmasters_screen', __('Reports Dashboard','rsvpmaker-for-t
 add_submenu_page( 'toastmasters_screen', __('Evaluations','rsvpmaker-for-toastmasters'), __('Evaluations','rsvpmaker-for-toastmasters'), 'read', 'wp4t_evaluations', 'wp4t_evaluations');
 
 add_submenu_page( 'toastmasters_screen', __('Member List','rsvpmaker-for-toastmasters'), __('Member List','rsvpmaker-for-toastmasters'), 'view_contact_info', 'contacts_list', 'member_list');
+add_submenu_page( 'toastmasters_screen', __('My Data','rsvpmaker-for-toastmasters'), __('My Data','rsvpmaker-for-toastmasters'), 'read', 'wpt_my_data', 'wpt_my_data');
 
 add_menu_page(__('TM Administration','rsvpmaker-for-toastmasters'), __('TM Administration','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_admin_screen', 'toastmasters_admin_screen','dashicons-microphone','2.02');
 add_submenu_page( 'toastmasters_admin_screen', __('Update History','rsvpmaker-for-toastmasters'), __('Update History','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_reconcile', 'toastmasters_reconcile');
@@ -608,14 +609,41 @@ $competent_leader = array(
 "Club Newsletter Editor",
 "Club Webmaster");
 
-function toastmasters_reports () {
+add_action('update_user_role_archive_all','update_user_role_archive_all');
+function update_user_role_archive_all() {
+	$events = get_past_events();
+	foreach($events as $event) {
+		update_user_role_archive($event->ID,$event->datetime);
+	}	
+}
 
-global $pagenow;
+function toastmasters_reports () {
+global $pagenow, $current_user, $rsvp_options;
+
+if(isset($_POST["pathwaysnote"]))
+{
+	$note = stripslashes($_POST["pathwaysnote"]);
+	$key = stripslashes($_POST["tmnote"]);
+	$author = get_userdata($current_user->ID);
+	$note .= "\n\n<em>".__('Added by','rspvpmaker-for-toastmasters').": ".$author->first_name.' '.$author->last_name.", ".strftime($rsvp_options["long_date"]).'</em>';
+	add_user_meta($_GET['toastmaster'],$key,$note);
+}
+	
+if(isset($_GET['updatearchive'])) {
+	update_user_role_archive_all();
+	return;
+}
+
+if(!wp_next_scheduled('update_user_role_archive_all') ) {
+	wp_schedule_event( strtotime('midnight tomorrow'), 'daily', 'update_user_role_archive_all');
+}
+
 if($_REQUEST["page"] == 'my_progress_report')
 	{
 	$hook = tm_admin_page_top(__('My Progress Report','rsvpmaker-for-toastmasters'));
 	global $current_user;
 	$user_id = $current_user->ID;
+	printf('<input type="hidden" id="toastmaster_select" value="%d">',$user_id);
 	}
 else
 	{
@@ -640,10 +668,10 @@ $edit_form = ob_get_clean();
 ?>
     <h2 class="nav-tab-wrapper">
 	  <a class="nav-tab <?php if(empty($_GET['active'])) echo ' nav-tab-active ';?>" href="#overview">Overview</a>
-      <a class="nav-tab <?php if(!empty($_GET['active']) && ($_GET['active'] == 'speeches') ) echo ' nav-tab-active ';?>" href="#speeches">Speeches</a>
-      <a class="nav-tab" href="#profile_main">Traditional Program</a>
-      <a class="nav-tab " href="#advanced">Advanced Awards</a>
-      <a class="nav-tab <?php if(!empty($_GET['active']) && ($_GET['active'] == 'pathways') ) echo ' nav-tab-active ';?>"  href="#pathways">Pathways</a>
+      <a id="show_speeches_by_manual" class="nav-tab <?php if(!empty($_GET['active']) && ($_GET['active'] == 'speeches') ) echo ' nav-tab-active ';?>" href="#speeches">Speeches</a>
+      <a id="show_pathways" class="nav-tab <?php if(!empty($_GET['active']) && ($_GET['active'] == 'pathways') ) echo ' nav-tab-active ';?>"  href="#pathways">Pathways</a>
+      <a id="show_traditional_program" class="nav-tab" href="#profile_main">Traditional Program</a>
+      <a id="show_traditional_advanced" class="nav-tab " href="#advanced">Traditional Advanced</a>
 <?php
 if( (($_REQUEST["page"] == 'my_progress_report') && current_user_can('edit_own_stats')) || current_user_can('edit_member_stats'))
 {
@@ -670,29 +698,27 @@ if(current_user_can('manage_options'))
 	?>
 	</section>
 	<section class="rsvpmaker"  id="speeches">
-	<?php speeches_by_manual($user_id); ?>
+	<?php 
+	if(empty($user_id))
+		echo speeches_by_manual($user_id);
+	else
+		wpt_fetch_report('speeches_by_manual', $user_id);
+	?>
 	</section>
-    <section class="rsvpmaker"  id="profile_main">
+<section class="rsvpmaker"  id="pathways">
 <?php
-echo toastmasters_progress_report($user_id);
+wpt_fetch_report('pathways',$user_id); //pathways_report(); ?>
+</section>
+<section class="rsvpmaker"  id="profile_main">
+<?php
+	wpt_fetch_report('traditional_program', $user_id);
+//echo toastmasters_progress_report($user_id);
 ?>
 </section>
 <section class="rsvpmaker"  id="advanced">
 <?php
-if($user_id)
-{
-$userdata = get_userdata($user_id);
-toastmasters_advanced_user ($userdata,true);	
-}
-else
-	{
-	echo 'Select member from the list above';
-	echo toastmasters_advanced();
-	}
+	wpt_fetch_report('traditional_advanced', $user_id);
 ?>
-</section>
-<section class="rsvpmaker"  id="pathways">
-<?php pathways_report(); ?>
 </section>
 <?php
 if( (($_REQUEST["page"] == 'my_progress_report') && current_user_can('edit_own_stats')) || current_user_can('edit_member_stats'))
@@ -742,10 +768,19 @@ tm_admin_page_bottom($hook);
 }
 
 function wpt_delete_records ($user_id = 0) {
-global $wpdb;
+global $wpdb, $current_user;
 $wpdb->show_errors();
 $output = '';
+/*
+if($user_id == $current_user->ID)
+	$sql = "select * from $wpdb->usermeta WHERE meta_key LIKE 'tm|%";
+elseif(current_user_can('manage_options'))
+	$sql = "select * from $wpdb->usermeta WHERE meta_key LIKE 'tm|%".$_SERVER['SERVER_NAME']."%' ";
+else
+	return 'Security error';
+*/
 $sql = "select * from $wpdb->usermeta WHERE meta_key LIKE 'tm|%".$_SERVER['SERVER_NAME']."%' ";
+
 if($user_id)
 	$sql .= " AND user_id=".$user_id;
 $sql .= ' ORDER BY user_id, meta_key';
@@ -763,7 +798,7 @@ foreach($results as $row)
 
 		}
 	$parts = explode('|',$row->meta_key);
-	$output .= sprintf('<p><input type="checkbox" name="deleterecords[]" value="%d" /> %s %s</p>',$row->umeta_id,$parts[1],$parts[2]);
+	$output .= sprintf('<p><input type="checkbox" name="deleterecords[]" value="%d" /> %s %s %s</p>',$row->umeta_id,$parts[1],$parts[2],$parts[4]);
 	$user_id = $row->user_id;
 	}
 if(!empty($output))
@@ -1702,7 +1737,7 @@ foreach($advanced_projects as $key => $project)
 	{
 		if(strpos($key,'CS'))
 			{
-			$plus = (current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
+			$plus = '';//(current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
 
 			$done = (!empty($counts[$key])) ? '<span style="color: green; font-weight: bold;">&#10004; DONE</span>' : '<em>TO DO</em> '.$plus;
 			printf('<p>%s: %s</p>',$project, $done);
@@ -1716,7 +1751,7 @@ foreach($advanced_projects as $key => $project)
 	{
 		if(strpos($key,'CG'))
 			{
-			$plus = (current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
+			$plus = '';//(current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
 
 			$done = (!empty($counts[$key])) ? '<span style="color: green; font-weight: bold;">&#10004; DONE</span>' : '<em>TO DO</em> '.$plus;
 			printf('<p>%s: %s</p>',$project, $done);
@@ -1754,7 +1789,7 @@ foreach($advanced_projects as $key => $project)
 	{
 		if(strpos($key,'LB'))
 			{
-			$plus = (current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
+			$plus = '';//(current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
 			$done = (!empty($counts[$key])) ? '<span style="color: green; font-weight: bold;">&#10004; DONE</span>' : '<em>TO DO</em> '.$plus;
 			printf('<p>%s: %s</p>',$project, $done);
 			}
@@ -1765,7 +1800,7 @@ foreach($advanced_projects as $key => $project)
 	{
 		if(strpos($key,'LS'))
 			{
-			$plus = (current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
+			$plus = ''; //(current_user_can('edit_member_stats')) ? increment_stat_button($user_id,$key) : '';
 			$done = (!empty($counts[$key])) ? '<span style="color: green; font-weight: bold;">&#10004; DONE</span>' : '<em>TO DO</em> '.$plus;
 			printf('<p>%s: %s</p>',$project, $done);
 			}
@@ -1931,8 +1966,8 @@ foreach($choices as $choice)
 		elseif($echo)
 			{
 			echo '<div>'.$choice;
-			if(current_user_can('edit_member_stats'))
-				echo increment_stat_button($user_id, $choice );
+			//if(current_user_can('edit_member_stats'))
+				//echo increment_stat_button($user_id, $choice );
 			if(!empty($roledates[$choice]))
 			{
 				echo roledates_text($roledates[$choice]);	
@@ -3068,15 +3103,14 @@ tm_admin_page_bottom($hook);
 }
 
 function toastmasters_progress_report($user_id) {
-
+ob_start();
 if(!$user_id)
 {
 ?>
 <p>Select member from the list above</p>
 <h2>Competent Communicator Progress Report</h2>
-<?php toastmasters_cc(); ?>
 <?php
-return;
+return ob_get_clean();
 }
 
 echo '<style>
@@ -3252,17 +3286,14 @@ else
 
 }
 
-$security = get_tm_security ();
-		
-//echo get_latest_speeches($id, $myroles);
-
 echo '<h3>Competent Leader Detail</h3>';
 
 echo $cl_detail;
-
+return ob_get_clean();
 }
 
 function speeches_by_manual ($user_id) {
+	ob_start();
 	if(!$user_id)
 		{
 	printf('<form method="get" action="%s" id="tm_select_member_tab"><input type="hidden" id="tm_page" name="page" value="toastmasters_reports" />',admin_url('admin.php'));
@@ -3270,9 +3301,8 @@ function speeches_by_manual ($user_id) {
 	echo '<button>'.__('Get','rsvpmaker-for-toastmasters').'</button>';
 	echo '<input type="hidden" name="active" class="tab" value="speeches">';
 	echo '</form>';
-		return;
+		return ob_get_clean();
 		}
-
 	$stats = get_tm_stats($user_id);
 
 	echo $stats["speech_list"];
@@ -3292,6 +3322,7 @@ function speeches_by_manual ($user_id) {
 
 	}	
 
+	return ob_get_clean();
 }
 
 function my_progress_report () {
@@ -4076,20 +4107,44 @@ if(isset($_POST["editor_assign"]) )
 return strtotime($timestamp . ' +1 week');
 }
 
-
-function update_user_role_archive($post_id,$timestamp) {
+function update_user_role_archive($post_id,$timestamp = '') {
 
 global $wpdb;
 global $current_user;
 $wpdb->show_errors();
 
+if(empty($timestamp))
+	$timestamp = get_rsvp_date($post_id);
+
 	$sql = "SELECT *, meta_key as role FROM `$wpdb->postmeta` where post_id=".$post_id." AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";//
 
 $results = $wpdb->get_results($sql);
 if($results)
-foreach($results as $row)
+{
+	$archive_code = get_post_meta($post_id,'wpt_archive_code',true);
+	$aggregated = '';
+	foreach($results as $row)
+	{
+		$check = (int) $row->meta_value;
+		if($check > 0) //skip blanks and zeroes
+		$aggregated .= $row->meta_value;
+		$speech_rows = $wpdb->get_results("SELECT meta_value FROM `$wpdb->postmeta` where post_id=".$post_id." AND (meta_key LIKE '_manual%' OR meta_key LIKE '_project%') ");
+		foreach($speech_rows as $srow) {
+			$aggregated .= $srow->meta_value;
+		}
+		$aggregated = md5($aggregated);
+	}
+	if(!empty($archive_code) && ($archive_code == $aggregated))
+		return; //nothing new here
+	if(empty($aggregated))
+		return; // nothing to record
+	printf('<p>Updating %s %s %s</p>',$post_id,$timestamp,$aggregated);
+	update_post_meta($post_id,'wpt_archive_code',$aggregated);
+	foreach($results as $row)
 	{
 		$user_id = (int) $row->meta_value;
+		if($user_id < 1)
+			continue;
 		$key = make_tm_usermeta_key ($row->role, $timestamp, $post_id);
 		$roledata = make_tm_roledata_array ('update_user_role_archive');
 		if(strpos($row->role,'Speaker'))
@@ -4106,6 +4161,8 @@ foreach($results as $row)
 		$sql = $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE meta_key=%s AND user_id != %d",$key,$user_id);
 		$wpdb->query($sql);
 	}
+}
+
 }
 
 function archive_legacy_roles_usermeta ($user_id, $start = '', $display=false) {
@@ -4419,7 +4476,11 @@ $lastdate = '';
 			$form .= sprintf('<form class="tm_edit_detail" status="%s" method="post" action="%s" id="form'.$field.'"><input type="hidden" name="action" value="tm_edit_detail"><input type="hidden" name="tm_details_update_key" class="tm_details_update_key" id="key_%s" value="%s" /><input type="hidden" name="user_id" id="user_id_%s" value="%d">',$field,admin_url('admin.php?page=toastmasters_reports&toastmaster=').$user_id,$row->meta_key,$row->meta_key,$field,$user_id);
 			if(($role == 'Speaker') && !empty($roledata['manual']))
 				{
-					$form .= speaker_details_admin ($user_id, $row->meta_key, $roledata['manual'],$roledata['project'],$roledata['title'],$roledata['intro']).'<p><button>Update</button></p>';
+					$manual = (empty($roledata['manual'])) ? '' : $roledata['manual'];
+					$project = (empty($roledata['project'])) ? '' : $roledata['project'];
+					$title = (empty($roledata['title'])) ? '' : $roledata['title'];
+					$intro = (empty($roledata['intro'])) ? '' : $roledata['intro'];
+					$form .= speaker_details_admin ($user_id, $row->meta_key, $manual,$project,$title,$intro).'<p><button>Update</button></p>';
 					//sprintf('<p>Manual %s Project %s Title <input type="text" name="title" id="_title_%s" value="%s" /> Intro %s</p><p><button>Update</button></p>',$roledata['manual'],$roledata['project'],$roledata['title'],$roledata['intro']);
 				}
 			$form .= '</form>';
@@ -5134,8 +5195,6 @@ add_action('init','show_evaluation');
 function pathways_report($toastmaster = 0) {
 global $current_user;
 global $rsvp_options;
-if($_GET['page'] == 'pathways_report')
-	echo '<h1>Pathways Progress Report</h1>';
 ?>
 <p>This report is based on speech projects recorded through the agenda system. Check it against the reports in BaseCamp.</p>
 <?php
@@ -5143,8 +5202,6 @@ if(isset($_REQUEST["toastmaster"]))
 	{
 		$toastmaster = (int) $_REQUEST["toastmaster"];
 	}
-elseif($_GET['page'] == 'my_progress_report')
-	$toastmaster = $current_user->ID;
 if(empty($toastmaster))
 	{
 	$users = get_users();
@@ -5219,15 +5276,6 @@ if(empty($toastmaster))
 	return;
 	}
 
-if(isset($_POST["pathwaysnote"]))
-	{
-		$note = stripslashes($_POST["pathwaysnote"]);
-		$key = stripslashes($_POST["tmnote"]);
-		$author = get_userdata($current_user->ID);
-		$note .= "\n\n<em>".__('Added by','rspvpmaker-for-toastmasters').": ".$author->first_name.' '.$author->last_name.", ".strftime($rsvp_options["long_date"]).'</em>';
-		add_user_meta($toastmaster,$key,$note);
-	}
-
 $stats = get_tm_stats($toastmaster);
 $manuals = get_manuals_array();
 foreach($manuals as $manual => $label)
@@ -5248,7 +5296,7 @@ foreach($manuals as $manual => $label)
 			}
 $mslug = str_replace(' ','_',$manual);
 ?>
-<form action="<?php echo site_url($_SERVER['REQUEST_URI']); ?>" method="post" id="<?php echo $mslug; ?>">
+<form action="<?php echo admin_url('admin.php?page=toastmasters_reports&toastmaster='.$toastmaster); ?>" method="post" id="<?php echo $mslug; ?>">
 <div class="pathwaysnote_entry"><textarea name="pathwaysnote" rows="2" style="width: 100%"></textarea></div>
 <input type="hidden" name="tmnote" value="tmnote_<?php echo $manual; ?>">
 <button target="<?php echo $mslug; ?>">Add Note</button>
@@ -6646,5 +6694,122 @@ function wpt_dues_report () {
 	printf('<form method="post" action="%s">%s<p><button>Save</button></p></form>',admin_url('admin.php?page=wpt_dues_report'), implode("\n",$logs));
 }// end function
 
+function wpt_my_data () {
+	global $current_user, $wpdb;
+?>
+<style>
+label {font-weight: bold; display: inline-block; width: 200px;}
+</style>
+<h1>My Data</h1>
+<p>This report aims to show the data gathered about your club participation in one place.</p>
+<form method="get" action="admin.php">
+<input type="hidden" name="page" value="wpt_my_data" />
+Show <input type="checkbox" name="speeches" value="1" <?php if(isset($_GET['speeches'])) echo ' checked="checked" '; ?> > Speeches
+<input type="checkbox" name="evaluations" value="1" <?php if(isset($_GET['evaluations'])) echo ' checked="checked" '; ?> > Evaluations 
+<input type="checkbox" name="other_roles" value="1" <?php if(isset($_GET['other_roles'])) echo ' checked="checked" '; ?>> Other Roles 
+<input type="checkbox" name="everything" value="1"<?php if(isset($_GET['everything'])) echo ' checked="checked" '; ?> > Everything 
+<button>Show Report</button>
+</form>
+<?php
+if(isset($_GET['speeches']) || isset($_GET['everything']))
+	$links[] = '<a href="#my_data_speeches">Speeches</a>';
+if(isset($_GET['evaluations']) || isset($_GET['everything']))
+	$links[] = '<a href="#my_data_evaluations">Evaluations</a>';
+if(isset($_GET['other_roles']) || isset($_GET['everything']))
+	$links[] = '<a href="#my_data_other">Other Roles</a>';
+if(!empty($links))
+	printf('<p><strong>Showing</strong> %s</p>',implode(' | ',$links));
+
+	$contact = wp_get_user_contact_methods($current_user);
+	$contact['description'] = 'Description';
+	$userdata = get_userdata($current_user->ID);
+	printf('<p>To change contact details, <a href="%s">Edit My Profile</a></p>',admin_url('profile.php'));
+	printf('<h1>%s %s</h1>',$userdata->first_name, $userdata->last_name);
+	foreach($contact as $index => $label) {
+		if(!empty($userdata->$index))
+		printf('<div><label>%s</label> %s</div>',$label,$userdata->$index);
+	}
+
+
+	if(isset($_GET['speeches']) || isset($_GET['everything']))
+	{
+		echo '<h2 id="my_data_speeches">Speeches</h2>';
+		echo speeches_by_manual($current_user->ID);	
+	}
+
+	if(isset($_GET['evaluations']) || isset($_GET['everything']))
+	{
+		echo '<h3 id="my_data_evaluations">Evaluations</h3>';
+		$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=".$current_user->ID." AND meta_key LIKE 'evaluation|%' ORDER BY meta_key DESC";
+		$results = $wpdb->get_results($sql);
+		if($results)
+		{
+			foreach($results as $row)
+			{
+				echo $row->meta_value;
+			}
+		}	
+	}
+
+	if(isset($_GET['other_roles']) || isset($_GET['everything']))
+	{
+		echo '<h2 id="my_data_other">Other Roles</h2>';
+		$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$current_user->ID AND meta_key LIKE 'tm|%' AND meta_key NOT LIKE 'tm|Speaker%' ORDER BY meta_key";
+		$results = $wpdb->get_results($sql);
+		if($results) {
+			foreach($results as $row) {
+				$parts = explode('|',$row->meta_key);
+				$t = rsvpmaker_strtotime($parts[2]);
+				$date = date('F j, Y',$t);
+				printf('<p>%s %s %s</p>',$parts[1],$date,$parts[4]);
+			}		
+		}
+	}
+	if(is_plugin_active('delete-me/delete-me.php'))
+	{
+		if(current_user_can('manage_options'))
+			echo '<p>Regular members (not administrators) will see a Delete My Profile option here.</p>';
+		else
+			printf('<h2>Delete My Profile</h2><p>If you wish to delete your account and all associated data, follow <a href="%s">this link</a> and confirm the request with your password.</p>',admin_url('options.php?page=plugin_delete_me_confirmation'));
+	}
+	elseif(current_user_can('manage_options')) {
+		echo '<p><strong>Administrators</strong>: Consider installing the <a href="https://wordpress.org/plugins/delete-me/">Delete Me</a> plugin to allow users to delete their own accounts and data.</p>';
+	}
+	$data = wpt_data_disclosure($current_user->ID);
+	echo '<div>Data inventory: '.implode(', ', $data).'</div>';
+
+}
+
+function wpt_data_disclosure ($user_id) {
+global $wpdb;
+	$contact = wp_get_user_contact_methods($user_id);
+	$contact['description'] = 'Description';
+	$userdata = get_userdata($user_id);
+	if(!empty($userdata->first_name))
+		$data[] = 'First Name';
+	if(!empty($userdata->last_name))
+		$data[] = 'Last Name';
+	foreach($contact as $index => $label) {
+		if(!empty($userdata->$index))
+			$data[] = $label;
+	}
+	$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=".$user_id." AND meta_key LIKE 'tm|Speaker%' ORDER BY meta_key DESC";
+	$results = $wpdb->get_results($sql);
+	$data[] = "Speech records: ".sizeof($results);
+	$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=".$user_id." AND meta_key LIKE 'evaluation|%' ORDER BY meta_key DESC";
+	$results = $wpdb->get_results($sql);
+	$data[] = "Evaluations: ".sizeof($results);
+	$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user_id AND meta_key LIKE 'tm|%' AND meta_key NOT LIKE 'tm|Speaker%' ORDER BY meta_key";
+	$results = $wpdb->get_results($sql);
+	$data[] = "Other meeting role records: ".sizeof($results);
+	$blogs = get_blogs_of_user($user_id);
+	$data[] = 'Active club websites you are listed as a member of '.sizeof($blogs);
+	if($blogs) {
+		foreach($blogs as $blog)
+			$bloglist[] = '<a href="'.$blog->siteurl.'">'.$blog->blogname.'</a>';// var_export($blog,true);
+		$data[] = implode(', ',$bloglist);
+	}
+	return $data;
+}
 
 ?>

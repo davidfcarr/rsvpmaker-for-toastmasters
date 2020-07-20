@@ -1,5 +1,10 @@
 (function($) {
-	
+	$.ajaxSetup({
+		headers: {
+			'X-WP-Nonce': wpt_rest.nonce,
+		}
+	});
+		
 	$('#default_css').hide();
 	
 	$("#default_css_show").click(function(){
@@ -13,7 +18,11 @@
 	if(activetab)
 	{
 		$('.toastmasters section').hide();
-		$('section' + activetab).show();	
+		$('section' + activetab).show();
+		if(activetab == '#pathways') {
+			let user_id = $('#toastmaster_select').val();
+			wpt_fetch_report('pathways',user_id);		
+		}
 	}
 		
 	$(document).on( 'click', '.nav-tab-wrapper a', function() {
@@ -275,5 +284,41 @@ $('.dashdate').mouseout(
 		$('#'+dateid+' .has-sub li').hide();
 	}
 );
+
+$("#show_speeches_by_manual").click(
+	function () {
+		let user_id = $('#toastmaster_select').val();
+		wpt_fetch_report('speeches_by_manual',user_id);
+	} 
+);
+
+$("#show_traditional_program").click(
+	function () {
+		let user_id = $('#toastmaster_select').val();
+		wpt_fetch_report('traditional_program',user_id);
+	} 
+);
+
+$("#show_traditional_advanced").click(
+	function () {
+		let user_id = $('#toastmaster_select').val();
+		wpt_fetch_report('traditional_advanced',user_id);
+	} 
+);
+
+$("#show_pathways").click(
+	function () {
+		let user_id = $('#toastmaster_select').val();
+		wpt_fetch_report('pathways',user_id);
+	} 
+);
+
+function wpt_fetch_report(report, user_id) {
+let fetchurl = wpt_rest.url+'rsvptm/v1/reports/'+report+'/'+user_id;
+$('#'+report+'_content').html('Loading from '+fetchurl+' ...');
+fetch(fetchurl, {headers: {'X-WP-Nonce' : wpt_rest.nonce}})
+  .then(response => response.json())
+  .then(data => $('#'+report+'_content').html(data.content) );
+}
 
 })( jQuery );

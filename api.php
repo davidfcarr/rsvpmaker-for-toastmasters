@@ -235,11 +235,11 @@ class Editor_Assign extends WP_REST_Controller {
 	}
   
   public function handle($request) {
-	global $wpdb;
+	global $wpdb, $current_user;
 	$post_id = (int) $_POST["post_id"];
 	$user_id = $_POST["user_id"];
 	$role = $_POST["role"];
-	$editor_id = (int) $_POST["editor_id"];
+	$editor_id = (empty($_POST["editor_id"])) ? $current_user->ID : (int) $_POST["editor_id"];
 	$timestamp = get_rsvp_date($post_id);
 	$was = get_post_meta($post_id,$role,true);
 	update_post_meta($post_id,$role,$user_id);
@@ -285,6 +285,56 @@ class Editor_Assign extends WP_REST_Controller {
 	}
 }
 
+class WPTM_Reports extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'reports/(?P<report>.+)/(?P<user_id>[0-9]+)';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return (is_user_logged_in() && current_user_can('view_reports'));
+	}
+  
+  public function handle($request) {
+	global $wpdb;
+	$report = $request["report"];
+	$user_id = $request["user_id"];
+	$content = '';
+	if($report == 'speeches_by_manual')
+		$content = speeches_by_manual($user_id);
+	elseif($report == 'traditional_program')
+		$content = toastmasters_progress_report($user_id);
+	elseif($report == 'traditional_advanced') {
+		ob_start();
+		if($user_id)
+			{
+			$userdata = get_userdata($user_id);
+			toastmasters_advanced_user ($userdata,true);	
+			}
+		else
+			{
+			echo 'Select member from the list above';
+			echo toastmasters_advanced();
+			}		
+		$content = ob_get_clean();
+	}
+	elseif($report == 'pathways') {
+		ob_start();
+		pathways_report($user_id);
+		$content = ob_get_clean();
+	}
+	  return new WP_REST_Response(array('report' => $report, 'content' => $content), 200);
+	}
+}
+
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
@@ -302,5 +352,7 @@ add_action('rest_api_init', function () {
 	 $assign->register_routes();
 	 $rsvpexp = new RSVP_Export();
 	 $rsvpexp->register_routes();
+	 $repo = new WPTM_Reports();
+	 $repo->register_routes();
    } );
 ?>

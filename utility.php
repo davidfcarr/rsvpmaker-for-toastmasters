@@ -138,10 +138,10 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	$options = apply_filters('awe_dropdown_options',$options);
 
 if($settings)
-	return '<select name="'.$role.'" >'.$options.'</select>';
+	return '<select name="'.$role.'" id="'.$role.'_select">'.$options.'</select>';
 elseif(isset($_GET['recommend_roles']))
 	return '<select name="editor_suggest['.$role.']" id="editor_suggest'.$role.'" class="editor_suggest" >'.$options.'</select>';
-elseif(isset($_GET['edit_roles']))
+elseif(is_edit_roles())
 	return "\n\n".'<input type="checkbox" class="recommend_instead" name="recommend_instead'.$role.'" id="recommend_instead'.$role.'" class="editor_assign" post_id="'.$post->ID.'" value="_rm'.$role.'" /> '.__('Recommend instead of assign','rsvpmaker-for-toastmasters').'<br /><select name="editor_assign['.$role.']" id="editor_assign'.$role.'" class="editor_assign"  post_id="'.$post->ID.'">'.$options.'</select><span id="_rm'.$role.'"></span>';
 else
 	return "\n\n".'<select name="editor_assign['.$role.']" id="'.$post->ID.'_editor_assign'.$role.'" class="editor_assign" post_id="'.$post->ID.'" role="'.$role.'">'.$options.'</select>';
@@ -646,4 +646,13 @@ function get_agenda_timing($post_id) {
 	}
 	return $time_array;
 }
+
+function is_edit_roles() {
+	if(isset($_GET['edit_roles']))
+		return true;
+	if(isset($_GET['page']) && ($_GET['page'] == 'toastmasters_reconcile'))
+		return true;
+	return false;
+}
+
 ?>
