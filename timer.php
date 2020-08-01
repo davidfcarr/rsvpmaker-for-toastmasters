@@ -197,11 +197,11 @@ elseif($post->post_type == 'rsvpmaker')
 $count = 0;
 if(strpos($post->post_content,'wp:wp4toastmasters'))
 {
-$data = wpt_blocks_to_data($post->post_content);
+$data = wpt_blocks_to_data($post->post_content, false, true);
 $count = (isset($data['Speaker']['count'])) ? $data['Speaker']['count'] : 0;
 }
 else {
-preg_match('/role="Speaker" count="([^"])"/',$post->post_content,$matches); //  count="([^"]+)
+preg_match('/role="Speaker" count="([^"])"/',$post->post_content,$matches);
 $count = $matches[1];
 }
 
@@ -226,7 +226,6 @@ for($i = 1; $i <= $count; $i++) {
 }
 
 for($i = 1; $i <= $count; $i++) {
-	//echo 'Lookup '.'_Speaker_'.$i;
 	$member_id = get_post_meta($post->ID,'_Evaluator_'.$i,true);
 	//echo ' id '.$member_id;
 	if($member_id)

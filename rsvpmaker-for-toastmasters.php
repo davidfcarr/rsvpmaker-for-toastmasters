@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 3.9.9
+Version: 4.0
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -6645,7 +6645,11 @@ class AwesomeWidget extends WP_Widget {
 printf('<div><a href="%s">%s</a></div>',admin_url('profile.php?page=wp4t_set_status_form'),__('Set Away Message','rsvpmaker-for-toastmasters'));
 
 				  printf('<div><a href="%s">'.__('Member Dashboard','rsvpmaker-for-toastmasters').'</a></div>',login_redirect(admin_url('index.php')) );
-				if(function_exists('bp_core_get_userlink'))
+				if(is_plugin_active('wp-user-avatar/wp-user-avatar.php'))
+				{
+				printf('<div><a href="%s">'.__('Change Profile Photo','rsvpmaker-for-toastmasters').'</a></div>',admin_url('profile.php#profilephoto') );
+				}
+			  if(function_exists('bp_core_get_userlink'))
 					{
 					global $current_user;
 				  	printf('<div><a href="%s#whats-new-form">'.__('Post to Social Profile','rsvpmaker-for-toastmasters').'</a></div>',bp_core_get_userlink($current_user->ID,false,true) );
@@ -13347,4 +13351,13 @@ function rsvpmaker4t_deactivate() {
 	wp_unschedule_hook('wp4t_reminders_nudge');
 }
 register_deactivation_hook( __FILE__, 'rsvpmaker4t_deactivate' );
+
+function profile_photo_anchor() {
+?>
+<p id="profilephoto">The Avatar image is your profile photo for the member page.</p>
+<?php	
+}
+
+add_action('wpua_before_avatar_admin','profile_photo_anchor');
+
 ?>

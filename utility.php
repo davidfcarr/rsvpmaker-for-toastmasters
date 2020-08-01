@@ -429,7 +429,7 @@ function is_club_member() {
 return apply_filters('is_club_member',is_user_member_of_blog());	
 }
 
-function wpt_blocks_to_data($content, $include_backup = true) {
+function wpt_blocks_to_data($content, $include_backup = true, $aggregate = false) {
 	$data = array();
 	if(strpos($content,'wp:wp4toast'))
 	{
@@ -460,6 +460,7 @@ function wpt_blocks_to_data($content, $include_backup = true) {
 				$key = $thisdata['role'];
 				if($key == 'custom')
 					$key = $thisdata['role'] = $thisdata['custom_role'];
+				if(!$aggregate)
 				$key .= (empty($thisdata['start'])) ? 1 : $thisdata['start'];
 			}
 			elseif(!empty($thisdata['uid']))
