@@ -268,12 +268,14 @@ if(isset($_GET['clear_custom_scoring']))
 	delete_option('toast_custom_contest');
 else
 	$options .= get_option('toast_custom_contest');
+$syncrole =	track_roles_ui();
 $output .= '<p>Use this dashboard to pick a contest, add your list of contestants and judges, and generate personalized links to a page where each judge can score contestants and enter their votes.</p><p>As the judges vote, you will see their votes appear on the dashboard within seconds. If you have the Timer and Tiebreaking Judge record their work online, their input can also be factored in to show if any contestants were disqualified or how any ties were broken.</p>';
 $output .= '<h1>Choose Contest</h1>'.sprintf('<form method="post" action="%s">
-	<div><select name="contest_scoring">%s</select>
+	<div>Contest:<br /><select name="contest_scoring">%s</select>
+	%s
 		<button>Set</button></div>
 </form>
-',$actionlink,$options);
+',$actionlink,$options,$syncrole);
 	
 $output .= '<h1>Custom Contest</h1>'.sprintf('<form method="post" action="%s" id="custom_contest"><p>Contest Name: <input type="input" name="contest_name" value="My Custom Contest" /></p>
 ',$actionlink);
@@ -543,7 +545,7 @@ if($timer_user)
 	}
 printf("<p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p></div>',$timer_link,$timer_link);
 
-echo "<p>If judges have problems with the online voting, you can record votes on their behalf using the forms below.</p>";
+echo "<h3>Backup Voting Forms</h3><p>If judges have problems with the online voting, you can record votes on their behalf using the forms below.</p>";
 echo $dashboard_forms;
 }
 if(empty($contestants))
@@ -594,6 +596,7 @@ else
 	<h2>Reset</h2>
 	<div><input type="checkbox" name="resetit[]" value="scores"> Scores</div>
 	<div><input type="checkbox" name="resetit[]" value="order"> Speaking Order</div>
+	<div><input type="checkbox" name="resetit[]" value="judges"> Judges List</div>
 	<button>Reset</button>
 </form>
 <?php	
@@ -642,36 +645,8 @@ judge_import_form($actionlink);
 	<h3>Contestants</h3>
 <?php
 
-if(strpos($post->post_content,'wp:wp4toastmasters'))
-{
-$data = wpt_blocks_to_data($post->post_content);
-foreach($data as $item)
-	if(!empty($item['role']))
-		$roles[] = $item['role'];
-}
-else {
-preg_match_all('/role="([^"]+)/',$post->post_content,$matches);
-	$roles = (empty($matches[1])) ? array() : $matches[1];	
-}
-	
-	
-if(!empty($roles))
-{
-$track = '';
-$track_top = '<option value="">Select Role</option>';
+echo track_roles_ui($track_role);
 
-foreach($roles as $role)
-{
-$s = ($role == $track_role) ? ' selected="selected" ' : '';
-if(strpos($role,'peaker') || strpos($role,'peech') || strpos($role,'ontest'))
-	$track_top  .= sprintf('<option value="%s" %s>%s</option>',$role,$s,$role);
-else
-	$track .= sprintf('<option value="%s" %s>%s</option>',$role,$s,$role);
-}
-
-printf('<p>Sync With Agenda Role <select id="track_role" name="track_role" >%s<option value="cancel">Cancel Selection</option></select></p>',$track_top.$track);
-
-}
 ?>
 <div id="role_track_status"><?php if(!empty($track_role)) printf('<p>Names pulled from %s role signups on the agenda.</p>',$track_role); ?></div>
 <div id="manual_contestants">
@@ -1475,7 +1450,7 @@ function check_contest_collaborators () {
 		}
 	
 		}
-	if(empty($myusers) || (sizeof($myusers) == 1))
+	if(isset($options) && (empty($myusers) || (sizeof($myusers) == 1)))
 		return $options;
 	foreach($myusers as $user_id) {
 		$user = get_userdata($user_id);
@@ -1493,7 +1468,7 @@ function judge_import_form($action) {
 	global $post, $wpdb, $current_user;
 	$judges = get_post_meta($post->ID,'tm_scoring_judges',true);
 	if(empty($judges) && check_contest_collaborators ()) {
-		$opt = '<option value="">Choose Contest</option>';
+		$opt = '<option value="">Choose Previous Contest</option>';
 		$results = $wpdb->get_results("SELECT * FROM $wpdb->posts JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id WHERE meta_key='tm_scoring_judges' AND post_status='publish' ORDER BY ID DESC");
 		if($results)
 		foreach($results as $event) {
@@ -1504,8 +1479,44 @@ function judge_import_form($action) {
 			$opt .= sprintf('<option value="%d">%s %s</option>',$event->ID,$event->post_title,rsvpmaker_strftime('',$date));
 		}
 		if(!empty($opt))
-			printf('<form action="%s" method="post">Import judges/settings from:<br ><select name="importfrom">%s</select><button>Import</button></form>',$action,$opt);
+			printf('<form action="%s" method="post"><h3>Import judges/settings (optional)</h3><p><select name="importfrom">%s</select></p>
+			<p>If the list of judges will be the same (or mostly the same) as for another contest, you can import those settings rather than setting them individually.</p><p>Otherwise, continue to the Setup section below.</p>
+			<button>Import</button></form>',$action,$opt);
 	}	
+}
+
+function track_roles_ui($track_role = '') {
+	global $post;
+	if(strpos($post->post_content,'wp:wp4toastmasters'))
+{
+$data = wpt_blocks_to_data($post->post_content);
+foreach($data as $item)
+	if(!empty($item['role']))
+		$roles[] = $item['role'];
+}
+else {
+preg_match_all('/role="([^"]+)/',$post->post_content,$matches);
+	$roles = (empty($matches[1])) ? array() : $matches[1];	
+}
+	
+if(!empty($roles))
+{
+$track = '';
+$track_top = '<option value="">Select Role</option>';
+
+foreach($roles as $role)
+{
+$s = ($role == $track_role) ? ' selected="selected" ' : '';
+if(strpos($role,'peaker') || strpos($role,'peech') || strpos($role,'ontest'))
+	$track_top  .= sprintf('<option value="%s" %s>%s</option>',$role,$s,$role);
+else
+	$track .= sprintf('<option value="%s" %s>%s</option>',$role,$s,$role);
+}
+
+return sprintf('<p>Sync With Agenda Role for Contestants <br /><select id="track_role" name="track_role" >%s<option value="cancel">Cancel Selection</option></select></p>',$track_top.$track);
+
+}
+
 }
 
 ?>

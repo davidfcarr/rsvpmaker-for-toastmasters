@@ -2553,7 +2553,6 @@ $projects["Club Webmaster:CL10"] = __("Team Building: Club Webmaster","rsvpmaker
 $project_options = array();
 $manuals = get_manuals_array();
 foreach($manuals as $manual => $display_name) {
-    $found = false;
     foreach($projects as $index => $project) {
         if(strpos($index,$manual) !== false)
             {

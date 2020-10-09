@@ -208,11 +208,11 @@ class Toast_Manual_Lookup extends WP_REST_Controller {
 		$manual = "Pathways 360 Level 5 Demonstrating Expertise";
 	else
 		$manual = $type .' Level 1 Mastering Fundamentals';
-	if($manual == 'Pathways 360')
-		$projects = $pa[$manual];
+	if(strpos($manual,'ways 360'))
+		$projects = '<option value="Pathways 360 Level 5 Demonstrating Expertise 99">Pathways 360° Evaluation</option>';
 	else
 		$projects = '<option value="">Select Project</option>'.$pa[$manual];
-	  return new WP_REST_Response(array('list' => $options, 'projects' => $projects), 200);
+	return new WP_REST_Response(array('list' => $options, 'projects' => $projects), 200);
 	}
 }
 
@@ -237,8 +237,8 @@ class Editor_Assign extends WP_REST_Controller {
   public function handle($request) {
 	global $wpdb, $current_user;
 	$post_id = (int) $_POST["post_id"];
-	$user_id = $_POST["user_id"];
-	$role = $_POST["role"];
+	$user_id = (int) $_POST["user_id"];
+	$role = sanitize_text_field($_POST["role"]);
 	$editor_id = (empty($_POST["editor_id"])) ? $current_user->ID : (int) $_POST["editor_id"];
 	$timestamp = get_rsvp_date($post_id);
 	$was = get_post_meta($post_id,$role,true);

@@ -248,14 +248,19 @@ for($i = 1; $i <= $count; $i++) {
     <option value="Speech (5-7)|5:00|6:00|7:00|standard">Speech (5-7)</option>
     <option value="Table Topics|1:00|1:30|2:00|tt">Table Topics</option>
     <option value="Evaluation|2:00|2:30|3:00|eval">Evaluation</option>
-    <option value="Speech (3-4)|3:00|3:30|4:00|6to8">Speech (3-4)</option>
+    <option value="Speech (3-4)|3:00|3:30|4:00|3to4">Speech (3-4)</option>
     <option value="Speech (6-8)|6:00|7:00|8:00|6to8">Speech (6-8)</option>
     <option value="Speech (8-10)|8:00|9:00|10:00|8to10">Speech (8-10)</option>
     <option value="Speech (10-15)|10:00|12:30|15:00|10to15">Speech (10-15)</option>
     <option value="Speech (15-20)|15:00|17:30|20:00|15to20">Speech (15-20)</option>
     <option value="Speech (20-30)|20:00|22:30|30:00|20to30">Speech (20-30)</option>
+    <option value="Test|0:05|0:10|0:15|test">Test (15 seconds)</option>
+    <option value="30 Seconds|0:20|0:25|0:30|30sec">30 Seconds</option>
     <option value="One Minute|0:30|0:45|1:00|minute">One Minute</option>
-    <option value="Test|0:05|0:10|0:15|test">Test</option>
+    <option value="Two Minutes|1:00|1:30|2:00|2minute">Two Minutes</option>
+    <option value="Three Minutes|2:00|2:30|3:00|3minute">Three Minutes</option>
+    <option value="Four Minutes|3:00|3:30|4:00|4minute">Four Minutes</option>
+    <option value="Five Minutes|4:00|4:30|5:00|5minute">Five Minutes</option>
     </select>
     <input type="hidden" id="speechid" />    
     <input type="text" placeholder="Speaker Name" id="speakername" size="30"> 
@@ -283,11 +288,14 @@ for($i = 1; $i <= $count; $i++) {
       <button id="greennow" class="colorbuttons">Green</button>
       <button id="yellownow" class="colorbuttons">Yellow</button>
       <button id="rednow" class="colorbuttons">Red</button>
+      <div id="clearwrap"><button id="clearlog">Clear Log</button></div>
       </div>
 	</div>
 
 			<div id="smallcounter"></div>
             <div id="logentries"></div>
+
+
 <?php
 
 if(isset($_REQUEST['contest']))

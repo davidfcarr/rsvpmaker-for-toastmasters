@@ -64,7 +64,7 @@ tm_application_fee();
 
 <?php
 if(isset($_POST['sponsor']))
-    printf('<p>%s</p>',stripslashes($_POST['sponsor']));
+    printf('<p>%s</p>',esc_html(stripslashes($_POST['sponsor'])));
 else
 {
     $users = get_users('blog_id='.get_current_blog_id());

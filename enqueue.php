@@ -14,7 +14,7 @@ $ver = '2.5';
 function toastmasters_css_js() {
 	global $post;
 	$version = '3.36';
-	if(isset($_GET['action']) || (is_admin() && !isset($_GET['page'])) )
+	if(is_admin() && (strpos($_SERVER['REQUEST_URI'],'edit.php') || (strpos($_SERVER['REQUEST_URI'],'post.php') && empty($_GET['page'])) || strpos($_SERVER['REQUEST_URI'],'post-new.php')) )
 		return; // don't load all this in editor or post listings
     if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && 
     (($_REQUEST["page"] == 'toastmasters_reconcile') || ($_REQUEST["page"] == 'my_progress_report') 
@@ -38,13 +38,15 @@ function toastmasters_css_js() {
 	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
 	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), $version );
 	}
+	if( (isset($post->post_content) && is_wp4t() ) 
+	|| (strpos($_SERVER['REQUEST_URI'],'profile.php') || strpos($_SERVER['REQUEST_URI'],'user-edit.php'))
+	) {
+		wp_enqueue_script('wp-tinymce');
+	}
 }
 
 function wpt_fetch_report($report, $user_id) {
 printf('<div id="%s_content">Loading ...</div>',$report);
-//echo "\n<script>\n(function($) {\n";
-//printf("wpt_fetch_report('%s',%d);",$report,$user_id);
-//echo "\n})( jQuery );\n</script>";
 }
 
 ?>

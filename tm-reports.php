@@ -220,7 +220,7 @@ else
 			$sql = "SELECT *, $wpdb->posts.ID as postID
 FROM $wpdb->postmeta
 JOIN $wpdb->posts ON $wpdb->postmeta.post_id = $wpdb->posts.ID
-WHERE meta_key='_sked' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish'";
+WHERE meta_key='_sked_Varies' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish'";
 			
 		$results = $wpdb->get_results($sql);
 		if($results)
@@ -1090,7 +1090,7 @@ foreach($results as $row)
 
 $sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.meta_value,'%M %e, %Y') as date
 	 FROM ".$wpdb->posts."
-	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_sked'
+	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_sked_Varies'
 	 ORDER BY $wpdb->posts.ID";
 
 $ot = '<option value="">'.__('Choose Template','rsvpmaker-for-toastmasters').'</option>';
@@ -1190,7 +1190,12 @@ $sql = "SELECT meta_key, meta_value FROM `$wpdb->postmeta` where post_id=".$r_po
 $results = $wpdb->get_results($sql);
 foreach ($results as $row) 
 	{
+		//print_r($row);
 		$present[] = $row->meta_value; // all the people who filled any role
+		if(strpos($row->meta_key,'Attended'))
+			$marked_attended[] = $row->meta_value;
+		elseif($row->meta_value)
+			$role_holder[] = $row->meta_value;
 		$meeting_roles[] = $row->meta_key;
 	}
 }
@@ -1220,6 +1225,28 @@ foreach ($members as $index => $userdata)
 		printf('%s %s %s',$att,$userdata->first_name, $userdata->last_name);
 	}
 
+if(!empty($role_holder)) {
+	$marked_out = '<p>Held a role: ';
+		foreach($role_holder as $index => $marked) {
+			$user = get_userdata($marked);
+			if($index) 
+				$marked_out .= ', ';	
+			$marked_out .= $user->display_name;
+		}
+	echo $marked_out . '</p>';
+}
+	
+if(!empty($marked_attended)) {
+$marked_out = '<p>No role but marked present: ';
+	foreach($marked_attended as $index => $marked) {
+		$user = get_userdata($marked);
+		if($index) 
+			$marked_out .= ', ';	
+		$marked_out .= $user->display_name;
+	}
+echo $marked_out . '</p>';
+}
+	
 submit_button('Save Changes','primary','edit_roles');
 if(isset($_REQUEST["history"]))
 	$post->ID = 0;

@@ -153,6 +153,10 @@ function checkColorChange() {
     });
 }
 
+$("#clearlog").click( function() {
+    $('#logentries').html('');
+});
+
 function refreshView() {
      var view = $('#view').children("option:selected").val();
      console.log('switch view: '+view);
@@ -338,7 +342,8 @@ var TSTimer = (function () {
         }
         correction = 0;
 	    if($('#showdigits').is(':checked'))
-			$('#trafficlight').text('0:00');
+            $('#trafficlight').text('0:00');
+        $('#correction').val(0);
         this.startTime = null;
 		greenchime = true;
 		yellowchime = true;
