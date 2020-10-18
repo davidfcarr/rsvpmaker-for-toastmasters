@@ -14,6 +14,62 @@
 input,select {max-width: 45%}
 #scorebody { margin: 10px; background-color: #fff; padding: 15px;}
 	input.setscore {width: 50px;}
+	h2.nav-tab-wrapper {
+	margin:22px 0 0 0;
+}
+
+#sections {
+	padding:22px;
+	background: #fff;
+	border:1px solid #ccc;
+	border-top:0px;
+}
+
+section.nav-tab {
+	display:none;
+}
+.nav-tab-wrapper {
+	background-color: #efefef;
+}
+.nav-tab {
+	background-color: gray;
+	color: #fff;
+	display: inline-block;
+	margin-right: 5px;
+	border: thin solid gray;
+	border-bottom: none;
+}
+.nav-tab-active {
+	color: #000;
+	background-color: #fff;
+}
+
+
+section.nav-tab-active {
+	display:block;
+	border: medium solid gray;
+}
+
+.no-js h2.nav-tab-wrapper {
+	display:none;
+}
+
+.no-js #sections {
+	border-top:1px solid #ccc;
+	margin-top:22px;
+}
+
+.no-js section {
+	border-top: 1px dashed #aaa;
+	margin-top:22px;
+	padding-top:22px;
+}
+
+.no-js section:first-child {
+	margin:0px;
+	padding:0px;
+	border:0px;
+}
 </style>
 </head>
 <body>

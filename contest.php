@@ -487,6 +487,63 @@ if(isset($_POST['hide_ballot_links']))
 else
 	$nolinks = (int) get_post_meta($post->ID,'hide_ballot_links',true);
 
+if(!empty($contestants) && empty($order))
+{
+?>
+<form method="post" action="<?php echo $actionlink; ?>">
+	<h2>Set Speaking Order</h2>
+	<p><em>Randomized speaking order has not been set.</em></p>
+	<div><input type="hidden" name="resetit[]" value="order">
+		<button>Set</button></div>
+</form>
+<?php
+}
+elseif(!empty($order))
+{
+	echo '<h3>Speaking Order</h3>';
+	foreach($order as $index => $next)
+	{
+		printf("<div>#%d %s</div>",$index + 1, $next);
+	}
+
+}
+
+if(!$is_locked)
+{
+if(isset($_POST['importfrom']))
+{
+	echo 'Copying setup from event post #'.$import = (int) $_POST['importfrom'];
+	$users = get_post_meta($import,'contest_user');
+	if($users)
+	foreach($users as $user)
+		add_post_meta($post->ID,'contest_user',$user);
+	$judges = get_post_meta($import,'tm_scoring_judges',true);
+	if($judges)
+		update_post_meta($post->ID,'tm_scoring_judges',$judges);
+	$dashboard_users = get_post_meta($import,'tm_contest_dashboard_users',true);
+	if($dashboard_users)
+		update_post_meta($post->ID,'tm_contest_dashboard_users',$dashboard_users);
+	$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
+	if($timer_user)
+		update_post_meta($post_id,'contest_timer',$timer_user);
+	$tie_breaker = get_post_meta($post->ID,'tm_scoring_tiebreaker',true);
+	if($tie_breaker)
+		update_post_meta($post_id,'tm_scoring_tiebreaker',$tie_breaker);
+
+	$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$import AND meta_key LIKE 'contest_link%' ";
+	$results = $wpdb->get_results($sql);
+	if($results)
+	foreach($results as $row)
+		{
+		$p = explode('?',$row->meta_value);
+		$url = get_permalink().'?'.$p[1];
+		update_post_meta($post->ID,$row->meta_key,$url);
+		//printf('<p>Setting %s %s %s</p>',$post->ID,$row->meta_key,$row->meta_value);
+		}
+}
+
+}// end locked test
+
 if(!empty($judges))
 {
 $dashboard_forms = '';
@@ -545,30 +602,15 @@ if($timer_user)
 	}
 printf("<p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p></div>',$timer_link,$timer_link);
 
-echo "<h3>Backup Voting Forms</h3><p>If judges have problems with the online voting, you can record votes on their behalf using the forms below.</p>";
-echo $dashboard_forms;
+echo "<h3>Backup Voting Forms</h3><p>If judges have problems with the online voting, you can record votes on their behalf.</p>";
+echo '<p><input type="checkbox" id="showvotingforms" value="1" /> Show Forms</p><div class="votingforms">';
+echo $dashboard_forms.'</div>';
 }
-if(empty($contestants))
-	;
-elseif(empty($order))
-{
+
 ?>
-<form method="post" action="<?php echo $actionlink; ?>">
-	<h2>Set Speaking Order</h2>
-	<p><em>Randomized speaking order has not been set.</em></p>
-	<div><input type="hidden" name="resetit[]" value="order">
-		<button>Set</button></div>
-</form>
+<div>
 <?php
-}
-else
-{
-	echo '<h3>Speaking Order</h3>';
-	foreach($order as $index => $next)
-	{
-		printf("<div>#%d %s</div>",$index + 1, $next);
-	}
-if($is_locked)
+	if($is_locked)
 	{
 	echo '<h3>Settings Locked</h3><p>Contest settings are locked. Only a website administrator, or the user who locked the form, can remove the lock.</p>';
 	if(($is_locked == $current_user->ID) || current_user_can('manage_options') )
@@ -582,69 +624,28 @@ if($is_locked)
 <?php		
 		}
 	}
-else
-{
+else {
 ?>
-<form method="post" action="<?php echo $actionlink; ?>">
-	<h2>Lock Settings</h2>
-	<p>You can do this once the contest begins to disable the reset function or any other changing of settings while the contest is in progress.</p>
-	<input type="hidden" name="contest_locked" value="1">
-	<button>Lock</button>
-</form>
-
-<form method="post" action="<?php echo $actionlink; ?>">
-	<h2>Reset</h2>
-	<div><input type="checkbox" name="resetit[]" value="scores"> Scores</div>
-	<div><input type="checkbox" name="resetit[]" value="order"> Speaking Order</div>
-	<div><input type="checkbox" name="resetit[]" value="judges"> Judges List</div>
-	<button>Reset</button>
-</form>
-<?php	
-}
-
-}
-
-if(!$is_locked)
-{
-if(isset($_POST['importfrom']))
-{
-	echo 'Copying setup from event post #'.$import = (int) $_POST['importfrom'];
-	$users = get_post_meta($import,'contest_user');
-	if($users)
-	foreach($users as $user)
-		add_post_meta($post->ID,'contest_user',$user);
-	$judges = get_post_meta($import,'tm_scoring_judges',true);
-	if($judges)
-		update_post_meta($post->ID,'tm_scoring_judges',$judges);
-	$dashboard_users = get_post_meta($import,'tm_contest_dashboard_users',true);
-	if($dashboard_users)
-		update_post_meta($post->ID,'tm_contest_dashboard_users',$dashboard_users);
-	$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
-	if($timer_user)
-		update_post_meta($post_id,'contest_timer',$timer_user);
-	$tie_breaker = get_post_meta($post->ID,'tm_scoring_tiebreaker',true);
-	if($tie_breaker)
-		update_post_meta($post_id,'tm_scoring_tiebreaker',$tie_breaker);
-
-	$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$import AND meta_key LIKE 'contest_link%' ";
-	$results = $wpdb->get_results($sql);
-	if($results)
-	foreach($results as $row)
-		{
-		$p = explode('?',$row->meta_value);
-		$url = get_permalink().'?'.$p[1];
-		update_post_meta($post->ID,$row->meta_key,$url);
-		//printf('<p>Setting %s %s %s</p>',$post->ID,$row->meta_key,$row->meta_value);
-		}
-}
-judge_import_form($actionlink);
-?>
-<div>
-<form method="post" action="<?php echo $actionlink ?>" >
 	<h2>Setup</h2>
-	<h3>Contestants</h3>
-<?php
 
+    <h2 class="nav-tab-wrapper">
+	<a class="nav-tab nav-tab-active" href="#contestants">Contestants</a>
+	<a class="nav-tab" href="#judges">Judges and Timer</a>
+      <a class="nav-tab" href="#security">Security</a>
+      <!--a class="nav-tab" href="#judging-links">Judging Links</a-->
+      <a class="nav-tab" href="#lock-reset">Lock/Unlock/Reset</a>
+    </h2>
+
+    <div id="sections" class="rsvpmaker" >
+    <section class="rsvpmaker"  id="contestants">
+	<?php
+if($is_locked) {
+	echo '<p>Settings are locked</p>';
+}
+else {
+?>
+	<form method="post" action="<?php echo $actionlink ?>" >
+<?php
 echo track_roles_ui($track_role);
 
 ?>
@@ -670,61 +671,61 @@ for($i= 0; $i < $stop; $i++)
 ?>
 <p><input type="checkbox" name="make_order" value="1"> Record this as the official speaking order</p>
 </div>
-	
-<h3>Judges</h3>
+<p><button>Submit</button></p>
+</form>
 <?php
-if(is_array($judges))
-foreach($judges as $index => $value)
-{
-	if(isset($_GET['debug']))
-		printf('<div>%s %s</div>',$index,$value);
-	if(is_numeric($value)) {
-		$user = $value;
-		$name = '';
-		$open = 'Open';
-	}
-	else {
-		$user = 0;
-		$name = $value;
-		$open = 'Guest';
-	}
-	if(isset($_GET['debug']))
-		printf('<div>%s %s - user %s open %s</div>',$index,$value,$user,$open);
-	if(!empty($tiebreaker) && ($tiebreaker == $index))
-		$s = ' checked="checked" ';
-	else
-		$s = '';
-	$drop = awe_user_dropdown ('judge['.$index.']', $user, true, $open);
-	printf('<p>%s <input type="text" name="judge_name[%d]" value="%s"><br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker</p>',$drop,$index,$name,$index,$s);
 }
-$t = time();	
-for($i= 0; $i < 10; $i++)
+?>
+	</section>
+	<section class="rsvpmaker"  id="judges">
+<?php
+if($is_locked) {
+	echo 'Settings are locked';
+}
+else {
+?>	
+	<form method="post" action="<?php echo $actionlink ?>" >
+<?php
+	if(is_array($judges))
+	foreach($judges as $index => $value)
 	{
-	$index = $t+($i*100)+rand(1,99);
-	$drop = awe_user_dropdown ('judge['.$index.']', 0, true);
-	printf('<p>%s or guest: <input type="text" name="judge_name[%d]" value=""><br /><input type="radio" name="tm_tiebreaker" value="%s" />Tiebreaker</p>',$drop, $index,$index);
+		if(isset($_GET['debug']))
+			printf('<div>%s %s</div>',$index,$value);
+		if(is_numeric($value)) {
+			$user = $value;
+			$name = '';
+			$open = 'Open';
+		}
+		else {
+			$user = 0;
+			$name = $value;
+			$open = 'Guest';
+		}
+		if(isset($_GET['debug']))
+			printf('<div>%s %s - user %s open %s</div>',$index,$value,$user,$open);
+		if(!empty($tiebreaker) && ($tiebreaker == $index))
+			$s = ' checked="checked" ';
+		else
+			$s = '';
+		$drop = awe_user_dropdown ('judge['.$index.']', $user, true, $open);
+		printf('<p>%s <input type="text" name="judge_name[%d]" value="%s"><br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker</p>',$drop,$index,$name,$index,$s);
 	}
-?>
-<p><em>You can assign up to 10 judges at a time. If you have more than 10 judges to assign, first submit the form with the first 10 assignments. When the page reloads, additional blanks will be displayed.</em></p>
-
-<h3>Timer</h3>
-<?php 
-$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
-echo '<p>'.awe_user_dropdown('contest_timer_user',$timer_user, true).'</p>';
-?>
-
-<h3>Dashboard Users</h3>
-	<p>Add chief judge, ballot counters</p>
-<?php
-for($i= 0; $i < 5; $i++)
-{
-	$user = empty($dashboard_users[$i]) ? 0 : $dashboard_users[$i];
-	$drop = awe_user_dropdown ('tm_scoring_dashboard_users[]', $user, true);//, $open);
-	echo '<div>'.$drop.'</div>';
-}
-
-?>
-<h3>Judging Links</h3>
+	$t = time();	
+	for($i= 0; $i < 10; $i++)
+		{
+		$index = $t+($i*100)+rand(1,99);
+		$drop = awe_user_dropdown ('judge['.$index.']', 0, true);
+		printf('<p>%s or guest: <input type="text" name="judge_name[%d]" value=""><br /><input type="radio" name="tm_tiebreaker" value="%s" />Tiebreaker</p>',$drop, $index,$index);
+		}
+	?>
+	<p><em>You can assign up to 10 judges at a time. If you have more than 10 judges to assign, first submit the form with the first 10 assignments. When the page reloads, additional blanks will be displayed.</em></p>
+	
+	<h3>Timer</h3>
+	<?php 
+	$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
+	echo '<p>'.awe_user_dropdown('contest_timer_user',$timer_user, true).'</p>';
+	?>
+	<h3>Judging Links</h3>
 <p><input type="radio" name="hide_ballot_links" value="0" <?php if(empty($nolinks)) echo ' checked="checked" '; ?> /> Show judge ballot links</p>
 <p><input type="radio" name="hide_ballot_links" value="1" <?php if(!empty($nolinks)) echo ' checked="checked" '; ?> /> Hide judge ballot links (if they're not being used)</p>
 <?php
@@ -736,14 +737,54 @@ if(isset($_POST['ballot_no_password']))
 else
 	$ballot_no_password = get_post_meta($post->ID,'ballot_no_password',true);
 ?>
-<h3>Security Options</h3>
+	<p><button>Submit</button></p>
+</form>
+	</section>
+    <section class="rsvpmaker"  id="security">
+	<form method="post" action="<?php echo $actionlink ?>" >
+	<h3>Security Options</h3>
 <p><input type="radio" name="ballot_no_password" value="0" <?php if(empty($ballot_no_password)) echo ' checked="checked" '; ?> /> User password required for access to ballot, timer's report form</p>
 <p><input type="radio" name="ballot_no_password" value="1" <?php if(!empty($ballot_no_password)) echo ' checked="checked" '; ?> /> No password. Ballots protected by coded links</p>
 <p><em>By default, a password is required for all voting forms associated with a user account. You may turn off password protection to make it easier for judges to access thier ballots, which will still be private as long as the link is only shared with the individual judges. This setting also applies to the timer's report. Guest judge links, created by entering a name rather than choosing a user account, are not password protected. The contest dashboard is always password protected.</em></p>
+<h3>Dashboard Users</h3>
+	<p>Add chief judge, ballot counters</p>
+<?php
+for($i= 0; $i < 5; $i++)
+{
+	$user = empty($dashboard_users[$i]) ? 0 : $dashboard_users[$i];
+	$drop = awe_user_dropdown ('tm_scoring_dashboard_users[]', $user, true);//, $open);
+	echo '<div>'.$drop.'</div>';
+}
+?>
 	<p><button>Submit</button></p>
 </form>
+<?php } ?>
+	</section>
+
+    <!--section class="rsvpmaker" id="judging-links"-->
+<?php
+?>
+	<!--/section -->
+	<section id="lock-reset">
+<form method="post" action="<?php echo $actionlink; ?>">
+	<h2>Lock Settings</h2>
+	<p>You can do this once the contest begins to disable the reset function or any other changing of settings while the contest is in progress.</p>
+	<input type="hidden" name="contest_locked" value="1">
+	<button>Lock</button>
+</form>
+
+<form method="post" action="<?php echo $actionlink; ?>">
+	<h2>Reset</h2>
+	<div><input type="checkbox" name="resetit[]" value="scores"> Scores</div>
+	<div><input type="checkbox" name="resetit[]" value="order"> Speaking Order</div>
+	<div><input type="checkbox" name="resetit[]" value="judges"> Judges List</div>
+	<button>Reset</button>
+</form>
+	</section>
+	</div><!--end of sections--->
 </div>
-<?php 
+<?php
+judge_import_form($actionlink);
 } //end test $is_locked
 do_action('wpt_scoring_dashboard_bottom'); ?>
 <p style="margin-top: 200px;"><a href="<?php echo $actionlink. '&reset_scoring=1'; ?>">Change Contest Type</a></p>
@@ -766,9 +807,36 @@ function votingLinkToggle () {
   }
 }
 
+function votingFormsToggle () {
+	if($( "input#showvotingforms:checked" ).val()) {
+	  $('.votingforms').show();
+  }
+  else {
+	$('.votingforms').hide();
+  }
+}
+
+var activetab = $('a.nav-tab-active').attr('href');
+	if(activetab)
+	{
+		$('section').hide();
+		$('section' + activetab).show();
+	}
+		
+$(document).on( 'click', '.nav-tab-wrapper a', function() {
+	$('section').hide();
+	$('a').removeClass('nav-tab-active');
+	$('section').eq($(this).index()).show();
+	$(this).addClass('nav-tab-active');
+	return false;
+});
+
 //check initial state of voting links
 votingLinkToggle();
 $( "input#showlinks" ).on( "click", votingLinkToggle);
+
+votingFormsToggle();
+$( "input#showvotingforms" ).on( "click", votingFormsToggle);
 
 function refreshScores() {
 $('#score_status').html('Checking for new scores ...');
@@ -1480,7 +1548,7 @@ function judge_import_form($action) {
 		}
 		if(!empty($opt))
 			printf('<form action="%s" method="post"><h3>Import judges/settings (optional)</h3><p><select name="importfrom">%s</select></p>
-			<p>If the list of judges will be the same (or mostly the same) as for another contest, you can import those settings rather than setting them individually.</p><p>Otherwise, continue to the Setup section below.</p>
+			<p>If the list of judges will be the same (or mostly the same) as for another contest, you can import those settings rather than setting them individually.</p>
 			<button>Import</button></form>',$action,$opt);
 	}	
 }

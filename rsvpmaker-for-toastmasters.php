@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.0.2
+Version: 4.0.3
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -7305,9 +7305,12 @@ function upcoming_open_roles($limit = 10) {
 return $openings;
 }
 
-function openings_for_date($datepost,$user_id) {
-			
+function openings_for_date($datepost,$user_id = 0) {
+	global $current_user;
+	if(!$user_id)
+		$user_id = $current_user->ID;
 	$data = wpt_blocks_to_data($datepost->post_content);
+	//printf('<pre>%s</pre>',var_export($data,true));
 	$openings = $bases = array();
 	foreach($data as $row)
 	{
@@ -7318,14 +7321,17 @@ function openings_for_date($datepost,$user_id) {
 		if(strpos($field_base,'Backup'))
 			continue;
 		$count = (int) $row['count'];
+		if(empty($count))
+			$count = 1;
 		for($i = 1; $i <= $count; $i++)
 		{
 			$field = $field_base.'_'.$i;
 			$assigned = (int) get_post_meta($datepost->ID,$field,true);
+			$open = (($assigned == '') || ($assigned == 0));
 			//printf('<p>%d %s %d</p>',$datepost->ID,$field,$assigned);
 			if($assigned == $user_id)
 				$openings['assigned'] = $field;
-			if(!$assigned && !in_array($field_base,$bases))
+			if($open && !in_array($field_base,$bases))
 			{
 				$openings[] = $field;
 				$bases[] = $field_base;
