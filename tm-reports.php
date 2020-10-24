@@ -4717,6 +4717,65 @@ function get_evaluator_postdata() {
 }
 
 function wp4t_evaluations ($demo = false) {
+
+	$updated = (int) get_option('evaluation_forms_updated');
+	if(empty($updated))
+	{
+		$json = file_get_contents(plugin_dir_path(__FILE__).'evaluation_forms.json');
+		if($json) {
+			$eval_data = json_decode($json);
+			foreach($eval_data as $eval_row) {
+				if(isset($eval_row->timestamp))
+				{
+					update_option('evaluation_forms_updated',$eval_row->timestamp);
+				}
+				elseif($eval_row->option_value) {
+					update_option($eval_row->option_name,$eval_row->option_value);
+				}
+			}	
+		}
+	}
+
+	if(isset($_GET['import_eval'])) {
+		$imports = 0;
+		$url = 'http://wp4toastmasters.com/wp-json/evaluation/v1/form/all';
+		printf('<p>Look up %s</a>',$url);
+		$args = array('timeout' => 20);
+		$request = wp_remote_get( $url, $args );
+		if( is_wp_error( $request ) ) {
+			printf('<div class="notice">Import failed: connection may have timed out. <a href="%s">retry</a></div>',admin_url('admin.php?page=wp4t_evaluations&import_eval=1'));
+		}
+		else {
+			$body = wp_remote_retrieve_body( $request );
+			$data = json_decode($body);
+			if(empty($data) || !is_array($data))
+			{
+				echo '<div class="notice">Import failed: data error</div>';
+			}
+			else {
+				foreach($data as $row) {
+					$slug = $row->option_name;
+					$serialized = $row->option_value;
+					$prompts = (object) unserialize($serialized);
+					update_option($slug,$prompts);
+					$imports++;
+				}	
+			}
+			if($imports)
+			{
+				echo '<div class="notice notice-success">'.$imports.' forms imported</div>';
+				update_option('evaluation_forms_updated',time());
+			}
+		}
+	
+	}
+	elseif(current_user_can('manage_options')) {
+		$updated_text = "Never";
+		if($updated)
+			$updated_text = rsvpmaker_date('r',$updated);
+		printf('<div class="notice notice-info"><p>To check for updates, <a href="%s">download copies of the forms</a> from wp4toastmasters.com. Current as of: %s</p></div>',admin_url('admin.php?page=wp4t_evaluations&import_eval=1'),$updated_text);
+	}
+
 if(!$demo)
 {
 $hook = tm_admin_page_top(__('Evaluations','rsvpmaker-for-toastmasters'));
@@ -6660,14 +6719,19 @@ Audience Awareness: Demonstrates awareness of audience engagement and needs|5 (E
 Comfort Level: Appears comfortable with the audience|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)
 Interest: Engages audience with interesting, well-constructed content|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)');
 	
-$form = get_transient($slug);
-if(!empty($form))
+$form = get_option($slug); // check for cached copy
+if(!empty($form)) {
+	if(is_array($form))
+		$form  = (object) $form;
+	rsvpmaker_debug_log($form,$slug);
 	return $form;
+}
 $url = 'http://wp4toastmasters.com/wp-json/evaluation/v1/form/'.urlencode($slug);
 if(isset($_GET['debug']))
 	printf('<p>Look up %s</a>',$url);
-$request = wp_remote_get( $url );
-
+$args = array('timeout' => 20);
+$request = wp_remote_get( $url, $args );
+//rsvpmaker_debug_log($request);
 if( is_wp_error( $request ) ) {
 	return $default; // Bail early
 }
@@ -6676,6 +6740,7 @@ $body = wp_remote_retrieve_body( $request );
 if($body == 'false')
 	return $default;
 $form = json_decode($body);
+update_option($slug,$form);
 set_transient($slug,$form,WEEK_IN_SECONDS);
 return $form;
 }
