@@ -106,11 +106,20 @@ foreach($future as $event) {
 }//end future
 }
 
+add_shortcode('wpt_contests_prompt','wpt_contests_prompt');
+function wpt_contests_prompt ($atts) {
+	if(is_user_logged_in())
+		return sprintf('<p>Judges/Organizers: see <a href="%s">contest links</a></p>',get_permalink().'?scoring=mycontests');
+	else
+		return sprintf('<p>Judges/Organizers: <a href="%s">login</a> to see assignments</p>',wp_login_url(get_permalink().'?scoring=mycontests'));	
+}
+
 function wpt_mycontests() {
 if(!is_user_logged_in()) {
-	echo 'Not logged in';
+	printf('<p>You must <a href="%s">login</a> to see assignments</p>',wp_login_url(get_permalink().'?scoring=mycontests'));
 	return;
 }
+
 	//if(current_user_can('manage_network')) contest_user_fix();
 	global $wpdb, $current_user;
 	$output = $past = '';

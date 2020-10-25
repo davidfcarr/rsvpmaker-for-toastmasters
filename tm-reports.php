@@ -4728,6 +4728,7 @@ function wp4t_evaluations ($demo = false) {
 				if(isset($eval_row->timestamp))
 				{
 					update_option('evaluation_forms_updated',$eval_row->timestamp);
+					$updated = $eval_row->timestamp;
 				}
 				elseif($eval_row->option_value) {
 					update_option($eval_row->option_name,$eval_row->option_value);
