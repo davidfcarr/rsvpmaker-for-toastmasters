@@ -656,4 +656,52 @@ function is_edit_roles() {
 	return false;
 }
 
+add_filter('wp_nav_menu', 'wp_nav_menu_wpt', 10, 2);
+
+function wp_nav_menu_wpt($menu_html,$menu_args) {
+    if(strpos($menu_html,'#rolesignup') || strpos($menu_html,'#tmlogin'))
+    {
+        $evlist = '';
+        $future = future_toastmaster_meetings(5);
+        if($future) {
+            $event = $future[0];
+            $evlist = sprintf('<li class="menu-item menu-item-type-post_type menu-item-object-rsvpmaker menu-item-%d menu-item-has-children" ><a href="%s">%s</a><ul class="sub-menu">',$event->ID,wpt_login_permalink($event->ID),__('Role Signup','rsvpmaker-for-toastmasters'));
+            if(!empty($future))
+            foreach($future as $event) {
+                $evlist .= sprintf('<li class="menu-item menu-item-type-post_type menu-item-object-rsvpmaker menu-item-%d"><a href="%s">%s</a></li>',$event->ID,wpt_login_permalink($event->ID),$event->date);
+			}
+			$evlist .= sprintf('<li class="menu-item menu-item-type-post_type menu-item-object-rsvpmaker"><a href="%s">%s</a></li>',site_url('rsvpmaker/'),__('Future Dates','rsvpmaker-for-toastmasters'));
+            $evlist .= '</ul></li>';   
+        }
+	}
+    if(strpos($menu_html,'#rolesignup'))
+	{
+		$menu_html = preg_replace('/<li [^>]+><a[^"]+"#rolesignup[^<]+<\/a><\/li>/',$evlist,$menu_html);
+    }
+	if(strpos($menu_html,'#tmlogin'))
+	{
+		add_option('wpt_login_menu_item',true);
+		$label = (is_user_logged_in()) ? __('Dashboard','rsvpmaker-for-toastmasters') : __('Login','rsvpmaker-for-toastmasters');
+		$toplink = (is_user_logged_in()) ? admin_url('/') : wpt_login_permalink();
+		$menu = '<li id="menu-item-wpt-login" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-wpt-login"><a href="'.$toplink.'">'.$label.'</a><ul class="sub-menu">
+		'.$evlist.'<li id="menu-item-profile" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2862"><a href="'.admin_url('profile.php').'">Profile</a></li>
+			<li id="menu-item-profilephoto" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2865"><a href="'.admin_url('profile.php#profilephoto').'">Profile Photo</a></li>
+			<li id="menu-item-password" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2863"><a href="'.admin_url('profile.php#password').'">Password</a></li>
+		</ul>
+		</li>';
+		$menu_html = preg_replace('/<li [^>]+><a[^"]+"#tmlogin[^<]+<\/a><\/li>/',$menu,$menu_html);
+    }
+    return $menu_html;
+}
+
+function wpt_login_permalink ($id = 0, $permalink = '') {
+	global $post;
+	if(empty($id))
+		$id = $post->ID;
+	if(empty($permalink))
+    	$permalink = get_permalink($id);
+    if(!is_user_logged_in())
+        $permalink = wp_login_url($permalink);
+    return $permalink;
+}
 ?>

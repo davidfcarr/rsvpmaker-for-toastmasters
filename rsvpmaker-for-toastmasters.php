@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.0.5
+Version: 4.0.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -5141,9 +5141,6 @@ function rsvpmaker_agenda_notifications ($permalink) {
 		$notify['edit'] = sprintf('Edit Signups mode allows you to assign other members to roles or change assignments. When done, scroll to the bottom and click <strong>Save Changes</strong>. <br />Switch Mode:<ul><li>%s</li><li><a href="%s">Recommend (suggestions, member must confirm)</a></li><li><a href="%s">Member Signup</a></li></ul>',$assignlink, $reclink,$signup);
 	}
 	
-	if(empty(get_option('hide_planner_promo')))
-	$notify['planner'] = sprintf('To sign up for multiple upcoming meetings, try the <a href="%s">Multi-Meeting Role Planner</a>',admin_url('admin.php?page=toastmasters_planner'));
-
 	if(!empty($notify))
 	foreach($notify as $slug => $value)
 	{
@@ -5298,9 +5295,9 @@ function agenda_menu($post_id, $frontend = true) {
 	$layout_id = get_option('rsvptoast_agenda_layout');
 	if(current_user_can($security['agenda_setup']))
 		{
-		$agenda_menu[__('Agenda Setup','rsvpmaker-for-toastmasters')] = admin_url('post.php?action=edit&post='.$post->ID);
+		$agenda_menu[__('Setup','rsvpmaker-for-toastmasters')] = admin_url('post.php?action=edit&post='.$post->ID);
 		if($template_id)
-			$agenda_menu[__('Agenda Setup: Template','rsvpmaker-for-toastmasters')] = admin_url('post.php?action=edit&post='.$template_id);
+			$agenda_menu[__('Setup: Template','rsvpmaker-for-toastmasters')] = admin_url('post.php?action=edit&post='.$template_id);
 		}
 	if(current_user_can('manage_options'))
 	{
@@ -5359,7 +5356,7 @@ if(!empty($agenda_menu)) {
 	else
 	$link .= '<li class="last"><a target="_blank" href="'.site_url('?signup2=1').'">'.__('Signup Sheet','rsvpmaker-for-toastmasters').'</a></li>';
 	if($frontend)
-	$link .= '<li class="last"><a  target="_blank" href="'.admin_url('admin.php?page=toastmasters_planner').'">'.__('Role Planner','rsvpmaker-for-toastmasters').'</a></li>';
+	$link .= '<li class="last"><a  target="_blank" href="'.admin_url('admin.php?page=toastmasters_planner').'">'.__('Planner','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '</ul></div>';
 
 	if($agenda_lock)
@@ -10282,7 +10279,12 @@ if($blog_id)
 'menu-item-object' => 'page',
 'menu-item-type' => 'post_type',	  
 'menu-item-status' => 'publish'));
-	  
+wp_update_nav_menu_item($menu->term_id, 0, array(
+'menu-item-title' =>  __('Login'),
+'menu-item-classes' => 'tm',
+'menu-item-url' => '#tmlogin',
+'menu-item-status' => 'publish'));	
+
   // you add as many items as you need with wp_update_nav_menu_item()
 
   //then you set the wanted theme  location
@@ -13339,7 +13341,9 @@ if(!wp_is_json_request()) {
 add_action('wp_head','wpt_richtext');
 function wpt_richtext() {
 global $post;
-if($post->post_type != 'rsvpmaker')
+if(empty($post->post_content))
+	return;
+if(empty($post->post_type) || $post->post_type != 'rsvpmaker')
 	return;
 if(!strpos($post->post_content,'wp:wp4toastmasters') && !strpos($post->post_content,'agenda_role')  )
 	return;

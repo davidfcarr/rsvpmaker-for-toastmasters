@@ -130,16 +130,16 @@ button.save_changes.focus, .save_changes:focus
 #cssmenu > ul li.has-sub > a {
   background-image: url('images/caret.png');
   background-repeat: no-repeat;
-  background-position: 90% -95%;
+  background-position: 100% -95%;
 }
 #cssmenu > ul li.has-sub > a.active,
 #cssmenu > ul li.has-sub > a:hover {
   background: #d80041 url('images/caret.png') no-repeat;
-  background-position: 90% 195%;
+  background-position: 100% 195%;
 }
 #cssmenu > ul li a {
   display: block;
-  padding: 12px 24px 11px 24px;
+  padding: 8px 12px 8px 12px;
   text-decoration: none;
   color: #747474;
   text-shadow: 0px 1px 0px #fff;

@@ -70,6 +70,9 @@ section.nav-tab-active {
 	padding:0px;
 	border:0px;
 }
+a {
+	color: blue;
+}
 </style>
 </head>
 <body>
