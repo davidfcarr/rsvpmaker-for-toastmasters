@@ -1177,13 +1177,17 @@ function speaker_details_agenda ($field,$assigned) {
 }
 
 function toastmasters_agenda_display($atts, $assignments) {
-	if(function_exists('toastmasters_agenda_display_custom'))
-		return  toastmasters_agenda_display_custom($atts);
 	global $post, $open;
+	$field = $output = $startdiv = '';
+	if(function_exists('toastmasters_agenda_display_custom'))
+		return  toastmasters_agenda_display_custom($atts, $assignments);
+	$output = apply_filters('toastmasters_agenda_role_display',$output,$atts,$assignments);
+	if(!empty($output))
+		return $output;
+	
 	$count = (empty($atts["count"])) ? 1 : $atts["count"];
 	$start = (empty($atts['start'])) ? 1 : $atts['start'];
 	
-		$field = $output = $startdiv = '';
 		$maxtime = (isset($atts["time_allowed"]) ) ? (int) $atts["time_allowed"] : 0;
 		$padding_time = (isset($atts["padding_time"])) ? (int) $atts["padding_time"] : 0;
 		$speaktime = 0;
@@ -5693,11 +5697,141 @@ if(!empty($userdata->original_join_date))
 
 }
 
+function wpt_member_upload_to_array() {
+    global $current_user;
+    $active_ids = array();
+    $label = array();
+    $users = array();
+    $index = 0;
+	$csv_array = Array();
+    if(!empty($_FILES['upload_file']['tmp_name']))
+    {
+        $file = fopen($_FILES['upload_file']['tmp_name'], 'r');
+        if($file){
+            while (($line = fgetcsv($file)) !== FALSE) {
+              //$line is an array of the csv elements
+              array_push($csv_array,$line);
+            }
+            fclose($file);
+        }
+    }
+    elseif(!empty($_POST["spreadsheet"])) {
+        $lines = explode("\n", trim($_POST["spreadsheet"]));
+        foreach($lines as $linenumber => $line)
+            {
+                $cells = explode("\t",$line);
+                array_push($csv_array,$cells);
+            }
+    }
+    if(!empty($csv_array)) {
+        foreach($csv_array as $linenumber => $cells) {
+            if($linenumber == 0)
+                {
+                foreach($cells as $index => $cell)
+                    {
+                        $label[trim($cell)] = $index;
+                    }
+                }
+            else
+            {
+            $user = array();
+                        
+            if(isset($label["First Name"]))
+                {
+                $user["first_name"] = $cells[$label["First Name"]];
+                $user["last_name"] = $cells[$label["Last Name"]];
+                }
+            elseif(isset($label["First"]))
+                {
+                $user["first_name"] = $cells[$label["First"]];
+                $user["last_name"] = $cells[$label["Last"]];
+                }
+            elseif(isset($label["Name"]))
+                {
+                    $user = name2fields($cells[$label["Name"]]);
+                }
+            $user["nickname"] = $user["display_name"] = $user["first_name"].' '.$user["last_name"];
+            if(isset($label["Paid Until"]))
+            {
+                if(time() > strtotime($cells[$label["Paid Until"]]))
+                {
+                    continue;			
+                }
+            }
+        
+            if(!empty($label["Edu."]) && !empty($cells[$label["Edu."]]))
+                $user["education_awards"] = $cells[$label["Edu."]];		
+                
+            if(isset($label["E-mail"]))
+                $user["user_email"] = strtolower(trim($cells[$label["E-mail"]]));
+            elseif(isset($label["Email"]))
+                $user["user_email"] = strtolower(trim($cells[$label["Email"]]));
+            if($user["user_email"] == strtolower(trim($current_user->user_email)))
+                continue;
+            
+            $user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"].$user["last_name"]));
+        
+            if(isset($label["Home Phone"]) && isset($cells[$label["Home Phone"]]))
+                $user["home_phone"] = $cells[$label["Home Phone"]];
+            elseif(isset($label["Home"]))
+                $user["home_phone"] = $cells[$label["Home"]];
+        
+            if(isset($label["Work Phone"]))
+                $user["work_phone"] = $cells[$label["Work Phone"]];
+            elseif(isset($label["Work"]))
+                $user["work_phone"] = $cells[$label["Work"]];
+        
+            if(isset($label["Cell"]))
+                $user["mobile_phone"] = $cells[$label["Cell"]];
+            elseif(isset($label["Cell Phone"]))
+                $user["mobile_phone"] = $cells[$label["Cell Phone"]];
+            elseif(isset($label["Mobile Phone"]))
+                $user["mobile_phone"] = $cells[$label["Mobile Phone"]];
+            elseif(isset($label["Mobile"]))
+                $user["mobile_phone"] = $cells[$label["Mobile"]];
+        
+            if(isset($label["Member #"]))
+                $user["toastmasters_id"] = $cells[$label["Member #"]];
+            elseif(isset($label["Member ID"]))
+                $user["toastmasters_id"] = $cells[$label["Member ID"]];
+            elseif(isset($label["CustomerID"]))
+                $user["toastmasters_id"] = $cells[$label["CustomerID"]];
+            elseif(isset($label["Customer ID"]))
+                $user["toastmasters_id"] = $cells[$label["Customer ID"]];
+            elseif(isset($label["Customer Id"]))
+                $user["toastmasters_id"] = $cells[$label["Customer Id"]];
+            if(!empty($user["toastmasters_id"]))
+                $user["toastmasters_id"] = (int) $user["toastmasters_id"];//get rid of zero padding
+            $blog_id = get_current_blog_id();
+            if(isset($label["Member of Club Since"]))
+                {
+                    $user["club_member_since"] = $cells[$label["Member of Club Since"]];
+                    $user["club_member_since_".$blog_id] = $cells[$label["Member of Club Since"]];
+                }
+            if(isset($label["Paid Until"]))
+                {
+                    $user["paid_until_".$blog_id] = $cells[$label["Member of Club Since"]];
+                }
+            if(isset($label["Original Join Date"]))
+                $user["original_join_date"] = $cells[$label["Original Join Date"]];
+            
+            $user["user_pass"] = password_hurdle(wp_generate_password());
+
+            $users[] = $user;
+            }
+            }
+        }   
+    return $users;
+}
+
 function add_awesome_member() {
 
 global $wpdb;
 global $current_user;
 $blog_id = get_current_blog_id();
+
+if(!empty($_POST))
+	$_POST = stripslashes_deep($_POST);
 
 if(isset($_POST['addtid']))
 {
@@ -5771,112 +5905,9 @@ if(isset($_POST["member_ids"])) {
 		}
 }
 
-if(isset($_POST["spreadsheet"])) {
+if(!empty($_POST["spreadsheet"]) || !empty($_FILES)) {
 $active_ids = array();
-$lines = explode("\n", trim($_POST["spreadsheet"]));
-$label = array();
-foreach($lines as $linenumber => $line)
-	{
-	$cells = explode("\t",$line);
-	if($linenumber == 0)
-		{
-		foreach($cells as $index => $cell)
-			{
-				$label[trim($cell)] = $index;
-			}
-		}
-	else
-	{
-	if(empty($cells[0]))
-		break;
-	$user = array();
-				
-	if(isset($label["First Name"]))
-		{
-		$user["first_name"] = $cells[$label["First Name"]];
-		$user["last_name"] = $cells[$label["Last Name"]];
-		}
-	elseif(isset($label["First"]))
-		{
-		$user["first_name"] = $cells[$label["First"]];
-		$user["last_name"] = $cells[$label["Last"]];
-		}
-	elseif(isset($label["Name"]))
-		{
-			$user = name2fields($cells[$label["Name"]]);
-		}
-	$user["nickname"] = $user["display_name"] = $user["first_name"].' '.$user["last_name"];
-	if(isset($label["Paid Until"]))
-	{
-		if(time() > strtotime($cells[$label["Paid Until"]]))
-		{
-			//echo '<div>'.$user["nickname"].' membership expired: '.$cells[$label["Paid Until"]].'</div>';
-			continue;			
-		}
-	}
-
-	if(!empty($label["Edu."]) && !empty($cells[$label["Edu."]]))
-		$user["education_awards"] = $cells[$label["Edu."]];		
-		
-	if(isset($label["E-mail"]))
-		$user["user_email"] = strtolower(trim($cells[$label["E-mail"]]));
-	elseif(isset($label["Email"]))
-		$user["user_email"] = strtolower(trim($cells[$label["Email"]]));
-	if($user["user_email"] == strtolower(trim($current_user->user_email)))
-		continue;
-	
-	$user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"].$user["last_name"]));
-
-	if(isset($label["Home Phone"]) && isset($cells[$label["Home Phone"]]))
-		$user["home_phone"] = $cells[$label["Home Phone"]];
-	elseif(isset($label["Home"]))
-		$user["home_phone"] = $cells[$label["Home"]];
-
-	if(isset($label["Work Phone"]))
-		$user["work_phone"] = $cells[$label["Work Phone"]];
-	elseif(isset($label["Work"]))
-		$user["work_phone"] = $cells[$label["Work"]];
-
-	if(isset($label["Cell"]))
-		$user["mobile_phone"] = $cells[$label["Cell"]];
-	elseif(isset($label["Cell Phone"]))
-		$user["mobile_phone"] = $cells[$label["Cell Phone"]];
-	elseif(isset($label["Mobile Phone"]))
-		$user["mobile_phone"] = $cells[$label["Mobile Phone"]];
-	elseif(isset($label["Mobile"]))
-		$user["mobile_phone"] = $cells[$label["Mobile"]];
-
-	if(isset($label["Member #"]))
-		$user["toastmasters_id"] = $cells[$label["Member #"]];
-	elseif(isset($label["Member ID"]))
-		$user["toastmasters_id"] = $cells[$label["Member ID"]];
-	elseif(isset($label["CustomerID"]))
-		$user["toastmasters_id"] = $cells[$label["CustomerID"]];
-	elseif(isset($label["Customer ID"]))
-		$user["toastmasters_id"] = $cells[$label["Customer ID"]];
-	elseif(isset($label["Customer Id"]))
-		$user["toastmasters_id"] = $cells[$label["Customer Id"]];
-	if(!empty($user["toastmasters_id"]))
-		$user["toastmasters_id"] = (int) $user["toastmasters_id"];//get rid of zero padding
-	$blog_id = get_current_blog_id();
-	if(isset($label["Member of Club Since"]))
-		{
-			$user["club_member_since"] = $cells[$label["Member of Club Since"]];
-			$user["club_member_since_".$blog_id] = $cells[$label["Member of Club Since"]];
-		}
-	if(isset($label["Paid Until"]))
-		{
-			$user["paid_until_".$blog_id] = $cells[$label["Member of Club Since"]];
-		}
-	if(isset($label["Original Join Date"]))
-		$user["original_join_date"] = $cells[$label["Original Join Date"]];
-	
-	$user["user_pass"] = password_hurdle(wp_generate_password());
-	$users[] = $user;
-	}
-	//break;
-	}
-
+$users = wpt_member_upload_to_array();
 if(empty($users))
 	return;
 
@@ -5995,7 +6026,6 @@ if(isset($_POST['existing_email']))
 	</tr>
 
 	</table>
-<p><input type="checkbox" name="no_email" value="1" /> <?php _e("Do not send email invites (for example, if you are still testing the site).",'rsvpmaker-for-toastmasters');?></p> 
 
 <p class="submit"><input type="submit" name="createuser" id="createusersub" class="button-primary" value="<?php _e("Add Member",'rsvpmaker-for-toastmasters');?>"  /></p>
 </form>
@@ -6016,11 +6046,12 @@ if(is_multisite()) {
 ?>
 <div id="import">
 <h3><?php _e("Batch Import From Toastmasters.org spreadsheet",'rsvpmaker-for-toastmasters');?></h3>
-<p><?php _e("If you download the member spreadsheet from toastmasters.org, you should be able to copy the cells including member data (including the header row of column labels) and paste it here (use Ctrl-V on Windows).",'rsvpmaker-for-toastmasters');?></p>
-<form method="post" action="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">
-<textarea cols="80" rows="10" name="spreadsheet"></textarea>
+<p><?php _e("If you download the member spreadsheet from toastmasters.org, you can import it here to create or update member records.",'rsvpmaker-for-toastmasters');?></p>
+<form method="post" enctype="multipart/form-data" action="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">
+<p><?php _e('Select file to upload','rsvpmaker-for-toastmasters');?>: <input type="file" name="upload_file" /></p>
+<p><?php _e('Alternative: you can open the CSV export file in Excel, then copy-and-paste records (including the header row of column labels) into the field below (use CTRL-C to copy, CTRL-V to paste on Windows).','rsvpmaker-for-toastmasters');?></p>
+<p><textarea cols="80" rows="10" name="spreadsheet"></textarea></p>
 	<div><input type="checkbox" name="check_missing" value="1" /> <?php _e("Check for missing members (if you post a complete list of current members, this checkbox triggers a check of which website users are NOT currently on the toastmasters.org list and gives you an option to delete them).",'rsvpmaker-for-toastmasters');?></div>
-	<div><input type="checkbox" name="no_email" value="1" /> <?php _e("Do not send email invites (for example, if you are still testing the site).",'rsvpmaker-for-toastmasters');?></div>
 	<div>
 	<?php
 	
@@ -6452,7 +6483,8 @@ foreach($blogs as $blog)
 	$bloglist .= $blog->blogname;	
 }
 $o .= '<div>'.$bloglist.'</div>';
-$o .= sprintf('<h3><input type="radio" name="new_or_existing[%d]" value="new" /> Or record as new member?</h3><div>',$this->prompt_count);
+$o .= '<h3><input type="radio" name="new_or_existing[%d]" value="skip" /> Skip entry for '.$user["display_name"].'</h3>';
+$o .= sprintf('<h3><input type="radio" name="new_or_existing[%d]" value="new" /> Or record as new member?</h3><p><em>Email address must change. System will accept @example.com placeholder emails.</em></p><div>',$this->prompt_count);
 }
 $o .= '<table>';
 foreach($visible as $field)
@@ -8853,6 +8885,7 @@ else
 		{
 		$templateID = $parent_id;
 		}
+	$sked = get_option('initial_sked');
 	if(isset($_POST['sked']))
 		{
 		$template = $_POST['sked'];
@@ -8861,6 +8894,8 @@ else
 		if(isset($_POST['minutes']))
 			$template["minutes"] = $_POST['minutes'];
 		}
+	elseif($sked)
+		$template = $sked;
 	else
 	{
 	$template["hour"]= 19;
@@ -10191,7 +10226,7 @@ function rsvptoast_pages ($user_id) {
 	if(!in_array('Members',$titles))
 	$members = wp_insert_post($post);
 	$post = array(
-	  'post_content'   => '[rsvpmaker_upcoming calendar="1" comment="This placeholder code displays the calendar of events."]',
+	  'post_content'   => '<!-- wp:rsvpmaker/upcoming {"calendar":"1","hideauthor":"true"} /-->',
 	  'post_name'      => 'calendar',
 	  'post_title'     => 'Calendar',
 	  'post_status'    => 'publish',
@@ -10201,32 +10236,6 @@ function rsvptoast_pages ($user_id) {
 	);
 	if(!in_array('Calendar',$titles))
 	$calendar = wp_insert_post($post);
-
-	$post = array(
-	  'post_content'   => 'We are part of <a href="http://www.toastmasters.org">Toastmasters International</a>, a world leader in communication and leadership development. Worldwide membership is 313,000 strong. These members improve their speaking and leadership skills by attending one of the 14,650 clubs in 126 countries that make up our global network of meeting locations.
-
-Membership in Toastmasters is one of the greatest investments you can make in yourself.
-
-<b>How Does It Work?</b>
-
-A Toastmasters meeting is a learn-by-doing workshop in which participants hone their speaking and leadership skills in a no-pressure atmosphere.
-
-There is no instructor in a Toastmasters meeting. Instead, members evaluate one another’s presentations. This feedback process is a key part of the program’s success.
-
-Meeting participants also give impromptu talks on assigned topics, conduct meetings and develop skills related to timekeeping, grammar and parliamentary procedure.
-
-Members learn communication skills by working in the <a href="http://www.toastmasters.org/Members/MemberExperience/EducationalProgram/CommunicationTrack.aspx" target="_blank">Competent Communication manual</a>, a series of 10 self-paced speaking assignments designed to instill a basic foundation in public speaking.
-
-https://www.youtube.com/watch?v=AykYRO5d_lI',
-	  'post_name'      => 'toastmasters-international',
-	  'post_title'     => 'Toastmasters International',
-	  'post_status'    => 'publish',
-	  'post_type'      => 'page',
-	  'post_author'    => $user_id,
-	  'ping_status'    => 'closed'
-	);
-	if(!in_array('Toastmasters International',$titles))
-	$tm = wp_insert_post($post);
 
 $name = 'Primary Menu';
   $menu_id = wp_create_nav_menu($name);
@@ -10269,13 +10278,6 @@ if($blog_id)
 'menu-item-object-id' => $members,
 'menu-item-title' =>  __('Members'),
 'menu-item-classes' => 'members',
-'menu-item-object' => 'page',
-'menu-item-type' => 'post_type',	  
-'menu-item-status' => 'publish'));
-  wp_update_nav_menu_item($menu->term_id, 0, array(
-'menu-item-object-id' => $tm,
-'menu-item-title' =>  __('Toastmasters International'),
-'menu-item-classes' => 'tm',
 'menu-item-object' => 'page',
 'menu-item-type' => 'post_type',	  
 'menu-item-status' => 'publish'));
@@ -11632,7 +11634,7 @@ if(($blog == 'publish') || ($blog == 'draft'))
 	$categories[] = $members_cat_id;	
 }
 
-$status = (($blog == 'publish') || ($blog == 'publish_public')) ? 'publish' : $draft;
+$status = (($blog == 'publish') || ($blog == 'publish_public')) ? 'publish' : 'draft';
 	// Create post object
 $email_post = $my_post = array(
   'post_title'    => __('Videos','rsvpmaker-for-toastmasters'),
@@ -11716,7 +11718,8 @@ foreach($_POST['wrapuplink'] as $index => $link) {
 		$parts = explode('/',$link); //https://youtu.be/ONGUlUB0ho4
 		$video_id = array_pop($parts);
 		}
-	$email_post['post_content'] .= sprintf('<!-- wp:paragraph -->
+
+		$email_post['post_content'] .= sprintf('<!-- wp:paragraph -->
 <p><a rel="noreferrer noopener" href="%s" target="_blank">Watch on YouTube</a></p>
 <!-- /wp:paragraph -->
 
@@ -11730,6 +11733,10 @@ foreach($_POST['wrapuplink'] as $index => $link) {
 $policy = rsvpautog($policy);
 $my_post['post_content'] .= $policy;
 $email_post['post_content'] .= $policy;
+
+if(!empty($_POST['youtube_subject'])) {
+	$my_post['post_title'] = $email_post['post_title'] = stripslashes($_POST['youtube_subject']);
+}	
 
 // Insert the post into the database
 if($blog != 'none')
@@ -11757,20 +11764,6 @@ if(empty($blog))
 $email = (int) get_option('tm_video_email');
 ?>
 <form method="post" action="<?php echo admin_url('upload.php?page=tm_youtube_tool'); ?>">
-<p>
-<input type="radio" name="blog" value="draft_public" <?php if($blog == 'draft_public') echo ' checked="checked" '; ?> ><?php _e('Create draft blog post (public)','rsvpmaker-for-toastmasters');?>
-<br />
-<input type="radio" name="blog" value="publish_public" <?php if($blog == 'publish_public') echo ' checked="checked" '; ?> ><?php _e('Create and publish blog post (public)','rsvpmaker-for-toastmasters');?>
-<br />
-<input type="radio" name="blog" value="draft" <?php if($blog == 'draft') echo ' checked="checked" '; ?> ><?php _e('Create draft blog post (members only)','rsvpmaker-for-toastmasters');?>
-<br />
-<input type="radio" name="blog" value="publish" <?php if($blog == 'publish') echo ' checked="checked" '; ?> ><?php _e('Create and publish blog post (members only)','rsvpmaker-for-toastmasters');?>
-<br />
-<input type="radio" name="blog" value="none" <?php if($blog == 'none') echo ' checked="checked" '; ?> ><?php _e('Do not create blog post','rsvpmaker-for-toastmasters');?>
-</p>
-<p>
-<?php _e('Create email message','rsvpmaker-for-toastmasters');?> <input type="radio" name="email" value="1" <?php if($email) echo ' checked="checked" '; ?> ><?php _e('Yes','rsvpmaker-for-toastmasters');?> <input type="radio" name="email" value="0" <?php if(!$email) echo ' checked="checked" '; ?> ><?php _e('No','rsvpmaker-for-toastmasters');?>
-</p>
 <?php
 $blogusers = get_users('blog_id='.get_current_blog_id() );
 $options = '<option value="">Select Member</option>';
@@ -11815,7 +11808,7 @@ foreach($past as $pst)
 				{
 				$user = get_userdata($row->user_id);
 				$name = (empty($user->first_name)) ? "User ".$row->user_id : $user->first_name.' '.$user->last_name;
-				$ptext .= sprintf('<div><input type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ',$count,$count,$name);
+				$ptext .= sprintf('<div><input class="youtube_speaker_check" type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ',$count,$count,$name);
 				$title = get_post_meta($pst->ID,'_title'.$row->meta_key,true);
 				$details = '';
 				if(!empty($title))
@@ -11840,20 +11833,20 @@ foreach($past as $pst)
 $stop = $count + 3;
 
 while($count < $stop) {
-	$ptext .= sprintf('<p><select name="speakers[%d]">%s</select> Details: <input type="text" name="speech[%d]"> YouTube Link: <input type="text" name="link[%d]"></p>',$count,$options,$count,$count);
+	$ptext .= sprintf('<p><select name="speakers[%d]"  class="youtube_speaker_select" >%s</select> Details: <input type="text" name="speech[%d]"> YouTube Link: <input type="text" name="link[%d]"></p>',$count,$options,$count,$count);
 	$count++;
 }
 
 $stop = $count + 2;
 
 while($count < $stop) {
-	$ptext .= sprintf('<p>Name: <input type="text" name="speakers[%d]"> Details: <input type="text" name="speech[%d]"> YouTube Link: <input type="text" name="link[%d]"></p>',$count,$count,$count);
+	$ptext .= sprintf('<p>Name: <input type="text" name="speakers[%d]" class="youtube_speaker_blank"> Details: <input type="text" name="speech[%d]"> YouTube Link: <input type="text" name="link[%d]"></p>',$count,$count,$count);
 	$count++;
 }
 
 $ptext .= '<p>Wrapup video, for example Zoom recording of a whole meeting</p>';
 foreach($wrapup as $index => $wrap) {
-	$ptext .= sprintf('<p><input type="text" name="wrapuptext[]" value="%s" /> YouTube link <input name="wrapuplink[]" /></p>',$wrap);
+	$ptext .= sprintf('<p><input type="text" name="wrapuptext[]" class="wrapuptext" value="%s" /> YouTube link <input class="wrapuplink" wrapindex="%d" name="wrapuplink[]" /></p>',$wrap,$index);
 	$ptext .= '<div class="speech-summaries">'.$summaries[$index].'</div>';
 }
 $ptext .= '<p id="show-summaries-wrapper"><input type="checkbox" id="show-summaries" > Show speech summaries for each week.</p>';
@@ -11863,6 +11856,23 @@ echo $ptext; //wpautop($ptext);
 	if(empty($policy) )
 		$policy = "<strong>Video policy</strong>: speech videos are intended as a tool for speakers to see their own performances and think about how they can improve. Even though these are on YouTube, they are published as \"unlisted\" by default, meaning they won't show up in search results. Don't forward these links or post them on Facebook or in any other forum without the speaker's permission. From time to time, we may ask a speaker for permission to use a video as part of our marketing of the club. Volunteers are also welcome - if you're proud of a particular speech, let us know.";
 ?>
+<p>
+<input type="radio" name="blog" value="draft_public" <?php if($blog == 'draft_public') echo ' checked="checked" '; ?> ><?php _e('Create draft blog post (public)','rsvpmaker-for-toastmasters');?>
+<br />
+<input type="radio" name="blog" value="publish_public" <?php if($blog == 'publish_public') echo ' checked="checked" '; ?> ><?php _e('Create and publish blog post (public)','rsvpmaker-for-toastmasters');?>
+<br />
+<input type="radio" name="blog" value="draft" <?php if($blog == 'draft') echo ' checked="checked" '; ?> ><?php _e('Create draft blog post (members only)','rsvpmaker-for-toastmasters');?>
+<br />
+<input type="radio" name="blog" value="publish" <?php if($blog == 'publish') echo ' checked="checked" '; ?> ><?php _e('Create and publish blog post (members only)','rsvpmaker-for-toastmasters');?>
+<br />
+<input type="radio" name="blog" value="none" <?php if($blog == 'none') echo ' checked="checked" '; ?> ><?php _e('Do not create blog post','rsvpmaker-for-toastmasters');?>
+</p>
+<p>
+<?php _e('Create email message','rsvpmaker-for-toastmasters');?> <input type="radio" name="email" value="1" <?php if($email) echo ' checked="checked" '; ?> ><?php _e('Yes','rsvpmaker-for-toastmasters');?> <input type="radio" name="email" value="0" <?php if(!$email) echo ' checked="checked" '; ?> ><?php _e('No','rsvpmaker-for-toastmasters');?>
+</p>
+
+<p id="youtube_subject_wrapper">Subject <input type="text" id="youtube_subject" name="youtube_subject" style="width: 80%;" /> </p>
+<p><button id="customize_subject">Customize Subject</button></p>
 <h3><?php _e('Policy to include in email','rsvpmaker-for-toastmasters'); ?></h3>
 <p><textarea name="policy" rows="3" style="width: 90%"><?php echo $policy;?></textarea></p>
 <?php submit_button(); ?>
@@ -11872,6 +11882,60 @@ echo $ptext; //wpautop($ptext);
 
 <script>
 jQuery(document).ready(function($) {
+
+$('#youtube_subject_wrapper').hide();
+
+$('#customize_subject').click( function (e) {
+e.preventDefault();
+$('#youtube_subject_wrapper').show();
+var subject = 'Videos: ';
+var speakers = [];
+var dates = [];
+
+$('.youtube_speaker_check').each(
+	function (index, field) {
+		if(field.checked)
+			speakers.push(field.value);
+	}
+);
+$('.youtube_speaker_text').each(
+	function (index, field) {
+		if(field.value != '')
+			speakers.push(field.value);
+	}
+);
+
+$('.youtube_speaker_select').each(
+	function (index, field) {
+		if(field.value != '')
+			speakers.push(field.value);
+	}
+);
+$('.youtube_speaker_text').each(
+	function (index, field) {
+		if(field.value != '')
+			speakers.push(field.value);
+	}
+);
+$('.wrapuplink').each(
+	function (index, field) {
+		if(field.value)
+			dates.push($('.wrapuptext')[index].value);
+	}
+);
+
+console.log(dates);
+console.log(speakers);
+
+subject += speakers.join(', ');
+if(dates.length) {
+	if(speakers.length)
+		subject += ' - ';
+	subject += dates.join(' - ');
+}
+$('#youtube_subject').val(subject);
+});
+
 $( ".checkboxlink" ).change(function() {
 	var count = $(this).attr('i');
 	$('#speaker'+count).prop('checked', true);
@@ -12119,8 +12183,8 @@ function tmlayout_main($atts) {
 		$permalink .= "print_agenda=1";
 		return sprintf('View the <a href="%s">agenda of a current meeting</a> to test this',$permalink);
 		}
-	
-	return tm_agenda_content();
+	$content = tm_agenda_content();
+	return $content;
 }
 
 add_action('rsvp_recorded','rsvp_to_member_auto');

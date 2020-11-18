@@ -758,7 +758,8 @@ else
 <h3>Dashboard Users</h3>
 	<p>Add chief judge, ballot counters</p>
 <?php
-for($i= 0; $i < 5; $i++)
+$dashlimit = sizeof($dashboard_users)+5;
+for($i= 0; $i < $dashlimit; $i++)
 {
 	$user = empty($dashboard_users[$i]) ? 0 : $dashboard_users[$i];
 	$drop = awe_user_dropdown ('tm_scoring_dashboard_users[]', $user, true);//, $open);

@@ -44,7 +44,14 @@ if(isset($_GET['word_agenda']))
 <?php
 if(function_exists('do_blocks'))
 	$layout_post->post_content = do_blocks($layout_post->post_content);
-echo wpautop(convert_chars(wptexturize(do_shortcode($layout_post->post_content))));
+$output = wpautop(convert_chars(wptexturize(do_shortcode($layout_post->post_content))));
+if(isset($_GET['word_agenda']) || isset($_GET['word_test']))
+{
+	$output = str_replace('</p>','</p><p>&nbsp;</p>',$output);
+	$output = str_replace('</div>','</div><p>&nbsp;</p>',$output);
+}
+
+echo $output;
 ?>
 </div>
 <?php

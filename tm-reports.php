@@ -3921,8 +3921,8 @@ foreach($lines as $linenumber => $line)
 			foreach($user_fields as $field)
 				{
 				$newuser['user_login'] = $cells[1];
-				$newuser['first_name'] = $cells[2];
-				$newuser['last_name'] = $cells[3];
+				$newuser['first_name'] = stripslashes($cells[2]);
+				$newuser['last_name'] = stripslashes($cells[3]);
 				$newuser['user_email'] = $cells[4];
 				}
 			$id = add_member_user($newuser);
