@@ -607,6 +607,14 @@ $projects["Pathways 360 Level 5 Demonstrating Expertise 99"] = __("Pathways 360Â
 $project_times["Pathways 360 Level 5 Demonstrating Expertise 99"] = 7;
 $display_times["Pathways 360 Level 5 Demonstrating Expertise 99"] = "5-7 minutes";
 
+$projects["Pathways Mentor Program Level 1 Educational Program 990"] = __("Mentor Program: Mentoring","rsvpmaker-for-toastmasters");
+$project_times["Pathways Mentor Program Level 1 Educational Program 990"] = 7;
+$display_times["Pathways Mentor Program Level 1 Educational Program 990"] = "5-7 minutes";
+
+$projects["Pathways Mentor Program Level 1 Educational Program 991"] = __("Mentor Program: Advanced Mentoring","rsvpmaker-for-toastmasters");
+$project_times["Pathways Mentor Program Level 1 Educational Program 991"] = 7;
+$display_times["Pathways Mentor Program Level 1 Educational Program 991"] = "5-7 minutes";
+
 $projects["Path Not Set Level 1 Mastering Fundamentals 0"] = __("Ice Breaker","rsvpmaker-for-toastmasters");
 $project_times["Path Not Set Level 1 Mastering Fundamentals 0"] = 6;
 $display_times["Path Not Set Level 1 Mastering Fundamentals 0"] = "4 - 6 minutes";

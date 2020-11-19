@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.5.3
-Stable tag: 4.0.7
+Stable tag: 4.0.8
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,7 +54,7 @@ The software will run on any WordPress web hosting service.
  
 When you install this software on your own website, you have greater freedom to install other plugins or themes, including those of your own design. However, you must also take more responsibility for providing your own technical support and solving problems such as spam filters blocking email notifications.
 
-The toastmost.org service is supported by sponsorships.
+The toastmost.org service is supported by subscriptions from member clubs.
 
 == Screenshots ==
 
@@ -62,6 +62,11 @@ The toastmost.org service is supported by sponsorships.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 4.0.8 =
+
+* Added evaluation forms for speeches from the Toastmasters Mentor program
+* Option to upload member roster CSV file from toastmasters.org rather than using copy-and-paste import from Excel
 
 = 4.0.6 =
 

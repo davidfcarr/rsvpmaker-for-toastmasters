@@ -200,12 +200,21 @@ class Toast_Manual_Lookup extends WP_REST_Controller {
 	$options = get_manuals_by_type_options($type);
 	$projects = '';
 	$pa = get_projects_array('options');
+/*	echo '<br />';
+	print_r($type);
+	echo '<br />';
+	print_r($pa);
+	echo '<br />Options<br />';
+	print_r($options);
+*/
 	if($type == 'Other')
 		$manual = 'Other Manual or Non Manual Speech';
 	elseif($type == 'Manual')
 		$manual = "COMPETENT COMMUNICATION";
 	elseif($type == 'Pathways 360')
 		$manual = "Pathways 360 Level 5 Demonstrating Expertise";
+	elseif($type == 'Pathways Mentor Program')
+		$manual = "Pathways Mentor Program Level 1 Educational Program";
 	else
 		$manual = $type .' Level 1 Mastering Fundamentals';
 	if(strpos($manual,'ways 360'))
