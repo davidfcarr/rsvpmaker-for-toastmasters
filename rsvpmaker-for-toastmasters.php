@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.0.8
+Version: 4.0.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -5605,42 +5605,7 @@ $default_expires = date('Y-m-d',strtotime('+1 Month'));
 ?>
 <div class="member-entry" style="margin-bottom: 50px; clear: both;">
 <?php
-if(function_exists('has_wp_user_avatar') && has_wp_user_avatar($userdata->ID))
-{
-?>	
-<div style="float: right; margin-left: 15px; width: 200px;">
-<img src="<?php echo get_wp_user_avatar_src($userdata->ID, 96); ?>" alt=""  />
-</div>
-<?php
-}
-elseif(function_exists('userphoto_exists') && userphoto_exists($userdata))
-{
-?>	
-<div style="float: right; margin-left: 15px; width: 200px;">
-<?php
-		userphoto($userdata);
-?>
-</div>
-<?php
-}
-elseif(function_exists('bp_core_fetch_avatar')) {
-{
-$args = array('item_id' => $userdata->ID,'type' => 'full', 'no_grav' => false);
-$avatar = bp_core_fetch_avatar($args);
-if(!strpos($avatar,'mystery') )
-{
-?>	
-<div style="float: right; margin-left: 15px; width: 200px;">
-<?php
-if($avatar != 404)
-	echo $avatar;
-?>
-</div>
-<?php
-}
-}
-
-}
+echo $avatar = get_avatar($userdata->ID);
 
 if(!empty($title))
 	printf('<h3 style="clear: none;">%s</h3>',$title);
@@ -6020,11 +5985,6 @@ if(isset($_POST['existing_email']))
 		<th scope="row"><label for="first_name"><?php _e("Toastmasters ID #",'rsvpmaker-for-toastmasters');?> </label></th>
 		<td><input name="toastmasters_id" type="text" id="toastmasters_id" value="" /></td>
 	</tr>
-	<tr class="form-field">
-		<th scope="row"><label for="user_pass"><?php _e("Password",'rsvpmaker-for-toastmasters');?> </label></th>
-		<td><input name="user_pass" type="text" id="user_pass" value="<?php echo $user_pass_default; ?>" /></td>
-	</tr>
-
 	</table>
 
 <p class="submit"><input type="submit" name="createuser" id="createusersub" class="button-primary" value="<?php _e("Add Member",'rsvpmaker-for-toastmasters');?>"  /></p>
@@ -8404,54 +8364,6 @@ if(!function_exists('add_implicit_links') ) { function add_implicit_links($text)
 	$text = preg_replace('! (https{0,1}://[a-z0-9_./?=&-;]+)!i', ' <a href="$1">$1</a>', $text);
 	return $text;
 } }
-
-// shortcode editor functions 
-
-function shortcode_eventdates($post_id) {
-
-global $wpdb;
-global $rsvp_options;
-global $custom_fields;
-$custom_fields = get_post_custom($post_id);
-
-if(isset($custom_fields["_sked_Varies"][0]))
-	{
-	$template = get_template_sked($post_id);
-	template_schedule($template);
-	return;
-	}
-
-if(isset($custom_fields["_meet_recur"][0]))
-	{
-		$t = (int) $custom_fields["_meet_recur"][0];
-	}
-	
-if(isset($post_id) )
-	{
-	$results = get_rsvp_dates($post_id);
-	}
-else
-	$results = false;
-
-if($results)
-{
-$start = 2;
-foreach($results as $row)
-	{
-	echo "\n<div class=\"event_dates\"> \n";
-	$t = strtotime($row["datetime"]);
-	if($rsvp_options["long_date"]) echo strftime($rsvp_options["long_date"],$t);
-	$dur = $row["duration"];
-	if($dur != 'allday')
-		echo strftime(' '.$rsvp_options["time_format"],$t);
-	if(is_numeric($dur) )
-		echo " to ". strftime($rsvp_options["time_format"],$dur);
-	echo sprintf(' <input type="checkbox" name="delete_date[]" value="%d" /> %s<br />',$row["meta_id"],__('Delete','rsvpmaker'));
-	rsvpmaker_date_option($row);
-	echo "</div>\n";
-	}
-}
-}
 
 function member_not_user() {
 echo '<p style="color: red;"><b>For Toastmasters members, please use the <a href="'.admin_url('users.php?page=add_awesome_member').'">Add Member</a> form instead.</b></p>';

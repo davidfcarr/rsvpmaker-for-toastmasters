@@ -129,165 +129,6 @@ echo '</pre>';
 tm_admin_page_bottom($hook);
 }//end toastmasters_admin
 
-function agenda_setup () {
-global $wpdb;
-$event_options = $template_options = '';
-if($_POST)
-{
-		
-	$post_id = (int) $_POST["post_id"];
-	$permalink = get_permalink($post_id);
-	$agenda_link = rsvpmaker_permalink_query($post_id, 'print_agenda=1');
-
-	if(isset($_POST["agenda_time"]))
-		update_option('agenda_time',1);
-	else
-		update_option('agenda_time',0);
-
-printf('<div id="message" class="updated">
-		<p><strong>'.__("Meeting Agenda updated",'rsvpmaker-for-toastmasters').'.</strong> <a href="%s">'.__("View Form",'rsvpmaker-for-toastmasters').'</a> | <a href="%s">'.__("View Agenda",'rsvpmaker-for-toastmasters').'</a></p>
-	</div>',$permalink, $agenda_link);
-	
-	$my_post = array(
-      'ID'           => $post_id,
-      'post_title' => $_POST["post_title"],
-      'post_content' => $_POST["post_content"]
-  );
-   wp_update_post( $my_post );
-if(isset($_POST["_tm_sidebar"]))
-	tm_sidebar_post($post_id);
-if(isset($_POST["enable_sidebar_layout"]) && $_POST["enable_sidebar_layout"])
-	update_option("wp4toastmasters_agenda_layout",'sidebar');
-}
-
-	if(isset($_POST["sked"]))
-		{
-				echo rsvp_template_update_checkboxes($post_id);
-		}
-
-if(isset($_REQUEST["post_id"]))
-{
-$post_id = (int) $_REQUEST["post_id"];
-global $post;
-$post = get_post($post_id);
-global $agenda_setup_item;
-?>
-<form id="agenda_form" method="post" action = "<?php echo admin_url('edit.php?post_type=rsvpmaker&page=agenda_setup&post_id='.$post_id); ?>">
-<input type="hidden" name="post_id" value="<?php echo $post_id; ?>" />
-
-<h1><?php _e("Title",'rsvpmaker-for-toastmasters');?>: <input type="text" name="post_title" value="<?php echo $post->post_title; ?>" size="30" /></h1>
-<?php shortcode_eventdates($post->ID); ?>
-
-<div style="float: right; width: 225px; padding: 5px; background-color: #fff; margin-left:5px;"><img src="<?php echo plugins_url('rsvpmaker-for-toastmasters/mce/toastmasters_editor_buttons.png')?>" /><br /><em>Toastmasters custom buttons</em></div>
-
-<p><em><?php _e("You can drag-and-drop to reorder roles or add new roles using the Toastmasters Roles button. Double-click on the placeholder for a role to edit options. Setting the count for a role to more than one opens up multiple signup slots (for example, multiple speakers and multiple evaluators). Your choices determine the roles that will appear on the online signup form, the printable signup form, and the agenda.",'rsvpmaker-for-toastmasters');?></em></p>
-<p><em><?php _e("Use the Agenda Note button to provide additional 'stage directions' that will appear on thet agenda. You can specify whether this text should appear on the agenda only, on the signup form only, or both.",'rsvpmaker-for-toastmasters');?></em></p>
-<div style="clear:both;"></div>
-<?php
-// include wp_editor with shortcode representation
-
-	$editor_id = "post_content";
-	$settings = array();
-	wp_editor( $post->post_content, $editor_id, $settings );
-
-$layout = get_option("wp4toastmasters_agenda_layout");
-if($layout == 'sidebar')
-{
-echo agenda_sidebar_editor ($post->ID);
-	if(isset($template_id))
-		printf('<input type="hidden" name="template_sidebar" value="%d" /> ',$template_id);
-	echo '<input type="hidden" name="option_sidebar" value="1" /> ';
-}
-else
-	echo '<p><input type="checkbox" name="enable_sidebar_layout" value="1" /> '.__('Enable agenda layout with sidebar','rsvpmaker-for-toastmasters').'</p>';
-
-$agenda_time = get_option('agenda_time');
-$checked = (($agenda_time == 1) || ($agenda_time == '')) ? ' checked="checked" ' : '';
-
-echo '<p><input type="checkbox" name="agenda_time" value="1" '.$checked.'/> '.__('Show times on agenda','rsvpmaker-for-toastmasters').'</p>';
-
-?>
-<input type="hidden" id="order" name="order" value="<?php for($i = 0; $i <= $agenda_setup_item; $i++) { if($i > 0) echo ","; echo "item_".$i; } ?>">
-<?php submit_button(); ?>
-</form>
-<?php
-}
-else
-{
-		$dayarray = Array(__("Sunday",'rsvpmaker'),__("Monday",'rsvpmaker'),__("Tuesday",'rsvpmaker'),__("Wednesday",'rsvpmaker'),__("Thursday",'rsvpmaker'),__("Friday",'rsvpmaker'),__("Saturday",'rsvpmaker'));
-		$weekarray = Array(__("Varies",'rsvpmaker'),__("First",'rsvpmaker'),__("Second",'rsvpmaker'),__("Third",'rsvpmaker'),__("Fourth",'rsvpmaker'),__("Last",'rsvpmaker'),__("Every",'rsvpmaker'));
-	
-			$sql = "SELECT *, $wpdb->posts.ID as postID
-FROM $wpdb->postmeta
-JOIN $wpdb->posts ON $wpdb->postmeta.post_id = $wpdb->posts.ID
-WHERE meta_key='_sked_Varies' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish'";
-			
-		$results = $wpdb->get_results($sql);
-		if($results)
-		foreach ($results as $r)
-			{
-			$sked = unserialize($r->meta_value);
-
-		//backward compatability
-		if(is_array($sked["week"]))
-			{
-				$weeks = $sked["week"];
-				$dows = $sked["dayofweek"];
-			}
-		else
-			{
-				$weeks = array();
-				$dows = array();
-				$weeks[0] = (isset($sked["week"])) ? $sked["week"] : 0;
-				$dows[0] = (isset($sked["dayofweek"])) ? $sked["dayofweek"] : 0;
-			}
-
-		$dayarray = Array(__("Sunday",'rsvpmaker'),__("Monday",'rsvpmaker'),__("Tuesday",'rsvpmaker'),__("Wednesday",'rsvpmaker'),__("Thursday",'rsvpmaker'),__("Friday",'rsvpmaker'),__("Saturday",'rsvpmaker'));
-		$weekarray = Array(__("Varies",'rsvpmaker'),__("First",'rsvpmaker'),__("Second",'rsvpmaker'),__("Third",'rsvpmaker'),__("Fourth",'rsvpmaker'),__("Last",'rsvpmaker'),__("Every",'rsvpmaker'));
-		$s = '';
-		if((int)$weeks[0] == 0)
-			$s = __('Schedule Varies','rsvpmaker');
-		else
-			{
-			foreach($weeks as $week)
-				{
-				if(!empty($s))
-					$s .= '/ ';
-				$s .= $weekarray[(int) $week].' ';
-				}
-			foreach($dows as $dow)
-				$s .= $dayarray[(int) $dow] . ' ';	
-			}
-
-			$template_options .= sprintf('<option value="%d">%s (%s)</option>',$r->postID,$r->post_title,$s);
-			}
-
-		$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime
-	 FROM ".$wpdb->posts."
-	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value >= '".date('Y-m')."-1' AND ($wpdb->posts.post_content LIKE '%[toastmaster%' OR $wpdb->posts.post_content LIKE '%wp:wp4toastmasters%') AND $wpdb->posts.post_status = 'publish' ORDER BY a1.meta_value LIMIT 0,100";
-		$results = $wpdb->get_results($sql);
-		if($results)
-		foreach ($results as $r)
-			{
-			$event_options .= sprintf('<option value="%d">%s %s</option>',$r->postID,$r->post_title,$r->datetime);
-			}
-			
-		$action = admin_url('edit.php');
-		
-		printf('<form method="get" action="%s"><p>'.__("Get Agenda For",'rsvpmaker-for-toastmasters').' <select name="post_id"><optgroup label="'.__("Templates",'rsvpmaker-for-toastmasters').'">%s</optgroup><optgroup label="'.__("Events",'rsvpmaker-for-toastmasters').'">%s</optgroup></select>
-<input type="hidden" name="post_type" value="rsvpmaker" /><input type="hidden" name="page" value="agenda_setup" />		
-		</p>',$action, $template_options, $event_options);
-		submit_button(__('Get Agenda','rsvpmaker-for-toastmasters'));
-		echo '</form>';
-
-		printf('<form method="put" action="%s">',$action);
-		submit_button(__('Make New Agenda Template','rsvpmaker-for-toastmasters'));
-		echo '</form>';
-
-}
-
-}
 
 function wp_ajax_add_speech () {
 	$user_id = $_REQUEST['user_id'];
@@ -3497,30 +3338,16 @@ global $wpdb;
 	?>
 <!-- admins see -->
 <h3>For Administrators and Editors</h3>
-    <p>Everyone sees the message above the first time they visit the administrator's dashboard. What follows are some specific tips for anyone starting one of these websites or taking responsibility for maintaining it.</p>
-    <ul>
-    <li>If you are setting up this software on a club website for the first time, a series of prompts at the top of the screen will guide you through basic steps like establishing a meeting template.</li>
-    <li>You will edit the content of your website using the WordPress editor, which is essentially a web-based word processor that you use to format text, with a built-in file uploader for adding images and other media. If you want to add a link, highlight a word or phrase and click the "chain link" icon.</li>
-    <li>The main content of a WordPress website is divided into Posts and Pages, which you create or edit using the <a href="<?php echo admin_url('edit.php'); ?>">Posts</a> and <a href="<?php echo admin_url('edit.php?post_type=page'); ?>">Pages</a> menus.
-    <ul><li>Posts appear on the blog in reverse chronological order, meaning the most recent items appear first. Typically, they consist of news content like announcing one of your members won an area contest (maybe including photos or video) that is most relevant when it is first published.</li>
-    <li>Pages are the more timeless content, like your home page or the page giving directions to your meeting location. Typically, you feature them on your site's navigation menu and update them periodically.</li>
-    <li>See this <a  target="_blank" href="http://wp4toastmasters.com/2016/02/10/adding-and-editing-club-website-content/">video tutorial</a> on creating and editing basic website content.</li>
-    </ul>
-    </li>
-    <li>In addition to Posts and Pages, this site uses a WordPress plugin called RSVPMaker to support events as a separate content type. The events editing screen is labeled <a href="<?php echo admin_url('edit.php?post_type=rsvpmaker'); ?>">RSVP Events</a>.
-    <ul>
-    <li>Events appear on the site in calendar order, rather than blog order or menu order, with the emphasis on upcoming events people can participate in.</li>
-    <li>Toastmasters meeting events appear in the WordPress editor with a series of placeholders for the different roles that will be displayed on the signup form and on the printable agenda. Other placeholders represent "agenda notes" or "stage directions" for the organization of your meeting. Double-click on any of the colored placeholders to edit the options for that role or note.</li>
-    <li>Typically, Toastmasters meetings follow an event template that lays out the organization of a "typical" meeting and defines a standard meeting schedule. You then generate individual events based on that template. For example, if your template says your club meets every Monday at 7 pm and typically schedules 3 speakers and 3 evaluators per meeting, the software will help you create events for the next several months that follow that pattern. <em>You always have the option of customizing the agenda for an individual meeting that does not follow the template.</em></li>
-    <li>See this <a  target="_blank"  href="http://wp4toastmasters.com/2016/02/09/video-setting-up-and-editing-your-standard-meeting-agenda/">video tutorial</a> on setting up and managing meeting agendas.</li>
-    <li>For any other sort of event, such as an open house, you would edit text and add media exactly as you would for Pages and Posts, except that you must also specify the date in the Event Options box. If you are advertising an event for which you are requesting online RSVPs, you would also specify that in this section. See this <a target="_blank" href="http://wp4toastmasters.com/2016/02/23/rsvpmaker-event-management-for-toastmasters/">blog post</a>.</li>
-    </ul>
-    </li>
-    <li>Some website pages also include placeholder codes. For example, the calendar page includes a placeholder for the calendar display and events listing.</li>
-    <li>To add pages to the menu, or change the order in which they appear, use the <a href="<?php echo admin_url('nav-menus.php'); ?>">Menu editor</a>. 
-    </li>
-    </ul>
-    
+    <p>Everyone sees the message above the first time they visit the administrator's dashboard. If you will be responsible for editing the site and/or managing agendas, you should also review documentation in the <a href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a>.</p>
+	<p>The two main content types in WordPress are pages and posts (blog posts), where pages hold content of more permanent interest included on your site menu and blog posts are news or feature articles.</p>
+	<p>You can edit any page of your site by clicking Pages on this dashboard, then the edit link under the name of the page. To add a new page, click the Add New submenu item under Pages.</p>
+	<p>You can edit any blog post by clicking Posts on this dashboard, then the edit link under the name of the post. To add a new blog post, click the Add New submenu item under Posts.</p>
+	<p>Alternatively, you can use the Edit link that appears on the black bar at the top of the page when you are logged in. Click one of the items under New on that same menu to add new content. If you are a site administrator, you will also see the Customize menu link that allows you to change design elements such as the page headers and background colors (see below).</p>
+	<p>The basics of adding and editing blocks of content (such as paragraphs, headlines, and images) are explained in this <a href="https://wordpress.com/support/wordpress-editor/">article from WordPress.com</a>.</p>
+	<p>WordPress for Toastmasters incorporates <a href="https://rsvpmaker.com">RSVPMaker</a>, a WordPress plugin for event management and event marketing. Agendas are created as RSVPMaker event posts with additional content blocks representing meeting roles and notes about the organization of the agenda. See the <a href="https://rsvpmaker.com/documentation">documentation</a> for more information about how RSVPMaker can also be used to create and market other sorts of events and even charge for those events.</p>
+<figure class="wp-block-image size-large"><img loading="lazy" width="614" height="237" src="https://i2.wp.com/www.wp4toastmasters.com/wp-content/uploads/2020/11/dashboard-pages.png?resize=614%2C237&#038;ssl=1" alt="" class="wp-image-1138630" srcset="https://i2.wp.com/www.wp4toastmasters.com/wp-content/uploads/2020/11/dashboard-pages.png?w=750&amp;ssl=1 750w, https://i2.wp.com/www.wp4toastmasters.com/wp-content/uploads/2020/11/dashboard-pages.png?resize=300%2C116&amp;ssl=1 300w" sizes="(max-width: 614px) 100vw, 614px" data-recalc-dims="1" /><figcaption>Pages Menu</figcaption></figure>
+<figure class="wp-block-image size-large"><img loading="lazy" width="419" height="364" src="https://i0.wp.com/www.wp4toastmasters.com/wp-content/uploads/2020/11/admin-bar.png?resize=419%2C364&#038;ssl=1" alt="" class="wp-image-1138631" srcset="https://i0.wp.com/www.wp4toastmasters.com/wp-content/uploads/2020/11/admin-bar.png?w=419&amp;ssl=1 419w, https://i0.wp.com/www.wp4toastmasters.com/wp-content/uploads/2020/11/admin-bar.png?resize=300%2C261&amp;ssl=1 300w" sizes="(max-width: 419px) 100vw, 419px" data-recalc-dims="1" /><figcaption>Admin Bar Options</figcaption></figure>
+   
     <?php
 	}
 
@@ -3532,21 +3359,18 @@ global $wpdb;
     <p>New members should start by:</p>
     <ul>
     <li><a href="<?php echo admin_url('profile.php#user_login'); ?>"><?php _e("Editing your member profile",'rsvpmaker-for-toastmasters');?></a> (you can also change your password on this screen)</li>
-    <li>Signing up for roles at an upcoming meeting.
+    <li>Signing up for roles at upcoming meetings.
     <ul>
 <?php
 
-$count = 0;
-// lookup next meeting
-	$results = get_future_events(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') 
- ",10,ARRAY_A);
+$results = future_toastmaster_meetings(5);
 			  if($results)
 			  {
 			  foreach($results as $index => $row)
 			  	{
 					$t = strtotime($row->datetime);
 					$title = $row->post_title . ' '.date('F jS',$t );
-					$permalink = rsvpmaker_permalink_query($row->postID);					
+					$permalink = rsvpmaker_permalink_query($row->ID);					
 					printf('<li><a href="%s">%s</a></li>',$permalink, $title);
 				}
 			  }
@@ -3555,6 +3379,7 @@ $count = 0;
 ?>  
     </ul>
     </li>
+	<li>Checking out the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>, which indludes a demo video.</li>
     </ul>
 
     </section><!-- end #TO DO -->
@@ -3577,6 +3402,7 @@ $count = 0;
     </div>
 
   <?php
+
 tm_admin_page_bottom($hook);
 }
 
@@ -4719,7 +4545,7 @@ function get_evaluator_postdata() {
 function wp4t_evaluations ($demo = false) {
 
 	$updated = (int) get_option('evaluation_forms_updated');
-	if(empty($updated))
+	if(empty($updated) || ( $updated < strtotime('December 1, 2020')) )
 	{
 		$json = file_get_contents(plugin_dir_path(__FILE__).'evaluation_forms.json');
 		if($json) {
@@ -6277,7 +6103,7 @@ $map = array (
   'Dynamic Leadership Level 1 Mastering Fundamentals 7' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
   'Dynamic Leadership Level 2 Learning Your Style 20' => 'Pathways:Understanding Your Leadership Style',
   'Dynamic Leadership Level 2 Learning Your Style 25' => 'Pathways:Understanding Your Communication Style',
-  'Dynamic Leadership Level 2 Learning Your Style 31' => 'Pathways:Mentoring',
+  'Dynamic Leadership Level 2 Learning Your Style 31' => 'Pathways:Introduction to Toastmasters Mentoring',
   'Dynamic Leadership Level 3 Increasing Knowledge 105' => 'Pathways:Using Descriptive Language',
   'Dynamic Leadership Level 3 Increasing Knowledge 111' => 'Pathways:Using Presentation Software',
   'Dynamic Leadership Level 3 Increasing Knowledge 117' => 'Pathways:Understanding Vocal Variety',
@@ -6318,7 +6144,7 @@ $map = array (
   'Effective Coaching Level 1 Mastering Fundamentals 246' => 'Pathways:Researching and Presenting',
   'Effective Coaching Level 2 Learning Your Style 256' => 'Pathways:Understanding Your Leadership Style',
   'Effective Coaching Level 2 Learning Your Style 263' => 'Pathways:Understanding Your Communication Style',
-  'Effective Coaching Level 2 Learning Your Style 269' => 'Pathways:Mentoring',
+  'Effective Coaching Level 2 Learning Your Style 269' => 'Pathways:Introduction to Pathways Mentoring',
   'Effective Coaching Level 3 Increasing Knowledge 285' => 'Pathways:Active Listening',
   'Effective Coaching Level 3 Increasing Knowledge 291' => 'Pathways:Connect with Storytelling',
   'Effective Coaching Level 3 Increasing Knowledge 297' => 'Pathways:Connect with Your Audience',
@@ -6360,7 +6186,7 @@ $map = array (
 "Engaging Humor Level 2 Learning Your Style 14026" =>  "Pathways:Know Your Sense of Humor",
   
   'Engaging Humor Level 2 Learning Your Style 14033' => 'Pathways:Connect with Your Audience',
-  'Engaging Humor Level 2 Learning Your Style 14039' => 'Pathways:Mentoring',
+  'Engaging Humor Level 2 Learning Your Style 14039' => 'Pathways:Introduction to Pathways Mentoring',
   'Engaging Humor Level 3 Increasing Knowledge 14055' => 'Pathways:Active Listening',
   'Engaging Humor Level 3 Increasing Knowledge 14061' => 'Pathways:Connect with Storytelling',
   'Engaging Humor Level 3 Increasing Knowledge 14067' => 'Pathways:Connect with Your Audience',
@@ -6398,7 +6224,7 @@ $map = array (
   'Innovative Planning Level 1 Mastering Fundamentals 483' => 'Pathways:Researching and Presenting',
   'Innovative Planning Level 2 Learning Your Style 492' => 'Pathways:Understanding Your Leadership Style',
   'Innovative Planning Level 2 Learning Your Style 499' => 'Pathways:Connect with Your Audience',
-  'Innovative Planning Level 2 Learning Your Style 505' => 'Pathways:Mentoring',
+  'Innovative Planning Level 2 Learning Your Style 505' => 'Pathways:Introduction to Pathways Mentoring',
   'Innovative Planning Level 3 Increasing Knowledge 521' => 'Pathways:Active Listening',
   'Innovative Planning Level 3 Increasing Knowledge 527' => 'Pathways:Connect with Storytelling',
   'Innovative Planning Level 3 Increasing Knowledge 533' => 'Pathways:Creating Effective Visual Aids',
@@ -6435,7 +6261,7 @@ $map = array (
   'Leadership Development Level 1 Mastering Fundamentals 703' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
   'Leadership Development Level 1 Mastering Fundamentals 707' => 'Pathways:Researching and Presenting',
   'Leadership Development Level 2 Learning Your Style 723' => 'Pathways:Understanding Your Leadership Style',
-  'Leadership Development Level 2 Learning Your Style 729' => 'Pathways:Mentoring',
+  'Leadership Development Level 2 Learning Your Style 729' => 'Pathways:Introduction to Pathways Mentoring',
   'Leadership Development Level 3 Increasing Knowledge 745' => 'Pathways:Active Listening',
   'Leadership Development Level 3 Increasing Knowledge 751' => 'Pathways:Connect with Storytelling',
   'Leadership Development Level 3 Increasing Knowledge 757' => 'Pathways:Connect with Your Audience',
@@ -6474,7 +6300,7 @@ $map = array (
   'Motivational Strategies Level 1 Mastering Fundamentals 950' => 'Pathways:Researching and Presenting',
   'Motivational Strategies Level 2 Learning Your Style 959' => 'Pathways:Understanding Your Communication Style',
   'Motivational Strategies Level 2 Learning Your Style 966' => 'Pathways:Active Listening',
-  'Motivational Strategies Level 2 Learning Your Style 972' => 'Pathways:Mentoring',
+  'Motivational Strategies Level 2 Learning Your Style 972' => 'Pathways:Introduction to Pathways Mentoring',
   'Motivational Strategies Level 3 Increasing Knowledge 1000' => 'Pathways:Creating Effective Visual Aids',
   'Motivational Strategies Level 3 Increasing Knowledge 1006' => 'Pathways:Deliver Social Speeches - First Speech',
   'Motivational Strategies Level 3 Increasing Knowledge 1012' => 'Pathways:Effective Body Language',
@@ -6513,7 +6339,7 @@ $map = array (
   'Persuasive Influence Level 1 Mastering Fundamentals 1186' => 'Pathways:Researching and Presenting',
   'Persuasive Influence Level 2 Learning Your Style 1195' => 'Pathways:Understanding Your Leadership Style',
   'Persuasive Influence Level 2 Learning Your Style 1202' => 'Pathways:Active Listening',
-  'Persuasive Influence Level 2 Learning Your Style 1208' => 'Pathways:Mentoring',
+  'Persuasive Influence Level 2 Learning Your Style 1208' => 'Pathways:Introduction to Pathways Mentoring',
   'Persuasive Influence Level 3 Increasing Knowledge 1224' => 'Pathways:Connect with Storytelling',
   'Persuasive Influence Level 3 Increasing Knowledge 1230' => 'Pathways:Connect with Your Audience',
   'Persuasive Influence Level 3 Increasing Knowledge 1236' => 'Pathways:Creating Effective Visual Aids',
@@ -6551,7 +6377,7 @@ $map = array (
   'Presentation Mastery Level 1 Mastering Fundamentals 1417' => 'Pathways:Researching and Presenting',
   'Presentation Mastery Level 2 Learning Your Style 1426' => 'Pathways:Understanding Your Communication Style',
   'Presentation Mastery Level 2 Learning Your Style 1433' => 'Pathways:Effective Body Language',
-  'Presentation Mastery Level 2 Learning Your Style 1439' => 'Pathways:Mentoring',
+  'Presentation Mastery Level 2 Learning Your Style 1439' => 'Pathways:Introduction to Pathways Mentoring',
   'Presentation Mastery Level 3 Increasing Knowledge 1455' => 'Pathways:Active Listening',
   'Presentation Mastery Level 3 Increasing Knowledge 1461' => 'Pathways:Connect with Storytelling',
   'Presentation Mastery Level 3 Increasing Knowledge 1467' => 'Pathways:Connect with Your Audience',
@@ -6588,7 +6414,7 @@ $map = array (
   'Strategic Relationships Level 1 Mastering Fundamentals 1637' => 'Pathways:Evaluation and Feedback - Evaluator Speech',
   'Strategic Relationships Level 1 Mastering Fundamentals 1641' => 'Pathways:Researching and Presenting',
   'Strategic Relationships Level 2 Learning Your Style 1650' => 'Pathways:Understanding Your Leadership Style',
-  'Strategic Relationships Level 2 Learning Your Style 1663' => 'Pathways:Mentoring',
+  'Strategic Relationships Level 2 Learning Your Style 1663' => 'Pathways:Introduction to Pathways Mentoring',
   'Strategic Relationships Level 3 Increasing Knowledge 1672' => 'Pathways:Make Connections Through Networking',
   'Strategic Relationships Level 3 Increasing Knowledge 1679' => 'Pathways:Active Listening',
   'Strategic Relationships Level 3 Increasing Knowledge 1685' => 'Pathways:Connect with Storytelling',
@@ -6627,7 +6453,7 @@ $map = array (
   'Team Collaboration Level 1 Mastering Fundamentals 1865' => 'Pathways:Researching and Presenting',
   'Team Collaboration Level 2 Learning Your Style 1874' => 'Pathways:Understanding Your Leadership Style',
   'Team Collaboration Level 2 Learning Your Style 1881' => 'Pathways:Active Listening',
-  'Team Collaboration Level 2 Learning Your Style 1887' => 'Pathways:Mentoring',
+  'Team Collaboration Level 2 Learning Your Style 1887' => 'Pathways:Introduction to Pathways Mentoring',
   'Team Collaboration Level 3 Increasing Knowledge 1903' => 'Pathways:Connect with Storytelling',
   'Team Collaboration Level 3 Increasing Knowledge 1909' => 'Pathways:Connect with Your Audience',
   'Team Collaboration Level 3 Increasing Knowledge 1915' => 'Pathways:Creating Effective Visual Aids',
@@ -6667,7 +6493,7 @@ $map = array (
   'Visionary Communication Level 1 Mastering Fundamentals 2101' => 'Pathways:Researching and Presenting',
   'Visionary Communication Level 2 Learning Your Style 2110' => 'Pathways:Understanding Your Leadership Style',
   'Visionary Communication Level 2 Learning Your Style 2117' => 'Pathways:Understanding Your Communication Style',
-  'Visionary Communication Level 2 Learning Your Style 2123' => 'Pathways:Mentoring',
+  'Visionary Communication Level 2 Learning Your Style 2123' => 'Pathways:Introduction to Pathways Mentoring',
   'Visionary Communication Level 3 Increasing Knowledge 2139' => 'Pathways:Active Listening',
   'Visionary Communication Level 3 Increasing Knowledge 2145' => 'Pathways:Connect with Storytelling',
   'Visionary Communication Level 3 Increasing Knowledge 2151' => 'Pathways:Connect with Your Audience',
@@ -6708,6 +6534,8 @@ return $slug;
 function fetch_evaluation_form ($slug) {
 	
 $slug = pathways_project_map($slug);	
+printf('<p>Project code: %s</p>',$slug);
+
 $slug = 'wpteval_'.$slug;
 $default = array('intro' => 'Specific evaluation form not found. The default Pathways evaluation criteria are shown below','prompts' => 'You excelled at:
 You may want to work on:
@@ -6721,6 +6549,7 @@ Comfort Level: Appears comfortable with the audience|5 (Exemplary)|4 (Excels)|3 
 Interest: Engages audience with interesting, well-constructed content|5 (Exemplary)|4 (Excels)|3 (Accomplished)|2 (Emerging)|1 (Developing)');
 	
 $form = get_option($slug); // check for cached copy
+printf('<p>%s</p><pre></pre>',$slug,var_export($form,true));
 if(!empty($form)) {
 	if(is_array($form))
 		$form  = (object) $form;

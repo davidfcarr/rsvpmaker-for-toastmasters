@@ -663,7 +663,7 @@ $projects["Dynamic Leadership Level 2 Learning Your Style 25"] = __("Understandi
 $project_times["Dynamic Leadership Level 2 Learning Your Style 25"] = 7;
 $display_times["Dynamic Leadership Level 2 Learning Your Style 25"] = "5 - 7 minutes";
 
-$projects["Dynamic Leadership Level 2 Learning Your Style 31"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Dynamic Leadership Level 2 Learning Your Style 31"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Dynamic Leadership Level 2 Learning Your Style 31"] = 7;
 $display_times["Dynamic Leadership Level 2 Learning Your Style 31"] = "5 - 7 minutes";
 
@@ -837,7 +837,7 @@ $projects["Effective Coaching Level 2 Learning Your Style 263"] = __("Understand
 $project_times["Effective Coaching Level 2 Learning Your Style 263"] = 7;
 $display_times["Effective Coaching Level 2 Learning Your Style 263"] = "5 - 7 minutes";
 
-$projects["Effective Coaching Level 2 Learning Your Style 269"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Effective Coaching Level 2 Learning Your Style 269"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Effective Coaching Level 2 Learning Your Style 269"] = 7;
 $display_times["Effective Coaching Level 2 Learning Your Style 269"] = "5 - 7 minutes";
 
@@ -1011,7 +1011,7 @@ $projects["Engaging Humor Level 2 Learning Your Style 14033"] = __("Connect with
 $project_times["Engaging Humor Level 2 Learning Your Style 14033"] = 7;
 $display_times["Engaging Humor Level 2 Learning Your Style 14033"] = "5 - 7 minutes";
 
-$projects["Engaging Humor Level 2 Learning Your Style 14039"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Engaging Humor Level 2 Learning Your Style 14039"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Engaging Humor Level 2 Learning Your Style 14039"] = 7;
 $display_times["Engaging Humor Level 2 Learning Your Style 14039"] = "5 - 7 minutes";
 
@@ -1179,7 +1179,7 @@ $projects["Innovative Planning Level 2 Learning Your Style 499"] = __("Connect w
 $project_times["Innovative Planning Level 2 Learning Your Style 499"] = 7;
 $display_times["Innovative Planning Level 2 Learning Your Style 499"] = "5 - 7 minutes";
 
-$projects["Innovative Planning Level 2 Learning Your Style 505"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Innovative Planning Level 2 Learning Your Style 505"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Innovative Planning Level 2 Learning Your Style 505"] = 7;
 $display_times["Innovative Planning Level 2 Learning Your Style 505"] = "5 - 7 minutes";
 
@@ -1341,7 +1341,7 @@ $projects["Leadership Development Level 2 Learning Your Style 723"] = __("Unders
 $project_times["Leadership Development Level 2 Learning Your Style 723"] = 7;
 $display_times["Leadership Development Level 2 Learning Your Style 723"] = "5 - 7 minutes";
 
-$projects["Leadership Development Level 2 Learning Your Style 729"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Leadership Development Level 2 Learning Your Style 729"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Leadership Development Level 2 Learning Your Style 729"] = 7;
 $display_times["Leadership Development Level 2 Learning Your Style 729"] = "5 - 7 minutes";
 
@@ -1515,7 +1515,7 @@ $projects["Motivational Strategies Level 2 Learning Your Style 966"] = __("Activ
 $project_times["Motivational Strategies Level 2 Learning Your Style 966"] = 7;
 $display_times["Motivational Strategies Level 2 Learning Your Style 966"] = "5 - 7 minutes";
 
-$projects["Motivational Strategies Level 2 Learning Your Style 972"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Motivational Strategies Level 2 Learning Your Style 972"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Motivational Strategies Level 2 Learning Your Style 972"] = 7;
 $display_times["Motivational Strategies Level 2 Learning Your Style 972"] = "5 - 7 minutes";
 
@@ -1685,7 +1685,7 @@ $projects["Persuasive Influence Level 2 Learning Your Style 1202"] = __("Active 
 $project_times["Persuasive Influence Level 2 Learning Your Style 1202"] = 7;
 $display_times["Persuasive Influence Level 2 Learning Your Style 1202"] = "5 - 7 minutes";
 
-$projects["Persuasive Influence Level 2 Learning Your Style 1208"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Persuasive Influence Level 2 Learning Your Style 1208"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Persuasive Influence Level 2 Learning Your Style 1208"] = 7;
 $display_times["Persuasive Influence Level 2 Learning Your Style 1208"] = "5 - 7 minutes";
 
@@ -1851,7 +1851,7 @@ $projects["Presentation Mastery Level 2 Learning Your Style 1433"] = __("Effecti
 $project_times["Presentation Mastery Level 2 Learning Your Style 1433"] = 7;
 $display_times["Presentation Mastery Level 2 Learning Your Style 1433"] = "5 - 7 minutes";
 
-$projects["Presentation Mastery Level 2 Learning Your Style 1439"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Presentation Mastery Level 2 Learning Your Style 1439"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Presentation Mastery Level 2 Learning Your Style 1439"] = 7;
 $display_times["Presentation Mastery Level 2 Learning Your Style 1439"] = "5 - 7 minutes";
 
@@ -2013,7 +2013,7 @@ $projects["Strategic Relationships Level 2 Learning Your Style 1657"] = __("Cros
 $project_times["Strategic Relationships Level 2 Learning Your Style 1657"] = 7;
 $display_times["Strategic Relationships Level 2 Learning Your Style 1657"] = "5 - 7 minutes";
 
-$projects["Strategic Relationships Level 2 Learning Your Style 1663"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Strategic Relationships Level 2 Learning Your Style 1663"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Strategic Relationships Level 2 Learning Your Style 1663"] = 7;
 $display_times["Strategic Relationships Level 2 Learning Your Style 1663"] = "5 - 7 minutes";
 
@@ -2175,7 +2175,7 @@ $projects["Team Collaboration Level 2 Learning Your Style 1881"] = __("Active Li
 $project_times["Team Collaboration Level 2 Learning Your Style 1881"] = 7;
 $display_times["Team Collaboration Level 2 Learning Your Style 1881"] = "5 - 7 minutes";
 
-$projects["Team Collaboration Level 2 Learning Your Style 1887"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Team Collaboration Level 2 Learning Your Style 1887"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Team Collaboration Level 2 Learning Your Style 1887"] = 7;
 $display_times["Team Collaboration Level 2 Learning Your Style 1887"] = "5 - 7 minutes";
 
@@ -2345,7 +2345,7 @@ $projects["Visionary Communication Level 2 Learning Your Style 2117"] = __("Unde
 $project_times["Visionary Communication Level 2 Learning Your Style 2117"] = 7;
 $display_times["Visionary Communication Level 2 Learning Your Style 2117"] = "5 - 7 minutes";
 
-$projects["Visionary Communication Level 2 Learning Your Style 2123"] = __("Mentoring","rsvpmaker-for-toastmasters");
+$projects["Visionary Communication Level 2 Learning Your Style 2123"] = __("Introduction to Toastmasters Mentoring","rsvpmaker-for-toastmasters");
 $project_times["Visionary Communication Level 2 Learning Your Style 2123"] = 7;
 $display_times["Visionary Communication Level 2 Learning Your Style 2123"] = "5 - 7 minutes";
 
@@ -2502,7 +2502,6 @@ $display_times["HIGH PERFORMANCE LEADERSHIP 1"] = "5 - 7 minutes";
 $projects["HIGH PERFORMANCE LEADERSHIP 2"] = __("Presenting the Results","rsvpmaker-for-toastmasters");
 $project_times["HIGH PERFORMANCE LEADERSHIP 2"] = 7;
 $display_times["HIGH PERFORMANCE LEADERSHIP 2"] = "5 - 7 minutes";
-
 
 $projects["Evaluator:CL1"] = __("Listening: Evaluator","rsvpmaker-for-toastmasters");
 $projects["Table Topics:CL1"] = __("Listening: Table Topics","rsvpmaker-for-toastmasters");

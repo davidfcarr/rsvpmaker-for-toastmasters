@@ -704,4 +704,19 @@ function wpt_login_permalink ($id = 0, $permalink = '') {
         $permalink = wp_login_url($permalink);
     return $permalink;
 }
+
+function wpt_get_last_login($user_id) {
+	global $rsvp_options;
+	$slug = (is_plugin_active( 'wordfence/wordfence.php' )) ? 'wfls-last-login' : 'wpt-last-login';
+	$last = get_user_meta($user_id,$slug,true);
+	return rsvpmaker_strftime($rsvp_options['long_date'].' '.rsvp_options['time_format'],$last);
+}
+
+function wpt_set_last_login($user_id) {
+	if(is_plugin_active( 'wordfence/wordfence.php' ))
+		return; // don't duplicate function
+	update_post_meta($user_id,'wpt-last-login',time());
+}
+
+
 ?>

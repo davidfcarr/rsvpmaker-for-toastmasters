@@ -4,8 +4,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 5.5.3
-Stable tag: 4.0.8
+Tested up to: 5.6
+Stable tag: 4.0.9
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,11 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 4.0.9 =
+
+* Evaluation forms correction: Introduction to Toastmasters Mentoring
+* Updated welcome screen for new members
 
 = 4.0.8 =
 
