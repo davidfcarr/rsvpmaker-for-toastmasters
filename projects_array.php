@@ -688,12 +688,12 @@ $project_times["Dynamic Leadership Level 3 Increasing Knowledge 63"] = 7;
 $display_times["Dynamic Leadership Level 3 Increasing Knowledge 63"] = "5 - 7 minutes";
 
 $projects["Dynamic Leadership Level 3 Increasing Knowledge 69"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 69"] = 7;
-$display_times["Dynamic Leadership Level 3 Increasing Knowledge 69"] = "5 - 7 minutes";
+$project_times["Dynamic Leadership Level 3 Increasing Knowledge 69"] = 4;
+$display_times["Dynamic Leadership Level 3 Increasing Knowledge 69"] = "3 - 4 minutes";
 
 $projects["Dynamic Leadership Level 3 Increasing Knowledge 70"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Dynamic Leadership Level 3 Increasing Knowledge 70"] = 7;
-$display_times["Dynamic Leadership Level 3 Increasing Knowledge 70"] = "5 - 7 minutes";
+$project_times["Dynamic Leadership Level 3 Increasing Knowledge 70"] = 4;
+$display_times["Dynamic Leadership Level 3 Increasing Knowledge 70"] = "3 - 4 minutes";
 
 $projects["Dynamic Leadership Level 3 Increasing Knowledge 75"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Dynamic Leadership Level 3 Increasing Knowledge 75"] = 7;
@@ -866,12 +866,12 @@ $project_times["Effective Coaching Level 3 Increasing Knowledge 303"] = 7;
 $display_times["Effective Coaching Level 3 Increasing Knowledge 303"] = "5 - 7 minutes";
 
 $projects["Effective Coaching Level 3 Increasing Knowledge 309"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Effective Coaching Level 3 Increasing Knowledge 309"] = 7;
-$display_times["Effective Coaching Level 3 Increasing Knowledge 309"] = "5 - 7 minutes";
+$project_times["Effective Coaching Level 3 Increasing Knowledge 309"] = 4;
+$display_times["Effective Coaching Level 3 Increasing Knowledge 309"] = "3 - 4 minutes";
 
 $projects["Effective Coaching Level 3 Increasing Knowledge 310"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Effective Coaching Level 3 Increasing Knowledge 310"] = 7;
-$display_times["Effective Coaching Level 3 Increasing Knowledge 310"] = "5 to 7 minutes";
+$project_times["Effective Coaching Level 3 Increasing Knowledge 310"] = 4;
+$display_times["Effective Coaching Level 3 Increasing Knowledge 310"] = "3 to 4 minutes";
 
 $projects["Effective Coaching Level 3 Increasing Knowledge 315"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Effective Coaching Level 3 Increasing Knowledge 315"] = 7;
@@ -1036,12 +1036,12 @@ $project_times["Engaging Humor Level 3 Increasing Knowledge 14073"] = 7;
 $display_times["Engaging Humor Level 3 Increasing Knowledge 14073"] = "5 - 7 minutes";
 
 $projects["Engaging Humor Level 3 Increasing Knowledge 14079"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Engaging Humor Level 3 Increasing Knowledge 14079"] = 7;
-$display_times["Engaging Humor Level 3 Increasing Knowledge 14079"] = "5 - 7 minutes";
+$project_times["Engaging Humor Level 3 Increasing Knowledge 14079"] = 4;
+$display_times["Engaging Humor Level 3 Increasing Knowledge 14079"] = "3 - 4 minutes";
 
 $projects["Engaging Humor Level 3 Increasing Knowledge 14080"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Engaging Humor Level 3 Increasing Knowledge 14080"] = 7;
-$display_times["Engaging Humor Level 3 Increasing Knowledge 14080"] = "5 - 7 minutes";
+$project_times["Engaging Humor Level 3 Increasing Knowledge 14080"] = 4;
+$display_times["Engaging Humor Level 3 Increasing Knowledge 14080"] = "3 - 4 minutes";
 
 $projects["Engaging Humor Level 3 Increasing Knowledge 14084"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Engaging Humor Level 3 Increasing Knowledge 14084"] = 7;
@@ -1200,12 +1200,12 @@ $project_times["Innovative Planning Level 3 Increasing Knowledge 533"] = 7;
 $display_times["Innovative Planning Level 3 Increasing Knowledge 533"] = "5 - 7 minutes";
 
 $projects["Innovative Planning Level 3 Increasing Knowledge 539"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Innovative Planning Level 3 Increasing Knowledge 539"] = 7;
-$display_times["Innovative Planning Level 3 Increasing Knowledge 539"] = "5 - 7 minutes";
+$project_times["Innovative Planning Level 3 Increasing Knowledge 539"] = 4;
+$display_times["Innovative Planning Level 3 Increasing Knowledge 539"] = "3 - 4 minutes";
 //second
 $projects["Innovative Planning Level 3 Increasing Knowledge 540"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Innovative Planning Level 3 Increasing Knowledge 540"] = 7;
-$display_times["Innovative Planning Level 3 Increasing Knowledge 540"] = "5 - 7 minutes";
+$project_times["Innovative Planning Level 3 Increasing Knowledge 540"] = 4;
+$display_times["Innovative Planning Level 3 Increasing Knowledge 540"] = "3 - 4 minutes";
 
 $projects["Innovative Planning Level 3 Increasing Knowledge 545"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Innovative Planning Level 3 Increasing Knowledge 545"] = 7;
@@ -1366,12 +1366,12 @@ $project_times["Leadership Development Level 3 Increasing Knowledge 763"] = 7;
 $display_times["Leadership Development Level 3 Increasing Knowledge 763"] = "5 - 7 minutes";
 
 $projects["Leadership Development Level 3 Increasing Knowledge 769"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Leadership Development Level 3 Increasing Knowledge 769"] = 7;
-$display_times["Leadership Development Level 3 Increasing Knowledge 769"] = "5 - 7 minutes";
+$project_times["Leadership Development Level 3 Increasing Knowledge 769"] = 4;
+$display_times["Leadership Development Level 3 Increasing Knowledge 769"] = "3 - 4 minutes";
 
 $projects["Leadership Development Level 3 Increasing Knowledge 770"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Leadership Development Level 3 Increasing Knowledge 770"] = 7;
-$display_times["Leadership Development Level 3 Increasing Knowledge 770"] = "5 - 7 minutes";
+$project_times["Leadership Development Level 3 Increasing Knowledge 770"] = 4;
+$display_times["Leadership Development Level 3 Increasing Knowledge 770"] = "3 - 4 minutes";
 
 $projects["Leadership Development Level 3 Increasing Knowledge 775"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Leadership Development Level 3 Increasing Knowledge 775"] = 7;
@@ -1536,12 +1536,12 @@ $project_times["Motivational Strategies Level 3 Increasing Knowledge 1000"] = 7;
 $display_times["Motivational Strategies Level 3 Increasing Knowledge 1000"] = "5 - 7 minutes";
 
 $projects["Motivational Strategies Level 3 Increasing Knowledge 1006"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1006"] = 7;
-$display_times["Motivational Strategies Level 3 Increasing Knowledge 1006"] = "5 - 7 minutes";
+$project_times["Motivational Strategies Level 3 Increasing Knowledge 1006"] = 4;
+$display_times["Motivational Strategies Level 3 Increasing Knowledge 1006"] = "3 - 4 minutes";
 //second
 $projects["Motivational Strategies Level 3 Increasing Knowledge 1007"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Motivational Strategies Level 3 Increasing Knowledge 1007"] = 7;
-$display_times["Motivational Strategies Level 3 Increasing Knowledge 1007"] = "5 - 7 minutes";
+$project_times["Motivational Strategies Level 3 Increasing Knowledge 1007"] = 4;
+$display_times["Motivational Strategies Level 3 Increasing Knowledge 1007"] = "3 - 4 minutes";
 
 $projects["Motivational Strategies Level 3 Increasing Knowledge 1012"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Motivational Strategies Level 3 Increasing Knowledge 1012"] = 7;
@@ -1706,12 +1706,12 @@ $project_times["Persuasive Influence Level 3 Increasing Knowledge 1236"] = 7;
 $display_times["Persuasive Influence Level 3 Increasing Knowledge 1236"] = "5 - 7 minutes";
 
 $projects["Persuasive Influence Level 3 Increasing Knowledge 1242"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1242"] = 7;
-$display_times["Persuasive Influence Level 3 Increasing Knowledge 1242"] = "5 - 7 minutes";
+$project_times["Persuasive Influence Level 3 Increasing Knowledge 1242"] = 4;
+$display_times["Persuasive Influence Level 3 Increasing Knowledge 1242"] = "3 - 4 minutes";
 //second
 $projects["Persuasive Influence Level 3 Increasing Knowledge 1243"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Persuasive Influence Level 3 Increasing Knowledge 1243"] = 7;
-$display_times["Persuasive Influence Level 3 Increasing Knowledge 1243"] = "5 - 7 minutes";
+$project_times["Persuasive Influence Level 3 Increasing Knowledge 1243"] = 4;
+$display_times["Persuasive Influence Level 3 Increasing Knowledge 1243"] = "3 - 4 minutes";
 
 $projects["Persuasive Influence Level 3 Increasing Knowledge 1248"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Persuasive Influence Level 3 Increasing Knowledge 1248"] = 7;
@@ -1876,12 +1876,12 @@ $project_times["Presentation Mastery Level 3 Increasing Knowledge 1473"] = 7;
 $display_times["Presentation Mastery Level 3 Increasing Knowledge 1473"] = "5 - 7 minutes";
 
 $projects["Presentation Mastery Level 3 Increasing Knowledge 1479"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1479"] = 7;
-$display_times["Presentation Mastery Level 3 Increasing Knowledge 1479"] = "5 - 7 minutes";
+$project_times["Presentation Mastery Level 3 Increasing Knowledge 1479"] = 4;
+$display_times["Presentation Mastery Level 3 Increasing Knowledge 1479"] = "3 - 4 minutes";
 //second
 $projects["Presentation Mastery Level 3 Increasing Knowledge 1480"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Presentation Mastery Level 3 Increasing Knowledge 1480"] = 7;
-$display_times["Presentation Mastery Level 3 Increasing Knowledge 1480"] = "5 - 7 minutes";
+$project_times["Presentation Mastery Level 3 Increasing Knowledge 1480"] = 4;
+$display_times["Presentation Mastery Level 3 Increasing Knowledge 1480"] = "3 - 4 minutes";
 
 $projects["Presentation Mastery Level 3 Increasing Knowledge 1485"] = __("Focus on the Positive","rsvpmaker-for-toastmasters");
 $project_times["Presentation Mastery Level 3 Increasing Knowledge 1485"] = 7;
@@ -2038,12 +2038,12 @@ $project_times["Strategic Relationships Level 3 Increasing Knowledge 1697"] = 7;
 $display_times["Strategic Relationships Level 3 Increasing Knowledge 1697"] = "5 - 7 minutes";
 
 $projects["Strategic Relationships Level 3 Increasing Knowledge 1703"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1703"] = 7;
-$display_times["Strategic Relationships Level 3 Increasing Knowledge 1703"] = "5 - 7 minutes";
+$project_times["Strategic Relationships Level 3 Increasing Knowledge 1703"] = 4;
+$display_times["Strategic Relationships Level 3 Increasing Knowledge 1703"] = "3 - 4 minutes";
 //second
 $projects["Strategic Relationships Level 3 Increasing Knowledge 1704"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Strategic Relationships Level 3 Increasing Knowledge 1704"] = 7;
-$display_times["Strategic Relationships Level 3 Increasing Knowledge 1704"] = "5 - 7 minutes";
+$project_times["Strategic Relationships Level 3 Increasing Knowledge 1704"] = 4;
+$display_times["Strategic Relationships Level 3 Increasing Knowledge 1704"] = "3 - 4 minutes";
 
 $projects["Strategic Relationships Level 3 Increasing Knowledge 1709"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Strategic Relationships Level 3 Increasing Knowledge 1709"] = 7;
@@ -2196,12 +2196,12 @@ $project_times["Team Collaboration Level 3 Increasing Knowledge 1915"] = 7;
 $display_times["Team Collaboration Level 3 Increasing Knowledge 1915"] = "5 - 7 minutes";
 
 $projects["Team Collaboration Level 3 Increasing Knowledge 1921"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1921"] = 7;
-$display_times["Team Collaboration Level 3 Increasing Knowledge 1921"] = "5 - 7 minutes";
+$project_times["Team Collaboration Level 3 Increasing Knowledge 1921"] = 4;
+$display_times["Team Collaboration Level 3 Increasing Knowledge 1921"] = "3 - 4 minutes";
 
 $projects["Team Collaboration Level 3 Increasing Knowledge 1922"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Team Collaboration Level 3 Increasing Knowledge 1922"] = 7;
-$display_times["Team Collaboration Level 3 Increasing Knowledge 1922"] = "5 - 7 minutes";
+$project_times["Team Collaboration Level 3 Increasing Knowledge 1922"] = 4;
+$display_times["Team Collaboration Level 3 Increasing Knowledge 1922"] = "3 - 4 minutes";
 
 $projects["Team Collaboration Level 3 Increasing Knowledge 1927"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Team Collaboration Level 3 Increasing Knowledge 1927"] = 7;
@@ -2370,12 +2370,12 @@ $project_times["Visionary Communication Level 3 Increasing Knowledge 2157"] = 7;
 $display_times["Visionary Communication Level 3 Increasing Knowledge 2157"] = "5 - 7 minutes";
 
 $projects["Visionary Communication Level 3 Increasing Knowledge 2163"] = __("Deliver Social Speeches - First Speech","rsvpmaker-for-toastmasters");
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2163"] = 7;
-$display_times["Visionary Communication Level 3 Increasing Knowledge 2163"] = "5 - 7 minutes";
+$project_times["Visionary Communication Level 3 Increasing Knowledge 2163"] = 4;
+$display_times["Visionary Communication Level 3 Increasing Knowledge 2163"] = "3 - 4 minutes";
 
 $projects["Visionary Communication Level 3 Increasing Knowledge 2164"] = __("Deliver Social Speeches - Second Speech","rsvpmaker-for-toastmasters");
-$project_times["Visionary Communication Level 3 Increasing Knowledge 2164"] = 7;
-$display_times["Visionary Communication Level 3 Increasing Knowledge 2164"] = "5 - 7 minutes";
+$project_times["Visionary Communication Level 3 Increasing Knowledge 2164"] = 4;
+$display_times["Visionary Communication Level 3 Increasing Knowledge 2164"] = "3 - 4 minutes";
 
 $projects["Visionary Communication Level 3 Increasing Knowledge 2169"] = __("Effective Body Language","rsvpmaker-for-toastmasters");
 $project_times["Visionary Communication Level 3 Increasing Knowledge 2169"] = 7;

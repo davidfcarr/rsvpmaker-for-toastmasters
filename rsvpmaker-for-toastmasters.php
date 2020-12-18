@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.0.9
+Version: 4.1.1
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1212,6 +1212,8 @@ function toastmasters_agenda_display($atts, $assignments) {
 				}
 			if(($i == $start) && !strpos($field,'Backup'))
 				$output .= 'TIMEBLOCKHERE';
+			else
+				$output .= '<span class="notime"></span>';
 			$output .= '<span class="role">'.$role;
 			if (!empty($atts["count"]) && ($atts["count"] > 1))
 			    {
@@ -1275,7 +1277,7 @@ function toastmasters_agenda_display($atts, $assignments) {
 		if($maxtime)
 			$output = str_replace('TIMEBLOCKHERE',$timeblock,$output);
 		else
-			$output = str_replace('TIMEBLOCKHERE','',$output);
+			$output = str_replace('TIMEBLOCKHERE','<span class="notime"></span>',$output);
 		if(isset($_REQUEST['word_agenda'])) // word doesn't handle the list numbering well
 			$output = preg_replace('/(<\/ul>|<\/li>|<ul>|<li>)/','',$output);
 return $output;			
@@ -2238,6 +2240,15 @@ function manual_type_options($field,$type) {
 	return sprintf('<div><select id="_manualtype_%s" class="manualtype">%s</select></div>',$field,$options);
 }
 
+function type_from_manual($manual) {
+	$type_manual = get_manuals_by_type();
+	foreach($type_manual as $type => $manual_array)
+	{
+		if(in_array($manual,$manual_array))
+			return $type;
+	}
+}
+
 function speaker_details ($field, $atts = array()) {
 $demo = (isset($atts['demo']));
 global $post;
@@ -2246,6 +2257,15 @@ $post_id = (isset($post) && isset($post->ID)) ? $post->ID : 0;
 $output = $title = $link = "";
 
 		$manual = (isset($post->ID)) ? get_post_meta($post->ID, '_manual'.$field, true) : '';
+
+		if(!empty($manual))
+		{
+			$type = type_from_manual($manual);
+			if(strpos($manual,'Non Manual'))
+				$type = 'Other';
+			$output .= manual_type_options($field,$type);
+		}
+
 		if(empty($manual) || strpos($manual,'hoose Manual') || strpos($manual,'elect Manual'))
 			{
 			if(is_edit_roles() || isset($_REQUEST["recommend_roles"]))
@@ -3439,6 +3459,22 @@ $last_attended_option .= '<option value="'.$i.'" '.$s.'>'.$i.'</option>';
 	</p>
 <p><?php _e('Avoid selecting members who have','rsvpmaker-for-toastmasters'); ?><ul><li><?php _e('not attended in more than','rsvpmaker-for-toastmasters'); ?> <select name="last_attended_limit"><?php echo $last_attended_option; ?></select> <?php _e('days'); echo '</li><li>'; _e('or who have filled the same role within','rsvpmaker-for-toastmasters'); ?> <select name="last_filled_limit"><?php echo $last_filled_option; ?></select> <?php _e('days');?></li></ul> <p><?php _e('Note: If you use the random assignment of members to roles, you may wish to have the software favor members who have attended the club recently but have not filled the same role within the last few weeks. This works best after your club has built up some history recording meetings in the software. Recommended reasonable settings: members who have attended more recently than 56 days (2 months) but have not filled the same role in the last 14 days.','rsvpmaker-for-toastmasters'); ?></p>
 
+<h3><?php _e("Legacy Manuals",'rsvpmaker-for-toastmasters');?> </h3>
+<?php
+$legacy = get_option('show_legacy_manuals');
+if($legacy == 'yes')
+{
+	$yeschecked = ' checked="checked" ';
+	$nochecked = '';
+}
+else {
+	$yeschecked = '';
+	$nochecked = ' checked="checked" ';
+}
+
+printf('<p>%s<br /><input type="radio" name="show_legacy_manuals" value="yes" %s /> %s <input type="radio" name="show_legacy_manuals" value="no" %s /> %s</p>',__('Show manuals from the legacy educational program (pre-Pathways) on speech signup drop-down list.','rsvpmaker-for-toastmasters'),$yeschecked,__('Yes','rsvpmaker-for-toastmasters'),$nochecked,__('No','rsvpmaker-for-toastmasters'));
+?>
+
 <h3><?php _e("Automatically Lock Agenda",'rsvpmaker-for-toastmasters');?> </h3>
 <p><select name="wpt_agenda_lock_policy">
 <?php 
@@ -3460,11 +3496,6 @@ for($i=30; $i <= 72; $i+=6)
 </select>
 <br /><em>You can set the agenda to be locked against changes one or more hours before the meeting start time. An administrator can remove the lock.</em>
 </p>
-
-<h3><?php _e("Member Role Planner",'rsvpmaker-for-toastmasters');?> </h3>
-<p>The planner allows members to sign up for roles several weeks in advance.</p>
-	<p>Promote planner on agenda signup pages? <select name="hide_planner_promo"><option value="">Yes</option><option value="no" <?php if(!empty(get_option('hide_planner_promo'))) echo ' selected="selected" ' ?> >No</option></select>
-	</p>
 
 <h3><?php _e("Page Containing Welcome Message",'rsvpmaker-for-toastmasters');?> </h3>
 <?php
@@ -3758,6 +3789,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'hide_planner_promo' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_contributor_notification' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_agenda_lock_policy' );
+	register_setting( 'wp4toastmasters-settings-group', 'show_legacy_manuals' );
 
 	if(isset($_POST['wp4toast_reminder']))
 		{
@@ -3975,7 +4007,7 @@ font-style: italic;
 .officer_entity {margin-top: 10px;}
 p.agenda_note, div.role-agenda-item, div.role-agenda-note {margin-top: 0; margin-bottom: 0; padding: 3px;}
 p.agenda_note {padding-left: 0;}
-span.timeblock {display: inline-block; width: 6em; margin: 0px; padding:3px;font-weight: bold;}
+span.timeblock, span.notime {display: inline-block; width: 6em; margin: 0px; padding:3px;font-weight: bold;}
 #agenda>div.indent {padding-left: 20px;}
 p.signup_note, .hideonagenda, .wp-block-wp4toastmasters-signupnote {display: none;}
 
@@ -9846,6 +9878,14 @@ if(current_user_can('edit_member_stats') && !in_array('update_history',$cleared)
 if(isset($_POST["sked"]))
 	delete_option('default_toastmasters_template');
 
+if(time() < 1612137600) {
+	if(empty(get_option('show_legacy_manuals')))
+	{
+		$message = __('The old (pre-Pathways) educational manuals are no longer displayed by default on the speech signup form. To restore them, visit Settings->Toastmasters.','rsvpmaker-for-toastmasters');
+		rsvptoast_admin_notice_format($message, 'show_legacy_manuals', $cleared, 'info');
+	}
+}
+
 if(!in_array('lectern',$cleared))
 {
 $my_theme = wp_get_theme();
@@ -10264,13 +10304,15 @@ function get_manuals_by_type_options($type) {
 	$types = get_manuals_by_type();
 	$manuals = $types[$type];
 	$o = '';
-	foreach($manuals as $manual => $label)
+	foreach($manuals as $manual => $label) {
 		$o .= sprintf('<option value="%s">%s</option>',$manual,$label);
+	}
 	return $o;
 }
 
 function get_manuals_by_type() {
-	return array(
+
+	$arr = array(
 	"Path Not Set" => array('Path Not Set Level 1 Mastering Fundamentals'=> __('Path Not Set Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')),
 	"Dynamic Leadership" => array(
 		'Dynamic Leadership Level 1 Mastering Fundamentals'=> __('Dynamic Leadership Level 1 Mastering Fundamentals','rsvpmaker-for-toastmasters')
@@ -10351,10 +10393,17 @@ function get_manuals_by_type() {
 	),
 	"Pathways 360" => array('Pathways 360 Level 5 Demonstrating Expertise'=> __('Pathways 360 Level 5 Demonstrating Expertise','rsvpmaker-for-toastmasters')),
 	"Pathways Mentor Program" => array('Pathways Mentor Program Level 1 Educational Program'=> __('Pathways Mentor Program Level 1 Educational Program','rsvpmaker-for-toastmasters')),
-	"Manual" => array("COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
-	),
 	"Other" => array("Other Manual or Non Manual Speech"=>__("Other Manual or Non Manual Speech",'rsvpmaker-for-toastmasters')) 
 	);
+
+	$legacy = get_option('show_legacy_manuals');
+
+if($legacy == 'yes')
+	$arr["Manual"] = array("COMPETENT COMMUNICATION" => __("COMPETENT COMMUNICATION",'rsvpmaker-for-toastmasters'),"ADVANCED MANUAL TBD" => __("ADVANCED MANUAL TBD",'rsvpmaker-for-toastmasters'),"COMMUNICATING ON VIDEO" => __("COMMUNICATING ON VIDEO",'rsvpmaker-for-toastmasters'),"FACILITATING DISCUSSION" => __("FACILITATING DISCUSSION",'rsvpmaker-for-toastmasters'), "HIGH PERFORMANCE LEADERSHIP" => "HIGH PERFORMANCE LEADERSHIP (ALS)","HUMOROUSLY SPEAKING" => "HUMOROUSLY SPEAKING","INTERPERSONAL COMMUNICATIONS"=>__("INTERPERSONAL COMMUNICATIONS",'rsvpmaker-for-toastmasters'),"INTERPRETIVE READING"=>__("INTERPRETIVE READING",'rsvpmaker-for-toastmasters'),"PERSUASIVE SPEAKING"=>__("PERSUASIVE SPEAKING",'rsvpmaker-for-toastmasters'),"PUBLIC RELATIONS"=>__("PUBLIC RELATIONS",'rsvpmaker-for-toastmasters'),"SPEAKING TO INFORM"=>__("SPEAKING TO INFORM",'rsvpmaker-for-toastmasters'),"SPECIAL OCCASION SPEECHES"=>__("SPECIAL OCCASION SPEECHES",'rsvpmaker-for-toastmasters'),"SPECIALTY SPEECHES"=>__("SPECIALTY SPEECHES",'rsvpmaker-for-toastmasters'),"SPEECHES BY MANAGEMENT"=>__("SPEECHES BY MANAGEMENT",'rsvpmaker-for-toastmasters'),"STORYTELLING"=>__("STORYTELLING",'rsvpmaker-for-toastmasters'),"TECHNICAL PRESENTATIONS"=>__("TECHNICAL PRESENTATIONS",'rsvpmaker-for-toastmasters'),"THE DISCUSSION LEADER"=>__("THE DISCUSSION LEADER",'rsvpmaker-for-toastmasters'),"THE ENTERTAINING SPEAKER"=>__("THE ENTERTAINING SPEAKER",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SALESPERSON"=>__("THE PROFESSIONAL SALESPERSON",'rsvpmaker-for-toastmasters'),"THE PROFESSIONAL SPEAKER"=>__("THE PROFESSIONAL SPEAKER",'rsvpmaker-for-toastmasters'),'BETTER SPEAKER SERIES' => __('BETTER SPEAKER SERIES','rsvpmaker-for-toastmasters'),'SUCCESSFUL CLUB SERIES'=> __('SUCCESSFUL CLUB SERIES','rsvpmaker-for-toastmasters'),'LEADERSHIP EXCELLENCE SERIES'=> __('LEADERSHIP EXCELLENCE SERIES','rsvpmaker-for-toastmasters')
+);
+
+return $arr;
+
 }
 
 function get_manuals_array() {

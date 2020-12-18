@@ -394,10 +394,15 @@ if(!empty($track_role))
 		$contestants[] = $contestant;
 	}
 }
-elseif(isset($_POST['contestant']))
-	foreach($_POST['contestant'] as $contestant)
+elseif(isset($_POST['contestant'])) {
+	foreach($_POST['contestant'] as $contestant) {
 		if(!empty($contestant))
 			$contestants[] = $contestant;
+	}
+	//allow user to clear the list of contestants by submitting an empty list
+	if(empty($contestants))
+		delete_post_meta($post->ID,'tm_scoring_contestants');
+}
 if(!empty($contestants))
 {
 	update_post_meta($post->ID,'tm_scoring_contestants',$contestants);
@@ -453,9 +458,6 @@ elseif(isset($_POST['contest_unlock']) && (($is_locked == $current_user->ID) || 
 
 if(isset($_POST['resetit']))
 {
-	//print_r($_POST['resetit']);
-	rsvpmaker_debug_log($_POST['resetit'],'contest reset');
-	rsvpmaker_debug_log(wp_get_current_user(),'contest reset by');
 
 	foreach($_POST['resetit'] as $reset)
 	{
@@ -465,19 +467,26 @@ if(isset($_POST['resetit']))
 			{
 				delete_post_meta($post->ID,'tm_scoring_vote'.$i);
 				delete_post_meta($post->ID,'tm_vote_received'.$i);
-				delete_post_meta($post->ID,'tm_subscore'.$i);	
+				delete_post_meta($post->ID,'tm_subscore'.$i);
 			}
+		delete_post_meta($post->ID,'_time_report');
+		delete_post_meta($post->ID,'_time_disqualified');
 		echo '<p>Scores reset</p>';			
 		}
 		
 		if($reset == 'judges')
 			delete_post_meta($post->ID,'tm_scoring_judges');
-		if($reset == 'order')
+		if($reset == 'deleteorder')
+		{
+		delete_post_meta($post->ID,'tm_scoring_order');
+		echo '<p>Speaking order deleted</p>';			
+		}
+		elseif($reset == 'order')
 		{
 		$order = $contestants;
 		shuffle($order);
 		update_post_meta($post->ID,'tm_scoring_order',$order);
-		echo '<p>Speaking order reset</p>';			
+		echo '<p>Speaking order reset (reshuffled)</p>';			
 		}
 	}
 }
@@ -510,6 +519,12 @@ if(!empty($contestants) && empty($order))
 elseif(!empty($order))
 {
 	echo '<h3>Speaking Order</h3>';
+	if(sizeof($order) != sizeof($contestants))
+		echo '<div style="color: red; font-weight: bold;">Order appears to be out of sync with contestant list.</div>';
+	foreach($contestants as $contestant) {
+		if(!in_array($contestant,$order))
+			printf('<div style="color: red; font-weight: bold;">Missing: %s</div>',$contestant);
+	}
 	foreach($order as $index => $next)
 	{
 		printf("<div>#%d %s</div>",$index + 1, $next);
@@ -594,7 +609,7 @@ $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
 if(empty($timer_code))
 {
 	$timer_code = time()+rand(1,99);
-	add_post_meta($post->ID,'tm_timer_code',$timer_code);
+	update_post_meta($post->ID,'tm_timer_code',$timer_code);
 }
 $timer_link = add_query_arg( array(
     'timer' => 1,
@@ -785,9 +800,10 @@ for($i= 0; $i < $dashlimit; $i++)
 
 <form method="post" action="<?php echo $actionlink; ?>">
 	<h2>Reset</h2>
-	<div><input type="checkbox" name="resetit[]" value="scores"> Scores</div>
-	<div><input type="checkbox" name="resetit[]" value="order"> Speaking Order</div>
+	<div><input type="checkbox" name="resetit[]" value="scores"> Scores and Timer's Report</div>
 	<div><input type="checkbox" name="resetit[]" value="judges"> Judges List</div>
+	<div><input type="checkbox" name="resetit[]" value="order"> Re-Shuffle Speaking Order</div>
+	<div><input type="checkbox" name="resetit[]" value="deleteorder"> Delete Speaking Order</div>
 	<button>Reset</button>
 </form>
 	</section>
@@ -941,8 +957,7 @@ $missing_votes = '';
 				$tiebreaker_status .= sprintf('<div>%s</div>',$vote);
 			}
 			
-			}
-				
+			}				
 		}
 		elseif(empty($votes))
 		{
@@ -1087,7 +1102,7 @@ if(isset($_REQUEST['judge']))
 	if(is_numeric($judge_name))
 	{
 	$dashboard_users = get_post_meta($post->ID,'tm_contest_dashboard_users',true);
-	//empty($ballot_no_password) && 
+	if(empty($dashbord_users)) $dashboard_users = array(); 
 	if(empty($ballot_no_password) && ($current_user->ID != $judge_name) && !in_array($current_user->ID,$dashboard_users))
 	{
 	echo wpt_mycontests();
@@ -1282,46 +1297,6 @@ foreach($order as $index => $name)
 	printf('<p><strong>Total <span id="sum%d">%s</span></strong></p>',$index,$score_me[$index]);
 }//end foreach order
 
-/*
-echo '<table><tr><th>Criteria</th><th>Max&nbsp;&nbsp;</th>';
-foreach($order as $index => $value)
-	printf('<th><input type="hidden" id="contestant%d" value="%s">%s</th>',$index,$value,$value);
-echo '</tr>';
-$category_count = 0;
-foreach($scoring as $category => $maxscore)
-	{
-	echo '<tr>';
-	printf('<td>%s</td><td>%s</td>',$category,$maxscore);
-	foreach($order as $index => $value)
-		{
-		$o = '';
-		if(!isset($score_me[$index]))
-			$score_me[$index] = 0;
-		if(isset($tm_subscores[$category_count][$index]))
-			$score_me[$index] += $tm_subscores[$category_count][$index];		   
-		if(isset($_GET['demo'])) 
-			$preselected = rand(2,$maxscore);
-		else
-			$preselected = 0;
-		for($i =0; $i <= $maxscore; $i++)
-		{
-			$s = (isset($tm_subscores[$category_count][$index]) && ($tm_subscores[$category_count][$index] == $i)) ? 'selected="selected" ' : '';
-			if($i == $preselected)
-				$s = 'selected="selected" ';
-			$o .= sprintf('<option value="%d" %s>%d </option>',$i,$s,$i);
-		}
-		printf('<td><select name="scores[%s][%s]" contestant="%d" class="score score%d">%s</select> </td>',$category_count,$index,$index,$index,$o);
-		}
-	echo '</tr>';
-	$category_count++;
-	}
-echo '<tr><td></td><td><strong>Total<strong></td>';
-
-foreach($order as $index => $value)
-	printf('<td><strong><span id="sum%d">%s</span></strong></td>',$index,$score_me[$index]);
-
-echo '</tr></table>';
-*/
 ?>
 
 <div id="autorank"><button id="autorank_now">Show Ranking</button></div>

@@ -4245,6 +4245,9 @@ $speeches = array();
 $speech_list = '';
 $editdetail = array();
 $lastdate = '';
+if(isset($_GET['start_date']))
+	$start_ts = strtotime($_GET['start_date']);
+
 	$sql = "SELECT * FROM `$wpdb->usermeta` WHERE user_id = $user_id AND meta_key LIKE 'tm|%' ORDER BY meta_key";//
 	$results = $wpdb->get_results($sql);
 	//print_r($results);
@@ -4264,6 +4267,13 @@ $lastdate = '';
 			$rolecount = $key_array[3];
 			$domain = $key_array[4];
 			$post_id = $key_array[5];
+			if(!empty($start_ts))
+			{
+			$event_ts = strtotime($event_date);
+			//rsvpmaker_debug_log(sprintf('<p>Start %s Event %s</p>',date('r',$start_ts),date('r',$event_ts)));
+			if($event_ts < $start_ts)
+				continue;
+			}
 			$roledata = unserialize($row->meta_value);
 			if(isset($_REQUEST["details"]))
 				{
@@ -4272,6 +4282,11 @@ $lastdate = '';
 				echo $domain.' ';
 				echo $post_id.'<br />';
 				}
+			if(empty($count[$role]))
+				$count[$role] = 1;
+			else
+				$count[$role]++;
+			$roledates[$role][] = date('M j Y',strtotime($event_date));
 			if($role == 'Speaker')
 				{
 				$manual = (empty($roledata['manual'])) ? 'Other' : $roledata['manual'];
@@ -4310,14 +4325,15 @@ $lastdate = '';
 				$speech_list .= '<pre>'.var_export($row,true).'</pre>';
 
 				}
-			else
+/*			else
 				{
-				if(empty($count[$role]))
+					if(empty($count[$role]))
 					$count[$role] = 1;
 				else
 					$count[$role]++;
 				$roledates[$role][] = date('M j Y',strtotime($event_date));
 				}
+*/
 		if((current_user_can('edit_member_stats')) || (($user_id == $current_user->ID) && current_user_can('edit_own_stats')) )
 		{
 			$form = '';
@@ -4600,7 +4616,7 @@ function wp4t_evaluations ($demo = false) {
 		$updated_text = "Never";
 		if($updated)
 			$updated_text = rsvpmaker_date('r',$updated);
-		printf('<div class="notice notice-info"><p>To check for updates, <a href="%s">download copies of the forms</a> from wp4toastmasters.com. Current as of: %s</p></div>',admin_url('admin.php?page=wp4t_evaluations&import_eval=1'),$updated_text);
+		printf('<div class="notice notice-info"><p><a href="%s">Check for updates</a> from wp4toastmasters.com. Current as of: %s</p></div>',admin_url('admin.php?page=wp4t_evaluations&import_eval=1'),$updated_text);
 	}
 
 if(!$demo)
