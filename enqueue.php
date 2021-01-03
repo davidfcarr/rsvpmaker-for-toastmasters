@@ -13,7 +13,7 @@ $ver = '2.5';
 
 function toastmasters_css_js() {
 	global $post;
-	$version = '3.5';
+	$version = '3.6';
 	if(is_admin() && (strpos($_SERVER['REQUEST_URI'],'edit.php') || (strpos($_SERVER['REQUEST_URI'],'post.php') && empty($_GET['page'])) || strpos($_SERVER['REQUEST_URI'],'post-new.php')) )
 		return; // don't load all this in editor or post listings
     if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && 
@@ -43,6 +43,12 @@ function toastmasters_css_js() {
 	) {
 		wp_enqueue_script('wp-tinymce');
 	}
+    if( isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'wp4t_setup_wizard')) {
+		wp_enqueue_script('password-strength-meter');
+		wp_enqueue_script('user-profile');
+		//wp_enqueue_script( 'pwstr', admin_url('js/password-strength-meter-min.js'));
+		//wp_enqueue_script( 'wpuser', admin_url('js/user-profile-min.js'));
+	} 
 }
 
 function wpt_fetch_report($report, $user_id) {

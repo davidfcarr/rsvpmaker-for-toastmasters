@@ -63,6 +63,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
+= 4.1.3 =
+
+* Enhancements to setup wizard, including option for password reset with strength meter.
+
 = 4.1.2 =
 
 * Setup wizard added to simplify configuration, particularly for those who are new to WordPress.

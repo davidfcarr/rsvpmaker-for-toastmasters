@@ -3203,7 +3203,6 @@ function tm_sync_fields($user) {
 unset($user['home_phone']);
 unset($user['work_phone']);
 unset($user['mobile_phone']);
-unset($user['user_email']);
 return $user;	
 }
 
@@ -3282,7 +3281,13 @@ tm_admin_page_bottom($hook);
 
 function tm_member_welcome_redirect() {
 	global $current_user;
-	if(isset($_REQUEST["forget_welcome"]))
+	if(isset($_GET['page']) && $_GET['page'] == 'wp4t_setup_wizard' )
+	{
+		//don't interfere with setup wizard
+		add_user_meta($current_user->ID,'tm_member_welcome',time());
+		return;
+	}
+	if(isset($_REQUEST["forget_welcome"]) )
 		{
 		delete_user_meta($current_user->ID,'tm_member_welcome');
 		wp_logout();
