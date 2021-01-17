@@ -727,5 +727,3 @@ function is_tm_officer($user_id = 0) {
 		return false;
 	return !empty($officers[$user_id]);
 }
-
-?>
