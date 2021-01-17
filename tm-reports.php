@@ -38,6 +38,7 @@ add_submenu_page( 'toastmasters_admin_screen', __('Import/Export','rsvpmaker-for
 //add_submenu_page( 'toastmasters_screen', __('Sync','rsvpmaker-for-toastmasters'), __('Sync','rsvpmaker-for-toastmasters'), 'manage_options', 'wpt_json', 'wpt_json');
 add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
 add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
+add_submenu_page( 'toastmasters_admin_screen', __('Setup Wizard','rsvpmaker-for-toastmasters'), __('Setup Wizard','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard');
 
 add_submenu_page( 'toastmasters_admin', __('Support This Project','rsvpmaker-for-toastmasters'), __('Support This Project','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_support', 'toastmasters_support');
 

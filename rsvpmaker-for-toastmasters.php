@@ -24,6 +24,7 @@ include 'tm-online-application.php';
 include 'api.php';
 include 'mailster.php';
 include 'enqueue.php';
+include 'setup-wizard.php';
 
 function wpt_gutenberg_check () {
 global $carr_gut_test;
@@ -9860,51 +9861,8 @@ if(isset($_REQUEST["meetings_nag"]) && ($_REQUEST["meetings_nag"] == 0))
 		update_option('cleared_rsvptoast_notices',$cleared);
 	}
 
-if(current_user_can('edit_member_stats') && !in_array('update_history',$cleared))
-	{
-		$count = $wpdb->get_var("SELECT count(*) FROM $wpdb->posts WHERE post_type='rsvpmaker' ");
-		if($count < 5)
-			{//new site, not a surprise
-			$cleared[] = 'update_history';
-			update_option('cleared_rsvptoast_notices',$cleared);
-			}
-		else
-			{
-			$message = sprintf(__('The Reconcile screen has been renamed Update History and can now be used to record backdated information such as speeches delivered before you started using this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/07/updating-member-history/">blog post</a> for explanation of this and related changes.</p><p><a href="%s">Got it: stop showing this notice.</a>','rsvpmaker-for-toastmasters'), admin_url('admin.php?page=toastmasters_reconcile&cleared_rsvptoast_notices=update_history') );
-			rsvptoast_admin_notice_format($message, 'update_history', $cleared, 'info');
-			}
-	}
-
 if(isset($_POST["sked"]))
 	delete_option('default_toastmasters_template');
-
-if(time() < 1612137600) {
-	if(empty(get_option('show_legacy_manuals')))
-	{
-		$message = __('The old (pre-Pathways) educational manuals are no longer displayed by default on the speech signup form. To restore them, visit Settings->Toastmasters.','rsvpmaker-for-toastmasters');
-		rsvptoast_admin_notice_format($message, 'show_legacy_manuals', $cleared, 'info');
-	}
-}
-
-if(!in_array('lectern',$cleared))
-{
-$my_theme = wp_get_theme();
-$theme_name = $my_theme->get( 'Name' );
-if($theme_name != 'Lectern')
-	{
-	if(file_exists( get_theme_root().'/lectern/style.css' ) )
-	{
-		$message = sprintf(__('The Lectern theme (recommended for Toastmasters branding) is installed but not active. <a href="%s">Activate now</a> or <a href="%s">No thanks,</a> I prefer another theme.','rsvpmaker-for-toastmasters'),admin_url('themes.php?search=Lectern#lectern-action'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=lectern') );
-		rsvptoast_admin_notice_format($message, 'lectern', $cleared, 'info');
-	}
-	else
-	{
-		$message = sprintf(__('The Lectern theme (recommended for Toastmasters branding) is not installed or activated. <a href="%s">Install it now</a> or <a href="%s">No thanks,</a> I prefer another theme.','rsvpmaker-for-toastmasters'),admin_url('theme-install.php?theme=lectern'), admin_url('options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=lectern'));		
-		rsvptoast_admin_notice_format($message, 'lectern', $cleared, 'info');
-	}
-	return;
-	}
-}
 
 if(!get_option('page_on_front') && !in_array('front',$cleared))
 	{
