@@ -245,7 +245,8 @@ function tm_application_form_choice($slug, $choices) {
 }
 
 function member_application_settings () {
-echo '<h1>Toastmasters Application Form</h1>';
+echo '<div style="width: 800px;"><div style="float: right;"><a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/"><button>Setup Instructions</button></a></div>';
+echo '<h1>Toastmasters Application Form</h1></div>';
 
 global $wpdb;
 $sql = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
@@ -316,15 +317,16 @@ if(empty($public) || empty($secret))
 {
 ?>
 <h3>Stripe Online Payment Service</h3>
-<p>To enable online payments, obtain these credentials from stripe.com.</p>
+<p>To enable online payments, obtain these credentials from stripe.com. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/online-payments-for-dues-and-events/">Learn How</a></p>
 <p>Publishable Key:<br />
 	<input name="rsvpmaker_stripe_pk" value="<?php echo get_option('rsvpmaker_stripe_pk'); ?>"></p>
 <p>Secret Key:<br />
 	<input name="rsvpmaker_stripe_sk" value="<?php echo get_option('rsvpmaker_stripe_sk'); ?>"></p>
 <?php
+printf('<p>Additional options, including test or "sandbox" payment key setup, in <a href="%s">RSVPMaker settings</a>.</p>',admin_url('https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php&tab=payments'));
 }
 else
-    printf('<p><strong>Stripe Online Payments: Enabled</strong> <a href="%s">RSVPMaker settings</a>.</p>',admin_url('https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php'));
+    printf('<p><strong>Stripe Online Payments: Enabled</strong> <a href="%s">RSVPMaker settings</a>.</p>',admin_url('https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php&tab=payments'));
 
 if(empty($apppage))
     printf('<p><input type="checkbox" name="addpage" value="1" checked="checked"> Create a page where the application will be displayed.</p>');

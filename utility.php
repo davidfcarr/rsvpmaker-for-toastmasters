@@ -718,5 +718,14 @@ function wpt_set_last_login($user_id) {
 	update_post_meta($user_id,'wpt-last-login',time());
 }
 
+function is_tm_officer($user_id = 0) {
+	global $current_user;
+	if(!$user_id)
+		$user_id = $current_user->ID;
+	$officers = get_option('wp4toastmasters_officer_ids');
+	if(empty($officers))
+		return false;
+	return !empty($officers[$user_id]);
+}
 
 ?>

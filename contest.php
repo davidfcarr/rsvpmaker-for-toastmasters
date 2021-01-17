@@ -35,6 +35,7 @@ function toast_contest ($mode) {
 	global $post, $rsvp_options;
 	$date = get_rsvp_date($post->ID);
 	$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
+	$dashboard_name = (empty($contest_name)) ? $post->post_title : $contest_name;
 	$date = strftime($rsvp_options['long_date'],strtotime($date));
 	$mycontests = get_permalink().'?scoring=mycontests';
 	if(!is_user_logged_in())
@@ -42,18 +43,24 @@ function toast_contest ($mode) {
 	$output = '<div id="scoring">';		
 	if($mode == 'dashboard')
 	{
-		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="'.$mycontests.'">My Contests</a></div>';
-		$output .= '<h1>Scoring Dashboard - '.$date.' '.$post->post_title.'</h1>';
+		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="'.$mycontests.'">My Contests</a><br /><a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/category/contests/">Help</a></div>';
+		$output .= '<h1>Scoring Dashboard - '.$date.' '.$dashboard_name.'</h1>';
+		$related = get_post_meta($post->ID,'_contest_related',true);
+		if($related) {
+			$contest_name = get_post_meta($related,'toast_contest_name',true);
+			printf('<p>Related: <a target="_blank" href="%s?scoring=dashboard">%s</a></p>',get_permalink($related),$contest_name);
+		}
 		$output .= toast_scoring_dashboard();
 	}
 	elseif($mode == 'voting')
 	{
-		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="'.$mycontests.'">My Contests</a></div>';
-		$output .= '<h1>Voting - '.$date.' '.$post->post_title.'</h1>';
+		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a target="_blank" href="'.$mycontests.'">My Contests</a><br /><a href="https://www.wp4toastmasters.com/knowledge-base/digital-ballot-for-toastmasters-contests/">Help</a><br /><a target="_blank" href="https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1">Practice Ballot</a></a></div>';
+		$output .= '<h1>Voting - '.$date.' '.$dashboard_name.'</h1>';
 		$output .= toast_scoring_sheet();	
 	}
 	elseif($mode == 'mycontests')
 		{
+		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><p><a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/category/contests/">Help</a></p></div>';
 		$output .= '<h1>My Contests</h1>';
 		$output .= wpt_mycontests();
 		}
@@ -137,7 +144,7 @@ if(!is_user_logged_in()) {
 			$t = strtotime($datetime);
 		//if($_GET['debug'])
 			//print_r($row);
-			if($_GET['debug'])
+			if(isset($_GET['debug']))
 				print_r($row);
 			$date = date('F j, Y',$t);
 			$link = get_post_meta($row->post_id,'contest_link_'.$current_user->ID,true);
@@ -230,6 +237,41 @@ else
 	}
 }
 
+$default_dashboard_users = array($current_user->ID);
+
+if(!empty($_POST['contest_scoring2']))
+{
+	$scoring_index = $_POST['contest_scoring2'];
+	$contest_scoring = $contest_selection[$scoring_index];
+	$timing = $contest_timing[$scoring_index];
+	$data['post_title'] = $scoring_index;
+	$data['post_content'] = '[wpt_contests_prompt]';
+	$data['post_author'] = $current_user->ID;
+	$data['post_type'] = 'rsvpmaker';
+	$data['post_status'] = 'publish';
+	$id = wp_insert_post($data);
+	if(!empty($contest_scoring))
+	{
+		update_post_meta($id,'toast_contest_name',$scoring_index);
+		update_post_meta($id,'toast_contest_scoring',$contest_scoring);
+		update_post_meta($id,'toast_timing',$timing);
+		update_post_meta($id,'_rsvpmaker_special','Contest document');
+		update_post_meta($id,'_contest_tracking_post',$post->ID);
+		update_post_meta($id,'_contest_related',$post->ID);
+		update_post_meta($id,'_rsvp_dates',get_rsvp_date($post->ID));
+		update_post_meta($post->ID,'_contest_related',$id);
+		update_post_meta($id,'tm_contest_dashboard_users',$default_dashboard_users);
+		$track_role = $_POST['track_role2'];
+		if(!empty($track_role))
+			update_post_meta($id,'tm_track_role',$track_role);
+		if($id) {
+			$rp = get_post($id);
+			printf('<p>Created related contest: <a target="_blank" href="%s?scoring=dashboard">%s</a></p>',get_permalink($id),$rp->post_title);
+		}
+	
+	}
+}
+
 if(!empty($_POST['contest_scoring']))
 {
 	$scoring_index = $_POST['contest_scoring'];
@@ -240,6 +282,7 @@ if(!empty($_POST['contest_scoring']))
 		update_post_meta($post->ID,'toast_contest_name',$scoring_index);
 		update_post_meta($post->ID,'toast_contest_scoring',$contest_scoring);
 		update_post_meta($post->ID,'toast_timing',$timing);		
+		update_post_meta($post->ID,'tm_contest_dashboard_users',$default_dashboard_users);
 	}
 }
 elseif(!empty($_POST['scoring_label'])) {
@@ -282,9 +325,11 @@ $output .= '<p>Use this dashboard to pick a contest, add your list of contestant
 $output .= '<h1>Choose Contest</h1>'.sprintf('<form method="post" action="%s">
 	<div>Contest:<br /><select name="contest_scoring">%s</select>
 	%s
+	<div>Contest #2 (optional):<br /><select name="contest_scoring2">%s</select>
+	%s
 		<button>Set</button></div>
 </form>
-',$actionlink,$options,$syncrole);
+',$actionlink,$options,track_roles_ui(),$options,track_roles_ui('',2));
 	
 $output .= '<h1>Custom Contest</h1>'.sprintf('<form method="post" action="%s" id="custom_contest"><p>Contest Name: <input type="input" name="contest_name" value="My Custom Contest" /></p>
 ',$actionlink);
@@ -320,6 +365,13 @@ $('form#custom_contest').submit(function(){
 $output .= ob_get_clean();
 
 return $output;
+}
+
+if(!empty($_POST['copy_judges'])) {
+	$copyfrom = (int) $_POST['copy_judges'];
+	update_post_meta($post->ID,'tm_scoring_judges', get_post_meta($copyfrom,'tm_scoring_judges',true) );
+	update_post_meta($post->ID,'tm_scoring_tiebreaker', get_post_meta($copyfrom,'tm_scoring_tiebreaker',true) );
+	update_post_meta($post->ID,'contest_timer', get_post_meta($copyfrom,'contest_timer',true) );
 }
 
 if(isset($_POST['track_role']))
@@ -370,12 +422,14 @@ if(isset($_POST['tm_scoring_dashboard_users']))
 
 if(!empty($track_role))
 {
+	$signup = get_post_meta($post->ID,'_contest_tracking_post',true);
+	$track_from = ($signup) ? $signup : $post->ID;
 	$miss = 0;
 	$field_base = '_'.preg_replace('/[^a-zA-Z0-9]/','_',$track_role);
 	for($i = 1; $i <20; $i++)
 	{
 		$lookup = $field_base.'_'.$i;
-		$contestant = get_post_meta($post->ID,$lookup,true);
+		$contestant = get_post_meta($track_from,$lookup,true);
 		if(empty($contestant))
 		{
 			$miss++;
@@ -439,7 +493,7 @@ if(!empty($judge))
 }
 
 if(empty($contestants))
-	$contestants = get_post_meta($post->ID,'tm_scoring_contestants',true);
+	$contestants = toast_get_contestants($post->ID);
 $judges = get_post_meta($post->ID,'tm_scoring_judges',true);
 
 $is_locked = get_post_meta($post->ID,'contest_locked', true);
@@ -604,6 +658,8 @@ foreach($judges as $key => $value)
 $dashboard_forms .= dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
 }
 
+echo '<p>Practice link you can share with judges:<br /><a target="_blank" href="https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1">https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1</a></p>';
+
 echo '<div class="votinglink"><h3>Timer</h3>';
 $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
 if(empty($timer_code))
@@ -707,9 +763,23 @@ if($is_locked) {
 	echo 'Settings are locked';
 }
 else {
+	$related = get_post_meta($post->ID,'_contest_related',true);
+	if(empty($judges) && $related) {
+		$contest_name = get_post_meta($related,'toast_contest_name',true);
+		printf('<form method="post" action="%s"><input type="hidden" name="copy_judges" value="%d">
+		<p>Copy judges and timer from %s?</p>
+		<p><button>Copy</button></p></form>',$actionlink,$related,$contest_name);
+		echo '<p>Or enter below</p>';
+	}
 ?>	
 	<form method="post" action="<?php echo $actionlink ?>" >
 <?php
+	$related = get_post_meta($post->ID,'_contest_related',true);
+	if($related) {
+		$contest_name = get_post_meta($related,'toast_contest_name',true);
+	}
+
+
 	if(is_array($judges))
 	foreach($judges as $index => $value)
 	{
@@ -916,11 +986,15 @@ $output .= ob_get_clean();
 return $output;
 }
 
+function toast_get_contestants($post_id) {
+return get_post_meta($post_id,'tm_scoring_contestants',true);
+}
+
 function toast_scoring_update_get($post_id) {
 $judges = get_post_meta($post_id,'tm_scoring_judges',true);
 if(empty($judges))
 	return 'Judges not set';
-$contestants = get_post_meta($post_id,'tm_scoring_contestants',true);
+$contestants = toast_get_contestants($post_id);
 if(empty($contestants))
 	return 'Contestants not set';
 
@@ -968,6 +1042,8 @@ $missing_votes = '';
 		else
 		{
 			$output .= '<h3>'.$judge.'</h3>';
+			$signature = get_post_meta($post_id,'tm_scoring_signature'.$index,true);
+			$output .= sprintf('<div>Signed: %s</div>',$signature);
 			$votes_recorded = true;
 			foreach($votes as $i => $vote)
 			{
@@ -1048,21 +1124,6 @@ else
 return $output;
 }
 
-function toast_scores_check($post_id) {
-	$judges = get_post_meta($post_id,'tm_scoring_judges',true);
-	if(empty($judges))
-		return array();
-	$contestants = get_post_meta($post_id,'tm_scoring_contestants',true);
-	if(empty($contestants))
-		return array();
-	
-		foreach($judges as $index => $judge) {
-			$votes = get_post_meta($post_id,'tm_scoring_vote'.$index,true);
-			$vote_array[$index] = !empty($votes);
-		}
-	return $vote_array;
-}//end toast_scores_check
-	
 function toast_scoring_update () {
 	if(!isset($_GET['toast_scoring_update']))
 		return;
@@ -1074,7 +1135,6 @@ add_action('init','toast_scoring_update');
   
 function toast_scoring_sheet() {
 ob_start();
-//$contestants = array('Adrienne Williams','John M. Quick','Carol Prahinski','Louis Brown','Norman Dowe','G. Murali');
 global $post;
 global $current_user;
 $votinglink = $actionlink = get_permalink($post->ID);
@@ -1088,7 +1148,7 @@ $actionlink .= '?scoring=dashboard';
 $votinglink .= '?scoring=voting';	
 }
 
-$contestants = get_post_meta($post->ID,'tm_scoring_contestants',true);
+$contestants = toast_get_contestants($post->ID);
 $judges = get_post_meta($post->ID,'tm_scoring_judges',true);
 $tiebreaker = get_post_meta($post->ID,'tm_scoring_tiebreaker',true);
 $ballot_no_password = get_post_meta($post->ID,'ballot_no_password',true);
@@ -1109,14 +1169,13 @@ if(isset($_REQUEST['judge']))
 	printf('<p>You must <a href="%s">login</a> to access this judge\'s voting form.</p>',wp_login_url($_SERVER['REQUEST_URI']));
 	return;
 	}
-	$userdata = get_userdata($judge_name);
-	$judge_name = $userdata->first_name.' '.$userdata->last_name;	
+	$judge_name = get_member_name($judge_name);
 	}
 }
 elseif( is_user_logged_in() )
 {
 	$id = $judge_id = array_search($current_user->ID,$judges);
-	$name = $current_user->display_name;
+	$name = get_member_name($judge_id);
 	if( !$id)
 		echo '<div style="color: red;">Logged in user is not on the list of judges</div>';
 }
@@ -1130,14 +1189,14 @@ if(! $id )
 do_action('wpt_voting_form_top');
 printf('<p><em>Voting Form for %s</em></p>',$judge_name);
 
-if(isset($_POST['vote']))
+if( isset($_POST['signature']) && empty($_POST['signature']) )
+	echo '<div style="color: red; padding: 20px;">Error: Signature left blank</div>';
+elseif(isset($_POST['vote']))
 	{
 		update_post_meta($post->ID,'tm_scoring_vote'.$id,$_POST['vote']);
+		update_post_meta($post->ID,'tm_scoring_signature'.$id,$_POST['signature'].' - '.$_POST['signature_date']);
 		rsvpmaker_debug_log($_POST,'contest_vote_submitted');
-		//print_r($_POST);
 	}
-if(isset($_POST['scores']))
-	update_post_meta($post->ID,'tm_subscore'.$id,$_POST['scores']);
 
 if(isset($_GET['reset']))
 	$votes = false;
@@ -1160,7 +1219,7 @@ if(is_array($votes) && !isset($_GET['judge_id']))
 if(empty($blanks))
 {
 	echo '<p>Keep this page open until you confirm your votes have been received properly.</p>';
-	echo '<p><button>Resubmit</button></p>';
+	echo '<p><button>Resubmit</button></p><p><em>Resubmit does not resubmits your previous vote (does not allow you to change your vote). Only use if there is a problem with votes showing up on the voting dashboard monitored by conference officials.</em></p>';
 ?>
 <script>
 jQuery(document).ready(function($) {
@@ -1211,7 +1270,7 @@ echo '</form>';
 $order = get_post_meta($post->ID,'tm_scoring_order',true);
 if(empty($order))
 	{
-		echo '<p>Refresh this page once the contestant order has been set. To practice, you can use <a href="https://contest.toastmost.org/rsvpmaker/international-speech-contest-division-demo/?scoring=voting&judge=1584220677">this demo</a>.</p>';
+		echo '<p>Refresh this page once the contestant order has been set. To practice, you can use <a href="https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1">this demo</a>.</p>';
 ?>
 <div id="order_status"></div>
 <script>
@@ -1321,8 +1380,11 @@ $max = (($tiebreaker == $id) || ($contestant_count < 3)) ? $contestant_count : 3
 
 for($i= 1; $i <= $max; $i++)
 	printf('<div><select class="voteselect" name="vote[]"><option value="">Vote #%d</option>%s</select></div>',$i,$vote_opt);
+global $rsvp_options;
 ?>
-<input type="checkbox" id="readytovote" value="1" /> Record these choices as the vote of <?php echo $judge_name; ?>
+<div>Signature: <input type="text" name="signature" id="signature"> Date <input type="text" name="signature_date" value="<?php echo rsvpmaker_strftime($rsvp_options['long_date'],time()); ?>" />
+<br /><em>By typing your name and verifying the date, you are signing this ballot as your official vote</em></div>
+
 <div id="readyprompt"></div>
 <input type="hidden" name="judge_id" value="<?php echo $id; ?>" />
 <button>Vote</button>
@@ -1375,21 +1437,6 @@ scoreArr[contestant].score = score;
 
 let findDuplicates = arr => arr.filter((item, index) => arr.indexOf(item) != index);
 
-/*
-$('.voteselect').change(function(){
-	var votes = $('.voteselect');
-	console.log(votes);
-	let findDuplicates = arr => arr.filter((item, index) => arr.indexOf(item) != index);
-	//let dups = findDuplicates(votes);
-	//if(dups) {
-		$("#readyprompt").html('<span style="color: red;">You cannot vote for the same contestant twice.</span>');
-		console.log('duplicates:');
-		//console.log(dups);
-		//return false;
-	//}
-}); 
-*/
-
 $('form#voting').submit(function(){
 	var empty = false;
 	var votes = $('.voteselect');
@@ -1407,12 +1454,12 @@ $('form#voting').submit(function(){
        $("#readyprompt").html('<span style="color: red;">One or more votes left blank</span>');
 		return false;			
 		}
-
-    if (! $('#readytovote').is(':checked')){
-       $("#readyprompt").html('<span style="color: red;">You must check the checkbox first</span>');
+	
+    if ( $('#signature').val() == ''){
+       $("#readyprompt").html('<span style="color: red;">You must complete your signature before you are allowed to vote</span>');
        return false;
 	}
-	
+
 	let findDuplicates = arr => arr.filter((item, index) => arr.indexOf(item) != index);
 	let dups = findDuplicates(checkvotes);
 	if(dups.length) {
@@ -1538,7 +1585,7 @@ function judge_import_form($action) {
 	}	
 }
 
-function track_roles_ui($track_role = '') {
+function track_roles_ui($track_role = '', $slug = '') {
 	global $post;
 	if(strpos($post->post_content,'wp:wp4toastmasters'))
 {
@@ -1566,10 +1613,8 @@ else
 	$track .= sprintf('<option value="%s" %s>%s</option>',$role,$s,$role);
 }
 
-return sprintf('<p>Sync With Agenda Role for Contestants <br /><select id="track_role" name="track_role" >%s<option value="cancel">Cancel Selection</option></select></p>',$track_top.$track);
+return sprintf('<p>Sync With Agenda Role for Contestants <br /><select id="track_role" name="track_role%s" >%s<option value="cancel">Cancel Selection</option></select></p>',$slug,$track_top.$track);
 
 }
 
 }
-
-?>

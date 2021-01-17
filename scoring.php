@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="profile" href="http://gmpg.org/xfn/11">
 <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
-<title>Scoring <?php if($_GET['scoring'] == 'dashboard') echo 'Dashboard';?> - <?php global $post; echo $post->post_title; ?></title>
+<?php
+global $post;
+$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
+$dashboard_name = (empty($contest_name)) ? $post->post_title : $contest_name;
+?>
+<title><?php global $post; echo $dashboard_name; ?> - Scoring <?php if($_GET['scoring'] == 'dashboard') echo 'Dashboard';?></title>
 
 <?php
 	wp_head(); 

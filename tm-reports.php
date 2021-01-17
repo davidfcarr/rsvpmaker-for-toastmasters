@@ -4762,7 +4762,18 @@ Other Comments';
 	$mail["to"] = (isset($_POST['speaker_email'])) ? $_POST['speaker_email'] : $speaker_user->user_email;
 	$mail["from"] = $evaluator->user_email;
 	$mail["fromname"] = $evaluator->display_name;
-	awemailer($mail);		
+	awemailer($mail);
+
+	if($demo) {
+		$mail["subject"] = 'Copy: '.$subject;
+		$mail["replyto"] = $evaluator->user_email;
+		$mail["html"] = "<html>\n<body>\n".$evaluation."\n</body></html>";
+		$mail["to"] = $evaluator->user_email;
+		$mail["from"] = $evaluator->user_email;
+		$mail["fromname"] = $evaluator->display_name;
+		awemailer($mail);	
+	}//demo mode as on toastmost public page
+
 	}
 
 	}
@@ -5061,7 +5072,8 @@ echo '<h3>Evaluations of My Speeches</h3>';
 		$timestamp = $parts[1];
 		$project = $parts[2];
 		$project_text = get_project_text($project);
-		printf('<p><a target="_blank" href="%s">%s %s</a></p>', site_url('?show_evaluation='.$key), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
+		$excerpt = substr(strip_tags($row->meta_value),0,200);
+		printf('<p><a target="_blank" href="%s">%s %s</a><br />%s</p>', site_url('?show_evaluation='.$key), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)), $excerpt )."\n";
 	}
 }
 
@@ -5070,7 +5082,7 @@ echo '<h3>Evaluations of My Speeches</h3>';
 		<section class="rsvpmaker" id="others">
 <?php
 	
-$sql = "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'evaluation|%".$current_user->user_login."' ORDER BY meta_key DESC";
+$sql = "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'evaluation|%|".$current_user->user_login."' ORDER BY meta_key DESC";
 $results = $wpdb->get_results($sql);
 if($results)
 {
@@ -5083,7 +5095,8 @@ echo '<h3>My Evaluations of Others</h3>';
 		$timestamp = $parts[1];
 		$project = $parts[2];
 		$project_text = get_project_text($project);
-		printf('<p><a target="_blank" href="%s">%s %s</a></p>', site_url('?show_evaluation='.$key.'&member_id='.$row->user_id), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)) )."\n";
+		$excerpt = substr(strip_tags($row->meta_value),0,200);
+		printf('<p><a target="_blank" href="%s">%s %s</a><br />%s</p>', site_url('?show_evaluation='.$key.'&member_id='.$row->user_id), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)),$excerpt )."\n";
 	}
 }
 ?>

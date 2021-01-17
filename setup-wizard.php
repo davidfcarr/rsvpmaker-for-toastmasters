@@ -79,7 +79,12 @@ $agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"'.$
 $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","count":"1","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"'.$time_tod.'","padding_time":"0"} /-->'."\n\n";
 $rarr = explode(',',stripslashes($_POST['otherroles']));
 foreach($rarr as $role)
-    $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"'.$role.'","count":"1","time_allowed":"0","padding_time":"0"} /-->'."\n\n";
+    {
+        $role = trim($role);
+        if(empty($role))
+            continue;
+        $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"'.$role.'","count":"1","time_allowed":"0","padding_time":"0"} /-->'."\n\n";
+    }
 if($_POST['tabletopics'] == 'before')
     $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"'.(int) $_POST['time_tt'].'","padding_time":"0"} /-->'."\n\n";
 
@@ -259,6 +264,8 @@ elseif($_REQUEST['setup_wizard'] == '1')
 elseif($_REQUEST['setup_wizard'] == '2')
     wpt_setup_wizard_3();
 
+do_action('wpt_wizard_post');
+
 echo '<div>';
 }
 
@@ -290,7 +297,7 @@ function wpt_setup_wizard_1 () {
     <p>Supporting roles on your agenda (separated by commas)
     <br /><input type="text" name="otherroles" value="Ah Counter, Body Language Monitor, Grammarian, Humorist, Timer, Vote Counter" style="width: 80%;" />
     </p>
-    <p><label>Number of Speakers at a Typical Meeting </label> <select name="numberspeakers">
+    <p><label>Number of Speakers and Evaluators at a Typical Meeting </label> <select name="numberspeakers">
     <option value="1">1</option>
     <option value="2">2</option>
     <option value="3" selected="selected">3</option>
@@ -308,8 +315,6 @@ function wpt_setup_wizard_1 () {
     <option value="end">end of the meeting</option>
     <option value="">no Table Topics</option>
     </select> Time Allowed <input name="time_tt" value="10" /></p>
-    <p><label>Reports</label><br /> <textarea name="reports" style="width: 80%;">General Evaluator calls for reports from supporting players. General Evaluator then gives an overall evaluation of the meeting.</textarea><br />Time Allowed <input name="time_ge" value="5" /></p>
-    <p><label>Meeting Closing Activities</label><br /> <textarea name="closing" style="width: 80%;">Toastmaster of the Day presents the awards. President or Presiding officer closes the meeting.</textarea><br />Time Allowed <input name="time_closing" value="4" /></p>
     <p><label>Break</label> <select name="break">
     <option val="">None</option>
     <option value="before">before speakers</option>
@@ -318,6 +323,8 @@ function wpt_setup_wizard_1 () {
     <select>
     Time Allowed <input name="time_break" value="5" />
     </p>
+    <p><label>Reports</label><br /> <textarea name="reports" style="width: 80%;">General Evaluator calls for reports from supporting players. General Evaluator then gives an overall evaluation of the meeting.</textarea><br />Time Allowed <input name="time_ge" value="5" /></p>
+    <p><label>Meeting Closing Activities</label><br /> <textarea name="closing" style="width: 80%;">Toastmaster of the Day presents the awards. President or Presiding officer closes the meeting.</textarea><br />Time Allowed <input name="time_closing" value="4" /></p>
     <p><label>Include Theme and/or Word of the Day on the Agenda</label> <input type="radio" name="theme" value="1" checked="checked" /> Yes <input type="radio" name="theme" value="0" > No
     <label>Label</label>  <input name="theme_label" value="Theme and Word of the Day" style="width: 20em;" /></p>
     <p><label>Include Member Absences Widget</label> <input type="radio" name="absences" value="1" checked="checked" /> Yes <input type="radio" name="absences" value="0" > No</p>
@@ -380,10 +387,11 @@ function wpt_setup_wizard_2 () {
     <option value="editor">Editor</option>
     <option value="author">Author</option>
    </select></blockquote>
-<?php
+<?php 
 }
 ?>
    <p>Note on security roles: You may want to assign another Administrator who will have security rights equal to your own. A Manager can do most of the same things as an administrator, including adding user accounts, but cannot change the basic settings of the website. An Editor can add and edit pages and blog posts. An author can post to the blog but cannot edit other people's content.</p>
+    <?php do_action('wpt_wizard_screen_2'); ?>
     <input type="hidden" name="setup_wizard" value="2" />
     <?php submit_button('Next'); ?>
     </form>
@@ -398,51 +406,52 @@ function wpt_setup_wizard_3 () {
     $upcoming = future_rsvpmakers_by_template($template_id);
     $next = $upcoming[0];
     $frontpage_id = get_option( 'page_on_front' );
+    ob_start();
     ?>
     <h2>Next Steps</h2>
 <div id="bullets">
+<h3>Basics</h3>
     <ul>
-    <li><a target="_blank" href="<?php echo admin_url('post.php?post='.$frontpage_id.'&action=edit'); ?>">Edit your home page</a> - tell everyone what makes your club special! See the documentation on how to use the WordPress editor below.</li>
+    <li><a target="_blank" href="<?php echo admin_url('post.php?post='.$frontpage_id.'&action=edit'); ?>">Edit your home page</a> - tell everyone what makes your club special! <a target="_blank" href="">Learn about the WordPress editor</a>.</li>
     <li>View the <a target="_blank" href="<?php echo get_permalink($next); ?>">signup page</a> and <a target="_blank" href="<?php echo get_permalink($next); ?>?print_agenda=1&no_print=1">agenda</a> for a meeting. Try signing up for a role. Explore the different options on the agenda menu, such as how to email it to the club. Ask club officers or other trusted users to test these features as well.</li>
-    <li>Open your primary <a target="_blank" href="<?php echo admin_url('post.php?post='.$template_id.'&action=edit'); ?>">agenda template in the WordPress editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. Documentation below.</li>
+    <li>Once things are starting to look good, <a target="_blank" href="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">add members</a> to your club website. You can save time by importing the member roster spreadsheet you can get from Club Central on toastmasters.org. <a target="blank" href="https://www.wp4toastmasters.com/2018/10/05/video-how-to-import-your-member-list-then-add-and-accounts-after-dues-renewal/">Learn How</a></li>
+</ul>
+<h3>Further Enhancements</h3>
+<ul>
+    <li>Open your primary <a target="_blank" href="<?php echo admin_url('post.php?post='.$template_id.'&action=edit'); ?>">agenda template in the WordPress editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/">Learn How</a></li>
     <li><strong>Meeting online?</strong> <a target="_blank" href="<?php echo admin_url('post.php?post='.$rsvp_options['rsvp_confirm'].'&action=edit'); ?>">Edit the confirmation message for guest registrations</a> to include the details about how to access your online meetings.</li>
-    <li>Check out the design options available in the <a target="_blank" href="<?php echo admin_url('customize.php?return=%2Fwp-admin%2F'); ?>">Customize</a> tool.</li>
-    <li>Once things are starting to look good, <a target="_blank" href="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">add members</a> to your club website. You can save time by importing the member roster spreadsheet you can get from Club Central on toastmasters.org.</li>
+    <li>Check out the design options available in the <a target="_blank" href="<?php echo admin_url('customize.php?return=%2Fwp-admin%2F'); ?>">Customize</a> tool. <a target="_blank" href="https://www.wp4toastmasters.com/2020/11/09/video-change-the-look-of-your-club-website/">Learn How</a></li>
+    <li>Set up the <a target="_blank" href="<?php echo admin_url('options-general.php?page=member_application_settings'); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/">Learn How</a></li>
+    <li>Learn to <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/where-to-find-things-administration-menus/">navigate the admin menus</a>. Where to find the various options, other than through this setup wizard.</li>
+    <li>Explore the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a> for additional options.</li>
     </ul>
+
+<?php do_action('wpt_wizard_screen_3'); ?>
+
 </div>
-
+<?php
+    $message = ob_get_flush();
+    if(!empty($_POST['setup_wizard'])) {
+        global $current_user;
+        $wpt_next_steps = get_user_meta($current_user->ID,'wpt_next_steps',true);
+        if(!$wpt_next_steps) {
+            $mail['html'] = $message."\n\n".'<p>For how-to documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>.</p>';
+            $mail['subject'] = 'Next steps after completing the Toastmasters setup wizard';
+            $mail['to'] = $current_user->user_email;
+            $mail['from'] = 'david@wp4toastmasters.com';
+            $mail['fromname'] = 'WordPress for Toastmasters setup wizard';
+            rsvpmailer($mail);
+            echo 'sending next steps by email';
+            update_user_meta($current_user->ID,'wpt_next_steps',true);
+        }
+    }
+?>
 <h2>Documentation</h2>
-<p>For more complete documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>. Some of the essential articles you should review when getting started are excerpted below.</p>
+<p>For more complete documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>. The article embedded below explains one of the fundamental concepts you need to understand for working with either marketing content or agendas.</p>
 
-	<h4 class="entry-title">Edit Posts, Pages, and Blocks of Content</h4>
+<iframe src="https://www.wp4toastmasters.com/knowledge-base/editing-pages-posts-and-meeting-agendas/?as_iframe=1" width="100%;" height="5000"></iframe>
 
-<p>The WordPress editor organizes content into <em>blocks</em> representing different content types. The default block is the paragraph. When you create a new post, enter the title, and hit ENTER, and start typing in the main content area of the editor, you are creating paragraph blocks.</p>
-
-<p>To add other types of blocks, click the + button (appears both at the top of the page and in the left hand margin when you add a blank line).</p>
-
-<figure class="wp-block-image size-large"><a target="_blank" href="https://www.wp4toastmasters.com/wp-content/uploads/2021/01/block-plus.jpg"><img src="https://i0.wp.com/www.wp4toastmasters.com/wp-content/uploads/2021/01/block-plus.jpg" /></a><figcaption>Insert block buttons</figcaption></figure>
-
-<figure class="wp-block-image size-large"><a target="_blank" href="https://www.wp4toastmasters.com/wp-content/uploads/2021/01/block-select-search.jpg"><img src="https://i1.wp.com/www.wp4toastmasters.com/wp-content/uploads/2021/01/block-select-search.jpg"  /></a><figcaption>Select and search for blocks</figcaption></figure>
-<!--  width="614" height="240" width="614" height="497"  -->
-<p><a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/how-to-add-wordpress-blocks-content-types/">Read More</a></p>
-
-<h4 class="entry-title">Meeting Templates and Meeting Events</h4>
-<p>The WordPress for Toastmasters agenda management system is defined around a system of event templates and individual event posts, or documents, that define the structure of your meetings. Members can then sign up for roles (or meeting organizers can assign them).</p>
-<p>The event documents are organized using the RSVPMaker WordPress plugin. The WordPress for Toastmasters system uses a separate plugin (RSVPMaker for Toastmasters) to add agenda management features. Within the WordPress editor, you use <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/add-or-edit-an-agenda-role/">Agenda Role</a> and <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/add-an-agenda-note/">Agenda Note</a> content blocks to structure your agenda. Other available content blocks include <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/editable-agenda-blocks/">Editable Note</a> and <a target="_blank" href="https://www.wp4toastmasters.com/2018/04/11/tracking-planned-absences-agenda/">Toastmasters Absences</a>.</p>
-<figure class="wp-block-image size-large"><a target="_blank" href="https://www.wp4toastmasters.com/wp-content/uploads/2021/01/agenda-role-block-properties.jpg"><img  src="https://www.wp4toastmasters.com/wp-content/uploads/2021/01/agenda-role-block-properties-1024x499.jpg" alt="" class="wp-image-1138710"/></a><figcaption>Agenda Role block</figcaption></figure>
-<figure class="wp-block-image size-large"><a target="_blank" href="https://www.wp4toastmasters.com/wp-content/uploads/2021/01/agenda-note-block-properties.jpg"><img  src="https://www.wp4toastmasters.com/wp-content/uploads/2021/01/agenda-note-block-properties-1024x517.jpg" alt="" class="wp-image-1138712"/></a><figcaption>Agenda Note block</figcaption></figure>
-<p>You can plan the time associated with different events on your agenda using the <strong>Time Allowed</strong> fields that appear in the sidebar of both Agenda Role and Agenda Note blocks. Agenda Role blocks also allow you to set a <strong>Count</strong> -- which, for example, is how you you would change the number of speaker openings that appear on the agenda and the signup form.</p>
-<p><a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/">Read More</a></p>
-    
-
-<h4 class="entry-title">Batch Creation of User Accounts</h4>
-<p>This wizard helps you add a few selected user accounts for members. The easiest way to add all your members is to download the member spreadsheet from Club Central on Toastmasters.org and import it into your club website.</p>
-<p><a target="_blank" href="https://www.wp4toastmasters.com/2018/10/05/video-how-to-import-your-member-list-then-add-and-accounts-after-dues-renewal/">Read More</a></p>
-
-<h4 class="entry-title">Change the Look of Your Club Website</h4>
-<p>If you don't like how your website looks, you can change it. Follow the link below to learn how to change the overall design of your site and style selected elements like headlines and the background color for pages.</p>
-<p><a target="_blank" href="https://www.wp4toastmasters.com/2020/11/09/video-change-the-look-of-your-club-website/">Read More</a></p>
-    <?php    
+<?php
 }
 
 function wpt_wizard_password() {
@@ -476,11 +485,7 @@ function wpt_wizard_password() {
         <th scope="row"><label for="pass2"><?php _e( 'Repeat New Password' ); ?></label></th>
         <td>
         <input name="pass2" type="password" id="pass2" class="regular-text" value="" autocomplete="off" aria-describedby="pass2-desc" />
-                <?php if ( IS_PROFILE_PAGE ) : ?>
-                    <p class="description" id="pass2-desc"><?php _e( 'Type your new password again.' ); ?></p>
-                <?php else : ?>
                     <p class="description" id="pass2-desc"><?php _e( 'Type the new password again.' ); ?></p>
-                <?php endif; ?>
         </td>
     </tr>
     <tr class="pw-weak">

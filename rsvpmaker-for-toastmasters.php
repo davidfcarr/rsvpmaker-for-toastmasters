@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.1.3
+Version: 4.1.5
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -290,7 +290,15 @@ if(!empty($upcoming_roles))
 <p><a href="<?php echo site_url(); ?>"><?php _e("Home Page",'rsvpmaker-for-toastmasters');?></a>
 <br /></p>
 <?php
-if(current_user_can('email_list') && function_exists('rsvpmaker_relay_active_lists') && $lists = rsvpmaker_relay_active_lists() )
+if(function_exists('get_club_email_lists')) {
+//toastmost specific 
+$toastmost_lists = get_club_email_lists();
+if(!empty($toastmost_lists['member']))
+	printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$toastmost_lists['member'],$toastmost_lists['member']);
+if(is_tm_officer() && !empty($toastmost_lists['officer']))
+	printf('<p>'.__("Private email list for officers",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a></p>',$toastmost_lists['officer'],$toastmost_lists['officer']);
+}
+elseif(current_user_can('email_list') && function_exists('rsvpmaker_relay_active_lists') && $lists = rsvpmaker_relay_active_lists() )
 	{
 		if(!empty($lists['member']))
 		printf('<p>'.__("Email all members",'rsvpmaker-for-toastmasters').': <a href="mailto:%s" target="_blank">%s</a> ('.__('for club business or social invitations, no spam please','rsvpmaker-for-toastmasters').')<br /></p>',$lists['member'],$lists['member']);
@@ -1301,6 +1309,8 @@ function toastmaster_short($atts=array(),$content="") {
 		return '<div class="role-block role-agenda-item"><p><strong>'.$atts["special"].'</strong></p></div>';	
 	elseif(empty($atts["role"]) )
 		return;
+	if(isset($atts['role']))
+		$atts['role'] = trim($atts['role']);
 	if(($atts["role"] == 'custom') )
 		{
 		if(empty($atts["custom_role"]))
@@ -3214,6 +3224,8 @@ if(empty($contributor_notification))
 echo '<h3>Contributor Notifications</h3><p>'.__('Users assigned the Contributor role may submit blog posts for publication, but they must be approved by an author or editor. Who should be notified when contributor posts are submitted for review?','rsvpmaker-for-toastmasters').'<p>';
 printf('<p><input type="text" name="wpt_contributor_notification" value="%s" size="150" /><br /><em>%s</em></p>',$contributor_notification, __('One or more email addresses, separated by commas. If you do not want these notifications, enter "none"','rsvpmaker-for-toastmasters'));
 
+if(!function_exists('toastmost_club_email_list') )
+{
 echo '<h2>Communications Options</h2>';
 do_action('wpt_mailing_list_message');
 if(function_exists('rsvpmaker_relay_init'))
@@ -3287,6 +3299,8 @@ if(isset($_REQUEST["mailman_add_officers"]))
 <?php
 	}//end show mailman options
 }
+
+}//end test for Toastmost email list options
 ?>
 <h3>Messages</h3>
 <p><?php _e("Message for Login Page",'rsvpmaker-for-toastmasters');?><br />
