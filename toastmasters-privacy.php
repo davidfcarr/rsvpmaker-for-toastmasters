@@ -159,5 +159,3 @@ function rsvptoast_plugin_add_privacy_policy_content() {
     );
 }
 add_action( 'admin_init', 'rsvptoast_plugin_add_privacy_policy_content' );
-
-?>

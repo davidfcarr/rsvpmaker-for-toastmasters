@@ -2569,5 +2569,3 @@ foreach($manuals as $manual => $display_name) {
             }
     }
 }
-
-?>

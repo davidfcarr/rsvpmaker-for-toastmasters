@@ -364,4 +364,3 @@ add_action('rest_api_init', function () {
 	 $repo = new WPTM_Reports();
 	 $repo->register_routes();
    } );
-?>

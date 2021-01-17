@@ -55,4 +55,3 @@ function wpt_fetch_report($report, $user_id) {
 printf('<div id="%s_content">Loading ...</div>',$report);
 }
 
-?>

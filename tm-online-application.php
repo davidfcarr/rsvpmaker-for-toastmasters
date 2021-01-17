@@ -627,4 +627,3 @@ function tm_application_menus () {
     add_submenu_page( 'member_application_approval','Add File or Link', 'Add File or Link', 'edit_users', 'member_application_upload', 'member_application_upload');
 }
 add_action('admin_menu','tm_application_menus');
-?>

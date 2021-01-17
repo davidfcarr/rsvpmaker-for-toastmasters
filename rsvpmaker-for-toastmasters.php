@@ -13384,5 +13384,3 @@ function toastmasters_shared_templates() {
 }
 
 add_action('import_shared_template_prompt','toastmasters_shared_templates');
-
-?>
