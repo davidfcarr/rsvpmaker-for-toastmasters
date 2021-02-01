@@ -21,6 +21,7 @@ input,select {max-width: 45%}
 	input.setscore {width: 50px;}
 	h2.nav-tab-wrapper {
 	margin:22px 0 0 0;
+	padding-bottom: 30px;
 }
 
 #sections {
@@ -77,6 +78,17 @@ section.nav-tab-active {
 }
 a {
 	color: blue;
+}
+.other {
+	display: none;
+}
+h1, h2, h3, h4 {
+	clear: none;
+}
+.email_links {display: none;}
+#voting label {
+	display: inline-block;
+	width: 100px;
 }
 </style>
 </head>

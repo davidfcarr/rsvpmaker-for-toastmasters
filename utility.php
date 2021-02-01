@@ -169,8 +169,21 @@ function next_toastmaster_meeting () {
 return get_next_rsvpmaker(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ");
 }
 
-function get_club_members () {
-	return get_users(array('blog_id' => get_current_blog_id(),'orderby' => 'display_name') );
+function get_club_members ($blog_id = 0) {
+	if(empty($blog_id))
+		$blog_id = get_current_blog_id();
+	return get_users(array('blog_id' => $blog_id,'orderby' => 'display_name') );
+}
+
+function get_club_member_emails ($blog_id = 0) {
+	if(empty($blog_id))
+		$blog_id = get_current_blog_id();
+	$members = get_users(array('blog_id' => $blog_id,'orderby' => 'display_name') );
+	$emails = array();
+	foreach($members as $member) {
+		$emails[] = strtolower($member->user_email);
+	}
+	return $emails;
 }
 
 function is_officer() {
@@ -179,10 +192,64 @@ function is_officer() {
 	return (is_array($officer_ids) && in_array($current_user->ID,$officer_ids));
 }
 
+function wpt_multiple_blocks_same( $post_id, $post_after, $post_before ) {
+	static $newcontent;
+	if(!empty($newcontent)) // prevent running more than once
+		return;
+	$content = $post_after->post_content;
+
+	$newcontent = '';
+$role_counter = $multiples = $role_occur = array();
+if(strpos($content,'wp:wp4toastmasters/role')) {
+    preg_match_all('/{"role":[^}]+}/',$content,$matches);
+    foreach($matches[0] as $match) {
+        $data = json_decode($match);
+        $role_counter[$data->role] = empty($role_counter[$data->role]) ? 1 : $role_counter[$data->role]+1;
+        $occur_index = $role_counter[$data->role];
+        $role_occur[$data->role][$occur_index] = ($occur_index == 1) ? $data->count : $role_occur[$data->role][$occur_index-1] + $data->count;
+    }
+    foreach($role_counter as $role => $count) {
+        if($count > 1) {
+          $multiples[$role] = (empty($multiples[$role])) ? 1 : $multiples[$role] + 1;
+        }
+    }
+    if($multiples)
+    {
+        foreach($multiples as $role => $multiple) {
+            $lines = explode("\n",$content);
+            $newcontent = '';
+            foreach($lines as $line) {
+                if(strpos($line,'"role":"'.$role.'"')) {
+                    if(!empty($found[$role]))
+                        {
+                            $start = $role_occur[$role][$found[$role]] + 1;
+                            $startvar = ',"start":"'.$start.'"}';
+                            //if not already added
+                            if(!strpos($line,$startvar)) {
+                                if(strpos($line,'"start"'))
+                                	$line = preg_replace('/"start":"\d{1,2}/','"start":"'.$start,$line);
+                                else
+                                	$line = str_replace('}',',"start":"'.$start.'"}',$line);
+                            } 
+                        }
+                    $found[$role] = (empty($found[$role])) ? 1 : $found[$role] + 1;
+                }
+            $newcontent .= $line."\n";
+            }
+        }
+    $post_array = array("ID" => $post_id, "post_content" => $newcontent);
+    wp_update_post($post_array); 
+    }
+}
+}
+add_action( 'post_updated', 'wpt_multiple_blocks_same', 10, 3 );
+
 function get_role_assignments($post_id, $atts) {
+	$role = $atts["role"];
+	$start = (empty($atts["start"])) ? 1 : $atts["start"];
+
 	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
 	$count = (int) (isset($atts["count"])) ? $atts["count"] : 1;
-	$start = (empty($atts['start'])) ? 1 : $atts['start'];
 	if($atts["role"] == 'Speaker')
 		pack_speakers($count);
 	elseif($count > 1)
@@ -494,6 +561,70 @@ function wpt_blocks_to_data($content, $include_backup = true, $aggregate = false
 return $data;
 }
 
+function wpt_blocks_to_data2($content, $include_backup = true, $aggregate = false) {
+	$data = array();
+	if(strpos($content,'wp:wp4toast'))
+	{
+	$blocks = preg_split("/<!/",$content);
+	foreach($blocks as $index => $block)
+	{
+		if(strpos($block,'agendanoterich2'))
+		{
+			preg_match('/{[^}]+}/',$block,$matches);
+			if(!empty($matches))
+			{
+			$thisdata = (array) json_decode($matches[0]);
+			$thisdata['content'] = trim(strip_tags('<'.$block.'>'));
+			$thisdata['json'] = $matches[0];
+			$data[] = $thisdata;				
+			}
+		}
+		else
+		{
+			preg_match('/{[^}]+}/',$block,$matches);
+			if(!empty($matches))
+			{
+			$thisdata =	(array) json_decode($matches[0]);
+			$thisdata['json'] = $matches[0];
+			if(!empty($thisdata['role']))
+			{
+				$key = $thisdata['role'];
+				if($key == 'custom')
+					$key = $thisdata['role'] = $thisdata['custom_role'];
+				if(!$aggregate)
+				$key .= (empty($thisdata['start'])) ? 1 : $thisdata['start'];
+			}
+			elseif(!empty($thisdata['uid']))
+				$key = $thisdata['uid'];
+			else
+				$key = 'other'.$index;
+			$data[] = $thisdata;
+			}
+
+			if(!empty($thisdata['backup']) && $include_backup)
+			{
+				$key = $backup['role'] = 'Backup '.$thisdata['role'];
+				$backup['count'] = 1;
+				$data[] = $backup;
+			}
+		}
+	}
+	//printf('<pre>%s</pre>',var_export($data,true));
+	return $data;
+	}
+	
+	preg_match_all('/\[.+role="([^"]+).+\]/',$content,$matches);
+	foreach($matches[1] as $index => $role)
+	{
+		if(strpos($role,'ackup'))
+			continue;
+		preg_match('/count="([\d]+)/',$matches[0][$index],$counts);
+		$count = (empty($counts[1])) ? 1 : $counts[1];
+		$data[$role] = array('role' => $role, 'count' => $count);
+	}
+return $data;
+}
+
 //project data encoding
 function make_tm_speechdata_array ($roledata, $manual, $project, $title, $intro) {
 	$roledata['manual'] = $manual;
@@ -726,4 +857,40 @@ function is_tm_officer($user_id = 0) {
 	if(empty($officers))
 		return false;
 	return !empty($officers[$user_id]);
+}
+
+add_shortcode('time_planner_2020','time_planner_2020');
+
+function time_planner_minutes_select($index,$minutes) {
+	$output = sprintf('<select class="timeadjust" id="timeadjust%d" counter="%d">',$index,$index);
+	for($i = 0; $i < 61; $i++) {
+		$s = ($i == $minutes) ? ' selected="selected" ' : '';
+		$output .= sprintf('<option %s value="%s">%s</option>',$s,$i,$i);
+	}
+}
+function time_planner_2020 ($atts) {
+	global $post, $rsvp_options;
+	$t = strtotime(get_rsvp_date($post->ID));
+	$output = sprintf('<h3>Start at %s</h3>',date('H:i',$t));
+	$addminutes = 0;
+	$data = wpt_blocks_to_data2($post->post_content);
+	foreach($data as $index => $row) {
+		if(!empty($row['role'])){
+			$output .= sprintf('<h3>%s %s</h3>',date('H:i',$t),$row['role']);
+			$padding = (empty($row['padding_time'])) ? '' : " (including ".$row['padding_time']." minutes padding time)";
+			$roleminutes = (int) $row['padding_time'] + (int) $row['time_allowed'];
+			$output .= sprintf('<p>%s minutes %s</p>',$roleminutes,$padding);
+			$t += ($roleminutes * 60);
+		}
+		elseif(!empty($row['time_allowed'])) {
+			$output .= sprintf('<h3>%s %s</h3>',date('H:i',$t),$row['content']);
+			$noteminutes = (int) $row['time_allowed'];
+			$t += $noteminutes;
+			$t += ($noteminutes * 60);
+			$output .= sprintf('<p>%s minutes</p>',$noteminutes);
+		}
+	}
+	$output .= sprintf('<h3>%s Done</h3>',date('H:i',$t));
+	$output .=  '<pre>'.var_export($data,true).'</pre>';
+	return $output;
 }

@@ -1,7 +1,11 @@
 ﻿body
 {
-    font-family: 'Segoe UI', sans-serif
+    font-family: 'Segoe UI', sans-serif;
+    padding-left: 3px;
 }
+
+#voting {background-color: #fff;}
+#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
 
 .label {
   font-size: 100%;
@@ -30,19 +34,19 @@ span {
     text-align: right;
     height: 25px;
     line-height: 20px;
-    width: 95px;
+    width: 120px;
     display: inline-block;
 }
 
 button.colorbuttons {
 display: block;
-width: 95px;
+width: 120px;
 text-align: center;
 margin-top: 2px;
 }
 
 select {
-    width: 95px;
+    width: 120px;
 }
 
 #red-light, button#rednow
@@ -62,11 +66,11 @@ select {
 }
 
 .greenyellowred, .timefield {
-    width: 95px;
+    width: 120px;
 }
 
 #dropdowntime, #speakername {
-    width: 95px;
+    width: 120px;
 }
 
 #correction {
@@ -75,28 +79,6 @@ select {
 
 #buttons {
     display: none;
-}
-.speech-type
-{
-    padding:3px;
-    margin: 3px;
-	font-size: 10px;
-    background-color: #E0EAF1;
-    color: #3E6D8E;
-    border-radius: 3px;
-    box-shadow: 3px 3px 5px #535353;
-}
-
-.speech-type:hover
-{
-    background-color: #3E6D8E;
-    color: #E0EAF1;
-    cursor: pointer;
-}
-
-.active-speech
-{
-    background-color: #acf;
 }
 
 #credit {
@@ -121,16 +103,23 @@ select {
 #jitsi {
     position: absolute;
     top: 30px;
-    left: 100px;
+    left: 150px;
+    width: 80%;
+    height: 100%;
 }
 
 #timelog {
-	width: 95px;
+	width: 120px;
     font-size: 10px;
+    background-color: #fff;
 }
 .speech-type {
     margin-bottom: 1px;
     margin-left: 10px;
     display: block;
     width: 60px;
+}
+
+#viewcontrol {
+    text-align: center;
 }

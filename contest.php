@@ -37,80 +37,38 @@ function toast_contest ($mode) {
 	$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
 	$dashboard_name = (empty($contest_name)) ? $post->post_title : $contest_name;
 	$date = strftime($rsvp_options['long_date'],strtotime($date));
-	$mycontests = get_permalink().'?scoring=mycontests';
-	if(!is_user_logged_in())
-		$mycontests = wp_login_url($mycontests);
-	$output = '<div id="scoring">';		
+	$output = '<div id="scoring">';
+	$practice = get_practice_contest_links();
+	$output .= wpt_mycontests_links($practice);
 	if($mode == 'dashboard')
 	{
-		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="'.$mycontests.'">My Contests</a><br /><a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/category/contests/">Help</a></div>';
 		$output .= '<h1>Scoring Dashboard - '.$date.' '.$dashboard_name.'</h1>';
 		$related = get_post_meta($post->ID,'_contest_related',true);
 		if($related) {
-			$contest_name = get_post_meta($related,'toast_contest_name',true);
-			printf('<p>Related: <a target="_blank" href="%s?scoring=dashboard">%s</a></p>',get_permalink($related),$contest_name);
+			$other_contest_name = get_post_meta($related,'toast_contest_name',true);
+			$otherprompt = (isset($_POST['judge']) && !empty(get_post_meta($post->ID,'tm_contest_sync',true))) ? ' - Reload '.$other_contest_name.' dashboard to see synchronized list of judges': '';
+			printf('<p>Related: <a target="_blank" href="%s?scoring=dashboard">%s</a> %s</p>',get_permalink($related),$other_contest_name, $otherprompt);
 		}
-		$output .= toast_scoring_dashboard();
+		$output .= toast_scoring_dashboard($related, $practice);
 	}
 	elseif($mode == 'voting')
 	{
-		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a target="_blank" href="'.$mycontests.'">My Contests</a><br /><a href="https://www.wp4toastmasters.com/knowledge-base/digital-ballot-for-toastmasters-contests/">Help</a><br /><a target="_blank" href="https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1">Practice Ballot</a></a></div>';
 		$output .= '<h1>Voting - '.$date.' '.$dashboard_name.'</h1>';
 		$output .= toast_scoring_sheet();	
 	}
 	elseif($mode == 'mycontests')
 		{
-		$output .= '<div style="width: 150px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><p><a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/category/contests/">Help</a></p></div>';
 		$output .= '<h1>My Contests</h1>';
 		$output .= wpt_mycontests();
+		}
+	elseif($mode == 'shuffle')
+		{
+			$output .= wpt_shuffle_contestants();
 		}
 	else
 		return "<div>Error: scoring mode not recognized</div>";
 	$output .= '</div>';// close wrapper		
 return $output;
-}
-
-//todo remove this after current crisis
-function contest_user_fix() {
-$future = get_future_events();
-foreach($future as $event) {
-	printf('<h1>%s %s</h1><div>%s</div>',$event->post_title,$event->date,var_export($event, true));
-
-	$permalink = get_permalink($event->ID);
-	$users = get_post_meta($event->ID,'tm_contest_dashboard_users',true);
-	echo '<br />dashboard users';
-	print_r($users);
-	$users[] = $event->post_author;
-	foreach($users as $user_id) {
-		$userdata = get_userdata($user_id);
-		$link = $permalink.'?scoring=dashboard';
-		add_contest_userlink($user_id,$link,$event->ID);
-		printf('<p>%s %s</p>',$userdata->display_name,$link);
-		//update_post_meta($event->ID,'contest_link_'.$user_id,$permalink.'?scoring=dashboard');
-	}
-	$judges = get_post_meta($event->ID,'tm_scoring_judges',true);
-	foreach($judges as $key => $user_id) {
-		if(is_numeric($user_id))
-			{
-				$userdata = get_userdata($user_id);
-				$link = $permalink.'?scoring=voting&judge='.$key;
-				printf('<p>%s %s</p>',$userdata->display_name,$link);
-				add_contest_userlink($user_id,$link,$event->ID);
-				$users[] = $user_id;
-			}
-	}
-
-	$timer = get_post_meta($event->ID,'contest_timer',true);
-	if($timer) {
-		$code = get_post_meta($event->ID,'tm_timer_code',true);
-		$link = $permalink.'?timer=1&contest='.$code;
-		add_contest_userlink($timer,$link,$event->ID);
-		$userdata = get_userdata($timer);
-		printf('<p>%s %s</p>',$userdata->display_name,$link);
-		$users[] = $timer;
-	}
-	print_r($users);
-}//end future
 }
 
 add_shortcode('wpt_contests_prompt','wpt_contests_prompt');
@@ -119,6 +77,195 @@ function wpt_contests_prompt ($atts) {
 		return sprintf('<p>Judges/Organizers: see <a href="%s">contest links</a></p>',get_permalink().'?scoring=mycontests');
 	else
 		return sprintf('<p>Judges/Organizers: <a href="%s">login</a> to see assignments</p>',wp_login_url(get_permalink().'?scoring=mycontests'));	
+}
+
+function wpt_shuffle_contestants() {
+	global $post;
+	$contestants = get_post_meta($post->ID,'tm_scoring_contestants',true);
+	$order = get_post_meta($post->ID,'tm_scoring_order',true);
+	$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
+	if(isset($_POST['shuffle']))
+	{
+		$order = $contestants;
+		shuffle($order);
+		update_post_meta($post->ID,'tm_scoring_order',$order);
+		echo '<p>Speaking order set</p>';
+	}
+	if(empty($order)) {
+		echo '<h1>Order Not Set - '.$contest_name.'</h1>';
+		sort($contestants);
+		foreach($contestants as $contestant)
+		{
+			printf('<p>%s</p>',$contestant);
+		}
+		printf('<form method="post" action="%s"><button>Set Speaking Order</button><input type="hidden" name="shuffle" value="1"></form>',get_permalink($post->ID).'?scoring=shuffle');
+	}
+	else {
+		echo '<h1>Speaker Order  - '.$contest_name.'</h1>';
+		foreach($order as $index => $contestant)
+		{
+			printf('<p id="text%d">%s</p>',$index,$contestant);
+		}
+?>
+  <script>
+	
+	jQuery(document).ready(function($) {
+	
+	var hasrun = false;
+
+	var ShuffleText = (function () {
+	    /**
+	     * Constructor.
+	     * @param element DOMã‚¨ãƒ¬ãƒ¡ãƒ³ãƒˆ
+	     */
+	    function ShuffleText(element) {
+	        /**
+	         * The string for random text.
+	         * ãƒ©ãƒ³ãƒ€ãƒ ãƒ†ã‚­ã‚¹ãƒˆã«ç”¨ã„ã‚‹æ–‡å­—åˆ—ã§ã™ã€‚
+	         * @type {string}
+	         * @default 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+	         */
+	        this.sourceRandomCharacter = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+	        /**
+	         * The string for effect space.
+	         * ç©ºç™½ã«ç”¨ã„ã‚‹æ–‡å­—åˆ—ã§ã™ã€‚
+	         * @type {string}
+	         * @default '-'
+	         */
+	        this.emptyCharacter = '-';
+	        /**
+	         * The milli seconds of effect time.
+	         * ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®å®Ÿè¡Œæ™‚é–“ã§ã™ã€‚
+	         * @type {number}
+	         * @default 600
+	         */
+	        this.duration = 600;
+	        this._isRunning = false;
+	        this._originalStr = '';
+	        this._originalLength = 0;
+	        this._timeCurrent = 0;
+	        this._timeStart = 0;
+	        this._randomIndex = [];
+	        this._requestAnimationFrameId = 0;
+	        this._element = element;
+	        this.setText(element.innerHTML);
+	    }
+	    /** ãƒ†ã‚­ã‚¹ãƒˆã‚’è¨­å®šã—ã¾ã™ã€‚ */
+	    ShuffleText.prototype.setText = function (text) {
+	        this._originalStr = text;
+	        this._originalLength = text.length;
+	    };
+	    Object.defineProperty(ShuffleText.prototype, "isRunning", {
+	        /**
+	         * It is running flag. å†ç”Ÿä¸­ã‹ã©ã†ã‹ã‚’ç¤ºã™ãƒ–ãƒ¼ãƒ«å€¤ã§ã™ã€‚
+	         * @returns {boolean}
+	         */
+	        get: function () {
+	            return this.isRunning;
+	        },
+	        enumerable: true,
+	        configurable: true
+	    });
+	    /** å†ç”Ÿã‚’é–‹å§‹ã—ã¾ã™ã€‚ */
+	    ShuffleText.prototype.start = function () {
+			if(hasrun)
+				return;
+	        var _this = this;
+	        this.stop();
+	        this._randomIndex = [];
+	        var str = '';
+	        for (var i = 0; i < this._originalLength; i++) {
+	            var rate = i / this._originalLength;
+	            this._randomIndex[i] = Math.random() * (1 - rate) + rate;
+	            str += this.emptyCharacter;
+	        }
+	        this._timeStart = new Date().getTime();
+	        this._isRunning = true;
+	        this._requestAnimationFrameId = requestAnimationFrame(function () {
+	            _this._onInterval();
+	        });
+	        this._element.innerHTML = str;
+	    };
+	    /** åœæ­¢ã—ã¾ã™ã€‚ */
+	    ShuffleText.prototype.stop = function () {
+	        this._isRunning = false;
+	        cancelAnimationFrame(this._requestAnimationFrameId);
+	    };
+	    ShuffleText.prototype.dispose = function () {
+	        this.sourceRandomCharacter = null;
+	        this.emptyCharacter = null;
+	        this._isRunning = false;
+	        this.duration = 0;
+	        this._originalStr = null;
+	        this._originalLength = 0;
+	        this._timeCurrent = 0;
+	        this._timeStart = 0;
+	        this._randomIndex = null;
+	        this._element = null;
+	        this._requestAnimationFrameId = 0;
+	    };
+	    /**
+	     * ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ãƒãƒ³ãƒ‰ãƒ©ãƒ¼ã§ã™ã€‚
+	     * @private
+	     */
+	    ShuffleText.prototype._onInterval = function () {
+	        var _this = this;
+	        this._timeCurrent = new Date().getTime() - this._timeStart;
+	        var percent = this._timeCurrent / this.duration;
+	        var str = '';
+	        for (var i = 0; i < this._originalLength; i++) {
+	            if (percent >= this._randomIndex[i]) {
+	                str += this._originalStr.charAt(i);
+	            }
+	            else if (percent < this._randomIndex[i] / 3) {
+	                str += this.emptyCharacter;
+	            }
+	            else {
+	                str += this.sourceRandomCharacter.charAt(Math.floor(Math.random() * (this.sourceRandomCharacter.length)));
+	            }
+	        }
+	        if (percent > 1) {
+	            str = this._originalStr;
+	            this._isRunning = false;
+	        }
+	        this._element.innerHTML = str;
+	        if (this._isRunning === true) {
+	            this._requestAnimationFrameId = requestAnimationFrame(function () {
+	                _this._onInterval();
+	            });
+	        }
+	    };
+	    return ShuffleText;
+	}());
+
+	function init() {
+      var arr = [];
+      for (var i = 0; i < 20; i++) {
+		var line = document.querySelector('#text' + i);
+		if(!line)
+			break;
+        arr[i] = new ShuffleText(line);
+	  }
+
+      for (var i = 0; i < arr.length; i++) {
+        $('#text' + i)
+          .data('index', i)
+          .hover(function () {
+            arr[$(this).data('index')].start();
+          }, function () {
+             arr[$(this).data('index')].start();
+          });
+        arr[i].start();
+	  }
+	hasrun = true;  
+	}
+
+	init();
+
+	});
+  </script>
+<?php
+	}
 }
 
 function wpt_mycontests() {
@@ -177,10 +324,37 @@ $output = '<p>Contest links you have access to:</p>'.$output;
 return $output;
 }
 
-function toast_scoring_dashboard () {
+function toast_scoring_dashboard ($related = 0, $practice = array()) {
 ob_start();
 global $post, $wpdb;
 global $current_user;
+$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
+
+if(isset($_POST['sync'])) {
+	$related = (int) $_POST['related'];
+	$synctype = $_POST['sync'];
+	if($synctype == 'master') {
+		$sync = array('copy_from' => $post->ID, 'copy_to' => $related);
+	}
+	elseif($synctype == 'slave') {
+		$sync = array('copy_from' => $related, 'copy_to' => $post->ID);
+	}
+	if(empty($sync)) {
+		delete_post_meta($post->ID,'tm_contest_sync');
+		delete_post_meta($related,'tm_contest_sync');
+	}
+	else {
+		update_post_meta($post->ID,'tm_contest_sync',$sync);
+		update_post_meta($related,'tm_contest_sync',$sync);
+	}
+}
+else {
+	$sync = get_post_meta($post->ID,'tm_contest_sync',true);
+}
+
+if(!empty($sync)) {
+	tm_contest_sync($sync);
+}
 
 if(isset($_POST['dashboardvote']))
 {
@@ -228,6 +402,13 @@ elseif( !is_user_logged_in() )
 else
 {
 	$dashboard_users = get_post_meta($post->ID,'tm_contest_dashboard_users',true);
+	if(empty($dashboard_users))
+		$dashboard_users = array();
+	if(!in_array($post->post_author,$dashboard_users))
+	{
+		$dashboard_users[] = $post->post_author;
+		update_post_meta($post->ID,'tm_contest_dashboard_users',$dashboard_users);
+	}
 	if(!current_user_can('edit_others_posts'))
 	{
 	if(!is_array($dashboard_users))
@@ -268,7 +449,12 @@ if(!empty($_POST['contest_scoring2']))
 			$rp = get_post($id);
 			printf('<p>Created related contest: <a target="_blank" href="%s?scoring=dashboard">%s</a></p>',get_permalink($id),$rp->post_title);
 		}
-	
+	if(!empty($_POST['syncwith1'])) {
+		$sync = array('copy_from' => $post->ID,'copy_to' => $id);
+		update_post_meta($post->ID,'tm_contest_sync',$sync);
+		update_post_meta($id,'tm_contest_sync',$sync);
+	}
+
 	}
 }
 
@@ -327,6 +513,7 @@ $output .= '<h1>Choose Contest</h1>'.sprintf('<form method="post" action="%s">
 	%s
 	<div>Contest #2 (optional):<br /><select name="contest_scoring2">%s</select>
 	%s
+	<p><input type="checkbox" name="syncwith1" value="checked" checked="checked" /> Use same list of judges and functionaries for second contest</p>
 		<button>Set</button></div>
 </form>
 ',$actionlink,$options,track_roles_ui(),$options,track_roles_ui('',2));
@@ -367,11 +554,22 @@ $output .= ob_get_clean();
 return $output;
 }
 
+if(true) { //kludge
+
 if(!empty($_POST['copy_judges'])) {
 	$copyfrom = (int) $_POST['copy_judges'];
-	update_post_meta($post->ID,'tm_scoring_judges', get_post_meta($copyfrom,'tm_scoring_judges',true) );
+	$judges = get_post_meta($copyfrom,'tm_scoring_judges',true);
+	update_post_meta($post->ID,'tm_scoring_judges', $judges );
 	update_post_meta($post->ID,'tm_scoring_tiebreaker', get_post_meta($copyfrom,'tm_scoring_tiebreaker',true) );
 	update_post_meta($post->ID,'contest_timer', get_post_meta($copyfrom,'contest_timer',true) );
+	foreach($judges as $index => $judge_id) {
+		if(is_numeric($judge_id))
+		{
+			$arg = array('scoring' => 'voting','judge' => $index);
+			$link = add_query_arg($arg,get_permalink());
+			add_contest_userlink($judge_id,$link,$post->ID);
+		}
+	}
 }
 
 if(isset($_POST['track_role']))
@@ -403,6 +601,9 @@ else
 
 if(isset($_POST['contest_timer_user']))
 	update_post_meta($post->ID,'contest_timer',$_POST['contest_timer_user']);
+
+if(isset($_POST['timer_named']))
+	update_post_meta($post->ID,'contest_timer_named',$_POST['timer_named']);
 	
 if(isset($_POST['tm_scoring_dashboard_users']))
 {
@@ -413,8 +614,6 @@ if(isset($_POST['tm_scoring_dashboard_users']))
 		if($user_id && !in_array($user_id,$dashboard_users))
 			{
 			add_contest_userlink($user_id,$dashboard);
-			//add_post_meta($post->ID,'contest_user',$user_id);
-			//add_post_meta($post->ID,'contest_link_'.$user_id,$dashboard);
 			$dashboard_users[] = $user_id;
 			}
 	update_post_meta($post->ID,'tm_contest_dashboard_users',$dashboard_users);
@@ -472,24 +671,49 @@ if(!empty($contestants))
 
 if(isset($_POST['judge']))
 {	
+	//print_r($_POST['judge_email']);
 	foreach($_POST['judge'] as $index => $judge_id)
 	{
-		$judge_name = $_POST['judge_name'][$index];
-		if(!empty($judge_name))
-		{
-			$judge[$index] = $judge_name;
-		}
-		elseif(!empty($judge_id)){
+		if(!empty($judge_id)){
 			$link = add_query_arg(array('scoring'=>'voting','judge'=>$index),get_permalink());
 			add_contest_userlink($judge_id,$link);
 			$judge[$index] = $judge_id;
 		}
 	}
-if(!empty($judge))
+	foreach($_POST['judge_name'] as $index => $judge_name)
+	{
+		if(!empty($judge_name))
+		{
+			$judge[$index] = $judge_name;
+			$email = (empty($_POST['judge_email'][$index])) ? '' : $_POST['judge_email'][$index];
+			if(!empty($email) && is_email($email))
+			{
+				echo "judge email $email";
+				update_post_meta($post->ID,'judge_email'.$index,$email);
+			}			
+		}
+	}
+}
+if(isset($_POST['remove_judge']))
 {
-	//print_r($judge);
+	foreach($_POST['remove_judge'] as $judge_index) {
+		$judge_id = $judge[$judge_index];
+		unset($judge[$judge_index]);
+		if(is_numeric($judge_id)) {
+			delete_post_meta($post->ID,'contest_user',$judge_id);
+			delete_post_meta($post->ID,'contest_link_'.$judge_id);
+			echo 'delete contest_link_'.$judge_id.' post '.$post->ID;	
+		}
+	}
+}
+
+if(isset($judge))
+{
 	update_post_meta($post->ID,'tm_scoring_judges',$judge);	
 }
+
+if(!empty($sync))
+	tm_contest_sync($sync);
 }
 
 if(empty($contestants))
@@ -533,7 +757,8 @@ if(isset($_POST['resetit']))
 		if($reset == 'deleteorder')
 		{
 		delete_post_meta($post->ID,'tm_scoring_order');
-		echo '<p>Speaking order deleted</p>';			
+		echo '<p>Speaking order deleted</p>';
+		unset($order);		
 		}
 		elseif($reset == 'order')
 		{
@@ -569,6 +794,18 @@ if(!empty($contestants) && empty($order))
 		<button>Set</button></div>
 </form>
 <?php
+	$shuffle_link = add_query_arg( array(
+		'scoring' => 'shuffle',
+	), get_permalink($post->ID) );
+printf('<p>Set order for %s <a target="_blank" href="%s">open in new tab</a></p>',$contest_name,$shuffle_link);
+if($related) {
+	$other_shuffle_link = add_query_arg( array(
+		'scoring' => 'shuffle',
+	), get_permalink($related) );
+	$other_contest_name = get_post_meta($related,'toast_contest_name',true);
+	printf('<p class="other">Set order for %s <a target="_blank" href="%s">open in new tab</a></p>',$other_contest_name,$other_shuffle_link);
+}
+
 }
 elseif(!empty($order))
 {
@@ -585,6 +822,14 @@ elseif(!empty($order))
 	}
 
 }
+
+if(isset($_POST['ballot_no_password']))
+{
+	$ballot_no_password = (int) $_POST['ballot_no_password'];
+	update_post_meta($post->ID,'ballot_no_password',$ballot_no_password);
+}
+else
+	$ballot_no_password = get_post_meta($post->ID,'ballot_no_password',true);
 
 if(!$is_locked)
 {
@@ -625,8 +870,29 @@ if(isset($_POST['importfrom']))
 if(!empty($judges))
 {
 $dashboard_forms = '';
+$related = get_post_meta($post->ID,'_contest_related',true);
+if($related) {
+	$other_contest_name = get_post_meta($related,'toast_contest_name',true);
+	$other_judges = get_post_meta($related,'tm_scoring_judges',true);
+}	
+
 $checked = ($nolinks) ? '' : ' checked="checked" ';
-echo '<h2>Voting Links</h2><p><input type="checkbox" id="showlinks" value="1" '. $checked .' /> Show Links</p><p class="votinglink">Share these personalized voting links with the judges.</p>';
+$othercontest = ($related) ? '<input type="checkbox" id="showboth" /> Show links for both contests. ' : ''; 
+$samedifferent = ($related) ? sprintf('Judge lists %s between contests',($judges == $other_judges) ? 'the same' : '<span style="color: red;">different</span>') : '';
+$practice_contest = get_option('tm_practice_contest');
+$practice_judges = get_post_meta($practice_contest,'tm_scoring_judges',true);
+
+$update_practice = false;
+
+echo '<h2>Voting Links</h2><p><input type="checkbox" id="showlinks" value="1" '. $checked .' /> Show Links '.$othercontest.' '.$samedifferent.'</p><p class="votinglink">Share these personalized voting links with the judges. </p> ';
+if(empty($_POST['email_link']))
+{
+?>	
+<p class="votinglink"><input type="checkbox" id="show_email_links" > Show send by email option. <span class="email_links"><em>Enter email addresses or use those from the accounts of registered users. You can also customize the note that will appear at the top of the message. When done, click the Email Links button at the bottom of the list.</em></p>
+	<form method="post" action="<?php echo $actionlink ?>" >
+<?php
+}
+
 foreach($judges as $key => $value)
 {
 	$v = $votinglink . '&judge='.$key;
@@ -650,15 +916,36 @@ foreach($judges as $key => $value)
 				$username = "(tiebreaker's username)";
 		}
 	echo '<div class="votinglink">';
-	echo '<h4>Voting Link for '.$name.'</h4>';
-	if(!empty($username))
-		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($v),wp_login_url().'?action=lostpassword');
-	printf('<p><a target="_blank" href="%s">%s</a></p>',$v,$v);
+	$links = '';
+	$links .= '<h4>Voting for '.$name.'</h4>';
+	$links .= sprintf('<p>%s <a target="_blank" href="%s">%s</a></p>',$contest_name,$v,$v);
+	if(!empty($other_judges[$key])) {
+		$v = get_permalink($related).'?scoring=voting&judge='.$key;
+		$links .= sprintf('<p class="other">%s <a target="_blank" href="%s">%s</a></p>',$other_contest_name,$v,$v);
+		unset($other_judges[$key]);
+	}
+	if(!empty($username) && !$ballot_no_password)
+		$links .= sprintf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($v),wp_login_url().'?action=lostpassword');
+	if(empty($practice_judges[$key]))
+	{
+		$practice_judges[$key] = $value;
+		$update_practice = true;
+	}
+	$v = add_query_arg(array('scoring' => 'voting','judge' => $key,'reset' => 1),get_permalink($practice_contest));
+	$links .= sprintf('<p>%s <a target="_blank" href="%s">%s</a></p>','Practice Contest Ballot for '.$name,$v,$v);
+	echo $links;
+	wpt_contest_emaillinks($links,$key,'judge',$value); // value is user id or name
 	echo '</div>';
 $dashboard_forms .= dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
 }
 
-echo '<p>Practice link you can share with judges:<br /><a target="_blank" href="https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1">https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1</a></p>';
+if($update_practice) {
+	update_post_meta($practice_contest,'tm_scoring_judges',$practice_judges);
+}
+
+if(!empty($other_judges)) {
+	printf('<p>%s judges only registered for other contest</p>',sizeof($other_judges));
+}
 
 echo '<div class="votinglink"><h3>Timer</h3>';
 $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
@@ -669,18 +956,48 @@ if(empty($timer_code))
 }
 $timer_link = add_query_arg( array(
     'timer' => 1,
+    'claim_timer' => 1,
     'contest' => $timer_code,
 ), get_permalink($post->ID) );
 
+$links = '';
 $timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
-if($timer_user)
+if($timer_user && !$ballot_no_password)
 	{
-		$user = get_userdata($timer_user);
-		$username = $user->user_login;
+		$userdata = get_userdata($timer_user);
+		$username = $userdata->user_login;
 		$name = $userdata->first_name.' '.$userdata->last_name;
-		printf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($timer_link),wp_login_url().'?action=lostpassword');
+		$links .= sprintf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($timer_link),wp_login_url().'?action=lostpassword');
 	}
-printf("<p>Use this link for the Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p></div>',$timer_link,$timer_link);
+$links .= sprintf("<p>%s Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>',$contest_name,$timer_link,$timer_link);
+
+if($related) {
+	$other_timer_link = add_query_arg( array(
+		'timer' => 1,
+		'claim_timer' => 1,
+		'contest' => $timer_code,
+	), get_permalink($related) );	
+	$links.= sprintf("<p class=\"other\">%s Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>',$other_contest_name,$other_timer_link,$other_timer_link);
+}
+
+$timer_code = get_post_meta($practice_contest,'tm_timer_code',true);
+$practice_timer_link = add_query_arg( array(
+	'timer' => 1,
+	'claim_timer' => 1,
+	'contest' => $timer_code,
+	'reset' => 1,
+), get_permalink($practice_contest) );
+$links .= sprintf("<p>%s Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>','Practice Contest',$practice_timer_link,$practice_timer_link);
+wpt_contest_emaillinks($links,$timer_code,'timer',$timer_user);
+echo $links;
+echo '</div>';
+
+if(empty($_POST['email_link']))
+{
+	?>
+	<p class="email_links"><button>Email Links</button></p></form>
+	<?php	
+}
 
 echo "<h3>Backup Voting Forms</h3><p>If judges have problems with the online voting, you can record votes on their behalf.</p>";
 echo '<p><input type="checkbox" id="showvotingforms" value="1" /> Show Forms</p><div class="votingforms">';
@@ -690,6 +1007,7 @@ echo $dashboard_forms.'</div>';
 ?>
 <div>
 <?php
+	
 	if($is_locked)
 	{
 	echo '<h3>Settings Locked</h3><p>Contest settings are locked. Only a website administrator, or the user who locked the form, can remove the lock.</p>';
@@ -705,15 +1023,23 @@ echo $dashboard_forms.'</div>';
 		}
 	}
 else {
+	$sync = get_post_meta($post->ID,'tm_contest_sync',true);
+	$slave = ($sync && ($sync['copy_from'] != $post->ID));
+	$addtodrop = contest_user_list_top($judges, $timer_user, $dashboard_users);
+	$genericdrop = wp_dropdown_users(array('echo' => false));
+	$genericdrop = preg_replace('/<select[^>]+>/','$0'.$addtodrop.'<optgroup label="All Users">',$genericdrop);
+	$genericdrop = str_replace('</select>','</optgroup></select>',$genericdrop);
 ?>
 	<h2>Setup</h2>
-
     <h2 class="nav-tab-wrapper">
 	<a class="nav-tab nav-tab-active" href="#contestants">Contestants</a>
 	<a class="nav-tab" href="#judges">Judges and Timer</a>
       <a class="nav-tab" href="#security">Security</a>
-      <!--a class="nav-tab" href="#judging-links">Judging Links</a-->
       <a class="nav-tab" href="#lock-reset">Lock/Unlock/Reset</a>
+	  <?php
+	  if($related) 
+	  	echo '<a class="nav-tab" href="#sync">Sync with Related Contest</a>'; 
+	  ?>
     </h2>
 
     <div id="sections" class="rsvpmaker" >
@@ -762,33 +1088,27 @@ for($i= 0; $i < $stop; $i++)
 if($is_locked) {
 	echo 'Settings are locked';
 }
+elseif($slave) {
+	echo 'Judges list controlled from related contest';
+}
 else {
 	$related = get_post_meta($post->ID,'_contest_related',true);
-	if(empty($judges) && $related) {
-		$contest_name = get_post_meta($related,'toast_contest_name',true);
-		printf('<form method="post" action="%s"><input type="hidden" name="copy_judges" value="%d">
-		<p>Copy judges and timer from %s?</p>
-		<p><button>Copy</button></p></form>',$actionlink,$related,$contest_name);
-		echo '<p>Or enter below</p>';
-	}
 ?>	
 	<form method="post" action="<?php echo $actionlink ?>" >
+	<p>You can select judges from the drop-down list of users or enter the name and email address of guest judges who do not have a user account. Ballot links for guest judges will not be password protected, even if that feature is turned on (see the Security tab).</p>
 <?php
-	$related = get_post_meta($post->ID,'_contest_related',true);
-	if($related) {
-		$contest_name = get_post_meta($related,'toast_contest_name',true);
-	}
-
-
+do_action('wpt_contest_judges_form');
 	if(is_array($judges))
 	foreach($judges as $index => $value)
 	{
+		$selected_option = '';
 		if(isset($_GET['debug']))
 			printf('<div>%s %s</div>',$index,$value);
 		if(is_numeric($value)) {
 			$user = $value;
-			$name = '';
+			$name = get_member_name($value);
 			$open = 'Open';
+			$selected_option = sprintf('<option value="%s">%s</option>',$user,$name);
 		}
 		else {
 			$user = 0;
@@ -801,40 +1121,58 @@ else {
 			$s = ' checked="checked" ';
 		else
 			$s = '';
-		$drop = awe_user_dropdown ('judge['.$index.']', $user, true, $open);
-		printf('<p>%s <input type="text" name="judge_name[%d]" value="%s"><br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker</p>',$drop,$index,$name,$index,$s);
+		$drop = str_replace('user','judge['.$index.']',$genericdrop);//awe_user_dropdown ('judge['.$index.']', $user, true, $open);
+		if(!empty($selected_option))
+			$drop = preg_replace('/<select[^>]+>/','$0'.$selected_option,$drop);
+		printf('<p><input type="hidden" name="judge[%s]" value="%s" /><input type="hidden" name="judge_name[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$index,$name,$name,$index,$s,$index);
 	}
-	$t = time();	
-	for($i= 0; $i < 10; $i++)
+	$t = time();
+	for($i= 0; $i < 15; $i++)
 		{
-		$index = $t+($i*100)+rand(1,99);
-		$drop = awe_user_dropdown ('judge['.$index.']', 0, true);
-		printf('<p>%s or guest: <input type="text" name="judge_name[%d]" value=""><br /><input type="radio" name="tm_tiebreaker" value="%s" />Tiebreaker</p>',$drop, $index,$index);
+		$index = $t+($i*100)+rand(1,99);	
+		$drop = str_replace('user','judge['.$index.']',$genericdrop);
+		$class = ($i > 5) ? ' class="morejudges" ' : '';
+		printf('<p %s>%s <input type="radio" name="tm_tiebreaker" value="%s" />Tiebreaker</p>',$class, $drop, $index);
+		}
+	for($i= 0; $i < 15; $i++)
+		{
+		$index = $t+($i*100)+rand(1,99);	
+		$class = ($i > 5) ? ' class="morejudges" ' : '';
+		printf('<p %s>Name <input type="text" name="judge_name[%d]" value=""> Email <input type="text" name="judge_email[%d]" value=""><br /><input type="radio" name="tm_tiebreaker" value="%s" />Tiebreaker</p>',$class,$index, $index,$index);
 		}
 	?>
-	<p><em>You can assign up to 10 judges at a time. If you have more than 10 judges to assign, first submit the form with the first 10 assignments. When the page reloads, additional blanks will be displayed.</em></p>
+	<p><input type="checkbox" id="showmorejudges"> Show more judge assignment entries</p>
 	
 	<h3>Timer</h3>
 	<?php 
 	$timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
-	echo '<p>'.awe_user_dropdown('contest_timer_user',$timer_user, true).'</p>';
+	$timer_named = get_post_meta($post->ID,'contest_timer_named',true);
+	if(empty($timer_named))
+		$timer_named = array('name' => "",'email' => "");
+
+	$selected_option = (empty($timer_user)) ? '' : sprintf('<option value="%s">%s</option>',$timer_user,get_member_name($timer_user));
+	$drop = str_replace('user','contest_timer_user',$genericdrop);//awe_user_dropdown ('judge['.$index.']', $user, true, $open);
+	if(!empty($selected_option))
+		$drop = preg_replace('/<select[^>]+>/','$0'.$selected_option,$drop);
+	echo '<div><em>With</em> a user account '.$drop.'</div>';
+	printf('<p><em>Without</em> without a user account: Name <input name="timer_named[name]" value="%s"> Email <input name="timer_named[email]" value="%s"> </p>',$timer_named['name'],$timer_named['email']);
 	?>
 	<h3>Judging Links</h3>
 <p><input type="radio" name="hide_ballot_links" value="0" <?php if(empty($nolinks)) echo ' checked="checked" '; ?> /> Show judge ballot links</p>
 <p><input type="radio" name="hide_ballot_links" value="1" <?php if(!empty($nolinks)) echo ' checked="checked" '; ?> /> Hide judge ballot links (if they're not being used)</p>
-<?php
-if(isset($_POST['ballot_no_password']))
-{
-	$ballot_no_password = (int) $_POST['ballot_no_password'];
-	update_post_meta($post->ID,'ballot_no_password',$ballot_no_password);
-}
-else
-	$ballot_no_password = get_post_meta($post->ID,'ballot_no_password',true);
-?>
 	<p><button>Submit</button></p>
 </form>
+<?php
+}
+?>
 	</section>
     <section class="rsvpmaker"  id="security">
+<?php
+if($slave || isset($_GET['test'])) {
+	echo 'Settings controlled from related contest';
+}
+else {
+?>
 	<form method="post" action="<?php echo $actionlink ?>" >
 	<h3>Security Options</h3>
 <p><input type="radio" name="ballot_no_password" value="0" <?php if(empty($ballot_no_password)) echo ' checked="checked" '; ?> /> User password required for access to ballot, timer's report form</p>
@@ -847,19 +1185,20 @@ $dashlimit = sizeof($dashboard_users)+5;
 for($i= 0; $i < $dashlimit; $i++)
 {
 	$user = empty($dashboard_users[$i]) ? 0 : $dashboard_users[$i];
-	$drop = awe_user_dropdown ('tm_scoring_dashboard_users[]', $user, true);//, $open);
+	$selected_option = (!$user) ? '' : sprintf('<option value="%s">%s</option>',$user,get_member_name($user));
+	$drop = str_replace('user','tm_scoring_dashboard_users[]',$genericdrop);//awe_user_dropdown ('judge['.$index.']', $user, true, $open);
+	if(!empty($selected_option))
+		$drop = preg_replace('/<select[^>]+>/','$0'.$selected_option,$drop);
 	echo '<div>'.$drop.'</div>';
 }
 ?>
 	<p><button>Submit</button></p>
 </form>
-<?php } ?>
+<?php 
+}//end slaved
+?>
 	</section>
 
-    <!--section class="rsvpmaker" id="judging-links"-->
-<?php
-?>
-	<!--/section -->
 	<section id="lock-reset">
 <form method="post" action="<?php echo $actionlink; ?>">
 	<h2>Lock Settings</h2>
@@ -877,6 +1216,20 @@ for($i= 0; $i < $dashlimit; $i++)
 	<button>Reset</button>
 </form>
 	</section>
+	<?php if($related) {
+	$other_contest_name = get_post_meta($related,'toast_contest_name',true); 
+	?>
+	<section id="sync">
+	<form method="post" action="<?php echo $actionlink; ?>">
+	<h2>Sync Settings</h2>
+	<div><input type="radio" name="sync" value="" <?php if(empty($sync)) echo ' checked="checked" ' ?> > Off</div>
+	<div><input type="radio" name="sync" value="slave" <?php if($slave) echo ' checked="checked" ' ?> > Sync based on <?php echo $other_contest_name; ?></div>
+	<div><input type="radio" name="sync" value="master" <?php if(!empty($sync) && !$slave) echo ' checked="checked" ' ?> > Sync based on this contest</div>
+	<input type="hidden" name="related" value="<?php echo $related; ?>" />
+	<button>Save</button>
+</form>
+	</section>
+	<?php } //end if related show sync ?>
 	</div><!--end of sections--->
 </div>
 <?php
@@ -894,12 +1247,42 @@ $.ajaxSetup({
 	}
 });
 
+$('#showboth').click( function() {
+	if($( "input#showboth:checked" ).val()) {
+		$('.other').show();
+  }
+  else {
+	$('.other').hide();
+  }
+});
+
+//hide to start with
+$('.morejudges').hide();
+
+$('#showmorejudges').click( function() {
+	if($( "input#showmorejudges:checked" ).val()) {
+		$('.morejudges').show();
+  }
+  else {
+	$('.morejudges').hide();
+  }
+});
+
 function votingLinkToggle () {
 	if($( "input#showlinks:checked" ).val()) {
 	  $('.votinglink').show();
   }
   else {
 	$('.votinglink').hide();
+  }
+}
+
+function emailLinksToggle () {
+	if($( "input#show_email_links:checked" ).val()) {
+	  $('.email_links').show();
+  }
+  else {
+	$('.email_links').hide();
   }
 }
 
@@ -934,27 +1317,15 @@ $( "input#showlinks" ).on( "click", votingLinkToggle);
 votingFormsToggle();
 $( "input#showvotingforms" ).on( "click", votingFormsToggle);
 
+emailLinksToggle ();
+$( "input#show_email_links" ).on( "click", emailLinksToggle);
+
 function refreshScores() {
 $('#score_status').html('Checking for new scores ...');
-$.get( "<?php echo site_url('?toast_scoring_update='.$post->ID); ?>", function( data ) {
+$.get( "<?php echo rest_url('/wptcontest/v1/votecheck/'.$post->ID); ?>", function( data ) {
   $( "#scores" ).html( data );
   $('#score_status').html('Updated');
 });
-
-$.get( "<?php echo site_url('/wp-json/wptcontest/v1/votecheck/'.$post->ID); ?>", function( data ) {
-  //console.log( data );
-  var hasvoted = '';
-  var status = '';
-  for (const property in data) {
-	hasvoted = '#votestatus'+`${property}`;
-if(data[property])
-status = ' Has voted';
-else
-status = ' Has <span style="color:red;">NOT</span> voted';
-$(hasvoted).html(status);
-}
-  //data.forEach(function(value, index) { console.log(index+': ');console.log(element+': '); });
-});	
 
 }
 $('#scoreupdate').click(function() {
@@ -1009,7 +1380,7 @@ if(empty($disqualified)) $disqualified = array();
 $output = '';
 $novote = 0;
 $missing_votes = '';
-			$tiebreaker_status = '<h3>Tiebreaker Ranking</h3>';
+	$tiebreaker_status = '<h3>Tiebreaker Ranking</h3>';
 	foreach($judges as $index => $judge) {
 		$votes = get_post_meta($post_id,'tm_scoring_vote'.$index,true);
 		if(!empty($votes))
@@ -1026,7 +1397,8 @@ $missing_votes = '';
 			else
 			{
 			$tiebreaker_vote = $votes;
-			foreach($votes as $i => $vote)
+			unset($votes);
+			foreach($tiebreaker_vote as $i => $vote)
 			{
 				$tiebreaker_status .= sprintf('<div>%s</div>',$vote);
 			}
@@ -1081,7 +1453,7 @@ else
 	arsort($ranking);
 	$last_contestant = '';
 	$last_points = 0;
-	$inc = 0.4;
+	$inc = 0.1;
 	$tie = false;
 	foreach($ranking as $contestant => $points)
 	{
@@ -1097,29 +1469,45 @@ else
 		$top .= '<div style="background-color: red; color: white; font-weight: bold; padding: 5px;">All judges have now voted</div>';
 		if($tie && !empty($tiebreaker_vote))
 		{
-			$top .= '<p>Tiebreaker vote applied</p>';
+			$top .= '<p>Tiebreaking judge vote applied</p>';
 			foreach($tiebreaker_vote as $index => $contestant)
 			{
-				if(!empty($ranking[$contestant]))
+				if(!empty($ranking[$contestant])) {
 					$ranking[$contestant] += $inc;
+				}
 				$inc -= 0.01;
 			}
 			arsort($ranking);
-		}		
+		}
+		$alljudgesvoted = true;		
 	}
+
+	$lastpoint = 0;
+	$lastpointint = 0;
+	$topnopoints = '<h3>Without Scores</h3>';
 
 	foreach($ranking as $contestant => $points)
 	{
-		if(($topcount < 3) && ($points > 0))
-			$top .= sprintf('<div>#%d %s</div>',$topcount+1,$contestant);
-		if($points >= 0)
-			$topscores .= sprintf('<div>%s (%d points)</div>',$contestant,$points);
+		if(($topcount < 3) && ($points > 0)) {
+			$is_tie = ($points == $lastpoint) ? ' (tied with #'.$topcount.')' : '';
+			$top .= sprintf('<div>#%d %s</div>',$topcount+1,$contestant.$is_tie);
+			$lastpoint = $points;
+		}
+		if($points >= 0) {
+			$pointsint = (int) $points;
+			$tiemessage = ($pointsint == $lastpointsint) ? ' (Tiebreaking Judge\'s vote applied)' : '';
+			$lastpointsint = $pointsint;
+			$topscores .= sprintf('<div>%s <span class="contestant_points">%s points %s</span></div>',$contestant,$pointsint,$tiemessage);
+			$topnopoints .= sprintf('<div>%s</div>',$contestant);
+		}
 		else
 			$topscores .= sprintf('<div>%s (disqualified)</div>',$contestant,$points);			
 		$topcount++;
 	}
 	$top .= $tiebreaker_status . $timer_report.'</div>';
-	$output = $top . $topscores . $output;
+	if($alljudgesvoted && !empty($tiebreaker_status) )
+		$top = apply_filters('wpt_contest_alljudgesvoted',$top);
+	$output = $top . $topscores . $topnopoints . $output;
 }
 return $output;
 }
@@ -1219,7 +1607,8 @@ if(is_array($votes) && !isset($_GET['judge_id']))
 if(empty($blanks))
 {
 	echo '<p>Keep this page open until you confirm your votes have been received properly.</p>';
-	echo '<p><button>Resubmit</button></p><p><em>Resubmit does not resubmits your previous vote (does not allow you to change your vote). Only use if there is a problem with votes showing up on the voting dashboard monitored by conference officials.</em></p>';
+	echo '<p><button>Resubmit</button></p><p><em>Resubmit resubmits your previous vote (does not allow you to change your vote). Only use if there is a problem with votes showing up on the voting dashboard monitored by conference officials.</em></p>';
+do_action('wpt_contest_ballot_submitted');
 ?>
 <script>
 jQuery(document).ready(function($) {
@@ -1270,7 +1659,7 @@ echo '</form>';
 $order = get_post_meta($post->ID,'tm_scoring_order',true);
 if(empty($order))
 	{
-		echo '<p>Refresh this page once the contestant order has been set. To practice, you can use <a href="https://contest.toastmost.org/rsvpmaker/international-speech-contest-demo-contest-2/?scoring=voting&judge=1610655667&ballotdemo=1">this demo</a>.</p>';
+		echo '<p>Refresh this page once the contestant order has been set.</p>';
 ?>
 <div id="order_status"></div>
 <script>
@@ -1364,7 +1753,7 @@ foreach($order as $index => $name)
 
 <h2>Vote</h2>
 <?php 
-echo '<form id="voting" method="post" action="'.$votinglink.'">';	
+echo '<form id="voting" method="post" action="'.$votinglink.'"><div id="nowvote"></div>';
 $vote_opt = '';
 if(!empty($contestants))
 {
@@ -1382,7 +1771,7 @@ for($i= 1; $i <= $max; $i++)
 	printf('<div><select class="voteselect" name="vote[]"><option value="">Vote #%d</option>%s</select></div>',$i,$vote_opt);
 global $rsvp_options;
 ?>
-<div>Signature: <input type="text" name="signature" id="signature"> Date <input type="text" name="signature_date" value="<?php echo rsvpmaker_strftime($rsvp_options['long_date'],time()); ?>" />
+<div><label>Signature:</label> <input type="text" name="signature" id="signature"> <br /><label>Date:</label> <input type="text" name="signature_date" value="<?php echo rsvpmaker_strftime($rsvp_options['long_date'],time()); ?>" />
 <br /><em>By typing your name and verifying the date, you are signing this ballot as your official vote</em></div>
 
 <div id="readyprompt"></div>
@@ -1415,7 +1804,10 @@ for (var i = 0; i < arrayLength; i++) {
 	autorank = autorank + '<br />'+name + ' '+scoreArr[i].score;
 }
 $('#autorank').html('<div style="width: 300px; margin-bottom: 10px; padding: 5px; border: thin solid #555;"><h3>Best Scores</h3>'+autorank+'</div>');
-
+$('#nowvote').html('<h3 style="color: red;">Now Vote! <span style="color: black">Your vote is not complete</span> until you make your selections below.</h3>');
+var votingform = document.getElementById("voting");
+votingform.style = 'border: thick solid red; padding: 10px; padding-bottom: 50px;';
+votingform.scrollIntoView();
 });
 	
 $('.score').on('change', function(){
@@ -1481,7 +1873,7 @@ function dashboard_vote($contestants, $id, $judge_name, $votinglink, $tiebreaker
 	if($tiebreaker)
 		$judge_name = 'Tie Breaker';
 	echo '<h3>'.$judge_name.'</h3><div id="votestatus'.$id.'"></div>';
-	echo '<form class="dashboard_votes" id="voting" method="post" action="'.$votinglink.'">';	
+	echo '<form class="dashboard_votes" class="dashboard_votes" method="post" action="'.$votinglink.'">';	
 	$vote_opt = '';
 	if(!empty($contestants))
 	{
@@ -1490,7 +1882,7 @@ function dashboard_vote($contestants, $id, $judge_name, $votinglink, $tiebreaker
 			$vote_opt .= sprintf('<option value="%s">%s</option>',$contestant,$contestant);	
 	}
 		
-	$contestant_count = sizeof($contestants);
+	$contestant_count = (empty($contestants)) ? 0 : sizeof($contestants);
 	if($tiebreaker == $id)
 		echo '<h3>As the tiebreaking judge, you should rank order ALL contestants.</h3>';
 	$max = (($tiebreaker) || ($contestant_count < 3)) ? $contestant_count : 3;
@@ -1573,12 +1965,12 @@ function judge_import_form($action) {
 		if($results)
 		foreach($results as $event) {
 			$contest_users = get_post_meta($event->ID,'contest_user');
-			if(!in_array($current_user->ID,$contest_users))
+			if($contest_users && !in_array($current_user->ID,$contest_users))
 				continue;
 			$date = get_rsvp_date($event->ID);
 			$opt .= sprintf('<option value="%d">%s %s</option>',$event->ID,$event->post_title,rsvpmaker_strftime('',$date));
 		}
-		if(!empty($opt))
+		if(!empty($opt) && empty(get_post_meta($post->ID,'tm_contest_sync',true)))
 			printf('<form action="%s" method="post"><h3>Import judges/settings (optional)</h3><p><select name="importfrom">%s</select></p>
 			<p>If the list of judges will be the same (or mostly the same) as for another contest, you can import those settings rather than setting them individually.</p>
 			<button>Import</button></form>',$action,$opt);
@@ -1613,8 +2005,207 @@ else
 	$track .= sprintf('<option value="%s" %s>%s</option>',$role,$s,$role);
 }
 
-return sprintf('<p>Sync With Agenda Role for Contestants <br /><select id="track_role" name="track_role%s" >%s<option value="cancel">Cancel Selection</option></select></p>',$slug,$track_top.$track);
+return sprintf('<p>Sync With Agenda Role for Contestants <br /><select id="track_role%s" name="track_role%s" >%s<option value="cancel">Cancel Selection</option></select></p>',$slug,$slug,$track_top.$track);
 
 }
 
+}
+
+function tm_contest_sync($sync = null) {
+	global $post;
+	if(empty($sync))
+		$sync = get_post_meta($post->ID,'tm_contest_sync',true);
+	if(empty($sync))
+		return;
+	$copyfrom = $sync['copy_from'];
+	$copyto = $sync['copy_to'];
+	$judges = get_post_meta($copyfrom,'tm_scoring_judges',true);
+	update_post_meta($copyto,'tm_scoring_judges', $judges );
+	update_post_meta($copyto,'tm_scoring_tiebreaker', get_post_meta($copyfrom,'tm_scoring_tiebreaker',true) );
+	update_post_meta($copyto,'contest_timer', get_post_meta($copyfrom,'contest_timer',true) );
+	if($judges)
+	foreach($judges as $index => $judge_id) {
+		if(is_numeric($judge_id))
+		{
+			$arg = array('scoring' => 'voting','judge' => $index);
+			$link = add_query_arg($arg,get_permalink($copyto));
+			add_contest_userlink($judge_id,$link,$copyto);
+		}
+	}
+	update_post_meta($copyto,'tm_contest_dashboard_users',get_post_meta($copyfrom,'tm_contest_dashboard_users',true));
+	update_post_meta($copyto,'ballot_no_password',get_post_meta($copyfrom,'ballot_no_password',true));
+}
+
+function get_practice_contest_links() {
+	global $current_user;
+	$practice_contest = get_option('tm_practice_contest');
+	$timing = '5 to 7';	
+	$scoring_index = 'International Speech Contest';
+	$contest_scoring = array('Speech Development' => 20,'Effectiveness' => 15,'Speech Value' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 10);
+
+	if(empty($practice_contest) || empty(get_post($practice_contest))) {
+		$data['post_title'] = 'Demo: '.$scoring_index;
+		$data['post_content'] = '[wpt_contests_prompt]';
+		$data['post_author'] = $current_user->ID;
+		$data['post_type'] = 'rsvpmaker';
+		$data['post_status'] = 'publish';
+		$practice_contest = wp_insert_post($data);
+	}
+	if(empty($data))//if new, this won't be set
+		$judges = get_post_meta($practice_contest,'tm_scoring_judges',true);
+	if(empty($judges))
+		$judges = array();
+	else {
+		$size = sizeof($judges);
+		//shorten the list
+		if($size > 15)
+		{
+			$i = 1;
+			$stop = $size - 10;
+			foreach($judges as $index => $value) {
+				if($i < $stop)
+					unset($judges[$index]);
+				$i++;
+			}
+		$judges['100000'] = 'Demo Judge';
+		update_post_meta($practice_contest,'tm_scoring_judges',$judges);
+		}
+	}
+	if(!empty($data) || isset($_GET['reset']))
+	{
+		update_post_meta($practice_contest,'toast_contest_name','Demo: '.$scoring_index);
+		update_post_meta($practice_contest,'toast_contest_scoring',$contest_scoring);
+		update_post_meta($practice_contest,'toast_timing',$timing);
+		update_post_meta($practice_contest,'_rsvpmaker_special','Contest document');
+		update_post_meta($practice_contest,'_rsvp_dates','2000-01-01 07:00:00');
+		$contestants = array('Aaron Beverly','Mike Carr','Ramona J. Smith','Darren LaCroix','Mark Brown');
+		update_post_meta($practice_contest,'tm_scoring_contestants',$contestants);
+		update_post_meta($practice_contest,'tm_scoring_order',$contestants);
+		update_post_meta($practice_contest,'ballot_no_password',1);
+		if(!empty($data) || ( isset($_GET['reset']) && isset($_GET['scoring']) && ($_GET['scoring'] == 'dashboard') ) )
+			if(is_user_logged_in())
+				update_post_meta($practice_contest,'tm_contest_dashboard_users',array($current_user->ID));
+		$judges['100000'] = 'Demo Judge';
+		update_post_meta($practice_contest,'tm_scoring_judges',$judges);
+		update_post_meta($practice_contest,'tm_timer_code','200000');
+		update_option('tm_practice_contest',$practice_contest);
+	}
+	if(isset($_GET['reset'])) {
+		delete_post_meta($practice_contest,'_time_report');
+	if(isset($_GET['judge'])) {
+		$index = $_GET['judge'];
+		delete_post_meta($practice_contest,'tm_scoring_vote'.$index);
+	}
+	elseif($_GET['scoring'] == 'dashboard') {
+		foreach($judges as $index => $judge)
+			delete_post_meta($practice_contest,'tm_scoring_vote'.$index);
+	}
+	}
+
+	$practicelinks['judge'] = add_query_arg(array('scoring' => 'voting','judge' => '100000','reset' => 1),get_permalink($practice_contest));
+	if(is_user_logged_in())
+		$practicelinks['dashboard']  = add_query_arg(array('scoring' => 'dashboard','reset' => 1),get_permalink($practice_contest));
+	return $practicelinks;
+}
+
+function wpt_mycontests_links($practice) {
+$mycontests = get_permalink().'?scoring=mycontests';
+$output = '<div style="width: 300px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="'.$mycontests.'">My Contests</a>';
+if(isset($practice['dashboard']))
+	$output .= sprintf('<div><a href="%s" target="_blank">Practice Contest Dashboard</a></div>',$practice['dashboard']);
+$output .= sprintf('<div><a href="%s" target="_blank">Practice Contest Ballot</a></div>',$practice['judge']);
+$output .= apply_filters('my_contests_help','');
+$output .= '<div><a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/category/contests/">Help</a></div>';
+$output .= '</div>';
+return $output;
+}
+
+function wpt_contest_emaillinks($links,$code,$role, $user_id) {
+global $current_user, $post;
+if(isset($_POST['email_link'][$code]))
+	{
+		if(empty($_POST['email_link'][$code]))
+			echo '<div>Email field is empty</div>';
+		else {
+			$mail['to'] = $_POST['email_link'][$code];
+			$mail['subject'] = 'IMPORTANT for your '.$role.' role in our contest';
+			$mail['html'] = '<p>'.nl2br(stripslashes($_POST['email_link_note'][$code]))."</p>\n".$links;
+			$mail['from'] = $current_user->user_email;
+			$mail['fromname'] = $current_user->display_name;
+			rsvpmailer($mail);
+			echo '<div>Emailing links to '.$_POST['email_link'][$code].'</div>';
+		}
+	}
+	else {
+		if(is_numeric($user_id) && $user_id)
+		{
+			$userdata = get_userdata($user_id);
+			$email = $userdata->user_email;
+		}
+		else
+		{
+			$timer_named = get_post_meta($post->ID,'contest_timer_named',true);
+			$email = (empty($timer_named['email'])) ? '' : $timer_named['email'];
+		}
+		$note = sprintf("We're planning to use a web-based voting / vote counting system for our upcoming contest, and these are the links we would like you to use for your role as %s. You may want to try the practice link ahead of time.",$role);
+		printf('<div class="email_links" method="post" action="%s"><strong>Email links to</strong> <input type="text" name="email_link[%s]" value="%s" /><br />Note: <textarea name="email_link_note[%s]" >%s</textarea></div>',get_permalink().'?scoring=dashboard',$code,$email,$code,$note);
+	}
+}
+
+function contest_user_list_top($judges, $timer_user, $dashboard_users) {
+	global $current_user, $wpdb, $post;
+	$team = get_user_meta($current_user->ID,'my_contest_team',true);
+	if(empty($team))
+		$team = array();
+	$initial = $team;
+	if(empty($team))
+	{
+		$sql = "SELECT * FROM $wpdb->postmeta WHERE meta_key='tm_contest_dashboard_users' AND meta_value LIKE '%\"$current_user->ID\"%' AND post_id != $post->ID";
+		$results = $wpdb->get_results($sql);
+		if($results) {
+			foreach($results as $row) {
+				$otherpost = $row->post_id;
+				$otherjudges = get_post_meta($otherpost,'tm_scoring_judges',true);
+				$otherdash = get_post_meta($otherpost,'tm_contest_dashboard_users',true);
+				$othertimer = get_post_meta($otherpost,'contest_timer',true);
+				if(!empty($other_judges) && is_array($other_judges))
+				foreach($other_judges as $id) {
+					if($id && is_numeric($id) && !in_array($id,$team))
+						$team[] = $id;
+				}
+				if(!empty($otherdash) && is_array($otherdash))
+				foreach($otherdash as $id) {
+					if($id && !in_array($id,$team))
+						$team[] = $id;
+				}
+				if($othertimer && is_numeric($othertimer) && !in_array($othertimer,$team) )
+					$team[] = $othertimer;	
+			}
+		}
+	}
+	if(is_array($judges))
+	foreach($judges as $id) {
+		if($id && is_numeric($id) && !in_array($id,$team))
+			$team[] = $id;
+	}
+	if(is_array($dashboard_users))
+	foreach($dashboard_users as $id) {
+		if($id && !in_array($id,$team))
+			$team[] = $id;
+	}
+	if($timer_user && is_numeric($timer_user) && !in_array($timer_user,$team) )
+		$team[] = $timer_user;
+		
+	$top = '<option value="">Open</open><optgroup label="My Contest Team">';
+	foreach($team as $id) {
+		$name = get_member_name($id);
+		$opt[$name] = sprintf('<option value="%s">%s</option>',$id,$name);
+	}
+	ksort($opt);
+	$top .= implode('',$opt);
+	$top .= '</optgroup>';
+	if($initial != $team)
+		update_user_meta($current_user->ID,'my_contest_team',$team);
+
+	return apply_filters('wpt_contest_user_dropdown',$top);
 }

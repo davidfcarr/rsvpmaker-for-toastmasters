@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.6
-Stable tag: 4.1.5
+Stable tag: 4.2.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,29 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 4.2.1 =
+
+* Tweaks for timer javascript and layout
+
+= 4.2 =
+
+* Updates to the contest and timer tools.
+
+= 4.1.8 =
+
+* Multiple contest tool enhancements. Feature for emailing contest links to judges and timer.
+* More glitch free implementation of automatic count for multiple role blocks for the same role. On post updated, rather than on post view.
+
+= 4.1.7 =
+
+* Synchronization of judges between related contests
+* Practice contest links for judges and timer
+
+= 4.1.6 =
+
+* Enhancements to contest functions. Clearer display of when a tie exists / tiebreaker vote is required.
+* Better handling of multiple blocks representing the same role (no longer necessary to manually set the Start From field). Example: Speakers 1-3, then a break or another activity, followed by Speakers 4-6.
 
 = 4.1.5 =
 

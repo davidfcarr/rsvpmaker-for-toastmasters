@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.1.5
+Version: 4.2.1
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1053,7 +1053,7 @@ if(!empty($atts["editable"]))
 			}
 		elseif(empty($editable))
 			$editable = '';
-		if(is_single() && is_club_member() && !isset($_REQUEST["edit_roles"]) && (current_user_can('edit_signups') || edit_signups_role()) && !isset($_REQUEST["print_agenda"]) && !is_email_context())
+		if(is_single() && is_club_member() && !isset($_REQUEST["edit_roles"])  && !isset($_REQUEST["recommend_roles"]) && (current_user_can('edit_signups') || edit_signups_role()) && !isset($_REQUEST["print_agenda"]) && !is_email_context())
 			{
 			$permalink = get_permalink($post->ID).'#'.$slug;
 			$edit_editable = '<div class="agenda_note_editable_editone_wrapper"><a class="agenda_note_editable_editone_on">Edit</a></div><form method="post" action="'.$permalink.'" class="agenda_note_editable_editone"><div class="agenda_note_editable"><textarea name="agenda_note[]" rows="5" cols="80" class="mce">'.$editable.'</textarea><input type="hidden" name="agenda_note_label[]" value="'.$editid.'" /></div><button>Update</button><input type="hidden" name="post_id" value="'.$post->ID.'" /> </form>';
@@ -1194,8 +1194,8 @@ function toastmasters_agenda_display($atts, $assignments) {
 	if(!empty($output))
 		return $output;
 	
-	$count = (empty($atts["count"])) ? 1 : $atts["count"];
-	$start = (empty($atts['start'])) ? 1 : $atts['start'];
+		$count = (empty($atts["count"])) ? 1 : $atts["count"];
+		$start = (empty($atts['start'])) ? 1 : $atts['start'];
 	
 		$maxtime = (isset($atts["time_allowed"]) ) ? (int) $atts["time_allowed"] : 0;
 		$padding_time = (isset($atts["padding_time"])) ? (int) $atts["padding_time"] : 0;
@@ -1224,7 +1224,7 @@ function toastmasters_agenda_display($atts, $assignments) {
 			else
 				$output .= '<span class="notime"></span>';
 			$output .= '<span class="role">'.$role;
-			if (!empty($atts["count"]) && ($atts["count"] > 1))
+			if (($count > 1) || ($i > 1) )
 			    {
             $output .= ' <span class="role_number">'.$i.'</span>';
 			    }
@@ -1295,7 +1295,7 @@ return $output;
 function toastmaster_short($atts=array(),$content="") {
 	if(isset($_GET['convert']))
 		return toastmaster_short_convert($atts);
-	global $tmroles, $post, $current_user, $open;
+	global $tmroles, $post, $current_user, $open, $role_counter;
 	$assigned = 0;
 	if(isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'agenda_timing') )
 		return timeplanner($atts, $content);
@@ -1322,9 +1322,6 @@ function toastmaster_short($atts=array(),$content="") {
 	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
 	
 	$assignments = get_role_assignments($post->ID, $atts);
-	//$output .= '<pre>'.var_export($assignments,true).'</pre>';
-	//return $output;
-	//$backup .= var_export($atts,true);
 	$permalink = rsvpmaker_permalink_query($post->ID);
 	
 	if(isset($_REQUEST["reorder"]))
@@ -1903,13 +1900,16 @@ if($toastmaster && is_numeric($toastmaster))
 }
 
 function role_post() {
-
-if(!is_club_member() || empty($_POST["post_id"]))
+if(!is_club_member() || empty($_POST["post_id"]) )
 	return;
 
 global $current_user;
-global $wpdb;
+global $wpdb, $post;
 $post_id = (int) $_POST["post_id"];
+if(!$post_id)
+	$post_id = $post->ID;
+if(!$post_id)
+	return;
 $timestamp = get_rsvp_date($post_id);
 $is_past = (time() > strtotime($timestamp));
 
@@ -1948,16 +1948,16 @@ if(isset($_POST["agenda_note"]))
 if(isset($_POST["editor_assign"]) )
 	{
 		$edit_log = array();
+		$allzeroes = true;
 		foreach($_POST["editor_assign"] as $role => $user_id)
 		{
 			if(isset($_POST['recommend_instead'.$role]))
 			{
 				$editor_id = (int) $_POST['editor_id'];
 				tm_recommend_send($role,$user_id,get_permalink($post_id),preg_replace('/[^0-9]/','',$role),$post_id,$editor_id);
-				update_post_meta($post_id,$role,0);
+				//update_post_meta($post_id,$role,0);
 				continue;
 			}
-			$timestamp = get_rsvp_date($post_id);
 			$was = get_post_meta($post_id,$role,true);
 			if($was != $user_id)
 				{
@@ -1967,9 +1967,10 @@ if(isset($_POST["editor_assign"]) )
 					{
 					if($user_id > 0)
 						{
+						$allzeroes = false;
 						do_action('toastmasters_agenda_notification',$post_id,$actiontext,$user_id);
 						}
-					$log = get_member_name($current_user->ID) .' assigned '.$role.' to '.get_member_name($user_id).' for '.date('F jS, Y',strtotime($timestamp));
+					$log = get_member_name($current_user->ID) .' assigned '.$role.' to '.get_member_name($user_id).' for '.$timestamp;
 					if($was)
 						$log .= ' (was: '.get_member_name($was).')';
 					$edit_log[] = $log;
@@ -2009,6 +2010,9 @@ if(isset($_POST["editor_assign"]) )
 		update_option( '_tm_updates_logged', strtotime('+ 2 minutes') );
 	}
 	awesome_wall("edited role signups ",$post_id);
+
+	//if($allzeroes)
+		//wp_mail('david@carrcommunications.com','allzeroes error on '.$_SERVER['server_name'],implode("\n",$edit_log));
 	}
 
 if(isset($_POST["_manual"]))
@@ -5169,7 +5173,7 @@ function rsvpmaker_agenda_notifications ($permalink) {
 	{
 		if(is_edit_roles())
 		{
-		$notify['rmedit'] = sprintf('<span style="color:red; font-weight: bold">Caution:</span> Open roles are shown below with suggested assignments. These are <strong>NOT yet</strong> saved to the agenda. To make assignments, accept or change each suggestion, then scroll to the bottom and click Save Changes.<br />Switch Mode:<ul><li><a href="%s">Edit Signups</a> (no suggestions)</li><li><a href="%s">Recommend</a> (suggestions, members must confirm)</li><li><a href="%s">Member Signup</a></li></ul>.',$edlink, $reclink,$signup);
+		$notify['rmedit'] = sprintf('<span style="color:red; font-weight: bold">Caution:</span> Open roles are shown below with suggested assignments. These are <strong>NOT yet</strong> saved to the agenda. To make assignments, accept or change each suggestion, then scroll to the bottom and click Save Changes.<br />Switch Mode:<ul><li><a href="%s">Edit Signups</a> (no suggestions)</li><li><a href="%s">Recommend (Member Must Confirm)</a> (suggestions, members must confirm)</li><li><a href="%s">Member Signup</a></li></ul>.',$edlink, $reclink,$signup);
 		
 	$assign_ok = get_user_meta($current_user->ID,'assign_okay',true);
 	if(empty($assign_ok) || ($assign_ok < time()))
@@ -5304,7 +5308,7 @@ function agenda_menu($post_id, $frontend = true) {
 		$allow_assign = get_option('allow_assign');
 		if(($allow_assign == 'yes') || ( ($allow_assign == 'editor') && current_user_can('edit_others_rsvpmakers') ) )
 		$link .= '<li><a href="'.$permalink.'edit_roles=1&rm=1"'.$blank.'>'.__('Suggest Assignments','rsvpmaker-for-toastmasters').'</a></li>';
-		$link .= '<li><a href="'.$permalink.'recommend_roles=1&rm=1"'.$blank.'>'.__('Recommend','rsvpmaker-for-toastmasters').'</a></li>';
+		$link .= '<li><a href="'.$permalink.'recommend_roles=1&rm=1"'.$blank.'>'.__('Recommend (Member Must Confirm)','rsvpmaker-for-toastmasters').'</a></li>';
 		$link .= '<li><a href="'.$permalink.'reorder=1"'.$blank.'>'.__('Reorder','rsvpmaker-for-toastmasters').'</a></li>';
 		if($frontend)
 		{
@@ -6788,6 +6792,7 @@ return sprintf('<form id="edit_roles_form" method="post" action="%s"">
 }
 
 function time_tally_include ($post_id) {
+ob_start();
 ?>
 <script>
 jQuery(document).ready(function($) {
@@ -6799,9 +6804,11 @@ var agenda_add_minutes =  function (dt, minutes) {
 }
 
 var agenda_time_tally =  function () {
+	console.log('agenda time tally start');
 	time_tally = new Date($('#startdate<?php echo $post_id; ?>').attr('datetime'));//start time
     $('.tweakminutes').each(function(index) {
      var target = $(this).attr('timetarget');
+	 console.log(target);
 	  	var hour = time_tally.getHours();
 		var minute = time_tally.getMinutes();
 		hour = (hour >= 12)? hour - 12: hour;
@@ -6849,9 +6856,9 @@ $('.tweakcount').on('change', function(){
 
 });
 </script>	
-<?php		
+<?php
+return ob_get_clean();
 }
-
 
 function recommend_hash($role, $user,$post_id = 0) {
 global $post;

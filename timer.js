@@ -14,6 +14,7 @@ var correction = 0;
 var lastdata;
 var lastupdate = 0;
 var checktimer = 15;
+var instructionsOn = true;
 
 function timeoutCheck() {
     var beenwaiting = new Date().getTime();
@@ -64,7 +65,7 @@ function setBackgroundColor(color) {
         colorLabel = 'Red';
     }
     else if(color == 'start') {
-        colorLabel = 'Timing...';        
+        colorLabel = 'Timing';       
         colorCode = '#EFEEEF';
     }
     else {
@@ -170,11 +171,10 @@ function refreshView() {
     $('iframe').css("width", window.innerWidth - 100);
     $('.timer-controls').hide();
     $('#checkcontrols').show();
-    //checkColorChange(); // check now
-/*    gotvotetimer = setInterval(function(){
+    checkColorChange(); // check now
+    gotvotetimer = setInterval(function(){
     checkColorChange();	
     }, 15000);
-*/
     $('#checkstatus').html('Click <strong>Check Now</strong> to start checking for Timer updates');
     if(timer)
         timer.resetButton();
@@ -209,6 +209,7 @@ $('#popup').click(function(){
         colorWin.document.title = 'Timing Light';
         //window.resizeBy(window.innerWidth,50);
         setBackgroundColor(colorNow);
+        colorWin.addEventListener("unload", function(event) { colorWin = undefined });
     }
 return false;
 }); 
@@ -289,11 +290,18 @@ checkColorChange();
 }
 );
 
-$('#hideit').click (
-    function() {
-        $('#jitsi').hide();
-    }
+$('#hideit').click ( function() {
+    hideInstructions();
+}
 );
+
+function hideInstructions() {
+    if(instructionsOn) {
+        $('#instructions').hide();
+        $('#hideit').hide();
+    }
+    instructionsOn = false;
+}
 
 var TSTimer = (function () {
     function TSTimer(speeches, ts = null) {
@@ -351,6 +359,7 @@ var TSTimer = (function () {
     };
 
     TSTimer.prototype.startButton = function () {
+        hideInstructions();
         if (this.started) {
             if(colorWinOpened) {
                 colorWin.document.getElementById('popuplabel').innerHTML = 'Paused';
@@ -374,7 +383,7 @@ var TSTimer = (function () {
     TSTimer.prototype.setElementText = function (elapsedSeconds) {
 		this.formattedTime = this.formatTime(elapsedSeconds);
         var view = $('#view').children("option:selected").val();
-            if(view == 'timer') {
+            if((view == 'timer') || view== 'self') {
                 $('#smallcounter').text(this.formattedTime);
             }
             //else 
@@ -520,12 +529,13 @@ var TSTimer = (function () {
 		if($('#showdigits').is(':checked'))
 			$('#trafficlight').text(this.formattedTime);
         var view = $('#view').children("option:selected").val();
-        if(view == 'timer') {
+        if((view == 'timer') || view== 'self') {
     		this.logStopTime();
             $('#smallcounter').text(this.formattedTime);
             sendTimerSignal({status: 'stop'});            
         }
         clearTimeout(this.timerToken);
+        setBackgroundColor('stop');
     };
 
 	TSTimer.prototype.logStopTime = function () {
@@ -592,5 +602,20 @@ var TSTimer = (function () {
     speeches.push(new SpeechType("Evaluation", "2:00", "2:30", "3:00", "st-evaluation"));
     speeches.push(new SpeechType("Icebreaker", "4:00", "5:00", "6:00", "st-icebreaker"));
     timer = new TSTimer(speeches);
-    timer.setDefault();	
+    timer.setDefault();
+    
+    $('#enlargecontrols').click( function() {
+            $('#timelog').css("font-size",'16px');
+            $('#timelog').css("width",'200px');
+            $('#dropdowntime').css("width",'200px');
+            $('#speakername').css("width",'200px');
+            $('#correction').css("width",'190px');
+            $('#red-light').css("width",'200px');
+            $('#green-light').css("width",'200px');
+            $('#yellow-light').css("width",'200px');
+            $('.colorbuttons').css("width",'200px');
+            hideInstructions();
+            $('#enlargecontrols').hide();
+    });        
+
 });//end jquery closure

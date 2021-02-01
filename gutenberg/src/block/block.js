@@ -432,35 +432,33 @@ class RoleInspector extends Component {
 			agenda_timing[index][att] = newvalue;
 			agenda_time_array = timing_summary();
 			setAttributes({timing: agenda_time_array});
-		}	
+		}
+
 		var array20 = [{value: '0', label: __('Minutes allowed (optional)') }];
-		var array240 = [{value: '0', label: __('Minutes allowed (optional)') }];
 		for(var i = 1; i <= 20; i++) {
 			array20.push({value: i.toString(), label: i.toString() });
 		}
+		var countarray = [];
+		for(var i = 1; i <= 20; i++) {
+			countarray.push({value: i.toString(), label: i.toString() });
+		}
+
+		var array240 = [{value: '0', label: __('Minutes allowed (optional)') }];
 		for(var i = 1; i <= 240; i++) {
 			array240.push({value: i.toString(), label: i.toString()});
 		}
 
 return (	
 <InspectorControls key="roleinspector">
-<div style={ {width: '45%', float: 'left'} }>	<SelectControl
+<div style={ {width: '60%'} }>	<SelectControl
 		label={ __( 'Count', 'rsvpmaker-for-toastmasters' ) }
 		value={ count }
-		options={ array20 }
+		options={ countarray }
 		onChange={ ( count ) => setAttributes( { count } ) }
-		options={ array20 }
 	/>
 	</div>
-	<div style={{width: '45%', float: 'left', marginLeft: '5%' }}><SelectControl
-							label={ __( 'Start From', 'rsvpmaker-for-toastmasters' ) }
-							value={ start }
-							onChange={ ( start ) => setAttributes( { start } ) }
-							options={ array20 }
-						/></div>
 <div>
-<p><em><strong>Count</strong> sets multiple instances of a role like Speaker or Evaluator. <strong>Start</strong> is 1 except for complex agendas.</em></p>
-<p><em>Complex agenda example: Two blocks of 3 speeches each, separated by another activity. Make <strong>Count</strong> 3 for both blocks and set <strong>Start</strong> to 4 for the second block (starts with Speaker #4).</em></p>
+<p><em><strong>Count</strong> sets multiple instances of a role like Speaker or Evaluator.</em></p>
 </div>
 <div style={{width: '45%', float: 'left' }}>
 					<SelectControl

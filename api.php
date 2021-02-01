@@ -83,12 +83,16 @@ class WPTContest_VoteCheck extends WP_REST_Controller {
 	  }
   
 	public function get_items_permissions_check($request) {
-	  return true;
+		global $current_user;
+		$post_id = $request['post_id'];
+		$dashboard_users = get_post_meta($post_id,'tm_contest_dashboard_users',true);
+		return in_array($current_user->ID,$dashboard_users);
 	}
   
   public function get_items($request) {
-	  global $wpdb;
-	  $votes = toast_scores_check($request['post_id']);
+	  global $wpdb, $current_user;
+	  $post_id = $request['post_id'];
+	  $votes = toast_scoring_update_get($post_id);
 	  return new WP_REST_Response($votes, 200);
 	}
 }
@@ -270,7 +274,7 @@ class Editor_Assign extends WP_REST_Controller {
 		}
 	$name = get_member_name($user_id);
 	$status = sprintf('%s assigned to %s',preg_replace('/[\_0-9]/',' ',$role),$name);
-	$log = get_member_name($editor_id) .' assigned '.clean_role($role).' to '.get_member_name($user_id).' for '.date('F jS, Y',strtotime($timestamp));
+	$log = get_member_name($editor_id) .' assigned '.clean_role($role).' to '.get_member_name($user_id).' for '.$timestamp;
 	if($was)
 		$log .= ' (was: '.get_member_name($was).')';
 	$log .= ' <small><em>(Posted: '.date('m/d/y H:i').')</em></small>';

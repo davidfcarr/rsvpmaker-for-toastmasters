@@ -90,6 +90,7 @@ if(isset($_GET['claim_timer']))
     $is_timer = true;
 
 $widthadj = ($is_timer) ? 100 : 50;
+$scriptversion = (isset($_GET['css'])) ? time() : date('Ymd');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,16 +102,11 @@ $widthadj = ($is_timer) ? 100 : 50;
   <meta name="viewport" content="width=device-width"/>
 
   <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v=0525'); ?>" rel="stylesheet" />
+  <link href="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.css?v='.$scriptversion); ?>" rel="stylesheet" />
  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-	<style>
-		#voting {background-color: #fff;}
-		#colorlabel {position: absolute; left: 300px; top: 300px; font-size: 80px;font-weight:bolder;}
-	</style>
-
-<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=').date('Ymd');?>"></script>
+<script src="<?php echo plugins_url('rsvpmaker-for-toastmasters/timer.js?v=').$scriptversion;?>"></script>
 <style>
 <?php 
 if(isset($_GET['embed']) && ($_GET['embed'] == 'zoom'))
@@ -124,11 +120,6 @@ display: none;
 <?php    
 }
 ?>
-
-#viewcontrol {
-    float: right;
-    max-width: 250px;
-}
 
 @media only screen and (max-width: 400px) {
   #viewcontrol {
@@ -154,10 +145,10 @@ if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
 <div id="body">
     <div>
 <div id="viewcontrol">View <select id="view">
-        <option value="normal">Normal</option>
-        <option value="self">Self Timer</option>
-        <option value="timer" <?php if($is_timer) echo ' selected="selected"' ?> >Timer</option>
-</select><button id="popup">Popup Light</button> <!--button id="timerpopup">Timer</button--></div>
+        <option value="self">Timer (no sync)</option>
+        <option value="timer">Timer (sync with Audience)</option>
+        <option value="normal">Audience</option>
+</select><button id="popup">Popup Light</button> <button id="enlargecontrols">Enlarge</button> <button id="hideit">Hide Instructions</button></div>
 
 <p id="explanation">The background of this page (and the Popup Timer window) act as timing lights.</p>
 
@@ -182,6 +173,50 @@ if(empty($contestants))
 else
 {
 $order = get_post_meta($post->ID,'tm_scoring_order',true);
+
+if(empty($order))
+{
+echo '<p>Refresh this page once the contestant order has been set.</p>';
+?>
+<div id="order_status"></div>
+<script>
+jQuery(document).ready(function($) {
+
+function refreshOrder() {
+$('#score_status').html('Checking for contestant order ...');
+$.get( "<?php echo site_url('/wp-json/wptcontest/v1/order/'.$post->ID); ?>", function( data ) {
+console.log(data);
+if(Array.isArray(data)) {
+	$('#order_status').html('Order set, reload the page now if it does not do so automatically');
+	location.reload();	
+}
+else
+  $('#order_status').html('Order still not set');
+});	
+}
+
+setInterval(function(){
+  refreshOrder();	
+}, 10000);
+	
+$('#track_role').on('change', function(){
+var role = $(this).val();
+if(role == '')
+	{
+$('#role_track_status').html('');
+$('#manual_contestants').show();		
+	}
+else {
+$('#role_track_status').html('<p>Contestant names will be pulled from the '+role+' role on the agenda</p>');
+$('#manual_contestants').hide();	
+}
+});
+
+});
+</script>
+<?php
+}
+
 if(empty($order))
 	$order = $contestants;
 
@@ -242,8 +277,8 @@ for($i = 1; $i <= $count; $i++) {
 
 }
 ?>
-    <select id="dropdowntime">
-    <option value="">Speech Type</option>
+    <div><select id="dropdowntime">
+    <option value="">Speaker/Speech Type</option>
     <?php echo $options; ?>
     <option value="Speech (5-7)|5:00|6:00|7:00|standard">Speech (5-7)</option>
     <option value="Table Topics|1:00|1:30|2:00|tt">Table Topics</option>
@@ -261,17 +296,19 @@ for($i = 1; $i <= $count; $i++) {
     <option value="Three Minutes|2:00|2:30|3:00|3minute">Three Minutes</option>
     <option value="Four Minutes|3:00|3:30|4:00|4minute">Four Minutes</option>
     <option value="Five Minutes|4:00|4:30|5:00|5minute">Five Minutes</option>
-    </select>
+    </select></div>
+    <div>
     <input type="hidden" id="speechid" />    
-    <input type="text" placeholder="Speaker Name" id="speakername" size="30"> 
+    <input type="text" placeholder="Speaker Name" id="speakername" size="30">
+    </div>
     <span class="hidecount">
-          <input id="green-light" type="text" class="greenyellowred">
-          <input id="yellow-light" type="text" class="greenyellowred">
-          <input id="red-light" type="text" class="greenyellowred">
+          <div><input id="green-light" type="text" class="greenyellowred"></div>
+          <div><input id="yellow-light" type="text" class="greenyellowred"></div>
+          <div><input id="red-light" type="text" class="greenyellowred"></div>
     </span>
 
     <button class="btn-primary btnStart" id="btnStart" type="button" value="Start">Start</button>
-    <button class=" btn-default btnReset" id="btnReset" type="button" value="Reset">Reset</button>
+    <button class=" btn-default btnReset" id="btnReset" type="button" value="Reset">Stop</button>
 	<select id="correction">
 	  <option value="0" selected="selected">Correction (0)</option>
 	  <?php 
@@ -374,19 +411,19 @@ if(!empty($_GET['embed']) && empty($name))
 elseif(empty($_GET['embed']))
     {
         ?>
-<div id="jitsi" style="background-color: #fff;">
-<div style="width: 100px; float: right;"><button id="hideit">Hide Instructions</button></div>
-<h2>May 2020 Update</h2>
-<p><em>In normal view, this tool checks the server for updates every 15 seconds and calculates the difference between the viewer's clock and the Timer's clock. Display of green, yellow, and red will be synchronized. The message that the timer has stopped the clock may be delayed by up to 15 seconds (in other words, you may see red even if the Timer has already stopped the clock).</em></p>
-<hr />
-<p>This screen displays in 3 views: Normal (speaker view), Self Timer, and Timer (the person showing timing lights to others). In Timer view, the green, yellow, and red colors are broadcast to everyone watching the Normal view (with a delay of about 1 second). Only one person should act as Timer.</p>
-<p>If you are listed on the agenda as Timer, the screen will open in Timer mode. Or you can use the dropdown list in the upper right hand corner to claim that role.</p>
-<p>How to set this up as a speaker:</p>
-<ul><li>In Normal view, click the Popup Light button in the upper right hand corner of the screen to get a small popup window that will change colors.</li><li>You can now minimize the bigger browser window and leave the timing light window parked in a corner of your screen.</li><li>In Zoom, exit full screen and size the Zoom window so you can still see the timing light.</li><li>For screen sharing, share individual applications rather than your whole desktop.</li></ul>
-<figure class="wp-block-image size-large"><img src="https://i2.wp.com/wp4toastmasters.com/wp-content/uploads/2020/05/timer-zoom-screensharing.jpg?fit=614%2C345&amp;ssl=1" alt="" class="wp-image-1138251"/></figure>
-<br />
-<p>Below: Use Reading Mode in PowerPoint to show slides without taking up the whole screen. Size the PowerPoint window so you can still see the timing light.</p>
-<figure class="wp-block-image size-large"><img src="https://wp4toastmasters.com/wp-content/uploads/2020/05/powerpoint-reading.png" alt="" class="wp-image-1138253"/></figure>
+<div id="jitsi">
+<div id="instructions">
+<h1>Usage Tips</h1>
+<p>Speakers and Evaluators from the agenda should be listed under Speakers/Speech Type, along with the associated time for their speeches. This is also true for contestants in a speech contest.</p>
+<p>You can also set the standard timing for Table Topics and Evaluations, or set custom timing. The Correction control can be used to make minor adjustments, for example if you started timing a few seconds late.</p>
+<p>In a Zoom meeting, you can share the color indicators using webcam software or a video streaming software such as <a href="https://obsproject.com/" target="_blank">OBS Studio</a>. (<a href="https://www.wp4toastmasters.com/2020/03/22/speech-timer-zoom/" target="_blank">Learn how</a>)</p>
+<p>Another technique is to share a <a href="<?php echo get_permalink();?>?timer=1">view timer link</a> with the audience. See <a href="https://www.wp4toastmasters.com/2020/05/10/online-timer-zoom/" target="_blank">blog post</a>.</p>
+
+<h2>Contest Timer</h2>
+<p>When used in the context of a contest, a Timer's Report form is displayed that you should use to report results even if you share the timer colors some other way. Contest organizers will be able to see within seconds whether anyone has been disqualified.</p>
+<p>Contestants will be listed under Speakers/Speech Type, according to the official speaking order. When you click Stop on the timer, the speaker's time will be added to the Timer's Report form, with the Disqualified checkbox check for times over or under by more than 30 seconds. You can make adjustments as necessary.</p>
+</div>
+
 </div>
         <?php
     }
