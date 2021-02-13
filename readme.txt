@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.6
-Stable tag: 4.2.1
+Stable tag: 4.2.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 4.2.3 =
+
+* Support for custom timer background images
+
+= 4.2.2 =
+
+* A few more tweaks to timer. Words Green, Yellow, Red appear in main screen, not just popup.
+* Checking that Jitsi integration still works.
 
 = 4.2.1 =
 

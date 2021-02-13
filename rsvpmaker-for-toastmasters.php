@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.2.1
+Version: 4.2.3
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -2595,6 +2595,7 @@ if(is_multisite())
 $userdata = get_userdata($user_id);
 $msg = $userdata->first_name.' '.$userdata->last_name.' '.__('added to website','rsvpmaker-for-toastmasters');
 echo '<div class="notice notice-success is-dismissible"><p>'.$msg.'</p></div>';
+return;
 }
 	
 if(isset($_REQUEST["unsubscribe"]))
@@ -3570,14 +3571,8 @@ do_action('toastmasters_settings_extra');
 
 function online_meeting_settings () {
 ?>
-<p>Jitsi online meeting integration, with a speaker timing lights function, is enabled by default. With a little extra configuration, Zoom integration can also be enabled.</p>
-<p><em>Zoom support is a work in progress. So far, users must authenticate at zoom.us first before accessing the page, or the video feed is not displayed.</em></p>
+<p>Jitsi online meeting integration, embedded in a web page with a speaker timing lights function, is enabled by default. You can remove it from the agenda menu by selecting None. For our current (2021) advice on using the timing lights feature with Zoom, see this <a href="https://www.wp4toastmasters.com/2021/02/02/showing-the-online-timer-in-zoom-with-obs-studio-2021-tutorial/">blog post</a>.</p>
 <?php
-if(isset($_POST['zoomon']))
-{
-	activate_plugin('wp-zoom-addon/wp-zoom-addon.php');
-	update_option('tm_online_meeting',array('platform' => 'Zoom'));
-}
 if(isset($_POST['tm_online_meeting']))
 	{
 		$online = $_POST['tm_online_meeting'];
@@ -3589,65 +3584,19 @@ else
 	$online = get_option('tm_online_meeting');
 }
 
-if(!empty($_POST['zoom_api_key']))
-	update_option('zoom_api_key',$_POST['zoom_api_key']);
-if(!empty($_POST['zoom_api_secret']))
-	update_option('zoom_api_secret',$_POST['zoom_api_secret']);
-
 $platform = (empty($online['platform'])) ? 'Jitsi' : $online['platform'];
-$personal_meeting_id = (empty($online['personal_meeting_id'])) ? '' : $online['personal_meeting_id'];
-$password = (empty($online['password'])) ? '' : $online['password'];
-
-if ( is_plugin_active( 'wp-zoom-addon/wp-zoom-addon.php' ) ) {
-echo '<h3>Zoom add-on enabled</h3>';
-$zoom_api_key                   = get_option( 'zoom_api_key' );
-$zoom_api_secret                = get_option( 'zoom_api_secret' );
-$zoom_url_enable                = get_option( 'zoom_url_enable' );
-$zoom_vanity_url                = get_option( 'zoom_vanity_url' );
-$zoom_alternative_join          = get_option( 'zoom_alternative_join' );
-$zoom_help_text_disable         = get_option( 'zoom_help_text_disable' );
-$zoom_compatiblity_text_disable = get_option( 'zoom_compatiblity_text_disable' );
-$zoom_subscribe_link            = get_option( 'zoom_subscribe_link' );
-$settings_url = admin_url('admin.php?page=zoom-video-conferencing-settings');
-if($zoom_api_key)
-	echo '<p>API key is set</p>';
-else
-	printf('<p>API key NOT set. <a href="%s">Settings</a></p>',$settings_url);
-if($zoom_api_secret)
-	echo '<p>API secret is set</p>';
-else
-	printf('<p>API secret NOT set. <a href="%s">Settings</a></p>',$settings_url);
 	?>
 	<form action="<?php echo admin_url('options-general.php?page=wp4toastmasters_settings');?>" method="post">
 	<p>Platform
 	<br /><select name="tm_online_meeting[platform]">
 	<option value="Jitsi" <?php if($platform == 'Jitsi') echo ' selected="selected" '; ?> >Jitsi</option>
-	<option value="Zoom" <?php if($platform == 'Zoom') echo ' selected="selected" '; ?>>Zoom</option>
-	<option value="Both" <?php if($platform == 'Both') echo ' selected="selected" '; ?> >Both</option>
+	<option value="None" <?php if($platform == 'None') echo ' selected="selected" '; ?> >None</option>
 	</select>
-	</p>
-	<p>Zoom Personal Meeting ID
-	<br /><input name="tm_online_meeting[personal_meeting_id]" value="<?php echo $personal_meeting_id;?>" />
 	</p>
 	
 	<p><button>Submit</button></p>
 	</form>
 	<?php	
-} 
-else {
-	if(file_exists(WP_PLUGIN_DIR.'/wp-zoom-addon/wp-zoom-addon.php')) {
-		echo '<p>The plugin required for Zoom integration is installed but not activated.</p>';
-		echo '<p>Before activating the plugin, you will need to optain the required integration credentials, a "key" and a "secret." You do that by visiting the <a href="https://marketplace.zoom.us/develop/create">Create App</a> screen in the Zoom marketplace and choosing JTW (see image below).</p>';
-		printf('<form method="post" action="%s"><input type="hidden" name="zoomon" value="1">
-		<p>Key<br /><input type="text" name="zoom_api_key"></p>
-		<p>Secret<br /><input type="text" name="zoom_api_secret"></p>
-		<button>Activate</button></form>',admin_url('options-general.php?page=wp4toastmasters_settings'));
-		$imageurl = plugins_url('/rsvpmaker-for-toastmasters/images/zoom-jwt.png');
-		echo '<p><img src="'.$imageurl.'" width="600" height="450" /></p>';
-		}
-	else
-		echo '<p>To enable Zoom integration you must download and install <a href="https://elearningevolve.com/products/category/wordpress-plugins/" target="_blank">Zoom integration plugin</a> by eLearning evolve</p>';
-}
 
 }
 
@@ -5339,12 +5288,13 @@ function agenda_menu($post_id, $frontend = true) {
 	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'intros=show">'.__('Speech Introductions','rsvpmaker-for-toastmasters').'</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'scoring=dashboard">'.__('Contest Scoring Dashboard','rsvpmaker-for-toastmasters').'</a></li>';
 	$online = get_option('tm_online_meeting');
-	$platform = (empty($online['platform'])) ? 'Jitsi' : $online['platform'];
-	if($platform != 'Zoom')
-	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1&embed=jitsi">'.__('Online Meeting (Jitsi)','rsvpmaker-for-toastmasters').'</a></li>';
-	if(($platform == 'Zoom') || ($platform == 'Both'))
-		$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1&embed=zoom">'.__('Online Meeting (Zoom)','rsvpmaker-for-toastmasters').'</a></li>';
-	$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1">'.__('Online Timer','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
+	$platform = (isset($online['platform'])) ? $online['platform'] : '';
+	if(($platform == 'Jitsi') || empty($platform))
+		$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1&embed=jitsi">'.__('Online Meeting (Jitsi)','rsvpmaker-for-toastmasters').'</a></li>';
+	if($platform == 'Jitsi')
+		$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1&embed=jitsi&claim_timer=1">'.__('Online Timer (Jitsi)','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
+	else
+		$link .= '<li class="last"><a target="_blank" href="'.$permalink.'timer=1">'.__('Online Timer','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
 
 	$template_id = get_post_meta($post->ID,'_meet_recur',true);
 	$layout_id = get_option('rsvptoast_agenda_layout');
@@ -6647,18 +6597,18 @@ class AwesomeWidget extends WP_Widget {
 					{
 					$t = strtotime($row->datetime);
 					$title = $row->post_title .' '. strftime($dateformat,$t );
-					$permalink = get_permalink($row->postID);
+					$permalink = get_permalink($row->ID);
 					//if(!isset($signup))
 						//$signup = login_redirect($permalink);
 					//$ev[ $row->postID ] = sprintf('<a href="%s">%s', login_redirect($permalink), $title);
 					if(is_user_logged_in())
-					$ev[ $row->postID ] = sprintf('<a class="meeting" href="%s">%s</a>', $permalink, $title);
+					$ev[ $row->ID ] = sprintf('<a class="meeting" href="%s">%s</a>', $permalink, $title);
 					else
 					{
-						$ev[ $row->postID ] = sprintf('<a class="meeting" href="%s">%s</a>', $permalink, $title);
-						$ev[ $row->postID ] .= sprintf('<div class="login_signup">&nbsp;&#8594; <a href="%s">%s</a>', login_redirect($permalink), __('Login/Sign Up','rsvpmaker-for-toastmasters'));	
+						$ev[ $row->ID ] = sprintf('<a class="meeting" href="%s">%s</a>', $permalink, $title);
+						$ev[ $row->ID ] .= sprintf('<div class="login_signup">&nbsp;&#8594; <a href="%s">%s</a>', login_redirect($permalink), __('Login/Sign Up','rsvpmaker-for-toastmasters'));	
 					}
-					$ev[ $row->postID ] = '<div class="meetinglinks">'.$ev[ $row->postID ].'</div>';
+					$ev[ $row->ID ] = '<div class="meetinglinks">'.$ev[ $row->ID ].'</div>';
 					}
 				}
 			  }// end if dates
@@ -11068,6 +11018,7 @@ $tm_security["manager"]['promote_users'] = 1;
 $tm_security["manager"]['remove_users'] = 1;
 $tm_security["manager"]['delete_users'] = 1;
 $tm_security["manager"]['list_users'] = 1;
+$tm_security["manager"]["upload_files"] = 1;
 
 $tm_security["editor"]["view_reports"] = 1;
 $tm_security["editor"]["view_contact_info"] = 1;
@@ -11083,6 +11034,7 @@ $tm_security["editor"]['promote_users'] = 0;
 $tm_security["editor"]['remove_users'] = 0;
 $tm_security["editor"]['delete_users'] = 0;
 $tm_security["editor"]['list_users'] = 0;
+$tm_security["editor"]["upload_files"] = 1;
 
 $tm_security["author"]["view_reports"] = 1;
 $tm_security["author"]["view_contact_info"] = 1;
@@ -11092,6 +11044,7 @@ $tm_security["author"]["edit_own_stats"] = 0;
 $tm_security["author"]["agenda_setup"] = 0;
 $tm_security["author"]["email_list"] = 1;
 $tm_security["author"]["add_member"] = 0;
+$tm_security["author"]["upload_files"] = 1;
 
 $tm_security["contributor"]["view_reports"] = 1;
 $tm_security["contributor"]["view_contact_info"] = 1;
@@ -11101,6 +11054,7 @@ $tm_security["contributor"]["edit_own_stats"] = 0;
 $tm_security["contributor"]["agenda_setup"] = 0;
 $tm_security["contributor"]["email_list"] = 1;
 $tm_security["contributor"]["add_member"] = 0;
+$tm_security["contributor"]["upload_files"] = 0;
 
 $tm_security["subscriber"]["view_reports"] = 1;
 $tm_security["subscriber"]["view_contact_info"] = 1;
@@ -11109,6 +11063,7 @@ $tm_security["subscriber"]["edit_member_stats"] = 0;
 $tm_security["subscriber"]["edit_own_stats"] = 0;
 $tm_security["subscriber"]["agenda_setup"] = 0;
 $tm_security["subscriber"]["email_list"] = 1;
+$tm_security["subscriber"]["upload_files"] = 0;
 
 //fix for changing display label for this role
 
@@ -11291,7 +11246,7 @@ echo '</form>';
 
 printf('<form method="post" action="%s"><h2>Set for User</h2>',$action);
 echo awe_user_dropdown ('user_id',0, true);
-submit_button();
+submit_button('Show Form');
 if(isset($_REQUEST['tab']) && $_REQUEST['tab'] == 'security')
 {
 ?>

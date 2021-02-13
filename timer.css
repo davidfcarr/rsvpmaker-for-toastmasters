@@ -15,10 +15,6 @@ body {
     background-color: #efeeef;
 }
 
-span {
-    font-style: italic
-}
-
 #trafficlight
 {
     height: 100%;
@@ -106,6 +102,8 @@ select {
     left: 150px;
     width: 80%;
     height: 100%;
+    background-repeat:no-repeat;
+    background-size: 100% auto;
 }
 
 #timelog {
@@ -122,4 +120,20 @@ select {
 
 #viewcontrol {
     text-align: center;
+}
+
+#background-image-control {
+    margin-top: 25px;
+}
+
+#timer2021 {
+    width: 200px;
+    float: right;
+    margin-top: 10px;
+    margin-right: 5px;
+    background-color: rgba(255,255, 255, 0.8);
+    border-radius: 25px;
+    text-align: center;
+    font-size: 60px;
+    display: none;
 }

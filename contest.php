@@ -1483,7 +1483,7 @@ else
 	}
 
 	$lastpoint = 0;
-	$lastpointint = 0;
+	$lastpointsint = 0;
 	$topnopoints = '<h3>Without Scores</h3>';
 
 	foreach($ranking as $contestant => $points)
@@ -1505,7 +1505,7 @@ else
 		$topcount++;
 	}
 	$top .= $tiebreaker_status . $timer_report.'</div>';
-	if($alljudgesvoted && !empty($tiebreaker_status) )
+	if(!empty($alljudgesvoted) && !empty($tiebreaker_status) )
 		$top = apply_filters('wpt_contest_alljudgesvoted',$top);
 	$output = $top . $topscores . $topnopoints . $output;
 }

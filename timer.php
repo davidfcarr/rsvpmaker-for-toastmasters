@@ -14,7 +14,17 @@ function timer_display_time_stoplight ($content, $name,$speechid) {
         }
         return $output;
     }
-    
+
+function timer_get_background_image($key) {
+global $wpdb;
+$o = '';
+$results = $wpdb->get_results("SELECT guid, post_title from $wpdb->posts where post_type='attachment' and post_title like '%$key%' ");
+foreach($results as $row) {
+    $o .= sprintf('<option value="%s">%s</option>',$row->guid,$row->post_title);
+    }
+return $o;
+}
+
 function timer_get_stoplight_options ($name, $green,$red, $speechid='') {
         if(empty($yellow))
         {
@@ -89,8 +99,16 @@ if($post->post_type != 'rsvpmaker')
 if(isset($_GET['claim_timer']))
     $is_timer = true;
 
+if(isset($_GET['nosync'])) {
+    $nosync = true;
+    update_post_meta($post->ID,'nosync',true);
+}
+else 
+    $nosync = get_post_meta($post->ID,'nosync',true);
+    
 $widthadj = ($is_timer) ? 100 : 50;
-$scriptversion = (isset($_GET['css'])) ? time() : date('Ymd');
+$is_jitsi = (isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'));
+$scriptversion = (isset($_GET['css'])) ? time() : date('Ymdh');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -144,11 +162,11 @@ if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
 <body>
 <div id="body">
     <div>
-<div id="viewcontrol">View <select id="view">
+<div id="viewcontrol"><span <?php if($nosync) echo ' style="display:none;" '?> >View <select id="view" >
         <option value="self">Timer (no sync)</option>
-        <option value="timer">Timer (sync with Audience)</option>
-        <option value="normal">Audience</option>
-</select><button id="popup">Popup Light</button> <button id="enlargecontrols">Enlarge</button> <button id="hideit">Hide Instructions</button></div>
+        <option value="timer"<?php if($is_jitsi && $is_timer) echo ' selected="selected" '; ?>>Timer (sync with Audience)</option>
+        <option value="normal" <?php if($is_jitsi && !$is_timer) echo ' selected="selected" '; ?> >Audience</option>
+</select></span><button id="popup">Popup Light</button> <button id="enlargecontrols">Enlarge</button> <button id="hideit">Hide Instructions</button></div>
 
 <p id="explanation">The background of this page (and the Popup Timer window) act as timing lights.</p>
 
@@ -240,6 +258,8 @@ preg_match('/role="Speaker" count="([^"])"/',$post->post_content,$matches);
 $count = $matches[1];
 }
 
+if(empty($options))
+$options = '';
 for($i = 1; $i <= $count; $i++) {
 	//echo 'Lookup '.'_Speaker_'.$i;
 	$member_id = get_post_meta($post->ID,'_Speaker_'.$i,true);
@@ -251,7 +271,7 @@ for($i = 1; $i <= $count; $i++) {
 		$member = get_userdata($member_id);
 		$speakername = $member->first_name.' '.$member->last_name;
 		}
-		else $name = 'Guest'; // guest
+		else $speakername = $member_id; // guest
 		//print_r($member);
 		$dt = get_post_meta($post->ID, '_display_time_Speaker_'.$i, true);
 		if(empty($dt))
@@ -280,6 +300,13 @@ for($i = 1; $i <= $count; $i++) {
     <div><select id="dropdowntime">
     <option value="">Speaker/Speech Type</option>
     <?php echo $options; ?>
+    <?php if(isset($_GET['contest'])) { ?> 
+    <option value="One Minute|0:30|0:45|1:00|minute">One Minute</option>
+    <option value="Two Minutes|1:00|1:30|2:00|2minute">Two Minutes</option>
+    <option value="Three Minutes|2:00|2:30|3:00|3minute">Three Minutes</option>
+    <option value="Four Minutes|3:00|3:30|4:00|4minute">Four Minutes</option>
+    <option value="Five Minutes|4:00|4:30|5:00|5minute">Five Minutes</option>
+    <?php } ?>
     <option value="Speech (5-7)|5:00|6:00|7:00|standard">Speech (5-7)</option>
     <option value="Table Topics|1:00|1:30|2:00|tt">Table Topics</option>
     <option value="Evaluation|2:00|2:30|3:00|eval">Evaluation</option>
@@ -291,11 +318,13 @@ for($i = 1; $i <= $count; $i++) {
     <option value="Speech (20-30)|20:00|22:30|30:00|20to30">Speech (20-30)</option>
     <option value="Test|0:05|0:10|0:15|test">Test (15 seconds)</option>
     <option value="30 Seconds|0:20|0:25|0:30|30sec">30 Seconds</option>
+    <?php if(!isset($_GET['contest'])) { ?> 
     <option value="One Minute|0:30|0:45|1:00|minute">One Minute</option>
     <option value="Two Minutes|1:00|1:30|2:00|2minute">Two Minutes</option>
     <option value="Three Minutes|2:00|2:30|3:00|3minute">Three Minutes</option>
     <option value="Four Minutes|3:00|3:30|4:00|4minute">Four Minutes</option>
     <option value="Five Minutes|4:00|4:30|5:00|5minute">Five Minutes</option>
+    <?php } ?>
     </select></div>
     <div>
     <input type="hidden" id="speechid" />    
@@ -356,10 +385,7 @@ if(isset($_POST['time']))
 		update_post_meta($post->ID,'_time_report',$timereport);
 		printf('<h2>Recorded</h2><p>%s</p>',$timereport);
 	}
-	if(!empty($disqualified))
-	{
 		update_post_meta($post->ID,'_time_disqualified',$disqualified);
-	}
 	
 	}
 $action = add_query_arg( array(
@@ -393,7 +419,22 @@ $contest_timer = ob_get_clean();
 
 } // end contest output
 echo $contest_timer;
+echo '<p id="background-image-control">Background Image (optional)</p>';
+printf('<p><select class="background-image-picker" id="bg-green"><option value="none">Green Image: None</option>
+<option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-green-1920x1080-c1.jpg">Green TM logo</option>
+<option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-green-1920x1080-c1.jpg">Green TM wordmark</option>
+%s</select></p>',timer_get_background_image('green'));
+printf('<p><select class="background-image-picker" id="bg-yellow"><option value="none">Yellow Image: None</option>
+<option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-yellow-1920x1080-c1.jpg">Yellow TM logo</option>
+<option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-yellow-1920x1080-c1_.jpg">Yellow TM wordmark</option>
+%s</select></p>',timer_get_background_image('yellow'));
+printf('<p><select class="background-image-picker" id="bg-red"><option value="none">Red Image: None</option>
+<option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-red-1920x1080-c1.jpg">Red TM logo</option>
+<option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-red-1920x1080-c1.jpg">Red TM wordmark</option>
+%s</select></p>',timer_get_background_image('red'));
+
 ?>
+<p><a href="https://www.wp4toastmasters.com/knowledge-base/online-timer-tool/">Instructions</a></p>
 </div><!-- end timer controls -->
 		</div>
 
@@ -412,12 +453,15 @@ elseif(empty($_GET['embed']))
     {
         ?>
 <div id="jitsi">
+<?php
+    printf('<div id="timer2021"><img src="%s" width="150" height="155"></div>',plugins_url('rsvpmaker-for-toastmasters/stopwatch.png'));
+?>
 <div id="instructions">
 <h1>Usage Tips</h1>
 <p>Speakers and Evaluators from the agenda should be listed under Speakers/Speech Type, along with the associated time for their speeches. This is also true for contestants in a speech contest.</p>
 <p>You can also set the standard timing for Table Topics and Evaluations, or set custom timing. The Correction control can be used to make minor adjustments, for example if you started timing a few seconds late.</p>
-<p>In a Zoom meeting, you can share the color indicators using webcam software or a video streaming software such as <a href="https://obsproject.com/" target="_blank">OBS Studio</a>. (<a href="https://www.wp4toastmasters.com/2020/03/22/speech-timer-zoom/" target="_blank">Learn how</a>)</p>
-<p>Another technique is to share a <a href="<?php echo get_permalink();?>?timer=1">view timer link</a> with the audience. See <a href="https://www.wp4toastmasters.com/2020/05/10/online-timer-zoom/" target="_blank">blog post</a>.</p>
+<p>In a Zoom meeting, you can share the color indicators using webcam software or a video streaming software such as <a href="https://obsproject.com/" target="_blank">OBS Studio</a>. (<a href="https://www.wp4toastmasters.com/2021/02/02/showing-the-online-timer-in-zoom-with-obs-studio-2021-tutorial/" target="_blank">Learn how</a>)</p>
+<p>Another technique is to share a <a href="<?php echo get_permalink();?>?timer=1&audience=1">view timer link</a> with the audience. See <a href="https://www.wp4toastmasters.com/2020/05/10/online-timer-zoom/" target="_blank">blog post</a>.</p>
 
 <h2>Contest Timer</h2>
 <p>When used in the context of a contest, a Timer's Report form is displayed that you should use to report results even if you share the timer colors some other way. Contest organizers will be able to see within seconds whether anyone has been disqualified.</p>
@@ -447,7 +491,8 @@ elseif($_GET['embed'] == 'zoom')
         }    
     }
 else 
-    echo '<div id="jitsi"></div>';
+
+echo '<div id="jitsi"></div><input type="hidden" id="is_jitsi" value="1" >';
 
 $users = get_users();
 foreach($users as $user)
@@ -495,6 +540,8 @@ api.executeCommand('email', '<?php echo $email;?>');
 
 <?php	
 }
+
+do_action('timer_footer');
 ?>
 </body>
 </html>

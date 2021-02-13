@@ -15,6 +15,9 @@ var lastdata;
 var lastupdate = 0;
 var checktimer = 15;
 var instructionsOn = true;
+var greenimg = '';
+var yellowimg = '';
+var redimg = '';
 
 function timeoutCheck() {
     var beenwaiting = new Date().getTime();
@@ -54,31 +57,55 @@ function colorChange(colorNow) {
 function setBackgroundColor(color) {
     var colorCode = $('body').css('background-color');
     var colorLabel;
+    var colorImage;
     if(color == 'green') {
         colorCode = '#A7DA7E';
         colorLabel = 'Green';
+        colorImage = (greenimg) ? 'url('+greenimg+')' : 'none';
     } else if (color == 'yellow') {
         colorCode = '#FCDC3B';
         colorLabel = 'Yellow';
+        colorImage = (yellowimg) ? 'url('+yellowimg+')' : 'none';
     } else if (color == 'red') {
         colorCode = '#FF4040';
         colorLabel = 'Red';
+        colorImage = (redimg) ? 'url('+redimg+')' : 'none';
     }
     else if(color == 'start') {
         colorLabel = 'Timing';       
         colorCode = '#EFEEEF';
+        colorImage = 'none';
     }
     else {
         colorCode = '#EFEEEF';
         colorLabel = 'Ready';
+        colorImage = 'none';
     }
 
     $('body').css('background-color', colorCode);
+    $('#jitsi').css('background-image', colorImage);
+    hideInstructions();
+    $('#timer2021').text(colorLabel);
     if(colorWin) {
         colorWin.document.body.style.backgroundColor = colorCode;
+        colorWin.document.body.style.backgroundImage = colorImage;
         colorWin.document.getElementById('popuplabel').innerHTML = colorLabel;
     }
 } 
+
+$('.background-image-picker').change(function() {
+    let id = $(this).attr('id');
+    let color = id.replace('bg-','');
+    url = $(this).val();
+    console.log('selected image '+url);
+    if(color == 'green')
+        greenimg = url;
+    if(color == 'yellow')
+        yellowimg = url;
+    if(color == 'red')
+        redimg = url;
+    setBackgroundColor(color);
+});
 
 function audienceStartTimer(data) {
     $('#green-light').val(data.green);
@@ -206,6 +233,9 @@ $('#popup').click(function(){
         colorWin = window.open("about:blank", "Color Light", "width=200,height=100,top=50,left=0");
         colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 20vw; text-align: center; margin-top: 10vw\">Ready</h1></body>");
         colorWin.document.body.style.backgroundColor = '#DDDDDD';
+        colorWin.document.body.style.backgroundSize = 'contain';
+        colorWin.document.getElementById('popuplabel').style.backgroundColor = 'rgba(255,255, 255, 0.8)';
+        colorWin.document.getElementById('popuplabel').style.borderRadius = '25px';
         colorWin.document.title = 'Timing Light';
         //window.resizeBy(window.innerWidth,50);
         setBackgroundColor(colorNow);
@@ -299,6 +329,7 @@ function hideInstructions() {
     if(instructionsOn) {
         $('#instructions').hide();
         $('#hideit').hide();
+        $('#timer2021').show();
     }
     instructionsOn = false;
 }
@@ -359,7 +390,6 @@ var TSTimer = (function () {
     };
 
     TSTimer.prototype.startButton = function () {
-        hideInstructions();
         if (this.started) {
             if(colorWinOpened) {
                 colorWin.document.getElementById('popuplabel').innerHTML = 'Paused';
