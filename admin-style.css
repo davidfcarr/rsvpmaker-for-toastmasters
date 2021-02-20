@@ -17,6 +17,12 @@ section:first-child {
 	display:block;
 }
 */
+
+.member_dues_update p.submit {
+	width: 150px;
+	float: right;
+}
+
 section.nav-tab-active {
 	display:block;
 }

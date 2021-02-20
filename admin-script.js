@@ -4,6 +4,49 @@
 			'X-WP-Nonce': wpt_rest.nonce,
 		}
 	});
+
+	$('.editvoid').click(
+		function() {
+			let x = $(this).val();
+			if(x == 'edit') {
+				let name = $(this).attr('name');
+				let member_id = $(this).attr('member_id');
+				var key = $('#tipaymentkey').val();
+				$('#editline'+member_id).html('<input type="hidden" name="markpaid['+member_id+']" value="1" />Paid until <input type="text" name="until['+member_id+']" value="'+$(this).attr('until')+'" /> Paid to TI <input type="text" name="'+key+'['+member_id+']" value="'+$(this).attr('paid_to_ti')+'" />');	
+			}
+		}
+	);
+
+	$('form.member_dues_update').submit(
+	function (e) {
+		e.preventDefault();
+	// This does the ajax request
+		data = $(this).serialize();
+		$.ajax({
+		url: wpt_rest.url+'rsvptm/v1/dues',
+		method: 'POST',		
+		data: data,
+		success:function(data) {
+			console.log(data);
+			let message = '';
+			if(data.marked_paid)
+				message += data.marked_paid+' ';
+			if(data.paid_ti)
+				message += data.paid_ti+' ';
+			if(data.no_renewal)
+				message += data.no_renewal+' ';
+
+			$('#confirm'+data.member_id).html(message);
+			$('#data-entry-'+data.member_id).hide();
+			$('#member_dues_update_'+data.member_id+' .enter_notes').hide();
+		},
+		error: function(errorThrown){
+		    console.log(errorThrown);
+		}
+	});	  
+		return false;
+	}
+); 
 		
 	$('#default_css').hide();
 	
@@ -320,5 +363,39 @@ fetch(fetchurl, {headers: {'X-WP-Nonce' : wpt_rest.nonce}})
   .then(response => response.json())
   .then(data => $('#'+report+'_content').html(data.content) );
 }
+
+$('.markpaid').click(
+	function() {
+		var id = $(this).attr('id');
+		var paidplan = id.replace('markpaid','paidplan');
+		var member_id = id.replace('markpaid','');
+		var key = $('#tipaymentkey').val();
+
+		$('#'+paidplan).html(' Paid to TI <input type="text" name="'+key+'['+member_id+']" value="" /> ');
+		
+		console.log('member id '+member_id);
+	}
+);
+
+$('#ti-transactions-refresh, #ti-transactions-tab').click(
+	function () {
+		let fetchurl = wpt_rest.url+'rsvptm/v1/money';
+		$('#ti-transactions-content').html('Loading from '+fetchurl+' ...');
+		fetch(fetchurl, {headers: {'X-WP-Nonce' : wpt_rest.nonce}})
+		.then(response => response.json())
+		.then(data => {$('#ti-transactions-content').html(data.content), $('#dues-report-export').text(data.export), $('#dues-report-export').select()});
+		//.then(data => $('#dues-report-export').text(data.export) );
+		}
+);
+
+$('#reminder-thank-you-refresh, #reminder-thank-you-tab').click(
+	function () {
+		let fetchurl = wpt_rest.url+'rsvptm/v1/duesreminders';
+		$('#reminder-thank-you-content').html('Loading from '+fetchurl+' ...');
+		fetch(fetchurl, {headers: {'X-WP-Nonce' : wpt_rest.nonce}})
+		.then(response => response.json())
+		.then(data => $('#reminder-thank-you-content').html(data.content) );
+		}
+);
 
 })( jQuery );

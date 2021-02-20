@@ -3571,6 +3571,7 @@ exit();
 
 function toastmasters_dues () {
 $hook = tm_admin_page_top('Track Dues');
+
 $standard_dues = get_option('toastmasters_dues');
 $newmember_fee = get_option('toastmasters_newmember_fee');
 if(empty($newmember_fee))
@@ -6610,46 +6611,426 @@ set_transient($slug,$form,WEEK_IN_SECONDS);
 return $form;
 }
 
+class DuesExtractor {
+	public $reverse_dues_table = array();
+    function __construct() {
+		$expected_renewal = 45.00;
+		$plus6 = array();
+		$ti_dues = get_option('ti_dues');
+		$club_dues = get_option('club_dues');
+		$new_member_fee = (int) get_option('club_new_member_fee');
+		if(!empty($ti_dues))
+		 {
+			$expected_renewal = $ti_dues[3];
+			$expected_renewal += $club_dues[3];
+			$expected_renewal = number_format($expected_renewal,2);
+			foreach($ti_dues as $index => $amount) {
+				$total_dues[$index] = number_format($amount + $club_dues[2] + $new_member_fee,2);
+				$total_dues_new[$index] = number_format($amount + $club_dues[2] + 20 + $new_member_fee,2);
+				if(($amount + $club_dues[2]) > $expected_renewal) {
+					if($index < 4)
+						$month = 9;
+					else
+						$month = 3;
+				}
+				else {
+					if($index < 4)
+						$month = 3;
+					else
+						$month = 9;
+				}
+				$paid_month[$index] = $month;
+			}
+			$this->reverse_dues_table['ifdues'.$expected_renewal][0] = array('owe_ti' => $ti_dues[3], 'paid_month' => 9);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][1] = array('owe_ti' => $ti_dues[3], 'paid_month' => 9);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][2] = array('owe_ti' => $ti_dues[3], 'paid_month' => 9);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][3] = array('owe_ti' => $ti_dues[3], 'paid_month' => 9);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][4] = array('owe_ti' => $ti_dues[3], 'paid_month' => 9);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][6] = array('owe_ti' => $ti_dues[3], 'paid_month' => 3);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][7] = array('owe_ti' => $ti_dues[3], 'paid_month' => 3);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][8] = array('owe_ti' => $ti_dues[3], 'paid_month' => 3);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][9] = array('owe_ti' => $ti_dues[3], 'paid_month' => 3);
+			$this->reverse_dues_table['ifdues'.$expected_renewal][10] = array('owe_ti' => $ti_dues[3], 'paid_month' => 3);
+			foreach($total_dues as $index => $amount) {
+				$this->reverse_dues_table['ifdues'.$amount][$index] = array('owe_ti' => $ti_dues[$index], 'paid_month' => $paid_month[$index]);
+				$amount = $total_dues_new[$index];
+				$this->reverse_dues_table['ifdues'.$amount][$index] = array('owe_ti' => $ti_dues[$index] + 20, 'paid_month' => $paid_month[$index]);
+			}
+		}
+    }
+
+	function get_paid_owed ($payment, $payment_date) {
+		if(empty($this->reverse_dues_table) || empty($payment) || empty($payment_date))
+			return;
+		$month = date('n',strtotime($payment_date));			
+		$index = $month - 1;		
+		$year = date('Y',strtotime($payment_date));
+		$key = 'ifdues'.number_format($payment,2);
+		if(empty($this->reverse_dues_table[$key][$index]))
+			return;
+		else 
+		{
+			$answer = $this->reverse_dues_table[$key][$index];
+			if($month > $answer["paid_month"])
+				$year++;
+			$day = ($month == 3) ? 31 : 30;
+			$answer["paid_month"] = $answer["paid_month"].'/'.$day.'/'.$year; 
+			//printf('<p>%s %s %s</p>',$payment,$payment_date,var_export($answer,true));
+			return $answer;
+		} 
+	}
+
+	function show_reverse () {
+		echo '<pre>';
+		print_r($this->reverse_dues_table);
+		echo '</pre>';
+	}
+}
+
+function get_treasurer_notes($member_id,$treasurer_note) {
+global $wpdb;
+$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id= $member_id AND meta_key='$treasurer_note' ORDER BY umeta_id DESC";
+$results = $wpdb->get_results($sql);
+if(empty($results))
+	return;
+foreach($results as $index => $row) {
+	if($index >= 5){
+		$wpdb->query("DELETE FROM $wpdb->usermeta WHERE umeta_id=$row->umeta_id");
+		if($index == 5)
+			$notes[] = '<em>limited to 5 most recent</em>';
+	}
+	else
+		$notes[] = $row->meta_value;
+}
+return $notes;
+}
+
 function wpt_dues_report () {
 	global $wpdb;
-	$paidkey = 'paid_until_'.get_current_blog_id();
 
+	$keys = get_rsvpmaker_stripe_keys ();
+	$stripe_on = (empty($keys) || empty($keys['pk'])) ? false : true;
+	$ti_dues = get_option('ti_dues');
+	if(empty($stripe_on) || empty($ti_dues))
+	printf('<div class="notice notice-info"><p>If you set up Stripe online payments for dues renewals and specify your dues schedule as part of the <a href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/" target="_blank">online application form setup</a>. You can specify those settings on the <strong>Dues and Application</strong> tab, below.</p></div>');
+
+	$extractor = new DuesExtractor();
+	$action = admin_url('admin.php?page=wpt_dues_report');
+
+	$paidkey = 'paid_until_'.get_current_blog_id();
+	$norenew = 'no_renew_'.get_current_blog_id();
+	$treasurer_note = 'treasurer_note_'.get_current_blog_id();
+	$members = get_club_members();
+	$stripetable = $wpdb->prefix."rsvpmaker_money";
+	if(isset($_POST['match'])) {
+		foreach($_POST['match'] as $row_id => $match) {
+			$sql = "UPDATE $stripetable SET user_id=$match WHERE id=$row_id";
+			$wpdb->query($sql);
+		}
+	}
+	if(isset($_GET['void'])) {
+		$user_id = (int) $_GET['void'];
+		delete_user_meta($user_id,$paidkey);
+	}
+
+	if(isset($_GET['check']))
+		stripe_balance_history(50, false);
 	if(isset($_POST['markpaid'])) {
 		foreach($_POST['markpaid'] as $member_id => $value) {
 			$until = $_POST['until'][$member_id];
 			update_user_meta($member_id,$paidkey,$until);
 		}
 	}
-
+	if(isset($_POST['no'])) {
+		foreach($_POST['no'] as $member_id => $until) {
+			update_user_meta($member_id,$norenew,$until);
+		}
+	}
+?>
+<h2 class="nav-tab-wrapper">
+<a class="nav-tab <?php if(empty($_REQUEST['active'])) echo ' nav-tab-active ';?>" href="#overview">Dues Status</a>
+<a id="reminder-thank-you-tab" class="nav-tab <?php if(!empty($_REQUEST['active']) && ($_REQUEST['active'] == 'reminder-thank-you') ) echo ' nav-tab-active ';?>" href="#reminder-thank-you">Remind and Thank</a>
+<a id="ti-transactions-tab" class="nav-tab <?php if(!empty($_REQUEST['active']) && ($_REQUEST['active'] == 'ti-transactions') ) echo ' nav-tab-active ';?>"  href="#ti-transactions">Transactions List</a>
+<a id="settings-tab" class="nav-tab <?php if(!empty($_REQUEST['active']) && ($_REQUEST['active'] == 'settings') ) echo ' nav-tab-active ';?>" href="#settings">Dues and Application</a>
+</h2>
+<sections class="toastmasters">
+<section id="overview">
+<?php	
 	echo '<h1>Member Dues Status</h1>';
-	echo '<p>Shows online payments received within the last 4 months.</p>';
+
+	$expected_renewal = 45;
+	$plus6 = array();
+	$ti_dues = get_option('ti_dues');
+	$club_dues = get_option('club_dues');
+	$new_member_fee = (int) get_option('club_new_member_fee');
+	if(!empty($ti_dues))
+	 {
+		$expected_renewal = $ti_dues[3];
+		$expected_renewal += $club_dues[3];
+		$plus6[] = $expected_renewal + 20 + $new_member_fee;
+		if(($ti_dues[2] + $club_dues[2]) > $expected_renewal)
+		{
+			$plus6[] = $ti_dues[2] + $club_dues[2];
+			$plus6[] = $ti_dues[2] + $club_dues[2] + 20 + $new_member_fee;
+		}
+		if(($ti_dues[1] + $club_dues[1]) > $expected_renewal)
+		{
+			$plus6[] = $ti_dues[1] + $club_dues[1];
+			$plus6[] = $ti_dues[1] + $club_dues[1] + 20 + $new_member_fee;
+		}
+	//echo 'renewal: '.$expected_renewal; print_r($plus6);
+	}
+
+	if($stripe_on) {
+
+		$latest = stripe_latest_logged();
+		printf('<p>Latest stripe transaction %s <a href="%s">check for updates</a></p>',$latest,admin_url('admin.php?page=wpt_dues_report&check=1'));
+		$orphans = rsvpmaker_stripe_transactions_no_user();
+		if($orphans) {
+			printf('<p>These transactions could not be automatically matched to a member record. Please assign them to a member or indicate if they are not member transactions.</p><form method="post" action="%s">',$action);
+			$member_options = '<option value="-1">Not a Member Transaction</option>';
+			foreach($members as $member) {
+				$names[$member->ID] = get_user_meta($member->ID,'first_name',true).' '.get_user_meta($member->ID,'last_name',true);
+				$emails[$member->ID] = $member->user_email;
+				$member_options .= sprintf('<option value="%s">%s %s</option>',$member->ID,$member->display_name,$member->user_email);
+			}			
+			foreach($orphans as $orphan) {
+				$possible_matches = '';
+				foreach($names as $user_id => $name) {
+					similar_text($orphan->name,$name,$perc);
+					if($perc > 75)
+						$possible_matches .= sprintf('<option value="%d">%s %s</option>',$user_id,$name,$emails[$user_id]);
+				}
+				printf('<p><select name="match[%d]">%s</select> %s %s %s %s %s</p>', $orphan->id,$possible_matches.$member_options,$orphan->name,$orphan->email,$orphan->amount,$orphan->date,$orphan->description);
+			}
+		submit_button('Update');
+		echo '</form>';
+		}
+		//print_r($orphans);
+	}
+			
 	$month = (int) date('n');
 	$year = (int) date('Y');
-	if($month < 5)
+	if($month < 5) {
 		$paid_until = '9/30/'.$year;
+		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-09-30';
+		$renewal_start = date('Y').'-01-01 00:00:00';
+	}
 	else {
 		$paid_until = '3/31/'.$year++;
+		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-03-31';
+		$renewal_start = date('Y').'-07-01 00:00:00';
+	}
+	printf('<input type="hidden" id="tipaymentkey" value="%s" />',$ti_paid_key);
+	if(isset($_POST[$ti_paid_key])) {
+		foreach($_POST[$ti_paid_key] as $member_id => $amount) 
+			update_user_meta($member_id,$ti_paid_key, $amount);
+	}
+
+	if(isset($_GET['correct'])) {
+		$member_id = (int) $_GET['correct'];
+		delete_user_meta($member_id,$ti_paid_key);
 	}
 
 	$members = get_club_members ();
 	foreach($members as $member) {
+		if(isset($_GET['reset']))
+			delete_user_meta($member->ID,	$paidkey);
 		$member = get_userdata($member->ID);
 		$index = $member->display_name;
-		$log = '<h3>'.$member->display_name.' '.$member->user_email.'</h3>';
-		if(!empty($member->$paidkey))
-		{
-			$log .= sprintf('<p>Paid until: %s</p>',$member->$paidkey);
+		$last_stripe = $checked = '';
+		$until = (empty($member->$paidkey)) ? '' : 'Paid until: '.$member->$paidkey;
+		$no = get_user_meta($member->ID,$norenew,true);
+		$answer = array();
+		if($stripe_on) {
+			$tx = rsvpmaker_stripe_latest_transaction_by_user ($member->ID, $renewal_start);
+			if($tx) {
+				$txdate = $tx->date;
+				$amount = $tx->amount;
+				if($tx->metadata) {
+					$metadata = unserialize($tx->metadata);
+				}
+				if(($amount == $expected_renewal) || in_array($amount,$plus6) )
+					$checked =  ' checked="checked" ';
+				$last_stripe = '<p>recent online payment '.$amount.' '.$txdate .' <span style="color:red">'.$tx->description.'</span> <p>';
+				$answer = $extractor->get_paid_owed($amount,$txdate);
+			}
 		}
-		if(empty($member->$paidkey) || ($member->$paidkey != $paid_until))
-			$log .= sprintf('<p><input type="checkbox" name="markpaid[%d]" value="1" /> Mark paid until <input type="text" name="until[%d]" value="%s"></p>',$member->ID,$member->ID,$paid_until);
-		//print_r($member);
-		//echo '<br />';
-		$log .= stripe_log_by_email ($member->user_email, 4);
-		$logs[$index] = $log;
+		$log = '<form method="post" action="'.$action.'" class="member_dues_update" id="member_dues_update_'.$member->ID.'"><input type="hidden" name="ti_paid_key" value="'.$ti_paid_key.'" /><input type="hidden" name="norenew" value="'.$norenew.'" /><input type="hidden" name="paidkey" value="'.$paidkey.'" /><input type="hidden" name="member_id" value="'.$member->ID.'"><input type="hidden" name="treasurer_note_key" value="'.$treasurer_note.'" />';
+		$log .= '<h3 id="status'.$member->ID.'">'.$member->display_name.' '.$member->user_email.' '.$until.' <span id="confirm'.$member->ID.'"><button>Update</button> </span></h3>';
+		if((empty($member->$paidkey) || ($member->$paidkey != $paid_until)) && (empty($member->$norenew) || ($member->$norenew != $paid_until))) {
+			if(empty($answer))
+				$log .= sprintf('<p id="data-entry-'.$member->ID.'"><input type="checkbox" name="markpaid[%d]" id="markpaid%d" class="markpaid" value="1" %s /> Mark paid until <input type="text" name="until[%d]" value="%s"> <span id="paidplan%d"><input type="checkbox" name="no[%d]" value="%s"> Not planning to renew</span></p>%s',$member->ID,$member->ID,$checked,$member->ID,$paid_until, $member->ID,$member->ID,$paid_until, $last_stripe);
+			else {
+				$log .= '<p id="data-entry-'.$member->ID.'"><input type="checkbox" name="markpaid['.$member->ID.']" id="markpaid'.$member->ID.'" checked="checked" value="1" /> Mark paid until <input type="text" name="until['.$member->ID.']" value="'.$answer['paid_month'].'"> Paid to TI <input type="text" name="'.$ti_paid_key.'['.$member->ID.']" value="'.$answer['owe_ti'].'" /> </p>';
+				$index = '00'.$index;
+			}
+		}
+		$log .= (empty($no)) ? '' : sprintf('<p id="editline%d">Not planning to renew <input type="checkbox" name="updatevoid" member_id="%d" class="editvoid" value="edit" until="%s" paid_to_ti="%s" /> Edit </p>',$member->ID,$member->ID,$paid_until,$paid_ti,$member->ID);
+		$log .= '<p class="enter_notes">Notes <input type="text" name="note">';
+		$notes = get_treasurer_notes($member->ID,$treasurer_note);//get_user_meta($member->ID,$treasurer_note); //return array
+		if(!empty($notes))
+			$log .= '<br />'.implode('<br />',$notes);
+		$log .= '</p>';
+		if(!empty($member->$paidkey) && ($member->$paidkey == $paid_until)) {
+			$paid_ti = get_user_meta($member->ID,$ti_paid_key,true);
+			if($paid_ti) 
+				$ti_payment = sprintf('<p id="editline%d">Paid to TI %s <input type="radio" name="updatevoid" member_id="%d" class="editvoid" value="edit" until="%s" paid_to_ti="%s" /> Edit <input type="radio" name="updatevoid" class="editvoid" value="%d" /> Void </p>',$member->ID,$paid_ti,$member->ID,$paid_until,$paid_ti,$member->ID,$member->ID);
+			else
+				$ti_payment = sprintf('<p><input type="hidden" name="markpaid[%d]" value="1" /> Paid to TI <input type="text" name="%s[%d]" /></p>',$member->ID,$ti_paid_key,$member->ID);
+			$paid_emails[] = $member->user_email;
+			$log .= $last_stripe.$ti_payment;
+			$logs2[$index] = $log.'</form>';
+		}
+		else
+			$logs[$index] = $log.'</form>';
 	}
-	sort($logs);
-	printf('<form method="post" action="%s">%s<p><button>Save</button></p></form>',admin_url('admin.php?page=wpt_dues_report'), implode("\n",$logs));
+	if(!empty($logs)) {
+		sort($logs);
+		echo '<div style="padding: 5px; border: medium solid red">';
+		printf('<h3>Not Renewed (%s)</h3>%s',sizeof($logs), implode("\n",$logs));
+		echo '</div>';// end colored border	
+	}
+	if(!empty($logs2))
+	{
+		sort($logs2);
+		echo '<div style="padding: 5px; border: medium solid green; margin-top: 20px;">';
+		printf('<h3>Members Who Have Renewed (%s)</h3>%s',sizeof($logs2), implode("\n",$logs2));
+	
+		echo '</div>';// end colored border	
+	}
+?>
+</section>
+<section id="reminder-thank-you">
+<div style="width: 100px; float: right;">
+<button id="reminder-thank-you-refresh">Refresh</button>
+</div>
+<div id="reminder-thank-you-content"></div>
+</section>
+<section id="ti-transactions">
+<div style="width: 100px; float: right;">
+<button id="ti-transactions-refresh">Refresh</button>
+</div>
+<?php
+if($stripe_on) 
+	echo '<div id="ti-transactions-content"></div><p><textarea id="dues-report-export" cols="100" rows="10"></textarea></p>';
+else
+	echo '<p>Fetches most recent transactions when Stripe is enabled.</p>'; ?>
+</section>
+<section id="settings">
+<?php 
+member_application_settings($action);
+?>
+</section>
+</sections>
+<?php
+
 }// end function
+
+function wpt_dues_reminders () {
+	global $current_user;
+	$month = (int) date('n');
+	$year = (int) date('Y');
+	if($month < 5) {
+		$paid_until = '9/30/'.$year;
+		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-09-30';
+		$renewal_start = date('Y').'-01-01 00:00:00';
+	}
+	else {
+		$paid_until = '3/31/'.$year++;
+		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-03-31';
+		$renewal_start = date('Y').'-07-01 00:00:00';
+	}
+	$paidkey = 'paid_until_'.get_current_blog_id();
+	$norenew = 'no_renew_'.get_current_blog_id();
+	$members = get_club_members ();
+	$reminder = $thanks = '';
+	$reminder_subject = 'Please renew your dues for '.get_bloginfo('name');
+	$thank_you_subject = 'Thank you for renewing your dues for '.get_bloginfo('name');
+	$renew_id = get_option('ti_dues_renewal_page');
+	$reminder_body = ($renew_id) ? 'You can pay your dues online at '.get_permalink($renew_id) : '';
+	foreach($members as $member) {
+		$member = get_userdata($member->ID);
+		$index = $member->display_name;
+		$until = (empty($member->$paidkey)) ? '' : 'Paid until: '.$member->$paidkey;
+		$no = get_user_meta($member->ID,$norenew,true);
+		if((empty($member->$paidkey) || ($member->$paidkey != $paid_until)) && (empty($member->$norenew) || ($member->$norenew != $paid_until))) {
+			$phones = '';
+			if(!empty($member->home_phone))
+				$phones .= ' Home Phone: '.$member->home_phone;
+			if(!empty($member->mobile_phone))
+				$phones .= ' Mobile Phone: '.$member->mobile_phone;
+			if(!empty($member->work_phone))
+				$phones .= ' Work Phone: '.$member->work_phone;
+			$reminder .= sprintf('<p>Reminder: %s <a target="_blank" href="mailto:%s?subject=%s&body=%s">%s</a> %s</p> ',$member->display_name,$member->user_email,$reminder_subject,$reminder_body,$member->user_email,$phones);
+			$reminder_emails[] = $member->user_email;
+		}
+		elseif(!$no) {
+			$thanks .= sprintf('<p>Thank you: %s <a target="_blank" href="mailto:%s?subject=%s&body=%s">%s</a></p> ',$member->display_name,$member->user_email,$reminder_subject,$reminder_body,$member->user_email);
+		}
+	}
+
+	if($reminder) {
+		$reminder = '<h2>Reminders</h2>'.$reminder;
+		$reminder .= '<h3>Reminder Mass Email<h3>'.sprintf('<p><a target="_blank" href="mailto:%s?bcc=%s&subject=%s&body=%s">Email All</a></p> ',$current_user->user_email,implode(',',$reminder_emails),$reminder_subject,$reminder_body,$member->user_email,$phones);
+	}
+	if($thanks) {
+		$thanks = '<h2>Thank You</h2>'.$thanks;
+	}
+
+	return $reminder.$thanks;
+}
+
+function wpt_stripe_transactions () {
+	$transactions = rsvpmaker_stripe_transactions_list();
+	if($transactions) {
+	$month = (int) date('n');
+	$year = (int) date('Y');
+	if($month < 5) {
+		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-09-30';
+	}
+	else {
+		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-03-31';
+	}
+	
+	$transaction = (array) $transactions[0];
+	$th = '<tr>';
+	$td = '';
+	foreach($transaction as $column => $value) {
+	if(($column == 'id') || ($column == 'metadata') || ($column == 'status') || ($column == 'transaction_id')  || ($column == 'user_id'))
+		continue;
+	$th .= '<th>'.$column.'</th>';
+		$export .= $column.',';
+	}
+	$th .= '<th>yield</tb><th>paid ti</th></tr>';
+	$export .= "yield,paid ti\n";
+	foreach($transactions as $transaction) {
+		$line = '';
+		$td .= '<tr>';
+		$transaction = (array) $transaction;
+		$paid_ti = get_user_meta($transaction['user_id'],$ti_paid_key,true);
+		if(!empty($transaction['metadata']) ) {
+			//could be used for paid to toastmasters amount
+			$metadata = unserialize($transaction['metadata']);
+			$transaction['metadata'] = var_export($metadata,true);
+		}
+
+		foreach($transaction as $column => $value) {
+		if(($column == 'id') || ($column == 'metadata') || ($column == 'status') || ($column == 'transaction_id') || ($column == 'user_id'))
+			continue;
+			$td .= '<td>'.$value.'</td>';
+			$line .= $value.',';
+		}
+		$yield = $transaction['amount'] - $transaction['fee'];
+		$line .= "$yield,$paid_ti";
+		$lines[] = $line;
+		$td .= "<td>$yield</td><td>$paid_ti</td></tr>\n";
+	}
+	krsort($lines);
+	$export .= implode("\n",$lines);
+	return array('content' => '<h3>50 Most Recent Stripe Transactions</h3><table>'.$th.$td.'</table>', 'export' => $export);
+	}
+}
 
 function wpt_my_data () {
 	global $current_user, $wpdb;

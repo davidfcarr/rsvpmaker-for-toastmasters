@@ -12,7 +12,11 @@
 }
 
 body {
-    background-color: #efeeef;
+    background-color: #000;
+}
+
+#instructions {
+    background-color: #fff;
 }
 
 #trafficlight
@@ -127,11 +131,12 @@ select {
 }
 
 #timer2021 {
-    width: 200px;
+    width: 300px;
     float: right;
     margin-top: 10px;
     margin-right: 5px;
     background-color: rgba(255,255, 255, 0.8);
+    font-weight: bold;
     border-radius: 25px;
     text-align: center;
     font-size: 60px;

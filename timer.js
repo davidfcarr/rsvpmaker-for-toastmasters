@@ -18,6 +18,7 @@ var instructionsOn = true;
 var greenimg = '';
 var yellowimg = '';
 var redimg = '';
+var defaultcolor = '#000000';
 
 function timeoutCheck() {
     var beenwaiting = new Date().getTime();
@@ -72,12 +73,12 @@ function setBackgroundColor(color) {
         colorImage = (redimg) ? 'url('+redimg+')' : 'none';
     }
     else if(color == 'start') {
-        colorLabel = 'Timing';       
-        colorCode = '#EFEEEF';
+        colorLabel = $('#green-light').val().replace(':00','') + ' - '+$('#red-light').val().replace(':00','');       
+        colorCode = defaultcolor;
         colorImage = 'none';
     }
     else {
-        colorCode = '#EFEEEF';
+        colorCode = defaultcolor;
         colorLabel = 'Ready';
         colorImage = 'none';
     }
@@ -96,14 +97,14 @@ function setBackgroundColor(color) {
 $('.background-image-picker').change(function() {
     let id = $(this).attr('id');
     let color = id.replace('bg-','');
-    url = $(this).val();
-    console.log('selected image '+url);
-    if(color == 'green')
-        greenimg = url;
-    if(color == 'yellow')
-        yellowimg = url;
-    if(color == 'red')
-        redimg = url;
+    if(color == 'default')
+        defaultcolor = $(this).val();
+    else if(color == 'green')
+        greenimg = $(this).val();
+    else if(color == 'yellow')
+        yellowimg = $(this).val();
+    else if(color == 'red')
+        redimg = $(this).val();
     setBackgroundColor(color);
 });
 
@@ -230,14 +231,17 @@ $('#popup').click(function(){
     if(colorWin)
         colorWin.focus();
     else {
-        colorWin = window.open("about:blank", "Color Light", "width=200,height=100,top=50,left=0");
-        colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 20vw; text-align: center; margin-top: 10vw\">Ready</h1></body>");
-        colorWin.document.body.style.backgroundColor = '#DDDDDD';
+        colorWin = window.open("about:blank", "Color Light", "width=800,height=600,top=50,left=400");
+        colorWin.document.write("<body><h1 id=\"popuplabel\" style=\"font-size: 10vw; position: absolute; right: 2vw; top: 2vw; width: 50vw;\">Ready</h1></body>");
+        colorWin.document.body.style.backgroundColor = '#000';
         colorWin.document.body.style.backgroundSize = 'contain';
+        colorWin.document.body.style.backgroundRepeat = 'no-repeat';
+        colorWin.document.body.style.padding = '0';
+        colorWin.document.getElementById('popuplabel').style.margin = '0';
         colorWin.document.getElementById('popuplabel').style.backgroundColor = 'rgba(255,255, 255, 0.8)';
         colorWin.document.getElementById('popuplabel').style.borderRadius = '25px';
-        colorWin.document.title = 'Timing Light';
-        //window.resizeBy(window.innerWidth,50);
+        colorWin.document.getElementById('popuplabel').style.textAlign = 'center';
+        colorWin.document.title = 'Popup Timing Light';
         setBackgroundColor(colorNow);
         colorWin.addEventListener("unload", function(event) { colorWin = undefined });
     }
@@ -286,7 +290,7 @@ $(document).on( 'change', '#correction', function() {
 
 $('#rednow').click(
     function () {
-        $('body').css('background-color', '#FF4040');
+        //$('body').css('background-color', '#FF4040');
         colorNow = 'red';
         colorChange(colorNow);
         //setBackgroundColor(colorNow);
@@ -294,7 +298,7 @@ $('#rednow').click(
 );
 $('#yellownow').click(
     function () {
-        $('body').css('background-color', '#FCDC3B');
+        //$('body').css('background-color', '#FCDC3B');
         colorNow = 'yellow';
         colorChange(colorNow);
         //setBackgroundColor(colorNow);
@@ -303,7 +307,7 @@ $('#yellownow').click(
 
 $('#greennow').click(
     function () {
-        $('body').css('background-color', '#A7DA7E');
+        //$('body').css('background-color', '#A7DA7E');
         colorNow = 'green';
         colorChange(colorNow);
         //setBackgroundColor(colorNow);

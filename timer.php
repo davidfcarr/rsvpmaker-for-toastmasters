@@ -168,9 +168,8 @@ if(isset($_GET['embed']) && ($_GET['embed'] == 'jitsi'))
         <option value="normal" <?php if($is_jitsi && !$is_timer) echo ' selected="selected" '; ?> >Audience</option>
 </select></span><button id="popup">Popup Light</button> <button id="enlargecontrols">Enlarge</button> <button id="hideit">Hide Instructions</button></div>
 
-<p id="explanation">The background of this page (and the Popup Timer window) act as timing lights.</p>
-
 		<div id="timelog">
+        <p id="explanation"></p>        
         <div id="checkcontrols">
         <div id="checkstatus"></div>
         <p><button id="checknow">Check Now</button></p>
@@ -311,6 +310,7 @@ for($i = 1; $i <= $count; $i++) {
     <option value="Table Topics|1:00|1:30|2:00|tt">Table Topics</option>
     <option value="Evaluation|2:00|2:30|3:00|eval">Evaluation</option>
     <option value="Speech (3-4)|3:00|3:30|4:00|3to4">Speech (3-4)</option>
+    <option value="Speech (4-6)|4:00|5:00|6:00|4to6">Speech (4-6)</option>
     <option value="Speech (6-8)|6:00|7:00|8:00|6to8">Speech (6-8)</option>
     <option value="Speech (8-10)|8:00|9:00|10:00|8to10">Speech (8-10)</option>
     <option value="Speech (10-15)|10:00|12:30|15:00|10to15">Speech (10-15)</option>
@@ -419,7 +419,7 @@ $contest_timer = ob_get_clean();
 
 } // end contest output
 echo $contest_timer;
-echo '<p id="background-image-control">Background Image (optional)</p>';
+echo '<p id="background-image-control">Background Choices</p>';
 printf('<p><select class="background-image-picker" id="bg-green"><option value="none">Green Image: None</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-green-1920x1080-c1.jpg">Green TM logo</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-green-1920x1080-c1.jpg">Green TM wordmark</option>
@@ -432,8 +432,62 @@ printf('<p><select class="background-image-picker" id="bg-red"><option value="no
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-red-1920x1080-c1.jpg">Red TM logo</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-red-1920x1080-c1.jpg">Red TM wordmark</option>
 %s</select></p>',timer_get_background_image('red'));
-
 ?>
+<p><select class="background-image-picker" id="bg-default">
+<option value="#000000">Default/Ready Color</option>
+<option value="#000000">Black </option>
+<option value="#DCDCDC">Gainsboro </option>
+<option value="#D3D3D3">LightGray </option>
+<option value="#C0C0C0">Silver </option>
+<option value="#A9A9A9">DarkGray </option>
+<option value="#696969">DimGray </option>
+<option value="#808080">Gray </option>
+<option value="#778899">LightSlateGray </option>
+<option value="#708090">SlateGray </option>
+<option value="#2F4F4F">DarkSlateGray </option>
+<option value="#FFFFFF">White </option>
+<option value="#FFFAFA">Snow </option>
+<option value="#F0FFF0">HoneyDew </option>
+<option value="#F5FFFA">MintCream </option>
+<option value="#F0FFFF">Azure </option>
+<option value="#F0F8FF">AliceBlue </option>
+<option value="#F8F8FF">GhostWhite </option>
+<option value="#F5F5F5">WhiteSmoke </option>
+<option value="#FFF5EE">SeaShell </option>
+<option value="#F5F5DC">Beige </option>
+<option value="#FDF5E6">OldLace </option>
+<option value="#FFFAF0">FloralWhite </option>
+<option value="#FFFFF0">Ivory </option>
+<option value="#FAEBD7">AntiqueWhite </option>
+<option value="#FAF0E6">Linen </option>
+<option value="#FFF0F5">LavenderBlush </option>
+<option value="#FFE4E1">MistyRose </option>
+<option value="#7B68EE">MediumSlateBlue </option>
+<option value="#6A5ACD">SlateBlue </option>
+<option value="#483D8B">DarkSlateBlue </option>
+<option value="#663399">RebeccaPurple </option>
+<option value="#4B0082">Indigo  </option>
+<option value="#4169E1">RoyalBlue </option>
+<option value="#0000FF">Blue </option>
+<option value="#0000CD">MediumBlue </option>
+<option value="#00008B">DarkBlue </option>
+<option value="#000080">Navy </option>
+<option value="#191970">MidnightBlue </option>
+<option value="#E6E6FA">Lavender </option>
+<option value="#D8BFD8">Thistle </option>
+<option value="#DDA0DD">Plum </option>
+<option value="#DA70D6">Orchid </option>
+<option value="#EE82EE">Violet </option>
+<option value="#FF00FF">Fuchsia </option>
+<option value="#FF00FF">Magenta </option>
+<option value="#BA55D3">MediumOrchid </option>
+<option value="#9932CC">DarkOrchid </option>
+<option value="#9400D3">DarkViolet </option>
+<option value="#8A2BE2">BlueViolet </option>
+<option value="#8B008B">DarkMagenta </option>
+<option value="#800080">Purple </option>
+<option value="#9370DB">MediumPurple </option>
+</select></p>
 <p><a href="https://www.wp4toastmasters.com/knowledge-base/online-timer-tool/">Instructions</a></p>
 </div><!-- end timer controls -->
 		</div>

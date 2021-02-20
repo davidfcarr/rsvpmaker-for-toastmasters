@@ -5,8 +5,8 @@ fix_timezone();
 if(isset($_GET['rsvpstripeconfirm']))
     return; // let rsvpmaker show payment message
 
-if(isset($_GET['paydues']))
-	return paydues_later();
+if(isset($_GET['pay']))
+	return pay_later();
 	
 global $post;
 if(empty($_POST['user_email']))
@@ -92,22 +92,48 @@ add_shortcode('club_fee_schedule','club_fee_schedule');
 function club_fee_schedule () {
     $ti_dues = get_option('ti_dues');
     $club_dues = get_option('club_dues');
+    $club_new_member_fee = (int) get_option('club_new_member_fee');
+    $new_member_fee = 20 + $club_new_member_fee;
+    $output = '';
+    $months = array('January','February','March','April','May','June','July','August','September','October','November','December');
+    if(empty($ti_dues))
+        return 'not set';
+    else {
+        $output .= '<style>.feeschedule th {text-align: center;} .feeschedule td {text-align: center; min-width: 100px;}</style>';
+        $output .= sprintf('<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>',__('Month','rsvpmaker-for-toastmasters'),__('TI Dues','rsvpmaker-for-toastmasters'),__('Club Dues','rsvpmaker-for-toastmasters'),__('Club New Member','rsvpmaker-for-toastmasters'),__('Total','rsvpmaker-for-toastmasters'),__('+ New Member Fee','rsvpmaker-for-toastmasters'));
+        foreach($months as $index => $month) {
+            $total = number_format($ti_dues[$index]+$club_dues[$index]+$club_new_member_fee,2);
+            $new = number_format($total + 20,2);
+            $output .= sprintf('<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$month,number_format($ti_dues[$index],2),number_format($club_dues[$index],2),$club_new_member_fee,$total,$new);
+        }
+        $output .= '</table>';
+    }
+return $output;
+}
+
+/*
+
+function club_fee_schedule () {
+    $ti_dues = get_option('ti_dues');
+    $club_dues = get_option('club_dues');
+    $club_new_member_fee = (int) get_option('club_new_member_fee');
+    $club_new = number_format($club_new_member_fee,2);
     $output = '';
     $months = array('January','February','March','April','May','June','July','August','September','October','November','December');
     if(empty($ti_dues))
         return 'not set';
     else {
         $output .= '<style>.feeschedule th {text-align: left;} .feeschedule td {text-align: center; min-width: 100px;}</style>';
-        $output .= sprintf('<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>',__('Month','rsvpmaker-for-toastmasters'),__('TI Dues','rsvpmaker-for-toastmasters'),__('Club Dues','rsvpmaker-for-toastmasters'),__('Total','rsvpmaker-for-toastmasters'),__('+ New Member Fee','rsvpmaker-for-toastmasters'));
+        $output .= sprintf('<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>',__('Month','rsvpmaker-for-toastmasters'),__('TI Dues','rsvpmaker-for-toastmasters'),__('Club Dues','rsvpmaker-for-toastmasters'),__('Club New Member Fee','rsvpmaker-for-toastmasters'),__('Total','rsvpmaker-for-toastmasters'),__('+ TI New Member Fee','rsvpmaker-for-toastmasters'));
         foreach($months as $index => $month) {
-            $total = number_format($ti_dues[$index]+$club_dues[$index],2);
-            $new = number_format($total + 20,2);
-            $output .= sprintf('<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$month,number_format($ti_dues[$index],2),number_format($club_dues[$index],2),$total,$new);
+            $total = number_format($ti_dues[$index]+$club_dues[$index]+$club_new_member_fee,2);
+            $output .= sprintf('<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',$month,number_format($ti_dues[$index],2),number_format($club_dues[$index],2),$club_new,$total,$new);
         }
         $output .= '</table>';
     }
 return $output;
 }
+*/
 
 function tm_application_fee() {
 global $post;
@@ -244,11 +270,13 @@ function tm_application_form_choice($slug, $choices) {
         }
 }
 
-function member_application_settings () {
+function member_application_settings ($action = '') {
 echo '<div style="width: 800px;"><div style="float: right;"><a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/"><button>Setup Instructions</button></a></div>';
-echo '<h1>Toastmasters Application Form</h1></div>';
+echo '<h1>Toastmasters Dues Schedule and Application Form</h1></div>';
 
 global $wpdb;
+if(empty($action))
+    $action = admin_url('options-general.php?page=member_application_settings');
 $sql = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
 $apppage = $wpdb->get_var($sql);
 
@@ -286,13 +314,34 @@ $club_dues = get_option('club_dues');
 if(empty($club_dues))
     $club_dues = array('0','0','0','0','0','0','0','0','0','0','0','0');
 
+if(isset($_GET["reset_renewal_page"]))
+    delete_option('ti_dues_renewal_page');
+
+if(isset($_POST['ti_dues_renewal_page']))
+{
+    if(is_numeric($_POST['ti_dues_renewal_page']))
+        update_option('ti_dues_renewal_page',$_POST['ti_dues_renewal_page']);
+    elseif($_POST['ti_dues_renewal_page'] == 'create') {
+        $renew = $ti_dues[3] + $club_dues[3];
+        $page['post_title'] = 'Dues Renewal';
+        $page['post_name'] = 'renew';
+        $page['post_content'] = '<!-- wp:rsvpmaker/stripecharge {"description":"Dues Renewal","showdescription":"yes","amount":"'.$renew.'"} /-->';
+        $page['post_status'] = 'publish';
+        $page['post_type'] = 'page';
+        $stripepage = wp_insert_post($page);
+        update_option('ti_dues_renewal_page',$stripepage);
+        printf('<div class="notice notice-success"><p>Dues Renewal page added: <a href="%s">Edit</a></p></div>',admin_url('post.php?post='.$stripepage.'&action=edit'));
+    }
+}
+
 $notifications = get_option('tm_application_notifications');
 if(empty($notifications))
     $notifications = get_option('admin_email');
 
 $months = array('January','February','March','April','May','June','July','August','September','October','November','December');
 ?>
-<form action="<?php echo admin_url('options-general.php?page=member_application_settings'); ?>" method="post">
+<form action="<?php echo $action; ?>" method="post">
+<input type="hidden" name="active" value="settings" />
 <p><strong>Club Name:</strong><br /><input type="text" name="club_name" value="<?php echo get_option('club_name'); ?>" /> </p>
 <p><strong>Club Number:</strong><br /><input type="text" name="club_number" value="<?php echo get_option('club_number'); ?>" /> </p>
 <p><strong>Club City:</strong><br /><input type="text" name="club_city" value="<?php echo get_option('club_city'); ?>" /> </p>
@@ -325,8 +374,26 @@ if(empty($public) || empty($secret))
 <?php
 printf('<p>Additional options, including test or "sandbox" payment key setup, in <a href="%s">RSVPMaker settings</a>.</p>',admin_url('https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php&tab=payments'));
 }
-else
+else {
     printf('<p><strong>Stripe Online Payments: Enabled</strong> <a href="%s">RSVPMaker settings</a>.</p>',admin_url('https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php&tab=payments'));
+    $stripepage = get_option('ti_dues_renewal_page');
+    if($stripepage)
+        printf('<p><a href="%s">Edit page</a> with dues renewal button.</p>',admin_url('post.php?post='.$stripepage.'&action=edit'));
+    else {
+        $sql = "SELECT * FROM $wpdb->posts WHERE post_status='publish' AND post_content LIKE '%wp:rsvpmaker/stripecharge%' ORDER BY ID DESC";
+        $pages = $wpdb->get_results($sql);
+        $create = '<p><input type="radio" name="ti_dues_renewal_page" value="create" ';
+        $create .= (empty($pages)) ? ' checked="checked" >' : '>';
+        echo $create;
+        echo ' Create dues renewal page</p>';
+        echo '<p><input type="radio" name="ti_dues_renewal_page" value="" > No thanks</p>';
+        if($pages)
+        foreach($pages as $index => $page) {
+            $checked = ($index == 0) ? ' checked="checked" ' : '';
+            printf('<p><input type="radio" name="ti_dues_renewal_page" value="%d" %s > Existing page: %s</p>',$page->ID,$checked,$page->post_title);
+        }
+    }
+}
 
 if(empty($apppage))
     printf('<p><input type="checkbox" name="addpage" value="1" checked="checked"> Create a page where the application will be displayed.</p>');
@@ -335,7 +402,7 @@ else
 submit_button(); ?>
 </form>
 <?php echo club_fee_schedule(); ?>
-<p>To display web page, use the shortcode [club_fee_schedule]</p>
+<p>To display this table on the website, use the shortcode [club_fee_schedule] as a placeholder in the text of a page or blog post.</p>
 <?php
 }
 

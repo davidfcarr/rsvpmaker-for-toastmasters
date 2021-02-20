@@ -348,6 +348,121 @@ class WPTM_Reports extends WP_REST_Controller {
 	}
 }
 
+class WPTM_Dues extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'dues';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'POST',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return (is_user_logged_in() && current_user_can('view_reports'));
+	}
+  
+  public function handle($request) {
+	global $wpdb, $current_user;
+	$confirmation = array();
+	$ti_paid_key = $_POST['ti_paid_key'];
+	$paidkey = $_POST['paidkey'];
+	$norenew = $_POST['norenew'];
+	if(isset($_POST['markpaid'])) {
+		foreach($_POST['markpaid'] as $member_id => $value) {
+			$until = $_POST['until'][$member_id];
+			update_user_meta($member_id,$paidkey,$until);
+			delete_user_meta($member_id,$norenew);		
+			$confirmation['marked_paid'] = 'Marked paid until '.$until;
+		}
+	}
+	if(isset($_POST[$ti_paid_key])) {
+		foreach($_POST[$ti_paid_key] as $member_id => $amount) {
+			update_user_meta($member_id,$ti_paid_key, $amount);
+			delete_user_meta($member_id,$norenew);		
+			$confirmation['paid_ti'] = 'Paid to TI: '.$amount;
+		}
+	}
+
+	if(isset($_POST['updatevoid']) && is_numeric($_POST['updatevoid'])) {
+		$member_id = (int) $_POST['updatevoid'];
+		delete_user_meta($member_id,$ti_paid_key);
+		delete_user_meta($member_id,$paidkey);
+		delete_user_meta($member_id,$norenew);		
+		$confirmation['paid_ti'] = 'Voided ';
+	}
+
+	if(isset($_POST['no'])) {
+		foreach($_POST['no'] as $member_id => $until) {
+			update_user_meta($member_id,$norenew,$until);
+			$confirmation['no_renewal'] = 'Marked not planning to renew';
+		}
+	}
+
+	if(isset($_POST['note'])) {
+		$member_id = $_POST['member_id'];
+		$note = stripslashes($_POST['note']).' ('.$current_user->display_name.') '.rsvpmaker_date('F j, Y');
+		$key = $_POST['treasurer_note_key'];
+		add_user_meta($member_id,$key,$note);
+	}
+
+	$confirmation['member_id'] = $member_id;
+	return new WP_REST_Response($confirmation, 200);
+	}
+}
+
+class WPTM_Money extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'money';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return (is_user_logged_in() && current_user_can('view_reports'));
+	}
+  
+  public function handle($request) {
+	$result = wpt_stripe_transactions ();
+	return new WP_REST_Response($result, 200);
+	}
+}
+
+class WPTM_Reminders extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'duesreminders';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return (is_user_logged_in() && current_user_can('view_reports'));
+	}
+  
+  public function handle($request) {
+	$result['content'] = wpt_dues_reminders ();
+	return new WP_REST_Response($result, 200);
+	}
+}
+
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
@@ -367,4 +482,10 @@ add_action('rest_api_init', function () {
 	 $rsvpexp->register_routes();
 	 $repo = new WPTM_Reports();
 	 $repo->register_routes();
+	 $dues = new WPTM_Dues();
+	 $dues->register_routes();
+	 $money = new WPTM_Money();
+	 $money->register_routes();
+	 $reminders = new WPTM_Reminders();
+	 $reminders->register_routes();
    } );
