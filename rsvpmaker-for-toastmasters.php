@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.2.5
+Version: 4.2.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -9710,6 +9710,15 @@ global $post;
 global $rsvp_options;
 
 /* notices NOT just for admin */
+
+if(isset($_GET["calendar_toastmost"]))
+{
+	$action = 'calendar_toastmost_'.$_GET["calendar_toastmost"];
+	set_transient($action,true);
+	printf('<div class="notice notice-info">
+	<h1>Toastmost Calendar Sync On/Off</h1>
+	<p><a href="https://calendar.toastmost.org/site-sync-on-off/?%s=%s">Confirm action: %s</a></p></div>',$_GET["calendar_toastmost"],$_SERVER['SERVER_NAME'],$action);
+}
 
 $pdir = str_replace('rsvpmaker-for-toastmasters/','',plugin_dir_path( __FILE__ ));
 

@@ -463,6 +463,31 @@ class WPTM_Reminders extends WP_REST_Controller {
 	}
 }
 
+class WPTM_Verify extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'verify/(?P<action>[a-z_]+)';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'GET',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;
+	}
+  
+  public function handle($request) {
+	$result['action'] = $request['action'];
+	$result['result'] = get_transient($request['action']);
+	return new WP_REST_Response($result, 200);
+	}
+}
+
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
@@ -488,4 +513,6 @@ add_action('rest_api_init', function () {
 	 $money->register_routes();
 	 $reminders = new WPTM_Reminders();
 	 $reminders->register_routes();
+	 $verify = new WPTM_Verify();
+	 $verify->register_routes();
    } );

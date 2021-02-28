@@ -6659,7 +6659,7 @@ class DuesExtractor {
 		}
     }
 
-	function get_paid_owed ($payment, $payment_date) {
+	function get_paid_owed ($payment, $payment_date, $already_paid_until) {
 		if(empty($this->reverse_dues_table) || empty($payment) || empty($payment_date))
 			return;
 		$month = date('n',strtotime($payment_date));			
@@ -6674,7 +6674,11 @@ class DuesExtractor {
 			if($month > $answer["paid_month"])
 				$year++;
 			$day = ($month == 3) ? 31 : 30;
-			$answer["paid_month"] = $answer["paid_month"].'/'.$day.'/'.$year; 
+			$answer["paid_month"] = $answer["paid_month"].'/'.$day.'/'.$year;
+			if(isset($_GET['debug']))
+				printf('<p>paid/owed %s %s already: \'%s\' new: \'%s\'</p>',$payment, $payment_date, $already_paid_until, $answer["paid_month"]);
+			if($answer["paid_month"] == $already_paid_until)
+				return; //nothing new 
 			//printf('<p>%s %s %s</p>',$payment,$payment_date,var_export($answer,true));
 			return $answer;
 		} 
@@ -6839,10 +6843,12 @@ function wpt_dues_report () {
 		$member = get_userdata($member->ID);
 		$index = $member->display_name;
 		$last_stripe = $checked = '';
-		$until = (empty($member->$paidkey)) ? '' : 'Paid until: '.$member->$paidkey;
+		$until = (empty($member->$paidkey)) ? '' : $member->$paidkey;
 		$no = get_user_meta($member->ID,$norenew,true);
 		$answer = array();
 		if($stripe_on) {
+			if(isset($_GET['debug']))
+				printf('<p>Check transactions for %s %s</p>',$member->ID,$member->display_name);
 			$tx = rsvpmaker_stripe_latest_transaction_by_user ($member->ID, $renewal_start);
 			if($tx) {
 				$txdate = $tx->date;
@@ -6850,17 +6856,17 @@ function wpt_dues_report () {
 				if($tx->metadata) {
 					$metadata = unserialize($tx->metadata);
 				}
-				if(($amount == $expected_renewal) || in_array($amount,$plus6) )
-					$checked =  ' checked="checked" ';
 				$last_stripe = '<p>recent online payment '.$amount.' '.$txdate .' <span style="color:red">'.$tx->description.'</span> <p>';
-				$answer = $extractor->get_paid_owed($amount,$txdate);
+				$answer = $extractor->get_paid_owed($amount,$txdate,$until);
 			}
 		}
+		if($until) // add label after comparison above in get_paid_owed
+			$until = 'Paid until: '.$until;
 		$log = '<form method="post" action="'.$action.'" class="member_dues_update" id="member_dues_update_'.$member->ID.'"><input type="hidden" name="ti_paid_key" value="'.$ti_paid_key.'" /><input type="hidden" name="norenew" value="'.$norenew.'" /><input type="hidden" name="paidkey" value="'.$paidkey.'" /><input type="hidden" name="member_id" value="'.$member->ID.'"><input type="hidden" name="treasurer_note_key" value="'.$treasurer_note.'" />';
-		$log .= '<h3 id="status'.$member->ID.'">'.$member->display_name.' '.$member->user_email.' '.$until.' <span id="confirm'.$member->ID.'"><button>Update</button> </span></h3>';
+		$log .= '<h3 id="status'.$member->ID.'">'.$member->display_name.' '.$member->user_email.' '.$until.' <span id="confirm'.$member->ID.'"><button>Update</button> </span></h3>'.$last_stripe;
 		if((empty($member->$paidkey) || ($member->$paidkey != $paid_until)) && (empty($member->$norenew) || ($member->$norenew != $paid_until))) {
 			if(empty($answer))
-				$log .= sprintf('<p id="data-entry-'.$member->ID.'"><input type="checkbox" name="markpaid[%d]" id="markpaid%d" class="markpaid" value="1" %s /> Mark paid until <input type="text" name="until[%d]" value="%s"> <span id="paidplan%d"><input type="checkbox" name="no[%d]" value="%s"> Not planning to renew</span></p>%s',$member->ID,$member->ID,$checked,$member->ID,$paid_until, $member->ID,$member->ID,$paid_until, $last_stripe);
+				$log .= sprintf('<p id="data-entry-'.$member->ID.'"><input type="checkbox" name="markpaid[%d]" id="markpaid%d" class="markpaid" value="1" %s /> Mark paid until <input type="text" name="until[%d]" value="%s"> <span id="paidplan%d"><input type="checkbox" name="no[%d]" value="%s"> Not planning to renew</span></p>',$member->ID,$member->ID,$checked,$member->ID,$paid_until, $member->ID,$member->ID,$paid_until);
 			else {
 				$log .= '<p id="data-entry-'.$member->ID.'"><input type="checkbox" name="markpaid['.$member->ID.']" id="markpaid'.$member->ID.'" checked="checked" value="1" /> Mark paid until <input type="text" name="until['.$member->ID.']" value="'.$answer['paid_month'].'"> Paid to TI <input type="text" name="'.$ti_paid_key.'['.$member->ID.']" value="'.$answer['owe_ti'].'" /> </p>';
 				$index = '00'.$index;
@@ -6879,21 +6885,21 @@ function wpt_dues_report () {
 			else
 				$ti_payment = sprintf('<p><input type="hidden" name="markpaid[%d]" value="1" /> Paid to TI <input type="text" name="%s[%d]" /></p>',$member->ID,$ti_paid_key,$member->ID);
 			$paid_emails[] = $member->user_email;
-			$log .= $last_stripe.$ti_payment;
+			$log .= $ti_payment;
 			$logs2[$index] = $log.'</form>';
 		}
 		else
 			$logs[$index] = $log.'</form>';
 	}
 	if(!empty($logs)) {
-		sort($logs);
+		ksort($logs);
 		echo '<div style="padding: 5px; border: medium solid red">';
 		printf('<h3>Not Renewed (%s)</h3>%s',sizeof($logs), implode("\n",$logs));
 		echo '</div>';// end colored border	
 	}
 	if(!empty($logs2))
 	{
-		sort($logs2);
+		ksort($logs2);
 		echo '<div style="padding: 5px; border: medium solid green; margin-top: 20px;">';
 		printf('<h3>Members Who Have Renewed (%s)</h3>%s',sizeof($logs2), implode("\n",$logs2));
 	
@@ -7002,8 +7008,8 @@ function wpt_stripe_transactions () {
 	$th .= '<th>'.$column.'</th>';
 		$export .= $column.',';
 	}
-	$th .= '<th>yield</tb><th>paid ti</th></tr>';
-	$export .= "yield,paid ti\n";
+	$th .= '<th>paid ti</th></tr>';
+	$export .= "paid ti\n";
 	foreach($transactions as $transaction) {
 		$line = '';
 		$td .= '<tr>';
@@ -7019,12 +7025,15 @@ function wpt_stripe_transactions () {
 		if(($column == 'id') || ($column == 'metadata') || ($column == 'status') || ($column == 'transaction_id') || ($column == 'user_id'))
 			continue;
 			$td .= '<td>'.$value.'</td>';
+			if(strpos($value,'"'))
+				$value = str_replace('"','\"',$value);
+			if(!is_numeric($value))
+				$value = '"'.$value.'"';
 			$line .= $value.',';
 		}
-		$yield = $transaction['amount'] - $transaction['fee'];
-		$line .= "$yield,$paid_ti";
+		$line .= "$paid_ti";
 		$lines[] = $line;
-		$td .= "<td>$yield</td><td>$paid_ti</td></tr>\n";
+		$td .= "<td>$paid_ti</td></tr>\n";
 	}
 	krsort($lines);
 	$export .= implode("\n",$lines);
