@@ -244,7 +244,8 @@ class Editor_Assign extends WP_REST_Controller {
 	  }
   
 	public function get_items_permissions_check($request) {
-	  return (is_user_logged_in() && current_user_can('edit_signups'));
+		$check = $_POST['check'];
+		return (wp_verify_nonce($check,'wpt_role_update') && is_user_logged_in() && current_user_can('edit_signups'));
 	}
   
   public function handle($request) {
@@ -295,6 +296,30 @@ class Editor_Assign extends WP_REST_Controller {
 		$projects = '<option value="">Select Project</option>'.$track["projects"];
 	}
 	  return new WP_REST_Response(array('status' => $status, 'type' => $type, 'list' => $options, 'projects' => $projects), 200);
+	}
+}
+
+class TM_Role extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'tm_role';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'POST',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+		return ( is_user_logged_in() );
+	}
+  
+  public function handle($request) {
+	$response['content'] = toastmasters_role_signup ();
+	  return new WP_REST_Response($response, 200);
 	}
 }
 
@@ -363,7 +388,8 @@ class WPTM_Dues extends WP_REST_Controller {
 	  }
   
 	public function get_items_permissions_check($request) {
-	  return (is_user_logged_in() && current_user_can('view_reports'));
+	$nonce = $_POST['tmn'];
+	  return (wp_verify_nonce($nonce,'wpt_dues_report') && is_user_logged_in() && current_user_can('view_reports'));
 	}
   
   public function handle($request) {
@@ -515,4 +541,6 @@ add_action('rest_api_init', function () {
 	 $reminders->register_routes();
 	 $verify = new WPTM_Verify();
 	 $verify->register_routes();
-   } );
+	 $role = new TM_Role();
+	 $role->register_routes();
+} );

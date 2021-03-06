@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.2.6
+Version: 4.2.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1366,6 +1366,8 @@ function toastmaster_short($atts=array(),$content="") {
 	global $last_attended;
 	global $last_filled;
 	
+	$output .= wp_nonce_field('wpt_role_update','tmn',true,false);
+
 	if(is_edit_roles() && (current_user_can('edit_roles') || edit_signups_role()) )
 		{
 			if(function_exists('do_blocks'))
@@ -1551,16 +1553,16 @@ function toastmaster_short($atts=array(),$content="") {
 		{
 			$output .= '</form>';
 			if($assigned == $current_user->ID)
-			$output .= sprintf('<form id="remove%s_form" method="post" class="remove_me_form" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="remove_role" id="remove_role%s" value="%s"><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" name="check" value="%s">',$field,$permalink, $current_user->ID, $field, $field, $post->ID,wp_create_nonce('remove'.$field)).'<button name="delete_role" id="delete_role'.$field.'" value="1">'.__('Remove Me','rsvpmaker-for-toastmasters').'</button></form>';
+			$output .= sprintf('<form id="remove%s_form" method="post" class="remove_me_form" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="remove_role" id="remove_role%s" value="%s"><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" name="check" value="%s" >',$field,$permalink, $current_user->ID, $field, $field, $post->ID,wp_create_nonce('remove'.$field)).'<button name="delete_role" id="delete_role'.$field.'" value="1">'.__('Remove Me','rsvpmaker-for-toastmasters').'</button></form>';
 			//hidden edit field
 			if(is_single() && current_user_can('edit_signups')) { 
 				$awe_user_dropdown = awe_user_dropdown($field, $assigned);
 				$editone = 'Member: '.$awe_user_dropdown;
 				$guest = is_numeric($assigned) ? '' : $assigned;
-				$editone .= sprintf('<br />Or guest: <input id="%d_edit_guest%s" name="guest" value="%s">',$post->ID,$role,esc_attr($guest));
+				$editone .= sprintf('<br />Or guest: <input id="%d_edit_guest%s" name="guest" value="%s">',$post->ID,$field,esc_attr($guest));
 				if(strpos($field,'Speaker') )
 					$editone .= str_replace('speaker_details maxtime','speaker_details',str_replace('id="','id="editone',$detailsform));
-				$output .= sprintf('<div id="editonewrapper%s""><a class="editonelink" editone="%s">Edit</a></div><form id="editone%s" method="post" class="edit_one_form" action="%s" style="display: block;"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s"><input type="hidden" name="role" value="%s"><div>%s</div>',$field,$field,$field,$permalink,$post->ID,wp_create_nonce($field),$field,$editone).'<button name="edit_one" id="edit_one_button'.$field.'" value="1">'.__('Submit','rsvpmaker-for-toastmasters').'</button></form>';	
+				$output .= sprintf('<div id="editonewrapper%s""><a class="editonelink" editone="%s">Edit</a></div><form id="editone%s" method="post" class="edit_one_form" action="%s" style="display: block;"><input type="hidden" name="post_id" value="%d"><input type="hidden" name="check" value="%s" ><input type="hidden" name="role" value="%s"><div>%s</div>',$field,$field,$field,$permalink,$post->ID,wp_create_nonce($field),$field,$editone).'<button name="edit_one" id="edit_one_button'.$field.'" value="1">'.__('Submit','rsvpmaker-for-toastmasters').'</button></form>';	
 			}
 		}
 		$output .= '<div class="ajax_status" id="status'.$field.'"></div>';
@@ -6983,11 +6985,16 @@ function signup_sheet_editor() {
 	.status {
 	color: blue;
 	}
+	.editor_assign {
+		width: 30em;
+	}
 	</style>
 	</head><body><table id=\"signup\"><tr>".$head."</tr>".$cells."</table>
 	
 	<script type='text/javascript' src='".admin_url('load-scripts.php?c=1&amp;load%5B%5D=jquery-core,jquery-migrate,utils&amp;ver=4.9.8')."'></script>
-	
+	<link rel='stylesheet' id='style-toastmasters-select2-css' href='".plugins_url('rsvpmaker-for-toastmasters/select2/dist/css/select2.min.css?ver=3.74')."' type='text/css' media='all' />
+	<script type='text/javascript' src='".plugins_url('rsvpmaker-for-toastmasters/select2/dist/js/select2.min.js?ver=3.74')."' id='script-toastmasters-select2-js'></script>
+
 	<script>
 jQuery(document).ready(function($) {
 
@@ -6996,6 +7003,8 @@ $.ajaxSetup({
 		'X-WP-Nonce': '". wp_create_nonce( 'wp_rest' )."',
 	}
 });
+
+$('.editor_assign').select2();
 
 $('.editor_assign').on('change', function(){
 	var user_id = this.value;
@@ -12880,7 +12889,7 @@ function tm_absence ($atts) {
 return $output;
 }
 
-function toastmasters_init () {
+function toastmasters_role_signup () {
 	global $wpdb;
 	if(isset($_REQUEST['tm_ajax']))
 	{
@@ -12939,8 +12948,7 @@ function toastmasters_init () {
 		$next = $wpdb->get_row($sql);
 		if($next && !isset($_REQUEST['editor_assign']))
 		$o .= sprintf('<p>Would you also like to sign up for <a href="%s">%s</a>?</p>',get_permalink($next->ID),$next->date);
-
-		die($o);
+		return $o;
 		}
 	elseif($aj == 'remove_role')
 		{
@@ -12961,13 +12969,10 @@ function toastmasters_init () {
 		$actiontext = __("withdrawn: ",'rsvpmaker-for-toastmasters').' '.clean_role($role);
 		do_action('toastmasters_agenda_notification',$post_id,$actiontext,$user_id);
 		awesome_wall("withdrawn: ".clean_role($role),$post_id);		
-		die($actiontext);
+		return $actiontext;
 		}	
-	die('ajax command not found');
 	}	
 }
-
-add_action('init','toastmasters_init');
 
 add_action('rsvpmaker_template_list_top','rsvpmaker_template_list_top_wpt');
 

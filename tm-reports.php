@@ -3998,7 +3998,8 @@ if($results)
 		return; //nothing new here
 	if(empty($aggregated))
 		return; // nothing to record
-	printf('<p>Updating %s %s %s</p>',$post_id,$timestamp,$aggregated);
+	echo '<p>'.__('Updating','rsvpmaker-for-toastmasters').'</p>';
+	//printf('<p>Updating %s %s %s</p>',$post_id,$timestamp,$aggregated);
 	update_post_meta($post_id,'wpt_archive_code',$aggregated);
 	foreach($results as $row)
 	{
@@ -6711,6 +6712,7 @@ return $notes;
 
 function wpt_dues_report () {
 	global $wpdb;
+	$nonce = wp_nonce_field('wpt_dues_report','tmn',true,false);
 
 	$keys = get_rsvpmaker_stripe_keys ();
 	$stripe_on = (empty($keys) || empty($keys['pk'])) ? false : true;
@@ -6862,7 +6864,7 @@ function wpt_dues_report () {
 		}
 		if($until) // add label after comparison above in get_paid_owed
 			$until = 'Paid until: '.$until;
-		$log = '<form method="post" action="'.$action.'" class="member_dues_update" id="member_dues_update_'.$member->ID.'"><input type="hidden" name="ti_paid_key" value="'.$ti_paid_key.'" /><input type="hidden" name="norenew" value="'.$norenew.'" /><input type="hidden" name="paidkey" value="'.$paidkey.'" /><input type="hidden" name="member_id" value="'.$member->ID.'"><input type="hidden" name="treasurer_note_key" value="'.$treasurer_note.'" />';
+		$log = '<form method="post" action="'.$action.'" class="member_dues_update" id="member_dues_update_'.$member->ID.'"><input type="hidden" name="ti_paid_key" value="'.$ti_paid_key.'" /><input type="hidden" name="norenew" value="'.$norenew.'" /><input type="hidden" name="paidkey" value="'.$paidkey.'" /><input type="hidden" name="member_id" value="'.$member->ID.'"><input type="hidden" name="treasurer_note_key" value="'.$treasurer_note.'" />'.$nonce;
 		$log .= '<h3 id="status'.$member->ID.'">'.$member->display_name.' '.$member->user_email.' '.$until.' <span id="confirm'.$member->ID.'"><button>Update</button> </span></h3>'.$last_stripe;
 		if((empty($member->$paidkey) || ($member->$paidkey != $paid_until)) && (empty($member->$norenew) || ($member->$norenew != $paid_until))) {
 			if(empty($answer))

@@ -21,14 +21,9 @@ if(!empty($assigned) && !is_numeric($assigned) )
 	}
 
 $blogusers = get_users('blog_id='.get_current_blog_id() );
-    foreach ($blogusers as $user) {		
-
+    foreach ($blogusers as $user) {
 		$member = get_userdata($user->ID);
-		//if($member->hidden_profile)
-			//continue;
-		$index = preg_replace('/[^a-zA-Z]/','',$member->last_name.$member->first_name.$member->user_login);
 		$findex = preg_replace('/[^a-zA-Z]/','',$member->first_name.$member->last_name.$member->user_login);
-		$sortmember[$index] = $member;
 		$fnamesort[$findex] = $member;
 	}	
 	
@@ -62,10 +57,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 	
 	$fnamesort["AAC"] = $sortmember["AAC"] = $member;
 
-	ksort($sortmember);
 	ksort($fnamesort);
-
-	$options .= '<optgroup label="First Name Sort">';
 
 	foreach($fnamesort as $fnindex => $member)
 		{
@@ -73,7 +65,7 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 				$s = ' selected="selected" ';
 			else
 				$s = '';
-			$status = '';
+			$status = __('Last did: ?','rsvpmaker-for_toastmasters');
 			if($member->ID > 0)
 			{
 			$held = $histories[$member->ID]->get_last_held($role);
@@ -85,12 +77,12 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 				$status = 'Away  '.$status_msg;
 			}
 			elseif(!empty($held))	
-				$status = __('Last did role','rsvpmaker-for_toastmasters').": " .$held;				
+				$status = __('Last did','rsvpmaker-for_toastmasters').": " .$held;				
 			}
 			if(!empty($status)) $status = '('.$status.')';
 			if(empty($member->first_name))
 				$member->first_name = $member->display_name;
-			$options .= sprintf('<option %s value="%d">%s %s</option>',$s, $member->ID,$member->first_name.' '.$member->last_name, $status );
+			$options .= sprintf('<option %s value="%d">%s</option>',$s, $member->ID,$member->first_name.' '.$member->last_name );
 		
 		if(!empty($role))
 		{
@@ -103,26 +95,6 @@ $blogusers = get_users('blog_id='.get_current_blog_id() );
 		}
 		
 		}
-
-	$options .= "</optgroup>";
-	$options .='<option value="0">'.$openlabel.'</option>';
-
-	$options .= '<optgroup label="Last Name Sort">';
-	foreach($sortmember as $member)
-		{
-			$status = '';
-			if($member->ID > 0)
-			{
-			$held = $histories[$member->ID]->get_last_held($role);
-			if(!empty($histories[$member->ID]->away_active))
-				$status = 'Away  '.wp4t_get_member_status($member->ID);
-			elseif(!empty($held))	
-				$status = __('Last did role','rsvpmaker-for_toastmasters').": " .$held;				
-			}
-			if(!empty($status)) $status = '('.$status.')';
-			$options .= sprintf('<option value="%d">%s %s</option>', $member->ID,$member->first_name.' '.$member->last_name, $status );
-		}
-	$options .= "</optgroup>";
 	if(!empty($role))
 	{
 	ksort($heldsort);
@@ -893,4 +865,12 @@ function time_planner_2020 ($atts) {
 	$output .= sprintf('<h3>%s Done</h3>',date('H:i',$t));
 	$output .=  '<pre>'.var_export($data,true).'</pre>';
 	return $output;
+}
+
+function get_update_role_nonce() {
+	global $tm_update_role_nonce;
+	if($tm_update_role_nonce)
+		return $tm_update_role_nonce;
+	$tm_update_role_nonce = wp_create_nonce('tm_update_role');
+	return $tm_update_role_nonce;
 }

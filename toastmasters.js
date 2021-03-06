@@ -97,6 +97,7 @@ $('.editor_assign').on('change', function(){
 	$('#_intro_'+role).val('');
 	var post_id = $(this).attr('post_id');
 	var editor_id = $('#editor_id').val();
+	var check = $('#tmn').val();
 	$('#status'+role).html('Saving ... '+role);
 	console.log('post_id '+post_id);
 	console.log('role '+role);
@@ -107,6 +108,7 @@ $('.editor_assign').on('change', function(){
 			'role': role,
 			'user_id': user_id,
 			'editor_id': editor_id,
+			'check': check,
 			'post_id': post_id
 		};
 		$.post(wpt_rest.url+'rsvptm/v1/editor_assign', data, function(response) {
@@ -243,17 +245,18 @@ $( ".delete_tm_detail" ).click(function( event ) {
 
 $(document).on('submit', 'form.toastrole', function(event) {
 	event.preventDefault();
-	var action = $(this).attr('action') + 'tm_ajax=role';
+	var conjunction = (wpt_rest.url.indexOf('?')) ? '&' : '?';
+	var action = wpt_rest.url+'rsvptm/v1/tm_role'+conjunction+'tm_ajax=role';
 	var formid = $(this).attr('id');
 	var data = $(this).serialize();
-	
+	console.log('form id '+formid);
   	$('#'+formid).html('<div style="line-height: 3">Saving ...</div>');
    setTimeout( function () {
          $('#'+formid).addClass('bounce');
       }, 1000);	
 	
 	jQuery.post(action, data, function(response) {
-	$('#'+formid).html(response);       
+	$('#'+formid).html(response.content);     
          $('#'+formid).removeClass('bounce');
        $('#'+formid).css("opacity", '1');
        $('#'+formid).css("display", 'block');
@@ -264,17 +267,17 @@ $(document).on('submit', 'form.toastrole', function(event) {
 
 $(document).on('submit', 'form.remove_me_form', function(event) {
 	event.preventDefault();
-	var action = $(this).attr('action') + 'tm_ajax=remove_role';
+	var conjunction = (wpt_rest.url.indexOf('?')) ? '&' : '?';
+	var action = wpt_rest.url+'rsvptm/v1/tm_role'+conjunction+'tm_ajax=remove_role';
 	var formid = $(this).attr('id');
 	$('#'+formid).hide();
 	var signup_id = formid.replace('remove','');
 	var data = $(this).serialize();
-  	$('#'+signup_id).html('<div style="min-height: 3em;">Removing ...</div>');
 	setTimeout( function () {
 	 $('#'+signup_id).addClass('bounce');
 	}, 1000);	
 	jQuery.post(action, data, function(response) {
-	$('#'+signup_id).html('<div style="min-height: 3em;">'+response+'</div>');       
+	$('#'+signup_id).html('<div style="min-height: 3em;">'+response.content+'</div>');       
          $('#'+signup_id).removeClass('bounce');
        $('#'+signup_id).css("opacity", '1');
        $('#'+signup_id).css("display", 'block');
@@ -380,5 +383,7 @@ $(document).on('submit', 'form.edit_one_form', function(event) {
          $('#'+formid).addClass('grow');
 	});
 });
+
+$('.editor_assign').select2();
 
 });

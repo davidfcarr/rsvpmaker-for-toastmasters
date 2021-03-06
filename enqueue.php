@@ -13,7 +13,7 @@ $ver = '3.18';
 
 function toastmasters_css_js() {
 	global $post;
-	$version = '3.7';
+	$version = '3.91';
 	if(is_admin() && (strpos($_SERVER['REQUEST_URI'],'edit.php') || (strpos($_SERVER['REQUEST_URI'],'post.php') && empty($_GET['page'])) || strpos($_SERVER['REQUEST_URI'],'post-new.php')) )
 		return; // don't load all this in editor or post listings
     if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && 
@@ -37,6 +37,8 @@ function toastmasters_css_js() {
 	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
 	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
 	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), $version );
+	wp_enqueue_style( 'select2', plugins_url('rsvpmaker-for-toastmasters/select2/dist/css/select2.min.css'), array(), $version );
+	wp_enqueue_script('select2', plugins_url('rsvpmaker-for-toastmasters/select2/dist/js/select2.min.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), $version);
 	}
 	if( (isset($post->post_content) && is_wp4t() ) 
 	|| (strpos($_SERVER['REQUEST_URI'],'profile.php') || strpos($_SERVER['REQUEST_URI'],'user-edit.php'))

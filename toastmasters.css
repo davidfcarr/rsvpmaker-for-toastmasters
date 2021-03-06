@@ -1586,3 +1586,6 @@ a.ui-button:active,
 	-webkit-box-shadow: -8px -8px 8px #aaaaaa;
 	box-shadow: -8px -8px 8px #aaaaaa;
 }
+.editor_assign {
+	width: 30em;
+}
