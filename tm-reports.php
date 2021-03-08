@@ -6674,7 +6674,7 @@ class DuesExtractor {
 			$answer = $this->reverse_dues_table[$key][$index];
 			if($month > $answer["paid_month"])
 				$year++;
-			$day = ($month == 3) ? 31 : 30;
+			$day = ($answer["paid_month"] == 3) ? 31 : 30;
 			$answer["paid_month"] = $answer["paid_month"].'/'.$day.'/'.$year;
 			if(isset($_GET['debug']))
 				printf('<p>paid/owed %s %s already: \'%s\' new: \'%s\'</p>',$payment, $payment_date, $already_paid_until, $answer["paid_month"]);
@@ -6880,6 +6880,8 @@ function wpt_dues_report () {
 		if(!empty($notes))
 			$log .= '<br />'.implode('<br />',$notes);
 		$log .= '</p>';
+		if(isset($_GET['checkpaid']))
+			$log .= sprintf('<p>paidkey "%s" paid until "%s"</p>',$member->$paidkey,$paid_until); 
 		if(!empty($member->$paidkey) && ($member->$paidkey == $paid_until)) {
 			$paid_ti = get_user_meta($member->ID,$ti_paid_key,true);
 			if($paid_ti) 
@@ -6974,7 +6976,7 @@ function wpt_dues_reminders () {
 			$reminder_emails[] = $member->user_email;
 		}
 		elseif(!$no) {
-			$thanks .= sprintf('<p>Thank you: %s <a target="_blank" href="mailto:%s?subject=%s&body=%s">%s</a></p> ',$member->display_name,$member->user_email,$reminder_subject,$reminder_body,$member->user_email);
+			$thanks .= sprintf('<p>Thank you: %s <a target="_blank" href="mailto:%s?subject=%s">%s</a></p> ',$member->display_name,$member->user_email,$thank_you_subject,$member->user_email);
 		}
 	}
 

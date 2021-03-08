@@ -429,7 +429,7 @@ class WPTM_Dues extends WP_REST_Controller {
 		}
 	}
 
-	if(isset($_POST['note'])) {
+	if(!empty($_POST['note'])) {
 		$member_id = $_POST['member_id'];
 		$note = stripslashes($_POST['note']).' ('.$current_user->display_name.') '.rsvpmaker_date('F j, Y');
 		$key = $_POST['treasurer_note_key'];
