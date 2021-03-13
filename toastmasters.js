@@ -245,7 +245,7 @@ $( ".delete_tm_detail" ).click(function( event ) {
 
 $(document).on('submit', 'form.toastrole', function(event) {
 	event.preventDefault();
-	var conjunction = (wpt_rest.url.indexOf('?')) ? '&' : '?';
+	var conjunction = (wpt_rest.url.indexOf('?') > 0) ? '&' : '?';
 	var action = wpt_rest.url+'rsvptm/v1/tm_role'+conjunction+'tm_ajax=role';
 	var formid = $(this).attr('id');
 	var data = $(this).serialize();

@@ -339,7 +339,7 @@ foreach($data as $item)
 		if(!empty($item['role']))
 		{
 		$role = $item['role'];
-		$count = (int) $item['count'];
+		$count = (empty($item['count'])) ? 1 : (int) $item['count'];
 		for($i = 1; $i <= $count; $i++)
 			{
 				$field = '_'.str_replace(' ','_',$role).'_'.$i;
@@ -705,17 +705,6 @@ function is_agenda_locked () {
 		$locked = true;
 	return $locked;
 }
-
-function toastmasters_rsvpmailer_rule($content, $email, $message_type) {
-	if(empty($message_type))
-		return;
-	$user = get_user_by('email',$email);
-	if(!$user)
-		return '';
-	return get_user_meta($user->ID,'email_rule_'.$message_type,true);
-}
-
-add_filter('rsvpmailer_rule','toastmasters_rsvpmailer_rule',10,3);
 
 function get_agenda_timing($post_id) {
 	global $rsvp_options;

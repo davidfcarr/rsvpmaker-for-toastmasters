@@ -23,6 +23,7 @@ add_submenu_page( 'toastmasters_screen', __('Evaluations','rsvpmaker-for-toastma
 
 add_submenu_page( 'toastmasters_screen', __('Member List','rsvpmaker-for-toastmasters'), __('Member List','rsvpmaker-for-toastmasters'), 'view_contact_info', 'contacts_list', 'member_list');
 add_submenu_page( 'toastmasters_screen', __('My Data','rsvpmaker-for-toastmasters'), __('My Data','rsvpmaker-for-toastmasters'), 'read', 'wpt_my_data', 'wpt_my_data');
+add_submenu_page( 'toastmasters_screen', __('About WordPress for Toastmasters','rsvpmaker-for-toastmasters'), __('About WordPress for Toastmasters','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_support', 'toastmasters_support');
 
 add_menu_page(__('TM Administration','rsvpmaker-for-toastmasters'), __('TM Administration','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_admin_screen', 'toastmasters_admin_screen','dashicons-microphone','2.02');
 add_submenu_page( 'toastmasters_admin_screen', __('Update History','rsvpmaker-for-toastmasters'), __('Update History','rsvpmaker-for-toastmasters'), $security['edit_member_stats'], 'toastmasters_reconcile', 'toastmasters_reconcile');
@@ -36,11 +37,9 @@ add_submenu_page( 'toastmasters_admin_screen', __('Activity Log','rsvpmaker-for-
 add_submenu_page( 'toastmasters_admin_screen', __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), __('Import Free Toast Host Data','rsvpmaker-for-toastmasters'), 'manage_options', 'import_fth', 'import_fth');
 add_submenu_page( 'toastmasters_admin_screen', __('Import/Export','rsvpmaker-for-toastmasters'), __('Import/Export','rsvpmaker-for-toastmasters'), 'manage_options', 'import_export', 'toastmasters_import_export');
 //add_submenu_page( 'toastmasters_screen', __('Sync','rsvpmaker-for-toastmasters'), __('Sync','rsvpmaker-for-toastmasters'), 'manage_options', 'wpt_json', 'wpt_json');
-add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
-add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
+//add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
+//add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
 add_submenu_page( 'toastmasters_admin_screen', __('Setup Wizard','rsvpmaker-for-toastmasters'), __('Setup Wizard','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard');
-
-add_submenu_page( 'toastmasters_admin', __('Support This Project','rsvpmaker-for-toastmasters'), __('Support This Project','rsvpmaker-for-toastmasters'), 'read', 'toastmasters_support', 'toastmasters_support');
 
 add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 
@@ -106,6 +105,12 @@ echo '<h2>Tools</h2>';
 
 $tip['toastmasters_reconcile'] = 'Update records for speech and role signups';
 $tip['toastmasters_activity_log'] = 'Log of who signed up, withdrew from a role, or edited signups';
+$tip['toastmasters_attendance'] = 'Check off who attended your meetings (members on record as holding a role already marked present)';
+$tip['wpt_dues_report'] = 'Shows recent online payments via Stripe and lets you record other payments. Send email reminders to renew. Export data to spreadsheet. Also provides access to application form, Stripe online payments setup';
+$tip['add_member_speech'] = 'Add a speech to a member\'s records (for example, a speech at another club)';
+$tip['wp4t_setup_wizard'] = 'Intended for initial site setup';
+$tip['toastmost_club_email_list'] = 'Settings for member discussion email list and officers discussion email list';
+$tip['findaclub'] = 'Automatically respond to "Prospective new member" emails from toastmasters.org. Set forwarding for other notifications, such as Basecamp alerts';
 
 foreach($submenu['toastmasters_admin_screen'] as $index => $item)
 {
@@ -3424,13 +3429,14 @@ function tm_welcome_screen_remove_menus() {
 
 
 function toastmasters_support() {
-
+$hook = tm_admin_page_top(__('About WordPress for Toastmasters','rsvpmaker-for-toastmasters'));
+echo '<div style="background-color: #fff; padding: 5px;">';
 	show_wpt_promo();
-
-$hook = tm_admin_page_top(__('Other Resources','rsvpmaker-for-toastmasters'));
 ?>
-<p>Ideas for improvements are always welcome. The underlying software is available as open source code, meaning web developers and designers can contribute their own improvements. See the <a href="https://wordpress.org/plugins/rsvpmaker/">RSVPMaker</a> and <a href="https://wordpress.org/plugins/rsvpmaker-for-toastmasters/">RSVPMaker for Toastmasters</a> plugins and the <a href="https://wordpress.org/themes/lectern/">Lectern</a> theme in the WordPress.org repository.</p>
-<p>&quot;Like&quot; the <a href="https://www.facebook.com/wp4toastmasters">WordPress for Toastmasters Facebook page</a>.</p>
+<h2>How You Can Help</h2>
+<p>Ideas for improvements are always welcome. Help with documentation and training materials would be appreciated, particularly from those with a training or technical writing background. Write to <a href="mailto:david@wp4toastmasters.com?subject=WordPress for Toastmasters">david@wp4toastmasters.com</a>.</p>
+<p>The underlying software is available as open source code, meaning web developers and designers can contribute their own improvements. See the <a href="https://wordpress.org/plugins/rsvpmaker/">RSVPMaker</a> and <a href="https://wordpress.org/plugins/rsvpmaker-for-toastmasters/">RSVPMaker for Toastmasters</a> plugins and the <a href="https://wordpress.org/themes/lectern/">Lectern</a> theme in the WordPress.org repository and on <a href="https://github.com/davidfcarr">Github</a>.</p>
+<p>&quot;Like&quot; the <a href="https://www.facebook.com/wp4toastmasters">WordPress for Toastmasters Facebook page</a> and join the <a href="https://www.facebook.com/groups/wp4toastmasters">Toastmost and WordPress for Toastmasters Users</a>  Facebook group.</p>
 <!-- Begin MailChimp Signup Form -->
 <link href="//cdn-images.mailchimp.com/embedcode/horizontal-slim-10_7.css" rel="stylesheet" type="text/css">
 <style type="text/css">
@@ -3448,6 +3454,7 @@ $hook = tm_admin_page_top(__('Other Resources','rsvpmaker-for-toastmasters'));
     <div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"></div>
     </div>
 </form>
+</div>
 </div>
 <?php
 tm_admin_page_bottom($hook);
