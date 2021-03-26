@@ -2458,22 +2458,22 @@ else
 }
 
 function last_filled_role ($user_id, $role) {
-global $wpdb, $rsvp_options;
-$wpdb->show_errors();
-
-$role = preg_replace('/[0-9]/','',$role);
-
-	$sql = "SELECT DISTINCT a1.meta_value as datetime
-	 FROM ".$wpdb->posts."
-	 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 JOIN ".$wpdb->postmeta." a2 ON ".$wpdb->posts.".ID =a2.post_id AND a2.meta_value=".$user_id." AND a2.meta_key LIKE '".$role."%'   
-	 WHERE a1.meta_value < '".get_sql_now()."' 
-	 ORDER BY a1.meta_value DESC";
-$date = $wpdb->get_var($sql);
-if($date)
-	return date('Y-m-d',strtotime($date));
+global $wpdb, $rsvp_options, $post;
+if(empty($post->ID))
+	return;
+$histories = get_post_meta($post->ID,'_histories',true);
+if(!$histories)
+	return;
+$role = clean_role($role);
+if(empty($histories[$user_id]))
+	return;
+$held = $histories[$user_id]->get_last_held($role);
+if($held) {
+	$result = array('index' => date('Y-m-d',strtotime($held)),'text' => '<br />'.__('Last held role','rsvpmaker-for-toastmasters').': '.$held);
+}
 else
-	return 'N/A';
+	$result = array('index' => '0000','text' => '?');
+return $result;
 }
 
 function toastmasters_mentors() {
@@ -6883,7 +6883,7 @@ function wpt_dues_report () {
 		}
 		$log .= (empty($no)) ? '' : sprintf('<p id="editline%d">Not planning to renew <input type="checkbox" name="updatevoid" member_id="%d" class="editvoid" value="edit" until="%s" paid_to_ti="%s" /> Edit </p>',$member->ID,$member->ID,$paid_until,$paid_ti,$member->ID);
 		$log .= '<p class="enter_notes">Notes <input type="text" name="note">';
-		$notes = get_treasurer_notes($member->ID,$treasurer_note);//get_user_meta($member->ID,$treasurer_note); //return array
+		$notes = get_treasurer_notes($member->ID,$treasurer_note);
 		if(!empty($notes))
 			$log .= '<br />'.implode('<br />',$notes);
 		$log .= '</p>';
@@ -6898,6 +6898,9 @@ function wpt_dues_report () {
 			$paid_emails[] = $member->user_email;
 			$log .= $ti_payment;
 			$logs2[$index] = $log.'</form>';
+		}
+		elseif($no) {
+			$notrenewing[$index] = $log.'</form>';
 		}
 		else
 			$logs[$index] = $log.'</form>';
@@ -6915,6 +6918,11 @@ function wpt_dues_report () {
 		printf('<h3>Members Who Have Renewed (%s)</h3>%s',sizeof($logs2), implode("\n",$logs2));
 	
 		echo '</div>';// end colored border	
+	}
+	if(!empty($notrenewing)) {
+		ksort($notrenewing);
+		echo '<div style="padding: 5px; border: medium solid gray; margin-top: 20px;">';
+		printf('<h3>Not Planning to Renew (%s)</h3>%s',sizeof($notrenewing), implode("\n",$notrenewing));
 	}
 ?>
 </section>

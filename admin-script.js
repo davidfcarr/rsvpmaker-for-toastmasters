@@ -35,6 +35,8 @@
 				message += data.paid_ti+' ';
 			if(data.no_renewal)
 				message += data.no_renewal+' ';
+			if(data.note)
+				message += data.note+' ';
 
 			$('#confirm'+data.member_id).html(message);
 			$('#data-entry-'+data.member_id).hide();

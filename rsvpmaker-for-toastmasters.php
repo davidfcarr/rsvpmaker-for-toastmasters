@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.3.1
+Version: 4.3.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1254,6 +1254,8 @@ function toastmaster_short($atts=array(),$content="") {
 				else
 					{
 							$output .= '<button name="take_role" id="take_role'.$field.'" value="1">Take Role</button>';
+							$last = last_filled_role($current_user->ID,$field);
+							$output .= $last['text'];
 					}
 				}
 
@@ -3456,7 +3458,7 @@ function register_wp4toastmasters_settings() {
 						$next = $future[0];
 						fix_timezone();
 						$timestamp = strtotime($next->datetime .' -'.$hours.' hours');
-						wp_schedule_event( $timestamp, 'weekly', 'wp4toast_reminders_cron', array( $hours ) );
+						wp_schedule_event( $timestamp, 'weekly', 'wp4toast_reminders_cron', array( $next->ID.':'.$hours ) );
 						update_option('wp4toast_reminders_cron', 1);
 						}
 				}
@@ -3487,7 +3489,7 @@ function register_wp4toastmasters_settings() {
 						{
 						$next = $future[0];
 						fix_timezone();
-						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $hours ) );
+						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $next->ID.':'.$hours ) );
 						update_option('wp4toast_reminders_cron', 1);
 						}
 				}
@@ -3536,7 +3538,7 @@ function wp4toast_reminders_dst_fix ($args = array()) {
 						{
 						$next = $future[0];
 						fix_timezone();
-						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $hours ) );
+						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $next.':'.$hours ) );
 						}
 				}
 			$previous = get_option('wp4toast_reminder2');
@@ -3558,7 +3560,7 @@ function wp4toast_reminders_dst_fix ($args = array()) {
 					if(!empty($next))
 						{
 						fix_timezone();
-						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $hours ) );
+						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $next->ID.':'.$hours ) );
 						}
 				}	
 }
@@ -12023,25 +12025,6 @@ global $wpdb;
 	}
 }
 
-function role_history_demo () {
-	$users = get_users();
-	foreach($users as $user) {
-		$history = new role_history($user->ID,'2017-10-01');
-		echo $user->user_login . '<br />';
-		$test_roles = array('Speaker','Evaluator','Nonesuch');
-		foreach($test_roles as $role) {
-		echo '<h2>'.$role .'</h2><p>';
-		if($history->get_eligibility($role))
-			echo 'Elibible <br />';
-		else
-			echo 'Not eligible for role <br />';
-		echo 'last held role '. $history->get_last_held($role) . '<br />';
-		}
-		echo 'speech count '. $history->get_speech_count() . '<br />';
-		echo 'recent roles '. var_export($history->recent_history,true) . '</p>';
-	}
-}
-
 function tm_goal_form () {
 global $wpdb, $rsvp_options, $current_user;
 $options = get_manuals_options();
@@ -12587,8 +12570,7 @@ function wp4t_cron_nudge_setup () {
 }
 add_action('wp4t_reminders_nudge','wp4t_reminders_nudge');
 function wp4t_reminders_nudge () {
-	//if(wp_get_scheduled_event('wp4toast_reminders_cron'))
-		//return;
+
 	$temp = get_option('wp4toast_reminder');
 	if(!empty($temp))
 	$reminders[] = $temp;
@@ -12650,7 +12632,6 @@ if(!wp_is_json_request()) {
 	add_shortcode('wpt_tod','wpt_tod');
 	add_shortcode('wptagendalink','wptagendalink');
 	add_shortcode('wp4t_assigned_open','wp4t_assigned_open');
-	add_shortcode('role_history_demo','role_history_demo');
 	add_shortcode('tm_absence','tm_absence');
 	add_shortcode('wpt_embed_agenda','wpt_embed_agenda');
 	add_shortcode('tm_branded_image','tm_branded_image');

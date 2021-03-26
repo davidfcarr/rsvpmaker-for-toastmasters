@@ -68,6 +68,42 @@ class WPTContest_Order_Controller extends WP_REST_Controller {
 	}
 }
 
+class WPTContest_Send_Link extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'wptcontest/v1';
+	  $path = 'send_link';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'POST',
+		  'callback'            => array( $this, 'get_items' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+			  ),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return is_user_logged_in();
+	}
+  
+  public function get_items($request) {
+	global $current_user;
+	$email = $_POST['email'];
+	$note = wpautop(stripslashes($_POST['note']));
+	$mail['subject'] = stripslashes($_POST['subject']);
+	$code = $_POST['code'];
+	$post_id = $_POST['post_id'];
+	$mail['to'] = $email;
+	$mail['html'] = $note;
+	$mail['from'] = $current_user->user_email;
+	$mail['fromname'] = $current_user->display_name;
+	$error = rsvpmailer($mail);
+	if($error)
+		return new WP_REST_Response($error, 200);
+	return new WP_REST_Response($mail, 200);
+	}
+}
+
 class WPTContest_VoteCheck extends WP_REST_Controller {
 	public function register_routes() {
 	  $namespace = 'wptcontest/v1';
@@ -431,9 +467,10 @@ class WPTM_Dues extends WP_REST_Controller {
 
 	if(!empty($_POST['note'])) {
 		$member_id = $_POST['member_id'];
-		$note = stripslashes($_POST['note']).' ('.$current_user->display_name.') '.rsvpmaker_date('F j, Y');
+		$note = '<strong>'.stripslashes($_POST['note']).'</strong> ('.$current_user->display_name.') '.rsvpmaker_date('F j, Y');
 		$key = $_POST['treasurer_note_key'];
 		add_user_meta($member_id,$key,$note);
+		$confirmation['note'] = $note;
 	}
 
 	$confirmation['member_id'] = $member_id;
@@ -519,6 +556,8 @@ add_action('rest_api_init', function () {
      $toastnorole->register_routes();
      $order_controller = new WPTContest_Order_Controller();
      $order_controller->register_routes();
+     $contest_sendlink = new WPTContest_Send_Link();
+     $contest_sendlink->register_routes();
      $votecheck_controller = new WPTContest_VoteCheck();
      $votecheck_controller->register_routes();
      $gotvote_controller = new WPTContest_GotVote();

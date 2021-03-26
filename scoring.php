@@ -50,7 +50,6 @@ section.nav-tab {
 	background-color: #fff;
 }
 
-
 section.nav-tab-active {
 	display:block;
 	border: medium solid gray;

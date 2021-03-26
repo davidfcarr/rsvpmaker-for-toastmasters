@@ -2,7 +2,7 @@
 
 function tm_welcome_screen_assets( $hook ) {
 //everywhere except posts screen
-$ver = '3.19';
+$ver = '3.21';
   if(!strpos($_SERVER['REQUEST_URI'],'post.php')) //if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) 
    {
     wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), $ver );
@@ -13,7 +13,7 @@ $ver = '3.19';
 
 function toastmasters_css_js() {
 	global $post;
-	$version = '3.92';
+	$version = '3.97';
 	if(is_admin() && (strpos($_SERVER['REQUEST_URI'],'edit.php') || (strpos($_SERVER['REQUEST_URI'],'post.php') && empty($_GET['page'])) || strpos($_SERVER['REQUEST_URI'],'post-new.php')) )
 		return; // don't load all this in editor or post listings
     if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && 
@@ -48,8 +48,6 @@ function toastmasters_css_js() {
     if( isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'wp4t_setup_wizard')) {
 		wp_enqueue_script('password-strength-meter');
 		wp_enqueue_script('user-profile');
-		//wp_enqueue_script( 'pwstr', admin_url('js/password-strength-meter-min.js'));
-		//wp_enqueue_script( 'wpuser', admin_url('js/user-profile-min.js'));
 	} 
 }
 

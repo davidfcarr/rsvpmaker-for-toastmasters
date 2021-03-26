@@ -362,7 +362,10 @@ $('.agenda_note_editable_editone_on').on('click', function(e){
 
 $(document).on('submit', 'form.edit_one_form', function(event) {
 	event.preventDefault();
-	var action = $(this).attr('action') + 'tm_ajax=role';
+	var conjunction = '?';//(wpt_rest.url.indexOf('?')) ? '&' : '?';
+	var action = wpt_rest.url+'rsvptm/v1/tm_role'+conjunction+'tm_ajax=role';
+	console.log('action '+action);
+	console.log('rest url '+wpt_rest.url);
 	var formid = $(this).attr('id');
 	var data = $(this).serialize();
 	var user_id = $('#'+formid+' .editor_assign').val();
@@ -375,7 +378,7 @@ $(document).on('submit', 'form.edit_one_form', function(event) {
       }, 1000);	
 	
 	jQuery.post(action, data, function(response) {
-	$('#'+formid).html(response);       
+	$('#'+formid).html(response.content);       
          $('#'+formid).removeClass('bounce');
        $('#'+formid).css("opacity", '1');
        $('#'+formid).css("display", 'block');

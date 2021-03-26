@@ -29,10 +29,15 @@ function email_with_without_role ($meeting_hours,$test = false) {
 		if($test)
 			$meeting_hours .= time();
 	}
+	elseif(!strpos($meeting_hours,':')) {
+		return;		
+	}
 	else {
 		$p = explode(':',$meeting_hours);
 		$next = get_post($p[0]);
 	}
+	if(empty($next))
+		return;
 	$t = rsvpmaker_strtotime(get_rsvp_date($next->ID));
 	$date = rsvpmaker_strftime($rsvp_options['short_date'],$t);
 	$post = $next;

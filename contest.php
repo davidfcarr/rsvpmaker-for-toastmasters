@@ -10,13 +10,13 @@ function add_contest_userlink($user_id, $link, $post_id = 0) {
 	update_post_meta($post_id,'contest_link_'.$user_id,$link);
 }
 
-function set_contest_parameters($post_id,$contest) {
-	global $current_user;
+function wpt_get_contest_array ($type = 'selection') {
 	$contest_selection['International Speech Contest'] = array('Speech Development' => 20,'Effectiveness' => 15,'Speech Value' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 10);
 	$contest_selection['Video Speech Contest'] = array('Speech Development' => 20,'Effectiveness' => 15,'Speech Value' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 10);
 	$contest_selection['Humorous Speech Contest'] = array('Speech Development' => 15,'Effectiveness' => 10,'Speech Value' => 15,'Audience Response' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 5);
 	$contest_selection['Table Topics Contest'] = array('Speech Development' => 30,'Effectiveness' => 25,'Physical' => 15,'Voice' => 15,'Appropriateness' => 10,'Correctness' => 5);
 	$contest_selection['Evaluation Contest'] = array('Analytical Quality' => 40,'Recommendations' => 30,'Technique' => 15,'Summation' => 15);
+	$contest_selection['VTM 3-5 Min Webinar Contest'] = array('Speech Development' => 15,'Audience Engagement' => 15,'Speech Value' => 15,'Call to Action' => 15,'Visual' => 15,'Voice' => 10,'Manner' => 5,'Appropriateness/Correctness' => 10);
 	$contest_selection['Mini-Webinar Contest'] = array('Speech Development' => 15,'Audience Engagement' => 15,'Speech Value' => 15,'Call to Action' => 15,'Visual' => 15,'Voice' => 10,'Manner' => 5,'Appropriateness/Correctness' => 10);
 	
 	$contest_timing['International Speech Contest'] = '5 to 7';
@@ -24,7 +24,18 @@ function set_contest_parameters($post_id,$contest) {
 	$contest_timing['Humorous Speech Contest'] = '5 to 7';
 	$contest_timing['Table Topics Contest'] = '1 to 2';
 	$contest_timing['Evaluation Contest'] = '2 to 3';
+	$contest_timing['VTM 3-5 Min Webinar Contest'] = '3 to 5';
 	$contest_timing['Mini-Webinar Contest'] = '6 to 8';
+	if($type == 'timing')
+		return $contest_timing;
+	else
+		return $contest_selection;	
+}
+
+function set_contest_parameters($post_id,$contest) {
+	global $current_user;
+	$contest_selection = wpt_get_contest_array();
+	$contest_timing = wpt_get_contest_array('timing');
 	update_post_meta($post_id,'toast_contest_name',$contest);
 	update_post_meta($post_id,'toast_contest_scoring',$contest_selection[$contest]);
 	update_post_meta($post_id,'toast_timing',$contest_timing[$contest]);
@@ -378,20 +389,9 @@ $votinglink .= '?scoring=voting';
 do_action('wpt_scoring_dashboard_top');
 $link = sprintf('<div id="agendalogin"><a href="%s">'.__('Login','rsvpmaker-for-toastmasters').'</a></div>',site_url().'/wp-login.php?redirect_to='.urlencode($actionlink));
 
-$contest_selection['International Speech Contest'] = array('Speech Development' => 20,'Effectiveness' => 15,'Speech Value' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 10);
-$contest_selection['Video Speech Contest'] = array('Speech Development' => 20,'Effectiveness' => 15,'Speech Value' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 10);
-$contest_selection['Humorous Speech Contest'] = array('Speech Development' => 15,'Effectiveness' => 10,'Speech Value' => 15,'Audience Response' => 15,'Physical' => 10,'Voice' => 10,'Manner' => 10,'Appropriateness' => 10,'Correctness' => 5);
-$contest_selection['Table Topics Contest'] = array('Speech Development' => 30,'Effectiveness' => 25,'Physical' => 15,'Voice' => 15,'Appropriateness' => 10,'Correctness' => 5);
-$contest_selection['Evaluation Contest'] = array('Analytical Quality' => 40,'Recommendations' => 30,'Technique' => 15,'Summation' => 15);
-$contest_selection['Mini-Webinar Contest'] = array('Speech Development' => 15,'Audience Engagement' => 15,'Speech Value' => 15,'Call to Action' => 15,'Visual' => 15,'Voice' => 10,'Manner' => 5,'Appropriateness/Correctness' => 10);
+$contest_selection = wpt_get_contest_array();
+$contest_timing = wpt_get_contest_array('timing');
 
-$contest_timing['International Speech Contest'] = '5 to 7';
-$contest_timing['Video Speech Contest'] = '5 to 7';
-$contest_timing['Humorous Speech Contest'] = '5 to 7';
-$contest_timing['Table Topics Contest'] = '1 to 2';
-$contest_timing['Evaluation Contest'] = '2 to 3';
-$contest_timing['Mini-Webinar Contest'] = '6 to 8';
-	
 $demo = get_post_meta($post->ID,'_contest_demo',true);
 if($demo)
 	$output .= '<p>This page is configured as a demo, no password required.</p>';
@@ -514,6 +514,9 @@ $output .= '<h1>Choose Contest</h1>'.sprintf('<form method="post" action="%s">
 	<div>Contest #2 (optional):<br /><select name="contest_scoring2">%s</select>
 	%s
 	<p><input type="checkbox" name="syncwith1" value="checked" checked="checked" /> Use same list of judges and functionaries for second contest</p>
+	<p><input type="radio" name="ballot_no_password" value="0"  checked="checked" /> User password required for access to ballot, timer\'s report form</p>
+	<p><input type="radio" name="ballot_no_password" value="1"  /> No password. Ballots protected by coded links</p>
+	<p><em>By default, a password is required for all voting forms associated with a user account. You may turn off password protection to make it easier for judges to access thier ballots, which will still be private as long as the link is only shared with the individual judges. This setting also applies to the timer\'s report. Guest judge links, created by entering a name rather than choosing a user account, are not password protected. The contest dashboard is always password protected.</em></p>
 		<button>Set</button></div>
 </form>
 ',$actionlink,$options,track_roles_ui(),$options,track_roles_ui('',2));
@@ -885,27 +888,27 @@ $practice_judges = get_post_meta($practice_contest,'tm_scoring_judges',true);
 $update_practice = false;
 
 echo '<h2>Voting Links</h2><p><input type="checkbox" id="showlinks" value="1" '. $checked .' /> Show Links '.$othercontest.' '.$samedifferent.'</p><p class="votinglink">Share these personalized voting links with the judges. </p> ';
+wpt_contest_emaillinks_post ();
 if(empty($_POST['email_link']))
-{
+	echo '<p>To send these links by email, see the Email Links tab, below.</p>';
 ?>	
-<p class="votinglink"><input type="checkbox" id="show_email_links" > Show send by email option. <span class="email_links"><em>Enter email addresses or use those from the accounts of registered users. You can also customize the note that will appear at the top of the message. When done, click the Email Links button at the bottom of the list.</em></p>
-	<form method="post" action="<?php echo $actionlink ?>" >
+<p class="votinglink">
+
 <?php
-}
+$email_links = '';
 
 foreach($judges as $key => $value)
 {
 	$v = $votinglink . '&judge='.$key;
-		
+	
+	$name = get_member_name($value);
 	if(is_numeric($value))
 	{
 		$userdata = get_userdata($value);
-		$name = $userdata->first_name.' '.$userdata->last_name;
 		$username = $userdata->user_login;
 	}
 	else
 	{
-		$name = $value;
 		$username = '';
 	}
 	$is_tiebreaker = ($key == $tiebreaker);
@@ -917,7 +920,7 @@ foreach($judges as $key => $value)
 		}
 	echo '<div class="votinglink">';
 	$links = '';
-	$links .= '<h4>Voting for '.$name.'</h4>';
+	$links .= '<h4>Voting for '.$name.'</h4>'."\n";
 	$links .= sprintf('<p>%s <a target="_blank" href="%s">%s</a></p>',$contest_name,$v,$v);
 	if(!empty($other_judges[$key])) {
 		$v = get_permalink($related).'?scoring=voting&judge='.$key;
@@ -926,6 +929,7 @@ foreach($judges as $key => $value)
 	}
 	if(!empty($username) && !$ballot_no_password)
 		$links .= sprintf('<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>',$username,wp_login_url($v),wp_login_url().'?action=lostpassword');
+	echo $links;
 	if(empty($practice_judges[$key]))
 	{
 		$practice_judges[$key] = $value;
@@ -933,8 +937,8 @@ foreach($judges as $key => $value)
 	}
 	$v = add_query_arg(array('scoring' => 'voting','judge' => $key,'reset' => 1),get_permalink($practice_contest));
 	$links .= sprintf('<p>%s <a target="_blank" href="%s">%s</a></p>','Practice Contest Ballot for '.$name,$v,$v);
-	echo $links;
-	wpt_contest_emaillinks($links,$key,'judge',$value); // value is user id or name
+	//$email_links .= $links;
+	$email_links .= wpt_contest_emaillinks($links,$key,'judge',$value); // value is user id or name
 	echo '</div>';
 $dashboard_forms .= dashboard_vote($contestants, $key, $name, $actionlink, $is_tiebreaker);
 }
@@ -947,7 +951,7 @@ if(!empty($other_judges)) {
 	printf('<p>%s judges only registered for other contest</p>',sizeof($other_judges));
 }
 
-echo '<div class="votinglink"><h3>Timer</h3>';
+echo '<div class="votinglink">';
 $timer_code = get_post_meta($post->ID,'tm_timer_code',true);
 if(empty($timer_code))
 {
@@ -960,7 +964,7 @@ $timer_link = add_query_arg( array(
     'contest' => $timer_code,
 ), get_permalink($post->ID) );
 
-$links = '';
+$links = '<h4>Timer</h4>'."\n";
 $timer_user = (int) get_post_meta($post->ID,'contest_timer',true);
 if($timer_user && !$ballot_no_password)
 	{
@@ -988,20 +992,12 @@ $practice_timer_link = add_query_arg( array(
 	'reset' => 1,
 ), get_permalink($practice_contest) );
 $links .= sprintf("<p>%s Timer's Report".'<br /><a target="_blank" href="%s">%s</a></p>','Practice Contest',$practice_timer_link,$practice_timer_link);
-wpt_contest_emaillinks($links,$timer_code,'timer',$timer_user);
+echo $links;
+//$email_links .= $links;
+$email_links .= wpt_contest_emaillinks($links,$timer_code,'timer',$timer_user);
 echo $links;
 echo '</div>';
 
-if(empty($_POST['email_link']))
-{
-	?>
-	<p class="email_links"><button>Email Links</button></p></form>
-	<?php	
-}
-
-echo "<h3>Backup Voting Forms</h3><p>If judges have problems with the online voting, you can record votes on their behalf.</p>";
-echo '<p><input type="checkbox" id="showvotingforms" value="1" /> Show Forms</p><div class="votingforms">';
-echo $dashboard_forms.'</div>';
 }
 
 ?>
@@ -1031,11 +1027,13 @@ else {
 	$genericdrop = str_replace('</select>','</optgroup></select>',$genericdrop);
 ?>
 	<h2>Setup</h2>
-    <h2 class="nav-tab-wrapper">
+    <h3 class="nav-tab-wrapper">
 	<a class="nav-tab nav-tab-active" href="#contestants">Contestants</a>
 	<a class="nav-tab" href="#judges">Judges and Timer</a>
+	<a class="nav-tab" href="#email_links">Email Links</a>
+	<a class="nav-tab" href="#backup_ballots">Backup Ballots</a>
       <a class="nav-tab" href="#security">Security</a>
-      <a class="nav-tab" href="#lock-reset">Lock/Unlock/Reset</a>
+      <a class="nav-tab" href="#lock-reset">Lock/Reset</a>
 	  <?php
 	  if($related) 
 	  	echo '<a class="nav-tab" href="#sync">Sync with Related Contest</a>'; 
@@ -1166,6 +1164,22 @@ do_action('wpt_contest_judges_form');
 }
 ?>
 	</section>
+<section class="rsvpmaker"  id="email_links">
+<p>Use this form to email links to the judges and timer. You can send them one at a time or use the Send All Links button at the bottom.</p>
+<form method="post" action="<?php echo $actionlink ?>" >
+<?php 
+echo $email_links;
+?>
+<p><br /><button>Send All Links</button></p>
+</form>
+	</section>
+	<section class="rsvpmaker"  id="backup_ballots">
+<?php
+	echo "<h3>Backup Voting Forms</h3><p>If judges have problems with the online voting, you can record votes on their behalf.</p>";
+echo '<div class="votingforms_tab">';
+echo $dashboard_forms.'</div>';
+?>
+	</section>
     <section class="rsvpmaker"  id="security">
 <?php
 if($slave || isset($_GET['test'])) {
@@ -1186,7 +1200,7 @@ for($i= 0; $i < $dashlimit; $i++)
 {
 	$user = empty($dashboard_users[$i]) ? 0 : $dashboard_users[$i];
 	$selected_option = (!$user) ? '' : sprintf('<option value="%s">%s</option>',$user,get_member_name($user));
-	$drop = str_replace('user','tm_scoring_dashboard_users[]',$genericdrop);//awe_user_dropdown ('judge['.$index.']', $user, true, $open);
+	$drop = str_replace('user','tm_scoring_dashboard_users[]',str_replace("id='user'",'',$genericdrop));//awe_user_dropdown ('judge['.$index.']', $user, true, $open);
 	if(!empty($selected_option))
 		$drop = preg_replace('/<select[^>]+>/','$0'.$selected_option,$drop);
 	echo '<div>'.$drop.'</div>';
@@ -1348,6 +1362,28 @@ $('#role_track_status').html('<p>Contestant names will be pulled from the '+role
 $('#manual_contestants').hide();	
 }
 });
+
+$('.send_contest_link').click (
+	function (e) {
+		e.preventDefault();
+		let id = $(this).attr('id');
+		let action = $(this).attr('action');
+		let data = {
+			email : $('#email_link'+id).val(),
+			note : $('#email_link_note'+id).val(),
+			subject : $('#email_subject'+id).val(),
+			code: id,
+			post_id: <?php echo $post->ID;?>,
+		}
+		console.log(data);
+		$('#send_link_status'+id).text('Sending ...');
+		jQuery.post(action, data, function(response) {
+			//data = JSON.parse(response);
+			if(response.subject)
+				$('#send_link_status'+id).text('Sent: '+response.subject);
+	});
+	}
+);
 
 });
 </script>
@@ -2120,36 +2156,53 @@ $output .= '</div>';
 return $output;
 }
 
+function wpt_contest_emaillinks_post () {
+	global $current_user, $post;
+	if(isset($_POST['email_link']))
+		{
+			foreach($_POST['email_link'] as $code => $email) {
+				if(!empty($email))
+				{
+					$mail['to'] = $email;
+					$mail['subject'] = stripslashes($_POST['email_role'][$code]);
+					$mail['html'] = '<p>'.nl2br(stripslashes($_POST['email_link_note'][$code]))."</p>\n";
+					$mail['from'] = $current_user->user_email;
+					$mail['fromname'] = $current_user->display_name;
+					rsvpmailer($mail);
+					echo '<div>Emailing links to '.$_POST['email_link'][$code].'</div>';	
+				}
+			}
+		}	
+}
+
 function wpt_contest_emaillinks($links,$code,$role, $user_id) {
-global $current_user, $post;
-if(isset($_POST['email_link'][$code]))
+global $post;
+ob_start();
+	if(is_numeric($user_id) && $user_id)
 	{
-		if(empty($_POST['email_link'][$code]))
-			echo '<div>Email field is empty</div>';
-		else {
-			$mail['to'] = $_POST['email_link'][$code];
-			$mail['subject'] = 'IMPORTANT for your '.$role.' role in our contest';
-			$mail['html'] = '<p>'.nl2br(stripslashes($_POST['email_link_note'][$code]))."</p>\n".$links;
-			$mail['from'] = $current_user->user_email;
-			$mail['fromname'] = $current_user->display_name;
-			rsvpmailer($mail);
-			echo '<div>Emailing links to '.$_POST['email_link'][$code].'</div>';
-		}
+	$userdata = get_userdata($user_id);
+	$email = $userdata->user_email;
+	$name = $userdata->display_name;
 	}
-	else {
-		if(is_numeric($user_id) && $user_id)
-		{
-			$userdata = get_userdata($user_id);
-			$email = $userdata->user_email;
-		}
-		else
-		{
-			$timer_named = get_post_meta($post->ID,'contest_timer_named',true);
-			$email = (empty($timer_named['email'])) ? '' : $timer_named['email'];
-		}
-		$note = sprintf("We're planning to use a web-based voting / vote counting system for our upcoming contest, and these are the links we would like you to use for your role as %s. You may want to try the practice link ahead of time.",$role);
-		printf('<div class="email_links" method="post" action="%s"><strong>Email links to</strong> <input type="text" name="email_link[%s]" value="%s" /><br />Note: <textarea name="email_link_note[%s]" >%s</textarea></div>',get_permalink().'?scoring=dashboard',$code,$email,$code,$note);
+	elseif($role == 'timer')
+	{
+	$timer_named = get_post_meta($post->ID,'contest_timer_named',true);
+	$email = (empty($timer_named['email'])) ? '' : $timer_named['email'];
+	$name = (empty($timer_named['name'])) ? '' : $timer_named['name'];
 	}
+	else
+	{
+	$email = get_post_meta($post->ID,'judge_email'.$code,true);
+	$name = $user_id;
+	}
+	$tiebreaker = get_post_meta($post->ID,'tm_scoring_tiebreaker',true);
+	if($code == $tiebreaker)
+		$role = 'Tie Breaker';
+	$note = sprintf("Please confirm you received this email. We're planning to use a web-based voting / vote counting system for our upcoming contest, and these are the links we would like you to use for your role as %s. You may want to try the practice link ahead of time.",$role);
+	$subject = 'IMPORTANT for your '.$role.' role in our contest';
+	printf('<p class="email_links_new"><strong>Email links for %s to</strong> <input type="text" name="email_link[%s]" id="email_link%s" value="%s" /><br /><input type="text" name="email_subject[%s]" id="email_subject%s" value="%s" size="80" /><br />Note: <textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br /><button class="send_contest_link" id="%s" action="%s">Send to %s</button><div id="send_link_status%s"></div></p>'
+	,$name,$code,$code,$email,$code,$code,$subject,$code,$code,$note."\n\n".trim(strip_tags(str_replace("</p>","\n\n",$links),'<a><strong><h3>')),$code,get_rest_url(NULL,'wptcontest/v1/send_link'),$name,$code);
+return ob_get_clean();
 }
 
 function contest_user_list_top($judges, $timer_user, $dashboard_users) {
