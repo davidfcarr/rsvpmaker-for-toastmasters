@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.7
-Stable tag: 4.3.1
+Stable tag: 4.3.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,29 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 4.3.7 =
+
+* Better method for adding "start" attribute to meeting role blocks when the same block is included multiple times within the same event (for example, to make the count start at 4 if you add a second block of 3 speakers)
+* Improved utility for emailing digital ballot links and timer's report link to contest functionaries.
+* Email links utility and backup forms (for voting if judge is unable to cast their own vote) moved to separate tabs of the contest daashboard.
+
+= 4.3.5 =
+
+* Bug fix (last held role)
+
+= 4.3.4 =
+
+* Fix for issue with editing roles
+
+= 4.3.3 =
+
+* More efficient lookup for member role history (last filled role)
+
+= 4.3.2 =
+
+* Updated instructions
+* Links to key documents like welcome message, RSVP Confirmation message in the admin dashboard widget
 
 = 4.3.1 =
 
