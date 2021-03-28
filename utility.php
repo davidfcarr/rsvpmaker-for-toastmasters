@@ -1618,8 +1618,6 @@ function time_planner_2020 ($atts) {
 
 }
 
-
-
 function get_update_role_nonce() {
 
 	global $tm_update_role_nonce;

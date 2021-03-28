@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.3.7
+Version: 4.3.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1109,44 +1109,6 @@ function toastmaster_short($atts=array(),$content="") {
 	global $last_filled;
 	
 	$output .= wp_nonce_field('wpt_role_update','tmn',true,false);
-
-	if(is_edit_roles() && (current_user_can('edit_roles') || edit_signups_role()) )
-		{
-			if(function_exists('do_blocks'))
-			{
-			$roleindex = preg_replace('/[^a-zA-Z]/','',$atts['role']);
-			$time = (empty($atts['time_allowed'])) ? 0 : (int) $atts['time_allowed'];
-			$count = (empty($atts['count'])) ? 1 : (int) $atts['count'];
-			$timeopt = '';
-			$countopt = '';
-			for($ii = 0; $ii <= 60; $ii++)
-			{
-				$s = ($ii == $time) ? ' selected="selected" ' : '';
-				$timeopt .= sprintf('<option value="%s" %s>%s</option>',$ii,$s,$ii);
-			}
-			for($ii = 1; $ii <= 10; $ii++)
-			{
-				$s = ($ii == $count) ? ' selected="selected" ' : '';
-				$countopt .= sprintf('<option value="%s" %s>%s</option>',$ii,$s,$ii);
-			}
-			if(($atts['role'] == 'Speaker') || !empty($atts["padding_time"]))
-			{
-				$padding_time = (int) $atts["padding_time"];
-				$paddingopt = '';
-				for($ii = 0; $ii <= 60; $ii++)
-				{
-					$s = ($ii == $padding_time) ? ' selected="selected" ' : '';
-					$paddingopt .= sprintf('<option value="%s" %s>%s</option>',$ii,$s,$ii);
-				}
-				$padding = sprintf('Padding <select name="tweakpadding[%s]" id="padding%s" class="tweakpadding">%s</select> ',$roleindex,$roleindex,$paddingopt);
-			}
-			else
-				$padding = '';
-		
-			$output .= sprintf('<div><span id="time%s" class="toasttime"></span> <input type="checkbox" name="tweaktime[]" value="%s" show="opt%s" class="timecheck" /> Tweak Timing for %s</div><div class="timeopt" id="opt%s">Minutes <select name="tweakminutes[%s]" class="tweakminutes" timetarget="%s">%s</select> %s Count <select name="tweakcount[%s]" class="tweakcount" prompt="prompt%s">%s</select><div id="prompt%s"></div><div><button>Save</button></div></div>',$roleindex,$atts['role'],$roleindex, $atts['role'], $roleindex,$roleindex, $roleindex, $timeopt, $padding, $roleindex, $roleindex, $countopt,$roleindex);		
-			}
-		}
-
 	foreach($assignments as $field => $values)
 		{
 		$role = $values['role'];
@@ -1903,35 +1865,6 @@ if($is_past)
 	update_user_role_archive($post_id,$timestamp);
 	}
 }
-
-function wpt_tweak_notes_x ($matches) {
-	$data = json_decode($matches[1]);
-	$time = (empty($data->time_allowed)) ? '' : $data->time_allowed;
-	$timeopt = '';
-	for($ii = 0; $ii <= 60; $ii++)
-	{
-		$s = ($ii == $time) ? ' selected="selected" ' : '';
-		$timeopt .= sprintf('<option value="%s" %s>%s</option>',$ii,$s,$ii);
-	}
-	$form = sprintf('<div><span id="time%s" class="toasttime"></span> <input type="checkbox" name="tweaktime[]" value="%s" show="opt%s" class="timecheck" /> Tweak Timing for note below</div><div class="timeopt" id="opt%s"> Minutes <select name="tweakminutes[%s]" class="tweakminutes" timetarget="%s">%s</select><div><button>Save</button></div></div>',$data->uid,$data->uid,$data->uid,$data->uid,$data->uid,$data->uid,$timeopt);
-	return $matches[0].$form;
-}
-
-function wpt_tweak_notes ($content)
-{
-	if(!is_edit_roles())
-		return $content;
-	if(!current_user_can('edit_signups') && !edit_signups_role() )
-		return $content;
-	$content = str_replace('class="wp-block-wp4toastmasters-agendanoterich2"','',$content);
-	
-	$content = preg_replace_callback('/<!-- wp:wp4toastmasters\/agendanoterich2 ({[^}]+}) -->/','wpt_tweak_notes_x',$content);
-return $content;
-}
-
-if(function_exists('do_blocks'))
-	add_filter('the_content','wpt_tweak_notes',1);
-
 
 function manual_type_options($field,$type) {
 	$manuals_by_type = get_manuals_by_type();
@@ -4899,6 +4832,7 @@ function agenda_menu($post_id, $frontend = true) {
 		if(($allow_assign == 'yes') || ( ($allow_assign == 'editor') && current_user_can('edit_others_rsvpmakers') ) )
 		$link .= '<li><a href="'.$permalink.'edit_roles=1&rm=1"'.$blank.'>'.__('Suggest Assignments','rsvpmaker-for-toastmasters').'</a></li>';
 		$link .= '<li><a href="'.$permalink.'recommend_roles=1&rm=1"'.$blank.'>'.__('Recommend (Member Must Confirm)','rsvpmaker-for-toastmasters').'</a></li>';
+		$link .= '<li ><a href="'.$permalink.'tweak_times=1" '.$blank.'>'.__('Adjust Agenda Times','rsvpmaker-for-toastmasters').'</a><li>';
 		$link .= '<li><a href="'.$permalink.'reorder=1"'.$blank.'>'.__('Reorder','rsvpmaker-for-toastmasters').'</a></li>';
 		if($frontend)
 		{
@@ -5010,6 +4944,74 @@ if(!empty($agenda_menu)) {
 	elseif(!empty($post_lock) && strpos($post_lock,'admin'))
 		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator).</p>';
 return $link;
+}
+
+function tweak_agenda_times($post) {
+	global $rsvp_options;
+
+	$time_format = str_replace('%Z','',$rsvp_options['time_format']);
+	if(rsvpmaker_is_template($post->ID)) {
+		$sked = get_template_sked($post->ID);
+		$date = '2030-01-01 '.$sked['hour'].':'.$sked['minutes'];
+	}
+	else
+		$date = get_rsvp_date($post->ID);
+	$ts_start = rsvpmaker_strtotime($date);
+
+	$data = wpt_blocks_to_data($post->post_content, false);
+
+	$elapsed = 0;
+
+	$time_array = array();
+
+	$block_count = 0;
+	$output = '<form id="tweak_times_form"><input type="hidden" name="post_id" value="'.$post->ID.'" /><input type="hidden" id="tweak_time_start" value="'.$date.'" />';
+	$output .= '<h2>Adjust Times</h2><p>This screen allows you to see the time reserved for different parts of your meeting, which can be associated with either roles or notes on the agenda. Adding or rearranging elements of the agenda requires editing the underlying document, but this screen makes it easier to see how the times add up.</p>
+	<p><strong>Time</strong> the base time for each activity</p>
+	<p><strong>Padding</strong> intended to be a little extra time for transitions (Example: Allow 24 minutes for speeches and 1 additinal Padding minute for introductions and setup)</p>
+	<p><strong>Count</strong> the number of occurrences for a role (Example: 3 Speakers, 3 Evaluators)</p>
+	<h4>Schedule Plan</h4>';
+
+	foreach($data as $d) {
+		$t = $ts_start + ($elapsed * 60);
+		$start_time_text = rsvpmaker_strftime($time_format,$t);
+		if(!$start_time_text)
+			$start_time_text = rsvpmaker_date('h:i A',$t);
+		$start_time = $elapsed;
+
+		$time_allowed = (empty($d['time_allowed'])) ? 0 : (int) $d['time_allowed'];
+
+		$padding_time = (empty($d['padding_time'])) ? 0 : (int) $d['padding_time'];
+
+		$add = $time_allowed + $padding_time;
+
+		$elapsed += $add;
+
+		if(!empty($d['role']))
+			{
+				$start = (empty($d['start'])) ? 1 : $d['start'];
+				$index = str_replace(' ','_',$d['role']);
+				$label = $d['role'];
+				$fields = sprintf('Time <input size="2" type="text" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > Padding <input size="2" type="text" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input size="2" type="text" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role']);
+			}
+
+		elseif(!empty($d['uid']))
+
+			{
+			$start = 1;
+			$index = $d['uid'];
+			$label = (empty($d['content'])) ? $index : 'Note: '.substr(trim(strip_tags($d['content'])),0,50).'...';
+			$fields = sprintf('Time <input size="2" type="text" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
+			}
+		else
+			continue;
+
+		$time_array[$index] = array('label' => $label, 'ts' => $t, 'start_time_text' => $start_time_text, 'elapsed' => $elapsed, 'time_allowed' => $time_allowed, 'padding_time' => $padding_time, 'block_count' => $block_count);
+		$output .= sprintf('<p><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s</p>',$block_count,$start_time_text,$label,$fields);
+		$block_count++;
+	}
+	$output .= '<p>End <span id="tweak_time_end"></span></p><p><button>Update Times</button></p><p id="tweak_times_result"></p>';
+	return $output;
 }
 
 function random_available_check() {
@@ -6370,7 +6372,9 @@ return sprintf('<form id="edit_roles_form" method="post" action="%s"">
 	}
 if(isset($_REQUEST["reorder"]))
 	return '<p><em>'.__('Drag and drop to change the order in which speakers, evaluators and other roles with multiple participants will appear on the agenda').'</em></p>'.$content;
-if(!is_edit_roles() || (!current_user_can('edit_signups') && !edit_signups_role()))
+elseif(isset($_GET['tweak_times']))
+	return tweak_agenda_times($post);
+elseif(!is_edit_roles() || (!current_user_can('edit_signups') && !edit_signups_role()))
 	return $content;
 	
 $r = 'x'.rand();
@@ -6381,76 +6385,7 @@ $content .= sprintf('<p><a href="%sedit_sidebar=1">%s</a></p>',rsvpmaker_permali
 	
 return sprintf('<form id="edit_roles_form" method="post" action="%s"">
 %s
-<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form> %s',rsvpmaker_permalink_query($post->ID),$content,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ),time_tally_include($post->ID));
-}
-
-function time_tally_include ($post_id) {
-ob_start();
-?>
-<script>
-jQuery(document).ready(function($) {
-
-var time_tally;
-
-var agenda_add_minutes =  function (dt, minutes) {
-    return new Date(dt.getTime() + minutes*60000);
-}
-
-var agenda_time_tally =  function () {
-	console.log('agenda time tally start');
-	time_tally = new Date($('#startdate<?php echo $post_id; ?>').attr('datetime'));//start time
-    $('.tweakminutes').each(function(index) {
-     var target = $(this).attr('timetarget');
-	 console.log(target);
-	  	var hour = time_tally.getHours();
-		var minute = time_tally.getMinutes();
-		hour = (hour >= 12)? hour - 12: hour;
-		if(minute < 10)
-		minute = '0' + minute;
-	$('#time' + target).fadeTo( "fast", 0.1 );
-	$('#time' + target).html(hour + ":" + minute);
-	$('#time' + target).delay(index*50).fadeTo( "fast", 1.0 );
-	var tallyadd = 0;
-	var addthis = Number($(this).val());
-	if(!isNaN(addthis))
-		tallyadd += addthis;
-	addthis = Number($('#padding' + target).val());
-	if(!isNaN(addthis))
-		{
-		tallyadd += addthis;
-		}
-	time_tally = agenda_add_minutes(time_tally,tallyadd);
-	});
-};
-
-agenda_time_tally();
-    var sum = 0;
-    $('.time_count').each(function() {
-        sum += Number($(this).val());
-    });
-$('.timeopt').hide();
-
-$('.timecheck').on('click', function(){
-	var show = $(this).attr('show');
-	$('#'+show).show();
-});
-
-$('.tweakminutes').on('change', function(){
-	agenda_time_tally();
-});
-$('.tweakpadding').on('change', function(){
-	agenda_time_tally();
-});
-$('.tweakcount').on('change', function(){
-	var prompt = $(this).attr('prompt');
-	if(prompt == 'promptSpeaker')
-		$('#'+prompt).html('<input type="checkbox" name="tweakevaltoo" value="1" checked="checked" /> Change Evaluator count also');
-});
-
-});
-</script>	
-<?php
-return ob_get_clean();
+<button class="save_changes">'.__("Save Changes",'rsvpmaker-for-toastmasters').'</button><input type="hidden" name="post_id" class="post_id" value="%d"><input type="hidden" id="toastcode" value="%s"></form>',rsvpmaker_permalink_query($post->ID),$content,$post->ID,wp_create_nonce( "rsvpmaker-for-toastmasters" ));
 }
 
 function recommend_hash($role, $user,$post_id = 0) {
@@ -10020,362 +9955,6 @@ function timeplanner($atts, $content) {
 	$output = sprintf('<tr class="timerow" timecount="%d"><td id="time%s"></td><td class="time_allowed_cell"><select class="time_count" name="time_allowed[%d]" id="time_allowed%d">%s</select>%s</td><td class="text_cell">%s</td></tr>',$time_counter,$time_counter,$time_counter,$time_counter,timeplanner_option ($atts["time_allowed"]),$padding_time_block ,$txt);
 
 return $output;
-}
-
-function agenda_timing () {
-global $wpdb;
-global $time_counter;
-global $timeplanner_total;
-global $post;
-fix_timezone();
-if( !isset($_REQUEST["post_id"]))
-{
-$template_options = '';
-		$dayarray = Array(__("Sunday",'rsvpmaker'),__("Monday",'rsvpmaker'),__("Tuesday",'rsvpmaker'),__("Wednesday",'rsvpmaker'),__("Thursday",'rsvpmaker'),__("Friday",'rsvpmaker'),__("Saturday",'rsvpmaker'));
-		$weekarray = Array(__("Varies",'rsvpmaker'),__("First",'rsvpmaker'),__("Second",'rsvpmaker'),__("Third",'rsvpmaker'),__("Fourth",'rsvpmaker'),__("Last",'rsvpmaker'),__("Every",'rsvpmaker'));
-	
-			$sql = "SELECT *, $wpdb->posts.ID as postID
-FROM $wpdb->postmeta
-JOIN $wpdb->posts ON $wpdb->postmeta.post_id = $wpdb->posts.ID
-WHERE meta_key='_sked_Varies' AND post_status='publish' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')";
-			
-		$results = $wpdb->get_results($sql);
-		if($results)
-		foreach ($results as $r)
-			{
-			$sked = get_template_sked($r->ID);
-
-		//backward compatability
-		if(is_array($sked["week"]))
-			{
-				$weeks = $sked["week"];
-				$dows = $sked["dayofweek"];
-			}
-		else
-			{
-				$weeks = array();
-				$dows = array();
-				$weeks[0] = (isset($sked["week"])) ? $sked["week"] : 0;
-				$dows[0] = (isset($sked["dayofweek"])) ? $sked["dayofweek"] : 0;
-			}
-
-		$dayarray = Array(__("Sunday",'rsvpmaker'),__("Monday",'rsvpmaker'),__("Tuesday",'rsvpmaker'),__("Wednesday",'rsvpmaker'),__("Thursday",'rsvpmaker'),__("Friday",'rsvpmaker'),__("Saturday",'rsvpmaker'));
-		$weekarray = Array(__("Varies",'rsvpmaker'),__("First",'rsvpmaker'),__("Second",'rsvpmaker'),__("Third",'rsvpmaker'),__("Fourth",'rsvpmaker'),__("Last",'rsvpmaker'),__("Every",'rsvpmaker'));
-		$s = '';
-		if((int)$weeks[0] == 0)
-			$s = __('Schedule Varies','rsvpmaker');
-		else
-			{
-			foreach($weeks as $week)
-				{
-				if(!empty($s))
-					$s .= '/ ';
-				$s .= $weekarray[(int) $week].' ';
-				}
-			foreach($dows as $dow)
-				$s .= $dayarray[(int) $dow] . ' ';	
-			}
-
-			$template_options .= sprintf('<option value="%d">%s (%s)</option>',$r->postID,$r->post_title,$s);
-			}
-
-		$results = get_future_events(" (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ", 100);
-		$event_options = '';
-		if($results)
-		foreach ($results as $r)
-			{
-			$event_options .= sprintf('<option value="%d">%s %s</option>',$r->postID,$r->post_title,$r->datetime);
-			}
-			
-		$action = admin_url('edit.php');
-		
-		printf('<form method="get" action="%s"><p>'.__("Get Agenda For",'rsvpmaker-for-toastmasters').' <select name="post_id"><optgroup label="'.__("Templates",'rsvpmaker-for-toastmasters').'">%s</optgroup><optgroup label="'.__("Events",'rsvpmaker-for-toastmasters').'">%s</optgroup></select>
-<input type="hidden" name="post_type" value="rsvpmaker" /><input type="hidden" name="page" value="agenda_timing" />		
-		</p>',$action, $template_options, $event_options);
-		submit_button(__('Get Agenda','rsvpmaker-for-toastmasters'));
-		echo '</form>';
-return;
-}
-else
-	$post = get_post($_REQUEST["post_id"]);
-
-$output = $newoutput = $template_options = '';
-if(isset($_REQUEST["post_id"]) && $_REQUEST["post_id"])
-{
-$post_id = (int) $_REQUEST["post_id"];
-global $post;
-$post = get_post($post_id);
-
-// clean up multiline agenda notes
-$r = get_shortcode_regex(array('agenda_note'));
-$post->post_content = preg_replace_callback(
-        "/$r/s",
-        function ($matches) {
-			$clean_content = preg_replace("/[\r\n]+/"," ",trim($matches[5]));
-            return '[agenda_note '.$matches[3].']'.$clean_content.'[/agenda_note]';
-			return preg_replace("/[\r\n]+/"," ",$matches[0]);
-        },
-        $post->post_content
-    );
-
-$time_counter = 0;
-$lines = explode("\n",$post->post_content);
-foreach($lines as $lineindex => $line)
-	{
-		$time_counter = $lineindex +1;
-		if( isset($_POST["time_allowed"]))
-			{
-			if(!empty($_POST["delete"][$time_counter]))
-				{
-				$line = "";
-				}
-			if ((strpos($line,'[toastmaster') === false)  && (strpos($line,'[agenda_note') === false))
-				$newoutput .= "\n".$line;
-			else
-				{
-					$time_allowed = (!empty($_POST["time_allowed"][$time_counter])) ? (int) $_POST["time_allowed"][$time_counter] : 0;
-					$padding_time = (!empty($_POST["padding_time"][$time_counter])) ? (int) $_POST["padding_time"][$time_counter] : 0;
-					if($time_allowed == 'delete')
-					{
-						$time_allowed = $padding_time = 0;
-						$line = '';
-					}
-				
-					if(strpos($line,'padding_time'))
-						$line = preg_replace('/padding_time="(\d{0,3})/','padding_time="'.$padding_time,$line);
-					else
-						{
-						if(isset($atts['role']))
-							$line = str_replace('[toastmaster','[toastmaster padding_time="'.$padding_time.'" ',$line);
-						else
-							$line = str_replace('[agenda_note','[agenda_note padding_time="'.$padding_time.'" ',$line);
-						}
-					if(strpos($line,'time_allowed'))
-						$line = preg_replace('/time_allowed="(\d{0,3})/','time_allowed="'.$time_allowed,$line);
-					else
-						{
-						if(isset($atts['role']))
-							$line = str_replace('[toastmaster','[toastmaster time_allowed="'.$time_allowed.'" ',$line);
-						else
-							$line = str_replace('[agenda_note','[agenda_note time_allowed="'.$time_allowed.'" ',$line);
-						}
-				if(!empty($_POST["change_speaker_count"]) && (strpos($line,'"Speaker"') || strpos($line,'"Evaluator"')))
-					{
-						$newcount = (int) $_POST["change_speaker_count"];
-						$line = preg_replace('/count="(\d{0,3})/','count="'.$newcount,$line);							
-					}
-					$newoutput .= "\n".$line;
-				}
-			}
-
-		if ((strpos($line,'[toastmaster') === false)  && (strpos($line,'[agenda_note') === false))
-			continue; // ignore non shortcode content on form
-		$output .= "\n".do_shortcode($line);
-	}
-
-$output .= '<tr class="timerow" timecount="'.$time_counter.'"><td id="time'.$time_counter.'"></td><td><input type="hidden" id="time_allowed'.$time_counter.'" value="0" /><input type="hidden" id="padding_time'.$time_counter.'" value="0"></td><td class="text_cell">'.__('Projected End of Meeting','rsvpmaker-for-toastmasters').'</td></tr>';	
-
-?>
-<h1><?php _e("Title",'rsvpmaker-for-toastmasters');?>: <?php echo $post->post_title; ?></h1>
-<?php
-
-$sked = get_template_sked($post_id);
-if(empty($sked))
-{
-global $rsvp_options;
-$results = get_rsvp_dates($post_id);
-if($results)
-{
-$dateblock = '';
-foreach($results as $index => $row)
-	{
-	$t = strtotime($row["datetime"]);
-	$dateblock .= '<div class="datetime" itemprop="startDate" datetime="'.date('c',$t).'" utc="'.gmdate('YYYY-mm-dd H:i'). 'UTC">';
-	$dateblock .= strftime($rsvp_options["long_date"],$t);
-	$dur = $row["duration"];
-	if($dur != 'allday')
-		$dateblock .= strftime(' '.$rsvp_options["time_format"],$t);
-	// dchange
-	if(strpos($dur,':'))
-		$dur = strtotime($dur);
-	if(is_numeric($dur) )
-		$dateblock .= " ".__('to','rsvpmaker')." ". strftime($rsvp_options["time_format"],$dur);
-	$dateblock .= "</div>\n";
-	if($index == 0)
-		{
-			$p = explode(' ',$row['datetime']);
-			$dateblock .= '<input type="hidden" id="start_time" value="'.$row['datetime'].'" />';
-		}
-	}
-}
-echo $dateblock;
-}
-else
-{
-if(is_array($sked["week"]))
-	{
-		$weeks = $sked["week"];
-		$dows = $sked["dayofweek"];
-	}
-else
-	{
-		$weeks[0] = $sked["week"];
-		$dows[0] = $sked["dayofweek"];
-	}
-$weekarray = Array(__("Varies",'rsvpmaker'),__("First",'rsvpmaker'),__("Second",'rsvpmaker'),__("Third",'rsvpmaker'),__("Fourth",'rsvpmaker'),__("Last",'rsvpmaker'),__("Every",'rsvpmaker'));
-$dayarray = Array(__("Sunday",'rsvpmaker'),__("Monday",'rsvpmaker'),__("Tuesday",'rsvpmaker'),__("Wednesday",'rsvpmaker'),__("Thursday",'rsvpmaker'),__("Friday",'rsvpmaker'),__("Saturday",'rsvpmaker'));
-
-if($weeks[0] == 0)
-	echo '<h2>Schedule Varies</h2>';
-else
-	{
-	$t = '';
-	foreach($weeks as $w)
-		{
-		$t .= $weekarray[$w].' ';
-		//$t .= $w;
-		}
-	foreach($dows as $d)
-		{
-		$t .= $dayarray[$d].' ';
-		//$t .= $d;
-		}
-	printf('<h2>%s</h2>',$t);
-	}
-echo '<input type="hidden" id="start_time" value="2017-01-01 '.$sked['hour'].':'.$sked['minutes'].'">';
-}
-
-if( isset($_POST["time_allowed"]))
-	{
-	$newoutput = trim(preg_replace("/[\n\r]{3,100}/","\n\n",$newoutput));
-	wp_update_post(array('ID' => $post_id,'post_content' => $newoutput));
-	//echo nl2br($newoutput);
-	printf('<h3>Total Time Allowed: %s</h3>',$timeplanner_total);
-	if(!empty($sked["week"]))
-		echo rsvp_template_update_checkboxes($post_id);
-	}
-}
-?>
-<div style="background-color: #fff;" id="doc">
-<p>You can plan your agenda by assigning minutes of <strong>Time Allowed</strong> to either roles like speaker or evaluator or agenda notes (typically used for stage directions like "Sgt. at Arms leads the Pledge of Allegience").</p>
-<p><strong>Extra Time</strong> is used to pad the schedule with additional time, beyond what members sign up for. The primary intended use was to add an allowance for time spent introducing speakers to the agenda.</p>
-<p>Example: a club sets 24 minutes as the Time Allowed for speeches, which would be sufficient for two 7-minute speeches, plus a 10 minute speech, or one or two longer speech projects. Setting Extra Time to 1 minute would make the total time reserved on the agenda to 25 minutes.</p>
-<p>If speakers have reserved more time on the agenda than is normally allowed, you will see that reflected in the time estimate.</p>
-</div>
-<p id="doc_button_container" style="width: 200px; float: right;"><button id="doc_button">Show Explanation</button></p>
-<form id="agenda_timing" method="post" action = "<?php echo admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$post_id); ?>">
-<style>
-td {
-vertical-align: top;
-}
-</style>
-<table>
-<tr><th>Elapsed Time</th><th>Time Allowed</th><th>Role/Note</th></tr>
-<input type="hidden" name="post_id" value="<?php echo $post_id; ?>" />
-<?php
-echo $output;
-global $max_speakers;
-?>
-</table>
-<p>Number of Speakers and Evaluators: <select name="change_speaker_count">
-<option value=""><?php echo $max_speakers; ?> (no change)</option>
-<option value="1">1</option>
-<option value="2">2</option>
-<option value="3">3</option>
-<option value="4">4</option>
-<option value="5">5</option>
-<option value="6">6</option>
-<option value="7">7</option>
-<option value="8">8</option>
-<option value="9">9</option>
-<option value="10">10</option>
-</select></p>
-<?php
-submit_button();
-?>
-</form>
-<script>
-jQuery(document).ready(function($) {
-
-var time_tally;
-
-var agenda_add_minutes =  function (dt, minutes) {
-    return new Date(dt.getTime() + minutes*60000);
-}
-
-var agenda_time_tally =  function () {
-	time_tally = new Date($('#start_time').val());//start time
-    $('.timerow').each(function(index) {
-     var count = $(this).attr('timecount');
-	  	var hour = time_tally.getHours();
-		var minute = time_tally.getMinutes();
-		hour = (hour >= 12)? hour - 12: hour;
-		if(minute < 10)
-		minute = '0' + minute;
-	$('#time' + count).fadeTo( "fast", 0.1 );
-	$('#time' + count).html(hour + ":" + minute);
-	$('#time' + count).delay(index*50).fadeTo( "fast", 1.0 );
-	var tallyadd = 0;
-	var addthis = Number($('#time_allowed' + count).val());
-	if(!isNaN(addthis))
-		tallyadd += addthis;
-	tallyadd += Number($('#padding_time' + count).val());
-    time_tally = agenda_add_minutes(time_tally,tallyadd);
-	});
-}
-
-agenda_time_tally();
-
-    var sum = 0;
-    $('.time_count').each(function() {
-        sum += Number($(this).val());
-    });
-	
-	var speaker_time = $('#speaker_time_count').val();
-	if(speaker_time)
-	    sum += Number(speaker_time);
-	
-	$('#time_message').html('Total time: '+sum+' minutes.');
-
-	$('#doc').hide();	
-
-$('.time_count').on('change', function(){
-	agenda_time_tally();
-});
-
-$('.remove_checkbox').on('click', function(){
-	var counter = $(this).val();
-	
-	var time_id = '#time_allowed_' + counter;
-	var padding_id = '#padding_time_' + counter;
-	
-	$(time_id).html('<option value="0">Marked for Removal</option>');
-	$(padding_id).html('<option value="0">Marked for Removal</option>');
-		
-    var sum = 0;
-    $('.time_count').each(function() {
-        sum += Number($(this).val());
-    });
-
-	var speaker_time = $('#speaker_time_count').val();
-	if(speaker_time)
-	    sum += Number(speaker_time);
-	
-	$('#time_message').html('Total time: '+sum+' minutes.');
-});
-
-
-$('#doc_button').on('click', function(){
-	$('#doc').show();
-	$('#doc_button_container').hide();
-});
-
-
-});
-
-</script>
-<?php
-
 }
 
 function admin_link_menu() {

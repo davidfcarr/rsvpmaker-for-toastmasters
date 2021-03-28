@@ -117,165 +117,6 @@ function wpt_shuffle_contestants() {
 		{
 			printf('<p id="text%d">%s</p>',$index,$contestant);
 		}
-?>
-  <script>
-	
-	jQuery(document).ready(function($) {
-	
-	var hasrun = false;
-
-	var ShuffleText = (function () {
-	    /**
-	     * Constructor.
-	     * @param element DOMã‚¨ãƒ¬ãƒ¡ãƒ³ãƒˆ
-	     */
-	    function ShuffleText(element) {
-	        /**
-	         * The string for random text.
-	         * ãƒ©ãƒ³ãƒ€ãƒ ãƒ†ã‚­ã‚¹ãƒˆã«ç”¨ã„ã‚‹æ–‡å­—åˆ—ã§ã™ã€‚
-	         * @type {string}
-	         * @default 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-	         */
-	        this.sourceRandomCharacter = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-	        /**
-	         * The string for effect space.
-	         * ç©ºç™½ã«ç”¨ã„ã‚‹æ–‡å­—åˆ—ã§ã™ã€‚
-	         * @type {string}
-	         * @default '-'
-	         */
-	        this.emptyCharacter = '-';
-	        /**
-	         * The milli seconds of effect time.
-	         * ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®å®Ÿè¡Œæ™‚é–“ã§ã™ã€‚
-	         * @type {number}
-	         * @default 600
-	         */
-	        this.duration = 600;
-	        this._isRunning = false;
-	        this._originalStr = '';
-	        this._originalLength = 0;
-	        this._timeCurrent = 0;
-	        this._timeStart = 0;
-	        this._randomIndex = [];
-	        this._requestAnimationFrameId = 0;
-	        this._element = element;
-	        this.setText(element.innerHTML);
-	    }
-	    /** ãƒ†ã‚­ã‚¹ãƒˆã‚’è¨­å®šã—ã¾ã™ã€‚ */
-	    ShuffleText.prototype.setText = function (text) {
-	        this._originalStr = text;
-	        this._originalLength = text.length;
-	    };
-	    Object.defineProperty(ShuffleText.prototype, "isRunning", {
-	        /**
-	         * It is running flag. å†ç”Ÿä¸­ã‹ã©ã†ã‹ã‚’ç¤ºã™ãƒ–ãƒ¼ãƒ«å€¤ã§ã™ã€‚
-	         * @returns {boolean}
-	         */
-	        get: function () {
-	            return this.isRunning;
-	        },
-	        enumerable: true,
-	        configurable: true
-	    });
-	    /** å†ç”Ÿã‚’é–‹å§‹ã—ã¾ã™ã€‚ */
-	    ShuffleText.prototype.start = function () {
-			if(hasrun)
-				return;
-	        var _this = this;
-	        this.stop();
-	        this._randomIndex = [];
-	        var str = '';
-	        for (var i = 0; i < this._originalLength; i++) {
-	            var rate = i / this._originalLength;
-	            this._randomIndex[i] = Math.random() * (1 - rate) + rate;
-	            str += this.emptyCharacter;
-	        }
-	        this._timeStart = new Date().getTime();
-	        this._isRunning = true;
-	        this._requestAnimationFrameId = requestAnimationFrame(function () {
-	            _this._onInterval();
-	        });
-	        this._element.innerHTML = str;
-	    };
-	    /** åœæ­¢ã—ã¾ã™ã€‚ */
-	    ShuffleText.prototype.stop = function () {
-	        this._isRunning = false;
-	        cancelAnimationFrame(this._requestAnimationFrameId);
-	    };
-	    ShuffleText.prototype.dispose = function () {
-	        this.sourceRandomCharacter = null;
-	        this.emptyCharacter = null;
-	        this._isRunning = false;
-	        this.duration = 0;
-	        this._originalStr = null;
-	        this._originalLength = 0;
-	        this._timeCurrent = 0;
-	        this._timeStart = 0;
-	        this._randomIndex = null;
-	        this._element = null;
-	        this._requestAnimationFrameId = 0;
-	    };
-	    /**
-	     * ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«ãƒãƒ³ãƒ‰ãƒ©ãƒ¼ã§ã™ã€‚
-	     * @private
-	     */
-	    ShuffleText.prototype._onInterval = function () {
-	        var _this = this;
-	        this._timeCurrent = new Date().getTime() - this._timeStart;
-	        var percent = this._timeCurrent / this.duration;
-	        var str = '';
-	        for (var i = 0; i < this._originalLength; i++) {
-	            if (percent >= this._randomIndex[i]) {
-	                str += this._originalStr.charAt(i);
-	            }
-	            else if (percent < this._randomIndex[i] / 3) {
-	                str += this.emptyCharacter;
-	            }
-	            else {
-	                str += this.sourceRandomCharacter.charAt(Math.floor(Math.random() * (this.sourceRandomCharacter.length)));
-	            }
-	        }
-	        if (percent > 1) {
-	            str = this._originalStr;
-	            this._isRunning = false;
-	        }
-	        this._element.innerHTML = str;
-	        if (this._isRunning === true) {
-	            this._requestAnimationFrameId = requestAnimationFrame(function () {
-	                _this._onInterval();
-	            });
-	        }
-	    };
-	    return ShuffleText;
-	}());
-
-	function init() {
-      var arr = [];
-      for (var i = 0; i < 20; i++) {
-		var line = document.querySelector('#text' + i);
-		if(!line)
-			break;
-        arr[i] = new ShuffleText(line);
-	  }
-
-      for (var i = 0; i < arr.length; i++) {
-        $('#text' + i)
-          .data('index', i)
-          .hover(function () {
-            arr[$(this).data('index')].start();
-          }, function () {
-             arr[$(this).data('index')].start();
-          });
-        arr[i].start();
-	  }
-	hasrun = true;  
-	}
-
-	init();
-
-	});
-  </script>
-<?php
 	}
 }
 
@@ -532,28 +373,8 @@ $output .= '<div id="readyprompt"></div><button>Set</button></div>
 ob_start();
 ?>
 <p><a href="<?php echo $actionlink; ?>&reset_scoring=1&clear_custom_scoring">Clear Custom Scoring</a></p>
-<script>
-jQuery(document).ready(function($) {
-	
-$('form#custom_contest').submit(function(){
-	var score = 0;
-	$('.setscore').each(function() {
-		score += Number($(this).val());
-	});
-	if(score != 100)
-		{
-       $('#readyprompt').html('<span style="color: red;">Scores total '+score + ' (must total 100)</span>');
-		return false;			
-		}
-	else
-		$('#readyprompt').html('Saving ...');
-}); 
-
-});
-</script>
 <?php
 $output .= ob_get_clean();
-
 return $output;
 }
 
@@ -1167,6 +988,8 @@ do_action('wpt_contest_judges_form');
 <section class="rsvpmaker"  id="email_links">
 <p>Use this form to email links to the judges and timer. You can send them one at a time or use the Send All Links button at the bottom.</p>
 <form method="post" action="<?php echo $actionlink ?>" >
+<p>You can customize this introduction to the list of links:</p>
+<textarea name="intro_note" id="intro_note" style="width: 90%" rows="3">Please confirm you received this email. We're planning to use a web-based voting / vote counting system for our upcoming contest, and these are the links we would like you to use for your role. You may want to try the practice link ahead of time.</textarea>
 <?php 
 echo $email_links;
 ?>
@@ -1251,143 +1074,6 @@ judge_import_form($actionlink);
 } //end test $is_locked
 do_action('wpt_scoring_dashboard_bottom'); ?>
 <p style="margin-top: 200px;"><a href="<?php echo $actionlink. '&reset_scoring=1'; ?>">Change Contest Type</a></p>
-
-<script>
-jQuery(document).ready(function($) {
-
-$.ajaxSetup({
-	headers: {
-		'X-WP-Nonce': '<?php echo wp_create_nonce( 'wp_rest' );?>',
-	}
-});
-
-$('#showboth').click( function() {
-	if($( "input#showboth:checked" ).val()) {
-		$('.other').show();
-  }
-  else {
-	$('.other').hide();
-  }
-});
-
-//hide to start with
-$('.morejudges').hide();
-
-$('#showmorejudges').click( function() {
-	if($( "input#showmorejudges:checked" ).val()) {
-		$('.morejudges').show();
-  }
-  else {
-	$('.morejudges').hide();
-  }
-});
-
-function votingLinkToggle () {
-	if($( "input#showlinks:checked" ).val()) {
-	  $('.votinglink').show();
-  }
-  else {
-	$('.votinglink').hide();
-  }
-}
-
-function emailLinksToggle () {
-	if($( "input#show_email_links:checked" ).val()) {
-	  $('.email_links').show();
-  }
-  else {
-	$('.email_links').hide();
-  }
-}
-
-function votingFormsToggle () {
-	if($( "input#showvotingforms:checked" ).val()) {
-	  $('.votingforms').show();
-  }
-  else {
-	$('.votingforms').hide();
-  }
-}
-
-var activetab = $('a.nav-tab-active').attr('href');
-	if(activetab)
-	{
-		$('section').hide();
-		$('section' + activetab).show();
-	}
-		
-$(document).on( 'click', '.nav-tab-wrapper a', function() {
-	$('section').hide();
-	$('a').removeClass('nav-tab-active');
-	$('section').eq($(this).index()).show();
-	$(this).addClass('nav-tab-active');
-	return false;
-});
-
-//check initial state of voting links
-votingLinkToggle();
-$( "input#showlinks" ).on( "click", votingLinkToggle);
-
-votingFormsToggle();
-$( "input#showvotingforms" ).on( "click", votingFormsToggle);
-
-emailLinksToggle ();
-$( "input#show_email_links" ).on( "click", emailLinksToggle);
-
-function refreshScores() {
-$('#score_status').html('Checking for new scores ...');
-$.get( "<?php echo rest_url('/wptcontest/v1/votecheck/'.$post->ID); ?>", function( data ) {
-  $( "#scores" ).html( data );
-  $('#score_status').html('Updated');
-});
-
-}
-$('#scoreupdate').click(function() {
-  refreshScores();
-});
-
-setInterval(function(){
-  refreshScores();	
-}, 10000);
-	
-$('#track_role').on('change', function(){
-var role = $(this).val();
-if(role == '')
-	{
-$('#role_track_status').html('');
-$('#manual_contestants').show();		
-	}
-else {
-$('#role_track_status').html('<p>Contestant names will be pulled from the '+role+' role on the agenda</p>');
-$('#manual_contestants').hide();	
-}
-});
-
-$('.send_contest_link').click (
-	function (e) {
-		e.preventDefault();
-		let id = $(this).attr('id');
-		let action = $(this).attr('action');
-		let data = {
-			email : $('#email_link'+id).val(),
-			note : $('#email_link_note'+id).val(),
-			subject : $('#email_subject'+id).val(),
-			code: id,
-			post_id: <?php echo $post->ID;?>,
-		}
-		console.log(data);
-		$('#send_link_status'+id).text('Sending ...');
-		jQuery.post(action, data, function(response) {
-			//data = JSON.parse(response);
-			if(response.subject)
-				$('#send_link_status'+id).text('Sent: '+response.subject);
-	});
-	}
-);
-
-});
-</script>
-
 <?php
 $output .= ob_get_clean();
 return $output;
@@ -1642,45 +1328,9 @@ if(is_array($votes) && !isset($_GET['judge_id']))
 	}
 if(empty($blanks))
 {
-	echo '<p>Keep this page open until you confirm your votes have been received properly.</p>';
+	echo '<p>Keep this page open until you confirm your votes have been received properly. Some contest organizers may require an analog signature on a printout or a paper ballot as a formality.</p>';
 	echo '<p><button>Resubmit</button></p><p><em>Resubmit resubmits your previous vote (does not allow you to change your vote). Only use if there is a problem with votes showing up on the voting dashboard monitored by conference officials.</em></p>';
 do_action('wpt_contest_ballot_submitted');
-?>
-<script>
-jQuery(document).ready(function($) {
-
-var dotdot = '...';
-
-function refreshReceived() {
-$.get( "<?php echo site_url('/wp-json/wptcontest/v1/votereceived/'.$post->ID.'/'.$id); ?>", function( data ) {
-console.log(data);
-if(data) {
-	$('#gotvote_result').html('Votes received on ballot counting dashboard');
-	stopRefreshReceived();
-}
-else
-  $('#gotvote_result').html('Checking whether vote has been received'+dotdot);
-  dotdot = dotdot.concat('.');
-});	
-}
-
-var checkinterval = 1500 + Math.floor(Math.random()*1000);
-
-//execute once
-refreshReceived();
-
-//then set timer
-var gotvotetimer = setInterval(function(){
-  refreshReceived();	
-}, checkinterval);
-
-function stopRefreshReceived() {
-  clearInterval(gotvotetimer);
-}
-
-});
-</script>
-<?php
 	//check for update_post_meta($post_id,'tm_vote_received'.$index,true);
 	return ob_get_clean();	
 }
@@ -1703,7 +1353,7 @@ jQuery(document).ready(function($) {
 
 function refreshOrder() {
 $('#score_status').html('Checking for contestant order ...');
-$.get( "<?php echo site_url('/wp-json/wptcontest/v1/order/'.$post->ID); ?>", function( data ) {
+$.get( "<?php echo get_rest_url('/wptcontest/v1/order/'.$post->ID); ?>", function( data ) {
 console.log(data);
 if(Array.isArray(data)) {
 	$('#order_status').html('Order set, reload the page now if it does not do so automatically');
@@ -1742,7 +1392,7 @@ if(isset($_GET["clear_scores"]))
 	$tm_subscores = array();
 else
 	$tm_subscores = get_post_meta($post->ID,'tm_subscore'.$id,true);
-echo '<style>th {font-size: 10px;} .criteria {width: 50px;} .max {width: 25px} .score {width: 25px;} select {min-width: 50px;} table {max-width: 400px;}</style>';
+echo '<style>th {font-size: 10px;} .criteria {width: 50px;} .max {width: 25px} .score {width: 25px;} select {min-width: 100px;} table {max-width: 400px;}</style>';
 
 foreach($order as $index => $name)
 {
@@ -1814,92 +1464,6 @@ global $rsvp_options;
 <input type="hidden" name="judge_id" value="<?php echo $id; ?>" />
 <button>Vote</button>
 </form>
-
-<script>
-jQuery(document).ready(function($) {
-
-var scoreArr = [];
-
-<?php
-foreach($order as $index => $value)
-	printf("
-scoreArr[%d] = {
-	'index' : %d,
-	'score' : 0
-}	
-",$index,$index);
-?>
-
-$('#autorank_now').click(function() {
-var autorank = '';
-scoreArr.sort(function (a, b) {return b.score - a.score});
-
-var arrayLength = scoreArr.length;
-for (var i = 0; i < arrayLength; i++) {
-	var name = $('#contestant' + scoreArr[i].index).val();
-	autorank = autorank + '<br />'+name + ' '+scoreArr[i].score;
-}
-$('#autorank').html('<div style="width: 300px; margin-bottom: 10px; padding: 5px; border: thin solid #555;"><h3>Best Scores</h3>'+autorank+'</div>');
-$('#nowvote').html('<h3 style="color: red;">Now Vote! <span style="color: black">Your vote is not complete</span> until you make your selections below.</h3>');
-var votingform = document.getElementById("voting");
-votingform.style = 'border: thick solid red; padding: 10px; padding-bottom: 50px;';
-votingform.scrollIntoView();
-});
-	
-$('.score').on('change', function(){
-
-var contestant = $(this).attr('contestant');
-var score = 0;
-$('.score' + contestant).each(function() {
-	score += Number($(this).val());
-});
-$('#sum' + contestant).html(score);
-
-scoreArr[contestant] = {
-	'index' : contestant,
-	'score' : score
-}
-
-scoreArr[contestant].score = score;
-});
-
-let findDuplicates = arr => arr.filter((item, index) => arr.indexOf(item) != index);
-
-$('form#voting').submit(function(){
-	var empty = false;
-	var votes = $('.voteselect');
-	var checkvotes = [];
-	votes.each(function() {
-		checkvotes.push($(this).val());
-		if($(this).val() == '')
-		{
-			empty = true;
-		}
-
-	});
-	if(empty)
-		{
-       $("#readyprompt").html('<span style="color: red;">One or more votes left blank</span>');
-		return false;			
-		}
-	
-    if ( $('#signature').val() == ''){
-       $("#readyprompt").html('<span style="color: red;">You must complete your signature before you are allowed to vote</span>');
-       return false;
-	}
-
-	let findDuplicates = arr => arr.filter((item, index) => arr.indexOf(item) != index);
-	let dups = findDuplicates(checkvotes);
-	if(dups.length) {
-		$("#readyprompt").html('<span style="color: red;">You cannot vote for the same contestant twice.</span>');
-		console.log('duplicates:');
-		console.log(dups);
-		return false;
-	}
-});
-
-});
-</script>
 <?php
 return ob_get_clean();
 }
@@ -2164,8 +1728,8 @@ function wpt_contest_emaillinks_post () {
 				if(!empty($email))
 				{
 					$mail['to'] = $email;
-					$mail['subject'] = stripslashes($_POST['email_role'][$code]);
-					$mail['html'] = '<p>'.nl2br(stripslashes($_POST['email_link_note'][$code]))."</p>\n";
+					$mail['subject'] = stripslashes($_POST['email_subject'][$code]);
+					$mail['html'] = '<p>'.nl2br(stripslashes($_POST['intro_note']) ."\n\n". stripslashes($_POST['email_link_note'][$code]))."</p>\n";
 					$mail['from'] = $current_user->user_email;
 					$mail['fromname'] = $current_user->display_name;
 					rsvpmailer($mail);
@@ -2198,10 +1762,9 @@ ob_start();
 	$tiebreaker = get_post_meta($post->ID,'tm_scoring_tiebreaker',true);
 	if($code == $tiebreaker)
 		$role = 'Tie Breaker';
-	$note = sprintf("Please confirm you received this email. We're planning to use a web-based voting / vote counting system for our upcoming contest, and these are the links we would like you to use for your role as %s. You may want to try the practice link ahead of time.",$role);
-	$subject = 'IMPORTANT for your '.$role.' role in our contest';
+	$subject = 'IMPORTANT for your role in our contest: '.$role;
 	printf('<p class="email_links_new"><strong>Email links for %s to</strong> <input type="text" name="email_link[%s]" id="email_link%s" value="%s" /><br /><input type="text" name="email_subject[%s]" id="email_subject%s" value="%s" size="80" /><br />Note: <textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br /><button class="send_contest_link" id="%s" action="%s">Send to %s</button><div id="send_link_status%s"></div></p>'
-	,$name,$code,$code,$email,$code,$code,$subject,$code,$code,$note."\n\n".trim(strip_tags(str_replace("</p>","\n\n",$links),'<a><strong><h3>')),$code,get_rest_url(NULL,'wptcontest/v1/send_link'),$name,$code);
+	,$name,$code,$code,$email,$code,$code,$subject,$code,$code,"Your role: $role\n\n".trim(strip_tags(str_replace("</p>","\n\n",$links),'<a><strong><h3>')),$code,get_rest_url(NULL,'wptcontest/v1/send_link'),$name,$code);
 return ob_get_clean();
 }
 

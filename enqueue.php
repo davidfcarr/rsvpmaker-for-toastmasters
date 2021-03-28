@@ -2,7 +2,7 @@
 
 function tm_welcome_screen_assets( $hook ) {
 //everywhere except posts screen
-$ver = '3.21';
+$ver = '3.23';
   if(!strpos($_SERVER['REQUEST_URI'],'post.php')) //if( ( strpos($hook,'toastmasters') !== false ) || strpos($_SERVER['REQUEST_URI'],'index.php')) 
    {
     wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css',array(), $ver );
@@ -12,8 +12,8 @@ $ver = '3.21';
 }
 
 function toastmasters_css_js() {
-	global $post;
-	$version = '3.97';
+	global $post, $current_user;
+	$version = '4.15';
 	if(is_admin() && (strpos($_SERVER['REQUEST_URI'],'edit.php') || (strpos($_SERVER['REQUEST_URI'],'post.php') && empty($_GET['page'])) || strpos($_SERVER['REQUEST_URI'],'post-new.php')) )
 		return; // don't load all this in editor or post listings
     if( (isset($post->post_content) && is_wp4t() ) || (isset($_REQUEST["page"]) && 
@@ -36,6 +36,12 @@ function toastmasters_css_js() {
 	wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
 	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
 	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
+	$tm_vars = $_GET;
+	$tm_vars['php_self'] = $_SERVER['PHP_SELF'];
+	$tm_vars['user_id'] = (empty($current_user->ID)) ? 0 : $current_user->ID;
+	$tm_vars['user_roles'] = (empty($current_user->roles)) ? array() : $current_user->roles;
+	$tm_vars['post_id'] = (empty($post->ID)) ? 0 : $post->ID;
+	wp_localize_script('script-toastmasters', 'tm_vars', $tm_vars );
 	wp_enqueue_style( 'style-toastmasters', plugins_url('rsvpmaker-for-toastmasters/toastmasters.css'), array(), $version );
 	wp_enqueue_style( 'select2', plugins_url('rsvpmaker-for-toastmasters/select2/dist/css/select2.min.css'), array(), $version );
 	wp_enqueue_script('select2', plugins_url('rsvpmaker-for-toastmasters/select2/dist/js/select2.min.js'), array('jquery','jquery-ui-core','jquery-ui-sortable'), $version);
@@ -48,6 +54,24 @@ function toastmasters_css_js() {
     if( isset($_REQUEST["page"]) && ($_REQUEST["page"] == 'wp4t_setup_wizard')) {
 		wp_enqueue_script('password-strength-meter');
 		wp_enqueue_script('user-profile');
+	} 
+    if( isset($_GET["scoring"]) ) {
+		wp_register_script('contest-toastmasters', plugins_url('rsvpmaker-for-toastmasters/contest.js'), array('jquery'), $version);
+		wp_enqueue_script( 'contest-toastmasters');
+		$contestvars = array('rest_nonce' => wp_create_nonce( 'wp_rest' ), 'votecheck' => rest_url('/wptcontest/v1/votecheck/'.$post->ID), 'post_id' => $post->ID, 'vote_submitted' => isset($_POST['vote']));
+		$order = get_post_meta($post->ID,'tm_scoring_order',true);
+		if($order && is_array($order)) {
+			foreach($order as $index => $value)
+				$scoreArr[$index] = array('index' => $index, 'score' => 0);
+		}
+		else 
+			$scoreArr = array();
+		wp_localize_script( 'contest-toastmasters', 'scoreArr', $scoreArr );
+		foreach($_GET as $index => $value)
+			$contestvars[$index] = $value;
+		if(isset($_GET['judge']))
+			$contestvars['votereceived'] = rest_url('wptcontest/v1/votereceived/'.$post->ID.'/'.$_GET['judge']);
+		wp_localize_script( 'contest-toastmasters', 'contest', $contestvars );
 	} 
 }
 

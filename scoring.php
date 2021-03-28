@@ -16,7 +16,7 @@ $dashboard_name = (empty($contest_name)) ? $post->post_title : $contest_name;
 	wp_head(); 
 ?>
 <style>
-input,select {max-width: 45%}
+input,select {max-width: 45%; min-width: 100px;}
 #scorebody { margin: 10px; background-color: #fff; padding: 15px;}
 	input.setscore {width: 50px;}
 	h2.nav-tab-wrapper {

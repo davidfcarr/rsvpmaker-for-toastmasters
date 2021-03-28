@@ -6,6 +6,83 @@ $.ajaxSetup({
 	}
 });
 
+var time_tally;
+
+var agenda_add_minutes =  function (dt, minutes) {
+    return new Date(dt.getTime() + minutes*60000);
+}
+
+function agenda_time_format(time_tally) {
+	var hour = time_tally.getHours();
+	var minute = time_tally.getMinutes();
+	var ampm = (hour >= 12) ? 'pm' : 'am';
+	hour = (hour >= 12)? hour - 12: hour;
+	if(minute < 10)
+		minute = '0' + minute;
+	return hour + ":" + minute+' '+ampm;
+}
+
+var agenda_time_tally =  function () {
+	$('#rsvpsection').html('');//don't combine with rsvp form
+	time_tally = new Date($('#tweak_time_start').val());//start time
+    $('.time_allowed').each(function(index) {
+	var formatted = agenda_time_format(time_tally);
+	$('#cacltime' + index).fadeTo( "fast", 0.1 );
+	$('#calctime' + index).text(formatted);
+	$('#calctime' + index).delay(index*50).fadeTo( "fast", 1.0 );
+	var tallyadd = 0;
+	var addthis = Number($(this).val());
+	if(!isNaN(addthis))
+		tallyadd += addthis;
+	addthis = Number($('#padding_time_' + index).val());
+	if(!isNaN(addthis))
+		{
+		tallyadd += addthis;
+		}
+	time_tally = agenda_add_minutes(time_tally,tallyadd);
+	});
+	$('#tweak_time_end').text(agenda_time_format(time_tally));
+};
+if (typeof tm_vars.tweak_times !== 'undefined') {
+	agenda_time_tally();
+}
+
+$('.time_allowed').on('change', function(){
+	agenda_time_tally();
+});
+$('.padding_time').on('change', function(){
+	agenda_time_tally();
+});
+
+$('.count').on('change', function(){
+	var role = $(this).attr('role');
+	var block_count = $(this).attr('block_count');
+	var count = $(this).val();
+	var time = 0;
+	if(role == 'Speaker') {
+		time = 7 * parseInt(count);
+		$('#time_allowed_'+block_count).val(time);
+		agenda_time_tally();
+	}
+	else if(role == 'Evaluator') {
+		time = 3 * parseInt(count);
+		$('#time_allowed_'+block_count).val(time);
+		agenda_time_tally();
+	}
+});
+
+$( "#tweak_times_form" ).submit(function( event ) {
+ 
+	// Stop form from submitting normally
+	event.preventDefault();   
+	// Get some values from elements on the page:
+	$('#tweak_times_result').html("Updating ...");
+	data = $( "#tweak_times_form" ).serialize();
+	  jQuery.post(wpt_rest.url+'rsvptm/v1/tweak_times', data, function(response) {
+		$('#tweak_times_result').html(response.next);
+	  });   
+ });
+
 $('.tmsortable').sortable({
   containment: "parent",
   cursor: "move",
@@ -99,8 +176,6 @@ $('.editor_assign').on('change', function(){
 	var editor_id = $('#editor_id').val();
 	var check = $('#tmn').val();
 	$('#status'+role).html('Saving ... '+role);
-	console.log('post_id '+post_id);
-	console.log('role '+role);
 	if(post_id > 0)
 	{
 		var data = {
@@ -112,7 +187,6 @@ $('.editor_assign').on('change', function(){
 			'post_id': post_id
 		};
 		$.post(wpt_rest.url+'rsvptm/v1/editor_assign', data, function(response) {
-			console.log(response);
 			if(response.status){
 				$('#status'+role).html(response.status);
 			}
@@ -147,12 +221,8 @@ $('.manualtype').on('change', function(){
 	var manualtype = this.value;
 	var target = this.id.replace('manualtype','manual');
 	var projects_target = this.id.replace('manualtype','project');
-	console.log('type '+manualtype);
-	console.log('target '+target);
 	var current = $('#'+target).val();
-	console.log('current '+current);
 	$.get(wpt_rest.url+'rsvptm/v1/type_to_manual/'+manualtype, function(data) {
-		console.log(data);
 		if(data.list) {
 			$('#'+target).html(data.list);
 			$('#'+projects_target).html(data.projects);
@@ -249,7 +319,6 @@ $(document).on('submit', 'form.toastrole', function(event) {
 	var action = wpt_rest.url+'rsvptm/v1/tm_role'+conjunction+'tm_ajax=role';
 	var formid = $(this).attr('id');
 	var data = $(this).serialize();
-	console.log('form id '+formid);
   	$('#'+formid).html('<div style="line-height: 3">Saving ...</div>');
    setTimeout( function () {
          $('#'+formid).addClass('bounce');
@@ -306,7 +375,6 @@ $('.absences').on('change', function(){
 			'post_id': post_id
 		};
 		jQuery.post(ajaxurl, data, function(response) {
-		console.log(response);
 		$('#'+statusid).html(response);
 		$('#'+statusid).fadeIn(200);
 		});
@@ -333,7 +401,6 @@ $('.absences_remove').on('click', function(){
 			'post_id': post_id
 		};
 		jQuery.post(ajaxurl, data, function(response) {
-		console.log(response);
 		$('#'+statusid).html(response);
 		$('#'+statusid).fadeIn(200);
 		});
@@ -364,14 +431,10 @@ $(document).on('submit', 'form.edit_one_form', function(event) {
 	event.preventDefault();
 	var conjunction = '?';//(wpt_rest.url.indexOf('?')) ? '&' : '?';
 	var action = wpt_rest.url+'rsvptm/v1/tm_role'+conjunction+'tm_ajax=role';
-	console.log('action '+action);
-	console.log('rest url '+wpt_rest.url);
 	var formid = $(this).attr('id');
 	var data = $(this).serialize();
 	var user_id = $('#'+formid+' .editor_assign').val();
 	data = data.concat('&user_id='+user_id);
-	console.log(user_id);
-	console.log(data);
   	$('#'+formid).html('<div style="line-height: 3">Saving ...</div>');
    setTimeout( function () {
          $('#'+formid).addClass('bounce');

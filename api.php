@@ -551,6 +551,69 @@ class WPTM_Verify extends WP_REST_Controller {
 	}
 }
 
+class WPTM_Tweak_Times extends WP_REST_Controller {
+	public function register_routes() {
+	  $namespace = 'rsvptm/v1';
+	  $path = 'tweak_times';
+  
+	  register_rest_route( $namespace, '/' . $path, [
+		array(
+		  'methods'             => 'POST',
+		  'callback'            => array( $this, 'handle' ),
+		  'permission_callback' => array( $this, 'get_items_permissions_check' )
+		),
+		  ]);     
+	  }
+  
+	public function get_items_permissions_check($request) {
+	  return true;//is_user_logged_in();
+	}
+  
+  public function handle($request) {
+	global $wpdb, $current_user;
+	$post = get_post($_POST['post_id']);
+	$lines = explode("\n",$post->post_content);
+	$block_count = 0;
+	$update = '';
+	foreach($lines as $line) {
+		$pattern = '/{"role":[^}]+}/';
+		preg_match($pattern,$line,$match);
+		if(!empty($match[0])) {
+			$atts = json_decode($match[0]);
+			$atts->time_allowed = $_POST['time_allowed'][$block_count];
+			$atts->padding_time = $_POST['padding_time'][$block_count];
+			$atts->count = $_POST['count'][$block_count];
+			$line = preg_replace('/{.+}/',json_encode($atts),$line);
+			$block_count++;
+		}
+		elseif(strpos($line,'"uid":"note')) {
+			$pattern = '/{.+}/';
+			preg_match($pattern,$line,$match);
+			if(!empty($match[0])) {
+				$atts = json_decode($match[0]);
+				$atts->time_allowed = $_POST['time_allowed'][$block_count];
+				$line = preg_replace($pattern,json_encode($atts),$line);
+				$block_count++;
+			}	
+		}
+		$update .= $line . "\n";
+	}
+	$up['ID'] = $post->ID;
+	$up['post_content'] = $update;
+	$response['return'] = wp_update_post($up);
+	$response['blocks'] = $block_count;
+	$response['next'] = sprintf('<p><a href="%s" target="_blank">View Agenda</a></p>',add_query_arg(array('print_agenda' => 1, 'no_print' => 1),get_permalink($post->ID)));
+	$response['next'] .= sprintf('<p><a href="%s">Signup</a></p>',get_permalink($post->ID));
+	if(current_user_can('edit_post',$post)) {
+		$edit = get_edit_post_link($post->ID);
+		$response['next'] .= sprintf('<p><a href="%s" target="_blank">Edit Event</a></p>',$edit);
+	}
+	fix_timezone();
+	$response['next'] .= sprintf('<p>Updated: %s</p>',date('r'));
+	return new WP_REST_Response($response, 200);
+	}
+}
+
 add_action('rest_api_init', function () {
      $toastnorole = new Toast_Norole_Controller();
      $toastnorole->register_routes();
@@ -582,4 +645,6 @@ add_action('rest_api_init', function () {
 	 $verify->register_routes();
 	 $role = new TM_Role();
 	 $role->register_routes();
+	 $tweak = new WPTM_Tweak_Times();
+	 $tweak->register_routes();
 } );
