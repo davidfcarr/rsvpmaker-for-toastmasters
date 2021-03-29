@@ -91,10 +91,9 @@ attributes: {
 	if(!uid)
 		{
 			var date = new Date();
-			uid = 'note' + date.getTime();
+			uid = 'note' + date.getTime()+Math.random();
 			setAttributes({uid});
-		}
-	
+		}	
 	return (
 <Fragment>
 <NoteInspector { ...props } />	
@@ -326,16 +325,10 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
 	var uid = props.attributes.uid;
 	if(!uid)
 		{
-			if(editable)
-				uid = editable;
-			else
-				{
-				var date = new Date();
-				uid = 'editable' + date.getTime();					
-				}
+			var date = new Date();
+			uid = 'editable' + date.getTime()+Math.random();					
 			setAttributes({uid});
-		}
-		
+		}		
 	function setAgendaEdit( event ) {
 		var note = document.getElementById('editable').value;
 		setAttributes( { editable: note } );
@@ -480,6 +473,8 @@ return (
 <p><em><strong>Time Allowed</strong>: Total minutes allowed on the agenda. In the case of speeches, limits the time that can be booked for speeches without a warning. Example: 24 minutes for 3 speeches, one of which might be longer than 7 minutes.</em></p>
 <p><em><strong>Padding Time</strong>: Typical use is extra time for introductions, beyond the time allowed for speeches.</em></p>
 <p><strong>Timing Summary</strong></p>
+<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Adjust Agenda Times','rsvpmaker')}</a></p>
+
 <p>{timing.map(function (x) {return <div>{x}</div>})}</p>
 </div>
 
@@ -541,6 +536,7 @@ class NoteInspector extends Component {
 					options={ array240 }
 				/>
 <p><strong>Timing Summary</strong></p>
+<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Adjust Agenda Times','rsvpmaker')}</a></p>
 <p>{timing.map(function (x) {return <div>{x}</div>})}</p>
 {docContent ()}
 			</InspectorControls>

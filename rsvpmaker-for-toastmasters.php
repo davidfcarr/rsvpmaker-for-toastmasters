@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.3.8
+Version: 4.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4958,19 +4958,65 @@ function tweak_agenda_times($post) {
 		$date = get_rsvp_date($post->ID);
 	$ts_start = rsvpmaker_strtotime($date);
 
-	$data = wpt_blocks_to_data($post->post_content, false);
-
 	$elapsed = 0;
 
 	$time_array = array();
 
+	$output = '';
+	$lines = explode("\n",$post->post_content);
+	$block_count = 0;
+	$uids = array();
+	$update = false;
+	$new = '';
+	foreach($lines as $line) {
+		$pattern = '/{"role":[^}]+}/';
+		preg_match($pattern,$line,$match);
+		if(!empty($match[0])) {
+			$data[] = (array) json_decode($match[0]);
+			//$block_count++;
+		}
+		elseif(strpos($line,'"uid":"')) {
+			$pattern = '/{.+}/';
+			preg_match($pattern,$line,$match);
+			if(!empty($match[0])) {
+				$atts = (array) json_decode($match[0]);
+				if(in_array($atts['uid'],$uids))
+					{
+						$atts['uid'] = 'note'.rand();
+						$line = preg_replace('/{.+}/',json_encode($atts),$line);
+						$update = true;
+					}
+				$uids[] = $atts['uid'];
+				if(empty($atts['editable'])) //editable blocks don't have time properties
+					$data[] = $atts;
+				//$block_count++;
+			}
+		}
+		$new .= $line."\n";
+	}
+
+	if($update) {
+		$up["ID"] = $post->ID;
+		$up['post_content'] = $new;
+		wp_update_post($up);
+	}
+
 	$block_count = 0;
 	$output = '<form id="tweak_times_form"><input type="hidden" name="post_id" value="'.$post->ID.'" /><input type="hidden" id="tweak_time_start" value="'.$date.'" />';
-	$output .= '<h2>Adjust Times</h2><p>This screen allows you to see the time reserved for different parts of your meeting, which can be associated with either roles or notes on the agenda. Adding or rearranging elements of the agenda requires editing the underlying document, but this screen makes it easier to see how the times add up.</p>
+	$output .= '<h2>Adjust Times</h2>';
+	$output .= '<p>This screen allows you to see the time reserved for different parts of your meeting, which can be associated with either roles or notes on the agenda. Adding or rearranging elements of the agenda requires editing the underlying document, but this screen makes it easier to see how the times add up.</p>
 	<p><strong>Time</strong> the base time for each activity</p>
 	<p><strong>Padding</strong> intended to be a little extra time for transitions (Example: Allow 24 minutes for speeches and 1 additinal Padding minute for introductions and setup)</p>
-	<p><strong>Count</strong> the number of occurrences for a role (Example: 3 Speakers, 3 Evaluators)</p>
-	<h4>Schedule Plan</h4>';
+	<p><strong>Count</strong> the number of occurrences for a role (Example: 3 Speakers, 3 Evaluators)</p>';
+
+	$template_id = rsvpmaker_has_template($post->ID);
+	if($template_id) {
+		$output .= '<h4>Schedule for Single Event</h4><p>You are editing the schedule for a single event.</p><p>To change the schedule for most or all upcoming dates in this series, switch to the <a href="'.get_permalink($template_id).'?tweak_times=1">event template</a></p>';
+		$output .= (current_user_can('edit_others_rsvpmakers')) ? '<p>You will be prompted to update events based on the template</p>' : '<p>(You will need help from someone who can edit the template.)</p>';
+	}
+	$output .= '<h4>Schedule</h4>';
+
+	$rawdata = wpt_blocks_to_data($new);
 
 	foreach($data as $d) {
 		$t = $ts_start + ($elapsed * 60);
@@ -5000,13 +5046,11 @@ function tweak_agenda_times($post) {
 			{
 			$start = 1;
 			$index = $d['uid'];
-			$label = (empty($d['content'])) ? $index : 'Note: '.substr(trim(strip_tags($d['content'])),0,50).'...';
+			$label = (empty($rawdata[$index]['content'])) ? $index : 'Note: '.substr(trim(strip_tags($rawdata[$index]['content'])),0,50).'...';
 			$fields = sprintf('Time <input size="2" type="text" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
 			}
 		else
 			continue;
-
-		$time_array[$index] = array('label' => $label, 'ts' => $t, 'start_time_text' => $start_time_text, 'elapsed' => $elapsed, 'time_allowed' => $time_allowed, 'padding_time' => $padding_time, 'block_count' => $block_count);
 		$output .= sprintf('<p><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s</p>',$block_count,$start_time_text,$label,$fields);
 		$block_count++;
 	}
@@ -5141,7 +5185,7 @@ if(isset($_GET['action']))
 	return; // don't let gutenberg try to display in editor
 
 ob_start();
-global $wpdb;
+global $wpdb, $current_user;
 
 $wp4toastmasters_officer_ids = get_option('wp4toastmasters_officer_ids');
 $wp4toastmasters_officer_titles = get_option('wp4toastmasters_officer_titles');
@@ -5228,7 +5272,7 @@ return ob_get_clean();
 
 function display_member($userdata, $title='')
 	 {
-	global $post;
+	global $post, $current_user;
 
 $contactmethods['home_phone'] = __("Home Phone",'rsvpmaker-for-toastmasters');
 $contactmethods['work_phone'] = __("Work Phone",'rsvpmaker-for-toastmasters');
@@ -5300,6 +5344,14 @@ elseif(!empty($userdata->club_member_since))
 	printf('<div class="club_join_date">%s: %s</div>',__('Joined Club','rsvpmaker-for-toastmasters'),$userdata->club_member_since);
 if(!empty($userdata->original_join_date))
 	printf('<div class="original_join_date">%s: %s</div>',__('Joined Toastmasters','rsvpmaker-for-toastmasters'),$userdata->original_join_date);
+if($userdata->ID == $current_user->ID) {
+	if (class_exists('WP_User_Avatar_Shortcode'))
+	{
+		$picup = new WP_User_Avatar_Shortcode();
+		echo str_replace('Profile Picture','Set Your Profile Picture',$picup->wpua_edit_shortcode(array()));	
+	}
+	printf('<p><a href="%s">Edit Your Profile</a>',admin_url('profile.php'));
+}
 ?>
 </div>
 <?php

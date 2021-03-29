@@ -328,6 +328,19 @@ function wpt_multiple_blocks_same( $post_id, $post_after, $post_before ) {
 				$next_start[$atts->role] = $atts->start + $atts->count;
 				$line = preg_replace('/{"role":[^}]+}/',json_encode($atts),$line);
 			}
+			elseif(strpos($line,'"uid":"')) {
+				$pattern = '/{.+}/';
+				preg_match($pattern,$line,$match);
+				if(!empty($match[0])) {
+					$atts = (array) json_decode($match[0]);
+					if(in_array($atts['uid'],$uids))
+						{
+							$atts['uid'] = 'note'.rand();
+							$line = preg_replace('/{.+}/',json_encode($atts),$line);
+						}
+					$uids[] = $atts['uid'];
+				}
+			}
 			$newcontent .= $line . "\n";
 		}
 		$post_array = array("ID" => $post_id, "post_content" => $newcontent);

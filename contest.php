@@ -348,7 +348,7 @@ if(isset($_GET['clear_custom_scoring']))
 else
 	$options .= get_option('toast_custom_contest');
 $syncrole =	track_roles_ui();
-$output .= '<p>Use this dashboard to pick a contest, add your list of contestants and judges, and generate personalized links to a page where each judge can score contestants and enter their votes.</p><p>As the judges vote, you will see their votes appear on the dashboard within seconds. If you have the Timer and Tiebreaking Judge record their work online, their input can also be factored in to show if any contestants were disqualified or how any ties were broken.</p>';
+$output .= '<p>Use this dashboard to pick a contest, add your list of contestants and judges, and generate personalized links to a page where each judge can score contestants and enter their votes.</p><p>As the judges vote, you will see their votes appear on the dashboard within seconds. If you have the Timer and Tiebreaking Judge record their work online, their input can also be factored in to show if any contestants were disqualified or how any ties were broken.</p><p><a href="https://www.wp4toastmasters.com/knowledge-base/contest-setup/" target="_blank">Step-By-Step Directions</a></p>';
 $output .= '<h1>Choose Contest</h1>'.sprintf('<form method="post" action="%s">
 	<div>Contest:<br /><select name="contest_scoring">%s</select>
 	%s

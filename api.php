@@ -608,6 +608,8 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 		$edit = get_edit_post_link($post->ID);
 		$response['next'] .= sprintf('<p><a href="%s" target="_blank">Edit Event</a></p>',$edit);
 	}
+	if(rsvpmaker_is_template($post->ID))
+		$response['next'] .= sprintf('<p><a href="%s">Create/Update</a> events from tempate</p>',admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t='.$post->ID));
 	fix_timezone();
 	$response['next'] .= sprintf('<p>Updated: %s</p>',date('r'));
 	return new WP_REST_Response($response, 200);
