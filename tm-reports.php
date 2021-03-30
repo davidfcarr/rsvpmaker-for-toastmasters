@@ -835,6 +835,7 @@ function toastmasters_reconcile () {
 $hook = tm_admin_page_top(__('Reconcile Meeting Activity / Add History','rsvpmaker-for-toastmasters'));
 
 echo '<p><em>'.__('Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)','rsvpmaker-for-toastmasters').'</em></p>';
+printf('<p>You can use this information as the basis for <a href="%s">Meeting Minutes</a>, as well as other reports.</p>',admin_url('admin.php?page=toastmasters_reports_dashboard&report=minutes'));
 echo '<style>.agenda_note{display: none;}</style>';
 global $wpdb;
 global $post;
@@ -855,6 +856,8 @@ printf('<div id="message" class="updated">
 					update_post_meta($post_id,'_Attended_'.$user_id,$user_id);
 				}
 		}
+	$notes = stripslashes($_POST["_notes_for_minutes"]);
+	update_post_meta($post_id,'_notes_for_minutes',$notes);
 	}
 	
 if(!empty($_POST["year"]))
@@ -1093,7 +1096,11 @@ $marked_out = '<p>No role but marked present: ';
 	}
 echo $marked_out . '</p>';
 }
-	
+
+echo '<p>Notes for Minutes<br />
+<textarea rows="5" style="width: 90%;" name="_notes_for_minutes">'.get_post_meta($r_post->postID,'_notes_for_minutes',true).'</textarea>
+</p>';
+
 submit_button('Save Changes','primary','edit_roles');
 if(isset($_REQUEST["history"]))
 	$post->ID = 0;
@@ -1108,6 +1115,202 @@ if(!empty($email))
 tm_admin_page_bottom($hook);
 }
 
+function toastmasters_meeting_minutes () {
+?>
+<p>Use this report to gather information recorded through the agenda and the <a href="<?php echo admin_url('admin.php?page=toastmasters_reconcile'); ?>">Update History</a> screen for each meeting date. If your club publishes weekly meeting minutes, this gives you the raw data.</p>
+<?php
+	global $wpdb, $post, $rsvp_options;
+	if(!empty($_REQUEST["history"]))
+		{
+		$r_post = get_post($_REQUEST["history"]);
+		printf('<form action="%s" method="post">',admin_url('admin.php?page=toastmasters_reconcile&history='.$_REQUEST["history"]) );
+		if(!isset($nextdate))
+			$nextdate = strtotime('-1 year');
+		$year = date('Y',$nextdate);
+		$month = date('n',$nextdate);
+		$day = date('j',$nextdate);
+		echo '<p>Year <select name="year">';
+		$yearback = (int) date('Y',strtotime('-10 year'));
+		$yearnow = (int) date('Y');
+		for($i = $yearback; $i <= $yearnow; $i++)
+			{
+				$s = ($i == $year) ? ' selected="selected" ' : '';
+				printf('<option value="%d" %s>%d</option>',$i,$s,$i);
+			}
+		echo '<select> ';
+		echo 'Month <select name="month">';
+		for($i = 1; $i < 13; $i++)
+			{
+				$s = ($i == $month) ? ' selected="selected" ' : '';
+				printf('<option value="%d" %s>%d</option>',$i,$s,$i);
+			}
+		echo '<select> ';
+		echo 'Day <select name="day">';
+		for($i = 1; $i < 32; $i++)
+			{
+				$s = ($i == $day) ? ' selected="selected" ' : '';
+				printf('<option value="%d" %s>%d</option>',$i,$s,$i);
+			}
+		echo '<select></p>';
+	
+		}
+	else
+		{
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.meta_value,'%M %e, %Y') as date
+		 FROM ".$wpdb->posts."
+		 JOIN ".$wpdb->postmeta." a1 ON ".$wpdb->posts.".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+		 WHERE a1.meta_value < DATE_ADD('".get_sql_now()."',INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.meta_value DESC";
+	
+	$results = $wpdb->get_results($sql);
+	if(empty($results))
+		return 'No data';
+	$options = '';
+	foreach($results as $row)
+		{
+			$rdate = get_post_meta($row->ID,'_reconciled', true);
+			$s = '';
+			if(isset($_REQUEST["post_id"]) && ($row->ID == $_REQUEST["post_id"]))
+				$s = ' selected="selected" ';
+			if($rdate)
+				$r = " (reconciled $rdate)";
+			else
+				$r = "";
+			$options .= sprintf('<option value="%d" %s>%s %s</option>',$row->ID,$s,$row->date, $r);
+		}
+	
+	?>
+	<form method="get" action="<?php echo admin_url('admin.php'); ?>">
+	<input type="hidden" name="page" value="toastmasters_reports_dashboard" />
+	<input type="hidden" name="report" value="minutes" />
+	<select id="pick_event" name="post_id">
+	<?php echo $options; ?>
+	</select>
+	<br /><button><?php _e('Get','rsvpmaker-for-toastmasters'); ?></button>
+	</form>
+	
+	<?php
+	if(isset($_REQUEST["post_id"]))
+		{
+		$id = (int) $_REQUEST["post_id"];
+		$r_post = get_post( $id );
+		$r_post->postID = $r_post->ID;
+		$time = get_rsvp_date( $id );
+		$r_post->date = strftime($rsvp_options["long_date"],strtotime($time));
+		}
+	else
+		{
+		$past = get_past_events(" (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ",1);
+		$r_post = $past[0];
+		}
+		printf("<h2>%s</h2>",$r_post->date);
+		} // not history
+	
+	$post = get_post($r_post->ID);
+	
+	$content = $r_post->post_content;
+	
+		$data = wpt_blocks_to_data($content);
+		foreach($data as $item)
+		{
+			if(!empty($item['role']))
+			{
+				echo toastmaster_minutes_display($item);
+				//retrieve metadata per role
+			}
+		}
+		echo toastmaster_minutes_display(array('role' => 'Table Topics','count' => 10));
+		echo toastmaster_minutes_display(array('role' => 'Best Table Topics','count' => 1));
+		echo toastmaster_minutes_display(array('role' => 'Best Speaker','count' => 1));
+		echo toastmaster_minutes_display(array('role' => 'Best Evaluator','count' => 1));
+	
+	if($r_post->postID)
+	{
+	$sql = "SELECT meta_key, meta_value FROM `$wpdb->postmeta` where post_id=".$r_post->postID." AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' GROUP BY meta_key";
+	$results = $wpdb->get_results($sql);
+	foreach ($results as $row) 
+		{
+			//print_r($row);
+			$present[] = $row->meta_value; // all the people who filled any role
+			if(strpos($row->meta_key,'Attended'))
+				$marked_attended[] = $row->meta_value;
+			elseif(is_numeric($row->meta_value) && ($row->meta_value > 0))
+				$role_holder[] = $row->meta_value;
+			$meeting_roles[] = $row->meta_key;
+		}
+	}
+	$members = array();
+	$blogusers = get_users('blog_id='.get_current_blog_id() );
+		foreach ($blogusers as $user) {
+			if(!in_array($user->ID,$role_holder) && !in_array($user->ID,$marked_attended))
+				$absent[] = $user->ID;
+		}
+	
+	if(!empty($role_holder)) {
+		$marked_out = '<p><strong>Held a role:</strong> ';
+			foreach($role_holder as $index => $marked) {
+				$user = get_userdata($marked);
+				if($index) 
+					$marked_out .= ', ';	
+				$marked_out .= $user->display_name;
+			}
+		echo $marked_out . '</p>';
+	}
+		
+	if(!empty($marked_attended)) {
+	$marked_out = '<p><strong>Marked present:</strong> ';
+		foreach($marked_attended as $index => $marked) {
+			$user = get_userdata($marked);
+			if($index) 
+				$marked_out .= ', ';	
+			$marked_out .= $user->display_name;
+		}
+	echo $marked_out . '</p>';
+	}
+
+	if(!empty($absent)) {
+		$marked_out = '<p><strong>Absent:</strong> ';
+			foreach($absent as $index => $marked) {
+				$user = get_userdata($marked);
+				if($index)
+					$marked_out .= ', ';	
+				$marked_out .= $user->display_name;
+			}
+		echo $marked_out . '</p>';
+	}
+	
+	echo '<h2>Notes</h2>';
+	$notes = get_post_meta($r_post->postID,'_notes_for_minutes',true);
+	if($notes)
+		echo wpautop($notes);
+}
+
+function toastmaster_minutes_display($atts) {
+	global $post;
+	$start = (empty($atts['start'])) ? 1 : (int) $atts['start'];
+	$count = (empty($atts['count'])) ? 1 : (int) $atts['count'];
+	$role = $atts['role'];
+	$output = '';
+	for($i = $start; $i < $count + $start; $i++) {
+		$field = '_'.str_replace(' ','_',$role).'_'.$i;
+		$id = get_post_meta($post->ID,$field,true);
+		if(empty($id))
+			continue;
+		if(is_numeric($id)) {
+			if($id < 1)
+				continue;
+			$name = get_member_name($id);
+		}
+		else {
+			//guest
+			$name = $id;
+		}
+		$output .= sprintf('<p><strong>%s:</strong> %s</p>',$role,$name);
+		if($role == 'Speaker') {
+			$output .= speaker_details_minutes($field,$id);
+		}
+	}
+	return $output;
+}
 
 function toastmasters_attendance () {
 $hook = tm_admin_page_top(__('Record Attendance','rsvpmaker-for-toastmasters'));
@@ -6023,6 +6226,7 @@ $titles['role'] = 'Role Report';
 $titles['speaker'] = 'Speaker Points System Report';
 $titles['attendance'] = 'Attendance';
 $titles['participation'] = 'Participation Overview';
+$titles['minutes'] = 'Information for Minutes';
 
 if(isset($_GET['report']))
 {
@@ -6120,6 +6324,8 @@ if(isset($_GET['report']))
 	}
 	elseif($report_slug == 'participation')
 		tm_participation_overview ();
+	elseif($report_slug == 'minutes')
+		toastmasters_meeting_minutes();
 
 /*
 add_submenu_page( 'toastmasters_screen', __('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'), __('CC Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_cc', 'toastmasters_cc');

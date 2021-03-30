@@ -83,6 +83,16 @@ $( "#tweak_times_form" ).submit(function( event ) {
 	  });   
  });
 
+ $('.role_remove').click(
+	function () {
+		var block_count = $(this).val();
+		$('#time_allowed_'+block_count).val(0);
+		$('#padding_time_'+block_count).val(0);
+		$('#count_'+block_count).val(0);
+		$('#timeline_'+block_count).fadeOut();
+	}
+ );
+
 $('.tmsortable').sortable({
   containment: "parent",
   cursor: "move",

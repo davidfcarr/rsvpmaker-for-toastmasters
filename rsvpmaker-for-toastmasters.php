@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.4
+Version: 4.4.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -779,7 +779,7 @@ if(!empty($atts["editable"]))
 		else
 		{
 		$editid = 'agenda_note_'.$atts["editable"];
-		$editable = get_post_meta($post->ID,'agenda_note_'.$atts["editable"],true);
+		$editable = trim(get_post_meta($post->ID,'agenda_note_'.$atts["editable"],true));
 		}
 
 		$slug = preg_replace('/[^a-zA-Z_]/','',$editid);
@@ -802,7 +802,10 @@ if(!empty($atts["editable"]))
 			}
 		else
 			$edit_editable = '';
-		$content .= '<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.wpautop($editable).'</div>'.$edit_editable;
+		if(!empty($editable))
+			$editable = wpautop($editable);
+		$content .= '<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.$editable.'</div>'.$edit_editable;
+		return $content;
 	}
 
 	$maxtime = (!empty($atts["time_allowed"])) ? $atts["time_allowed"] : '';
@@ -892,6 +895,22 @@ function get_role_signups ($post_id, $role, $count) {
 				}
 			}
 return implode(', ',$volunteers);
+}
+
+function speaker_details_minutes ($field,$assigned) {
+	global $post;
+	$output = '';
+	$speaker = get_speaker_array_by_field($field,$assigned,$post->ID);
+	$manual = '<span class="manual">'.$speaker["manual"].'</span>';
+	if(!empty($speaker["project"]))
+		{
+		$project = get_project_text($speaker["project"]);
+		$manual .= ': <span class="project">'.$project.'</span>';			
+		}	
+	$title = (empty($speaker["title"])) ? '' : '<span class="title">&quot;'.$speaker["title"].'&quot;</span> ';
+	$output .= '<div>'.$title.'<span class="manual-project">'.$manual.'</span></div>';
+	$output = "\n".'<div class="speaker-details">'.$output.'</div>'."\n";
+	return $output;
 }
 
 function speaker_details_agenda ($field,$assigned) {
@@ -4832,7 +4851,7 @@ function agenda_menu($post_id, $frontend = true) {
 		if(($allow_assign == 'yes') || ( ($allow_assign == 'editor') && current_user_can('edit_others_rsvpmakers') ) )
 		$link .= '<li><a href="'.$permalink.'edit_roles=1&rm=1"'.$blank.'>'.__('Suggest Assignments','rsvpmaker-for-toastmasters').'</a></li>';
 		$link .= '<li><a href="'.$permalink.'recommend_roles=1&rm=1"'.$blank.'>'.__('Recommend (Member Must Confirm)','rsvpmaker-for-toastmasters').'</a></li>';
-		$link .= '<li ><a href="'.$permalink.'tweak_times=1" '.$blank.'>'.__('Adjust Agenda Times','rsvpmaker-for-toastmasters').'</a><li>';
+		$link .= '<li ><a href="'.$permalink.'tweak_times=1" '.$blank.'>'.__('Agenda Time Planner','rsvpmaker-for-toastmasters').'</a><li>';
 		$link .= '<li><a href="'.$permalink.'reorder=1"'.$blank.'>'.__('Reorder','rsvpmaker-for-toastmasters').'</a></li>';
 		if($frontend)
 		{
@@ -5003,16 +5022,17 @@ function tweak_agenda_times($post) {
 
 	$block_count = 0;
 	$output = '<form id="tweak_times_form"><input type="hidden" name="post_id" value="'.$post->ID.'" /><input type="hidden" id="tweak_time_start" value="'.$date.'" />';
-	$output .= '<h2>Adjust Times</h2>';
+	$output .= '<h2>Agenda Time Planner</h2>';
 	$output .= '<p>This screen allows you to see the time reserved for different parts of your meeting, which can be associated with either roles or notes on the agenda. Adding or rearranging elements of the agenda requires editing the underlying document, but this screen makes it easier to see how the times add up.</p>
 	<p><strong>Time</strong> the base time for each activity</p>
-	<p><strong>Padding</strong> intended to be a little extra time for transitions (Example: Allow 24 minutes for speeches and 1 additinal Padding minute for introductions and setup)</p>
+	<p><strong>Padding</strong> intended to be a little extra time for transitions between speeches (Example: Allow 24 minutes for speeches and 1 additinal Padding minute for introductions and setup)</p>
 	<p><strong>Count</strong> the number of occurrences for a role (Example: 3 Speakers, 3 Evaluators)</p>';
 
 	$template_id = rsvpmaker_has_template($post->ID);
 	if($template_id) {
-		$output .= '<h4>Schedule for Single Event</h4><p>You are editing the schedule for a single event.</p><p>To change the schedule for most or all upcoming dates in this series, switch to the <a href="'.get_permalink($template_id).'?tweak_times=1">event template</a></p>';
+		$output .= '<div style="margin: 5px; padding: 5px; border: medium solid gray;"><h4>Schedule for Single Event</h4><p>You are editing the schedule for a single event.</p><p>To change the schedule for most or all upcoming dates in this series, switch to the <a href="'.get_permalink($template_id).'?tweak_times=1">event template</a></p>';
 		$output .= (current_user_can('edit_others_rsvpmakers')) ? '<p>You will be prompted to update events based on the template</p>' : '<p>(You will need help from someone who can edit the template.)</p>';
+		$output .= '</div>';
 	}
 	$output .= '<h4>Schedule</h4>';
 
@@ -5038,7 +5058,10 @@ function tweak_agenda_times($post) {
 				$start = (empty($d['start'])) ? 1 : $d['start'];
 				$index = str_replace(' ','_',$d['role']);
 				$label = $d['role'];
-				$fields = sprintf('Time <input size="2" type="text" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > Padding <input size="2" type="text" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input size="2" type="text" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role']);
+				if($d['role'] == 'Speaker')
+					$fields = sprintf('Time <input size="2" type="number" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > Padding <input size="2" type="number" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input size="2" type="number" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
+				else
+					$fields = sprintf('Time <input size="2" type="number" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input size="2" type="number" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
 			}
 
 		elseif(!empty($d['uid']))
@@ -5047,11 +5070,11 @@ function tweak_agenda_times($post) {
 			$start = 1;
 			$index = $d['uid'];
 			$label = (empty($rawdata[$index]['content'])) ? $index : 'Note: '.substr(trim(strip_tags($rawdata[$index]['content'])),0,50).'...';
-			$fields = sprintf('Time <input size="2" type="text" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
+			$fields = sprintf('Time <input type="number" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
 			}
 		else
 			continue;
-		$output .= sprintf('<p><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s</p>',$block_count,$start_time_text,$label,$fields);
+		$output .= sprintf('<p id="timeline_%d"><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s</p>',$block_count,$block_count,$start_time_text,$label,$fields);
 		$block_count++;
 	}
 	$output .= '<p>End <span id="tweak_time_end"></span></p><p><button>Update Times</button></p><p id="tweak_times_result"></p>';
@@ -11553,21 +11576,6 @@ function pre_print_test ($var,$label,$return=false)
 	
 }
 }
-
-function no_shortcode_paragraphs($content) {
-	return str_replace('<p[','[',str_replace(']</p>',']',$content));
-}
-
-function wpautop_for_toastmasters () {
-	global $post;
-	if(isset($post->post_type) && ($post->post_type == 'rsvpmaker') && is_wp4t())
-	{
-	remove_filter( 'the_content', 'wpautop' );
-	add_filter( 'the_content', 'wpautop' , 1);
-	add_filter('the_content','no_shortcode_paragraphs',2);
-	}
-}
-add_action('wp','wpautop_for_toastmasters');
 
 class role_history {
 

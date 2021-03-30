@@ -375,7 +375,7 @@ if(empty($public) || empty($secret))
 printf('<p>Additional options, including test or "sandbox" payment key setup, in <a href="%s">RSVPMaker settings</a>.</p>',admin_url('https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php&tab=payments'));
 }
 else {
-    printf('<p><strong>Stripe Online Payments: Enabled</strong> <a href="%s">RSVPMaker settings</a>.</p>',admin_url('https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php&tab=payments'));
+    printf('<p><strong>Stripe Online Payments: Enabled</strong> <a href="%s">RSVPMaker settings</a>.</p>',admin_url('options-general.php?page=rsvpmaker-admin.php&tab=payments'));
     $stripepage = get_option('ti_dues_renewal_page');
     if($stripepage)
         printf('<p><a href="%s">Edit page</a> with dues renewal button.</p>',admin_url('post.php?post='.$stripepage.'&action=edit'));

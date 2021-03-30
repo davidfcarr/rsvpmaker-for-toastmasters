@@ -579,19 +579,28 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 		$pattern = '/{"role":[^}]+}/';
 		preg_match($pattern,$line,$match);
 		if(!empty($match[0])) {
-			$atts = json_decode($match[0]);
-			$atts->time_allowed = $_POST['time_allowed'][$block_count];
-			$atts->padding_time = $_POST['padding_time'][$block_count];
-			$atts->count = $_POST['count'][$block_count];
-			$line = preg_replace('/{.+}/',json_encode($atts),$line);
+			if(isset($_POST['remove'][$block_count]))
+				$line = '<!-- wp:wp4toastmasters/role {"role":""} /-->'; // empty role, will not display
+			else {
+				//if(!is_numeric(trim($_POST['time_allowed'][$block_count])) || !is_numeric(trim($_POST['padding_time'][$block_count])) || !is_numeric(trim($_POST['count'][$block_count])) )
+					//return new WP_REST_Response(array('error' => 'non-numeric data'), 200);
+				$atts->count = $_POST['count'][$block_count];
+				$atts = json_decode($match[0]);
+				$atts->time_allowed = (int) $_POST['time_allowed'][$block_count];
+				$atts->padding_time = (int) $_POST['padding_time'][$block_count];
+				$atts->count = (int) $_POST['count'][$block_count];
+				$line = preg_replace('/{.+}/',json_encode($atts),$line);	
+			}
 			$block_count++;
 		}
 		elseif(strpos($line,'"uid":"note')) {
+			//if(!is_numeric(trim($_POST['time_allowed'][$block_count])))
+				//return new WP_REST_Response(array('error' => 'non-numeric data'), 200);
 			$pattern = '/{.+}/';
 			preg_match($pattern,$line,$match);
 			if(!empty($match[0])) {
 				$atts = json_decode($match[0]);
-				$atts->time_allowed = $_POST['time_allowed'][$block_count];
+				$atts->time_allowed = (int) $_POST['time_allowed'][$block_count];
 				$line = preg_replace($pattern,json_encode($atts),$line);
 				$block_count++;
 			}	
@@ -606,7 +615,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 	$response['next'] .= sprintf('<p><a href="%s">Signup</a></p>',get_permalink($post->ID));
 	if(current_user_can('edit_post',$post)) {
 		$edit = get_edit_post_link($post->ID);
-		$response['next'] .= sprintf('<p><a href="%s" target="_blank">Edit Event</a></p>',$edit);
+		$response['next'] .= sprintf('<p><a href="%s">Edit Event</a></p>',$edit);
 	}
 	if(rsvpmaker_is_template($post->ID))
 		$response['next'] .= sprintf('<p><a href="%s">Create/Update</a> events from tempate</p>',admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t='.$post->ID));

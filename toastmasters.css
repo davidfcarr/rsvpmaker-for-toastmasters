@@ -1589,3 +1589,7 @@ a.ui-button:active,
 .editor_assign {
 	width: 30em;
 }
+
+.time_allowed, .padding_time, .count {
+	width: 4em;
+}

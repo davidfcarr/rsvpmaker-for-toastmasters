@@ -15,6 +15,7 @@ const { RichText } = wp.blockEditor;
 const { Component, Fragment } = wp.element;
 const { InspectorControls, PanelBody } = wp.editor;
 const { TextareaControl, SelectControl } = wp.components;
+import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 
 function timing_summary( newtiming = null ) {
 	if(newtiming)
@@ -72,7 +73,7 @@ attributes: {
         },
         time_allowed: {
             type: 'string',
-            default: '',
+            default: '0',
         },
 		uid: {
 			type: 'string',
@@ -194,11 +195,11 @@ attributes: {
         },
         time_allowed: {
             type: 'string',
-            default: '',
+            default: '0',
         },
         padding_time: {
             type: 'string',
-            default: '',
+            default: '0',
         },
         backup: {
             type: 'string',
@@ -411,69 +412,59 @@ class RoleInspector extends Component {
 		const { attributes, setAttributes, className } = this.props;
 		const { count, start, time_allowed, padding_time, agenda_note, backup, timing, role } = attributes;
 		//console.log(timing);
-		const updateindex = role.replace(/ /g,'_') + start;
-	
-		function timeAllowedChange (time_allowed, index) {
-			setAttributes(time_allowed);
-			updateTiming(index,'time_allowed',parseInt(time_allowed.time_allowed));
-		}
-		function paddingChange (padding_time, index) {
-			setAttributes(padding_time);
-			updateTiming(index,'padding_time',parseInt(padding_time.padding_time));
-		}
+		const updateindex = role.replace(/ /g,'_') + start;	
 		function updateTiming(index, att, newvalue) {
 			agenda_timing[index][att] = newvalue;
 			agenda_time_array = timing_summary();
 			setAttributes({timing: agenda_time_array});
 		}
 
-		var array20 = [{value: '0', label: __('Minutes allowed (optional)') }];
-		for(var i = 1; i <= 20; i++) {
-			array20.push({value: i.toString(), label: i.toString() });
-		}
-		var countarray = [];
-		for(var i = 1; i <= 20; i++) {
-			countarray.push({value: i.toString(), label: i.toString() });
-		}
-
-		var array240 = [{value: '0', label: __('Minutes allowed (optional)') }];
-		for(var i = 1; i <= 240; i++) {
-			array240.push({value: i.toString(), label: i.toString()});
-		}
-
 return (	
 <InspectorControls key="roleinspector">
-<div style={ {width: '60%'} }>	<SelectControl
+<div style={ {width: '60%'} }>	<NumberControl
 		label={ __( 'Count', 'rsvpmaker-for-toastmasters' ) }
 		value={ count }
-		options={ countarray }
 		onChange={ ( count ) => setAttributes( { count } ) }
 	/>
 	</div>
 <div>
 <p><em><strong>Count</strong> sets multiple instances of a role like Speaker or Evaluator.</em></p>
 </div>
-<div style={{width: '45%', float: 'left' }}>
-					<SelectControl
+{
+(role == 'Speaker') && 
+<div>
+<div style={{width: '45%', float: 'left'}}>
+					<NumberControl
 							label={ __( 'Time Allowed', 'rsvpmaker-for-toastmasters' ) }
 							value={ time_allowed }
-							onChange={ ( time_allowed ) => timeAllowedChange({ time_allowed }, updateindex ) }//  setAttributes( { time_allowed } ) }
-							options={ array240 }
+							onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }//  setAttributes( { time_allowed } ) }
 						/>
 </div>
 <div style={{width: '45%', float: 'left', marginLeft: '5%' }}>
-			<SelectControl
+			<NumberControl
 				label={ __( 'Padding Time', 'rsvpmaker-for-toastmasters' ) }
 				value={ padding_time }
-				onChange={ ( padding_time ) => paddingChange({ padding_time }, updateindex ) }
-				options={ array20 }
+				onChange={ ( padding_time ) => setAttributes({ padding_time }) }
 			/>
 </div>
-<div>
 <p><em><strong>Time Allowed</strong>: Total minutes allowed on the agenda. In the case of speeches, limits the time that can be booked for speeches without a warning. Example: 24 minutes for 3 speeches, one of which might be longer than 7 minutes.</em></p>
 <p><em><strong>Padding Time</strong>: Typical use is extra time for introductions, beyond the time allowed for speeches.</em></p>
+</div>
+}
+{
+(role != 'Speaker') && 
+<div>
+					<NumberControl
+							label={ __( 'Time Allowed', 'rsvpmaker-for-toastmasters' ) }
+							value={ time_allowed }
+							onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }//  setAttributes( { time_allowed } ) }
+						/>
+<p><em><strong>Time Allowed</strong>: Total minutes allowed on the agenda. In the case of speeches, limits the time that can be booked for speeches without a warning. Example: 24 minutes for 3 speeches, one of which might be longer than 7 minutes.</em></p>
+</div>
+}
+<div>
 <p><strong>Timing Summary</strong></p>
-<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Adjust Agenda Times','rsvpmaker')}</a></p>
+<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
 
 <p>{timing.map(function (x) {return <div>{x}</div>})}</p>
 </div>
@@ -482,7 +473,7 @@ return (
         label="Agenda Note"
         help="A note that appears immediately below the role on the agenda and signup form"
         value={ agenda_note }
-        onChange={ ( agenda_note ) => setAttributes( { agenda_note } ) }
+        onChange={ ( agenda_note ) => setAttributes( { agenda_note: fix_quotes_in_note(agenda_note) } ) }
     />
 <SelectControl
 				label={ __( 'Backup for this Role', 'rsvpmaker-for-toastmasters' ) }
@@ -494,6 +485,12 @@ return (
 </InspectorControls>
 		);
 	}
+}
+
+function fix_quotes_in_note(agenda_note) {
+	agenda_note = agenda_note.replace('"','\u0026quot;');
+	agenda_note = agenda_note.replace('\u0022','\u0026quot;');
+	return agenda_note;
 }
 
 function docContent () {
@@ -522,21 +519,16 @@ class NoteInspector extends Component {
 			agenda_time_array = timing_summary();
 			setAttributes({timing: agenda_time_array});
 		}	
-		var array240 = [{value: '0', label: __('Minutes allowed (optional)') }];
-		for(var i = 1; i <= 240; i++) {
-			array240.push({value: i.toString(), label: i.toString()});
-		}
 			
 		return (
 		<InspectorControls key="noteinspector">
-			<SelectControl
+			<NumberControl
 					label={ __( 'Time Allowed', 'rsvpmaker-for-toastmasters' ) }
 					value={ time_allowed }
-					onChange={ ( time_allowed ) => timeAllowedChange({ time_allowed }, uid ) }
-					options={ array240 }
+					onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }
 				/>
 <p><strong>Timing Summary</strong></p>
-<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Adjust Agenda Times','rsvpmaker')}</a></p>
+<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
 <p>{timing.map(function (x) {return <div>{x}</div>})}</p>
 {docContent ()}
 			</InspectorControls>
