@@ -90,6 +90,7 @@ $( "#tweak_times_form" ).submit(function( event ) {
 		$('#padding_time_'+block_count).val(0);
 		$('#count_'+block_count).val(0);
 		$('#timeline_'+block_count).fadeOut();
+		agenda_time_tally();
 	}
  );
 
