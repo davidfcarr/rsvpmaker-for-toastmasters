@@ -35,7 +35,7 @@ function toastmasters_css_js() {
 	$display_times = get_projects_array('display_times');
 	wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
 	wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url('admin-ajax.php') );
-	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() ) );
+	wp_localize_script('script-toastmasters', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url(), 'post_id' => $post->ID ) );
 	$tm_vars = $_GET;
 	$tm_vars['php_self'] = $_SERVER['PHP_SELF'];
 	$tm_vars['user_id'] = (empty($current_user->ID)) ? 0 : $current_user->ID;

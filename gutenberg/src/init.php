@@ -57,11 +57,10 @@ function wpt_cgb_editor_assets() {
 	);
 
 	$rsvpmaker_special = get_post_meta($post->ID,'_rsvpmaker_special',true);
-	$timing = get_agenda_timing($post->ID);
 	if(!empty($rsvpmaker_special))
 		wp_localize_script( 'wpt-cgb-block-js', 'toastmasters_special', $rsvpmaker_special);
-	wp_localize_script( 'wpt-cgb-block-js', 'agenda_timing', $timing);
-	
+	wp_localize_script('wpt-cgb-block-js', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url(), 'post_id' => $post->ID ) );
+
 	// Styles.
 	wp_enqueue_style(
 		'wpt-cgb-block-editor-css', // Handle.

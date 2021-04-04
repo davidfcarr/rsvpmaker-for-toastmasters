@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.4.3
+Version: 4.4.5
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -802,9 +802,12 @@ if(!empty($atts["editable"]))
 			}
 		else
 			$edit_editable = '';
+		$maxtime = (!empty($atts["time_allowed"])) ? $atts["time_allowed"] : '';
+		$timeblock = ($maxtime) ? '<span class="time_allowed" maxtime="'.$maxtime.'"></span>' : '';
+
 		if(!empty($editable))
 			$editable = wpautop($editable);
-		$content .= '<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.$editable.'</div>'.$edit_editable;
+		$content .= $timeblock.'<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.$editable.'</div>'.$edit_editable;
 		return $content;
 	}
 
@@ -4987,14 +4990,14 @@ function tweak_agenda_times($post) {
 	$uids = array();
 	$update = false;
 	$new = '';
-	foreach($lines as $line) {
+	foreach($lines as $index => $line) {
 		$pattern = '/{"role":[^}]+}/';
 		preg_match($pattern,$line,$match);
 		if(!empty($match[0])) {
 			$data[] = (array) json_decode($match[0]);
 			//$block_count++;
 		}
-		elseif(strpos($line,'"uid":"')) {
+		elseif(strpos($line,'-- wp:wp4toastmasters/agendanoterich2') || strpos($line,'-- wp:wp4toastmasters/agendaedit')) {
 			$pattern = '/{.+}/';
 			preg_match($pattern,$line,$match);
 			if(!empty($match[0])) {
@@ -5006,8 +5009,7 @@ function tweak_agenda_times($post) {
 						$update = true;
 					}
 				$uids[] = $atts['uid'];
-				if(empty($atts['editable'])) //editable blocks don't have time properties
-					$data[] = $atts;
+				$data[] = $atts;
 				//$block_count++;
 			}
 		}
@@ -5059,9 +5061,9 @@ function tweak_agenda_times($post) {
 				$index = str_replace(' ','_',$d['role']);
 				$label = $d['role'];
 				if($d['role'] == 'Speaker')
-					$fields = sprintf('Time <input size="2" type="number" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > Padding <input size="2" type="number" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input size="2" type="number" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
+					$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > Padding <input type="number" min="0" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input type="number" min="0" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
 				else
-					$fields = sprintf('Time <input size="2" type="number" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input size="2" type="number" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
+					$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input type="number" min="0" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
 			}
 
 		elseif(!empty($d['uid']))
@@ -5070,7 +5072,7 @@ function tweak_agenda_times($post) {
 			$start = 1;
 			$index = $d['uid'];
 			$label = (empty($rawdata[$index]['content'])) ? $index : 'Note: '.substr(trim(strip_tags($rawdata[$index]['content'])),0,50).'...';
-			$fields = sprintf('Time <input type="number" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
+			$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
 			}
 		else
 			continue;

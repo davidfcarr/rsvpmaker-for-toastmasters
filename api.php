@@ -558,7 +558,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
   
 	  register_rest_route( $namespace, '/' . $path, [
 		array(
-		  'methods'             => 'POST',
+		  'methods'             => 'POST,GET',
 		  'callback'            => array( $this, 'handle' ),
 		  'permission_callback' => array( $this, 'get_items_permissions_check' )
 		),
@@ -571,6 +571,99 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
   
   public function handle($request) {
 	global $wpdb, $current_user;
+
+	if(isset($_GET['post_id'])) {
+			global $rsvp_options;
+			$post = get_post($_GET['post_id']);	
+			$time_format = str_replace('%Z','',$rsvp_options['time_format']);
+			if(rsvpmaker_is_template($post->ID)) {
+				$sked = get_template_sked($post->ID);
+				$date = '2030-01-01 '.$sked['hour'].':'.$sked['minutes'];
+			}
+			else
+				$date = get_rsvp_date($post->ID);
+			$ts_start = rsvpmaker_strtotime($date);
+			$elapsed = 0;
+			$time_array = array();
+			$pattern = '|<!-- wp:wp4toastmasters/agendanoterich2[^>]+>(.+)<!-- /wp:wp4toastmasters/agendanoterich2 -->|sU';
+			$pattern = '/<p class="wp-block-wp4toastmasters-agendanoterich2">(.+)/';
+			preg_match_all($pattern,$post->post_content,$matches);
+			$notes = $matches[1];
+			$output = '';
+			$lines = explode("\n",$post->post_content);
+			$block_count = 0;
+			$update = false;
+			$new = '';
+			foreach($lines as $index => $line) {
+				$pattern = '/{"role":[^}]+}/';
+				preg_match($pattern,$line,$match);
+				if(!empty($match[0])) {
+					$data[] = (array) json_decode($match[0]);
+				}
+				elseif(strpos($line,'-- wp:wp4toastmasters/agendanoterich2') || strpos($line,'-- wp:wp4toastmasters/agendaedit')) {
+					$pattern = '/{.+}/';
+					preg_match($pattern,$line,$match);
+					if(!empty($match[0])) {
+						$atts = (array) json_decode($match[0]);
+						$data[] = $atts;
+						//$block_count++;
+					}
+				}
+				$new .= $line."\n";
+			}
+		
+			$block_count = 0;
+			$output = array();
+			$rawdata = wpt_blocks_to_data($new);
+			foreach($data as $d) {
+				$t = $ts_start + ($elapsed * 60);
+				$waselapsed = $elapsed;
+				$start_time_text = rsvpmaker_strftime($time_format,$t);
+				if(!$start_time_text)
+					$start_time_text = rsvpmaker_date('h:i A',$t);
+				$start_time = $elapsed;
+		
+				$time_allowed = (empty($d['time_allowed'])) ? 0 : (int) $d['time_allowed'];
+		
+				$padding_time = (!empty($d['role']) && ($d['role'] == 'Speaker') && !empty($d['padding_time'])) ? (int) $d['padding_time'] : 0;
+		
+				$add = $time_allowed + $padding_time;
+		
+				$elapsed += $add;
+		
+				if(!empty($d['role']))
+					{
+						$start = (empty($d['start'])) ? 1 : $d['start'];
+						$index = str_replace(' ','_',$d['role']);
+						$label = $d['role'];
+					}
+		
+				elseif(!empty($d['uid']))		
+					{
+					$start = 1;
+					$label = $d['uid'];
+					if(strpos($label,'ote'))
+					{
+						$note = array_shift($notes);
+						if($note)
+							$label = trim(strip_tags($note));
+					}
+					}
+				else
+					continue;
+				$output[] = array('label' => $label, 'time' => $start_time_text, 'elapsed' => $waselapsed, 'add' => $add);
+				$block_count++;
+			}
+			$t = $ts_start + ($elapsed * 60);
+			$start_time_text = rsvpmaker_strftime($time_format,$t);
+			$start_time_text = rsvpmaker_strftime($time_format,$t);
+			if(!$start_time_text)
+				$start_time_text = rsvpmaker_date('h:i A',$t);
+			$output[] = array('label' => 'End', 'time' => $start_time_text, 'elapsed' => $elapsed, 'add' => 0);
+		return new WP_REST_Response($output, 200);	
+		}
+	//}
+
 	$post = get_post($_POST['post_id']);
 	$lines = explode("\n",$post->post_content);
 	$block_count = 0;
@@ -584,23 +677,22 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			else {
 				//if(!is_numeric(trim($_POST['time_allowed'][$block_count])) || !is_numeric(trim($_POST['padding_time'][$block_count])) || !is_numeric(trim($_POST['count'][$block_count])) )
 					//return new WP_REST_Response(array('error' => 'non-numeric data'), 200);
-				$atts->count = $_POST['count'][$block_count];
 				$atts = json_decode($match[0]);
-				$atts->time_allowed = (int) $_POST['time_allowed'][$block_count];
-				$atts->padding_time = (int) $_POST['padding_time'][$block_count];
+				$atts->time_allowed = $_POST['time_allowed'][$block_count]; //numeric string
+				$atts->padding_time = $_POST['padding_time'][$block_count];
 				$atts->count = (int) $_POST['count'][$block_count];
 				$line = preg_replace('/{.+}/',json_encode($atts),$line);	
 			}
 			$block_count++;
 		}
-		elseif(strpos($line,'"uid":"note')) {
+		elseif(strpos($line,'-- wp:wp4toastmasters/agendanoterich2') || strpos($line,'-- wp:wp4toastmasters/agendaedit')) {
 			//if(!is_numeric(trim($_POST['time_allowed'][$block_count])))
 				//return new WP_REST_Response(array('error' => 'non-numeric data'), 200);
 			$pattern = '/{.+}/';
 			preg_match($pattern,$line,$match);
 			if(!empty($match[0])) {
 				$atts = json_decode($match[0]);
-				$atts->time_allowed = (int) $_POST['time_allowed'][$block_count];
+				$atts->time_allowed = $_POST['time_allowed'][$block_count];
 				$line = preg_replace($pattern,json_encode($atts),$line);
 				$block_count++;
 			}	

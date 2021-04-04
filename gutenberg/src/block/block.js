@@ -16,29 +16,28 @@ const { Component, Fragment } = wp.element;
 const { InspectorControls, PanelBody } = wp.editor;
 const { TextareaControl, SelectControl } = wp.components;
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
+const { subscribe } = wp.data;
 
-function timing_summary( newtiming = null ) {
-	if(newtiming)
-		agenda_timing = newtiming;
-	let output = [];
-	let add = 0;
-	let newtime = 0;
-	let start_time = 0;
-	let row;
-	for(const index in agenda_timing) {
-		row = agenda_timing[index];
-		add = row.time_allowed + row.padding_time;
-		if(add == 0)
-			continue;
-		newtime = start_time + add;
-		var newstring = start_time+' to '+newtime+' minutes '+row.label;
-		output.push(newstring);
-		start_time = newtime;
-	}
-	return output;
+var agenda = [];
+function agenda_update() {
+	let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
+	fetch(geturl, {
+		method: 'GET',
+		headers: {
+		  'Content-Type': 'application/json',
+		  'X-WP-Nonce': wpt_rest.nonce,
+		},
+	  })
+	  .then(response => response.json())
+	  .then(data => {
+		  agenda = data;
+	})
+	.catch((error) => {
+	  console.error('Error:', error);
+	});	
 }
-	
-var agenda_time_array = timing_summary();
+
+agenda_update();
 
 /**
  * Register: aa Gutenberg Block.
@@ -79,10 +78,10 @@ attributes: {
 			type: 'string',
 			default: '',
 		},
-		timing: {
-			type: 'array',
-			default: agenda_time_array,
-		}
+		timing_updated: {
+			type: 'int',
+			default: agenda,
+		},
     },
 
     edit: function( props ) {	
@@ -197,6 +196,10 @@ attributes: {
             type: 'string',
             default: '0',
         },
+		timing_updated: {
+			type: 'int',
+			default: 0,
+		},
         padding_time: {
             type: 'string',
             default: '0',
@@ -205,10 +208,6 @@ attributes: {
             type: 'string',
             default: '',
         },
-		timing: {
-			type: 'array',
-			default: agenda_time_array,
-		}
     },
 	edit: function( props ) {
 	const { attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected } = props;
@@ -221,14 +220,6 @@ attributes: {
 			{
 			document.getElementById('custom_role').value = '';
 			customline.style = 'display: none;';
-			}
-		var paddingline = document.getElementById('paddingline');
-		
-		if(selected.value == 'Speaker')
-			paddingline.style = 'display: block;';
-		else
-			{
-			paddingline.style = 'display: none;';
 			}
 	}
 
@@ -317,7 +308,15 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
 		uid: {
 			type: 'string',
 			default: '',
-		},	
+		},
+		time_allowed: {
+			type: 'string',
+			default: '0',
+		},
+		timing_updated: {
+			type: 'int',
+			default: 0,
+		},
     },
 	edit: function( props ) {
 
@@ -345,7 +344,7 @@ return (<form onSubmit={ setAgendaEdit } >
 		
 		return (
 			<Fragment>
-			<DocInspector />
+			<NoteInspector { ...props } />
 <div className={ props.className }>
 <p class="dashicons-before dashicons-welcome-write-blog"><strong>Toastmasters Editable Note</strong></p>
 { showForm() }
@@ -410,17 +409,54 @@ class RoleInspector extends Component {
 
 	render() {
 		const { attributes, setAttributes, className } = this.props;
-		const { count, start, time_allowed, padding_time, agenda_note, backup, timing, role } = attributes;
+		const { count, start, time_allowed, padding_time, agenda_note, backup, role } = attributes;
 		//console.log(timing);
 		const updateindex = role.replace(/ /g,'_') + start;	
-		function updateTiming(index, att, newvalue) {
-			agenda_timing[index][att] = newvalue;
-			agenda_time_array = timing_summary();
-			setAttributes({timing: agenda_time_array});
-		}
+
+		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+		// determine whether to show notice
+		subscribe( () => {
+			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
+			
+			// Save metaboxes on save completion, except for autosaves that are not a post preview.
+			const shouldTrigger = (
+					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
+					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
+				);
+	
+			// Save current state for next inspection.
+			wasSavingPost = isSavingPost;
+			wasAutosavingPost = isAutosavingPost;
+			wasPreviewingPost = isPreviewingPost;
+	
+			if ( shouldTrigger ) {
+				let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
+				fetch(geturl, {
+					method: 'GET',
+					headers: {
+					  'Content-Type': 'application/json',
+					  'X-WP-Nonce': wpt_rest.nonce,
+					},
+				  })
+				  .then(response => response.json())
+				  .then(data => {
+					  agenda = data;
+					  setAttributes({timing_updated: Date.now()});
+				})
+				.catch((error) => {
+				  console.error('Error:', error);
+				});			
+	}
+	} );
 
 return (	
 <InspectorControls key="roleinspector">
+<p>Role: {role}</p>
 <div style={ {width: '60%'} }>	<NumberControl
 		label={ __( 'Count', 'rsvpmaker-for-toastmasters' ) }
 		value={ count }
@@ -437,12 +473,14 @@ return (
 					<NumberControl
 							label={ __( 'Time Allowed', 'rsvpmaker-for-toastmasters' ) }
 							value={ time_allowed }
+							min={0}
 							onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }//  setAttributes( { time_allowed } ) }
 						/>
 </div>
 <div style={{width: '45%', float: 'left', marginLeft: '5%' }}>
 			<NumberControl
 				label={ __( 'Padding Time', 'rsvpmaker-for-toastmasters' ) }
+				min={0}
 				value={ padding_time }
 				onChange={ ( padding_time ) => setAttributes({ padding_time }) }
 			/>
@@ -456,6 +494,7 @@ return (
 <div>
 					<NumberControl
 							label={ __( 'Time Allowed', 'rsvpmaker-for-toastmasters' ) }
+							min={0}
 							value={ time_allowed }
 							onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }//  setAttributes( { time_allowed } ) }
 						/>
@@ -463,10 +502,9 @@ return (
 </div>
 }
 <div>
-<p><strong>Timing Summary</strong></p>
-<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
-
-<p>{timing.map(function (x) {return <div>{x}</div>})}</p>
+<p><strong>Timing Summary</strong> - refreshes on Save Draft/Publish/Update</p>
+<p>See also: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
+<p>{agenda.map(function (x) {return <div><strong>{x.time}</strong> {x.label}</div>})}</p>
 </div>
 
 <TextareaControl
@@ -508,28 +546,61 @@ class NoteInspector extends Component {
 	render() {
 
 		const { attributes, setAttributes, className } = this.props;
-		const { time_allowed, timing, uid } = attributes;
-	
-		function timeAllowedChange (time_allowed, index) {
-			setAttributes(time_allowed);
-			updateTiming(index,'time_allowed',parseInt(time_allowed.time_allowed));
-		}
-		function updateTiming(index, att, newvalue) {
-			agenda_timing[index][att] = newvalue;
-			agenda_time_array = timing_summary();
-			setAttributes({timing: agenda_time_array});
-		}	
+		const { time_allowed, uid } = attributes;
+
+		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+		// determine whether to show notice
+		subscribe( () => {
+			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
+			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
+			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
+			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
 			
+			// Save metaboxes on save completion, except for autosaves that are not a post preview.
+			const shouldTrigger = (
+					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
+					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
+				);
+	
+			// Save current state for next inspection.
+			wasSavingPost = isSavingPost;
+			wasAutosavingPost = isAutosavingPost;
+			wasPreviewingPost = isPreviewingPost;
+	
+			if ( shouldTrigger ) {
+				let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
+				console.log(geturl);
+				fetch(geturl, {
+					method: 'GET',
+					headers: {
+					  'Content-Type': 'application/json',
+					  'X-WP-Nonce': wpt_rest.nonce,
+					},
+				  })
+				  .then(response => response.json())
+				  .then(data => {
+					  agenda = data;
+					  setAttributes({timing_updated: Date.now()});
+				})
+				.catch((error) => {
+				  console.error('Error:', error);
+				});			
+	}
+	} );
+
 		return (
 		<InspectorControls key="noteinspector">
 			<NumberControl
 					label={ __( 'Time Allowed', 'rsvpmaker-for-toastmasters' ) }
+					min={0}
 					value={ time_allowed }
 					onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }
 				/>
-<p><strong>Timing Summary</strong></p>
-<p>See also this tool: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
-<p>{timing.map(function (x) {return <div>{x}</div>})}</p>
+<p><strong>Timing Summary</strong> - refreshes on Save Draft/Publish/Update</p>
+<p>See also: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
+<p>{agenda.map(function (x) {return <div><strong>{x.time}</strong> {x.label}</div>})}</p>
 {docContent ()}
 			</InspectorControls>
 		);

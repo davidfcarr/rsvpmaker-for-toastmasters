@@ -1331,8 +1331,6 @@ function is_agenda_locked () {
 
 }
 
-
-
 function get_agenda_timing($post_id) {
 
 	global $rsvp_options;
