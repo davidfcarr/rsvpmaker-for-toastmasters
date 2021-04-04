@@ -19,6 +19,8 @@ import { __experimentalNumberControl as NumberControl } from '@wordpress/compone
 const { subscribe } = wp.data;
 
 var agenda = [];
+var master_agenda_update = 0;
+
 function agenda_update() {
 	let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
 	fetch(geturl, {
@@ -409,9 +411,7 @@ class RoleInspector extends Component {
 
 	render() {
 		const { attributes, setAttributes, className } = this.props;
-		const { count, start, time_allowed, padding_time, agenda_note, backup, role } = attributes;
-		//console.log(timing);
-		const updateindex = role.replace(/ /g,'_') + start;	
+		const { count, time_allowed, padding_time, agenda_note, backup, role } = attributes;
 
 		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
 		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
@@ -435,24 +435,33 @@ class RoleInspector extends Component {
 			wasPreviewingPost = isPreviewingPost;
 	
 			if ( shouldTrigger ) {
-				let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
-				fetch(geturl, {
-					method: 'GET',
-					headers: {
-					  'Content-Type': 'application/json',
-					  'X-WP-Nonce': wpt_rest.nonce,
-					},
-				  })
-				  .then(response => response.json())
-				  .then(data => {
-					  agenda = data;
-					  setAttributes({timing_updated: Date.now()});
-				})
-				.catch((error) => {
-				  console.error('Error:', error);
-				});			
-	}
-	} );
+				let ts = Date.now();
+				//role
+				let diff = ts - master_agenda_update;
+				master_agenda_update = ts + 500;
+				if(diff > 0) {
+					let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
+					fetch(geturl, {
+						method: 'GET',
+						headers: {
+						  'Content-Type': 'application/json',
+						  'X-WP-Nonce': wpt_rest.nonce,
+						},
+					  })
+					  .then(response => response.json())
+					  .then(data => {
+						  agenda = data;
+						  setAttributes({timing_updated: ts*2});
+					})
+					.catch((error) => {
+					  console.error('Error:', error);
+					});	
+				}
+				else {
+					setAttributes({timing_updated: ts});
+				}
+			}
+} );
 
 return (	
 <InspectorControls key="roleinspector">
@@ -545,8 +554,8 @@ class NoteInspector extends Component {
 
 	render() {
 
-		const { attributes, setAttributes, className } = this.props;
-		const { time_allowed, uid } = attributes;
+		const { attributes, setAttributes } = this.props;
+		const { time_allowed } = attributes;
 
 		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
 		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
@@ -570,24 +579,31 @@ class NoteInspector extends Component {
 			wasPreviewingPost = isPreviewingPost;
 	
 			if ( shouldTrigger ) {
-				let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
-				console.log(geturl);
-				fetch(geturl, {
-					method: 'GET',
-					headers: {
-					  'Content-Type': 'application/json',
-					  'X-WP-Nonce': wpt_rest.nonce,
-					},
-				  })
-				  .then(response => response.json())
-				  .then(data => {
-					  agenda = data;
-					  setAttributes({timing_updated: Date.now()});
-				})
-				.catch((error) => {
-				  console.error('Error:', error);
-				});			
-	}
+				let ts = Date.now();
+				let diff = ts - master_agenda_update;
+				master_agenda_update = ts + 500;
+				if(diff > 0) {
+					let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
+					fetch(geturl, {
+						method: 'GET',
+						headers: {
+						  'Content-Type': 'application/json',
+						  'X-WP-Nonce': wpt_rest.nonce,
+						},
+					  })
+					  .then(response => response.json())
+					  .then(data => {
+						  agenda = data;
+						  setAttributes({timing_updated: ts*2});
+					})
+					.catch((error) => {
+					  console.error('Error:', error);
+					});	
+				}
+				else {
+					setAttributes({timing_updated: ts});
+				}
+			}
 	} );
 
 		return (
