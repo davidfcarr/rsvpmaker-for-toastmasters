@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.4.6
+Version: 4.4.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -807,7 +807,10 @@ if(!empty($atts["editable"]))
 
 		if(!empty($editable))
 			$editable = wpautop($editable);
-		$content .= $timeblock.'<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.$editable.'</div>'.$edit_editable;
+		if(!empty($atts['inline']))
+			$content .= '<div id="'.$slug.'" class="editable_content">'.$timeblock.'<strong>'.$atts["editable"].'</strong> '.$editable.'</div>'.$edit_editable;
+		else
+			$content .= $timeblock.'<h3 id="'.$slug.'">'.$atts["editable"].'</h3><div class="editable_content">'.$editable.'</div>'.$edit_editable;
 		return $content;
 	}
 
@@ -1311,22 +1314,11 @@ function tm_calc_time($minutes)
 	{
 		if(empty($minutes))
 			return;
-		if(strpos($minutes,':'))
-			{
-				$parts = explode(':',$minutes);
-				$minutes = $parts[0];
-				$seconds = $parts[1];
-			}
-		elseif(strpos($minutes,'.'))
-			{
-				$parts = explode('.',$minutes);
-				$minutes = $parts[0];
-				$seconds = round(($parts[1] / 10) * 60);
-			}
+		if($minutes == 'x')
+			$minutes = 0;
 		else
-			{
-				$seconds = 0;
-			}
+			$minutes = (int) $minutes;
+		$seconds = 0;
 		global $rsvp_options;
 		global $post;
 		global $time_count;
@@ -1352,14 +1344,14 @@ function tm_calc_time($minutes)
 		if(isset($_REQUEST["end"]))
 			$start_time .= '-'.strftime($rsvp_options["time_format"],$time_count);
 		return $start_time;
-	}
+}
 
 function decode_timeblock ($matches) {
-	return '><span class="timeblock">'.tm_calc_time((int) $matches[1]).'&nbsp;</span>';
+	return '><span class="timeblock">'.tm_calc_time($matches[1]).'&nbsp;</span>';
 }
 
 function agendanoterich2_timeblock($matches) {
-	$props = json_decode($matches[1]);
+	$props = (empty($matches[1])) ? null : json_decode($matches[1]);
 	$time = empty($props->time_allowed) ? 0 : $props->time_allowed;
 	$timed = str_replace('<p class="wp-block-wp4toastmasters-agendanoterich2"','<p class="wp-block-wp4toastmasters-agendanoterich2" maxtime="'.$time.'"',$matches[0]);
 	if($time)
@@ -1376,8 +1368,9 @@ function tm_agenda_content () {
 	if(function_exists('do_blocks'))
 		$content = do_blocks($content);
 	$content = wpautop(do_shortcode($content));
-	//if(!is_email_context()) //not working well in event reminders
-	$content = preg_replace_callback('/maxtime="([0-9]+)[^>]+>/','decode_timeblock',$content);
+	if(!strpos($content,'milestone'))
+		$content .= '<p maxtime="x">End</p>';
+	$content = preg_replace_callback('/maxtime="([0-9x]+)[^>]+>/','decode_timeblock',$content);
 return $content;
 }
 
@@ -1671,7 +1664,8 @@ if(isset($_POST["agenda_note"]))
 			$note = trim(str_replace('&nbsp;',' ',$note));
 			if( empty($_POST["agenda_note_label"][$index]) )
 				continue;
-			update_post_meta($post_id,$_POST["agenda_note_label"][$index],sanitize_text_field($note));
+			$note = preg_replace('/(style=("|\Z)(.*?)("|\Z))/','',$note);
+			update_post_meta($post_id,$_POST["agenda_note_label"][$index],wp_filter_post_kses($note));
 		}
 	}
 
@@ -5072,6 +5066,8 @@ function tweak_agenda_times($post) {
 			$start = 1;
 			$index = $d['uid'];
 			$label = (empty($rawdata[$index]['content'])) ? $index : 'Note: '.substr(trim(strip_tags($rawdata[$index]['content'])),0,50).'...';
+			if(!empty($d['editable']))
+				$label = $d['editable'];
 			$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
 			}
 		else
@@ -8151,47 +8147,45 @@ if($wpdb->get_var($sql))
 	return;
 
 if(function_exists('do_blocks'))
-	$default = '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"2","uid":"note1534624962895"} -->
-<p class="wp-block-wp4toastmasters-agendanoterich2">Sgt. at Arms opens the Meeting</p>
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+	$default = '<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"5","inline":true} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"3","uid":"note1534625016726"} -->
-<p class="wp-block-wp4toastmasters-agendanoterich2">President leads the <strong><em>Self Introductions</em></strong>.Then introduces the Toastmaster of the Day.</p>
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","count":"1","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"3","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"Ah Counter","count":"1","time_allowed":"0","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"Timer","count":"1","time_allowed":"0","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"Vote Counter","count":"1","time_allowed":"0","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"Grammarian","count":"1","agenda_note":"Leads word of the day contest.","time_allowed":"0","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"10","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"Speaker","count":"3","time_allowed":"24","padding_time":"1","backup":"1"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"General Evaluator","count":"1","agenda_note":"Explains the importance of evaluations. Introduces Evaluators.","time_allowed":"1","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":"3","time_allowed":"9","padding_time":"0"} /-->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"5","uid":"note31972"} -->
-<p class="wp-block-wp4toastmasters-agendanoterich2">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"3","uid":"note21837"} -->
-<p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day presents the awards.</p>
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"2","uid":"note30722"} -->
-<p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting.</p>
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendaedit {"editable":"Theme"} /-->
-
-<!-- wp:wp4toastmasters/absences /-->';
+	<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"4","padding_time":"5"} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"Ah Counter"} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"Timer"} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"Vote Counter"} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"Grammarian","agenda_note":"Leads word of the day contest."} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"Topics Master","time_allowed":"10"} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":"23","backup":"1"} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"General Evaluator","agenda_note":"Explains the importance of evaluations. Introduces Evaluators."} /-->
+	
+	<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":3,"time_allowed":"9"} /-->
+	
+	<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"2","uid":"note31972"} -->
+	<p class="wp-block-wp4toastmasters-agendanoterich2">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
+	<!-- /wp:wp4toastmasters/agendanoterich2 -->
+	
+	<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note21837"} -->
+	<p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day presents the awards.</p>
+	<!-- /wp:wp4toastmasters/agendanoterich2 -->
+	
+	<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note30722"} -->
+	<p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting.</p>
+	<!-- /wp:wp4toastmasters/agendanoterich2 -->
+	
+	<!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
+	<p maxtime="x" class="wp-block-wp4toastmasters-milestone">Meeting Ends</p>
+	<!-- /wp:wp4toastmasters/milestone -->
+	
+	<!-- wp:wp4toastmasters/agendaedit {"editable":"Theme and Word of the Day","uid":"editable16181528612380.6987292403509966"} /-->
+	
+	<!-- wp:wp4toastmasters/absences /-->';
 
 else
 	$default = '[agenda_note padding_time="0"  agenda_display="agenda" strong="" italic="" size="" style="" alink="" editable="" time_allowed="1"]Sgt of Arms opens the meeting.[/agenda_note]
@@ -11849,7 +11843,7 @@ function tm_absence ($atts) {
 	if(!empty($absences) && is_array($absences) && in_array($current_user->ID,$absences))
 		$output .= sprintf('<form method="post" action="%s"><input type="hidden" name="cancel_absence" value="1"><button>Cancel My Absence </button></form>',get_permalink());
 	else
-		$output .= sprintf('<form method="post" action="%s"><input type="hidden" name="add_absence" value="1"><button>Planned Absence </button></form>',get_permalink());
+		$output .= sprintf('<form class="planned_absence_form" method="post" action="%s"><input type="hidden" name="add_absence" value="1"><button>Planned Absence </button></form>',get_permalink());
 
 	$output .= sprintf('<p>%s <a href="%s">Away Message</a> %s</p>',__('Click here to mark yourself unavailable for this specific meeting. Or, if you will be away for several weeks, you can set an ','rsvpmaker-for-toastmasters'),admin_url('profile.php?page=wp4t_set_status_form'),__('with an expiration date','rsvpmaker-for-toastmasters'));
 

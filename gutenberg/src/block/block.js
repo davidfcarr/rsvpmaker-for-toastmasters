@@ -14,7 +14,7 @@ const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.b
 const { RichText } = wp.blockEditor;
 const { Component, Fragment } = wp.element;
 const { InspectorControls, PanelBody } = wp.editor;
-const { TextareaControl, SelectControl } = wp.components;
+const { TextareaControl, SelectControl, ToggleControl, TextControl } = wp.components;
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 const { subscribe } = wp.data;
 
@@ -319,10 +319,14 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
 			type: 'int',
 			default: 0,
 		},
+		inline: {
+			type: 'int',
+			default: 0,
+		},
     },
 	edit: function( props ) {
 
-	const { attributes: { editable }, setAttributes, isSelected } = props;
+	const { attributes: { editable, inline }, setAttributes, isSelected } = props;
 
 	var uid = props.attributes.uid;
 	if(!uid)
@@ -331,32 +335,68 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
 			uid = 'editable' + date.getTime()+Math.random();					
 			setAttributes({uid});
 		}		
-	function setAgendaEdit( event ) {
-		var note = document.getElementById('editable').value;
-		setAttributes( { editable: note } );
-		event.preventDefault();
-	}	
-	function showForm() {
-	if(!isSelected)
-		return (<p><em>Select to set title</em></p>);
-return (<form onSubmit={ setAgendaEdit } >
-<p><label>Editable Note Title:</label> <input type="text" id="editable" onChange={setAgendaEdit} defaultValue={editable} /></p>
-<p>Enter the title for a note that can be changed for each meeting the meeting. <em>Example: Meeting Theme.</em></p></form>);		
-		}
-		
 		return (
 			<Fragment>
 			<NoteInspector { ...props } />
 <div className={ props.className }>
 <p class="dashicons-before dashicons-welcome-write-blog"><strong>Toastmasters Editable Note</strong></p>
-{ showForm() }
+<TextControl
+        label="Label"
+        value={ editable }
+        onChange={ ( editable ) => setAttributes( { editable } ) }
+    />
 </div>
+
 </Fragment>
 		);
 	},
     save: function (props) { return null; },
 
 } ); 
+
+registerBlockType( 'wp4toastmasters/milestone', {
+
+	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
+	title: __( 'Toastmasters Milestone' ), // Block title.
+	icon: 'welcome-write-blog', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
+	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	keywords: [
+		__( 'Toastmasters' ),
+		__( 'Agenda' ),
+		__( 'Milestone' ),
+	],
+	description: __('Milestone such as the end of the meeting, displayed with time'),
+	attributes: {
+        label: {
+            type: 'string',
+            default: '',
+        },
+    },
+	edit: function( props ) {
+
+	const { attributes: { label }, setAttributes, isSelected } = props;
+		
+		return (
+<div className={ props.className }>
+<p class="dashicons-before dashicons-clock"><strong>Toastmasters Agenda Milestone</strong></p>
+<TextControl
+        label="Label for Milestone"
+        value={ label }
+        onChange={ ( label ) => setAttributes( { label } ) }
+    />
+</div>
+		);
+	},
+    save: function (props) { 
+	const { attributes: { label } } = props;
+		
+		return (
+<p maxtime="x">{label}</p>
+	) },
+
+} ); 
+
+
 
 registerBlockType( 'wp4toastmasters/absences', {
 	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
@@ -555,7 +595,7 @@ class NoteInspector extends Component {
 	render() {
 
 		const { attributes, setAttributes } = this.props;
-		const { time_allowed } = attributes;
+		const { time_allowed, editable, inline } = attributes;
 
 		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
 		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
@@ -608,6 +648,15 @@ class NoteInspector extends Component {
 
 		return (
 		<InspectorControls key="noteinspector">
+{ editable && 
+	<ToggleControl
+        label="Display inline label, bold, instead of headline"
+        help={ inline ? 'Inline Label' : 'Headline' }
+        checked={ inline }
+        onChange={ (inline) => setAttributes( {inline} ) }
+    />
+}			
+
 			<NumberControl
 					label={ __( 'Time Allowed', 'rsvpmaker-for-toastmasters' ) }
 					min={0}

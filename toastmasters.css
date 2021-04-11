@@ -1593,3 +1593,8 @@ a.ui-button:active,
 .time_allowed, .padding_time, .count {
 	width: 4em;
 }
+
+.planned_absence_form {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}

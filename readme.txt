@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.7
-Stable tag: 4.4.6
+Stable tag: 4.4.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,6 +62,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 4.4.7 =
+
+* New default Toastmasters meeting agenda, takes advantage of time allowed attribute on editable notes.
 
 = 4.4.6 =
 

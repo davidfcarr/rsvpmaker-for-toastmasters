@@ -648,6 +648,8 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 						if($note)
 							$label = trim(strip_tags($note));
 					}
+					if(!empty($d['editable']))
+						$label = $d['editable'];
 					}
 				else
 					continue;
