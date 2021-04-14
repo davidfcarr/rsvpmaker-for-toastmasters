@@ -1416,15 +1416,7 @@ foreach($order as $index => $name)
 	else
 		$preselected = 0;
 	$category_count++;
-	$o = '';
-	for($i =0; $i <= $maxscore; $i++)
-	{
-		$s = (isset($tm_subscores[$category_count][$index]) && ($tm_subscores[$category_count][$index] == $i)) ? 'selected="selected" ' : '';
-		if($i == $preselected)
-			$s = 'selected="selected" ';
-		$o .= sprintf('<option value="%d" %s>%d </option>',$i,$s,$i);
-	}
-	printf('<td class="score"><select name="scores[%s][%s]" contestant="%d" class="score score%d">%s</select> </td></tr>',$category_count,$index,$index,$index,$o);
+	printf('<td class="score"><input type="number" min="0" max="%d" name="scores[%s][%s]" contestant="%d" class="score score%d" value="%d" /> </td></tr>',$maxscore,$category_count,$index,$index,$index,$preselected);
 	echo "\n";
 	}//end foreach scoring
 	echo '</table>';

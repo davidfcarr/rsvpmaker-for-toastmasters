@@ -83,6 +83,19 @@ $( "#tweak_times_form" ).submit(function( event ) {
 	  });   
  });
 
+$('.planner_edits_wrapper').hide();
+
+ $('.planner_edits_checkbox').click(
+	 function() {
+		 var index = $(this).val();
+		 index = index.replace('.','\\.');
+		 console.log('index '+index);
+		 console.log($('#check-wrapper-'+index).html());
+		 $('#check-wrapper-'+index).hide();
+		 $('#wrapper-'+index).show();
+	 }
+ );
+
  $('.role_remove').click(
 	function () {
 		var block_count = $(this).val();

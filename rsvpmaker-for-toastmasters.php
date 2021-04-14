@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.4.7
+Version: 4.4.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4964,6 +4964,9 @@ return $link;
 
 function tweak_agenda_times($post) {
 	global $rsvp_options;
+	if(!is_user_logged_in()) {
+		return "Not logged in";
+	}
 
 	$time_format = str_replace('%Z','',$rsvp_options['time_format']);
 	if(rsvpmaker_is_template($post->ID)) {
@@ -5049,8 +5052,11 @@ function tweak_agenda_times($post) {
 
 		$elapsed += $add;
 
+		$editline = '';
+
 		if(!empty($d['role']))
 			{
+				$class = 'agenda_planner_role';
 				$start = (empty($d['start'])) ? 1 : $d['start'];
 				$index = str_replace(' ','_',$d['role']);
 				$label = $d['role'];
@@ -5063,16 +5069,23 @@ function tweak_agenda_times($post) {
 		elseif(!empty($d['uid']))
 
 			{
+			$class = 'agenda_planner_note';
 			$start = 1;
 			$index = $d['uid'];
 			$label = (empty($rawdata[$index]['content'])) ? $index : 'Note: '.substr(trim(strip_tags($rawdata[$index]['content'])),0,50).'...';
-			if(!empty($d['editable']))
+			if(!empty($d['editable'])) {
+				$class = 'agenda_planner_editable';
 				$label = $d['editable'];
+				$html = get_post_meta($post->ID,'agenda_note_'.$index,true);
+				$excerpt = (empty($html)) ? 'empty' : substr(strip_tags($html),0,75).' ...';
+				$index = str_replace('.','_',$index);
+				$editline = sprintf(' <span id="check-wrapper-%s"><input id="check%s" type="checkbox" class="planner_edits_checkbox" name="edits[]" value="%s" /> Edit <em>%s</em></span><div class="planner_edits_wrapper" id="wrapper-%s"><textarea name="%s" class="mce">%s</textarea></div>',$index,$index,$index,$excerpt,$index,$index,$html);
+			}
 			$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
 			}
 		else
 			continue;
-		$output .= sprintf('<p id="timeline_%d"><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s</p>',$block_count,$block_count,$start_time_text,$label,$fields);
+		$output .= sprintf('<p class="%s" id="timeline_%d"><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s %s</p>',$class,$block_count,$block_count,$start_time_text,$label,$fields,$editline);
 		$block_count++;
 	}
 	$output .= '<p>End <span id="tweak_time_end"></span></p><p><button>Update Times</button></p><p id="tweak_times_result"></p>';

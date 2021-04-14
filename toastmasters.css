@@ -1598,3 +1598,9 @@ a.ui-button:active,
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
+.agenda_planner_editable {
+	margin-bottom: -15px;
+}
+.planner_edits_wrapper {
+	margin-top: 15px;
+}

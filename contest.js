@@ -108,13 +108,23 @@ if(contest.scoring == 'voting') {
         votingform.style = 'border: thick solid red; padding: 10px; padding-bottom: 50px;';
         votingform.scrollIntoView();
         });
-            
+
+        var max;
+        var this_score;
+
         $('.score').on('change', function(){
         
         var contestant = $(this).attr('contestant');
         var score = 0;
         $('.score' + contestant).each(function() {
-            score += Number($(this).val());
+            max = Number($(this).attr('max'));
+            this_score = Number($(this).val());
+            if(this_score > max)
+            {
+                this_score = max;
+                $(this).val(this_score);
+            }
+            score += this_score;
         });
         $('#sum' + contestant).html(score);
         

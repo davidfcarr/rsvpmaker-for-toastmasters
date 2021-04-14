@@ -566,7 +566,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 	  }
   
 	public function get_items_permissions_check($request) {
-	  return true;//is_user_logged_in();
+	  return is_user_logged_in();
 	}
   
   public function handle($request) {
@@ -661,12 +661,14 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			$start_time_text = rsvpmaker_strftime($time_format,$t);
 			if(!$start_time_text)
 				$start_time_text = rsvpmaker_date('h:i A',$t);
+			
 			$output[] = array('label' => 'End', 'time' => $start_time_text, 'elapsed' => $elapsed, 'add' => 0);
 		return new WP_REST_Response($output, 200);	
 		}
 	//}
 
-	$post = get_post($_POST['post_id']);
+	$post_id = (int) $_POST['post_id'];
+	$post = get_post($post_id);
 	$lines = explode("\n",$post->post_content);
 	$block_count = 0;
 	$update = '';
@@ -694,6 +696,8 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			preg_match($pattern,$line,$match);
 			if(!empty($match[0])) {
 				$atts = json_decode($match[0]);
+				if(isset($atts->editable))
+					$labels[$atts->uid] = $atts->editable;
 				$atts->time_allowed = $_POST['time_allowed'][$block_count];
 				$line = preg_replace($pattern,json_encode($atts),$line);
 				$block_count++;
@@ -701,12 +705,24 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 		}
 		$update .= $line . "\n";
 	}
+	$edits = array();
+	if(isset($_POST['edits'])) {
+		foreach($_POST['edits'] as $index) {
+			$note = stripslashes($_POST[$index]);
+			$note = preg_replace('/(style=("|\Z)(.*?)("|\Z))/','',$note);
+			$note = wp_filter_post_kses($note);
+			$index = str_replace('_','.',$index);
+			update_post_meta($post_id,"agenda_note_".$index,$note);
+			$edits[] = $labels[$index];
+		}
+	}
 	$up['ID'] = $post->ID;
 	$up['post_content'] = $update;
 	$response['return'] = wp_update_post($up);
 	$response['blocks'] = $block_count;
 	$response['next'] = sprintf('<p><a href="%s" target="_blank">View Agenda</a></p>',add_query_arg(array('print_agenda' => 1, 'no_print' => 1),get_permalink($post->ID)));
 	$response['next'] .= sprintf('<p><a href="%s">Signup</a></p>',get_permalink($post->ID));
+	$response['edits'] = $edits;
 	if(current_user_can('edit_post',$post)) {
 		$edit = get_edit_post_link($post->ID);
 		$response['next'] .= sprintf('<p><a href="%s">Edit Event</a></p>',$edit);
@@ -715,6 +731,8 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 		$response['next'] .= sprintf('<p><a href="%s">Create/Update</a> events from tempate</p>',admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t='.$post->ID));
 	fix_timezone();
 	$response['next'] .= sprintf('<p>Updated: %s</p>',date('r'));
+	$response['note'] = $note;
+	//$response['formpost'] = $_POST;
 	return new WP_REST_Response($response, 200);
 	}
 }
