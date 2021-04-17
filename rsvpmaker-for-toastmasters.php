@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.4.8
+Version: 4.4.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -5024,7 +5024,6 @@ function tweak_agenda_times($post) {
 	$output .= '<h2>Agenda Time Planner</h2>';
 	$output .= '<p>This screen allows you to see the time reserved for different parts of your meeting, which can be associated with either roles or notes on the agenda. Adding or rearranging elements of the agenda requires editing the underlying document, but this screen makes it easier to see how the times add up.</p>
 	<p><strong>Time</strong> the base time for each activity</p>
-	<p><strong>Padding</strong> intended to be a little extra time for transitions between speeches (Example: Allow 24 minutes for speeches and 1 additinal Padding minute for introductions and setup)</p>
 	<p><strong>Count</strong> the number of occurrences for a role (Example: 3 Speakers, 3 Evaluators)</p>';
 
 	$template_id = rsvpmaker_has_template($post->ID);
@@ -5058,16 +5057,19 @@ function tweak_agenda_times($post) {
 			{
 				$class = 'agenda_planner_role';
 				$start = (empty($d['start'])) ? 1 : $d['start'];
-				$index = str_replace(' ','_',$d['role']);
+				$index = str_replace(' ','_',$d['role']).'-'.$start;
 				$label = $d['role'];
 				if($d['role'] == 'Speaker')
-					$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > Padding <input type="number" min="0" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input type="number" min="0" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
+					$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > Padding <input type="number" min="0" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input type="number" min="0" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s"  block_count="%d" /> Remove',$time_allowed,$index,$index,$padding_time,$index,$index,$d['count'],$index,$index,$index,$d['role'],$index,$index,$block_count);
 				else
-					$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input type="number" min="0" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" /> Remove',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count,$d['count'],$block_count,$block_count,$block_count,$d['role'],$block_count,$block_count);
-			}
+					$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > Count <input type="number" min="0" value="%s" class="count" id="count_%s" name="count[%s]" block_count="%s" role="%s" /> <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" block_count="%d" /> Remove',$time_allowed,$index,$index,$padding_time,$index,$index,$d['count'],$index,$index,$index,$d['role'],$index,$index, $block_count);
+				if(($d['role'] == 'Speaker') && !rsvpmaker_is_template())
+					$fields .= role_count_time($post->ID, $d);
+				if($d['role'] == 'Speaker')
+					$fields .= '<br /><strong>Padding</strong> (optional) is for a little extra time for transitions between speeches (Example: Allow 24 minutes for speeches and 1 additional Padding minute for introductions and setup)';
+				}
 
 		elseif(!empty($d['uid']))
-
 			{
 			$class = 'agenda_planner_note';
 			$start = 1;
@@ -5079,13 +5081,14 @@ function tweak_agenda_times($post) {
 				$html = get_post_meta($post->ID,'agenda_note_'.$index,true);
 				$excerpt = (empty($html)) ? 'empty' : substr(strip_tags($html),0,75).' ...';
 				$index = str_replace('.','_',$index);
-				$editline = sprintf(' <span id="check-wrapper-%s"><input id="check%s" type="checkbox" class="planner_edits_checkbox" name="edits[]" value="%s" /> Edit <em>%s</em></span><div class="planner_edits_wrapper" id="wrapper-%s"><textarea name="%s" class="mce">%s</textarea></div>',$index,$index,$index,$excerpt,$index,$index,$html);
+				$editline = sprintf(' <div class="check-wrapper" id="check-wrapper-%s"><input id="check%s" type="checkbox" class="planner_edits_checkbox" name="edits[]" value="%s" /> Check to Edit: <em>%s</em></div><div class="planner_edits_wrapper" id="wrapper-%s"><textarea name="%s" class="mce">%s</textarea></div>',$index,$index,$index,$excerpt,$index,$index,$html);
 			}
-			$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$block_count,$block_count,$padding_time,$block_count,$block_count);
+			$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$index,$index,$padding_time,$index,$index);
+			$fields .= sprintf(' <input type="checkbox" class="role_remove" name="remove[%s]" value="%s" block_count="%d" /> Remove',$index,$index,$block_count);
 			}
 		else
 			continue;
-		$output .= sprintf('<p class="%s" id="timeline_%d"><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s %s</p>',$class,$block_count,$block_count,$start_time_text,$label,$fields,$editline);
+		$output .= sprintf('<div class="%s" id="timeline_%s"><p><strong><span id="calctime%s" class="calctime">%s</span> %s </strong><br />%s %s</p></div>',$class,$index,$block_count,$start_time_text,$label,$fields,$editline);
 		$block_count++;
 	}
 	$output .= '<p>End <span id="tweak_time_end"></span></p><p><button>Update Times</button></p><p id="tweak_times_result"></p>';
@@ -8160,45 +8163,45 @@ if($wpdb->get_var($sql))
 	return;
 
 if(function_exists('do_blocks'))
-	$default = '<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"5","inline":true} /-->
+$default = '<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"5","inline":true} /-->
 
-	<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"4","padding_time":"5"} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"Ah Counter"} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"Timer"} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"Vote Counter"} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"Grammarian","agenda_note":"Leads word of the day contest."} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"Topics Master","time_allowed":"10"} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":"23","backup":"1"} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"General Evaluator","agenda_note":"Explains the importance of evaluations. Introduces Evaluators."} /-->
-	
-	<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":3,"time_allowed":"9"} /-->
-	
-	<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"2","uid":"note31972"} -->
-	<p class="wp-block-wp4toastmasters-agendanoterich2">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
-	<!-- /wp:wp4toastmasters/agendanoterich2 -->
-	
-	<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note21837"} -->
-	<p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day presents the awards.</p>
-	<!-- /wp:wp4toastmasters/agendanoterich2 -->
-	
-	<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note30722"} -->
-	<p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting.</p>
-	<!-- /wp:wp4toastmasters/agendanoterich2 -->
-	
-	<!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
-	<p maxtime="x" class="wp-block-wp4toastmasters-milestone">Meeting Ends</p>
-	<!-- /wp:wp4toastmasters/milestone -->
-	
-	<!-- wp:wp4toastmasters/agendaedit {"editable":"Theme and Word of the Day","uid":"editable16181528612380.6987292403509966"} /-->
-	
-	<!-- wp:wp4toastmasters/absences /-->';
+<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"4","padding_time":"5"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Ah Counter"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Timer"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Vote Counter"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Grammarian","agenda_note":"Leads word of the day contest."} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Topics Master","time_allowed":"10"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":"23","backup":"1"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"General Evaluator","agenda_note":"Explains the importance of evaluations. Introduces Evaluators."} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":3,"time_allowed":"9"} /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"2","uid":"note31972"} -->
+<p class="wp-block-wp4toastmasters-agendanoterich2">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
+<!-- /wp:wp4toastmasters/agendanoterich2 -->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note21837"} -->
+<p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day presents the awards.</p>
+<!-- /wp:wp4toastmasters/agendanoterich2 -->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note30722"} -->
+<p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting.</p>
+<!-- /wp:wp4toastmasters/agendanoterich2 -->
+
+<!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
+<p maxtime="x" class="wp-block-wp4toastmasters-milestone">Meeting Ends</p>
+<!-- /wp:wp4toastmasters/milestone -->
+
+<!-- wp:wp4toastmasters/agendaedit {"editable":"Theme and Word of the Day","uid":"editable16181528612380.6987292403509966"} /-->
+
+<!-- wp:wp4toastmasters/absences /-->';
 
 else
 	$default = '[agenda_note padding_time="0"  agenda_display="agenda" strong="" italic="" size="" style="" alink="" editable="" time_allowed="1"]Sgt of Arms opens the meeting.[/agenda_note]

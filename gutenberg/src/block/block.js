@@ -453,56 +453,6 @@ class RoleInspector extends Component {
 		const { attributes, setAttributes, className } = this.props;
 		const { count, time_allowed, padding_time, agenda_note, backup, role } = attributes;
 
-		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-		// determine whether to show notice
-		subscribe( () => {
-			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
-			
-			// Save metaboxes on save completion, except for autosaves that are not a post preview.
-			const shouldTrigger = (
-					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
-					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
-				);
-	
-			// Save current state for next inspection.
-			wasSavingPost = isSavingPost;
-			wasAutosavingPost = isAutosavingPost;
-			wasPreviewingPost = isPreviewingPost;
-	
-			if ( shouldTrigger ) {
-				let ts = Date.now();
-				//role
-				let diff = ts - master_agenda_update;
-				master_agenda_update = ts + 500;
-				if(diff > 0) {
-					let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
-					fetch(geturl, {
-						method: 'GET',
-						headers: {
-						  'Content-Type': 'application/json',
-						  'X-WP-Nonce': wpt_rest.nonce,
-						},
-					  })
-					  .then(response => response.json())
-					  .then(data => {
-						  agenda = data;
-						  setAttributes({timing_updated: ts*2});
-					})
-					.catch((error) => {
-					  console.error('Error:', error);
-					});	
-				}
-				else {
-					setAttributes({timing_updated: ts});
-				}
-			}
-} );
-
 return (	
 <InspectorControls key="roleinspector">
 <p>Role: {role}</p>
@@ -551,9 +501,7 @@ return (
 </div>
 }
 <div>
-<p><strong>Timing Summary</strong> - refreshes on Save Draft/Publish/Update</p>
-<p>See also: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
-<p>{agenda.map(function (x) {return <div><strong>{x.time}</strong> {x.label}</div>})}</p>
+<p>Scheduling overview: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
 </div>
 
 <TextareaControl
@@ -597,55 +545,6 @@ class NoteInspector extends Component {
 		const { attributes, setAttributes } = this.props;
 		const { time_allowed, editable, inline } = attributes;
 
-		let wasSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-		let wasAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-		let wasPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-		// determine whether to show notice
-		subscribe( () => {
-			const isSavingPost = wp.data.select( 'core/editor' ).isSavingPost();
-			const isAutosavingPost = wp.data.select( 'core/editor' ).isAutosavingPost();
-			const isPreviewingPost = wp.data.select( 'core/editor' ).isPreviewingPost();
-			const hasActiveMetaBoxes = wp.data.select( 'core/edit-post' ).hasMetaBoxes();
-			
-			// Save metaboxes on save completion, except for autosaves that are not a post preview.
-			const shouldTrigger = (
-					( wasSavingPost && ! isSavingPost && ! wasAutosavingPost ) ||
-					( wasAutosavingPost && wasPreviewingPost && ! isPreviewingPost )
-				);
-	
-			// Save current state for next inspection.
-			wasSavingPost = isSavingPost;
-			wasAutosavingPost = isAutosavingPost;
-			wasPreviewingPost = isPreviewingPost;
-	
-			if ( shouldTrigger ) {
-				let ts = Date.now();
-				let diff = ts - master_agenda_update;
-				master_agenda_update = ts + 500;
-				if(diff > 0) {
-					let geturl = wpt_rest.url+'rsvptm/v1/tweak_times?post_id='+wpt_rest.post_id;
-					fetch(geturl, {
-						method: 'GET',
-						headers: {
-						  'Content-Type': 'application/json',
-						  'X-WP-Nonce': wpt_rest.nonce,
-						},
-					  })
-					  .then(response => response.json())
-					  .then(data => {
-						  agenda = data;
-						  setAttributes({timing_updated: ts*2});
-					})
-					.catch((error) => {
-					  console.error('Error:', error);
-					});	
-				}
-				else {
-					setAttributes({timing_updated: ts});
-				}
-			}
-	} );
-
 		return (
 		<InspectorControls key="noteinspector">
 { editable && 
@@ -663,9 +562,7 @@ class NoteInspector extends Component {
 					value={ time_allowed }
 					onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }
 				/>
-<p><strong>Timing Summary</strong> - refreshes on Save Draft/Publish/Update</p>
-<p>See also: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
-<p>{agenda.map(function (x) {return <div><strong>{x.time}</strong> {x.label}</div>})}</p>
+<p>Scheduling overview: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
 {docContent ()}
 			</InspectorControls>
 		);

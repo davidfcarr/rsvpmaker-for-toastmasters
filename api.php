@@ -582,6 +582,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			}
 			else
 				$date = get_rsvp_date($post->ID);
+
 			$ts_start = rsvpmaker_strtotime($date);
 			$elapsed = 0;
 			$time_array = array();
@@ -676,18 +677,19 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 		$pattern = '/{"role":[^}]+}/';
 		preg_match($pattern,$line,$match);
 		if(!empty($match[0])) {
-			if(isset($_POST['remove'][$block_count]))
+			$atts = json_decode($match[0]);
+			$index = str_replace(' ','_',$atts->role).'-';
+			$index .= (empty($atts->start)) ? '1' : $atts->start;
+			if(isset($_POST['remove'][$index]))
 				$line = '<!-- wp:wp4toastmasters/role {"role":""} /-->'; // empty role, will not display
 			else {
 				//if(!is_numeric(trim($_POST['time_allowed'][$block_count])) || !is_numeric(trim($_POST['padding_time'][$block_count])) || !is_numeric(trim($_POST['count'][$block_count])) )
 					//return new WP_REST_Response(array('error' => 'non-numeric data'), 200);
-				$atts = json_decode($match[0]);
-				$atts->time_allowed = $_POST['time_allowed'][$block_count]; //numeric string
-				$atts->padding_time = $_POST['padding_time'][$block_count];
-				$atts->count = (int) $_POST['count'][$block_count];
-				$line = preg_replace('/{.+}/',json_encode($atts),$line);	
+				$atts->time_allowed = $_POST['time_allowed'][$index]; //numeric string
+				$atts->padding_time = $_POST['padding_time'][$index];
+				$atts->count = (int) $_POST['count'][$index];
 			}
-			$block_count++;
+			$line = preg_replace($pattern,json_encode($atts),$line);
 		}
 		elseif(strpos($line,'-- wp:wp4toastmasters/agendanoterich2') || strpos($line,'-- wp:wp4toastmasters/agendaedit')) {
 			//if(!is_numeric(trim($_POST['time_allowed'][$block_count])))
@@ -696,11 +698,23 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			preg_match($pattern,$line,$match);
 			if(!empty($match[0])) {
 				$atts = json_decode($match[0]);
+				$index = str_replace('.','_',$atts->uid);
+				if(isset($_POST['remove'][$index])) {
+					$line = '';
+					if(!strpos($index,'ditable')) {
+						foreach($lines as $line){
+							if(strpos($line,'wp:wp4toastmasters'))
+								break;//eat up lines until close
+						}
+					}
+				
+				}
+				else {
 				if(isset($atts->editable))
 					$labels[$atts->uid] = $atts->editable;
-				$atts->time_allowed = $_POST['time_allowed'][$block_count];
+				$atts->time_allowed = $_POST['time_allowed'][$index];
 				$line = preg_replace($pattern,json_encode($atts),$line);
-				$block_count++;
+				}
 			}	
 		}
 		$update .= $line . "\n";

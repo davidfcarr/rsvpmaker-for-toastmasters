@@ -26,12 +26,14 @@ var agenda_time_tally =  function () {
 	$('#rsvpsection').html('');//don't combine with rsvp form
 	time_tally = new Date($('#tweak_time_start').val());//start time
     $('.time_allowed').each(function(index) {
+	var block_count = $(this).attr('block_count');
 	var formatted = agenda_time_format(time_tally);
 	$('#cacltime' + index).fadeTo( "fast", 0.1 );
 	$('#calctime' + index).text(formatted);
 	$('#calctime' + index).delay(index*50).fadeTo( "fast", 1.0 );
 	var tallyadd = 0;
 	var addthis = Number($(this).val());
+	console.log('addthis'+addthis);
 	if(!isNaN(addthis))
 		tallyadd += addthis;
 	addthis = Number($('#padding_time_' + index).val());

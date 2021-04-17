@@ -350,6 +350,38 @@ function wpt_multiple_blocks_same( $post_id, $post_after, $post_before ) {
 
 add_action( 'post_updated', 'wpt_multiple_blocks_same', 10, 3 );
 
+function role_count_time($post_id, $atts) {
+
+		$role = $atts["role"];
+		$start = (empty($atts["start"])) ? 1 : $atts["start"];
+		$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
+		$count = (int) (isset($atts["count"])) ? $atts["count"] : 1;
+		$total = $time = 0;
+		$output = '';
+		for($i = $start; $i < ($count + $start); $i++)
+			{
+	
+			$field = '_' . $field_base . '_' . $i;
+	
+			$assigned = get_post_meta($post_id, $field, true);
+			if($assigned) {
+				$total++;
+				if($role == 'Speaker') {
+					$slug = '_maxtime_Speaker_'.$i;
+					$metatime = get_post_meta($post_id,$slug,true);
+					$time += (empty($metatime)) ? 7 : (int) $metatime;
+				}
+			}
+
+			}
+		
+		$output .= ' <em>'.$total. ' signed up ';
+		if($time)
+			$output .= "($time minutes)";
+		$output .= '</em>';
+
+		return $output;
+}
 
 
 function get_role_assignments($post_id, $atts) {
@@ -357,8 +389,6 @@ function get_role_assignments($post_id, $atts) {
 	$role = $atts["role"];
 
 	$start = (empty($atts["start"])) ? 1 : $atts["start"];
-
-
 
 	$field_base = preg_replace('/[^a-zA-Z0-9]/','_',$atts["role"]);	
 
