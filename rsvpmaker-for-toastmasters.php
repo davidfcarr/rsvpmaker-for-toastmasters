@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.4.9
+Version: 4.5
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -5075,12 +5075,12 @@ function tweak_agenda_times($post) {
 			$start = 1;
 			$index = $d['uid'];
 			$label = (empty($rawdata[$index]['content'])) ? $index : 'Note: '.substr(trim(strip_tags($rawdata[$index]['content'])),0,50).'...';
+			$index = str_replace('.','_',$index);
 			if(!empty($d['editable'])) {
 				$class = 'agenda_planner_editable';
 				$label = $d['editable'];
 				$html = get_post_meta($post->ID,'agenda_note_'.$index,true);
 				$excerpt = (empty($html)) ? 'empty' : substr(strip_tags($html),0,75).' ...';
-				$index = str_replace('.','_',$index);
 				$editline = sprintf(' <div class="check-wrapper" id="check-wrapper-%s"><input id="check%s" type="checkbox" class="planner_edits_checkbox" name="edits[]" value="%s" /> Check to Edit: <em>%s</em></div><div class="planner_edits_wrapper" id="wrapper-%s"><textarea name="%s" class="mce">%s</textarea></div>',$index,$index,$index,$excerpt,$index,$index,$html);
 			}
 			$fields = sprintf('Time <input type="number" min="0" value="%s" class="time_allowed" id="time_allowed_%s" name="time_allowed[%s]" > <input type="hidden" value="%s" class="padding_time" id="padding_time_%s" name="padding_time[%s]" > ',$time_allowed,$index,$index,$padding_time,$index,$index);
