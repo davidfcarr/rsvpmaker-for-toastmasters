@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.5
+Version: 4.5.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -5001,7 +5001,7 @@ function tweak_agenda_times($post) {
 				$atts = (array) json_decode($match[0]);
 				if(in_array($atts['uid'],$uids))
 					{
-						$atts['uid'] = 'note'.rand();
+						$atts['uid'] = 'note'.rand(100,10000);
 						$line = preg_replace('/{.+}/',json_encode($atts),$line);
 						$update = true;
 					}
@@ -12065,12 +12065,12 @@ function wpt_embed_agenda ($atts) {
 
 function agenda_note_upgrade_helper($matches) {
 	if(empty($matches[1]))
-		$props = '{"uid":"note'.rand().'"}';
+		$props = '{"uid":"note'.rand(100,10000).'"}';
 	else
 	{
 		$props = $matches[1];
 		if(!strpos($props,'"uid"'))
-			$props = str_replace('}',',"uid":"note'.rand().'"}',$props);
+			$props = str_replace('}',',"uid":"note'.rand(100,10000).'"}',$props);
 		$props = str_replace(',"className":"wp-block-wp4toastmasters-agendanoterich"','',$props);
 	}	
 	

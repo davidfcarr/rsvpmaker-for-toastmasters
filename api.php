@@ -673,6 +673,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 	$lines = explode("\n",$post->post_content);
 	$block_count = 0;
 	$update = '';
+	$log = '';
 	foreach($lines as $line) {
 		$pattern = '/{"role":[^}]+}/';
 		preg_match($pattern,$line,$match);
@@ -680,11 +681,15 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			$atts = json_decode($match[0]);
 			$index = str_replace(' ','_',$atts->role).'-';
 			$index .= (empty($atts->start)) ? '1' : $atts->start;
-			if(isset($_POST['remove'][$index]))
-				$line = '<!-- wp:wp4toastmasters/role {"role":""} /-->'; // empty role, will not display
+			$log .= $index."\n";
+			if(isset($_POST['remove'][$index])) {
+				$update .= "\n";
+				//$line = '<!-- wp:wp4toastmasters/role {"role":""} /-->'; // empty role, will not display
+				$log .= "remove $index \n";
+				continue;
+			}
 			else {
-				//if(!is_numeric(trim($_POST['time_allowed'][$block_count])) || !is_numeric(trim($_POST['padding_time'][$block_count])) || !is_numeric(trim($_POST['count'][$block_count])) )
-					//return new WP_REST_Response(array('error' => 'non-numeric data'), 200);
+				$log .= "update $index \n";
 				$atts->time_allowed = $_POST['time_allowed'][$index]; //numeric string
 				$atts->padding_time = $_POST['padding_time'][$index];
 				$atts->count = (int) $_POST['count'][$index];
@@ -699,17 +704,20 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			if(!empty($match[0])) {
 				$atts = json_decode($match[0]);
 				$index = str_replace('.','_',$atts->uid);
+				$log .= "$index \n";
 				if(isset($_POST['remove'][$index])) {
-					$line = '';
-					if(!strpos($index,'ditable')) {
+					$log .= "remove $index \n";
+					$update .= "\n";
+					if(!strpos($line,'editable')) {
 						foreach($lines as $line){
 							if(strpos($line,'wp:wp4toastmasters'))
 								break;//eat up lines until close
 						}
+					continue;
 					}
-				
 				}
 				else {
+				$log .= "update $index \n";
 				if(isset($atts->editable))
 					$labels[$atts->uid] = $atts->editable;
 				$atts->time_allowed = $_POST['time_allowed'][$index];
@@ -717,6 +725,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 				}
 			}	
 		}
+		$log .= "line: $line\n";
 		$update .= $line . "\n";
 	}
 	$edits = array();
@@ -746,6 +755,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 	fix_timezone();
 	$response['next'] .= sprintf('<p>Updated: %s</p>',date('r'));
 	$response['note'] = $note;
+	$response['log'] = $log;
 	//$response['formpost'] = $_POST;
 	return new WP_REST_Response($response, 200);
 	}

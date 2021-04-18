@@ -335,7 +335,7 @@ function wpt_multiple_blocks_same( $post_id, $post_after, $post_before ) {
 					$atts = (array) json_decode($match[0]);
 					if(in_array($atts['uid'],$uids))
 						{
-							$atts['uid'] = 'note'.rand();
+							$atts['uid'] = 'note'.rand(100,10000);
 							$line = preg_replace('/{.+}/',json_encode($atts),$line);
 						}
 					$uids[] = $atts['uid'];
