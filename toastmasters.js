@@ -33,10 +33,10 @@ var agenda_time_tally =  function () {
 	$('#calctime' + index).delay(index*50).fadeTo( "fast", 1.0 );
 	var tallyadd = 0;
 	var addthis = Number($(this).val());
-	console.log('addthis'+addthis);
 	if(!isNaN(addthis))
 		tallyadd += addthis;
-	addthis = Number($('#padding_time_' + index).val());
+	var padding = $(this).attr('id').replace('time_allowed','padding_time');
+	addthis = Number($('#'+padding).val());
 	if(!isNaN(addthis))
 		{
 		tallyadd += addthis;

@@ -80,11 +80,19 @@ emailLinksToggle ();
 $( "input#show_email_links" ).on( "click", emailLinksToggle);
 
 function refreshScores() {
-$('#score_status').html('Checking for new scores ...');
-$.get( contest.votecheck, function( data ) {
-    $( "#scores" ).html( data );
-    $('#score_status').html('Updated');
-});
+if(countdown == 0) {
+    $('#score_status').html('Checking for new scores ...');
+    console.log('checking for scores');
+    $.get( contest.votecheck, function( data ) {
+        $( "#scores" ).html( data );
+        $('#score_status').html('Updated');
+    });
+    countdown = 30;
+}
+else {
+    $('#score_status').html('Checking in '+countdown);
+    countdown--;
+}
 
 }
 $('#scoreupdate').click(function() {
@@ -170,12 +178,35 @@ if(contest.scoring == 'voting') {
         });        
 }
 
-if(contest.scoring == 'dashboard')
+/*
+if((contest.scoring == 'dashboard') && scoreArr.length) //starts once speaking order is set
 {
+    console.log('start checking for scores');
     setInterval(function(){
         refreshScores();	
-    }, 10000);        
+    }, 50000);        
 }
+*/
+
+var checkvoteinterval;
+var countdown = 30;
+
+$('#votecheck').click(
+    function () {
+        var label = $('#votecheck').text();
+        console.log(label + ' checking for scores');
+        if(label == 'Start') {
+            checkvoteinterval = setInterval(function(){
+                refreshScores();
+            }, 1000);
+            $('#votecheck').text('Stop');
+        }
+        else {
+            clearInterval(checkvoteinterval);
+            $('#votecheck').text('Start');
+        }
+    }
+);
     
 $('#track_role').on('change', function(){
 var role = $(this).val();
@@ -210,8 +241,18 @@ $('.send_contest_link').click (
     });
     }
 );
-    
-    
+
+$('.show_ballot_links_preview').click(
+    function(e) {
+        e.preventDefault();
+        $('.ballot_links_preview').show();
+        let id = $(this).attr('id').replace('p','');
+        var email = $('#email_link'+id).val();
+        var subject = $('#email_subject'+id).val();
+        $('#send_link_status'+id).html('To email manually, click <a target="_blank" href="mailto:'+email+'?subject='+subject+'">'+email+' '+subject+'</a>');
+    }
+);
+
 $('form#custom_contest').submit(function(){
     var score = 0;
     $('.setscore').each(function() {
@@ -231,24 +272,29 @@ if(contest.vote_submitted) {
 //execute once, start interval
 var gotvotetimer = setInterval(function(){
     refreshReceived();	
-    }, checkinterval);
+    }, 1000);
 }
 
-var dotdot = '...';
+var check_seconds = 5;
 
 function refreshReceived() {
-$.get( contest.votereceived, function( data ) {
-if(data) {
-	$('#gotvote_result').html('Votes received on ballot counting dashboard');
-	stopRefreshReceived();
+if(check_seconds == 0) {
+    $.get( contest.votereceived, function( data ) {
+        if(data) {
+            $('#gotvote_result').html('Votes received on ballot counting dashboard');
+            stopRefreshReceived();
+        }
+        else
+          $('#gotvote_result').html('Not yet');
+        });
+    check_seconds = 30;
 }
-else
-  $('#gotvote_result').html('Checking whether vote has been received'+dotdot);
-  dotdot = dotdot.concat('.');
-});	
+else {
+    $('#gotvote_result').html('Checking if vote has been recieved in '+check_seconds);
+    check_seconds--;
 }
 
-var checkinterval = 1500 + Math.floor(Math.random()*1000);
+}
 
 //then set timer
 function stopRefreshReceived() {

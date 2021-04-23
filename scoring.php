@@ -89,6 +89,9 @@ h1, h2, h3, h4 {
 	display: inline-block;
 	width: 100px;
 }
+.ballot_links_preview {
+	display: none;
+}
 </style>
 </head>
 <body>
