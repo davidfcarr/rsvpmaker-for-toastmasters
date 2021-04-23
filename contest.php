@@ -600,6 +600,8 @@ if(empty($order))
 if(!empty($judges))
 	echo '<div id="score_status"></div><div id="scores">'.toast_scoring_update_get($post->ID).'</div>';
 	//<button id="scoreupdate">Update</button>
+echo '<p><button id="votecheck">Start</button> checking for votes</p>';
+
 if(isset($_POST['hide_ballot_links']))
 {
 	$nolinks = (int) $_POST['hide_ballot_links'];
@@ -758,6 +760,8 @@ foreach($judges as $key => $value)
 	}
 	$v = add_query_arg(array('scoring' => 'voting','judge' => $key,'reset' => 1),get_permalink($practice_contest));
 	$links .= sprintf('<p>%s <a target="_blank" href="%s">%s</a></p>','Practice Contest Ballot for '.$name,$v,$v);
+
+	$links .= '<p>See this <a href="https://www.wp4toastmasters.com/knowledge-base/digital-ballot-for-toastmasters-contests/">tutorial</a> on how the digital ballot works.</a>';
 	//$email_links .= $links;
 	$email_links .= wpt_contest_emaillinks($links,$key,'judge',$value); // value is user id or name
 	echo '</div>';
@@ -921,6 +925,10 @@ do_action('wpt_contest_judges_form');
 	foreach($judges as $index => $value)
 	{
 		$selected_option = '';
+		if(!empty($tiebreaker) && ($tiebreaker == $index))
+			$s = ' checked="checked" ';
+		else
+			$s = '';
 		if(isset($_GET['debug']))
 			printf('<div>%s %s</div>',$index,$value);
 		if(is_numeric($value)) {
@@ -928,13 +936,15 @@ do_action('wpt_contest_judges_form');
 			$name = get_member_name($value);
 			$open = 'Open';
 			$selected_option = sprintf('<option value="%s">%s</option>',$user,$name);
+			printf('<p><input type="hidden" name="judge[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$name,$index,$s,$index);
 		}
 		else {
 			$user = 0;
 			$name = $value;
 			$open = 'Guest';
+			printf('<p><input type="hidden" name="judge[%s]" value="%s" /><input type="hidden" name="judge_name[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$index,$name,$name,$index,$s,$index);
 		}
-		if(isset($_GET['debug']))
+/*		if(isset($_GET['debug']))
 			printf('<div>%s %s - user %s open %s</div>',$index,$value,$user,$open);
 		if(!empty($tiebreaker) && ($tiebreaker == $index))
 			$s = ' checked="checked" ';
@@ -943,7 +953,9 @@ do_action('wpt_contest_judges_form');
 		$drop = str_replace('user','judge['.$index.']',$genericdrop);//awe_user_dropdown ('judge['.$index.']', $user, true, $open);
 		if(!empty($selected_option))
 			$drop = preg_replace('/<select[^>]+>/','$0'.$selected_option,$drop);
-		printf('<p><input type="hidden" name="judge[%s]" value="%s" /><input type="hidden" name="judge_name[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$index,$name,$name,$index,$s,$index);
+*/
+		//printf('<p><input type="hidden" name="judge[%s]" value="%s" /><input type="hidden" name="judge_name[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$index,$name,$name,$index,$s,$index);
+		//printf('<p><input type="hidden" name="judge[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$name,$index,$s,$index);
 	}
 	$t = time();
 	for($i= 0; $i < 15; $i++)
@@ -1345,45 +1357,8 @@ echo '</form>';
 $order = get_post_meta($post->ID,'tm_scoring_order',true);
 if(empty($order))
 	{
-		echo '<p>Refresh this page once the contestant order has been set.</p>';
-?>
-<div id="order_status"></div>
-<script>
-jQuery(document).ready(function($) {
-
-function refreshOrder() {
-$('#score_status').html('Checking for contestant order ...');
-$.get( "<?php echo get_rest_url('/wptcontest/v1/order/'.$post->ID); ?>", function( data ) {
-console.log(data);
-if(Array.isArray(data)) {
-	$('#order_status').html('Order set, reload the page now if it does not do so automatically');
-	location.reload();	
-}
-else
-  $('#order_status').html('Order still not set');
-});	
-}
-
-setInterval(function(){
-  refreshOrder();	
-}, 10000);
-	
-$('#track_role').on('change', function(){
-var role = $(this).val();
-if(role == '')
-	{
-$('#role_track_status').html('');
-$('#manual_contestants').show();		
-	}
-else {
-$('#role_track_status').html('<p>Contestant names will be pulled from the '+role+' role on the agenda</p>');
-$('#manual_contestants').hide();	
-}
-});
-
-});
-</script>
-<?php		return ob_get_clean();
+	printf('<p>Contestant order not set. <a href="%s">Check Now</a></p>',site_url($_SERVER['REQUEST_URI']));
+return ob_get_clean();
 	}
 
 $scoring = get_post_meta($post->ID,'toast_contest_scoring',true);
@@ -1734,6 +1709,7 @@ function wpt_contest_emaillinks_post () {
 function wpt_contest_emaillinks($links,$code,$role, $user_id) {
 global $post;
 ob_start();
+	//printf("User ID $user_id");
 	if(is_numeric($user_id) && $user_id)
 	{
 	$userdata = get_userdata($user_id);
@@ -1755,8 +1731,9 @@ ob_start();
 	if($code == $tiebreaker)
 		$role = 'Tie Breaker';
 	$subject = 'IMPORTANT for your role in our contest: '.$role;
-	printf('<p class="email_links_new"><strong>Email links for %s to</strong> <input type="text" name="email_link[%s]" id="email_link%s" value="%s" /><br /><input type="text" name="email_subject[%s]" id="email_subject%s" value="%s" size="80" /><br />Note: <textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br /><button class="send_contest_link" id="%s" action="%s">Send to %s</button><div id="send_link_status%s"></div></p>'
-	,$name,$code,$code,$email,$code,$code,$subject,$code,$code,"Your role: $role\n\n".trim(strip_tags(str_replace("</p>","\n\n",$links),'<a><strong><h3>')),$code,get_rest_url(NULL,'wptcontest/v1/send_link'),$name,$code);
+	printf('<p class="email_links_new"><strong>Email links for %s to</strong> <input type="text" name="email_link[%s]" id="email_link%s" value="%s" /><br /><input type="text" name="email_subject[%s]" id="email_subject%s" value="%s" size="80" /><br />Note:<br /><textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br /><button class="send_contest_link" id="%s" action="%s">Send to %s</button> / <button class="show_ballot_links_preview" id="p%s">Show previews</button><div id="send_link_status%s"></p></div></p>'
+	,$name,$code,$code,$email,$code,$code,$subject,$code,$code,"Your role: $role\n\n".trim(strip_tags(str_replace("</p>","\n\n",$links),'<a><strong><h3>')),$code,get_rest_url(NULL,'wptcontest/v1/send_link'),$name,$code,$code);
+	echo '<div class="ballot_links_preview">'.$links.'</div>';
 return ob_get_clean();
 }
 
