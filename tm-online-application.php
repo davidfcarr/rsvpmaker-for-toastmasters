@@ -1,7 +1,7 @@
 <?php
 
 function tm_member_application ($atts) {
-fix_timezone();
+rsvpmaker_fix_timezone();
 if(isset($_GET['rsvpstripeconfirm']))
     return; // let rsvpmaker show payment message
 
@@ -407,7 +407,7 @@ submit_button(); ?>
 }
 
 function verification_by_officer () {
-fix_timezone();
+rsvpmaker_fix_timezone();
 ob_start();
 ?>
 <p><strong>Verification of Club Officer</strong></p>

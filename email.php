@@ -394,7 +394,7 @@ $content = apply_filters('email_agenda',$content);
 		$time_format = $dateformat .' at '.$rsvp_options["time_format"];
 	else
 		$time_format = $dateformat;
-	fix_timezone();
+	rsvpmaker_fix_timezone();
 	$date = rsvpmaker_date($time_format, rsvpmaker_strtotime($row->datetime) );
 	
 	$header = '<!DOCTYPE html>

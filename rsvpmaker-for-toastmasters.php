@@ -1449,7 +1449,7 @@ function tm_get_histories () {
 
 
 function wp4t_get_member_status($member_id) {
-fix_timezone();
+rsvpmaker_fix_timezone();
 $exp = (int) get_user_meta($member_id,'status_expires',true);
 if(current_time('timestamp') > $exp)
 	{
@@ -1463,7 +1463,7 @@ return get_user_meta($member_id,'status',true).' '.__('expires','rsvpmaker-for-t
 function wp4t_set_member_status($member_id,$status,$status_expires) {
 if(empty($status) || empty($status_expires))
 	return;
-fix_timezone();
+rsvpmaker_fix_timezone();
 update_user_meta($member_id,'status_expires',strtotime($status_expires));
 update_user_meta($member_id,'status',stripslashes($status));
 }
@@ -2143,7 +2143,7 @@ foreach($results as $row)
 
 
 $wpdb->show_errors();
-fix_timezone();
+rsvpmaker_fix_timezone();
 $now = date('Y-m-d H:i:s');
 	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_value as template
 	 FROM ".$wpdb->posts."
@@ -3410,7 +3410,7 @@ function register_wp4toastmasters_settings() {
 					if(sizeof($future))
 						{
 						$next = $future[0];
-						fix_timezone();
+						rsvpmaker_fix_timezone();
 						$timestamp = rsvpmaker_strtotime($next->datetime .' -'.$hours.' hours');
 						wp_schedule_event( $timestamp, 'weekly', 'wp4toast_reminders_cron', array( $next->ID.':'.$hours ) );
 						update_option('wp4toast_reminders_cron', 1);
@@ -3442,7 +3442,7 @@ function register_wp4toastmasters_settings() {
 					if(sizeof($future))
 						{
 						$next = $future[0];
-						fix_timezone();
+						rsvpmaker_fix_timezone();
 						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $next->ID.':'.$hours ) );
 						update_option('wp4toast_reminders_cron', 1);
 						}
@@ -3461,7 +3461,7 @@ function wp4toast_reminders_cron_status() {
 global $rsvp_options;
 $cron = get_option('cron');
 $output = '';
-//fix_timezone();
+//rsvpmaker_fix_timezone();
 $post = next_toastmaster_meeting();
 if(empty($post))
 	return 'No future meeting events registered';
@@ -3496,7 +3496,7 @@ function wp4toast_reminders_dst_fix ($args = array()) {
 					if(sizeof($future))
 						{
 						$next = $future[0];
-						fix_timezone();
+						rsvpmaker_fix_timezone();
 						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $next.':'.$hours ) );
 						}
 				}
@@ -3518,7 +3518,7 @@ function wp4toast_reminders_dst_fix ($args = array()) {
 					$fudge = $hours + 1;
 					if(!empty($next))
 						{
-						fix_timezone();
+						rsvpmaker_fix_timezone();
 						wp_schedule_event( strtotime($next->datetime .' -'.$hours.' hours'), 'weekly', 'wp4toast_reminders_cron', array( $next->ID.':'.$hours ) );
 						}
 				}	

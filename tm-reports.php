@@ -4100,7 +4100,7 @@ if(isset($_GET['joutcode']) || ($jt < time()))
 	$joutcode = rand().':'.$jt;
 	update_option('joutcode',$joutcode);
 }
-fix_timezone();
+rsvpmaker_fix_timezone();
 global $rsvp_options;
 printf('<p><strong>Step 1. Export:</strong> To move your club\'s member records to another website that also uses this software, copy this web address:</p>
 <pre>%s</pre>
@@ -4145,7 +4145,7 @@ $last = (isset($_REQUEST["archive"])) ? '' : get_option('archive_site_user_roles
 $users = get_club_members();//get_members ?
 foreach($users as $user)
 	archive_legacy_roles_usermeta($user->ID,$last);
-fix_timezone();
+rsvpmaker_fix_timezone();
 update_option('archive_site_user_roles',date('Y-m-d G:i:s'));
 }
 
@@ -4308,7 +4308,7 @@ if($_POST["date"])
 			$new_key = str_replace($event_date,$_POST["date"]. ' 00:00:00',$_POST["tm_details_update_key"]);
 			$sql = "UPDATE $wpdb->usermeta set meta_key='$new_key' WHERE user_id=$user_id AND meta_key='".$_POST["tm_details_update_key"]."'";
 			$wpdb->query($sql);
-			fix_timezone();
+			rsvpmaker_fix_timezone();
 			$date = rsvpmaker_date($rsvp_options["long_date"],strtotime($_POST["date"])) . ' (changed date)';
 			add_user_meta($user_id,'wp4t_stats_delete',$_POST["tm_details_update_key"]);
 		}

@@ -1,4 +1,5 @@
 <?php
+
 function refresh_tm_history () {
 	$histories = tm_get_histories();
 	update_option('tm_histories',$histories);
@@ -1426,8 +1427,6 @@ function get_agenda_timing($post_id) {
 	return $time_array;
 
 }
-
-
 
 function is_edit_roles() {
 
