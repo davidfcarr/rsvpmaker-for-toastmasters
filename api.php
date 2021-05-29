@@ -120,6 +120,8 @@ class WPTContest_VoteCheck extends WP_REST_Controller {
   
 	public function get_items_permissions_check($request) {
 		global $current_user;
+		if(current_user_can('manage_options'))
+			return true;
 		$post_id = $request['post_id'];
 		$dashboard_users = get_post_meta($post_id,'tm_contest_dashboard_users',true);
 		return in_array($current_user->ID,$dashboard_users);
@@ -300,7 +302,7 @@ class Editor_Assign extends WP_REST_Controller {
 		delete_post_meta($post_id,'_title'.$role);
 		delete_post_meta($post_id,'_intro'.$role);
 		}
-	if(time() > strtotime($timestamp))
+	if(time() > rsvpmaker_strtotime($timestamp))
 		{
 		$key = make_tm_usermeta_key ($role, $timestamp, $post_id);
 		$roledata = make_tm_roledata_array ('wp_ajax_editor_assign');
@@ -575,7 +577,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 	if(isset($_GET['post_id'])) {
 			global $rsvp_options;
 			$post = get_post($_GET['post_id']);	
-			$time_format = str_replace('%Z','',$rsvp_options['time_format']);
+			$time_format = str_replace('T','',$rsvp_options['time_format']);
 			if(rsvpmaker_is_template($post->ID)) {
 				$sked = get_template_sked($post->ID);
 				$date = '2030-01-01 '.$sked['hour'].':'.$sked['minutes'];
@@ -619,9 +621,9 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			foreach($data as $d) {
 				$t = $ts_start + ($elapsed * 60);
 				$waselapsed = $elapsed;
-				$start_time_text = rsvpmaker_strftime($time_format,$t);
+				$start_time_text = date($time_format,$t);
 				if(!$start_time_text)
-					$start_time_text = rsvpmaker_date('h:i A',$t);
+					$start_time_text = date('h:i A',$t);
 				$start_time = $elapsed;
 		
 				$time_allowed = (empty($d['time_allowed'])) ? 0 : (int) $d['time_allowed'];
@@ -658,10 +660,10 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 				$block_count++;
 			}
 			$t = $ts_start + ($elapsed * 60);
-			$start_time_text = rsvpmaker_strftime($time_format,$t);
-			$start_time_text = rsvpmaker_strftime($time_format,$t);
+			$start_time_text = date($time_format,$t);
+			$start_time_text = date($time_format,$t);
 			if(!$start_time_text)
-				$start_time_text = rsvpmaker_date('h:i A',$t);
+				$start_time_text = date('h:i A',$t);
 			
 			$output[] = array('label' => 'End', 'time' => $start_time_text, 'elapsed' => $elapsed, 'add' => 0);
 		return new WP_REST_Response($output, 200);	

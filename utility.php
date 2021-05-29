@@ -1365,7 +1365,7 @@ function get_agenda_timing($post_id) {
 
 	global $rsvp_options;
 
-	$time_format = str_replace('%Z','',$rsvp_options['time_format']);
+	$time_format = str_replace('T','',$rsvp_options['time_format']);
 
 	$post = get_post($post_id);
 
@@ -1381,7 +1381,7 @@ function get_agenda_timing($post_id) {
 
 		$t = strtotime($date.' +'.$elapsed.' minutes');
 
-		$start_time_text = strftime($time_format,$t);
+		$start_time_text = rsvpmaker_date($time_format,$t);
 
 		$start_time = $elapsed;
 
@@ -1551,7 +1551,7 @@ function wpt_get_last_login($user_id) {
 
 	$last = get_user_meta($user_id,$slug,true);
 
-	return rsvpmaker_strftime($rsvp_options['long_date'].' '.rsvp_options['time_format'],$last);
+	return rsvpmaker_date($rsvp_options['long_date'].' '.rsvp_options['time_format'],$last);
 
 }
 

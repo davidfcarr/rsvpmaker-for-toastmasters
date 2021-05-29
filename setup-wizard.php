@@ -8,8 +8,6 @@ function wp4t_setup_wizard_no_distrations() {
 
 }
 
-
-
 add_action('admin_init','wp4t_setup_wizard_no_distrations');
 
 
@@ -365,20 +363,18 @@ if($rsvp) {
         if(!strpos($post->post_content,'wp:rsvpmaker/event'))
 
         {
-
-        $update['post_content'] = '<!-- wp:heading -->
-
-<h2 id="visit">Visit as a Guest</h2>
-
-<!-- /wp:heading -->
-
-
-
-<!-- wp:rsvpmaker/event {"post_id":"nextrsvp","one_format":"compact"} /-->
-
-            
-
-'.$post->post_content;
+        
+        $invite = '<!-- wp:heading -->
+        <h2 id="visit">Visit as a Guest</h2>
+        <!-- /wp:heading -->
+        
+        <!-- wp:rsvpmaker/next-events /-->
+        
+        ';
+        if(strpos($post->post_content,'<!-- invite widget -->'))
+            $update['post_content'] = str_replace('<!-- invite widget -->',$invite,$post->post_content);
+        else
+            $update['post_content'] = $invite.$post->post_content;
 
         $update['ID'] = $frontpage_id;
 
@@ -574,7 +570,7 @@ function wpt_setup_wizard_1 () {
 
     <form method="post" action="<?php echo admin_url('admin.php?page=wp4t_setup_wizard'); ?>">
 
-    <p><label>Welcome and Introductions</label> Time Allowed <input type="number" name="time_open" value="5" /></p>
+    <p><img src="<?php echo plugins_url('images/noun_welcome_882790-50.png',__FILE__); ?>"> <label>Welcome and Introductions</label> Time Allowed <input type="number" name="time_open" value="5" /></p>
 
     <p>Toastmaster of the Day introduces self, other role players. Time Allowed <input type="number" name="time_tod" value="5" /></p>
 
@@ -584,9 +580,9 @@ function wpt_setup_wizard_1 () {
 
     </p>
 
-    <p><label>Number of Speakers and Evaluators at a Typical Meeting </label> <input name="numberspeakers"  type="number" value="3" ></p>
+    <p><img src="<?php echo plugins_url('images/noun_public-speaking_1681645-50.png',__FILE__); ?>"> <label>Number of Speakers and Evaluators at a Typical Meeting </label> <input name="numberspeakers"  type="number" value="3" ></p>
 
-    <p><label>Topics Master leads Table Topics</label> <select name="tabletopics">
+    <p><img src="<?php echo plugins_url('images/noun_Microphone_3953338-50.png',__FILE__); ?>"> <label>Topics Master leads Table Topics</label> <select name="tabletopics">
 
     <option value="before">before speakers</option>
 
@@ -616,7 +612,7 @@ function wpt_setup_wizard_1 () {
 
     <p><label>Reports</label><br /> <textarea name="reports" style="width: 80%;">General Evaluator calls for reports from supporting players. General Evaluator then gives an overall evaluation of the meeting.</textarea><br />Time Allowed <input name="time_ge" value="5"  type="number"  /></p>
 
-    <p><label>Meeting Closing Activities</label><br /> <textarea name="closing" style="width: 80%;">Toastmaster of the Day presents the awards. President or Presiding officer closes the meeting.</textarea><br />Time Allowed <input name="time_closing" value="4"  type="number" /></p>
+    <p><img src="<?php echo plugins_url('images/noun_Award_2887079-50.png',__FILE__); ?>"> <label>Meeting Closing Activities</label><br /> <textarea name="closing" style="width: 80%;">Toastmaster of the Day presents the awards. President or Presiding officer closes the meeting.</textarea><br />Time Allowed <input name="time_closing" value="4"  type="number" /></p>
 
     <p><label>Include Theme and/or Word of the Day on the Agenda</label> <input type="radio" name="theme" value="1" checked="checked" /> Yes <input type="radio" name="theme" value="0" > No
 
@@ -624,7 +620,7 @@ function wpt_setup_wizard_1 () {
 
     <p><label>Include Member Absences Widget</label> <input type="radio" name="absences" value="1" checked="checked" /> Yes <input type="radio" name="absences" value="0" > No</p>
 
-    <p><label>Invite Guests to Register Online</label> <input type="radio" name="invite" value="1" checked="checked" /> Yes <input type="radio" name="invite" value="0" > No</p>
+    <p><img src="<?php echo plugins_url('images/noun_Registration_2018816-50.png',__FILE__); ?>"> <label>Invite Guests to Register Online</label> <input type="radio" name="invite" value="1" checked="checked" /> Yes <input type="radio" name="invite" value="0" > No</p>
 
     <p><label>Show timezone on events (recommended for online clubs)</label> <input type="radio" name="timezone" value="1" checked="checked" /> Yes <input type="radio" name="timezone" value="0" > No</p>
 
@@ -639,7 +635,7 @@ function wpt_setup_wizard_1 () {
     <?php submit_button('Next'); ?>
 
     </form>
-
+    <p><em>Icons from <a href="https://thenounproject.com/">The Noun Project</a>: "welcome" by Gan Khoon Lay, "public speaking" by Becris, "Microphone" by Nawicon, "Award" by Flatart, "Registration" by Shiva.</em></p>
     <?php    
 
 }
@@ -792,9 +788,9 @@ function wpt_setup_wizard_3 () {
 
     <ul>
 
-    <li><a target="_blank" href="<?php echo admin_url('post.php?post='.$frontpage_id.'&action=edit'); ?>">Edit your home page</a> - tell everyone what makes your club special! <a target="_blank" href="">Learn about the WordPress editor</a>.</li>
+    <li><a target="_blank" href="<?php echo admin_url('post.php?post='.$frontpage_id.'&action=edit'); ?>">Edit your home page</a> - tell everyone what makes your club special! <a target="_blank" href="https://wordpress.org/support/article/wordpress-editor/">Learn about the WordPress editor</a>.</li>
 
-    <li>View the <a target="_blank" href="<?php echo get_permalink($next); ?>">signup page</a> and <a target="_blank" href="<?php echo get_permalink($next); ?>?print_agenda=1&no_print=1">agenda</a> for a meeting. Try signing up for a role. Explore the different options on the agenda menu, such as how to email it to the club. Ask club officers or other trusted users to test these features as well.</li>
+    <li>View the <a target="_blank" href="<?php echo get_permalink($next); ?>">role signup page</a> for a meeting and <a target="_blank" href="<?php echo get_permalink($next); ?>?print_agenda=1&no_print=1">agenda</a> for a meeting. Try signing up for a role. Explore the different options on the agenda menu, such as how to email it to the club. Ask club officers or other trusted users to test these features as well.</li>
 
     <li>Once things are starting to look good, <a target="_blank" href="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">add members</a> to your club website. You can save time by importing the member roster spreadsheet you can get from Club Central on toastmasters.org. <a target="blank" href="https://www.wp4toastmasters.com/2018/10/05/video-how-to-import-your-member-list-then-add-and-accounts-after-dues-renewal/">Learn How</a></li>
 

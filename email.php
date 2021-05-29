@@ -39,7 +39,7 @@ function email_with_without_role ($meeting_hours,$test = false) {
 	if(empty($next))
 		return;
 	$t = rsvpmaker_strtotime(get_rsvp_date($next->ID));
-	$date = rsvpmaker_strftime($rsvp_options['short_date'],$t);
+	$date = rsvpmaker_date($rsvp_options['short_date'],$t);
 	$post = $next;
 	$dupkey = 'email_reminder_'.$meeting_hours;
 	if(get_post_meta($post->ID,$dupkey,true))
@@ -235,8 +235,8 @@ if($toastmaster && is_numeric($toastmaster))
 		}
 	$title = get_post_meta($post_id, '_title'.$field, true);
 	
-	$t = strtotime(get_rsvp_date($post_id));
-	$date = strftime($rsvp_options["short_date"],$t);
+	$t = rsvpmaker_strtotime(get_rsvp_date($post_id));
+	$date = rsvpmaker_date($rsvp_options["short_date"],$t);
 	$userdata = get_userdata($toastmaster);
 	$url = get_permalink($post_id);
 	
@@ -265,7 +265,7 @@ global $current_user;
 global $wpdb;
 global $rsvp_options;
 $datetime = get_rsvp_date($post_id);
-$meetingdate = strftime($rsvp_options["short_date"],strtotime($datetime));
+$meetingdate = rsvpmaker_date($rsvp_options["short_date"],rsvpmaker_strtotime($datetime));
 	if(!is_numeric($user_id))
 		return;
 	$speakerdata = get_userdata($user_id);
@@ -330,7 +330,7 @@ function tm_recommend_send($name,$value,$permalink,$count,$post_id,$editor_id) {
 		$_SESSION[$invite_check] = 1;
 		
 		$date = get_rsvp_date($post_id);
-		$date = strftime($rsvp_options['long_date'],strtotime($date));
+		$date = rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($date));
 		$neatname = trim(preg_replace('/[_\-0-9]/',' ',$name));
 		$user = get_userdata($editor_id);
 		$msg = sprintf('<p>Toastmaster %s %s %s %s %s %s</p>',$user->first_name,$user->last_name,__('has recomended you for the role of','rsvpmaker-for-toastmasters'),$neatname, __('for','rsvpmaker-for-toastmasters'),$date);
@@ -388,14 +388,14 @@ $content = apply_filters('email_agenda',$content);
 	$permalink = rsvpmaker_permalink_query($post_id);
 	$row = get_rsvp_event(" ID = $post_id ");
 	//year not necessary in this context
-	$dateformat = str_replace(', ','',str_replace('%Y','',$rsvp_options["long_date"]));
+	$dateformat = str_replace(', ','',str_replace('Y','',$rsvp_options["long_date"]));
 
 	if(get_option('wp4toastmasters_agenda_timezone'))
 		$time_format = $dateformat .' at '.$rsvp_options["time_format"];
 	else
 		$time_format = $dateformat;
 	fix_timezone();
-	$date = strftime($time_format, strtotime($row->datetime) );
+	$date = rsvpmaker_date($time_format, rsvpmaker_strtotime($row->datetime) );
 	
 	$header = '<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -514,7 +514,7 @@ function backup_speaker_notify($assigned) {
 		return;
 	
 		$datetime = get_rsvp_date($post->ID);
-		$meetingdate = strftime($rsvp_options["short_date"],strtotime($datetime));
+		$meetingdate = rsvpmaker_date($rsvp_options["short_date"],rsvpmaker_strtotime($datetime));
 	
 		$meeting_leader = get_post_meta($post->ID, 'meeting_leader', true);
 		if(empty($meeting_leader))

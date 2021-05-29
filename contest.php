@@ -47,7 +47,7 @@ function toast_contest ($mode) {
 	$date = get_rsvp_date($post->ID);
 	$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
 	$dashboard_name = (empty($contest_name)) ? $post->post_title : $contest_name;
-	$date = strftime($rsvp_options['long_date'],strtotime($date));
+	$date = rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($date));
 	$output = '<div id="scoring">';
 	$practice = get_practice_contest_links();
 	$output .= wpt_mycontests_links($practice);
@@ -409,7 +409,13 @@ if(isset($_POST['track_role']))
 }
 else
 	$track_role = get_post_meta($post->ID,'tm_track_role',true);
-	
+
+if(isset($_POST['make_order'])) {
+	//don't keep checking against agenda
+	$track_role = '';
+	delete_post_meta($post->ID,'tm_track_role');
+}
+
 if(isset($_POST['remove']))
 {
 	update_post_meta($post->ID,'tm_judges_removed',$_POST['remove']);
@@ -597,10 +603,10 @@ if(isset($_POST['resetit']))
 if(empty($order))
 	$order = get_post_meta($post->ID,'tm_scoring_order',true);	
 
-if(!empty($judges))
+if(!empty($judges) && !empty($order)) {
+	echo '<p><button id="votecheck">Start</button> checking for votes</p>';
 	echo '<div id="score_status"></div><div id="scores">'.toast_scoring_update_get($post->ID).'</div>';
-	//<button id="scoreupdate">Update</button>
-echo '<p><button id="votecheck">Start</button> checking for votes</p>';
+}
 
 if(isset($_POST['hide_ballot_links']))
 {
@@ -1326,7 +1332,7 @@ else
 	$votes = get_post_meta($post->ID,'tm_scoring_vote'.$id,true);
 if(is_array($votes) && !isset($_GET['judge_id']))
 {
-	printf('<form action="%s" method="post">',site_url($_SERVER['REQUEST_URI']));
+	printf('<form action="%s" method="post">',$votinglink.'&check='.time());
 	echo '<h2>Recorded</h2>';
 	echo '<div id="gotvote_result" style="font-style: italic; font-weight: bold; padding: 20px;"></div>';
 	foreach($votes as $index => $vote)
@@ -1357,7 +1363,7 @@ echo '</form>';
 $order = get_post_meta($post->ID,'tm_scoring_order',true);
 if(empty($order))
 	{
-	printf('<p>Contestant order not set. <a href="%s">Check Now</a></p>',site_url($_SERVER['REQUEST_URI']));
+	printf('<p>Contestant order not set. <a href="%s">Check Now</a></p>', add_query_arg(array('scoring'=>'voting','judge'=>$judge,'check'=>time()),get_permalink()) ); //  site_url($_SERVER['REQUEST_URI'])
 return ob_get_clean();
 	}
 
@@ -1424,7 +1430,7 @@ for($i= 1; $i <= $max; $i++)
 	printf('<div><select class="voteselect" name="vote[]"><option value="">Vote #%d</option>%s</select></div>',$i,$vote_opt);
 global $rsvp_options;
 ?>
-<div><label>Signature:</label> <input type="text" name="signature" id="signature"> <br /><label>Date:</label> <input type="text" name="signature_date" value="<?php echo rsvpmaker_strftime($rsvp_options['long_date'],time()); ?>" />
+<div><label>Signature:</label> <input type="text" name="signature" id="signature"> <br /><label>Date:</label> <input type="text" name="signature_date" value="<?php echo rsvpmaker_date($rsvp_options['long_date'],time()); ?>" />
 <br /><em>By typing your name and verifying the date, you are signing this ballot as your official vote</em></div>
 
 <div id="readyprompt"></div>
@@ -1535,7 +1541,7 @@ function judge_import_form($action) {
 			if($contest_users && !in_array($current_user->ID,$contest_users))
 				continue;
 			$date = get_rsvp_date($event->ID);
-			$opt .= sprintf('<option value="%d">%s %s</option>',$event->ID,$event->post_title,rsvpmaker_strftime('',$date));
+			$opt .= sprintf('<option value="%d">%s %s</option>',$event->ID,$event->post_title,rsvpmaker_date('',$date));
 		}
 		if(!empty($opt) && empty(get_post_meta($post->ID,'tm_contest_sync',true)))
 			printf('<form action="%s" method="post"><h3>Import judges/settings (optional)</h3><p><select name="importfrom">%s</select></p>

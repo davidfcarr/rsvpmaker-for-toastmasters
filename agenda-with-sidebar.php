@@ -27,7 +27,7 @@ if(!isset($custom["_sked"][0]))
 			echo "<p>$sql : $datestring </p>";
 		
 		}
-	$date = strftime($rsvp_options["long_date"], strtotime($datestring) );
+	$date = date($rsvp_options["long_date"], strtotime($datestring) );
 	}
 else
 	$date = ' ('.__('Template','rsvpmaker-for-toastmasters').')';

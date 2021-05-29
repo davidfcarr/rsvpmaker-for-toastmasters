@@ -472,7 +472,7 @@ if(isset($_POST["pathwaysnote"]))
 	$note = stripslashes($_POST["pathwaysnote"]);
 	$key = stripslashes($_POST["tmnote"]);
 	$author = get_userdata($current_user->ID);
-	$note .= "\n\n<em>".__('Added by','rspvpmaker-for-toastmasters').": ".$author->first_name.' '.$author->last_name.", ".strftime($rsvp_options["long_date"]).'</em>';
+	$note .= "\n\n<em>".__('Added by','rspvpmaker-for-toastmasters').": ".$author->first_name.' '.$author->last_name.", ".rsvpmaker_date($rsvp_options["long_date"]).'</em>';
 	add_user_meta($_GET['toastmaster'],$key,$note);
 }
 	
@@ -800,7 +800,7 @@ foreach($speeches as $s)
 		else
 			$buff = sprintf('<p>%s %s %s %s</p>',$manual, $project_text, $title, $button);
 		
-		$ts = strtotime($s->datetime);
+		$ts = rsvpmaker_strtotime($s->datetime);
 		$speech_array[$ts] = (empty($speech_array[$ts])) ? $buff : $speech_array[$ts] . $buff;
 	}
 
@@ -827,7 +827,7 @@ global $rsvp_options;
 $buff = "<h2>Speech List</h2>";
 krsort($speech_array);
 foreach($speech_array as $ts => $details)
-	$buff .= '<h3>'.strftime($rsvp_options["long_date"],$ts).'</h3>'.$details;
+	$buff .= '<h3>'.rsvpmaker_date($rsvp_options["long_date"],$ts).'</h3>'.$details;
 return $buff;
 }
 
@@ -862,7 +862,7 @@ printf('<div id="message" class="updated">
 	
 if(!empty($_POST["year"]))
 	{
-	$t = strtotime($_POST["year"].'-'.$_POST["month"].'-'.$_POST["day"].' 12:00:00');
+	$t = rsvpmaker_strtotime($_POST["year"].'-'.$_POST["month"].'-'.$_POST["day"].' 12:00:00');
 	$timestamp = date("Y-m-d H:i:s",$t);
 	$nextdate = post_user_role_archive ($timestamp);
 	$sql = "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE '%".$timestamp."%' order BY meta_key";
@@ -890,7 +890,7 @@ if(!empty($_REQUEST["history"]))
 	$month = date('n',$nextdate);
 	$day = date('j',$nextdate);
 	echo '<p>Year <select name="year">';
-	$yearback = (int) date('Y',strtotime('-10 year'));
+	$yearback = (int) date('Y',strtotime('-1 year'));
 	$yearnow = (int) date('Y');
 	for($i = $yearback; $i <= $yearnow; $i++)
 		{
@@ -991,7 +991,7 @@ if(isset($_REQUEST["post_id"]))
 	$r_post = get_post( $id );
 	$r_post->postID = $r_post->ID;
 	$time = get_rsvp_date( $id );
-	$r_post->date = strftime($rsvp_options["long_date"],strtotime($time));
+	$r_post->date = rsvpmaker_date($rsvp_options["long_date"],rsvpmaker_strtotime($time));
 	}
 else
 	{
@@ -1195,7 +1195,7 @@ function toastmasters_meeting_minutes () {
 		$r_post = get_post( $id );
 		$r_post->postID = $r_post->ID;
 		$time = get_rsvp_date( $id );
-		$r_post->date = strftime($rsvp_options["long_date"],strtotime($time));
+		$r_post->date = rsvpmaker_date($rsvp_options["long_date"],strtotime($time));
 		}
 	else
 		{
@@ -1533,7 +1533,7 @@ sort($dates);
 foreach($dates as $date)
 {
 	$t = strtotime($date);
-	$output .= '<div>'.strftime($rsvp_options['long_date'],$t).'</div>';
+	$output .= '<div>'.rsvpmaker_date($rsvp_options['long_date'],$t).'</div>';
 	$y = date('Y',$t);
 	if(empty($peryear[$y]))
 		$peryear[$y] = 0;
@@ -4104,7 +4104,7 @@ fix_timezone();
 global $rsvp_options;
 printf('<p><strong>Step 1. Export:</strong> To move your club\'s member records to another website that also uses this software, copy this web address:</p>
 <pre>%s</pre>
-<p>This link will expire at %s. (<a href="%s">reset</a>)</p>',site_url('?jout='.$joutcode.'&tm_export='.$nonce),strftime($rsvp_options['short_date'].' '.$rsvp_options['time_format'].' %Z',$jt),admin_url('admin.php?page=import_export&joutcode=1'));
+<p>This link will expire at %s. (<a href="%s">reset</a>)</p>',site_url('?jout='.$joutcode.'&tm_export='.$nonce),rsvpmaker_date($rsvp_options['short_date'].' '.$rsvp_options['time_format'].' T',$jt),admin_url('admin.php?page=import_export&joutcode=1'));
 ?>
 <p>The next step will take place on your new website.</p>
 <form method="post" action="<?php echo admin_url('admin.php?page=import_export'); ?>">
@@ -4309,7 +4309,7 @@ if($_POST["date"])
 			$sql = "UPDATE $wpdb->usermeta set meta_key='$new_key' WHERE user_id=$user_id AND meta_key='".$_POST["tm_details_update_key"]."'";
 			$wpdb->query($sql);
 			fix_timezone();
-			$date = strftime($rsvp_options["long_date"],strtotime($_POST["date"])) . ' (changed date)';
+			$date = rsvpmaker_date($rsvp_options["long_date"],strtotime($_POST["date"])) . ' (changed date)';
 			add_user_meta($user_id,'wp4t_stats_delete',$_POST["tm_details_update_key"]);
 		}
 }
@@ -4325,7 +4325,7 @@ if($post_id && ($domain = $_SERVER['SERVER_NAME']))
 		}
 	}
 if(empty($date))
-	$date = strftime($rsvp_options["long_date"],strtotime($event_date));
+	$date = rsvpmaker_date($rsvp_options["long_date"],strtotime($event_date));
 echo "<strong>Updating ".$role." for ".$date.'</strong>';
 printf('<br />%s<br />%s<br />%s<br />%s',$_POST["manual"], get_project_text($_POST["project"]), stripslashes($_POST["title"]),stripslashes($_POST["intro"]));
 echo ' <a href="'.admin_url("admin.php?page=toastmasters_reports&toastmaster=".$user_id).'">refresh</a> to see changes.';
@@ -4363,7 +4363,7 @@ if($post_id && ($domain = $_SERVER['SERVER_NAME']))
 			}
 		}
 	}
-echo "<strong>Deleting ".$role." for ".strftime($rsvp_options["long_date"],strtotime($event_date)).'</strong> <a href="'.admin_url("admin.php?page=toastmasters_reports&toastmaster=".$user_id).'">refresh</a> to see changes.';
+echo "<strong>Deleting ".$role." for ".rsvpmaker_date($rsvp_options["long_date"],strtotime($event_date)).'</strong> <a href="'.admin_url("admin.php?page=toastmasters_reports&toastmaster=".$user_id).'">refresh</a> to see changes.';
 wp_die();
 }
 
@@ -4532,7 +4532,7 @@ if(isset($_GET['start_date']))
 				if(isset($_REQUEST["debug"]))
 				$speech_details .= '<br />'.$row->meta_key;
 
-				$speech_details = '<p>'.strftime($rsvp_options["long_date"],strtotime($event_date)).'<br />'.$speech_details.'</p>';
+				$speech_details = '<p>'.rsvpmaker_date($rsvp_options["long_date"],strtotime($event_date)).'<br />'.$speech_details.'</p>';
 				if(empty($speeches[$manual]))
 					$speeches[$manual] = $speech_details;
 				else
@@ -4559,7 +4559,7 @@ if(isset($_GET['start_date']))
 				$form .= '<div style="color:red; border: thin solid red;">'.__('Possible duplicate','rsvpmaker-for-toastmasters').'</div>';
 			$lastdate = $event_date.$role;
 			$field = preg_replace('/[^a-zA-Z0-9]/','',$row->meta_key);
-			$form .= '<p id="delete'.$field.'"><strong>'.$role .' '.strftime($rsvp_options["long_date"],strtotime($event_date)).' </strong><button class="delete_tm_detail" key="'.$row->meta_key.'" status="'.$field.'">Delete</button></p>';
+			$form .= '<p id="delete'.$field.'"><strong>'.$role .' '.rsvpmaker_date($rsvp_options["long_date"],strtotime($event_date)).' </strong><button class="delete_tm_detail" key="'.$row->meta_key.'" status="'.$field.'">Delete</button></p>';
 			$form .= sprintf('<form class="tm_edit_detail" status="%s" method="post" action="%s" id="form'.$field.'"><input type="hidden" name="action" value="tm_edit_detail"><input type="hidden" name="tm_details_update_key" class="tm_details_update_key" id="key_%s" value="%s" /><input type="hidden" name="user_id" id="user_id_%s" value="%d">',$field,admin_url('admin.php?page=toastmasters_reports&toastmaster=').$user_id,$row->meta_key,$row->meta_key,$field,$user_id);
 			if(($role == 'Speaker') && !empty($roledata['manual']))
 				{
@@ -4644,7 +4644,7 @@ else
 	$timestamp = get_rsvp_date($meeting_id);
 	$t = (empty($timestamp)) ? time() : strtotime($timestamp);
 }
-$date = strftime($rsvp_options["long_date"],$t);
+$date = rsvpmaker_date($rsvp_options["long_date"],$t);
 $slug = $project;
 	
 $name = $project_text;
@@ -4886,7 +4886,7 @@ if(!empty($_POST['eval_project']))
 	if($meeting_id)
 	{
 		$ts = strtotime(get_rsvp_date($meeting_id));
-		$date = strftime($rsvp_options["long_date"],$ts);
+		$date = rsvpmaker_date($rsvp_options["long_date"],$ts);
 	}
 	$message .= sprintf('<p>%s <br />%s</p>',$project_text, $date);
 	$evaluator = get_userdata($_POST['evaluator']);
@@ -5285,7 +5285,7 @@ echo '<h3>Evaluations of My Speeches</h3>';
 		$project = $parts[2];
 		$project_text = get_project_text($project);
 		$excerpt = substr(strip_tags($row->meta_value),0,200);
-		printf('<p><a target="_blank" href="%s">%s %s</a><br />%s</p>', site_url('?show_evaluation='.$key), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)), $excerpt )."\n";
+		printf('<p><a target="_blank" href="%s">%s %s</a><br />%s</p>', site_url('?show_evaluation='.$key), $project_text, rsvpmaker_date($rsvp_options["long_date"], strtotime($timestamp)), $excerpt )."\n";
 	}
 }
 
@@ -5308,7 +5308,7 @@ echo '<h3>My Evaluations of Others</h3>';
 		$project = $parts[2];
 		$project_text = get_project_text($project);
 		$excerpt = substr(strip_tags($row->meta_value),0,200);
-		printf('<p><a target="_blank" href="%s">%s %s</a><br />%s</p>', site_url('?show_evaluation='.$key.'&member_id='.$row->user_id), $project_text, strftime($rsvp_options["long_date"], strtotime($timestamp)),$excerpt )."\n";
+		printf('<p><a target="_blank" href="%s">%s %s</a><br />%s</p>', site_url('?show_evaluation='.$key.'&member_id='.$row->user_id), $project_text, rsvpmaker_date($rsvp_options["long_date"], strtotime($timestamp)),$excerpt )."\n";
 	}
 }
 ?>
@@ -6263,7 +6263,7 @@ if(isset($_GET['report']))
 		if(!empty($title))
 			$title = ', "'.$title.'"';
 		$keydata = explode('|',$speech->meta_key);
-		$date = strftime($rsvp_options['long_date'],strtotime($keydata[2]));
+		$date = rsvpmaker_date($rsvp_options['long_date'],strtotime($keydata[2]));
 		
 		printf('<p><strong>%s%s</strong><br />%s %s<br />%s</p>',$name,$title,$manual,$project_text, $date);
 	}
@@ -7030,16 +7030,18 @@ function wpt_dues_report () {
 			
 	$month = (int) date('n');
 	$year = (int) date('Y');
-	if($month < 5) {
+	if($month < 8) {
 		$paid_until = '9/30/'.$year;
 		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-09-30';
 		$renewal_start = date('Y').'-01-01 00:00:00';
 	}
 	else {
-		$paid_until = '3/31/'.$year++;
+		$year++;
+		$paid_until = '3/31/'.$year;
 		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-03-31';
 		$renewal_start = date('Y').'-07-01 00:00:00';
 	}
+	printf('<p>Checking for Dues Paid Through %s</p>',$paid_until);
 	printf('<input type="hidden" id="tipaymentkey" value="%s" />',$ti_paid_key);
 	if(isset($_POST[$ti_paid_key])) {
 		foreach($_POST[$ti_paid_key] as $member_id => $amount) 
@@ -7215,14 +7217,6 @@ function wpt_dues_reminders () {
 function wpt_stripe_transactions () {
 	$transactions = rsvpmaker_stripe_transactions_list();
 	if($transactions) {
-	$month = (int) date('n');
-	$year = (int) date('Y');
-	if($month < 5) {
-		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-09-30';
-	}
-	else {
-		$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-03-31';
-	}
 	
 	$transaction = (array) $transactions[0];
 	$th = '<tr>';
@@ -7239,13 +7233,24 @@ function wpt_stripe_transactions () {
 		$line = '';
 		$td .= '<tr>';
 		$transaction = (array) $transaction;
-		$paid_ti = get_user_meta($transaction['user_id'],$ti_paid_key,true);
 		if(!empty($transaction['metadata']) ) {
 			//could be used for paid to toastmasters amount
 			$metadata = unserialize($transaction['metadata']);
 			$transaction['metadata'] = var_export($metadata,true);
 		}
 
+		$t = strtotime($transaction['date']);
+		$month = (int) date('n',$t);
+		$year = (int) date('Y',$t);
+		if($month < 8) {
+			$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-09-30';
+		}
+		else {
+			$year++;
+			$ti_paid_key = 'TIpayment_'.get_current_blog_id().'_'.$year.'-03-31';
+		}
+		$paid_ti = get_user_meta($transaction['user_id'],$ti_paid_key,true);
+	
 		foreach($transaction as $column => $value) {
 		if(($column == 'id') || ($column == 'metadata') || ($column == 'status') || ($column == 'transaction_id') || ($column == 'user_id'))
 			continue;

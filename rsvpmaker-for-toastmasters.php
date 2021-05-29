@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.5.3
+Version: 4.5.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -132,8 +132,8 @@ global $rsvp_options;
 	$title = get_post_meta($post_id, '_title'.$field, true);
 	$intro = get_post_meta($post_id, '_intro'.$field, true);
 	
-	$t = strtotime(get_rsvp_date($post_id));
-	$date = strftime($rsvp_options["short_date"],$t);
+	$t = rsvpmaker_strtotime(get_rsvp_date($post_id));
+	$date = rsvpmaker_date($rsvp_options["short_date"],$t);
 	$url = get_permalink($post_id);
 	
 	$message = '<h2>'.$speaker->first_name.' '.$speaker->last_name."</h2>\n\n".$manual;
@@ -975,10 +975,10 @@ function toastmasters_agenda_display($atts, $assignments) {
 			$assigned = $values['assigned'];
 			$assignedto = $values['name'];
 			$i = $values['iteration'];
+		$className = (isset($atts['className'])) ? $atts['className'] : '';
 		if(isset($atts["indent"]) && $atts["indent"])
-			$output  .= "\n".'<div class="role-agenda-item indent">';
-		else
-			$output .= "\n".'<div class="role-agenda-item">';
+			$className.= " indent";
+		$output .= "\n".'<div class="role-agenda-item '.$className.'">';
 			if(isset($_GET['agendadebug']))
 			$output .= '<div style="color: red">Assigned: '.$assigned.'</div>';
 				
@@ -1038,10 +1038,10 @@ function toastmasters_agenda_display($atts, $assignments) {
 				$output .=  '<div class="role_agenda_note">'.$note."</div>";
 				}
 		if((strpos($field,'Evaluator') == 1) && get_option('wp4toastmasters_stoplight')) {
-			$output .= '<div>Each evaluator '.get_stoplight(2,3).'</div>';
+			$output .= '<div class="role-timing">Each evaluator '.get_stoplight(2,3).'</div>';
 		}
 		if((strpos($field,'Topics_Master') == 1) && get_option('wp4toastmasters_stoplight')) {
-			$output .= '<div>Each Table Topics Speaker '.get_stoplight(1,2).'</div>';
+			$output .= '<div class="role-timing">Each Table Topics Speaker '.get_stoplight(1,2).'</div>';
 		}
 		$output = apply_filters('agenda_role_bottom',$output,$field);
 		if($speaktime > $maxtime)
@@ -1338,11 +1338,13 @@ function tm_calc_time($minutes)
 				$time_count = strtotime($datetime);
 				//todo also end time
 			}
-		$start_time = strftime(str_replace('%Z','',$rsvp_options["time_format"]),$time_count);
+		$start_time = date(str_replace('T','',$rsvp_options["time_format"]),$time_count);
+		if(isset($_GET['debug']))
+			$start_time .= $rsvp_options["time_format"];
 		
 		$time_count = mktime( date("H",$time_count), date("i",$time_count) + $minutes, date("s",$time_count) + $seconds );
 		if(isset($_REQUEST["end"]))
-			$start_time .= '-'.strftime($rsvp_options["time_format"],$time_count);
+			$start_time .= '-'.date($rsvp_options["time_format"],$time_count);
 		return $start_time;
 }
 
@@ -1634,7 +1636,7 @@ if(!$post_id)
 if(!$post_id)
 	return;
 $timestamp = get_rsvp_date($post_id);
-$is_past = (time() > strtotime($timestamp));
+$is_past = (time() > rsvpmaker_strtotime($timestamp));
 
 if(isset($_POST["take_role"]) || isset($_POST["update_speaker_details"]))
 	{
@@ -3062,7 +3064,9 @@ wp4toastmasters_agenda_layout_check('custom'); //add layout post if doesn't alre
 $layout_id = get_option('rsvptoast_agenda_layout');
 if($layout_id && ($wp4toastmasters_agenda_layout == 'custom'))
 	printf('<br />&nbsp;<a href="%s">%s</a>',admin_url('post.php?action=edit&post='.$layout_id),__('Edit Custom Agenda Layout','rsvpmaker-for-toastmasters'));
-
+$layout_mod = get_the_modified_date('Y-m-d',$layout_id);
+if($layout_mod < '2021-05-05')
+	echo ' <input type="checkbox" name="set_layout_default" value="'.$layout_id.'"> '.__('Update to current default? (will overwrite customizations)','rsvpmaker-for-toastmasters');
 echo '<pre id="default_css">'.wpt_default_agenda_css().'</pre><br /><a id="default_css_show" href="#default_css">Show default CSS styles</a>';
 ?>
 </p>
@@ -3321,7 +3325,8 @@ function agenda_css_customization_form() {
 <?php echo get_option('wp4toastmasters_agenda_css'); ?>
 </textarea>
 <br /><?php _e('Examples','rsvpmaker-for-toastmasters'); ?>:<br /><code>p, div, li {font-size: 14px;}</code> - <?php _e('increase the default font size for all text','rsvpmaker-for-toastmasters'); ?>
-<br /><code>#agenda p, #agenda div, #agenda li  {font-size: 14px;}</code> - <?php _e('change the font size of the actual agenda but not the sidebar content','rsvpmaker-for-toastmasters'); ?>
+<br /><code>#agenda, #agenda p, #agenda div, #agenda li  {font-size: 14px;}</code> - <?php _e('change the font size of the actual agenda but not the sidebar content','rsvpmaker-for-toastmasters'); ?>
+<br /><code>#agenda-sidebar, #agenda-sidebar p, #agenda-sidebar div, #agenda-sidebar li  {font-size: 12px; font-family: Georgia, serif; }</code> - <?php _e('change the font for the agenda sidebar only','rsvpmaker-for-toastmasters'); ?>
 <br /><code>#agenda {border-left: thick dotted #000;}</code> - <?php _e('add a dotted black line to the left of sidebar','rsvpmaker-for-toastmasters'); ?>
 </p>
 <?php
@@ -3406,7 +3411,7 @@ function register_wp4toastmasters_settings() {
 						{
 						$next = $future[0];
 						fix_timezone();
-						$timestamp = strtotime($next->datetime .' -'.$hours.' hours');
+						$timestamp = rsvpmaker_strtotime($next->datetime .' -'.$hours.' hours');
 						wp_schedule_event( $timestamp, 'weekly', 'wp4toast_reminders_cron', array( $next->ID.':'.$hours ) );
 						update_option('wp4toast_reminders_cron', 1);
 						}
@@ -3445,6 +3450,11 @@ function register_wp4toastmasters_settings() {
 
 
 		}
+		if(isset($_POST['set_layout_default'])) {
+			$agenda['ID'] = (int) $_POST['set_layout_default'];
+			$agenda['post_content'] = wpt_custom_layout_default();
+			wp_update_post($agenda);
+		}
 }
 
 function wp4toast_reminders_cron_status() {
@@ -3455,11 +3465,11 @@ $output = '';
 $post = next_toastmaster_meeting();
 if(empty($post))
 	return 'No future meeting events registered';
-$output .= sprintf('<p>Next meeting: %s</p>',rsvpmaker_strftime($rsvp_options['long_date'].' '.$rsvp_options['time_format'],rsvpmaker_strtotime($post->datetime)));
+$output .= sprintf('<p>Next meeting: %s</p>',rsvpmaker_date($rsvp_options['long_date'].' '.$rsvp_options['time_format'],rsvpmaker_strtotime($post->datetime)));
 foreach($cron as $ts => $item)
 {
 if(isset($item['wp4toast_reminders_cron']))
-	$output .= sprintf("<p>Scheduled reminder %s</p>",rsvpmaker_strftime($rsvp_options['long_date'].' '.$rsvp_options['time_format'],(int) $ts));
+	$output .= sprintf("<p>Scheduled reminder %s</p>",rsvpmaker_date($rsvp_options['long_date'].' '.$rsvp_options['time_format'],(int) $ts));
 }
 	return $output;
 }
@@ -3602,11 +3612,26 @@ font-style: italic;
 }
 .officers_label {font-weight: bold;}
 .officer_entity {margin-top: 10px;}
-p.agenda_note, div.role-agenda-item, div.role-agenda-note {margin-top: 0; margin-bottom: 0; padding: 3px;}
+p.agenda_note, div.role-agenda-item, div.role-agenda-note {margin-top: 0; margin-bottom: 0; padding-bottom: 3px;}
 p.agenda_note {padding-left: 0;}
-span.timeblock, span.notime {display: inline-block; width: 6em; margin: 0px; padding:3px;font-weight: bold;}
+span.timeblock, span.notime {display: inline-block; width: 6em; margin: 0px; font-weight: bold;}
 #agenda>div.indent {padding-left: 20px;}
 p.signup_note, .hideonagenda, .wp-block-wp4toastmasters-signupnote {display: none;}
+/*
+alignment tweaks
+*/
+p.wp-block-wp4toastmasters-agendanoterich2 span.timeblock, .editable_content span.timeblock {text-indent: 0;}
+p.wp-block-wp4toastmasters-agendanoterich2, .editable_content {
+margin-left: 6em;
+text-indent: -6em;
+}
+.speaker-details {
+    margin-left: 6em;
+}
+.role_agenda_note, .role-timing {
+    margin-left: 6em;
+}
+#agenda-sidebar {max-width: 175px; padding-right: 15px;}
 
 /* selected Gutenberg block css */
 
@@ -4340,6 +4365,20 @@ function stoplight_shortcode($atts) {
 	return get_stoplight($green,$red,$yellow);
 }
 
+function wpt_custom_layout_default() {
+	return '<!-- wp:image {"align":"center","id":666,"width":50,"sizeSlug":"large","linkDestination":"media"} -->
+	<div class="wp-block-image"><figure class="aligncenter size-large is-resized"><a href="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" class="wp-image-666" width="50"/></a></figure></div>
+	<!-- /wp:image -->
+
+	<!-- wp:heading {"textAlign":"center"} -->
+	<h2 class="has-text-align-center" id="block-25ecbefc-681f-4f15-aee4-936431ed20f3">'.get_bloginfo('name').' - [tmlayout_meeting_date] </h2>
+	<!-- /wp:heading -->
+	
+	<!-- wp:wp4toastmasters/agenda-wrapper -->
+	<div class="wp-block-wp4toastmasters-agenda-wrapper"><table id="agenda-main" width="700"><tbody><tr><td id="agenda-sidebar" width="175"><!-- wp:wp4toastmasters/agendasidebar /--></td><td id="agenda-main" width="*">[tmlayout_main]</td></tr></tbody></table></div>
+	<!-- /wp:wp4toastmasters/agenda-wrapper -->';
+}
+
 function wp4toastmasters_agenda_layout_check ($option) {
 global $current_user;
 if($option == 'custom')
@@ -4350,22 +4389,7 @@ if($option == 'custom')
 			{
 			$layout["post_type"] = 'rsvpmaker';
 			$layout["post_title"] = 'Agenda Layout';
-			if(function_exists('do_blocks'))
-			$layout["post_content"] = '<!-- wp:image {"sizeSlug":"large"} -->
-			<figure class="wp-block-image size-large"><img src="https://toastmost.org/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></figure>
-			<!-- /wp:image -->
-
-			<!-- wp:heading -->
-			<h2>'.get_bloginfo('name').' - [tmlayout_meeting_date] </h2>
-			<!-- /wp:heading -->
-			
-			<!-- wp:wp4toastmasters/agenda-wrapper -->
-			<div class="wp-block-wp4toastmasters-agenda-wrapper"><table id="agenda-main" width="700"><tbody><tr><td id="agenda-sidebar" width="175"><!-- wp:wp4toastmasters/agendasidebar /--></td><td id="agenda-main" width="*">[tmlayout_main]</td></tr></tbody></table></div>
-			<!-- /wp:wp4toastmasters/agenda-wrapper -->';
-			else
-			$layout["post_content"] = '<img src="https://toastmost.org/tmbranding/agenda-rays.png" alt="Toastmasters branded agenda" /></div>
-<h2 id="title">'.get_bloginfo('name').' - [tmlayout_meeting_date]</h2>
-<table id="main" width="700"><tr><td id="sidebar" width="175">[tmlayout_sidebar]</td><td id="agenda" width="*">[tmlayout_main]</td></tr></table>';
+			$layout["post_content"] = wpt_custom_layout_default();
 			$layout["post_author"] = $current_user->ID;
 			$layout["post_status"] = 'publish';
 			$layout_id = wp_insert_post( $layout );
@@ -4857,9 +4881,9 @@ function agenda_menu($post_id, $frontend = true) {
 		if($events)
 		foreach ($events as $event)
 		{
-			$link .= '<li><a href="'.rsvpmaker_permalink_query($event->ID).'"'.$blank.'>'.strftime($rsvp_options["short_date"],strtotime($event->datetime)).'</a></li>';
+			$link .= '<li><a href="'.rsvpmaker_permalink_query($event->ID).'"'.$blank.'>'.rsvpmaker_date($rsvp_options["short_date"],strtotime($event->datetime)).'</a></li>';
 			if(current_user_can($security['edit_signups']) || edit_signups_role($event->ID))
-				$link .= '<li><a href="'.rsvpmaker_permalink_query($event->ID,'edit_roles=1').'"'.$blank.'>'.__('Edit','rsvpmaker-for-toastmasters').' '.strftime($rsvp_options["short_date"],strtotime($event->datetime)).'</a></li>';
+				$link .= '<li><a href="'.rsvpmaker_permalink_query($event->ID,'edit_roles=1').'"'.$blank.'>'.__('Edit','rsvpmaker-for-toastmasters').' '.rsvpmaker_date($rsvp_options["short_date"],rsvpmaker_strtotime($event->datetime)).'</a></li>';
 		}
 		$link .= '<li class="last"><a href="'.$permalink.'"'.$blank.'>'.__('Stop Editing','rsvpmaker-for-toastmasters').'</a></li></ul></li>';
 			
@@ -4968,7 +4992,7 @@ function tweak_agenda_times($post) {
 		return "Not logged in";
 	}
 
-	$time_format = str_replace('%Z','',$rsvp_options['time_format']);
+	$time_format = str_replace('T','',$rsvp_options['time_format']);
 	if(rsvpmaker_is_template($post->ID)) {
 		$sked = get_template_sked($post->ID);
 		$date = '2030-01-01 '.$sked['hour'].':'.$sked['minutes'];
@@ -5038,7 +5062,7 @@ function tweak_agenda_times($post) {
 
 	foreach($data as $d) {
 		$t = $ts_start + ($elapsed * 60);
-		$start_time_text = rsvpmaker_strftime($time_format,$t);
+		$start_time_text = rsvpmaker_date($time_format,$t);
 		if(!$start_time_text)
 			$start_time_text = rsvpmaker_date('h:i A',$t);
 		$start_time = $elapsed;
@@ -5382,12 +5406,14 @@ elseif(!empty($userdata->club_member_since))
 if(!empty($userdata->original_join_date))
 	printf('<div class="original_join_date">%s: %s</div>',__('Joined Toastmasters','rsvpmaker-for-toastmasters'),$userdata->original_join_date);
 if($userdata->ID == $current_user->ID) {
-	if (class_exists('WP_User_Avatar_Shortcode'))
+	if(function_exists('get_simple_local_avatar')) 
+		printf('<p><a href="%s">%s</a></p>',admin_url('profile.php#simple-local-avatar-section'),__('Set Your Profile Picture','rsvpmaker-for-toastmasters'));
+	elseif (class_exists('WP_User_Avatar_Shortcode'))
 	{
 		$picup = new WP_User_Avatar_Shortcode();
-		echo str_replace('Profile Picture','Set Your Profile Picture',$picup->wpua_edit_shortcode(array()));	
+		echo str_replace('Profile Picture',__('Set Your Profile Picture','rsvpmaker-for-toastmasters'),$picup->wpua_edit_shortcode(array()));	
 	}
-	printf('<p><a href="%s">Edit Your Profile</a>',admin_url('profile.php'));
+	printf('<p><a href="%s">%s</a>',admin_url('profile.php'),__('Edit Your Profile','rsvpmaker-for-toastmasters'));
 }
 ?>
 </div>
@@ -6326,11 +6352,11 @@ class AwesomeWidget extends WP_Widget {
 			  	{				
 				
 				if(isset($ev[$row->postID]))
-					$ev[$row->postID] .= ", ".strftime($dateformat,strtotime($row->datetime) );
+					$ev[$row->postID] .= ", ".rsvpmaker_date($dateformat,strtotime($row->datetime) );
 				else
 					{
-					$t = strtotime($row->datetime);
-					$title = $row->post_title .' '. strftime($dateformat,$t );
+					$t = rsvpmaker_strtotime($row->datetime);
+					$title = $row->post_title .' '. rsvpmaker_date($dateformat,$t );
 					$permalink = get_permalink($row->ID);
 					//if(!isset($signup))
 						//$signup = login_redirect($permalink);
@@ -6567,8 +6593,8 @@ function signup_sheet_editor() {
 	foreach($dates as $index => $date)
 		{
 		$guestopt = '';
-		$t = strtotime($date->datetime);
 		$post = get_post($date->ID);
+		$t = strtotime($date->datetime);
 		$head .= "<th>".$post->post_title.'<br />'.date("F j",$t)."</th>";
 		$cell[$date->ID] = '';
 		$data = wpt_blocks_to_data($date->post_content);
@@ -7770,9 +7796,10 @@ else
 return ob_get_clean();
 }
 
-function simplify_html($text, $allowable_tags="<p><br><div><b><strong><em><i><h1><h2><h3><h4><h5><h6><ol><ul><li>") {
+function simplify_html($text, $allowable_tags="<p><br><div><b><strong><em><i><h1><h2><h3><h4><h5><h6><ol><ul><li><a>") {
 	$text = strip_tags($text, $allowable_tags);
-	$text = preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/i",'<$1$2>', $text);
+	//$text = preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/i",'<$1$2>', $text);
+	$text = preg_replace('/style="[^"]+"/i','', $text);
 	$text = trim(str_replace("&nbsp;",' ',$text));
 	return preg_replace("|</{0,1}p>|i","\n", $text);
 }
@@ -9635,6 +9662,7 @@ wp_update_nav_menu_item($menu->term_id, 0, array(
   $locations = get_theme_mod('nav_menu_locations');
   $locations['primary-menu'] = $menu->term_id;
   $locations['primary'] = $menu->term_id;
+$locations['menu-1'] = $menu->term_id;
   set_theme_mod( 'nav_menu_locations', $locations );
 }
 
@@ -10546,7 +10574,7 @@ $members = get_club_members();
 		if ( have_posts() ) :
 			while (have_posts()) : the_post();
 				$t = rsvpmaker_strtotime($post->post_date);
-				$date = date('M d, Y',$t);
+				$date = rsvpmaker_date('M d, Y',$t);
 				$members_only = (has_category('Members Only',$post->ID)) ? ' (members only)' : '';
 				/*
 				$excerpt = strip_tags($post->post_content);
@@ -11047,7 +11075,7 @@ function tmlayout_meeting_date ($atts) {
 	global $rsvp_options;
 	$datestring = get_rsvp_date($post->ID);
 	if(!empty($datestring))
-	return strftime($rsvp_options["long_date"], strtotime($datestring) );
+	return date($rsvp_options["long_date"], strtotime($datestring) );
 }
 function tmlayout_sidebar($atts) {
 	if(is_admin() || wp_is_json_request())
@@ -11699,7 +11727,7 @@ foreach($goals as $goal)
 		$gp = explode(':',$goal);
 		$goal_manual = $gp[0];
 		$start = (int) $gp[1];
-		printf('<p><strong>Goal: %s<br />after: %s</strong></h3>',$goal_manual,strftime($rsvp_options["long_date"],$start));
+		printf('<p><strong>Goal: %s<br />after: %s</strong></h3>',$goal_manual,rsvpmaker_date($rsvp_options["long_date"],$start));
 	if($results)
 	foreach($results as $row)
 		{
@@ -11709,7 +11737,7 @@ foreach($goals as $goal)
 			$rolecount = $key_array[3];
 			$domain = $key_array[4];
 			$post_id = $key_array[5];
-			$t = strtotime($event_date);
+			$t = rsvpmaker_strtotime($event_date);
 			if($t < $start)
 				continue;
 			$roledata = unserialize($row->meta_value);
@@ -11731,7 +11759,7 @@ foreach($goals as $goal)
 				if($domain != $_SERVER['SERVER_NAME'])
 					$speech_details .= '<br /><em>'.$domain.'</em>';
 
-				$speech_details = '<p>'.strftime($rsvp_options["long_date"],strtotime($event_date)).'<br />'.$speech_details.'</p>';
+				$speech_details = '<p>'.rsvpmaker_date($rsvp_options["long_date"],rsvpmaker_strtotime($event_date)).'<br />'.$speech_details.'</p>';
 			echo $speech_details;
 		}
 
@@ -11826,7 +11854,7 @@ function tm_absence ($atts) {
 		
 		$output .= '</div>'; 
 	}
-		$time = strtotime(get_rsvp_date($post->ID));
+		$time = rsvpmaker_strtotime(get_rsvp_date($post->ID));
 		$away = '';
 		$blogusers = get_users( 'blog_id='.get_current_blog_id() );
 		// Array of WP_User objects.
@@ -11845,7 +11873,7 @@ function tm_absence ($atts) {
 			if(!empty($status))
 				{
 				$userdata = get_userdata($user->ID);
-				$away .= '<br />'.$userdata->first_name.' '.$userdata->last_name.' '.$status.sprintf(' (Expires: %s)',strftime($rsvp_options['long_date'],$exp));
+				$away .= '<br />'.$userdata->first_name.' '.$userdata->last_name.' '.$status.sprintf(' (Expires: %s)',rsvpmaker_date($rsvp_options['long_date'],$exp));
 				}
 			}
 		}

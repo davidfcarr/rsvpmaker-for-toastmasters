@@ -174,7 +174,7 @@ else {
 }
 
 function tm_application_form_start($atts) {
-$pdf = (isset($atts['pdf'])) ? $atts['pdf'] : 'https://www.toastmasters.org/-/media/files/membership-files/membership-applications/membership-application---800.ashx';
+$pdf = (isset($atts['pdf'])) ? $atts['pdf'] : 'https://toastmasterscdn.azureedge.net/medias/files/membership-files/membership-applications/800-membership-application.pdf';
 if(isset($_POST['user_email']) && empty($_POST['user_email']))
     return 'Email address is required <a href="'.get_permalink().'">Try again</a>';
 ob_start();
