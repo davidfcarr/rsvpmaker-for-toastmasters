@@ -2,21 +2,22 @@
 
 function wp4t_setup_wizard_no_distrations() {
 
-    if(!empty($_GET['page']) && ($_GET['page'] == 'wp4t_setup_wizard'))
+	if ( ! empty( $_GET['page'] ) && ( $_GET['page'] == 'wp4t_setup_wizard' ) ) {
 
-    remove_all_actions('admin_notices');
+		remove_all_actions( 'admin_notices' );
+	}
 
 }
 
-add_action('admin_init','wp4t_setup_wizard_no_distrations');
+add_action( 'admin_init', 'wp4t_setup_wizard_no_distrations' );
 
 
 
 function wp4t_setup_wizard() {
 
-global $rsvp_options, $current_user, $wpdb;
+	global $rsvp_options, $current_user, $wpdb;
 
-?>
+	?>
 
 <style>
 
@@ -38,9 +39,9 @@ global $rsvp_options, $current_user, $wpdb;
 
 #wizard #bullets {
 
-    padding: 10px;
+	padding: 10px;
 
-    background-color: #fff;
+	background-color: #fff;
 
 }
 
@@ -48,17 +49,17 @@ global $rsvp_options, $current_user, $wpdb;
 
 #wizardmenu {
 
-    background-color: #000;
+	background-color: #000;
 
-    font-size: large;
+	font-size: large;
 
-    color: #fff;
+	color: #fff;
 
-    font-weight: bold;
+	font-weight: bold;
 
-    margin-top: 3px;
+	margin-top: 3px;
 
-    padding-top: 5px;
+	padding-top: 5px;
 
 }
 
@@ -88,13 +89,13 @@ color: #fff;
 
 img {
 
-    max-width: 60%;
+	max-width: 60%;
 
 }
 
 p {
 
-    max-width: 800px;
+	max-width: 800px;
 
 }
 
@@ -104,695 +105,639 @@ p {
 
 <h1>Toastmasters Setup Wizard</h1>
 
-<?php
+	<?php
 
-$class1 = (empty($_REQUEST['setup_wizard'])) ? ' class="current" ' : '';
+	$class1 = ( empty( $_REQUEST['setup_wizard'] ) ) ? ' class="current" ' : '';
 
-$class2 = (!empty($_REQUEST['setup_wizard']) && ($_REQUEST['setup_wizard'] == 1) ) ? ' class="current" ' : '';
+	$class2 = ( ! empty( $_REQUEST['setup_wizard'] ) && ( $_REQUEST['setup_wizard'] == 1 ) ) ? ' class="current" ' : '';
 
-$class3 = (!empty($_REQUEST['setup_wizard']) && ($_REQUEST['setup_wizard'] == 2) ) ? ' class="current" ' : '';
+	$class3 = ( ! empty( $_REQUEST['setup_wizard'] ) && ( $_REQUEST['setup_wizard'] == 2 ) ) ? ' class="current" ' : '';
 
-printf('<div id="wizardmenu"><a href="'.admin_url('admin.php?page=wp4t_setup_wizard').'" '.$class1.'>Step 1:<br />Meetings &amp; Basics</a> &gt; 
+	printf(
+		'<div id="wizardmenu"><a href="' . admin_url( 'admin.php?page=wp4t_setup_wizard' ) . '" ' . $class1 . '>Step 1:<br />Meetings &amp; Basics</a> &gt; 
 
-<a href="'.admin_url('admin.php?page=wp4t_setup_wizard').'&setup_wizard=1"  '.$class2.'>Step 2:<br />User Accounts</a> &gt; 
+<a href="' . admin_url( 'admin.php?page=wp4t_setup_wizard' ) . '&setup_wizard=1"  ' . $class2 . '>Step 2:<br />User Accounts</a> &gt; 
 
-<a href="'.admin_url('admin.php?page=wp4t_setup_wizard').'&setup_wizard=2"  '.$class3.'>Next Steps</a></div>');
+<a href="' . admin_url( 'admin.php?page=wp4t_setup_wizard' ) . '&setup_wizard=2"  ' . $class3 . '>Next Steps</a></div>'
+	);
 
-if(isset($_POST['setup_wizard'])) {
+	if ( isset( $_POST['setup_wizard'] ) ) {
+	if(!wp_verify_nonce($_POST['_wpnonce'],'setup_wizard'))
+		wp_die('security error');
+		if ( $_POST['setup_wizard'] == '1' ) {
 
+			$agenda_content = '';
 
+			$time_open = (int) $_POST['time_open'];
 
-if($_POST['setup_wizard'] == '1') {
+			$time_tod = (int) $_POST['time_tod'];
 
-$agenda_content = '';
+			$time_ge = (int) $_POST['time_ge'];
 
-$time_open = (int) $_POST['time_open'];
+			$time_closing = (int) $_POST['time_closing'];
 
-$time_tod = (int) $_POST['time_tod'];
+			$time_break = (int) $_POST['time_break'];
 
-$time_ge = (int) $_POST['time_ge'];
+			$agenda_content .= '<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"' . $time_open . '","inline":true} /-->' . "\n\n";
 
-$time_closing = (int) $_POST['time_closing'];
+			$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","count":"1","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"' . $time_tod . '","padding_time":"0"} /-->' . "\n\n";
 
-$time_break = (int) $_POST['time_break'];
+			$rarr = explode( ',', sanitize_text_field(stripslashes( $_POST['otherroles'] ) ) );
 
-$agenda_content .= '<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"'.$time_open.'","inline":true} /-->'."\n\n";
+			foreach ( $rarr as $role ) {
 
-$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","count":"1","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"'.$time_tod.'","padding_time":"0"} /-->'."\n\n";
+				$role = trim( $role );
 
-$rarr = explode(',',stripslashes($_POST['otherroles']));
+				if ( empty( $role ) ) {
 
-foreach($rarr as $role)
+					continue;
+				}
 
-    {
+				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"' . $role . '","count":"1","time_allowed":"0","padding_time":"0"} /-->' . "\n\n";
 
-        $role = trim($role);
+			}
 
-        if(empty($role))
+			if ( $_POST['tabletopics'] == 'before' ) {
 
-            continue;
+				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"' . (int) $_POST['time_tt'] . '","padding_time":"0"} /-->' . "\n\n";
+			}
 
-        $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"'.$role.'","count":"1","time_allowed":"0","padding_time":"0"} /-->'."\n\n";
+			if ( $_POST['break'] == 'before' ) {
 
-    }
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_break . '","uid":"note1534625016726"} -->
 
-if($_POST['tabletopics'] == 'before')
+    <p class="wp-block-wp4toastmasters-agendanoterich2">' . $time_break . ' minute break</p>
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"'.(int) $_POST['time_tt'].'","padding_time":"0"} /-->'."\n\n";
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
+			}
 
+			$numberspeakers = (int) $_POST['numberspeakers'];
 
+			if ( $numberspeakers ) {
 
-if($_POST['break'] == 'before')
+				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Speaker","count":"' . $numberspeakers . '","time_allowed":"' . ( round( $numberspeakers * 7.5 ) ) . '","padding_time":"0"} /-->' . "\n\n";
+			}
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"'.$time_break.'","uid":"note1534625016726"} -->
+			if ( $_POST['break'] == 'afterspeakers' ) {
 
-    <p class="wp-block-wp4toastmasters-agendanoterich2">'.$time_break.' minute break</p>
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_break . '","uid":"note1534625016726"} -->
 
-    <!-- /wp:wp4toastmasters/agendanoterich2 -->'."\n\n";
+    <p class="wp-block-wp4toastmasters-agendanoterich2">' . $time_break . ' minute break</p>
 
-    
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
+			}
 
-$numberspeakers = (int) $_POST['numberspeakers'];
+			if ( $_POST['tabletopics'] == 'after' ) {
 
-if($numberspeakers)
+				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"' . (int) $_POST['time_tt'] . '","padding_time":"0"} /-->' . "\n\n";
+			}
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Speaker","count":"'.$numberspeakers.'","time_allowed":"'.(round($numberspeakers*7.5)).'","padding_time":"0"} /-->'."\n\n";
+			$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"General Evaluator","count":"1","agenda_note":"Explains the importance of evaluations. Introduces Evaluators.","time_allowed":"1","padding_time":"0"} /-->';
 
+			if ( $numberspeakers ) {
 
+				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":"' . $numberspeakers . '","time_allowed":"' . ( $numberspeakers * 3 ) . '","padding_time":"0"} /-->' . "\n\n";
+			}
 
-if($_POST['break'] == 'afterspeakers')
+			if ( $_POST['break'] == 'afterevaluators' ) {
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"'.$time_break.'","uid":"note1534625016726"} -->
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_break . '","uid":"note1534625016726"} -->
 
-    <p class="wp-block-wp4toastmasters-agendanoterich2">'.$time_break.' minute break</p>
+    <p class="wp-block-wp4toastmasters-agendanoterich2">' . $time_break . ' minute break</p>
 
-    <!-- /wp:wp4toastmasters/agendanoterich2 -->'."\n\n";
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
+			}
 
+			if ( ! empty( $_POST['reports'] ) ) {
 
+				$content = sanitize_text_field(stripslashes( $_POST['reports'] ) );
 
-if($_POST['tabletopics'] == 'after')
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_ge . '","uid":"note1534625016726"} -->
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"'.(int) $_POST['time_tt'].'","padding_time":"0"} /-->'."\n\n";
+    <p class="wp-block-wp4toastmasters-agendanoterich2">' . $content . '</p>
 
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 
+			}
 
-$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"General Evaluator","count":"1","agenda_note":"Explains the importance of evaluations. Introduces Evaluators.","time_allowed":"1","padding_time":"0"} /-->';
+			if ( $_POST['tabletopics'] == 'end' ) {
 
-if($numberspeakers)
+				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"' . (int) $_POST['time_tt'] . '","padding_time":"0"} /-->' . "\n\n";
+			}
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":"'.$numberspeakers.'","time_allowed":"'.($numberspeakers*3).'","padding_time":"0"} /-->'."\n\n";
+			if ( ! empty( $_POST['closing'] ) ) {
+ 
+				$content = sanitize_text_field(stripslashes( $_POST['closing'] ) );
 
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_closing . '","uid":"note1534625016726"} -->
 
+    <p class="wp-block-wp4toastmasters-agendanoterich2">' . $content . '</p>
 
-if($_POST['break'] == 'afterevaluators')
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"'.$time_break.'","uid":"note1534625016726"} -->
+			}
 
-    <p class="wp-block-wp4toastmasters-agendanoterich2">'.$time_break.' minute break</p>
-
-    <!-- /wp:wp4toastmasters/agendanoterich2 -->'."\n\n";
-
-
-
-if(!empty($_POST['reports']))
-
-    {
-
-    $content = stripslashes($_POST['reports']);
-
-    $agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"'.$time_ge.'","uid":"note1534625016726"} -->
-
-    <p class="wp-block-wp4toastmasters-agendanoterich2">'.$content.'</p>
-
-    <!-- /wp:wp4toastmasters/agendanoterich2 -->'."\n\n";
-
-    }
-
-
-
-if($_POST['tabletopics'] == 'end')
-
-    $agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"'.(int) $_POST['time_tt'].'","padding_time":"0"} /-->'."\n\n";
-
-
-
-if(!empty($_POST['closing']))
-
-    {
-
-    $content = stripslashes($_POST['closing']);
-
-    $agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"'.$time_closing.'","uid":"note1534625016726"} -->
-
-    <p class="wp-block-wp4toastmasters-agendanoterich2">'.$content.'</p>
-
-    <!-- /wp:wp4toastmasters/agendanoterich2 -->'."\n\n";
-
-    }
-
-$agenda_content .= '<!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
+			$agenda_content .= '<!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
 <p maxtime="x" class="wp-block-wp4toastmasters-milestone">Meeting Ends</p>
-<!-- /wp:wp4toastmasters/milestone -->';    
+<!-- /wp:wp4toastmasters/milestone -->';
 
-if(!empty($_POST['theme']))
+			if ( ! empty( $_POST['theme'] ) ) {
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/agendaedit {"editable":"'.stripslashes($_POST['theme_label']).'","uid":"Theme"} /-->'."\n\n";
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendaedit {"editable":"' . sanitize_text_field(stripslashes( $_POST['theme_label'] ) ) . '","uid":"Theme"} /-->' . "\n\n";
+			}
 
-if(!empty($_POST['absences']))
+			if ( ! empty( $_POST['absences'] ) ) {
 
-    $agenda_content .= '<!-- wp:wp4toastmasters/absences /-->'."\n\n";
+				$agenda_content .= '<!-- wp:wp4toastmasters/absences /-->' . "\n\n";
+			}
 
-$rsvp_options['rsvp_on'] = $rsvp = (int) $_POST['invite'];
+			$rsvp_options['rsvp_on'] = $rsvp = (int) $_POST['invite'];
 
-$sync = (int) $_POST['sync'];
+			$sync = (int) $_POST['sync'];
 
-$rsvp_options['add_timezone'] = $rsvp_options['convert_timezone'] = $timezone = (int) $_POST['timezone'];
+			$rsvp_options['add_timezone'] = $rsvp_options['convert_timezone'] = $timezone = (int) $_POST['timezone'];
 
+			$update['post_content'] = $agenda_content;
 
+			$template_id = (int) $_POST['template_id'];
 
-$update['post_content'] = $agenda_content;
+			$default_template_id = get_option( 'default_toastmasters_template' );
 
-$template_id = (int) $_POST['template_id'];
+			if ( $default_template_id != $template_id ) {
 
-$default_template_id = get_option('default_toastmasters_template');
+				$template = get_post( $default_template_id );
 
-if($default_template_id != $template_id) {
+				if ( empty( $template ) ) { // document does not exist
 
-    $template = get_post($default_template_id);
+					update_option( 'default_toastmasters_template', $template_id );// make this the new default
+				}
+			}
 
-    if(empty($template))//document does not exist
+			$form = rsvpmaker_get_form_id( 'simple' );
 
-        update_option('default_toastmasters_template',$template_id);//make this the new default 
+			// update template_first
 
-}
+			$update['ID'] = $template_id;
 
-$form = rsvpmaker_get_form_id('simple');
+			wp_update_post( $update );
 
-//update template_first
+			update_post_meta( $template_id, '_rsvp_on', $rsvp );
 
-$update['ID'] = $template_id;
+			update_post_meta( $template_id, '_rsvp_form', $form );
 
-wp_update_post($update);
+			update_post_meta( $template_id, '_add_timezone', $timezone );
 
-update_post_meta($template_id,'_rsvp_on',$rsvp);
+			update_post_meta( $template_id, '_convert_timezone', $timezone );
 
-update_post_meta($template_id,'_rsvp_form',$form);
+			$toupdate = future_rsvpmakers_by_template( $template_id );
 
-update_post_meta($template_id,'_add_timezone',$timezone);
+			if ( empty( $toupdate ) ) {
 
-update_post_meta($template_id,'_convert_timezone',$timezone);
+				auto_renew_project( $template_id );
 
+			} else {
 
+				foreach ( $toupdate as $post_id ) {
 
-$toupdate = future_rsvpmakers_by_template($template_id);
+					$update['ID'] = $post_id;
 
-if(empty($toupdate))
+					$result = wp_update_post( $update );
 
-{
+					if ( empty( $updated_date ) ) {
 
-    auto_renew_project($template_id);
+						$updated_date = $wpdb->get_var( "SELECT post_modified from $wpdb->posts WHERE ID=" . $post_id );
 
-}
+					}
 
-else {
+					update_post_meta( $post_id, '_updated_from_template', $updated_date );
 
-    foreach($toupdate as $post_id) {
+					update_post_meta( $post_id, '_rsvp_on', $rsvp );
 
-        $update['ID'] = $post_id;
+					update_post_meta( $post_id, '_rsvp_form', $form );
 
-        $result = wp_update_post($update);
+					update_post_meta( $post_id, '_add_timezone', $timezone );
 
-        if(empty($updated_date)) {
+					update_post_meta( $post_id, '_convert_timezone', $timezone );
 
-            $updated_date = $wpdb->get_var("SELECT post_modified from $wpdb->posts WHERE ID=".$post_id);
+				}
+			}
 
-        }
+			$rsvp_options['calendar_icons'] = 1;
 
-        update_post_meta($post_id,"_updated_from_template",$updated_date);
+			update_option( 'RSVPMAKER_Options', $rsvp_options );
 
-        update_post_meta($post_id,'_rsvp_on',$rsvp);
+			update_option( 'wp4toastmasters_enable_sync', $sync );
 
-        update_post_meta($post_id,'_rsvp_form',$form);
+			if ( $rsvp ) {
 
-        update_post_meta($post_id,'_add_timezone',$timezone);
+				$frontpage_id = get_option( 'page_on_front' );
 
-        update_post_meta($post_id,'_convert_timezone',$timezone);
+				if ( $frontpage_id ) {
 
-            }    
+					$post = get_post( $frontpage_id );
 
-}
+					if ( ! strpos( $post->post_content, 'wp:rsvpmaker/event' ) ) {
 
-$rsvp_options['calendar_icons'] = 1;
-
-update_option('RSVPMAKER_Options',$rsvp_options);
-
-update_option('wp4toastmasters_enable_sync', $sync );
-
-
-
-if($rsvp) {
-
-    $frontpage_id = get_option( 'page_on_front' );
-
-    if($frontpage_id)
-
-    {
-
-        $post = get_post($frontpage_id);
-
-        if(!strpos($post->post_content,'wp:rsvpmaker/event'))
-
-        {
-        
-        $invite = '<!-- wp:heading -->
+						$invite = '<!-- wp:heading -->
         <h2 id="visit">Visit as a Guest</h2>
         <!-- /wp:heading -->
         
         <!-- wp:rsvpmaker/next-events /-->
         
         ';
-        if(strpos($post->post_content,'<!-- invite widget -->'))
-            $update['post_content'] = str_replace('<!-- invite widget -->',$invite,$post->post_content);
-        else
-            $update['post_content'] = $invite.$post->post_content;
+						if ( strpos( $post->post_content, '<!-- invite widget -->' ) ) {
+							$update['post_content'] = str_replace( '<!-- invite widget -->', $invite, $post->post_content );
+						} else {
+							$update['post_content'] = $invite . $post->post_content;
+						}
 
-        $update['ID'] = $frontpage_id;
+						$update['ID'] = $frontpage_id;
 
-        wp_update_post($update);        
+						wp_update_post( $update );
 
-        }
+					}
+				}
+			}
 
-    }
+			echo '<div class="notice notice-success"><p>Meeting Options Saved</p></div>';
+
+		}
+
+		if ( isset( $_POST['first'] ) ) {
+
+			$member_factory = new Toastmasters_Member();
+
+			$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+
+			if ( empty( $wp4toastmasters_officer_titles ) ) {
+
+				$wp4toastmasters_officer_titles = array( __( 'President', 'rsvpmaker-for-toastmasters' ), __( 'VP of Education', 'rsvpmaker-for-toastmasters' ), __( 'VP of Membership', 'rsvpmaker-for-toastmasters' ), __( 'VP of Public Relations', 'rsvpmaker-for-toastmasters' ), __( 'Secretary', 'rsvpmaker-for-toastmasters' ), __( 'Treasurer', 'rsvpmaker-for-toastmasters' ), __( 'Sgt. at Arms', 'rsvpmaker-for-toastmasters' ), __( 'Webmaster', 'rsvpmaker-for-toastmasters' ), __( 'Immediate Past President', 'rsvpmaker-for-toastmasters' ) );
+			}
+
+			$wp4toastmasters_officer_ids = get_option( 'wp4toastmasters_officer_ids' );
+
+			if ( empty( $wp4toastmasters_officer_ids ) ) {
+
+				$wp4toastmasters_officer_ids = array( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+			}
+
+			foreach ( $_POST['first'] as $index => $first ) {
+
+				$user = array();
+
+				$user['first_name'] = sanitize_text_field(stripslashes( $first ));
+
+				$user['last_name'] = sanitize_text_field( stripslashes( $_POST['last'][ $index ] ) );
+
+				$user['display_name'] = $user['first_name'] . ' ' . $user['last_name'];
+
+				$user['user_email'] = sanitize_text_field($_POST['email'][ $index ]);
+
+				if ( empty( $user['user_email'] ) ) {
+
+					continue;
+				}
+
+				$role = sanitize_text_field( $_POST['role'][ $index ] );
+
+				$security = sanitize_text_field( $_POST['security'][ $index ] );
+
+				$user = wpt_wizard_check_member( $user );
+
+				if ( ! empty( $user ) ) {
+
+					$user_id = $member_factory->add( $user );
+				}
+
+				if ( ! empty( $security ) ) {
+
+					$u = new WP_User( $user_id );
+
+					$u->set_role( $security );
+
+				}
+
+				if ( ! empty( $role ) ) {
+
+					$title_index = array_search( $role, $wp4toastmasters_officer_titles );
+
+					$wp4toastmasters_officer_ids[ $title_index ] = $user_id;
+
+				}
+			}
+
+			$role = sanitize_text_field($_POST['myrole']);
+
+			$title_index = array_search( $role, $wp4toastmasters_officer_titles );
+
+			$wp4toastmasters_officer_ids[ $title_index ] = $current_user->ID;
+
+			update_option( 'wp4toastmasters_officer_titles', $wp4toastmasters_officer_titles );
+
+			update_option( 'wp4toastmasters_officer_ids', $wp4toastmasters_officer_ids );
+
+			echo '<div class="notice notice-success"><p>User Account Options Saved</p></div>';
+
+		}
+	}
+
+	if ( ! empty( $_POST['pwd'] ) ) {
+
+		global $current_user;
+
+		reset_password( $current_user, sanitize_text_field(stripslashes( $_POST['pwd'] ) ) );
+
+		$weakwarning = ( empty( $_POST['pw_weak'] ) ) ? '' : '<span style="color:red; font-weight: bold;">Warning: A weak password makes it more likely your site will be hacked.</span>';
+
+		echo '<div class="notice notice-success"><p>Password Changed - you must <a href="' . wp_login_url( admin_url( 'admin.php?page=wp4t_setup_wizard&setup_wizard=2' ) ) . '">login again with your new password</a> to continue. ' . $weakwarning . '</p></div>';
+
+	}
+
+	if ( empty( $_REQUEST['setup_wizard'] ) ) {
+
+		wpt_setup_wizard_1();
+
+	} elseif ( $_REQUEST['setup_wizard'] == '1' ) {
+
+		wpt_setup_wizard_2();
+
+	} elseif ( $_REQUEST['setup_wizard'] == '2' ) {
+
+		wpt_setup_wizard_3();
+	}
+
+	do_action( 'wpt_wizard_post' );
+
+	echo '<div>';
 
 }
 
 
 
-echo '<div class="notice notice-success"><p>Meeting Options Saved</p></div>';
+function wpt_setup_wizard_1() {
+
+	$template_id = get_option( 'default_toastmasters_template' );
+
+	if ( $template_id ) {
+
+		$template = get_post( $template_id );
+
+		if ( empty( $template ) ) {
+
+			$template_id = 0; // document does not exist
+		}
+	}
+
+	$templates = rsvpmaker_get_templates();
+
+	if ( empty( $templates ) ) {
+
+			echo '<h2>Error: Agenda Templates appear to have been deleted</h2><p><a href="' . admin_url( 'edit.php?post_type=rsvpmaker&page=rsvpmaker_setup&new_template=1' ) . '">Create a new template</a>, then return to this wizard.</p>';
+
+			return;
+
+	}
+
+	$options = '';
+
+	foreach ( $templates as $template ) {
+
+		$s = ( $template->ID == $template_id ) ? ' selected="selected" ' : '';
+
+		$options .= sprintf( '<option value="%s" %s>%s</option>', $template->ID, $s, $template->post_title );
+
+	}
+
+	?>
+
+	<h2>Step 1: Meeting Defaults</h2>
+
+	<p>The default template is for a meeting with 3 speakers, 3 evaluators, and Table Topics, timed to last one hour. Use this form to make some adjustments to the basic organization of your meetings. You can customize your standard meeting template further, using the WordPress editor, but this will get you off to a quicker start.</p>
+
+	<form method="post" action="<?php echo admin_url( 'admin.php?page=wp4t_setup_wizard' ); ?>">
+	<?php wp_nonce_field('setup_wizard'); ?>
+
+	<p><img src="<?php echo plugins_url( 'images/noun_welcome_882790-50.png', __FILE__ ); ?>"> <label>Welcome and Introductions</label> Time Allowed <input type="number" name="time_open" value="5" /></p>
+
+	<p>Toastmaster of the Day introduces self, other role players. Time Allowed <input type="number" name="time_tod" value="5" /></p>
+
+	<p>Supporting roles on your agenda (separated by commas)
+
+	<br /><input type="text" name="otherroles" value="Ah Counter, Body Language Monitor, Grammarian, Humorist, Timer, Vote Counter" style="width: 80%;" />
+
+	</p>
+
+	<p><img src="<?php echo plugins_url( 'images/noun_public-speaking_1681645-50.png', __FILE__ ); ?>"> <label>Number of Speakers and Evaluators at a Typical Meeting </label> <input name="numberspeakers"  type="number" value="3" ></p>
+
+	<p><img src="<?php echo plugins_url( 'images/noun_Microphone_3953338-50.png', __FILE__ ); ?>"> <label>Topics Master leads Table Topics</label> <select name="tabletopics">
+
+	<option value="before">before speakers</option>
+
+	<option value="after">after speakers, before evaluators</option>
+
+	<option value="end">end of the meeting</option>
+
+	<option value="">no Table Topics</option>
+
+	</select> Time Allowed <input name="time_tt"  type="number" value="10" /></p>
+
+	<p><label>Break</label> <select name="break">
+
+	<option val="">None</option>
+
+	<option value="before">before speakers</option>
+
+	<option value="afterspeakers">after speakers</option>
+
+	<option value="afterevaluators">after evaluators</option>
+
+	<select>
+
+	Time Allowed <input name="time_break" value="5"  type="number"  />
+
+	</p>
+
+	<p><label>Reports</label><br /> <textarea name="reports" style="width: 80%;">General Evaluator calls for reports from supporting players. General Evaluator then gives an overall evaluation of the meeting.</textarea><br />Time Allowed <input name="time_ge" value="5"  type="number"  /></p>
+
+	<p><img src="<?php echo plugins_url( 'images/noun_Award_2887079-50.png', __FILE__ ); ?>"> <label>Meeting Closing Activities</label><br /> <textarea name="closing" style="width: 80%;">Toastmaster of the Day presents the awards. President or Presiding officer closes the meeting.</textarea><br />Time Allowed <input name="time_closing" value="4"  type="number" /></p>
+
+	<p><label>Include Theme and/or Word of the Day on the Agenda</label> <input type="radio" name="theme" value="1" checked="checked" /> Yes <input type="radio" name="theme" value="0" > No
+
+	<label>Label</label>  <input name="theme_label" value="Theme and Word of the Day" style="width: 20em;" /></p>
+
+	<p><label>Include Member Absences Widget</label> <input type="radio" name="absences" value="1" checked="checked" /> Yes <input type="radio" name="absences" value="0" > No</p>
+
+	<p><img src="<?php echo plugins_url( 'images/noun_Registration_2018816-50.png', __FILE__ ); ?>"> <label>Invite Guests to Register Online</label> <input type="radio" name="invite" value="1" checked="checked" /> Yes <input type="radio" name="invite" value="0" > No</p>
+
+	<p><label>Show timezone on events (recommended for online clubs)</label> <input type="radio" name="timezone" value="1" checked="checked" /> Yes <input type="radio" name="timezone" value="0" > No</p>
+
+	<p><label>Allow Member Data to Sync (see <a target="_blank" href="" target="_blank">blog post</a>)</label> <input type="radio" name="sync" value="1" checked="checked" /> Yes <input type="radio" name="sync" value="0" > No</p>
+
+	<input type="hidden" name="setup_wizard" value="1" />
+
+	<p>Template to Update <select name="template_id"><?php echo $options; ?></select></p>
 
 
+
+	<?php submit_button( 'Next' ); ?>
+
+	</form>
+	<p><em>Icons from <a href="https://thenounproject.com/">The Noun Project</a>: "welcome" by Gan Khoon Lay, "public speaking" by Becris, "Microphone" by Nawicon, "Award" by Flatart, "Registration" by Shiva.</em></p>
+	<?php
 
 }
 
 
 
-if(isset($_POST['first']))
+function wpt_setup_wizard_2() {
 
-{
+	update_option( 'wp4t_setup_wizard_used', time() );
 
-    $member_factory = new Toastmasters_Member();
+	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
 
-    $wp4toastmasters_officer_titles = get_option('wp4toastmasters_officer_titles');
+	if ( empty( $wp4toastmasters_officer_titles ) ) {
 
-    if(empty($wp4toastmasters_officer_titles))
+		$wp4toastmasters_officer_titles = array( __( 'President', 'rsvpmaker-for-toastmasters' ), __( 'VP of Education', 'rsvpmaker-for-toastmasters' ), __( 'VP of Membership', 'rsvpmaker-for-toastmasters' ), __( 'VP of Public Relations', 'rsvpmaker-for-toastmasters' ), __( 'Secretary', 'rsvpmaker-for-toastmasters' ), __( 'Treasurer', 'rsvpmaker-for-toastmasters' ), __( 'Sgt. at Arms', 'rsvpmaker-for-toastmasters' ), __( 'Webmaster', 'rsvpmaker-for-toastmasters' ), __( 'Immediate Past President', 'rsvpmaker-for-toastmasters' ) );
 
-        $wp4toastmasters_officer_titles = array(__("President",'rsvpmaker-for-toastmasters'),__("VP of Education",'rsvpmaker-for-toastmasters'),__("VP of Membership",'rsvpmaker-for-toastmasters'),__("VP of Public Relations",'rsvpmaker-for-toastmasters'),__("Secretary",'rsvpmaker-for-toastmasters'),__("Treasurer",'rsvpmaker-for-toastmasters'),__("Sgt. at Arms",'rsvpmaker-for-toastmasters'),__("Webmaster",'rsvpmaker-for-toastmasters'),__("Immediate Past President",'rsvpmaker-for-toastmasters'));
+	} elseif ( ! in_array( 'Webmaster', $wp4toastmasters_officer_titles ) ) {
 
-    $wp4toastmasters_officer_ids = get_option('wp4toastmasters_officer_ids');
+		foreach ( $wp4toastmasters_officer_titles as $index => $title ) {
 
-    if(empty($wp4toastmasters_officer_ids))
+			if ( empty( $title ) ) {
 
-        $wp4toastmasters_officer_ids = array(0,0,0,0,0,0,0,0,0);
+				$wp4toastmasters_officer_titles[ $index ] = 'Webmaster';
 
-    foreach($_POST['first'] as $index => $first)
+				break;
 
-    {
+			}
+		}
 
-        $user = array();
+			update_option( 'wp4toastmasters_officer_titles', $wp4toastmasters_officer_titles );
 
-        $user['first_name'] = stripslashes($first);
+	}
 
-        $user['last_name'] = stripslashes($_POST['last'][$index]);
+	$oopt = '';
 
-        $user['display_name'] = $first.' '.$user['last_name'];
+	foreach ( $wp4toastmasters_officer_titles as $title ) {
 
-        $user['user_email'] = $_POST['email'][$index];
+		if ( ! empty( $title ) ) {
 
-        if(empty($user['user_email']))
+			$oopt .= sprintf( '<option value="%s">%s</option>', $title, $title );
+		}
+	}
 
-            continue;
+	?>
 
-        $role = $_POST['role'][$index];
+	<h2>Step 2: User Accounts</h2>
 
-        $security = $_POST['security'][$index];
+	<form method="post" action="<?php echo admin_url( 'admin.php?page=wp4t_setup_wizard' ); ?>">
+	<?php wp_nonce_field('setup_wizard'); ?>
 
-        $user = wpt_wizard_check_member($user);
+	<p>If you received a randomly generated password by email, <strong style="color:red;">change it now</strong>. Picking a strong password reduces the risk your site could be hacked.</p>
 
-        if(!empty($user))
+	<?php wpt_wizard_password(); ?>
 
-            $user_id = $member_factory->add($user);    
+	<p><label>My Officer Role</label> <select name="myrole" >
 
-        if(!empty($security))
+	<option value="">None</option>
 
-        {
+	<option value="Webmaster" selected="selected">Webmaster</option>
 
-            $u = new WP_User( $user_id );
-
-            $u->set_role( $security );
-
-        }
-
-        if(!empty($role))
-
-        {
-
-            $title_index = array_search($role,$wp4toastmasters_officer_titles);
-
-            $wp4toastmasters_officer_ids[$title_index] = $user_id;
-
-        }
-
-    }
-
-    $role = $_POST['myrole'];
-
-    $title_index = array_search($role,$wp4toastmasters_officer_titles);
-
-    $wp4toastmasters_officer_ids[$title_index] = $current_user->ID;
-
-
-
-    update_option('wp4toastmasters_officer_titles',$wp4toastmasters_officer_titles);
-
-    update_option('wp4toastmasters_officer_ids',$wp4toastmasters_officer_ids);
-
-    echo '<div class="notice notice-success"><p>User Account Options Saved</p></div>';
-
-}
-
-
-
-}
-
-
-
-if(!empty($_POST['pwd'])) {
-
-    global $current_user;
-
-    reset_password($current_user,stripslashes($_POST['pwd']));
-
-    $weakwarning = (empty($_POST['pw_weak'])) ? '' : '<span style="color:red; font-weight: bold;">Warning: A weak password makes it more likely your site will be hacked.</span>';
-
-    echo '<div class="notice notice-success"><p>Password Changed - you must <a href="'.wp_login_url(admin_url('admin.php?page=wp4t_setup_wizard&setup_wizard=2')).'">login again with your new password</a> to continue. '.$weakwarning.'</p></div>';
-
-}
-
-
-
-if(empty($_REQUEST['setup_wizard']))
-
-    wpt_setup_wizard_1();
-
-elseif($_REQUEST['setup_wizard'] == '1')
-
-    wpt_setup_wizard_2();
-
-elseif($_REQUEST['setup_wizard'] == '2')
-
-    wpt_setup_wizard_3();
-
-
-
-do_action('wpt_wizard_post');
-
-
-
-echo '<div>';
-
-}
-
-
-
-function wpt_setup_wizard_1 () {
-
-    $template_id = get_option('default_toastmasters_template');
-
-    if($template_id) {
-
-        $template = get_post($template_id);
-
-        if(empty($template))
-
-            $template_id = 0; //document does not exist
-
-    }
-
-    $templates = rsvpmaker_get_templates();
-
-    if(empty($templates))
-
-        {
-
-            echo '<h2>Error: Agenda Templates appear to have been deleted</h2><p><a href="'.admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_setup&new_template=1').'">Create a new template</a>, then return to this wizard.</p>';
-
-            return;
-
-        }
-
-    $options = '';
-
-    foreach($templates as $template) {
-
-        $s = ($template->ID == $template_id) ? ' selected="selected" ' : '';
-
-        $options .= sprintf('<option value="%s" %s>%s</option>',$template->ID,$s,$template->post_title);
-
-    }
-
-
-
-    ?>
-
-    <h2>Step 1: Meeting Defaults</h2>
-
-    <p>The default template is for a meeting with 3 speakers, 3 evaluators, and Table Topics, timed to last one hour. Use this form to make some adjustments to the basic organization of your meetings. You can customize your standard meeting template further, using the WordPress editor, but this will get you off to a quicker start.</p>
-
-    <form method="post" action="<?php echo admin_url('admin.php?page=wp4t_setup_wizard'); ?>">
-
-    <p><img src="<?php echo plugins_url('images/noun_welcome_882790-50.png',__FILE__); ?>"> <label>Welcome and Introductions</label> Time Allowed <input type="number" name="time_open" value="5" /></p>
-
-    <p>Toastmaster of the Day introduces self, other role players. Time Allowed <input type="number" name="time_tod" value="5" /></p>
-
-    <p>Supporting roles on your agenda (separated by commas)
-
-    <br /><input type="text" name="otherroles" value="Ah Counter, Body Language Monitor, Grammarian, Humorist, Timer, Vote Counter" style="width: 80%;" />
-
-    </p>
-
-    <p><img src="<?php echo plugins_url('images/noun_public-speaking_1681645-50.png',__FILE__); ?>"> <label>Number of Speakers and Evaluators at a Typical Meeting </label> <input name="numberspeakers"  type="number" value="3" ></p>
-
-    <p><img src="<?php echo plugins_url('images/noun_Microphone_3953338-50.png',__FILE__); ?>"> <label>Topics Master leads Table Topics</label> <select name="tabletopics">
-
-    <option value="before">before speakers</option>
-
-    <option value="after">after speakers, before evaluators</option>
-
-    <option value="end">end of the meeting</option>
-
-    <option value="">no Table Topics</option>
-
-    </select> Time Allowed <input name="time_tt"  type="number" value="10" /></p>
-
-    <p><label>Break</label> <select name="break">
-
-    <option val="">None</option>
-
-    <option value="before">before speakers</option>
-
-    <option value="afterspeakers">after speakers</option>
-
-    <option value="afterevaluators">after evaluators</option>
-
-    <select>
-
-    Time Allowed <input name="time_break" value="5"  type="number"  />
-
-    </p>
-
-    <p><label>Reports</label><br /> <textarea name="reports" style="width: 80%;">General Evaluator calls for reports from supporting players. General Evaluator then gives an overall evaluation of the meeting.</textarea><br />Time Allowed <input name="time_ge" value="5"  type="number"  /></p>
-
-    <p><img src="<?php echo plugins_url('images/noun_Award_2887079-50.png',__FILE__); ?>"> <label>Meeting Closing Activities</label><br /> <textarea name="closing" style="width: 80%;">Toastmaster of the Day presents the awards. President or Presiding officer closes the meeting.</textarea><br />Time Allowed <input name="time_closing" value="4"  type="number" /></p>
-
-    <p><label>Include Theme and/or Word of the Day on the Agenda</label> <input type="radio" name="theme" value="1" checked="checked" /> Yes <input type="radio" name="theme" value="0" > No
-
-    <label>Label</label>  <input name="theme_label" value="Theme and Word of the Day" style="width: 20em;" /></p>
-
-    <p><label>Include Member Absences Widget</label> <input type="radio" name="absences" value="1" checked="checked" /> Yes <input type="radio" name="absences" value="0" > No</p>
-
-    <p><img src="<?php echo plugins_url('images/noun_Registration_2018816-50.png',__FILE__); ?>"> <label>Invite Guests to Register Online</label> <input type="radio" name="invite" value="1" checked="checked" /> Yes <input type="radio" name="invite" value="0" > No</p>
-
-    <p><label>Show timezone on events (recommended for online clubs)</label> <input type="radio" name="timezone" value="1" checked="checked" /> Yes <input type="radio" name="timezone" value="0" > No</p>
-
-    <p><label>Allow Member Data to Sync (see <a target="_blank" href="" target="_blank">blog post</a>)</label> <input type="radio" name="sync" value="1" checked="checked" /> Yes <input type="radio" name="sync" value="0" > No</p>
-
-    <input type="hidden" name="setup_wizard" value="1" />
-
-    <p>Template to Update <select name="template_id"><?php echo $options; ?></select></p>
-
-
-
-    <?php submit_button('Next'); ?>
-
-    </form>
-    <p><em>Icons from <a href="https://thenounproject.com/">The Noun Project</a>: "welcome" by Gan Khoon Lay, "public speaking" by Becris, "Microphone" by Nawicon, "Award" by Flatart, "Registration" by Shiva.</em></p>
-    <?php    
-
-}
-
-
-
-function wpt_setup_wizard_2 () {
-
-    update_option('wp4t_setup_wizard_used',time());
-
-    $wp4toastmasters_officer_titles = get_option('wp4toastmasters_officer_titles');
-
-    if(empty($wp4toastmasters_officer_titles))
-
-        $wp4toastmasters_officer_titles = array(__("President",'rsvpmaker-for-toastmasters'),__("VP of Education",'rsvpmaker-for-toastmasters'),__("VP of Membership",'rsvpmaker-for-toastmasters'),__("VP of Public Relations",'rsvpmaker-for-toastmasters'),__("Secretary",'rsvpmaker-for-toastmasters'),__("Treasurer",'rsvpmaker-for-toastmasters'),__("Sgt. at Arms",'rsvpmaker-for-toastmasters'),__("Webmaster",'rsvpmaker-for-toastmasters'),__("Immediate Past President",'rsvpmaker-for-toastmasters'));
-
-    elseif(!in_array('Webmaster',$wp4toastmasters_officer_titles))
-
-        {
-
-            foreach($wp4toastmasters_officer_titles as $index => $title) {
-
-                if(empty($title)) {
-
-                    $wp4toastmasters_officer_titles[$index] = 'Webmaster';
-
-                    break;
-
-                }
-
-            }
-
-            update_option('wp4toastmasters_officer_titles',$wp4toastmasters_officer_titles);
-
-        }
-
-    $oopt = '';
-
-    foreach($wp4toastmasters_officer_titles as $title) {
-
-        if(!empty($title))
-
-        $oopt .= sprintf('<option value="%s">%s</option>',$title,$title);
-
-    }
-
-    ?>
-
-    <h2>Step 2: User Accounts</h2>
-
-    <form method="post" action="<?php echo admin_url('admin.php?page=wp4t_setup_wizard'); ?>">
-
-    <p>If you received a randomly generated password by email, <strong style="color:red;">change it now</strong>. Picking a strong password reduces the risk your site could be hacked.</p>
-
-    <?php wpt_wizard_password(); ?>
-
-    <p><label>My Officer Role</label> <select name="myrole" >
-
-    <option value="">None</option>
-
-    <option value="Webmaster" selected="selected">Webmaster</option>
-
-    <?php echo $oopt;?>
+	<?php echo $oopt; ?>
 
    </select></p>
 
    <h3>Invite Others</h3>
 
-    <p>It's a good idea to invite a few people who can review what you are doing with the website and join you in experimenting with using the online agenda. When the website is ready, you can invite in all your members using the roster spreadsheet from Club Central.</p>
+	<p>It's a good idea to invite a few people who can review what you are doing with the website and join you in experimenting with using the online agenda. When the website is ready, you can invite in all your members using the roster spreadsheet from Club Central.</p>
 
-<?php for($i = 0; $i < 5; $i++) { ?>
+	<?php for ( $i = 0; $i < 5; $i++ ) { ?>
 
-    <p><label>First Name</label> <input type="text" name="first[]" />
+	<p><label>First Name</label> <input type="text" name="first[]" />
 
-    <label>Last Name</label> <input type="text" name="last[]" />
+	<label>Last Name</label> <input type="text" name="last[]" />
 
-    <label>Email</label> <input type="text" name="email[]" /></p>
+	<label>Email</label> <input type="text" name="email[]" /></p>
 
-    <blockquote>
+	<blockquote>
 
  <label>Officer Role</label> <select name="role[]" >
 
-    <option value="">None</option>
+	<option value="">None</option>
 
-    <?php echo $oopt;?>
+		<?php echo $oopt; ?>
 
    </select>
 
    <label>Security </label> <select name="security[]" >
 
-    <option value="">Member</option>
+	<option value="">Member</option>
 
-    <option value="administrator">Administrator</option>
+	<option value="administrator">Administrator</option>
 
-    <option value="manager">Manager</option>
+	<option value="manager">Manager</option>
 
-    <option value="editor">Editor</option>
+	<option value="editor">Editor</option>
 
-    <option value="author">Author</option>
+	<option value="author">Author</option>
 
    </select></blockquote>
 
-<?php 
+		<?php
 
-}
+	}
 
-?>
+	?>
 
    <p>Note on security roles: You may want to assign another Administrator who will have security rights equal to your own. A Manager can do most of the same things as an administrator, including adding user accounts, but cannot change the basic settings of the website. An Editor can add and edit pages and blog posts. An author can post to the blog but cannot edit other people's content.</p>
 
-    <?php do_action('wpt_wizard_screen_2'); ?>
+	<?php do_action( 'wpt_wizard_screen_2' ); ?>
 
-    <input type="hidden" name="setup_wizard" value="2" />
+	<input type="hidden" name="setup_wizard" value="2" />
 
-    <?php submit_button('Next'); ?>
+	<?php submit_button( 'Next' ); ?>
 
-    </form>
+	</form>
 
 
 
-    <?php    
+	<?php
 
 }
 
 
 
-function wpt_setup_wizard_3 () {
+function wpt_setup_wizard_3() {
 
-    global $rsvp_options;
+	global $rsvp_options;
 
-    update_option('wp4t_setup_wizard_used',time());
+	update_option( 'wp4t_setup_wizard_used', time() );
 
-    $template_id = get_option('default_toastmasters_template');
+	$template_id = get_option( 'default_toastmasters_template' );
 
-    $upcoming = future_rsvpmakers_by_template($template_id);
+	$upcoming = future_rsvpmakers_by_template( $template_id );
 
-    $next = $upcoming[0];
+	$next = $upcoming[0];
 
-    $frontpage_id = get_option( 'page_on_front' );
+	$frontpage_id = get_option( 'page_on_front' );
 
-    ob_start();
+	ob_start();
 
-    ?>
+	?>
 
-    <h2>Next Steps</h2>
+	<h2>Next Steps</h2>
 
 <div id="bullets">
 
 <h3>Basics</h3>
 
-    <ul>
+	<ul>
 
-    <li><a target="_blank" href="<?php echo admin_url('post.php?post='.$frontpage_id.'&action=edit'); ?>">Edit your home page</a> - tell everyone what makes your club special! <a target="_blank" href="https://wordpress.org/support/article/wordpress-editor/">Learn about the WordPress editor</a>.</li>
+	<li><a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $frontpage_id . '&action=edit' ); ?>">Edit your home page</a> - tell everyone what makes your club special! <a target="_blank" href="https://wordpress.org/support/article/wordpress-editor/">Learn about the WordPress editor</a>.</li>
 
-    <li>View the <a target="_blank" href="<?php echo get_permalink($next); ?>">role signup page</a> for a meeting and <a target="_blank" href="<?php echo get_permalink($next); ?>?print_agenda=1&no_print=1">agenda</a> for a meeting. Try signing up for a role. Explore the different options on the agenda menu, such as how to email it to the club. Ask club officers or other trusted users to test these features as well.</li>
+	<li>View the <a target="_blank" href="<?php echo get_permalink( $next ); ?>">role signup page</a> for a meeting and <a target="_blank" href="<?php echo get_permalink( $next ); ?>?print_agenda=1&no_print=1">agenda</a> for a meeting. Try signing up for a role. Explore the different options on the agenda menu, such as how to email it to the club. Ask club officers or other trusted users to test these features as well.</li>
 
-    <li>Once things are starting to look good, <a target="_blank" href="<?php echo admin_url('users.php?page=add_awesome_member'); ?>">add members</a> to your club website. You can save time by importing the member roster spreadsheet you can get from Club Central on toastmasters.org. <a target="blank" href="https://www.wp4toastmasters.com/2018/10/05/video-how-to-import-your-member-list-then-add-and-accounts-after-dues-renewal/">Learn How</a></li>
+	<li>Once things are starting to look good, <a target="_blank" href="<?php echo admin_url( 'users.php?page=add_awesome_member' ); ?>">add members</a> to your club website. You can save time by importing the member roster spreadsheet you can get from Club Central on toastmasters.org. <a target="blank" href="https://www.wp4toastmasters.com/2018/10/05/video-how-to-import-your-member-list-then-add-and-accounts-after-dues-renewal/">Learn How</a></li>
 
 </ul>
 
@@ -800,61 +745,60 @@ function wpt_setup_wizard_3 () {
 
 <ul>
 
-    <li>Open your primary <a target="_blank" href="<?php echo admin_url('post.php?post='.$template_id.'&action=edit'); ?>">agenda template in the WordPress editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/">Learn How</a></li>
+	<li>Open your primary <a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $template_id . '&action=edit' ); ?>">agenda template in the WordPress editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/">Learn How</a></li>
 
-    <li><strong>Meeting online?</strong> <a target="_blank" href="<?php echo admin_url('post.php?post='.$rsvp_options['rsvp_confirm'].'&action=edit'); ?>">Edit the confirmation message for guest registrations</a> to include the details about how to access your online meetings.</li>
+	<li><strong>Meeting online?</strong> <a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $rsvp_options['rsvp_confirm'] . '&action=edit' ); ?>">Edit the confirmation message for guest registrations</a> to include the details about how to access your online meetings.</li>
 
-    <li>Check out the design options available in the <a target="_blank" href="<?php echo admin_url('customize.php?return=%2Fwp-admin%2F'); ?>">Customize</a> tool. <a target="_blank" href="https://www.wp4toastmasters.com/2020/11/09/video-change-the-look-of-your-club-website/">Learn How</a></li>
+	<li>Check out the design options available in the <a target="_blank" href="<?php echo admin_url( 'customize.php?return=%2Fwp-admin%2F' ); ?>">Customize</a> tool. <a target="_blank" href="https://www.wp4toastmasters.com/2020/11/09/video-change-the-look-of-your-club-website/">Learn How</a></li>
 
-    <li>Set up the <a target="_blank" href="<?php echo admin_url('options-general.php?page=member_application_settings'); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/">Learn How</a></li>
+	<li>Set up the <a target="_blank" href="<?php echo admin_url( 'options-general.php?page=member_application_settings' ); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/">Learn How</a></li>
 
-    <li>Learn to <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/where-to-find-things-administration-menus/">navigate the admin menus</a>. Where to find the various options, other than through this setup wizard.</li>
+	<li>Learn to <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/where-to-find-things-administration-menus/">navigate the admin menus</a>. Where to find the various options, other than through this setup wizard.</li>
 
-    <li>Explore the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a> for additional options.</li>
+	<li>Explore the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a> for additional options.</li>
 
-    </ul>
+	</ul>
 
 
 
-<?php do_action('wpt_wizard_screen_3'); ?>
+	<?php do_action( 'wpt_wizard_screen_3' ); ?>
 
 
 
 </div>
 
-<?php
+	<?php
 
-    $message = ob_get_flush();
+	$message = ob_get_flush();
 
-    if(!empty($_POST['setup_wizard'])) {
+	if ( ! empty( $_POST['setup_wizard'] ) ) {
 
-        global $current_user;
+		global $current_user;
 
-        $wpt_next_steps = get_user_meta($current_user->ID,'wpt_next_steps',true);
+		$wpt_next_steps = get_user_meta( $current_user->ID, 'wpt_next_steps', true );
 
-        if(!$wpt_next_steps) {
+		if ( ! $wpt_next_steps ) {
 
-            $mail['html'] = $message."\n\n".'<p>For how-to documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>.</p>';
+			$mail['html'] = $message . "\n\n" . '<p>For how-to documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>.</p>';
 
-            $mail['subject'] = 'Next steps after completing the Toastmasters setup wizard';
+			$mail['subject'] = 'Next steps after completing the Toastmasters setup wizard';
 
-            $mail['to'] = $current_user->user_email;
+			$mail['to'] = $current_user->user_email;
 
-            $mail['from'] = 'david@wp4toastmasters.com';
+			$mail['from'] = 'david@wp4toastmasters.com';
 
-            $mail['fromname'] = 'WordPress for Toastmasters setup wizard';
+			$mail['fromname'] = 'WordPress for Toastmasters setup wizard';
 
-            rsvpmailer($mail);
+			rsvpmailer( $mail );
 
-            echo 'sending next steps by email';
+			echo 'sending next steps by email';
 
-            update_user_meta($current_user->ID,'wpt_next_steps',true);
+			update_user_meta( $current_user->ID, 'wpt_next_steps', true );
 
-        }
+		}
+	}
 
-    }
-
-?>
+	?>
 
 <h2>Documentation</h2>
 
@@ -866,7 +810,7 @@ function wpt_setup_wizard_3 () {
 
 
 
-<?php
+	<?php
 
 }
 
@@ -874,151 +818,152 @@ function wpt_setup_wizard_3 () {
 
 function wpt_wizard_password() {
 
-    global $current_user;
+	global $current_user;
 
-    $profileuser = $current_user;
+	$profileuser = $current_user;
 
-    ?>
+	?>
 
-    <table class="form-table" role="presentation">
+	<table class="form-table" role="presentation">
 
-    <tr id="password" class="user-pass1-wrap">
+	<tr id="password" class="user-pass1-wrap">
 
-        <th><label for="pass1"><?php _e( 'New Password' ); ?></label></th>
+		<th><label for="pass1"><?php _e( 'New Password' ); ?></label></th>
 
-        <td>
+		<td>
 
-            <input class="hidden" value=" " /><!-- #24364 workaround -->
+			<input class="hidden" value=" " /><!-- #24364 workaround -->
 
-            <button type="button" class="button wp-generate-pw hide-if-no-js" aria-expanded="false"><?php _e( 'Set New Password' ); ?></button>
+			<button type="button" class="button wp-generate-pw hide-if-no-js" aria-expanded="false"><?php _e( 'Set New Password' ); ?></button>
 
-            <div class="wp-pwd hide-if-js">
+			<div class="wp-pwd hide-if-js">
 
-                <span class="password-input-wrapper">
+				<span class="password-input-wrapper">
 
-                <input type="hidden" name="user_login" value="<?php echo $current_user->user_login; ?>" />
+				<input type="hidden" name="user_login" value="<?php echo esc_attr($current_user->user_login); ?>" />
 
-                    <input type="password" name="pwd" id="pass1" class="regular-text" value="" autocomplete="off" data-pw="<?php echo esc_attr( wp_generate_password( 24 ) ); ?>" aria-describedby="pass-strength-result" />
+					<input type="password" name="pwd" id="pass1" class="regular-text" value="" autocomplete="off" data-pw="<?php echo esc_attr( wp_generate_password( 24 ) ); ?>" aria-describedby="pass-strength-result" />
 
-                </span>
+				</span>
 
-                <button type="button" class="button wp-hide-pw hide-if-no-js" data-toggle="0" aria-label="<?php esc_attr_e( 'Hide password' ); ?>">
+				<button type="button" class="button wp-hide-pw hide-if-no-js" data-toggle="0" aria-label="<?php esc_attr_e( 'Hide password' ); ?>">
 
-                    <span class="dashicons dashicons-hidden" aria-hidden="true"></span>
+					<span class="dashicons dashicons-hidden" aria-hidden="true"></span>
 
-                    <span class="text"><?php _e( 'Hide' ); ?></span>
+					<span class="text"><?php _e( 'Hide' ); ?></span>
 
-                </button>
+				</button>
 
-                <button type="button" class="button wp-cancel-pw hide-if-no-js" data-toggle="0" aria-label="<?php esc_attr_e( 'Cancel password change' ); ?>">
+				<button type="button" class="button wp-cancel-pw hide-if-no-js" data-toggle="0" aria-label="<?php esc_attr_e( 'Cancel password change' ); ?>">
 
-                    <span class="dashicons dashicons-no" aria-hidden="true"></span>
+					<span class="dashicons dashicons-no" aria-hidden="true"></span>
 
-                    <span class="text"><?php _e( 'Cancel' ); ?></span>
+					<span class="text"><?php _e( 'Cancel' ); ?></span>
 
-                </button>
+				</button>
 
-                <div style="display:none" id="pass-strength-result" aria-live="polite"></div>
+				<div style="display:none" id="pass-strength-result" aria-live="polite"></div>
 
-            </div>
+			</div>
 
-        </td>
+		</td>
 
-    </tr>
+	</tr>
 
-    <tr class="user-pass2-wrap hide-if-js">
+	<tr class="user-pass2-wrap hide-if-js">
 
-        <th scope="row"><label for="pass2"><?php _e( 'Repeat New Password' ); ?></label></th>
+		<th scope="row"><label for="pass2"><?php _e( 'Repeat New Password' ); ?></label></th>
 
-        <td>
+		<td>
 
-        <input name="pass2" type="password" id="pass2" class="regular-text" value="" autocomplete="off" aria-describedby="pass2-desc" />
+		<input name="pass2" type="password" id="pass2" class="regular-text" value="" autocomplete="off" aria-describedby="pass2-desc" />
 
-                    <p class="description" id="pass2-desc"><?php _e( 'Type the new password again.' ); ?></p>
+					<p class="description" id="pass2-desc"><?php _e( 'Type the new password again.' ); ?></p>
 
-        </td>
+		</td>
 
-    </tr>
+	</tr>
 
-    <tr class="pw-weak">
+	<tr class="pw-weak">
 
-        <th><?php _e( 'Confirm Password' ); ?></th>
+		<th><?php _e( 'Confirm Password' ); ?></th>
 
-        <td>
+		<td>
 
-            <label>
+			<label>
 
-                <input type="checkbox" name="pw_weak" class="pw-checkbox" />
+				<input type="checkbox" name="pw_weak" class="pw-checkbox" />
 
-                <span id="pw-weak-text-label"><?php _e( 'Confirm use of weak password' ); ?></span>
+				<span id="pw-weak-text-label"><?php _e( 'Confirm use of weak password' ); ?></span>
 
-            </label>
+			</label>
 
-        </td>
+		</td>
 
-    </tr>
+	</tr>
 
-    </table>
+	</table>
 
-<?php    
+	<?php
 
 }
 
 
 
-function wpt_wizard_check_member($user) {
+function wpt_wizard_check_member( $user ) {
 
-	foreach($user as $name => $value)
+	foreach ( $user as $name => $value ) {
 
-		$user[$name] = trim($value);	
+		$user[ $name ] = trim( $value );
+	}
 
-	if(empty($user["first_name"]) || empty($user["last_name"]))
+	if ( empty( $user['first_name'] ) || empty( $user['last_name'] ) ) {
 
 		return;
+	}
 
+	if ( empty( $user['user_login'] ) ) {
 
+		// assign based on first name or first+last
 
-	if(empty($user["user_login"]) )
+		$user['user_login'] = preg_replace( '/[^a-z]/', '', strtolower( $user['first_name'] ) );
 
-		{
+		if ( get_user_by( 'login', $user['user_login'] ) ) {
 
-		//assign based on first name or first+last
-
-		$user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"]));
-
-		if(get_user_by('login',$user["user_login"] ))
-
-			$user["user_login"] = preg_replace('/[^a-z]/','',strtolower($user["first_name"].$user["last_name"]));
-
+			$user['user_login'] = preg_replace( '/[^a-z]/', '', strtolower( $user['first_name'] . $user['last_name'] ) );
 		}
+	}
 
-	if(empty($user["user_login"]))
+	if ( empty( $user['user_login'] ) ) {
 
 		return;
+	}
 
+	if ( empty( $user['user_email'] ) ) {
 
+		$user['user_email'] = $user['user_login'] . '@example.com';
+	}
 
-	if(empty($user["user_email"]))
+	if ( empty( $user['user_pass'] ) ) {
 
-		$user["user_email"] = $user["user_login"].'@example.com';
+		$user['user_pass'] = wp_generate_password();
+	}
 
-	if(empty($user["user_pass"]))
+	$login_exists = get_user_by( 'login', $user['user_login'] );
 
-		$user["user_pass"] = wp_generate_password();
+	$email_exists = get_user_by( 'email', $user['user_email'] );
 
-	$login_exists = get_user_by('login',$user["user_login"] );
+	if ( ! empty( $login_exists->ID ) ) {
 
-    $email_exists = get_user_by('email',$user["user_email"] );
+		$user['ID'] = $login_exists->ID;
+	}
 
-    if(!empty($login_exists->ID))
+	if ( ! empty( $email_exists->ID ) ) {
 
-        $user['ID'] = $login_exists->ID;
+		$user['ID'] = $email_exists->ID;
+	}
 
-    if(!empty($email_exists->ID))
-
-        $user['ID'] = $email_exists->ID;
-
-    return $user;
+	return $user;
 
 }
 
@@ -1026,34 +971,36 @@ function wpt_wizard_check_member($user) {
 
 function wpt_wizard_prompt() {
 
-    global $current_user;
+	global $current_user;
 
-    $members = get_club_members();
+	$members = get_club_members();
 
-    $wp4toastmasters_officer_titles = get_option('wp4toastmasters_officer_titles');
+	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
 
-    if(!empty($wp4toastmasters_officer_titles) || (sizeof($members) > 1) )
+	if ( ! empty( $wp4toastmasters_officer_titles ) || ( sizeof( $members ) > 1 ) ) {
 
-        return;
+		return;
+	}
 
-    $cleared = get_user_meta($current_user->ID,'rsvpmaker_agenda_notifications');
+	$cleared = get_user_meta( $current_user->ID, 'rsvpmaker_agenda_notifications' );
 
-    if(empty($cleared))
+	if ( empty( $cleared ) ) {
 
-        $cleared = array();
+		$cleared = array();
+	}
 
-    $used = get_option('wp4t_setup_wizard_used');
+	$used = get_option( 'wp4t_setup_wizard_used' );
 
-    $message ='<div style="height: 100px; padding: 20px;">';
+	$message = '<div style="height: 100px; padding: 20px;">';
 
-    $message .= sprintf('<h2>Try the <a href="%s">Club Website Setup Wizard</a></h2>',admin_url('admin.php?page=wp4t_setup_wizard'));
+	$message .= sprintf( '<h2>Try the <a href="%s">Club Website Setup Wizard</a></h2>', admin_url( 'admin.php?page=wp4t_setup_wizard' ) );
 
-    $message .= sprintf('<h3>Use the <a href="%s">setup wizard</a> to quickly tweak your agenda, invite others to test the site, and begin using your club website productively.</h3>',admin_url('admin.php?page=wp4t_setup_wizard'));
+	$message .= sprintf( '<h3>Use the <a href="%s">setup wizard</a> to quickly tweak your agenda, invite others to test the site, and begin using your club website productively.</h3>', admin_url( 'admin.php?page=wp4t_setup_wizard' ) );
 
-    $message .= '</div>';
+	$message .= '</div>';
 
-    rsvptoast_admin_notice_format($message, 'wizard', $cleared, 'info');
+	rsvptoast_admin_notice_format( $message, 'wizard', $cleared, 'info' );
 
 }
 
-add_action('admin_notices','wpt_wizard_prompt',-5);
+add_action( 'admin_notices', 'wpt_wizard_prompt', -5 );
