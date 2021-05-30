@@ -7,13 +7,23 @@
 <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
 <?php
 global $post;
-$contest_name = get_post_meta($post->ID,'toast_contest_name',true);
-$dashboard_name = (empty($contest_name)) ? $post->post_title : $contest_name;
+$contest_name   = get_post_meta( $post->ID, 'toast_contest_name', true );
+$dashboard_name = ( empty( $contest_name ) ) ? $post->post_title : $contest_name;
 ?>
-<title><?php global $post; echo $dashboard_name; ?> - Scoring <?php if($_GET['scoring'] == 'dashboard') echo 'Dashboard';?></title>
+<title>
+<?php
+global $post;
+echo esc_html($dashboard_name);
+?>
+ - Scoring 
+ <?php
+	if ( $_GET['scoring'] == 'dashboard' ) {
+		echo 'Dashboard';}
+	?>
+	</title>
 
 <?php
-	wp_head(); 
+	wp_head();
 ?>
 <style>
 input,select {max-width: 45%; min-width: 100px;}
@@ -98,9 +108,8 @@ h1, h2, h3, h4 {
 <div id="scorebody">
 
 <?php
-if(isset($_REQUEST['scoring']))
-{
-	echo toast_contest($_REQUEST['scoring']);
+if ( isset( $_REQUEST['scoring'] ) ) {
+	echo toast_contest( $_REQUEST['scoring'] );
 }
 ?>
 </div>

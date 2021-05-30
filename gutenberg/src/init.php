@@ -45,8 +45,9 @@ add_action( 'enqueue_block_assets', 'wpt_cgb_block_assets' );
  */
 function wpt_cgb_editor_assets() {
 	global $post;
-	if(!isset($_GET['action']) || !isset($post->post_type) || ($post->post_type != 'rsvpmaker'))
+	if ( ! isset( $_GET['action'] ) || ! isset( $post->post_type ) || ( $post->post_type != 'rsvpmaker' ) ) {
 		return;
+	}
 	// Scripts.
 	wp_enqueue_script(
 		'wpt-cgb-block-js', // Handle.
@@ -56,16 +57,25 @@ function wpt_cgb_editor_assets() {
 		true // Enqueue the script in the footer.
 	);
 
-	$rsvpmaker_special = get_post_meta($post->ID,'_rsvpmaker_special',true);
-	if(!empty($rsvpmaker_special))
-		wp_localize_script( 'wpt-cgb-block-js', 'toastmasters_special', $rsvpmaker_special);
-	wp_localize_script('wpt-cgb-block-js', 'wpt_rest', array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url(), 'post_id' => $post->ID ) );
+	$rsvpmaker_special = get_post_meta( $post->ID, '_rsvpmaker_special', true );
+	if ( ! empty( $rsvpmaker_special ) ) {
+		wp_localize_script( 'wpt-cgb-block-js', 'toastmasters_special', $rsvpmaker_special );
+	}
+	wp_localize_script(
+		'wpt-cgb-block-js',
+		'wpt_rest',
+		array(
+			'nonce'   => wp_create_nonce( 'wp_rest' ),
+			'url'     => get_rest_url(),
+			'post_id' => $post->ID,
+		)
+	);
 
 	// Styles.
 	wp_enqueue_style(
 		'wpt-cgb-block-editor-css', // Handle.
 		plugins_url( 'dist/blocks.editor.build.css', dirname( __FILE__ ) ), // Block editor CSS.
-		array( 'wp-edit-blocks' ), 
+		array( 'wp-edit-blocks' ),
 		filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
 	);
 } // End function wpt_cgb_editor_assets().
@@ -73,27 +83,31 @@ function wpt_cgb_editor_assets() {
 // Hook: Editor assets.
 add_action( 'enqueue_block_editor_assets', 'wpt_cgb_editor_assets' );
 
-function wpt_server_block_render(){
-	if(wp_is_json_request())
+function wpt_server_block_render() {
+	if ( wp_is_json_request() ) {
 		return;
-	register_block_type('wp4toastmasters/role', ['render_callback' => 'toastmaster_short']);
-	register_block_type('wp4toastmasters/agendaedit', ['render_callback' => 'editable_note']);	
-	register_block_type('wp4toastmasters/absences', ['render_callback' => 'tm_absence']);	
-	register_block_type('wp4toastmasters/agendasidebar', ['render_callback' => 'tmlayout_sidebar']);	
-	register_block_type('wp4toastmasters/agendamain', ['render_callback' => 'tmlayout_main']);
-	register_block_type('wp4toastmasters/agendanoterich2', ['render_callback' => 'agendanoterich2']);
+	}
+	register_block_type( 'wp4toastmasters/role', array( 'render_callback' => 'toastmaster_short' ) );
+	register_block_type( 'wp4toastmasters/agendaedit', array( 'render_callback' => 'editable_note' ) );
+	register_block_type( 'wp4toastmasters/absences', array( 'render_callback' => 'tm_absence' ) );
+	register_block_type( 'wp4toastmasters/agendasidebar', array( 'render_callback' => 'tmlayout_sidebar' ) );
+	register_block_type( 'wp4toastmasters/agendamain', array( 'render_callback' => 'tmlayout_main' ) );
+	register_block_type( 'wp4toastmasters/agendanoterich2', array( 'render_callback' => 'agendanoterich2' ) );
 }
 
-function agendanoterich2($atts, $content) {
-$output = false;
-global $emailcontext;
-if($emailcontext)
-	$output = true;
-if(isset($_GET['print_agenda']) || isset($_GET['email_agenda']))
-	$output = true;
-if($output)
-	return $content;
-return;
+function agendanoterich2( $atts, $content ) {
+	$output = false;
+	global $emailcontext;
+	if ( $emailcontext ) {
+		$output = true;
+	}
+	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) ) {
+		$output = true;
+	}
+	if ( $output ) {
+		return $content;
+	}
+	return;
 }
 
-add_action('init','wpt_server_block_render');
+add_action( 'init', 'wpt_server_block_render' );

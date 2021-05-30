@@ -1,18 +1,17 @@
-<?php 
-if(!isset($_POST['applicant_signature']))
-{
-?>
+<?php
+if ( ! isset( $_POST['applicant_signature'] ) ) {
+	?>
 <form method="post" action="<?php echo get_permalink(); ?>">
-<?php    
+	<?php
 }
 ?>
 <p><strong>TOASTMASTERS INTERNATIONAL MEMBERSHIP APPLICATION</strong></p>
 
 
 <div style="margin-left: 10px; width: 200px; float: right; padding: 5px; border: thin solid #000; font-size: small;">
-Application Type <?php tm_application_form_hidden('membership_type');  ?>
+Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
 <br /><em>If applicant is transferring from another club, please fill in the three lines below.</em>
-<br />Previous club name <?php tm_application_form_hidden('previous_club_name'); ?><br >Previous club number<?php tm_application_form_hidden('previous_club_number'); ?><br /> Member number<?php tm_application_form_hidden('toastmasters_id'); ?>
+<br />Previous club name <?php tm_application_form_hidden( 'previous_club_name' ); ?><br >Previous club number<?php tm_application_form_hidden( 'previous_club_number' ); ?><br /> Member number<?php tm_application_form_hidden( 'toastmasters_id' ); ?>
 </div>
 
 <p>To become a club member, please</p>
@@ -21,40 +20,40 @@ Application Type <?php tm_application_form_hidden('membership_type');  ?>
 
 <p>2. Provide payment.</p>
 
-<p>Do you need an assistive technology (such as a screen reader) to view educational materials <?php tm_application_form_choice('assistive_technology', array('No','Yes'));  ?></p>
+<p>Do you need an assistive technology (such as a screen reader) to view educational materials <?php tm_application_form_choice( 'assistive_technology', array( 'No', 'Yes' ) ); ?></p>
 
 <p>MEMBERSHIP APPLICATION</p>
 
 <p><strong>Club Information</strong></p>
 
-<p><label>Club name</label> <?php tm_application_form_field('club_name'); ?><br><label>Club number</label> <?php tm_application_form_field('club_number'); ?><br><label>Club city</label> <?php tm_application_form_field('club_city'); ?></p>
+<p><label>Club name</label> <?php tm_application_form_field( 'club_name' ); ?><br><label>Club number</label> <?php tm_application_form_field( 'club_number' ); ?><br><label>Club city</label> <?php tm_application_form_field( 'club_city' ); ?></p>
 
 <p><strong>Applicant Information</strong></p>
 
-<p>Gender <?php tm_application_form_choice('gender', array('','Male','Female','Other'));  ?></p>
+<p>Gender <?php tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Other' ) ); ?></p>
 
-<p><label>Last name/Surname</label> <?php tm_application_form_field('last_name'); ?>
-<br><label>First name</label> <?php tm_application_form_field('first_name'); ?>
-<br><label>Middle name</label> <?php tm_application_form_field('middle_name'); ?></p>
+<p><label>Last name/Surname</label> <?php tm_application_form_field( 'last_name' ); ?>
+<br><label>First name</label> <?php tm_application_form_field( 'first_name' ); ?>
+<br><label>Middle name</label> <?php tm_application_form_field( 'middle_name' ); ?></p>
 
 <p>The monthly <em>Toastmaster&nbsp;</em>magazine will be sent to the following address:</p>
 
-<p><label>Organization/In care of</label> <?php tm_application_form_field('address_organization'); ?><br >
-<label>Address line 1</label> <?php tm_application_form_field('address_line1'); ?><br>
-<label>Address line 2</label> <?php tm_application_form_field('address_line2'); ?><br>
-<label>City</label> <?php tm_application_form_field('address_city'); ?><br>
-<label>State or province</label> <?php tm_application_form_field('address_state'); ?><br>
-<label>Country</label> <?php tm_application_form_field('address_country'); ?><br>
-<label>Postal Code</label> <?php tm_application_form_field('address_postalcode'); ?></p>
+<p><label>Organization/In care of</label> <?php tm_application_form_field( 'address_organization' ); ?><br >
+<label>Address line 1</label> <?php tm_application_form_field( 'address_line1' ); ?><br>
+<label>Address line 2</label> <?php tm_application_form_field( 'address_line2' ); ?><br>
+<label>City</label> <?php tm_application_form_field( 'address_city' ); ?><br>
+<label>State or province</label> <?php tm_application_form_field( 'address_state' ); ?><br>
+<label>Country</label> <?php tm_application_form_field( 'address_country' ); ?><br>
+<label>Postal Code</label> <?php tm_application_form_field( 'address_postalcode' ); ?></p>
 
-<p><label>Home phone number</label> <?php tm_application_form_field('home_phone'); ?><br>
-<label>Mobile phone number</label> <?php tm_application_form_field('mobile_phone'); ?><br>
-<label>Email address</label> <?php tm_application_form_hidden('user_email'); ?></p>
+<p><label>Home phone number</label> <?php tm_application_form_field( 'home_phone' ); ?><br>
+<label>Mobile phone number</label> <?php tm_application_form_field( 'mobile_phone' ); ?><br>
+<label>Email address</label> <?php tm_application_form_hidden( 'user_email' ); ?></p>
 
 <p><strong>Toastmasters International Dues and Fees</strong></p>
 
 <div style="padding: 5px; border: thin dotted #000;">
-<?php 
+<?php
 tm_application_fee();
 ?>
 </div>
@@ -63,24 +62,25 @@ tm_application_fee();
 <p><strong>Sponsor of New, Reinstated or Dual Member</strong></p>
 
 <?php
-if(isset($_POST['sponsor']))
-    printf('<p>%s</p>',esc_html(stripslashes($_POST['sponsor'])));
-else
-{
-    $users = get_users('blog_id='.get_current_blog_id());
-    foreach($users as $user) {
-        $userdata = get_userdata($user->ID);
-        if(!empty($userdata->last_name))
-            $name = $userdata->first_name.' '.$userdata->last_name;
-        else
-            $name = $userdata->display_name;
-        $names[] = $name;    
-    }
-    sort($names);
-    $o = '<option value="">None Selected</option>';
-    foreach($names as $name)
-        $o .= sprintf('<option value="%s">%s</option>',$name,$name);
-    printf('<p><select name="sponsor">%s</select></p>',$o);   
+if ( isset( $_POST['sponsor'] ) ) {
+	printf( '<p>%s</p>', esc_html( sanitize_text_field( stripslashes( $_POST['sponsor'] ) ) ) );
+} else {
+	$users = get_users( 'blog_id=' . get_current_blog_id() );
+	foreach ( $users as $user ) {
+		$userdata = get_userdata( $user->ID );
+		if ( ! empty( $userdata->last_name ) ) {
+			$name = $userdata->first_name . ' ' . $userdata->last_name;
+		} else {
+			$name = $userdata->display_name;
+		}
+		$names[] = $name;
+	}
+	sort( $names );
+	$o = '<option value="">None Selected</option>';
+	foreach ( $names as $name ) {
+		$o .= sprintf( '<option value="%s">%s</option>', $name, $name );
+	}
+	printf( '<p><select name="sponsor">%s</select></p>', $o );
 }
 ?>
 
@@ -95,9 +95,9 @@ else
 <li>Maintain&nbsp;changes to my personal contact information to ensure it is accurate and current by updating my personal profile page located on the Toastmasters International website:&nbsp;<strong>www.toastmasters.org/login</strong>. I understand that the majority of the data requested in this application is necessary for administrative and planning purposes.</li>
 </ul>
 
-<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> Mail <?php tm_application_form_choice('mail_ok', array('Yes','No'));  ?> Email <?php tm_application_form_choice('email_ok', array('Yes','No'));  ?> Phone <?php tm_application_form_choice('phone_ok', array('Yes','No'));  ?></p>
+<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> Mail <?php tm_application_form_choice( 'mail_ok', array( 'Yes', 'No' ) ); ?> Email <?php tm_application_form_choice( 'email_ok', array( 'Yes', 'No' ) ); ?> Phone <?php tm_application_form_choice( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
 
-<p>If you would rather not receive non-essential communications from us, please select "No" <?php tm_application_form_choice('opt_out', array('Yes, communication is welcome','No, I wish to opt out of non-esssential communications'));  ?></p>
+<p>If you would rather not receive non-essential communications from us, please select "No" <?php tm_application_form_choice( 'opt_out', array( 'Yes, communication is welcome', 'No, I wish to opt out of non-esssential communications' ) ); ?></p>
 
 <p>For our full privacy policy, you may visit&nbsp;<strong><a target="_blank" href="https://www.toastmasters.org/footer/privacy-policy">www.toastmasters.org/footer/privacy-policy</a></strong>.</p>
 
@@ -112,11 +112,13 @@ else
 <p>By my signature below, I agree to the terms of A Toastmaster’s Promise and the Member’s Agreement and Release stated above, and certify that I am 18 years of age or older (in compliance with the Toastmasters Club Constitution for Clubs of Toastmasters International).</p>
 
 <p><em>I acknowledge that my electronic signature on this document is legally equivalent to my handwritten signature.</em> Type your name as the electronic signature.</p>
-<p><label>Applicant’s signature</label> <?php tm_application_form_field('applicant_signature'); ?><br >
-<label>Date</label> <?php tm_application_form_field('applicant_signature_date'); ?>
+<p><label>Applicant’s signature</label> <?php tm_application_form_field( 'applicant_signature' ); ?><br >
+<label>Date</label> <?php tm_application_form_field( 'applicant_signature_date' ); ?>
 </p>
 <?php
-if(!isset($_POST['applicant_signature']))
-echo '<p><button>Submit</button></p></form>';
+wp_nonce_field('applicant_signature');
+if ( ! isset( $_POST['applicant_signature'] ) ) {
+	echo '<p><button>Submit</button></p></form>';
+}
 ?>
 <p>&nbsp;</p>

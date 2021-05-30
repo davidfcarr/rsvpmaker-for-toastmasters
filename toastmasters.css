@@ -152,91 +152,91 @@ button.save_changes.focus, .save_changes:focus
 }
 @media (max-width: 600px) {
   #cssmenu > ul {
-    width: 100%;
+	width: 100%;
   }
   #cssmenu > ul li#responsive-tab {
-    display: block;
+	display: block;
   }
   #cssmenu > ul li#responsive-tab a {
-    background: url('images/menu.png') no-repeat;
-    background-position: 95% -35%;
+	background: url('images/menu.png') no-repeat;
+	background-position: 95% -35%;
   }
   #cssmenu > ul li#responsive-tab a:hover {
-    background-color: #d80041;
-    background-position: 95% 135%;
+	background-color: #d80041;
+	background-position: 95% 135%;
   }
   #cssmenu > ul li {
-    display: none;
+	display: none;
   }
   #cssmenu > ul li.right {
-    float: none;
+	float: none;
   }
   #cssmenu > ul li.has-sub {
-    position: relative;
+	position: relative;
   }
   #cssmenu > ul li.has-sub ul {
-    display: block;
-    position: static;
-    width: 100%;
-    background: #ffffff;
-    border: 0 none;
+	display: block;
+	position: static;
+	width: 100%;
+	background: #ffffff;
+	border: 0 none;
   }
   #cssmenu > ul li.has-sub ul li {
-    display: block !important;
+	display: block !important;
   }
   #cssmenu > ul li.has-sub ul li a span {
-    display: block;
-    padding-left: 24px;
+	display: block;
+	padding-left: 24px;
   }
   #cssmenu > ul li.has-sub > a {
-    background-image: none;
+	background-image: none;
   }
 }
 /* Make sure they show even if hidden in mobile view by JS */
 @media (min-width: 600px) {
   #cssmenu > ul > li.collapsed {
-    display: inline-block !important;
-    *display: inline;
-    zoom: 1;
+	display: inline-block !important;
+	*display: inline;
+	zoom: 1;
   }
   #cssmenu > ul ul li.collapsed {
-    display: block !important;
+	display: block !important;
   }
 }
 
-@-webkit-keyframes bounce { 
-   0%, 100% {opacity:1;} 
-    50% {opacity:0;}
-} 
-
-@keyframes bounce { 
-   0%, 100% {opacity:1;} 
-    50% {opacity:0;}
+@-webkit-keyframes bounce {
+   0%, 100% {opacity:1;}
+	50% {opacity:0;}
 }
 
-.bounce { 
-    -webkit-animation-name: bounce; 
-    animation-name: bounce; 
+@keyframes bounce {
+   0%, 100% {opacity:1;}
+	50% {opacity:0;}
+}
+
+.bounce {
+	-webkit-animation-name: bounce;
+	animation-name: bounce;
   background:#fff;
   transform: scale(.1);
   -webkit-transform: scale(.1);
   transform-origin: center;
   -webkit-transform-origin: center;
-  
-    -webkit-animation-duration: 1.5s; 
-    animation-duration: 1.5s; 
-    -webkit-animation-fill-mode: both; 
-    animation-fill-mode: both; 
-    -webkit-animation-timing-function: ease-out; 
-    animation-timing-function: ease-out; 
-    animation-iteration-count:infinite; 
-    -webkit-animation-iteration-count:infinite; 
-  
+
+	-webkit-animation-duration: 1.5s;
+	animation-duration: 1.5s;
+	-webkit-animation-fill-mode: both;
+	animation-fill-mode: both;
+	-webkit-animation-timing-function: ease-out;
+	animation-timing-function: ease-out;
+	animation-iteration-count:infinite;
+	-webkit-animation-iteration-count:infinite;
+
 }
 
 .grow {
-    transition: transform 1s ease-in;
-  
+	transition: transform 1s ease-in;
+
   -webkit-animation: grow 1.3s ease-in;
   animation: grow 1.3s;
   transform-origin: center;
@@ -252,7 +252,7 @@ button.save_changes.focus, .save_changes:focus
 
 @-webkit-keyframes grow {
 	from { transform: scaleY(.1); }
-	to{ transform: scaleY(1);background:#eee; }	
+	to{ transform: scaleY(1);background:#eee; }
 }
 
 .toasttime {

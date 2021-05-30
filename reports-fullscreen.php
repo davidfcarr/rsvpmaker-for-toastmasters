@@ -11,23 +11,25 @@ do_action( 'admin_print_styles' );
 
 <body>
 <?php
-if(!is_user_logged_in())
-	die('Login required');
-elseif(empty($_GET["tm_reports"]))
-	die('No report selected');
+if ( ! is_user_logged_in() ) {
+	die( 'Login required' );
+} elseif ( empty( $_GET['tm_reports'] ) ) {
+	die( 'No report selected' );
+}
 
-if($_GET["tm_reports"] == 'toastmasters_reports')
+if ( $_GET['tm_reports'] == 'toastmasters_reports' ) {
 	toastmasters_reports();
-elseif($_GET["tm_reports"] == 'toastmasters_attendance_report')
+} elseif ( $_GET['tm_reports'] == 'toastmasters_attendance_report' ) {
 	toastmasters_attendance_report();
-elseif($_GET["tm_reports"] == 'toastmasters_attendance')
+} elseif ( $_GET['tm_reports'] == 'toastmasters_attendance' ) {
 	toastmasters_attendance();
-elseif($_GET["tm_reports"] == 'toastmasters_cc')
+} elseif ( $_GET['tm_reports'] == 'toastmasters_cc' ) {
 	toastmasters_cc();
-elseif($_GET["tm_reports"] == 'cl_report')
+} elseif ( $_GET['tm_reports'] == 'cl_report' ) {
 	cl_report();
-elseif($_GET["tm_reports"] == 'toastmasters_mentors')
+} elseif ( $_GET['tm_reports'] == 'toastmasters_mentors' ) {
 	toastmasters_mentors();
+}
 ?>
 </body>
 </html>
