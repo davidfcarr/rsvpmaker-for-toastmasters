@@ -207,7 +207,7 @@ class WPT_Timer_Control extends WP_REST_Controller {
 
 	public function get_items( $request ) {
 		if ( ! empty( $_POST ) ) {
-			$control = $_POST;
+			$control = array_map('sanitize_text_field',$_POST);
 			update_post_meta( $request['post_id'], 'timing_light_control', $control );
 		}
 		// else
@@ -327,8 +327,8 @@ class Editor_Assign extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		$check = $_POST['check'];
-		return ( wp_verify_nonce( $check, 'wpt_role_update' ) && is_user_logged_in() && current_user_can( 'edit_signups' ) );
+		$check = sanitize_text_field($_POST['check']);
+		return ( wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) && is_user_logged_in() && current_user_can( 'edit_signups' ) );
 	}
 
 	public function handle( $request ) {
@@ -494,8 +494,8 @@ class WPTM_Dues extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		$nonce = $_POST['tmn'];
-		return ( wp_verify_nonce( $nonce, 'wpt_dues_report' ) && is_user_logged_in() && current_user_can( 'view_reports' ) );
+		$nonce = sanitize_text_field($_POST['tmn']);
+		return ( wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) && is_user_logged_in() && current_user_can( 'view_reports' ) );
 	}
 
 	public function handle( $request ) {
@@ -540,7 +540,7 @@ class WPTM_Dues extends WP_REST_Controller {
 		}
 
 		if ( ! empty( $_POST['note'] ) ) {
-			$member_id = $_POST['member_id'];
+			$member_id = sanitize_text_field($_POST['member_id']);
 			$note      = '<strong>' . sanitize_textarea_field(stripslashes( $_POST['note'] )) . '</strong> (' . $current_user->display_name . ') ' . rsvpmaker_date( 'F j, Y' );
 			$key       = sanitize_text_field($_POST['treasurer_note_key']);
 			add_user_meta( $member_id, $key, $note );
@@ -863,7 +863,6 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 		$response['next'] .= sprintf( '<p>Updated: %s</p>', date( 'r' ) );
 		$response['note']  = $note;
 		$response['log']   = $log;
-		// $response['formpost'] = $_POST;
 		return new WP_REST_Response( $response, 200 );
 	}
 }

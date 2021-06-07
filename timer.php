@@ -366,7 +366,7 @@ if ( isset( $_REQUEST['contest'] ) ) {
 	if ( $timer_code != $_REQUEST['contest'] ) {
 		wp_die( 'incorrect code' );
 	}
-	if ( isset( $_POST['time'] ) ) {
+	if ( isset( $_POST['time'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$disqualified = ( isset( $_POST['disqualified'] ) ) ? array_map('sanitize_text_field',$_POST['disqualified']) : array();
 		$timereport   = '';
 		foreach ( $_POST['time'] as $index => $value ) {
@@ -408,6 +408,7 @@ if ( isset( $_REQUEST['contest'] ) ) {
 <div id="readyline"><input type="checkbox" id="readytovote" value="1" /> Check to digitally sign this as the official time record</div>
 <div id="readyprompt"></div>
 			<div id="timesend" ><button >Send</button></div>
+			<?php rsvpmaker_nonce(); ?>
 		</form>			
 		<?php
 		$contest_timer = ob_get_clean();
@@ -504,7 +505,7 @@ printf(
 if ( ! empty( $_GET['embed'] ) && empty( $name ) ) {
 	printf( '<h1>%s</h1><p>To join the online meeting</p><ul>', $post->post_title );
 	printf( '<li>Members please <a href="%s">login</a></li>', wp_login_url( sanitize_text_field($_SERVER['REQUEST_URI']) ) );
-	printf( '<li>Guests, please enter the email you used to RSVP</li></ul><form action="%s" method="get"><p>Email <input type="text" name="email"></p><input type="hidden" name="jitsi" value="1"><p><button>Submit</button></p></form></p>', site_url( sanitize_text_field($_SERVER['REQUEST_URI']) ) );
+	printf( '<li>Guests, please enter the email you used to RSVP</li></ul><form action="%s" method="get"><p>Email <input type="text" name="email"></p><input type="hidden" name="jitsi" value="1"><p><button>Submit</button></p>%s</form></p>', site_url( sanitize_text_field($_SERVER['REQUEST_URI']) ), rsvpmaker_nonce('return') );
 } elseif ( empty( $_GET['embed'] ) ) {
 	?>
 <div id="jitsi">

@@ -121,9 +121,7 @@ p {
 <a href="' . admin_url( 'admin.php?page=wp4t_setup_wizard' ) . '&setup_wizard=2"  ' . $class3 . '>Next Steps</a></div>'
 	);
 
-	if ( isset( $_POST['setup_wizard'] ) ) {
-	if(!wp_verify_nonce($_POST['_wpnonce'],'setup_wizard'))
-		wp_die('security error');
+	if ( isset( $_POST['setup_wizard'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( $_POST['setup_wizard'] == '1' ) {
 
 			$agenda_content = '';
@@ -250,6 +248,8 @@ p {
 
 				$agenda_content .= '<!-- wp:wp4toastmasters/absences /-->' . "\n\n";
 			}
+			if(!empty($_POST['agenda_officers']))
+				wp4toastmasters_agenda_layout_check(true);
 
 			$rsvp_options['rsvp_on'] = $rsvp = (int) $_POST['invite'];
 
@@ -567,6 +567,8 @@ function wpt_setup_wizard_1() {
 
 	<p><label>Include Member Absences Widget</label> <input type="radio" name="absences" value="1" checked="checked" /> Yes <input type="radio" name="absences" value="0" > No</p>
 
+	<p><label>Include Officers Listing on Agenda</label> <input type="radio" name="agenda_officers" value="1" checked="checked" /> Yes <input type="radio" name="agenda_officers" value="0" > No</p>
+
 	<p><img src="<?php echo plugins_url( 'images/noun_Registration_2018816-50.png', __FILE__ ); ?>"> <label>Invite Guests to Register Online</label> <input type="radio" name="invite" value="1" checked="checked" /> Yes <input type="radio" name="invite" value="0" > No</p>
 
 	<p><label>Show timezone on events (recommended for online clubs)</label> <input type="radio" name="timezone" value="1" checked="checked" /> Yes <input type="radio" name="timezone" value="0" > No</p>
@@ -577,10 +579,8 @@ function wpt_setup_wizard_1() {
 
 	<p>Template to Update <select name="template_id"><?php echo $options; ?></select></p>
 
-
-
 	<?php submit_button( 'Next' ); ?>
-
+	<?php rsvpmaker_nonce(); ?>
 	</form>
 	<p><em>Icons from <a href="https://thenounproject.com/">The Noun Project</a>: "welcome" by Gan Khoon Lay, "public speaking" by Becris, "Microphone" by Nawicon, "Award" by Flatart, "Registration" by Shiva.</em></p>
 	<?php
@@ -696,13 +696,9 @@ function wpt_setup_wizard_2() {
 	<input type="hidden" name="setup_wizard" value="2" />
 
 	<?php submit_button( 'Next' ); ?>
-
+	<?php rsvpmaker_nonce(); ?>
 	</form>
-
-
-
 	<?php
-
 }
 
 
@@ -970,6 +966,8 @@ function wpt_wizard_check_member( $user ) {
 
 
 function wpt_wizard_prompt() {
+	if(function_exists('is_district') && is_district())
+		return;
 
 	global $current_user;
 

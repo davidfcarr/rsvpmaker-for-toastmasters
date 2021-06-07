@@ -346,7 +346,7 @@ function tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor
 			$permalink
 		);
 		$msg .= sprintf( "\n\n" . __( '<p>Click here to <a href="%s">ACCEPT</a> (no password required if you act before someone else takes this role)</p>', 'rsvpmaker-for-toastmasters' ), $url );
-	if ( ! empty( $_POST['editor_suggest_note'][ $name ] ) ) {
+	if ( ! empty( $_POST['editor_suggest_note'][ $name ] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$msg .= "\n\n<p><b>" . __( 'Note from', 'rsvpmaker-for-toastmasters' ) . ' ' . $user->first_name . ' ' . $user->last_name . ': </b>' . wp_kses_post(stripslashes( $_POST['editor_suggest_note'][ $name ]) ) . '</p>';
 	}
 		$mail['html']     = $msg;
@@ -441,7 +441,7 @@ font-size: 16px;
 
 	$wp4toastmasters_mailman = get_option( 'wp4toastmasters_mailman' );
 
-	if ( $_POST ) {
+	if ( isset($_POST) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( ! empty( $_POST['test'] ) && ! empty( $_POST['testto'] ) ) {
 			$mail['to'] = sanitize_text_field($_POST['testto']);
 		} elseif ( ! empty( $wp4toastmasters_mailman['members'] ) ) {
@@ -454,7 +454,7 @@ font-size: 16px;
 			}
 		}
 
-		if ( isset( $_POST['note'] ) && $_POST['note'] ) {
+		if ( isset( $_POST['note'] ) && $_POST['note'] && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 			$output = '<div id="message">' . wp_kses_post(stripslashes( $_POST['note'] )) . "</div>\n<p>Sent by: " . $current_user->display_name . ' <a href="mailto:' . $current_user->user_email . '">' . $current_user->user_email . "</a>\n" . $output;
 		}
 		$mail['html']     = $header . $output . '</body></html>';
@@ -501,7 +501,7 @@ Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><b
 <input type="submit" value="Send" />
 </form>';
 
-		$output = $header . $mailform . $output . '</body></html>';
+		$output = $header . $mailform . $output . rsvpmaker_nonce(). '</body></html>';
 	}
 
 	echo $output;

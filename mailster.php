@@ -352,7 +352,7 @@ function mailster_toastmasters() {
 	$officer_list = get_option( 'wpt_mailster_officerslist' );
 	$list_table   = $wpdb->prefix . 'mailster_lists';
 
-	if ( isset( $_POST['email'] ) ) {
+	if ( isset( $_POST['email'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$emails = preg_split( '/[,\n]/', sanitize_textarea_field($_POST['email']) );
 		foreach ( $emails as $email ) {
 			$email = strtolower( trim( $email ) );
@@ -365,7 +365,7 @@ function mailster_toastmasters() {
 			printf( '<div class="notice">Emails added to whitelist: %s</div>', var_export( $whitelist, true ) );
 		}
 	}
-	if ( isset( $_POST['extra'] ) ) {
+	if ( isset( $_POST['extra'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$unsub = get_option( 'rsvpmail_unsubscribed' );
 		if ( empty( $unsub ) ) {
 			$unsub = array();
@@ -421,7 +421,7 @@ function mailster_toastmasters() {
 	?>
 <h3>List Status</h3>
 	<?php
-	if ( isset( $_POST['activate'] ) ) {
+	if ( isset( $_POST['activate'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		foreach ( $_POST['activate'] as $list_id ) {
 			$list_id = sanitize_text_field($list_id);
 			$wpdb->query( "UPDATE $list_table SET active=1 WHERE id=$list_id" );
@@ -445,7 +445,7 @@ function mailster_toastmasters() {
 		$activate_form .= sprintf( '<p><strong>%s</strong> NOT active<br />Create email account %s pw: %s <br /><input type="checkbox" name="activate[]" value="%d" /> Mark activated</p>', $officer_login->name, $officer_login->list_mail, $officer_login->mail_in_pw, $officer_list );
 	}
 	if ( ! empty( $activate_form ) ) {
-		printf( '<form method="post" action="%s">%s<button>Activate Checked</button></form>', admin_url( 'admin.php?page=mailster_toastmasters' ), $activate_form );
+		printf( '<form method="post" action="%s">%s<button>Activate Checked</button>%s</form>', admin_url( 'admin.php?page=mailster_toastmasters' ), $activate_form, rsvpmaker_nonce('return') );
 	}
 
 	if ( ! $member_login->server_inb_id ) {
@@ -465,6 +465,7 @@ function mailster_toastmasters() {
 <form method="post" action="<?php echo admin_url( 'admin.php?page=mailster_toastmasters' ); ?>">
 <textarea name="email" rows="5" cols="80"></textarea>
 <br /><button>Add to Whitelist</button>
+<?php rsvpmaker_nonce(); ?>
 </form>
 
 <h3>Additional List Members</h3>
@@ -472,6 +473,7 @@ function mailster_toastmasters() {
 <form method="post" action="<?php echo admin_url( 'admin.php?page=mailster_toastmasters' ); ?>">
 <textarea name="extra" rows="5" cols="80"></textarea>
 <br /><button>Add to Member List</button>
+<?php rsvpmaker_nonce(); ?>
 </form>
 
 <p><a href="<?php echo admin_url( 'edit.php?post_type=rsvpemail&page=unsubscribed_list' ); ?>">Unsubscribed / blocked emails</a></p>

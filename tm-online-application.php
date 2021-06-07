@@ -11,7 +11,7 @@ function tm_member_application( $atts ) {
 	}
 
 	global $post;
-	if ( empty( $_POST['user_email'] ) ) {
+	if ( empty( $_POST['user_email'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		return tm_application_form_start( $atts );
 	}
 
@@ -39,7 +39,7 @@ label {
 	$payprompt = '';
 
 	if ( ! empty( $_POST['applicant_signature'] ) ) {
-		if(!wp_verify_nonce($_POST['_wpnonce'],'applicant_signature'))
+		if(!wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) )
 			wp_die('security error');
 		$content                 = preg_replace( '/(<(style)\b[^>]*>).*?(<\/\2>)/is', '$1$3', $output );
 		$newpost['post_type']    = 'tmapplication';
@@ -117,7 +117,7 @@ function club_fee_schedule() {
 
 function tm_application_fee() {
 	global $post;
-	if ( isset( $_POST['membership_type'] ) ) {
+	if ( isset( $_POST['membership_type'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$new     = ( $_POST['membership_type'] == 'New' ) ? 20 : 0;
 		$ti_dues = get_option( 'ti_dues' );
 		if ( empty( $ti_dues ) ) {
@@ -148,7 +148,7 @@ function tm_application_fee() {
 		$feetext .= sprintf( '<p>Club New Member Fee: <strong>%s</strong></p>', number_format( $club_new, 2 ) );
 		$feetext .= sprintf( '<p>Total Payment to Club: <strong>%s</strong></p>', number_format( $club_dues_calc + $club_new, 2 ) );
 		$feetext .= sprintf( '<p>Total: <strong>%s</strong></p>', number_format( $fee, 2 ) );
-		echo $feetext;
+		echo esc_html($feetext);
 		update_post_meta( $post->ID, 'tm_application_fee', $fee );
 		update_post_meta( $post->ID, 'tm_application_feetext', $feetext );
 	} else {
@@ -189,6 +189,7 @@ label {
 <p id="formerclubinfo"><label>Previous club name</label> <?php tm_application_form_field( 'previous_club_name' ); ?><br ><label>Previous club number</label><?php tm_application_form_field( 'previous_club_number' ); ?><br /> <label>Member number</label><?php tm_application_form_field( 'toastmasters_id' ); ?><br /><em>Appears above your name on the mailing label for Toastmaster magazine.</em></p>
 <?php wp_nonce_field('application_email'); ?>
 <button>Next Screen</button>
+<?php rsvpmaker_nonce(); ?>
 </form>
 <p>&nbsp;</p>
 
@@ -218,7 +219,7 @@ $('#membership_type').change(function(){
 }
 
 function tm_application_form_hidden( $slug ) {
-	echo ' <strong>' . stripslashes( $_POST[ $slug ] ) . '</strong>';
+	echo ' <strong>' . esc_html(stripslashes( $_POST[ $slug ] )) . '</strong>';
 	printf( '<input type="hidden" name="%s" id="%s" value="%s" />', $slug, $slug, sanitize_text_field(stripslashes( $_POST[ $slug ]) ) );
 }
 
@@ -232,9 +233,9 @@ function tm_application_form_field( $slug ) {
 	);
 
 	if ( isset( $_POST[ $slug ] ) ) {
-		echo ' <strong>' . stripslashes( $_POST[ $slug ] ) . '</strong>';
+		echo ' <strong>' . esc_html(stripslashes( sanitize_text_field($_POST[ $slug ]) )) . '</strong>';
 	} else {
-		$value = '';// get_post_meta($post->ID,'application_'.$slug,true);
+		$value = '';
 		if ( ! empty( $defaults[ $slug ] ) ) {
 			$value = $defaults[ $slug ];
 		} elseif ( strpos( $slug, 'date' ) ) {
@@ -272,12 +273,12 @@ function member_application_settings( $action = '' ) {
 	$sql     = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
 	$apppage = $wpdb->get_var( $sql );
 
-	if ( isset( $_POST['ti_dues'] ) ) {
+	if ( isset( $_POST['ti_dues'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		update_option( 'club_name', sanitize_text_field(stripslashes( $_POST['club_name'] ) ));
 		update_option( 'club_number', sanitize_text_field($_POST['club_number']) );
 		update_option( 'club_city', sanitize_text_field(stripslashes( $_POST['club_city'] ) ) );
-		update_option( 'ti_dues', sanitize_text_field($_POST['ti_dues']) );
-		update_option( 'club_dues', sanitize_text_field($_POST['club_dues']) );
+		update_option( 'ti_dues', array_map('sanitize_text_field',$_POST['ti_dues']) );
+		update_option( 'club_dues', array_map('sanitize_text_field',$_POST['club_dues']) );
 		update_option( 'club_new_member_fee', sanitize_text_field($_POST['club_new_member_fee']) );
 		update_option( 'tm_application_notifications', sanitize_text_field($_POST['tm_application_notifications']) );
 		if ( isset( $_POST['rsvpmaker_stripe_pk'] ) ) {
@@ -309,7 +310,7 @@ function member_application_settings( $action = '' ) {
 		delete_option( 'ti_dues_renewal_page' );
 	}
 
-	if ( isset( $_POST['ti_dues_renewal_page'] ) ) {
+	if ( isset( $_POST['ti_dues_renewal_page'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( is_numeric( $_POST['ti_dues_renewal_page'] ) ) {
 			update_option( 'ti_dues_renewal_page', $_POST['ti_dues_renewal_page'] );
 		} elseif ( $_POST['ti_dues_renewal_page'] == 'create' ) {
@@ -342,7 +343,7 @@ function member_application_settings( $action = '' ) {
 	<?php
 	foreach ( $months as $i => $month ) {
 		?>
-<tr><td><?php echo esc_attr($month); ?></td><td><input type="text" name="ti_dues[<?php echo $i; ?>]" value="<?php echo $ti_dues[ $i ]; ?>"  /></td><td><input type="text" name="club_dues[<?php echo $i; ?>]" value="<?php echo esc_attr($club_dues[ $i ]); ?>"  /></td></tr>
+<tr><td><?php echo esc_attr($month); ?></td><td><input type="text" name="ti_dues[<?php echo $i; ?>]" value="<?php echo esc_attr($ti_dues[ $i ]); ?>"  /></td><td><input type="text" name="club_dues[<?php echo $i; ?>]" value="<?php echo esc_attr($club_dues[ $i ]); ?>"  /></td></tr>
 		<?php
 	}
 	?>
@@ -391,6 +392,7 @@ Multiple email addresses may be entered, separated by a comma.</p>
 		printf( '<p>Application page: <a target="_blank" href="%s">View</a> or <a target="_blank" href="%s">Edit</a>', get_permalink( $apppage ), admin_url( 'post.php?action=edit&post=' . $apppage ) );
 	}
 	submit_button();
+	rsvpmaker_nonce();
 	?>
 </form>
 	<?php echo club_fee_schedule(); ?>
@@ -464,7 +466,7 @@ width: 150px;
 	global $wpdb, $current_user;
 
 	if ( isset( $_POST['officer_signature'] ) ) {
-		if(!wp_nonce_verify($_POST['_wpnonce'],'officer_signature'))
+		if(!wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')))
 			wp_die('nonce error');
 		$app_id                 = (int) $_POST['app'];
 		$application            = get_post( $app_id );
@@ -539,6 +541,7 @@ width: 150px;
 			echo '<p>Notes</br><textarea style="width: 100%;" name="notes"></textarea></p>';
 			echo submit_button( 'Approve' );
 		}
+		rsvpmaker_nonce();
 		echo '</form>';
 		echo '</div>';
 
@@ -574,7 +577,7 @@ width: 150px;
 	$results = $wpdb->get_results( 'SELECT ID, post_title, post_modified FROM ' . $wpdb->posts . ' WHERE post_status="private" AND post_type="tmapplication" ORDER BY ID DESC' );
 	if ( $results ) {
 		if ( ! empty( $emailopt ) ) {
-			printf( '<form method="post" action="%s"><p>%s <select name="add_account">%s</select> <button>%s</button></p></form>', admin_url( 'admin.php?page=member_application_approval' ), __( 'Create user account for', 'rsvpmaker-for-toastmasters' ), $emailopt, __( 'Add', 'rsvpmaker-for-toastmasters' ) );
+			printf( '<form method="post" action="%s"><p>%s <select name="add_account">%s</select> <button>%s</button></p>%s</form>', admin_url( 'admin.php?page=member_application_approval' ), __( 'Create user account for', 'rsvpmaker-for-toastmasters' ), $emailopt, __( 'Add', 'rsvpmaker-for-toastmasters' ),rsvpmaker_nonce('return') );
 		}
 		echo '<div style="border: thin solid #333; padding: 10px;">';
 		foreach ( $results as $post ) {
@@ -589,7 +592,7 @@ width: 150px;
 			} else {
 				$verified = check_application_payment( $post->ID );
 			}
-			echo $log;
+			echo esc_html($log);
 			printf( '<p><a href="%s">%s</a> %s %s</p>', admin_url( 'admin.php?page=member_application_approval&app=' . $post->ID ), $post->post_title, $post->post_modified, $verified );
 		}
 		echo '<div>';
@@ -598,18 +601,14 @@ width: 150px;
 }
 
 function member_application_upload() {
-	if ( ! empty( $_POST ) ) {
+	if ( ! empty( $_POST ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$upload_overrides = array(
 			'test_form' => false,
 		);
 		$content          = '';
-		// print_r($_POST);
-		// print_r($_FILES);
 		foreach ( $_FILES as $file ) {
 			if ( ! empty( $file[ tmp_name ] ) ) {
 				$result = wp_handle_upload( $file, $upload_overrides );
-				// echo '<br />upload result';
-				// print_r($result);
 				if ( $result['url'] ) {
 					if ( strpos( $result['type'], 'png' ) || strpos( $result['type'], 'jpg' ) || strpos( $result['type'], 'gif' ) ) {
 						$content .= sprintf( '<p><img src="%s" style="max-width: %s" /></p>', $result['url'], '95%' );
@@ -674,6 +673,7 @@ label {
 <p><label>Link:</label> <input type="text" name="application3" id="application3"></p>
 <p><input type="checkbox" name="approved"> Mark approved (signed by current user, today's date)</p>
 <p><input type="submit" value="Submit" name="submit"></p>
+<?php rsvpmaker_nonce(); ?>
 </form>
 	<?php
 }

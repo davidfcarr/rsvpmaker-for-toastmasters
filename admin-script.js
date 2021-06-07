@@ -69,15 +69,20 @@
 
 	$( '.speech_update' ).hide();
 
-	var activetab = $( 'a.nav-tab-active' ).attr( 'href' );
-	if (activetab) {
-		$( '.toastmasters section' ).hide();
-		$( 'section' + activetab ).show();
-		if (activetab == '#pathways') {
-			let user_id = $( '#toastmaster_select' ).val();
-			wpt_fetch_report( 'pathways',user_id );
-		}
-	}
+	$( '.toastmasters section' ).hide();
+	/*$( 'section#basic').show();*/
+
+	$('a.nav-tab-active').click( function() {
+		var activetab = $( 'a.nav-tab-active' ).attr( 'href' );
+		if (activetab) {
+			$( '.toastmasters section' ).hide();
+			$( 'section' + activetab ).show();
+			if (activetab == '#pathways') {
+				let user_id = $( '#toastmaster_select' ).val();
+				wpt_fetch_report( 'pathways',user_id );
+			}
+		}	
+	});
 
 	$( document ).on(
 		'click',
@@ -107,11 +112,12 @@
 			var project = $( this ).attr( 'project' );
 			$.ajax(
 				{
-					url: ajaxurl,
+					url: rsvpmaker_rest.ajaxurl,
 					method: 'POST',
 					data: {
 						'action':'remove_meta_speech',
 						'project': project,
+						'timelord': rsvpmaker_rest.timelord,
 						'user_id': user_id
 					},
 					success:function(data) {
@@ -162,7 +168,7 @@
 
 			$.ajax(
 				{
-					url: ajaxurl,
+					url: rsvpmaker_rest.ajaxurl,
 					method: 'POST',
 					data: {
 						'action':'add_speech',
@@ -173,6 +179,7 @@
 						'project_year': $( '#project_year_add' ).val(),
 						'project_month': $( '#project_month_add' ).val(),
 						'project_day': $( '#project_day_add' ).val(),
+						'timelord': rsvpmaker_rest.timelord,
 						'user_id': $( '#member' ).val()
 					},
 					success:function(data) {
@@ -198,7 +205,7 @@
 
 			$.ajax(
 				{
-					url: ajaxurl,
+					url: rsvpmaker_rest.ajaxurl,
 					method: 'POST',
 					data: {
 						'action':'add_speech',
@@ -206,6 +213,7 @@
 						'project_year': $( '#role_year_add' ).val(),
 						'project_month': $( '#role_month_add' ).val(),
 						'project_day': $( '#role_day_add' ).val(),
+						'timelord': rsvpmaker_rest.timelord,
 						'user_id': $( '#member' ).val()
 					},
 					success:function(data) {
@@ -230,7 +238,7 @@
 
 			$.ajax(
 				{
-					url: ajaxurl,
+					url: rsvpmaker_rest.ajaxurl,
 					method: 'POST',
 					data: $( this ).serialize(),
 					success:function(data) {
@@ -255,11 +263,12 @@
 
 			$.ajax(
 				{
-					url: ajaxurl,
+					url: rsvpmaker_rest.ajaxurl,
 					method: 'POST',
 					data: {
 						'action':'increment_stat',
 						'role': role,
+						'timelord': rsvpmaker_rest.timelord,
 						'user_id': user_id
 					},
 					success:function(data) {
@@ -299,18 +308,15 @@
 		'click',
 		'div.wptoast-notice button.notice-dismiss',
 		function () {
-			// Read the "data-notice" information to track which notice
-			// is being dismissed and send it via AJAX
 			var type = $( this ).closest( '.wptoast-notice' ).data( 'notice' );
-			// Make an AJAX call
-			// Since WP 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 			console.log( 'notice dismiss: ' + type );
 			$.ajax(
-				ajaxurl,
+				rsvpmaker_rest.ajaxurl,
 				{
 					type: 'POST',
 					data: {
 						action: 'wptoast_dismissed_notice_handler',
+						'timelord': rsvpmaker_rest.timelord,
 						type: type,
 					}
 				}
@@ -341,7 +347,7 @@
 				console.log( manual + ' ' + project + ' ' + title + ' ' + intro + ' ' + display_time + ' ' + maxtime );
 			}
 			$.ajax(
-				ajaxurl,
+				rsvpmaker_rest.ajaxurl,
 				{
 					type: 'POST',
 					data: {
@@ -355,6 +361,7 @@
 						title: title,
 						intro: intro,
 						display_time: display_time,
+						'timelord': rsvpmaker_rest.timelord,
 						maxtime: maxtime,
 					}
 				}

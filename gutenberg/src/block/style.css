@@ -1,11 +1,11 @@
 /*
 Error: Undefined variable: "$red".
-		on line 12 of C:\wamp64\www\beta\wp-content\plugins\wpt\src\block\style.scss
+        on line 12 of C:\wamp64\www\beta\wp-content\plugins\wpt\src\block\style.scss
 
 7: .hideonsignup {
 8: 	display: none;
 9: }
-10:
+10: 
 11: .wp-block-cgb-block-wpt  {
 12:   background: $red;
 13:   border: 0.2rem solid $black;

@@ -2,7 +2,7 @@
 
 function tm_welcome_screen_assets( $hook ) {
 	// everywhere except posts screen
-	$ver = '3.23';
+	$ver = '3.3';
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'post.php' ) ) {
 		wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css', array(), $ver );
 		wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), $ver, true );
@@ -19,7 +19,7 @@ function tm_welcome_screen_assets( $hook ) {
 
 function toastmasters_css_js() {
 	global $post, $current_user;
-	$version = '4.36';
+	$version = '4.42';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
 		return; // don't load all this in editor or post listings
 	}
@@ -40,7 +40,6 @@ function toastmasters_css_js() {
 		wp_localize_script( 'script-toastmasters', 'project_times', $times );
 		$display_times = get_projects_array( 'display_times' );
 		wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
-		wp_localize_script( 'script-toastmasters', 'ajaxurl', admin_url( 'admin-ajax.php' ) );
 		wp_localize_script(
 			'script-toastmasters',
 			'wpt_rest',
@@ -50,7 +49,7 @@ function toastmasters_css_js() {
 				'post_id' => $post->ID,
 			)
 		);
-		$tm_vars               = $_GET;
+		$tm_vars               = array_map('sanitize_text_field',$_GET);
 		$tm_vars['php_self']   = sanitize_text_field($_SERVER['PHP_SELF']);
 		$tm_vars['user_id']    = ( empty( $current_user->ID ) ) ? 0 : $current_user->ID;
 		$tm_vars['user_roles'] = ( empty( $current_user->roles ) ) ? array() : $current_user->roles;

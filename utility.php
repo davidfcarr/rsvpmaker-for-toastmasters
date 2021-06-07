@@ -1551,18 +1551,3 @@ function time_planner_2020( $atts ) {
 	return $output;
 
 }
-
-function get_update_role_nonce() {
-
-	global $tm_update_role_nonce;
-
-	if ( $tm_update_role_nonce ) {
-
-		return $tm_update_role_nonce;
-	}
-
-	$tm_update_role_nonce = wp_create_nonce( 'tm_update_role' );
-
-	return $tm_update_role_nonce;
-
-}

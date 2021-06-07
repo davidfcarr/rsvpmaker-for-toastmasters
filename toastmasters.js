@@ -134,7 +134,7 @@ jQuery( document ).ready(
 				containment: "parent",
 				cursor: "move",
 				update: function (event, ui) {
-					var datastr = 'action=wpt_reorder&reorder_nonce=' + $( '#reorder_nonce' ).val() + '&post_id=' + this.closest( '.post_id' );// $('#post_id').val();
+					var datastr = 'action=wpt_reorder&post_id=' + this.closest( '.post_id' );// $('#post_id').val();
 					// $('#post_id').val();
 					var order       = $( this ).sortable( 'toArray' );
 					var assigned    = 0;
@@ -240,7 +240,6 @@ jQuery( document ).ready(
 				$( '#_intro_' + role ).val( '' );
 				var post_id   = $( this ).attr( 'post_id' );
 				var editor_id = $( '#editor_id' ).val();
-				var check     = $( '#tmn' ).val();
 				$( '#status' + role ).html( 'Saving ... ' + role );
 				if (post_id > 0) {
 					var data = {
@@ -248,8 +247,8 @@ jQuery( document ).ready(
 						'role': role,
 						'user_id': user_id,
 						'editor_id': editor_id,
-						'check': check,
-						'post_id': post_id
+						'post_id': post_id,
+						'timelord': rsvpmaker_rest.timelord 
 					};
 					$.post(
 						wpt_rest.url + 'rsvptm/v1/editor_assign',
@@ -389,9 +388,10 @@ jQuery( document ).ready(
 				var user_id = $( '#user_id_' + status ).val();
 
 				data = {
-					action: "delete_tm_detail",
-					user_id: user_id,
-					key: key
+					'action': "delete_tm_detail",
+					'timelord': rsvpmaker_rest.timelord,
+					'user_id': user_id,
+					'key': key
 				};
 
 				jQuery.post(
@@ -478,7 +478,6 @@ jQuery( document ).ready(
 					return;
 				}
 				var id       = this.id;
-				var security = $( '#toastcode' ).val();
 				var post_id  = $( '#' + id ).attr( 'post_id' );
 				var statusid = 'status_absences' + post_id;
 				$( '#' + statusid ).html( 'Saving ...' );
@@ -488,8 +487,8 @@ jQuery( document ).ready(
 						'action': 'editor_absences',
 						'user_id': user_id,
 						'editor_id': editor_id,
-						'security': security,
-						'post_id': post_id
+						'post_id': post_id,
+						'timelord': rsvpmaker_rest.timelord 
 					};
 					jQuery.post(
 						ajaxurl,
@@ -511,7 +510,6 @@ jQuery( document ).ready(
 					return;
 				}
 				var id       = this.id;
-				var security = $( '#toastcode' ).val();
 				var post_id  = $( '#' + id ).attr( 'post_id' );
 				var statusid = 'current_absences' + post_id + user_id;
 				$( '#' + statusid ).html( 'Saving ...' );
@@ -521,7 +519,7 @@ jQuery( document ).ready(
 						'action': 'absences_remove',
 						'user_id': user_id,
 						'editor_id': editor_id,
-						'security': security,
+						'timelord': rsvpmaker_rest.timelord,
 						'post_id': post_id
 					};
 					jQuery.post(

@@ -4,7 +4,7 @@ if ( isset( $_GET['word_agenda'] ) ) {
 	header( 'Content-Type: application/msword' );
 	header( 'Content-disposition: attachment; filename=' . $post->post_name . '.doc' );
 }
-wp4toastmasters_agenda_layout_check( 'custom' ); // add layout post if doesn't already exist
+wp4toastmasters_agenda_layout_check(  ); // add layout post if doesn't already exist
 $layout      = get_option( 'rsvptoast_agenda_layout' );
 $layout_post = get_post( $layout );
 if ( ! isset( $_GET['reset'] ) ) {

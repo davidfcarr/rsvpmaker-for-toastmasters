@@ -1,6 +1,5 @@
 @charset "utf-8";
 /* CSS Document */
-
 .tmsortable li {
 	list-style: none;
 	padding: 10px;
@@ -1590,7 +1589,7 @@ a.ui-button:active,
 	width: 30em;
 }
 
-.time_allowed, .padding_time, .count {
+input[type="number"].time_allowed, input[type="number"].padding_time, input[type="number"].count {
 	width: 4em;
 }
 
