@@ -102,6 +102,9 @@ h1, h2, h3, h4 {
 .ballot_links_preview {
 	display: none;
 }
+input[type=checkbox],input[type=radio]{
+	min-width: auto !important;
+}
 </style>
 </head>
 <body>

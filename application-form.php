@@ -7,7 +7,6 @@ if ( ! isset( $_POST['applicant_signature'] ) ) {
 ?>
 <p><strong>TOASTMASTERS INTERNATIONAL MEMBERSHIP APPLICATION</strong></p>
 
-
 <div style="margin-left: 10px; width: 200px; float: right; padding: 5px; border: thin solid #000; font-size: small;">
 Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
 <br /><em>If applicant is transferring from another club, please fill in the three lines below.</em>
@@ -116,7 +115,7 @@ if ( isset( $_POST['sponsor'] ) ) {
 <label>Date</label> <?php tm_application_form_field( 'applicant_signature_date' ); ?>
 </p>
 <?php
-wp_nonce_field('applicant_signature');
+rsvpmaker_nonce();
 if ( ! isset( $_POST['applicant_signature'] ) ) {
 	echo '<p><button>Submit</button></p></form>';
 }

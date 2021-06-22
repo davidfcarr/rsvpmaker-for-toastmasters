@@ -1094,10 +1094,11 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 <section class="rsvpmaker"  id="email_links">
 <p>Use this form to email links to the judges and timer. You can send them one at a time or use the Send All Links button at the bottom.</p>
 <form method="post" action="<?php echo esc_attr($actionlink); ?>" >
+<input type="hidden" id="send_link_action" value="<?php echo get_rest_url( null, 'wptcontest/v1/send_link' )?>">
 <p>You can customize this introduction to the list of links:</p>
 <textarea name="intro_note" id="intro_note" style="width: 90%" rows="3">Please confirm you received this email. We're planning to use a web-based voting / vote counting system for our upcoming contest, and these are the links we would like you to use for your role. You may want to try the practice link ahead of time.</textarea>
 		<?php
-		echo wp_kses_post($email_links);
+		echo $email_links;
 		?>
 <p><br /><button>Send All Links</button></p>
 	</section>
@@ -1893,23 +1894,23 @@ function wpt_contest_emaillinks( $links, $code, $role, $user_id ) {
 	}
 	$subject = 'IMPORTANT for your role in our contest: ' . $role;
 	printf(
-		'<p class="email_links_new"><strong>Email links for %s to</strong> <input type="text" name="email_link[%s]" id="email_link%s" value="%s" /><br /><input type="text" name="email_subject[%s]" id="email_subject%s" value="%s" size="80" /><br />Note:<br /><textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br /><button class="send_contest_link" id="%s" action="%s">Send to %s</button> / <button class="show_ballot_links_preview" id="p%s">Show previews</button><div id="send_link_status%s"></p></div></p>',
-		$name,
+		'<p class="email_links_new"><strong>Email links for %s</strong>',
+		$name);
+		echo '<input type="text" name="email_link['.$code.']" id="email_link'.$code.'" value="'.$email.'" />';
+		printf('<br /><input type="text" name="email_subject[%s]" id="email_subject%s" value="%s" size="80" />',
 		$code,
 		$code,
-		$email,
+		$subject);
+		
+		printf('<br />Note:<br /><textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br />',$code,
 		$code,
+		"Your role: $role\n\n" . trim( strip_tags( str_replace( '</p>', "\n\n", $links ), '<a><strong><h3>' ) ));
+
+		echo '<button class="send_contest_link" id="'.$code.'" >Send to '.$name.'</button>';
+
+		printf(' * <button class="show_ballot_links_preview" id="%s">Show previews</button><div id="send_link_status%s"></p></div></p>',
 		$code,
-		$subject,
-		$code,
-		$code,
-		"Your role: $role\n\n" . trim( strip_tags( str_replace( '</p>', "\n\n", $links ), '<a><strong><h3>' ) ),
-		$code,
-		get_rest_url( null, 'wptcontest/v1/send_link' ),
-		$name,
-		$code,
-		$code
-	);
+		$code);
 	echo '<div class="ballot_links_preview">' . $links . '</div>';
 	return ob_get_clean();
 }

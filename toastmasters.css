@@ -35,7 +35,11 @@ background-color: #fff;
 div.role-block {
 margin-bottom: 2px;
 background-color: #fff;
+color: #000;
 }
+div.role-block button {
+border: thin solid gray;
+}	
 div.role-title {
 font-weight: bold;
 }

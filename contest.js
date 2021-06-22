@@ -245,7 +245,8 @@ jQuery( document ).ready(
 			function (e) {
 				e.preventDefault();
 				let id     = $( this ).attr( 'id' );
-				let action = $( this ).attr( 'action' );
+				let action = $('#send_link_action' ).val();
+				console.log(action);
 				let data   = {
 					email : $( '#email_link' + id ).val(),
 					note : $( '#intro_note' ).val() + "\n\n" + $( '#email_link_note' + id ).val(),
@@ -253,6 +254,7 @@ jQuery( document ).ready(
 					code: id,
 					post_id: contest.post_id,
 				}
+				console.log(data);
 				$( '#send_link_status' + id ).text( 'Sending ...' );
 				jQuery.post(
 					action,

@@ -966,7 +966,7 @@ function wpt_wizard_check_member( $user ) {
 
 
 function wpt_wizard_prompt() {
-	if(function_exists('is_district') && is_district())
+	if(wp4t_is_district())
 		return;
 
 	global $current_user;

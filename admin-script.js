@@ -70,7 +70,6 @@
 	$( '.speech_update' ).hide();
 
 	$( '.toastmasters section' ).hide();
-	/*$( 'section#basic').show();*/
 
 	$('a.nav-tab-active').click( function() {
 		var activetab = $( 'a.nav-tab-active' ).attr( 'href' );
@@ -83,6 +82,8 @@
 			}
 		}	
 	});
+	/*$('section#pending.rsvpmaker').show();*/
+	$('section:first-child').show();
 
 	$( document ).on(
 		'click',

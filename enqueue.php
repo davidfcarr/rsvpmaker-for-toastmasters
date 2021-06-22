@@ -2,10 +2,10 @@
 
 function tm_welcome_screen_assets( $hook ) {
 	// everywhere except posts screen
-	$ver = '3.3';
+	$ver = '3.36';
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'post.php' ) ) {
 		wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css', array(), $ver );
-		wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), $ver, true );
+		wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery','rsvpmaker_admin_script' ), $ver, true );
 		wp_localize_script(
 			'tm_welcome_screen_js',
 			'wpt_rest',
@@ -19,7 +19,7 @@ function tm_welcome_screen_assets( $hook ) {
 
 function toastmasters_css_js() {
 	global $post, $current_user;
-	$version = '4.42';
+	$version = '4.49';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
 		return; // don't load all this in editor or post listings
 	}

@@ -1343,8 +1343,6 @@ function is_edit_roles() {
 
 add_filter( 'wp_nav_menu', 'wp_nav_menu_wpt', 10, 2 );
 
-
-
 function wp_nav_menu_wpt( $menu_html, $menu_args ) {
 
 	if ( strpos( $menu_html, '#rolesignup' ) || strpos( $menu_html, '#tmlogin' ) ) {
@@ -1381,15 +1379,35 @@ function wp_nav_menu_wpt( $menu_html, $menu_args ) {
 
 	}
 
+/*
+function twenty_twenty_one_add_sub_menu_toggle( $output, $item, $depth, $args ) {
+	rsvpmaker_debug_log($output, 'output');
+	rsvpmaker_debug_log($item, 'item');
+	rsvpmaker_debug_log($depth, 'depth');
+	rsvpmaker_debug_log($args, 'args');
+
+	if ( 0 === $depth && in_array( 'menu-item-has-children', $item->classes, true ) ) {
+		// Add toggle button.
+		$output .= '<button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)">';
+		$output .= '<span class="icon-plus">' . twenty_twenty_one_get_icon_svg( 'ui', 'plus', 18 ) . '</span>';
+		$output .= '<span class="icon-minus">' . twenty_twenty_one_get_icon_svg( 'ui', 'minus', 18 ) . '</span>';
+		$output .= '<span class="screen-reader-text">' . esc_html__( 'Open menu', 'twentytwentyone' ) . '</span>';
+		$output .= '</button>';
+	}
+	return $output;
+}
+*/
+
 	if ( strpos( $menu_html, '#tmlogin' ) ) {
 
 		add_option( 'wpt_login_menu_item', true );
+		$button = apply_filters('tm_submenu_toggle_button','');
 
 		$label = ( is_user_logged_in() ) ? __( 'Dashboard', 'rsvpmaker-for-toastmasters' ) : __( 'Login', 'rsvpmaker-for-toastmasters' );
 
 		$toplink = ( is_user_logged_in() ) ? admin_url( '/' ) : wpt_login_permalink();
 
-		$menu = '<li id="menu-item-wpt-login" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-wpt-login"><a href="' . $toplink . '">' . $label . '</a><ul class="sub-menu">
+		$menu = '<li id="menu-item-wpt-login" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-wpt-login"><a href="' . $toplink . '">' . $label . '</a>'.$button.'<ul class="sub-menu">
 
 		' . $evlist . '<li id="menu-item-profile" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2862"><a href="' . admin_url( 'profile.php' ) . '">Profile</a></li>
 
@@ -1551,3 +1569,36 @@ function time_planner_2020( $atts ) {
 	return $output;
 
 }
+
+function wp4t_is_district() {
+    return (int) get_option('toastmasters_district');
+}
+
+function wp4t_editor_style_override() {
+if(!(isset($_GET['post']) && isset($_GET['action'])))
+	return;
+global $post;
+$special = get_post_meta(intval($_GET['post']),'_rsvpmaker_special',true);
+if(($post->post_type != 'rsvpmailer') && ($special != 'Agenda Layout'))
+	return;
+?>
+<style>
+:root .editor-styles-wrapper {
+    --global--color-background: #fff;
+    --global--color-primary: #000;
+    --global--color-secondary: #000;
+    --button--color-background: #000;
+    --button--color-text-hover: #333;
+    --table--stripes-border-color: rgba(0, 0, 0, 0.15);
+    --table--stripes-background-color: rgba(0, 0, 0, 0.15);
+	background-color: #fff;
+}
+.editor-styles-wrapper {
+	background-color: #fff;
+	color: #000;
+}}
+</style>
+<?php
+}
+
+add_action('admin_head','wp4t_editor_style_override');

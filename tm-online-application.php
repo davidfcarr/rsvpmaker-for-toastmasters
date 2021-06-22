@@ -11,7 +11,7 @@ function tm_member_application( $atts ) {
 	}
 
 	global $post;
-	if ( empty( $_POST['user_email'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+	if ( empty( $_POST['user_email'] ) ) {
 		return tm_application_form_start( $atts );
 	}
 
@@ -148,7 +148,7 @@ function tm_application_fee() {
 		$feetext .= sprintf( '<p>Club New Member Fee: <strong>%s</strong></p>', number_format( $club_new, 2 ) );
 		$feetext .= sprintf( '<p>Total Payment to Club: <strong>%s</strong></p>', number_format( $club_dues_calc + $club_new, 2 ) );
 		$feetext .= sprintf( '<p>Total: <strong>%s</strong></p>', number_format( $fee, 2 ) );
-		echo esc_html($feetext);
+		echo wp_kses_post($feetext);
 		update_post_meta( $post->ID, 'tm_application_fee', $fee );
 		update_post_meta( $post->ID, 'tm_application_feetext', $feetext );
 	} else {

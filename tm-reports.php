@@ -7,7 +7,7 @@ add_action( 'admin_init', 'tm_member_welcome_redirect' );
 add_action( 'admin_head', 'tm_welcome_screen_remove_menus' );
 
 function toastmasters_reports_menu() {
-	if(function_exists('is_district') && is_district())
+	if(wp4t_is_district())
 		return;
 	global $current_user;
 	$security = get_tm_security();
@@ -1147,9 +1147,9 @@ function toastmasters_reconcile() {
 			if ( $index ) {
 				$marked_out .= ', ';
 			}
-			$marked_out .= $user->display_name;
+			$marked_out .= esc_html($user->display_name);
 		}
-		echo esc_html($marked_out) . '</p>';
+		echo $marked_out . '</p>';
 	}
 
 	if ( ! empty( $marked_attended ) ) {
@@ -1159,9 +1159,9 @@ function toastmasters_reconcile() {
 			if ( $index ) {
 				$marked_out .= ', ';
 			}
-			$marked_out .= $user->display_name;
+			$marked_out .= esc_html($user->display_name);
 		}
-		echo esc_html($marked_out) . '</p>';
+		echo $marked_out . '</p>';
 	}
 
 	echo '<p>Notes for Minutes<br />
@@ -1332,9 +1332,9 @@ function toastmasters_meeting_minutes() {
 			if ( $index ) {
 				$marked_out .= ', ';
 			}
-			$marked_out .= $user->display_name;
+			$marked_out .= esc_html($user->display_name);
 		}
-		echo esc_htm($marked_out) . '</p>';
+		echo $marked_out . '</p>';
 	}
 
 	if ( ! empty( $marked_attended ) ) {
@@ -1344,21 +1344,21 @@ function toastmasters_meeting_minutes() {
 			if ( $index ) {
 				$marked_out .= ', ';
 			}
-			$marked_out .= $user->display_name;
+			$marked_out .= esc_html($user->display_name);
 		}
-		echo esc_html($marked_out) . '</p>';
+		echo $marked_out . '</p>';
 	}
 
 	if ( ! empty( $absent ) ) {
-		$marked_out = '<p><strong>Absent:</strong> ';
+		$marked_out = ( ! empty( $marked_attended ) ) ? '<p><strong>Absent:</strong> ' : '<p><strong>Absent or No Role:</strong> ';
 		foreach ( $absent as $index => $marked ) {
 			$user = get_userdata( $marked );
 			if ( $index ) {
 				$marked_out .= ', ';
 			}
-			$marked_out .= $user->display_name;
+			$marked_out .= esc_html($user->display_name);
 		}
-		echo esc_html($marked_out) . '</p>';
+		echo $marked_out . '</p>';
 	}
 
 	echo '<h2>Notes</h2>';
@@ -1366,6 +1366,8 @@ function toastmasters_meeting_minutes() {
 	if ( $notes ) {
 		echo wpautop( $notes );
 	}
+
+	printf('<p><a href="%s">Make Corrections</a></p>',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID.'&'.rsvpmaker_nonce('query')) );
 }
 
 function toastmaster_minutes_display( $atts ) {
@@ -3814,13 +3816,12 @@ function tm_export() {
 		exit();
 	}
 
-	$nonce = sanitize_text_field($_REQUEST['tm_export']);
 	if ( ! wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key'))  ) {
 		// This nonce is not valid.
 		die( 'Failed security check' );
 	} elseif ( isset( $_GET['json'] ) || isset( $_GET['jout'] ) ) {
 		global $wpdb;
-		$users = get_users();
+		$users = get_users('blog_id='.get_current_blog_id());
 		foreach ( $users as $user ) {
 			$u             = array(
 				'user_login'    => $user->user_login,
@@ -4027,7 +4028,7 @@ function toastmasters_import_export() {
 	<?php
 	$nonce       = wp_create_nonce( 'tm_export' );
 	$timelord = rsvpmaker_nonce('query');
-	$export_link = sprintf( '<a href="%s?page=%s&tm_export=%s%s">Export</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
+	$export_link = sprintf( '<a href="%s?page=%s&tm_export=%s&%s">Export</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
 
 	printf( '<p>Click to %s a listing of member contact info and achievements. Use this for your own reference or make corrections to the spreadsheet and import your data into the website.</p>', $export_link );
 
@@ -4616,7 +4617,6 @@ function get_tm_stats( $user_id = 0 ) {
 			$post_id    = $key_array[5];
 			if ( ! empty( $start_ts ) ) {
 				$event_ts = strtotime( $event_date );
-				// rsvpmaker_debug_log(sprintf('<p>Start %s Event %s</p>',date('r',$start_ts),date('r',$event_ts)));
 				if ( $event_ts < $start_ts ) {
 					continue;
 				}
@@ -5145,6 +5145,7 @@ Other Comments';
 		if ( empty( $speaker_id ) && ! $demo ) {
 			echo '<h2 style="color:red;">Speaker not identified</h2>';
 		}
+		//printf('<p>Speaker Id %s meeting id %s project %s</p>',$speaker_id, $meeting_id, $project);
 		show_evaluation_form( $project, $speaker_id, $meeting_id, $demo );
 	}
 

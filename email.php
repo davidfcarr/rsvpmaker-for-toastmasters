@@ -402,7 +402,7 @@ function awesome_open_roles( $post_id = null, $scheduled = false ) {
 	$dateformat = str_replace( ', ', '', str_replace( 'Y', '', $rsvp_options['long_date'] ) );
 
 	if ( get_option( 'wp4toastmasters_agenda_timezone' ) ) {
-		$time_format = $dateformat . ' at ' . $rsvp_options['time_format'];
+		$time_format = $dateformat . ' ' . $rsvp_options['time_format'];
 	} else {
 		$time_format = $dateformat;
 	}
@@ -417,8 +417,12 @@ function awesome_open_roles( $post_id = null, $scheduled = false ) {
 #message p, #message li {
 font-size: 16px;
 }
-</style>
-</head>
+</style>';
+//
+//'js/tinymce/plugins/compat3x/plugin.min.js?ver='.time()
+if(empty($_POST))
+$header .= sprintf("<script src='%s' id='wp-tinymce-js'></script>",includes_url('/js/tinymce/tinymce.min.js?ver='.time()));
+$header .= '</head>
 <body>
 ';
 	$output   = '';
@@ -439,13 +443,9 @@ font-size: 16px;
 	// print_r($open);
 	$output .= $content;
 
-	$wp4toastmasters_mailman = get_option( 'wp4toastmasters_mailman' );
-
 	if ( isset($_POST) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( ! empty( $_POST['test'] ) && ! empty( $_POST['testto'] ) ) {
 			$mail['to'] = sanitize_text_field($_POST['testto']);
-		} elseif ( ! empty( $wp4toastmasters_mailman['members'] ) ) {
-			$mail['to'] = sanitize_text_field($wp4toastmasters_mailman['members']);
 		} else {
 			$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 			foreach ( $blogusers as $user ) {
@@ -453,7 +453,6 @@ font-size: 16px;
 				$emails[] = $user->user_email;
 			}
 		}
-
 		if ( isset( $_POST['note'] ) && $_POST['note'] && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 			$output = '<div id="message">' . wp_kses_post(stripslashes( $_POST['note'] )) . "</div>\n<p>Sent by: " . $current_user->display_name . ' <a href="mailto:' . $current_user->user_email . '">' . $current_user->user_email . "</a>\n" . $output;
 		}
@@ -466,8 +465,10 @@ font-size: 16px;
 				$mail['to'] = $e;
 				echo awemailer( $mail );
 			}
+			echo "<p>Sending to club members</p>";
 		} else {
 			echo awemailer( $mail );
+			echo "<p>Sending to ".$mail['to']."</p>";
 		}
 		// output without form
 		$output = $header . $output . '</body></html>';
@@ -476,9 +477,7 @@ font-size: 16px;
 		if ( $openings ) {
 			$subject .= ' (' . $openings . ' ' . __( 'open roles', 'rsvpmaker-for-toastmasters' ) . ')';
 		}
-		if ( empty( $wp4toastmasters_mailman['members'] ) ) {
-			$subject = get_bloginfo( 'name' ) . ' ' . $subject;
-		}
+		$subject = get_bloginfo( 'name' ) . ' ' . $subject;
 		$mailform = '<script>
 	tinymce.init({
 		selector:"textarea",plugins: "link",
@@ -499,16 +498,16 @@ Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><b
 <textarea name="note" rows="5" cols="80"></textarea><br />
 <input type="radio" name="test" value="0" checked="checked" > ' . __( 'Send to all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="test" value="1" > ' . __( 'Send test to', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" name="testto" /><br />
 <input type="submit" value="Send" />
+' . rsvpmaker_nonce('return'). '
 </form>';
 
-		$output = $header . $mailform . $output . rsvpmaker_nonce(). '</body></html>';
+		$output = $header . $mailform . $output.'</body></html>';
 	}
 
 	echo $output;
 
 	exit();
 }
-
 
 function backup_speaker_notify( $assigned ) {
 	global $post;
