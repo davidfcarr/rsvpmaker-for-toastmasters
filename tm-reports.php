@@ -438,6 +438,7 @@ function tm_member_edit( $id = 0 ) {
 }
 
 function toastmasters_screen() {
+	global $current_user;
 	$hook = tm_admin_page_top( __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ) );
 
 	awesome_dashboard_widget_function();
@@ -709,7 +710,7 @@ function wpt_delete_records( $user_id = 0 ) {
 }
 
 function wpt_deleterecords_post() {
-	if ( ! isset( $_POST['deleterecords'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+	if ( ! isset( $_POST['deleterecords'] ) || !wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		return;
 	}
 	if ( ! current_user_can( 'manage_options' ) ) {
@@ -7084,6 +7085,22 @@ function get_treasurer_notes( $member_id, $treasurer_note ) {
 }
 
 function wpt_dues_report() {
+
+	echo '<p style="text-align: right; width: 100%;"><a href="'.admin_url('admin.php?page=wpt_dues_report').'">Overview</a> | <a href="'.admin_url('admin.php?page=wpt_dues_report&tx').'">Transaction List</a>  | <a href="'.admin_url('admin.php?page=wpt_dues_report&followup').'">Follow Up</a> | <a href="'.admin_url('options-general.php?page=member_application_settings').'">Dues & Application</a> </p>';
+
+	if(isset($_GET['tx']))
+	{
+		$tx = wpt_stripe_transactions();
+		echo $tx['content'];
+		echo '<div><textarea style="width: 100%" rows="20">'.$tx['export'].'</textarea></div>';
+		return;	
+	}
+	if(isset($_GET['followup']))
+	{
+	echo wpt_dues_reminders();
+	return;
+	}
+
 	global $wpdb;
 	$nonce = wp_nonce_field( 'wpt_dues_report', 'tmn', true, false );
 
@@ -7129,36 +7146,7 @@ function wpt_dues_report() {
 			update_user_meta( (int) $member_id, $norenew, sanitize_text_field($until) );
 		}
 	}
-	?>
-<h2 class="nav-tab-wrapper">
-<a class="nav-tab 
-	<?php
-	if ( empty( $_REQUEST['active'] ) ) {
-		echo ' nav-tab-active ';}
-	?>
-" href="#overview">Dues Status</a>
-<a id="reminder-thank-you-tab" class="nav-tab 
-	<?php
-	if ( ! empty( $_REQUEST['active'] ) && ( $_REQUEST['active'] == 'reminder-thank-you' ) ) {
-		echo ' nav-tab-active ';}
-	?>
-" href="#reminder-thank-you">Remind and Thank</a>
-<a id="ti-transactions-tab" class="nav-tab 
-	<?php
-	if ( ! empty( $_REQUEST['active'] ) && ( $_REQUEST['active'] == 'ti-transactions' ) ) {
-		echo ' nav-tab-active ';}
-	?>
-"  href="#ti-transactions">Transactions List</a>
-<a id="settings-tab" class="nav-tab 
-	<?php
-	if ( ! empty( $_REQUEST['active'] ) && ( $_REQUEST['active'] == 'settings' ) ) {
-		echo ' nav-tab-active ';}
-	?>
-" href="#settings">Dues and Application</a>
-</h2>
-<sections class="toastmasters">
-<section id="overview">
-	<?php
+
 	echo '<h1>Member Dues Status</h1>';
 
 	$expected_renewal = 45;
@@ -7319,33 +7307,6 @@ function wpt_dues_report() {
 		echo '<div style="padding: 5px; border: medium solid gray; margin-top: 20px;">';
 		printf( '<h3>Not Planning to Renew (%s)</h3>%s', sizeof( $notrenewing ), implode( "\n", $notrenewing ) );
 	}
-	?>
-</section>
-<section id="reminder-thank-you">
-<div style="width: 100px; float: right;">
-<button id="reminder-thank-you-refresh">Refresh</button>
-</div>
-<div id="reminder-thank-you-content"></div>
-</section>
-<section id="ti-transactions">
-<div style="width: 100px; float: right;">
-<button id="ti-transactions-refresh">Refresh</button>
-</div>
-	<?php
-	if ( $stripe_on ) {
-		echo '<div id="ti-transactions-content"></div><p><textarea id="dues-report-export" cols="100" rows="10"></textarea></p>';
-	} else {
-		echo '<p>Fetches most recent transactions when Stripe is enabled.</p>';
-	}
-	?>
-</section>
-<section id="settings">
-	<?php
-	member_application_settings( $action );
-	?>
-</section>
-</sections>
-	<?php
 
 }//end wpt_dues_report()
 

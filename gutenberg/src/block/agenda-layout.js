@@ -10,9 +10,9 @@ import './editor.scss';
 const { __ } = wp.i18n;
 const { registerBlockType } = wp.blocks;
 const { InnerBlocks} = wp.editor;
-const { FormToggle } = wp.components;
+const { FormToggle, ServerSideRender } = wp.components;
 
-if((typeof toastmasters_special !== 'undefined') && (toastmasters_special == 'Agenda Layout'))
+if((typeof wpt_rest.special !== 'undefined') && (wpt_rest.special == 'Agenda Layout'))
 { // only initialize these blocks for Agenda Layout document
 registerBlockType( 'wp4toastmasters/agenda-wrapper', {
 	title: ( 'Agenda Layout Wrapper' ), // Block title.
@@ -124,10 +124,16 @@ registerBlockType( 'wp4toastmasters/agendamain', {
 		__( 'Main' ),
 	],
 	description: __('Placeholder for main content (roles and agenda notes) in the agenda layout'),
-    edit: function( props ) {	
+    edit: function( props ) {
+	const { attributes } = props;	
 
 	return (
-		<div className="agendaplaceholder">Placeholder: agenda main content</div>
+		<div className="agendaplaceholder">Placeholder: agenda main content
+		 <ServerSideRender
+                block="wp4toastmasters/agendamain"
+				attributes={ attributes }
+            />
+		</div>
 );
 	
     },
@@ -150,7 +156,12 @@ registerBlockType( 'wp4toastmasters/officers', {
     edit: function( props ) {	
 
 	return (
-		<div className="agendaplaceholder">Placeholder for output of officers listing, based on data from Settings -> Toastmasters</div>
+		<div>
+		<div className="agendaplaceholder">From Settings -> Toastmasters</div>
+		 <ServerSideRender
+                block="wp4toastmasters/officers"
+            />
+		</div>
 );	
     },
     save: function(props) {

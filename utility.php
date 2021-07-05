@@ -230,12 +230,10 @@ function past_toastmaster_meetings( $limit = 10000, $buffer = 0 ) {
 
 
 function next_toastmaster_meeting() {
-
-	return get_next_rsvpmaker( " (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') " );
-
+	global $wpdb;
+	$sql = "SELECT * FROM $wpdb->posts JOIN ".$wpdb->prefix."rsvpmaker_event WHERE date > NOW() AND post_status='publish' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')";
+	return $wpdb->get_row($sql);
 }
-
-
 
 function get_club_members( $blog_id = 0 ) {
 
@@ -373,7 +371,8 @@ function role_count_time( $post_id, $atts ) {
 
 
 function get_role_assignments( $post_id, $atts ) {
-
+	global $email_context;
+	$nonce = get_post_meta($post_id,'oneclicknonce',true);
 	$role = $atts['role'];
 
 	$start = ( empty( $atts['start'] ) ) ? 1 : $atts['start'];
@@ -396,8 +395,16 @@ function get_role_assignments( $post_id, $atts ) {
 		$field = '_' . $field_base . '_' . $i;
 
 		$assigned = get_post_meta( $post_id, $field, true );
-
-		$name = get_member_name( $assigned );
+		if(empty($assigned) && $email_context) {
+			if(empty($nonce)) {
+				$nonce = wp_create_nonce('oneclick');
+				update_post_meta($post_id,'oneclicknonce',$nonce);
+			}
+			$name = add_query_arg(array('oneclick' => $nonce,'role' => $role,'e' => '*|EMAIL|*'),get_permalink());//sprintf('&oneclick=code&role=Ah Counter&e=test@example.com');
+			$name = sprintf('<a href="%s">One-Click Signup</a>',$name);
+		}
+		else
+			$name = get_member_name( $assigned );
 
 		$assignments[ $field ] = array(
 			'role'      => $atts['role'],
@@ -1537,7 +1544,9 @@ function time_planner_2020( $atts ) {
 
 		if ( ! empty( $row['role'] ) ) {
 
-			$output .= sprintf( '<h3>%s %s</h3>', date( 'H:i', $t ), $row['role'] );
+			$label = (($row['role'] == 'custom')) ? var_export($row,true) : $row['role'];
+			$output .= var_export($row,true);
+			$output .= sprintf( '<h3>%s %s</h3>', date( 'H:i', $t ), $label );
 
 			$padding = ( empty( $row['padding_time'] ) ) ? '' : ' (including ' . $row['padding_time'] . ' minutes padding time)';
 
@@ -1602,3 +1611,4 @@ if(($post->post_type != 'rsvpmailer') && ($special != 'Agenda Layout'))
 }
 
 add_action('admin_head','wp4t_editor_style_override');
+

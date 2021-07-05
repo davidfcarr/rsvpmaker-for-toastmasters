@@ -339,6 +339,7 @@ class Editor_Assign extends WP_REST_Controller {
 		$editor_id = ( empty( $_POST['editor_id'] ) ) ? $current_user->ID : (int) $_POST['editor_id'];
 		$timestamp = get_rsvp_date( $post_id );
 		$was       = get_post_meta( $post_id, $role, true );
+		do_action('toastmasters_agenda_change',$post_id,$role,$user_id,$was,$editor_id);
 		update_post_meta( $post_id, $role, $user_id );
 		if ( strpos( $role, 'Speaker' ) ) {
 			delete_post_meta( $post_id, '_manual' . $role );
