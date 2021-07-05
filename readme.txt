@@ -63,6 +63,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
+= 4.6 =
+
+* Agenda Layout options. One click signup option.
+
 = 4.5.8 =
 
 * Fix to add members screen
