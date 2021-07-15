@@ -251,7 +251,7 @@ $('#manual_contestants').hide();
 		$count = ( isset( $data['Speaker']['count'] ) ) ? $data['Speaker']['count'] : 0;
 	} else {
 		preg_match( '/role="Speaker" count="([^"])"/', $post->post_content, $matches );
-		$count = $matches[1];
+		$count = isset($matches[1]) ? $matches[1] : 1;
 	}
 
 	if ( empty( $options ) ) {

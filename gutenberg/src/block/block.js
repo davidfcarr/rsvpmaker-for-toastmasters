@@ -14,7 +14,7 @@ const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.b
 const { RichText } = wp.blockEditor;
 const { Component, Fragment } = wp.element;
 const { InspectorControls, PanelBody } = wp.editor;
-const { TextareaControl, SelectControl, ToggleControl, TextControl } = wp.components;
+const { TextareaControl, SelectControl, ToggleControl, TextControl, ServerSideRender } = wp.components;
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 const { subscribe } = wp.data;
 
@@ -100,13 +100,15 @@ attributes: {
 <Fragment>
 <NoteInspector { ...props } />	
 <div className={ props.className }>
-<p><strong>Toastmasters Agenda Note</strong> <em>Timing: See sidebar</em></p>
+<p><strong>Toastmasters Agenda Note</strong></p>
 <RichText
 	tagName="p"
 	value={attributes.content}
 	multiline=' '
 	onChange={(content) => setAttributes({ content })}
-/></div>
+/>
+{isSelected && <div><em>Options: see sidebar</em><ServerSideRender block="wp4toastmasters/agendanoterich2" attributes={ props.attributes } /></div>}
+</div>
 </Fragment>
 );
 	
@@ -214,74 +216,17 @@ attributes: {
 	edit: function( props ) {
 	const { attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected } = props;
 
-	function showHideOptions () {
-		const selected = document.querySelector( '#role option:checked' );
-		if(selected.value == 'custom')
-			customline.style = 'display: block;';
-		else
-			{
-			document.getElementById('custom_role').value = '';
-			customline.style = 'display: none;';
-			}
-	}
-
-	function setRole() {
-		const selected = event.target.querySelector( '#role option:checked' );
-		setAttributes( { role: selected.value } );
-		var customline = document.getElementById('customline');
-		showHideOptions();
-		
-		event.preventDefault();
-		}
-	function setCustomRole( event ) {
-		var roleinput = document.getElementById('custom_role').value;
-		setAttributes( { custom_role: roleinput } );
-		event.preventDefault();
-	}
-
-		function showForm() {
-		if(!isSelected)
-			return (<em> Click to show options</em>);
-return (<form onSubmit={ setRole, setCustomRole } >
-<div><label>Role:</label> 
-<select id="role" value={ role } onChange={ setRole }>
-<option value=""></option>
-<option value="custom">Custom Role</option>
-<option value="Ah Counter">Ah Counter</option>
-<option value="Body Language Monitor">Body Language Monitor</option>
-<option value="Evaluator">Evaluator</option>
-<option value="General Evaluator">General Evaluator</option>
-<option value="Grammarian">Grammarian</option>
-<option value="Humorist">Humorist</option>
-<option value="Speaker">Speaker</option>
-<option value="Backup Speaker">Backup Speaker</option>
-<option value="Topics Master">Topics Master</option>
-<option value="Table Topics">Table Topics</option>
-<option value="Timer">Timer</option>
-<option value="Toastmaster of the Day">Toastmaster of the Day</option>
-<option value="Vote Counter">Vote Counter</option>
-<option value="Contest Chair">Contest Chair</option>
-<option value="Contest Master">Contest Master</option>
-<option value="Chief Judge">Chief Judge</option>
-<option value="Ballot Counter">Ballot Counter</option>
-<option value="Contestant">Contestant</option>
-</select>			
-</div>
-<p id="customline"><label>Custom Role:</label> <input type="text" id="custom_role" onChange={setCustomRole} defaultValue={custom_role} /></p>
-<div>
-</div>
-
-</form>
-);		
-		}
-		
 		return (			
 <Fragment>
 <RoleInspector { ...props } />
 <div className={ props.className }>
 <strong>Toastmasters Role {role} {custom_role}</strong>
-{isSelected && <em>More options: see sidebar</em>}
-{showForm()}
+{isSelected && <div><em>Options: see sidebar</em>
+	<ServerSideRender
+block="wp4toastmasters/role"
+attributes={ props.attributes }
+/></div>
+}
 </div>
 </Fragment>
 		);
@@ -340,13 +285,14 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
 			<NoteInspector { ...props } />
 <div className={ props.className }>
 <p class="dashicons-before dashicons-welcome-write-blog"><strong>Toastmasters Editable Note</strong></p>
+
 <TextControl
         label="Label"
         value={ editable }
         onChange={ ( editable ) => setAttributes( { editable } ) }
     />
+{isSelected && <div><em>Options: see sidebar</em><ServerSideRender block="wp4toastmasters/agendaedit" attributes={ props.attributes } /></div>}
 </div>
-
 </Fragment>
 		);
 	},
@@ -451,11 +397,38 @@ class RoleInspector extends Component {
 
 	render() {
 		const { attributes, setAttributes, className } = this.props;
-		const { count, time_allowed, padding_time, agenda_note, backup, role } = attributes;
+		const { count, time_allowed, padding_time, agenda_note, backup, role, custom_role } = attributes;
 
 return (	
 <InspectorControls key="roleinspector">
-<p>Role: {role}</p>
+<div><div><label>Role</label></div> 
+<select id="role" value={ role } onChange={ ( role ) => setAttributes( { role } ) }>
+<option value=""></option>
+<option value="custom">Custom Role</option>
+<option value="Ah Counter">Ah Counter</option>
+<option value="Body Language Monitor">Body Language Monitor</option>
+<option value="Evaluator">Evaluator</option>
+<option value="General Evaluator">General Evaluator</option>
+<option value="Grammarian">Grammarian</option>
+<option value="Humorist">Humorist</option>
+<option value="Speaker">Speaker</option>
+<option value="Backup Speaker">Backup Speaker</option>
+<option value="Topics Master">Topics Master</option>
+<option value="Table Topics">Table Topics</option>
+<option value="Timer">Timer</option>
+<option value="Toastmaster of the Day">Toastmaster of the Day</option>
+<option value="Vote Counter">Vote Counter</option>
+<option value="Contest Chair">Contest Chair</option>
+<option value="Contest Master">Contest Master</option>
+<option value="Chief Judge">Chief Judge</option>
+<option value="Ballot Counter">Ballot Counter</option>
+<option value="Contestant">Contestant</option>
+</select>			
+</div>
+<p id="customline"><label>Custom Role:</label><br /> <input type="text" id="custom_role" onChange={ ( custom_role ) => setAttributes( { custom_role } ) } defaultValue={custom_role} /></p>
+<div>
+</div>
+
 <div style={ {width: '60%'} }>	<NumberControl
 		label={ __( 'Count', 'rsvpmaker-for-toastmasters' ) }
 		value={ count }

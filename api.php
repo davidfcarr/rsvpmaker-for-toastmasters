@@ -415,9 +415,52 @@ class TM_Role extends WP_REST_Controller {
 	}
 
 	public function handle( $request ) {
-		$response['content'] = toastmasters_role_signup();
+		if(isset($_POST['suggest_note']))
+			$response['content'] = wpt_suggest_role();
+		else
+			$response['content'] = toastmasters_role_signup();
 		return new WP_REST_Response( $response, 200 );
 	}
+}
+
+function wpt_suggest_role() {
+	global $current_user, $rsvp_options;
+	$post_id = intval($_POST['post_id']);
+	$roletag = sanitize_text_field($_POST['role']);
+	$role = clean_role($roletag);
+	$member_id = intval($_POST['user_id']);
+	$member = get_userdata($member_id);
+	$post_id = intval($_POST['post_id']);
+	$datetime = get_rsvp_date($post_id);
+	$t = rsvpmaker_strtotime($datetime);
+	$date = rsvpmaker_date($rsvp_options['short_date'],$t);
+	$mail['subject'] = sprintf('Nominating you for %s on %s',clean_role($_POST['role']),$date);
+	$nonce = get_post_meta($post_id,'oneclicknonce',true);
+	if(empty($nonce)) {
+		$nonce = wp_create_nonce('oneclick');
+		update_post_meta($post_id,'oneclicknonce',$nonce);
+	}
+	$url = add_query_arg(array('oneclick' => $nonce,'role' => $role,'e' => $member->user_email),get_permalink($post_id));
+	$link = sprintf('<p>One-Click Signup for %s <br /><a href="%s#oneclick">%s</a></p>', $role, $url, $url );
+	$note = wpautop(stripslashes($_POST['suggest_note']))."\n".$link;
+	$mail['html'] = wp_kses_post($note);
+	$mail['fromname'] = $current_user->display_name;
+	$mail['from'] = $current_user->user_email;
+	$mail['to'] = $member->user_email;
+	$mail['override'] = 1;//works with rsvpmailer override on toastmost
+	rsvpmailer($mail);
+	$msg = $mail['html'];
+	if(isset($_POST['ccme']))
+	{
+		$mail['to'] = $current_user->user_email;
+		$mail['subject'] = '(For '.$member->user_email.') '.$mail['subject'];
+		if(!empty($member->mobile_phone)) {
+			$mail['html'] .= "\n" . sprintf('<p><a href="tel:%s">%s</p>',$member->mobile_phone,$member->mobile_phone);
+		}
+		rsvpmailer($mail);
+	}
+	add_post_meta($post_id,'_suggest'.$roletag,$member_id);
+	return '<p>Message sent:'.$msg.'</p>';
 }
 
 class WPTM_Reports extends WP_REST_Controller {

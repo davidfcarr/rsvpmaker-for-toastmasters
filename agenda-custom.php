@@ -50,7 +50,7 @@ if(empty($_GET['simple']))
 </style>
 </head>
 
-<body lang=EN-US style='tab-interval:.5in'>
+<body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['no_print'])) echo ' id="show" '; ?> >
 <div class="Section1">
 <?php
 if(isset($_GET['simple'])) {

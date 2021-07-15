@@ -75,17 +75,21 @@ function wpt_cgb_editor_assets() {
 add_action( 'enqueue_block_editor_assets', 'wpt_cgb_editor_assets' );
 
 function wpt_server_block_render(){
-	//if(wp_is_json_request())
-		//return;
+	$roleatts = array('role' => array('type' => 'string', 'default' => ''),'custom_role' => array('type' => 'string', 'default' => ''),'count' => array('type' => 'int', 'default' => 1),'start' => array('type' => 'int', 'default' => 1),'agenda_note' => array('type' => 'string', 'default' => ''),'time_allowed' => array('type' => 'string', 'default' => '0'),'padding_time' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'int', 'default' => 0),'backup' => array('type' => 'string', 'default' => ''));
+	$noteatts = array('time_allowed' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'int', 'default' => 0),'uid' => array('type' => 'string', 'default' => ''),'content' => array('type' => 'array', 'default' => array() ) );
+	register_block_type('wp4toastmasters/agendanoterich2', ['render_callback' => 'agendanoterich2', 'attributes' => $noteatts]);
+	$noteatts = array('editable' => array('type' => 'string', 'default' => ''),'time_allowed' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'int', 'default' => 0),'uid' => array('type' => 'string', 'default' => ''),'inline' => array('type' => 'int', 'default' => 0 ) );
+	register_block_type('wp4toastmasters/agendaedit', ['render_callback' => 'editable_note', 'attributes' => $noteatts]);
+	register_block_type('wp4toastmasters/role', ['render_callback' => 'toastmaster_short', 'attributes' => $roleatts ]);
 	register_block_type('wp4toastmasters/agendamain', ['render_callback' => 'tmlayout_main_block']);
 	register_block_type('wp4toastmasters/officers', ['render_callback' => 'toastmaster_officers']);	
-	register_block_type('wp4toastmasters/role', ['render_callback' => 'toastmaster_short']);
-	register_block_type('wp4toastmasters/agendaedit', ['render_callback' => 'editable_note']);	
 	register_block_type('wp4toastmasters/absences', ['render_callback' => 'tm_absence']);	
-	register_block_type('wp4toastmasters/agendanoterich2', ['render_callback' => 'agendanoterich2']);
 }
 
 function agendanoterich2($atts, $content) {
+if(wp_is_json_request())
+	return summarize_agenda_times($atts);
+
 $output = false;
 global $emailcontext;
 if($emailcontext)

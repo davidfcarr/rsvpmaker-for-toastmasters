@@ -219,14 +219,17 @@ jQuery( document ).ready(
 			function(){
 				var target = this.value;
 				var role   = target.replace( '_rm','' );
-				$( '#' + target ).html( '<p>Add a personal note (optional):<br /><textarea rows="3" cols="40" name="editor_suggest_note[' + role + ']"></textarea></p>' );
+				$( '#' + target ).html( '<p>Add a personal note (optional):<br /><textarea rows="3" cols="40" name="editor_suggest_note[' + role + ']"></textarea><br /><input type="checkbox" name="ccme" value="1" /> Send me a copy</p>' );
 			}
 		);
 
+		var suggest_mode = false;
 		// delegation code? $('.role_data').on('change', '.manual', function(){
 		$( '.editor_assign' ).on(
 			'change',
 			function(){
+				if(suggest_mode)
+					return;
 				var user_id = this.value;
 				// alert('user_id '+user_id);
 				var id    = this.id;
@@ -534,17 +537,41 @@ jQuery( document ).ready(
 			}
 		);
 
-		$( '.edit_one_form' ).hide();
+		if($('#edit_roles_new').length) {
+			$( '.toastrole' ).hide();
+			$( '.editone_wrapper' ).hide();
+			$( '.remove_me_form' ).hide();
+			$( '.agenda_note_editable_editone' ).show();
+			$( '.agenda_note_editable_editone_wrapper' ).hide();
+			$( '.editable_content' ).hide();
+		}
+		else
+			$( '.edit_one_form' ).hide();
 
 		$( '.editonelink' ).on(
 			'click',
 			function(e){
+				suggest_mode = false;
 				e.preventDefault();
 				var field = $( this ).attr( 'editone' );
 				$( '#editone' + field ).show();
 				$( '#editonewrapper' + field ).hide();
 				$( '#' + field + '_form' ).hide();
 				$( '#remove' + field + '_form' ).hide();
+			}
+		);
+
+		$( '.suggestonelink' ).on(
+			'click',
+			function(e){
+				suggest_mode = true;
+				e.preventDefault();
+				var field = $( this ).attr( 'editone' );
+				$( '#editone' + field ).show();
+				$( '#editonewrapper' + field ).hide();
+				$( '#' + field + '_form' ).hide();
+				$( '#remove' + field + '_form' ).hide();
+				$('#suggest' + field).html('<p>Nominate the member for a role. Send them an email with your note and a one-click signup link.</p><p><textarea name="suggest_note" rows="3" cols="80"></textarea><br /><input type="checkbox" name="ccme" value="1" /> Send me a copy</p>');
 			}
 		);
 

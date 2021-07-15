@@ -86,23 +86,17 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 		echo esc_html($email);
 		$mail['to']      = ( $test ) ? $mail['from'] : $email;
 		$testtext        = ( $test ) ? "<p>$email</p>" : '';
-		$mail['html']    = $testtext . wp_kses_post('<p>Your role(s) :' . $reminder_roles[ $index ] . '<p>' . $reminder_details[ $index ] . $content);
+		$mail['html']    = wpt_email_agenda_wrapper($testtext . wp_kses_post('<p>Your role(s) :' . $reminder_roles[ $index ] . '<p>' . $reminder_details[ $index ] . $content));
 		$mail['subject'] = 'You are signed up for ' . esc_attr($reminder_roles[ $index ] . ' on ' . $date . ' - ' . $next->post_title);
-		$result          = rsvpmailer( $mail );
+		$result          = rsvpmaker_qemail( $mail, array($mail['to']) );
 		update_post_meta( $post->ID, 'reminder', $mail );
 	}
-	$mail['html'] = "<p>You're not yet signed up for a role.</p>\n" . $content;
-	foreach ( $norole as $index => $email ) {
-		echo esc_html($email);
-		$mail['to']      = ( $test ) ? $mail['from'] : $email;
-		$mail['subject'] = 'Reminder: ' . $date . ' - ' . $next->post_title;
-		rsvpmailer( $mail );
-		update_post_meta( $post->ID, 'prompt', $mail );
-		if ( $test ) {
-			break;
-		}
+	if(!empty($norole)) {
+		$mail['html'] = wpt_email_agenda_wrapper("<p>You're not yet signed up for a role.</p>\n" . $content);
+		$mail['subject'] = 'Reminder: ' . $date . ' - ' . $next->post_title;	
+		rsvpmaker_qemail($mail,$norole);
 	}
-	update_post_meta( $post->ID, '_role_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $norole ) );
+	update_post_meta( $post->ID, '_role_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $norole ).rsvpmaker_date('r') );
 	$post = $waspost;
 }
 
@@ -361,6 +355,21 @@ function tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor
 		update_option( '_tm_updates_logged', strtotime( '+ 2 minutes' ) );
 }
 
+function wpt_email_agenda_wrapper($content) {
+$header   = '<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<style>
+' . wpt_default_agenda_css() . "\n" . get_option( 'wp4toastmasters_agenda_css' ) . '
+#message p, #message li {
+font-size: 16px;
+}
+</style>
+<head>
+<body>';
+return rsvpmaker_inliner($header.$content.'<body></html>');
+}
+
 function awesome_open_roles( $post_id = null, $scheduled = false ) {
 
 	if ( ! is_club_member() ) {
@@ -426,6 +435,12 @@ $header .= '</head>
 <body>
 ';
 	$output   = '';
+	if(isset($_GET['test'])) {
+		$members = get_users('blog_id='.get_current_blog_id());
+		foreach($members as $index => $member) 
+			$output .= $index.': '.$member->display_name.'<br />';	
+	}
+	
 	$openings = 0;
 	if ( $open ) {
 		$output .= '<h3>' . __( 'Open Roles', 'rsvpmaker-for-toastmasters' ) . "</h3>\n<p>";
@@ -460,11 +475,9 @@ $header .= '</head>
 		$mail['from']     = $current_user->user_email;
 		$mail['fromname'] = get_bloginfo( 'name' ) . ' / ' . $current_user->display_name;
 		$mail['subject']  = sanitize_text_field( stripslashes( $_POST['subject'] ) );
-		if ( isset( $emails ) && is_array( $emails ) ) {
-			foreach ( $emails as $e ) {
-				$mail['to'] = $e;
-				echo awemailer( $mail );
-			}
+
+if ( isset( $emails ) && is_array( $emails ) ) {
+			rsvpmaker_qemail ($mail, $emails);			
 			echo "<p>Sending to club members</p>";
 		} else {
 			echo awemailer( $mail );

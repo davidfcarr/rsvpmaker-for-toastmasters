@@ -61,7 +61,7 @@ function toastmasters_admin_screen() {
 		foreach ( $meetings as $meeting ) {
 			$editlink    = admin_url( 'post.php?action=edit&post=' . $meeting->ID );
 			$viewlink    = get_permalink( $meeting->ID );
-			$signupslink = add_query_arg( 'edit_roles', '1', $viewlink );
+			$signupslink = add_query_arg( 'edit_roles_new', '1', $viewlink );
 			$layout_id = wp4toastmasters_agenda_layout_check( );
 			$layout_link = admin_url('post.php?post='.$layout_id.'&action=edit');
 			$meetingslist .= sprintf(

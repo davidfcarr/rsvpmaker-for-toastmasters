@@ -208,6 +208,7 @@ function awe_assign_dropdown( $role, $random_assigned ) {
 }
 
 function clean_role( $role ) {
+	$role = str_replace('_suggest_','',$role);
 	$role = preg_replace( '/[0-9]/', '', $role );
 	$role = str_replace( '_', ' ', $role );
 	return trim( $role );
@@ -401,7 +402,7 @@ function get_role_assignments( $post_id, $atts ) {
 				update_post_meta($post_id,'oneclicknonce',$nonce);
 			}
 			$name = add_query_arg(array('oneclick' => $nonce,'role' => $role,'e' => '*|EMAIL|*'),get_permalink());//sprintf('&oneclick=code&role=Ah Counter&e=test@example.com');
-			$name = sprintf('<a href="%s">One-Click Signup</a>',$name);
+			$name = sprintf('Open - <a href="%s#oneclick">One-Click Signup</a>',$name);
 		}
 		else
 			$name = get_member_name( $assigned );
@@ -550,7 +551,7 @@ function tm_admin_page_top( $headline ) {
 
 	}
 
-	$print = ( isset( $_REQUEST['page'] ) && ! isset( $_REQUEST['rsvp_print'] ) ) ? '<div style="width: 200px; text-align: right; float: right;"><a target="_blank" href="' . admin_url( str_replace( '/wp-admin/', '', $_SERVER['REQUEST_URI'] ) ) . '&rsvp_print=1">Print</a></div>' : '';
+	$print = ( isset( $_REQUEST['page'] ) && ! isset( $_REQUEST['rsvp_print'] ) ) ? '<div style="width: 200px; text-align: right; float: right;"><a target="_blank" href="' . admin_url( str_replace( '/wp-admin/', '', $_SERVER['REQUEST_URI'] ) ) . '&rsvp_print=1&'.rsvpmaker_nonce('query').'">Print</a></div>' : '';
 
 	printf( '<div id="wrap" class="%s toastmasters">%s<h1>%s</h1>', $hook, $print, $headline );
 
