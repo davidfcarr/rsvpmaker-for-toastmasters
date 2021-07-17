@@ -4931,6 +4931,7 @@ function get_evaluator_postdata() {
 }
 
 function wp4t_evaluations( $demo = false ) {
+	global $current_user, $rsvp_options, $wpdb, $toast_roles, $competent_leader;
 
 	$updated = (int) get_option( 'evaluation_forms_updated' );
 	if ( empty( $updated ) || ( $updated < strtotime( 'December 1, 2020' ) ) ) {
@@ -5001,9 +5002,6 @@ function wp4t_evaluations( $demo = false ) {
 
 	printf( '<p><em>%s</em> %s</p>', __( 'These online evaluation forms mirror the prompts on the evaluation forms from Toastmasters International for Pathways as well as older speech manual projects.', 'rsvpmaker-for-toastmasters' ), $link );
 
-	global $current_user;
-	global $rsvp_options;
-	global $wpdb;
 	$project_options = get_projects_array( 'options' );
 
 	if ( ! empty( $_POST['eval_project'] )  && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -5304,8 +5302,6 @@ Other Comments';
 			}
 		}
 
-		global $toast_roles, $competent_leader;
-
 		// get_past_events
 		$past = get_past_events( " (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')  ", 2 );
 		if ( $past ) {
@@ -5349,7 +5345,7 @@ Other Comments';
 
 	if ( empty( $_REQUEST['project'] ) ) {
 
-		$project_widget = str_replace( '[]', '_meta', speaker_details( '', 0, array( 'demo' => 1 ) ) );
+		$project_widget = str_replace( '[]', '_meta', speaker_details( '', 0 ) ); 
 		$project_widget = str_replace( 'name="_project_meta"', 'name="project"', $project_widget );
 		$action_url     = ( $demo ) ? get_permalink() : admin_url( 'admin.php?page=wp4t_evaluations' );
 		$member_prompt  = ( $demo ) ? '' : 'Member: ' . awe_user_dropdown( 'speaker', 0, true );
@@ -5411,12 +5407,12 @@ Other Comments';
 			}
 
 			printf( '<h2>Request Evaluation</h2><form method="post" action="%s"><select name="eval_project">%s</select><br />Send to: %s<br />Note:<br /><textarea name="note" style="width: 800px; height: 3em;"></textarea><br /><button>Send Request</button>%s</form>', admin_url( 'admin.php?page=wp4t_evaluations' ), $options, awe_user_dropdown( 'evaluator', 0, true ), rsvpmaker_nonce('return') );
-
 			?>
 					
 		</section>
 		<section class="rsvpmaker" id="myevaluations">
 			<?php
+			global $current_user;
 			$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=" . $current_user->ID . " AND meta_key LIKE 'evaluation|%' ORDER BY meta_key DESC";
 			$results = $wpdb->get_results( $sql );
 			if ( $results ) {
