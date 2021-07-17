@@ -6,22 +6,27 @@ function refresh_tm_history() {
 }
 add_action( 'refresh_tm_history', 'refresh_tm_history' );
 
+function wp4t_haverole($post_id) {
+	global $wpdb;
+	$haverole[999999] = 'placeholder';
+	$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' AND meta_value > 0";
+	$results = $wpdb->get_results($sql);
+	if($results)
+	foreach($results as $row) {
+		if(is_numeric($row->meta_value))
+		$haverole[$row->meta_value] = clean_role($row->meta_key); 
+	}
+	return $haverole;
+}
+
 function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel = 'Open' ) {
 
 	if ( rsvpmaker_is_template() ) {
-
 		return 'Member dropdown will appear here';
 	}
-
-	global $wpdb;
-
-	global $sortmember;
-
-	global $fnamesort;
-
-	global $histories;
-
-	global $post;
+	global $wpdb, $sortmember, $fnamesort, $histories, $post, $haverole;
+	if(empty($haverole) && !empty($post->ID))
+		$haverole = wp4t_haverole($post->ID);
 
 	if ( ! wp_next_scheduled( 'refresh_tm_history' ) ) {
 		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'refresh_tm_history' );
@@ -114,9 +119,10 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 			$s = '';
 		}
 
-			$status = __( 'Last did: ?', 'rsvpmaker-for_toastmasters' );
-
-		if ( ( $member->ID > 0 ) && ( ! empty( $histories[ $member->ID ] ) ) ) {
+		$status = '';
+		if(isset($haverole[$member->ID]))
+			$status = $haverole[$member->ID];
+		elseif ( ( $member->ID > 0 ) && ( ! empty( $histories[ $member->ID ] ) ) ) {
 
 			$held = $histories[ $member->ID ]->get_last_held( $role );
 
@@ -146,7 +152,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 			$member->first_name = $member->display_name;
 		}
 
-			$options .= sprintf( '<option %s value="%d">%s</option>', $s, $member->ID, $member->first_name . ' ' . $member->last_name );
+			$options .= sprintf( '<option %s value="%d">%s</option>', $s, $member->ID, $member->first_name . ' ' . $member->last_name.' '.$status );
 
 		if ( ! empty( $role ) ) {
 			if ( empty( $held ) ) {
@@ -608,8 +614,6 @@ function wp4t_unassigned_emails( $post_id = 0 ) {
 
 	$signup = get_post_custom( $post_id );
 
-	// rsvpmaker_debug_log($signup,'unassigned emails roles assigned '.$post_id);
-
 	$data = wpt_blocks_to_data( $post->post_content );
 
 	foreach ( $data as $item ) {
@@ -679,8 +683,6 @@ function wp4t_unassigned_ids( $post_id = 0 ) {
 	$roster = '';
 
 	$signup = get_post_custom( $post_id );
-
-	// rsvpmaker_debug_log($signup,'unassigned emails roles assigned '.$post_id);
 
 	$data = wpt_blocks_to_data( $post->post_content );
 
@@ -1386,25 +1388,6 @@ function wp_nav_menu_wpt( $menu_html, $menu_args ) {
 		$menu_html = preg_replace( '/<li [^>]+><a[^"]+"#rolesignup[^<]+<\/a><\/li>/', $evlist, $menu_html );
 
 	}
-
-/*
-function twenty_twenty_one_add_sub_menu_toggle( $output, $item, $depth, $args ) {
-	rsvpmaker_debug_log($output, 'output');
-	rsvpmaker_debug_log($item, 'item');
-	rsvpmaker_debug_log($depth, 'depth');
-	rsvpmaker_debug_log($args, 'args');
-
-	if ( 0 === $depth && in_array( 'menu-item-has-children', $item->classes, true ) ) {
-		// Add toggle button.
-		$output .= '<button class="sub-menu-toggle" aria-expanded="false" onClick="twentytwentyoneExpandSubMenu(this)">';
-		$output .= '<span class="icon-plus">' . twenty_twenty_one_get_icon_svg( 'ui', 'plus', 18 ) . '</span>';
-		$output .= '<span class="icon-minus">' . twenty_twenty_one_get_icon_svg( 'ui', 'minus', 18 ) . '</span>';
-		$output .= '<span class="screen-reader-text">' . esc_html__( 'Open menu', 'twentytwentyone' ) . '</span>';
-		$output .= '</button>';
-	}
-	return $output;
-}
-*/
 
 	if ( strpos( $menu_html, '#tmlogin' ) ) {
 

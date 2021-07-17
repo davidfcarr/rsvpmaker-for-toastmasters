@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.6.4
+Version: 4.6.5
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -195,8 +195,7 @@ function awesome_dashboard_widget_function() {
 				$title .= ' (Role: ' . $r . ')';
 
 			if ( strpos( $row->post_content, 'role' ) ) {
-				$link  = '<p><a href="' . $permalink . '">' . __( 'Sign Up', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
-				$link .= agenda_menu( $row->ID, false );
+				$link = dash_agenda_menu( $row->ID, false );
 				printf( '<div class="dashdate" id="dashdate' . $row->ID . '"><p><strong>%s</strong></p> %s</div>', $title, $link );
 			}
 		}
@@ -1142,12 +1141,10 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 		}
 		$output .= '<div class="role-block" id="' . $field . '"><div class="role-title" style="font-weight: bold;">';
 		$output .= $role . ': </div><div class="role-data"> ';
-		// rsvpmaker_debug_log($output,'start role content');
 		$ajaxclass = 'toastrole'; // ($assigned) ? 'toastupdate' :
 		if ( is_club_member() && ! ( is_edit_roles() || isset( $_REQUEST['recommend_roles'] ) ) ) {
 			$output .= sprintf( ' <form id="%s_form" method="post" class="%s" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="role" value="%s"><input type="hidden" name="post_id" value="%d">', $field, $ajaxclass, $permalink, $current_user->ID, $field, $post->ID ).rsvpmaker_nonce('return');
 		}
-		// rsvpmaker_debug_log($output,'start form output');
 		$output .= '<div class="member-role">' . $assignedto . '</div>';
 
 		if ( is_club_member() ) {
@@ -1992,7 +1989,7 @@ function speaker_details( $field, $atts = array(), $user = null ) {
 		$output .= '<div class="speaker_introduction">Introduction: <br /><textarea class="intro_' . $field . ' mce" name="_intro[' . $field . ']" id="_intro_' . $field . '" style="width: 100%; height: 4em;" >' . $intro . '</textarea></div>';
 	}
 		$output = apply_filters( 'speaker_form_extra', $output, $field );
-
+	$output = '<div class="speaker_details_form">'.$output.'</div>';
 	return $output;
 }
 
@@ -3532,9 +3529,6 @@ function register_wp4toastmasters_settings() {
 			$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 		if ( sizeof( $future ) ) {
 			$next = $future[0];
-			rsvpmaker_fix_timezone();
-			wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'hourly', 'wp4toast_reminders_intros', array( $hours ) );
-			update_option( 'wp4toast_reminders_intros', 1 );
 		}
 	}
 
@@ -3546,20 +3540,60 @@ function register_wp4toastmasters_settings() {
 	}
 }
 
-add_action('wp4toast_reminders_intros','wp4toast_reminders_intros',10,1);
-function wp4toast_reminders_intros($hours) {
-global $wpdb;
-$sql = "SELECT * FROM ".$wpdb->prefix."rsvpmaker_event WHERE date > DATE_SUB(date, INTERVAL ".$hours." HOUR) AND date <= DATE_ADD(NOW(), INTERVAL ".$hours." HOUR)";
-rsvpmaker_debug_log($sql,'search for event x hours');
-$sql = "SELECT ".$wpdb->prefix."_event WHERE date > NOW() ";
+add_action('wp4toast_reminders_intros','wp4toast_reminders_intros',10,2);
+function wp4toast_reminders_intros($post_id, $hours = 0) {
+if(!$hours)
+	return;
+global $wpdb, $rsvp_options;
+$sql = "SELECT * FROM ".$wpdb->prefix."rsvpmaker_event WHERE event=$post_id AND date > NOW() AND date <= DATE_ADD(NOW(), INTERVAL $hours HOUR) ";
 $row = $wpdb->get_row($sql);
-rsvpmaker_debug_log($row,'event within hour');
 if($row)
 	{
-		$event_id = $row->event;
-		$tmod = get_post_meta($event_id,'_Toastmaster_of_the_Day_1',true);
-		$toastmaster = get_member_name($tmod);
-		mail('david@carrcommunications.com','TOD reminder',$toastmaster.':'.$tmod);
+		$date = rsvpmaker_date($rsvp_options['long_date'], (int) $row->ts_start);
+		$msg = '';
+		echo $sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_Speaker%' AND meta_value > 0";
+		$results = $wpdb->get_results($sql);
+		print_r($results);
+		foreach($results as $row) {
+			if($row->meta_value > 0)
+				$msg .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $post_id, $row->meta_key ) ) . '</div>';
+		}
+		if(!empty($msg))
+		{
+			$meeting_leader_tag = '_Toastmaster_of_the_Day_1';
+			$meeting_leader_id = get_post_meta($post_id,$meeting_leader_tag,true);
+			if($meeting_leader_id)
+				{
+				$user = get_userdata($meeting_leader_id);
+				if($user) {
+					$mail['to'] = $user->user_email;
+					$mail['subject'] = __('Speech introductions for','rsvpmaker-for-toastmasters').' '.$date;
+					$mail['html'] = $msg.'<p>Sent to meeting leader: '.$user->display_name.'</p>';
+					rsvpmailer($mail);	
+				}
+
+				}
+			$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
+			$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+			foreach($wp4toastmasters_officer_titles as $index => $title) {
+				if(strpos($title,__('Education','rsvpmaker-for-toastmasters')))
+				{
+					if(!empty($wp4toastmasters_officer_ids[$index])) {
+						$vpe_id = $wp4toastmasters_officer_ids[$index];
+						$vpe = get_userdata($vpe_id);
+						if($vpe) {
+							$mail['to'] = $vpe->user_email;
+							$mail['subject'] = __('Speech introductions for','rsvpmaker-for-toastmasters').' '.$date;
+							$mail['html'] = $msg.'<p>Sent to VPE: '.$vpe->display_name.'</p>';
+							if(!empty($user->display_name))
+								$mail['html'] .= '<p>Also sent to meeting leader: '.$user->display_name.'</p>';
+							rsvpmailer($mail);
+						}
+					}
+				}
+			}
+
+		}
 	}
 }
 
@@ -4752,8 +4786,14 @@ $code = sanitize_text_field($_GET['oneclick']);
 if($nonce != $code)
 	return '<p>Security error.</p>';
 $role = sanitize_text_field($_GET['role']);
-$email = sanitize_text_field($_GET['e']);
-$user = get_user_by('email',$email);
+if(isset($_GET['e'])) {
+	$email = sanitize_text_field($_GET['e']);
+	$user = get_user_by('email',$email);	
+}
+elseif(isset($_GET['member'])) {
+	$user_id = intval($_GET['member']);
+	$user = get_userdata($user_id);
+}
 if(!empty($user->display_name))
 	$output .= sprintf('<h2 id="oneclick">One Click Signup</h2><p>Recognized member: %s</p>',$user->display_name);
 else
@@ -4923,7 +4963,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 	$link .= '<div id="cssmenu"><ul>';
 
 	if ( current_user_can( 'edit_signups' ) || edit_signups_role() ) {
-		$link        .= '<li class="has-sub"><a href="' . $permalink . 'edit_roles_new=1" ' . $blank . '>' . __( 'Edit Signups', 'rsvpmaker-for-toastmasters' ) . '</a><ul>';
+		$link  .= '<li class="has-sub"><a href="' . $permalink . 'edit_roles_new=1" ' . $blank . '>' . __( 'Edit Signups', 'rsvpmaker-for-toastmasters' ) . '</a><ul>';
 		$link .= '<li ><a href="' . $permalink . 'tweak_times=1" ' . $blank . '>' . __( 'Agenda Time Planner', 'rsvpmaker-for-toastmasters' ) . '</a><li>';
 		$link .= '<li><a href="' . $permalink . 'reorder=1"' . $blank . '>' . __( 'Reorder', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 		if ( $frontend ) {
@@ -5044,6 +5084,44 @@ function agenda_menu( $post_id, $frontend = true ) {
 	if ( $frontend ) {
 		$link .= '<li class="last"><a  target="_blank" href="' . admin_url( 'admin.php?page=toastmasters_planner' ) . '">' . __( 'Planner', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	}
+	$link .= '</ul></div>';
+
+	if ( $agenda_lock ) {
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked against changes and can only be unlocked by an administrator.</p>';
+	} elseif ( ! empty( $post_lock ) && strpos( $post_lock, 'admin' ) ) {
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator).</p>';
+	}
+	return $link;
+}
+
+function dash_agenda_menu( $post_id ) {
+	global $post, $rsvp_options;
+	$post       = get_post( $post_id );
+	$permalink  = get_permalink( $post_id );
+	$permalink .= strpos( $permalink, '?' ) ? '&' : '?';
+	$link       = '';
+
+	$blank = ' target="_blank" ';
+	// defaults 'edit_signups' => 'read','email_list' => 'read','edit_member_stats' => 'edit_others_posts','view_reports' => 'read','view_attendance' => 'read','agenda_setup' => 'edit_others_posts'
+	$security = get_tm_security();
+
+	$link .= '<div id="cssmenu"><ul>';
+	$link .= '<li><a href="' . $permalink . '" ' . $blank . '>' . __( 'Signup', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	if ( current_user_can( 'edit_signups' ) || edit_signups_role() ) {
+		$link .= '<li><a href="' . $permalink . 'edit_roles_new=1" ' . $blank . '>' . __( 'Edit Signups', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+		$link .= '<li ><a href="' . $permalink . 'tweak_times=1" ' . $blank . '>' . __( 'Agenda Time Planner', 'rsvpmaker-for-toastmasters' ) . '</a><li>';
+	}
+	$link .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Agenda Print', 'rsvpmaker-for-toastmasters' ) . '</a></li> ';
+	if ( current_user_can( $security['email_list'] ) ) {
+		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1">' . __( 'Agenda Email', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	}
+	$link     .= '<li ><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Agenda Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	if ( ! get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
+		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	}
+	$link    .= '<li ><a href="' . $permalink . 'assigned_open=1" ' . $blank . '>' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li ><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li ><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link .= '</ul></div>';
 
 	if ( $agenda_lock ) {
@@ -11825,6 +11903,10 @@ function wpt_notification_forms( $template_forms ) {
 		'subject' => 'Meeting Reminder for [rsvpdate]',
 		'body'    => "[wpt_open_roles]\n\n[tmlayout_main]\n\n[wpt_tod]",
 	);
+	$template_forms['suggest']  = array(
+		'subject' => 'Nominating you for [wptrole] on [rsvpdate]',
+		'body'    => "[custom_message]\n\nTo confirm:\n[oneclicklink]\n(no password required)",
+	);
 	return $template_forms;
 }
 
@@ -12766,6 +12848,7 @@ function wp4t_cron_nudge_setup() {
 }
 add_action( 'wp4t_reminders_nudge', 'wp4t_reminders_nudge' );
 function wp4t_reminders_nudge() {
+	$future = future_toastmaster_meetings( 2 );
 
 	$temp = get_option( 'wp4toast_reminder' );
 	if ( ! empty( $temp ) ) {
@@ -12775,21 +12858,31 @@ function wp4t_reminders_nudge() {
 	if ( ! empty( $temp ) ) {
 		$reminders[] = $temp;
 	}
+	wp_unschedule_hook( 'wp4toast_reminders_intro' );
+	$temp = get_option( 'wp4toast_reminder_intros' );
+	if ( ! empty( $temp ) ) {
+		$hours = $temp;
+		foreach ( $future as $meeting ) {
+			$time = $meeting->datetime;
+				$string = $time . ' -' . $hours;
+				$timestamp = rsvpmaker_strtotime( $string );
+				$hours = trim( str_replace( 'hours', '', $hours ) );
+				if ( $timestamp > time() ) {
+					$result = wp_schedule_single_event( $timestamp, 'wp4toast_reminders_intros', array( $meeting->ID,$hours ) );
+				}
+		}
+	}
+
 	if ( empty( $reminders ) ) {
 		return;
 	}
+
 	wp_unschedule_hook( 'wp4toast_reminders_cron' );
-	// wptoast_reminder_clear();
-	$future = future_toastmaster_meetings( 2 );
 	foreach ( $future as $meeting ) {
-		// print_r($meeting);
 		$time = $meeting->datetime;
 		foreach ( $reminders as $hours ) {
 			$string = $time . ' -' . $hours;
-			// rsvpmaker_debug_log($string,'nudge time');
-			// printf('<p>%s</p>',$string);
 			$timestamp = rsvpmaker_strtotime( $string );
-			// printf('<h3>%s %s</h3>',$time,date('r',$timestamp));
 			$hours = trim( str_replace( 'hours', '', $hours ) );
 			if ( $timestamp > time() ) {
 				$result = wp_schedule_single_event( $timestamp, 'wp4toast_reminders_cron', array( $meeting->ID . ':' . $hours ) );

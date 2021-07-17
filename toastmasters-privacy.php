@@ -42,7 +42,6 @@ function rsvptoast_exporter( $email_address, $page = 1 ) {
 					'value' => $value,
 				);
 			}
-			// rsvpmaker_debug_log($data,'data from archive ');
 		}
 	} else {
 		$userdata = get_userdata( $user->ID );

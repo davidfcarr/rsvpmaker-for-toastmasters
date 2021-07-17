@@ -571,6 +571,7 @@ jQuery( document ).ready(
 				$( '#editonewrapper' + field ).hide();
 				$( '#' + field + '_form' ).hide();
 				$( '#remove' + field + '_form' ).hide();
+				$( '.speaker_details_form' ).hide();
 				$('#suggest' + field).html('<p>Nominate the member for a role. Send them an email with your note and a one-click signup link.</p><p><textarea name="suggest_note" rows="3" cols="80"></textarea><br /><input type="checkbox" name="ccme" value="1" /> Send me a copy</p>');
 			}
 		);
