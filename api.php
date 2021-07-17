@@ -212,9 +212,6 @@ class WPT_Timer_Control extends WP_REST_Controller {
 		}
 		// else
 		$control = get_post_meta( $request['post_id'], 'timing_light_control', true );
-		rsvpmaker_debug_log( $request, 'timing light API request' );
-		rsvpmaker_debug_log( $_REQUEST, 'timing light server request' );
-		rsvpmaker_debug_log( $control, 'timing light control' );
 		return new WP_REST_Response( $control, 200 );
 	}
 }
@@ -434,16 +431,24 @@ function wpt_suggest_role() {
 	$datetime = get_rsvp_date($post_id);
 	$t = rsvpmaker_strtotime($datetime);
 	$date = rsvpmaker_date($rsvp_options['short_date'],$t);
-	$mail['subject'] = sprintf('Nominating you for %s on %s',clean_role($_POST['role']),$date);
+	$cleanrole = clean_role($_POST['role']);
 	$nonce = get_post_meta($post_id,'oneclicknonce',true);
 	if(empty($nonce)) {
 		$nonce = wp_create_nonce('oneclick');
 		update_post_meta($post_id,'oneclicknonce',$nonce);
 	}
-	$url = add_query_arg(array('oneclick' => $nonce,'role' => $role,'e' => $member->user_email),get_permalink($post_id));
-	$link = sprintf('<p>One-Click Signup for %s <br /><a href="%s#oneclick">%s</a></p>', $role, $url, $url );
-	$note = wpautop(stripslashes($_POST['suggest_note']))."\n".$link;
-	$mail['html'] = wp_kses_post($note);
+	$url = add_query_arg(array('oneclick' => $nonce,'role' => rawurlencode($role),'member' => $member_id),get_permalink($post_id)).'#oneclick';
+	$link = sprintf('<a href="%s">%s</a>', $url, $url );
+	$templates = get_rsvpmaker_notification_templates();
+	$template = $templates['suggest'];
+	$note = '';
+	if(!empty($_POST['suggest_note'])){
+		$note = wpautop(stripslashes($_POST['suggest_note']))."\n".$link;
+		$note = wp_kses_post($note);	
+	}
+	$mail['subject'] = str_replace('[rsvpdate]',$date,str_replace('[wptrole]',$cleanrole,$template['subject']));//$cleanrole,$date);
+	$mail['html'] = wpautop(str_replace('[custom_message]',$note,$template['body']));//$cleanrole,$date);
+	$mail['html'] = str_replace('[oneclicklink]',$link,$mail['html']);
 	$mail['fromname'] = $current_user->display_name;
 	$mail['from'] = $current_user->user_email;
 	$mail['to'] = $member->user_email;
@@ -455,7 +460,14 @@ function wpt_suggest_role() {
 		$mail['to'] = $current_user->user_email;
 		$mail['subject'] = '(For '.$member->user_email.') '.$mail['subject'];
 		if(!empty($member->mobile_phone)) {
-			$mail['html'] .= "\n" . sprintf('<p><a href="tel:%s">%s</p>',$member->mobile_phone,$member->mobile_phone);
+			$mail['html'] .= "\n" . sprintf('<p><br><br>Mobile: <a href="tel:%s">%s</p>',$member->mobile_phone,$member->mobile_phone);
+			$mail['html'] .= sprintf("<p>Text message version<br><br></p><p>Nominating you for %s on %s<br>To accept %s<br><br></p>",$cleanrole, $date, $url);
+		}
+		if(!empty($member->home_phone)) {
+			$mail['html'] .= "\n" . sprintf('<p>Home: <a href="tel:%s">%s</p>',$member->home_phone,$member->home_phone);
+		}
+		if(!empty($member->work_phone)) {
+			$mail['html'] .= "\n" . sprintf('<p>Work: <a href="tel:%s">%s</p>',$member->work_phone,$member->work_phone);
 		}
 		rsvpmailer($mail);
 	}

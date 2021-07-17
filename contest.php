@@ -1432,7 +1432,6 @@ function toast_scoring_sheet() {
 		$vote = array_map('sanitize_text_field',$_POST['vote']);
 		update_post_meta( $post->ID, 'tm_scoring_vote' . $id, $vote );
 		update_post_meta( $post->ID, 'tm_scoring_signature' . $id, sanitize_text_field($_POST['signature'] . ' - ' . $_POST['signature_date'] ) );
-		rsvpmaker_debug_log( $_POST, 'contest_vote_submitted' );
 	}
 
 	if ( isset( $_GET['reset'] ) ) {

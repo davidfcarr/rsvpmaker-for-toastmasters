@@ -4861,13 +4861,11 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 	<?php if ( $is_speech ) { ?>
 <p>Speech Title: <input type="text" name="speech_title" value="<?php echo esc_attr($title); ?>" /></p>
 <?php } ?>
-<p>Evaluator: <input type="text" name="evaluator" value="
-	<?php
+<p>Evaluator: <input type="text" name="evaluator" value="<?php
 	if ( ! $demo ) {
 		echo esc_attr($evaluator->first_name . ' ' . $evaluator->last_name);
 	}
-	?>
-" /></p>
+	?>" /></p>
 <p>Date: <input type="text" name="timestamp" value="<?php echo esc_attr($date); ?>" /></p>
 
 	<?php
@@ -4913,14 +4911,15 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 	<?php
 }
 
-add_shortcode( 'wp4t_evaluations_demo2020', 'wp4t_evaluations_demo2020' );
+add_shortcode( 'wp4t_evaluations_demo2021', 'wp4t_evaluations_demo2021' );
 
-function wp4t_evaluations_demo2020() {
+function wp4t_evaluations_demo2021() {
 	if ( is_admin() ) {
 		return;
 	}
+	//if(is_user_logged_in())
+		//return 'Please log out before using this version of the evaluation form.';
 	ob_start();
-	// printf('<script src="%s"></script>',plugins_url('rsvpmaker-for-toastmasters/toastmasters.js'));
 	wp4t_evaluations( true ); // show in demo mode
 	return ob_get_clean();
 }
@@ -5105,7 +5104,7 @@ Other Comments';
 				$evaluation .= wpautop( sanitize_textarea_field($_POST['check'][ $index ] ) );
 			}
 			if ( ! empty( $_POST['comment'][ $index ] ) ) {
-				$evaluation .= wpautop( sanitize_text_field( stripslashes( $_POST['comment'][ $index ] ) ) );
+				$evaluation .= wpautop( sanitize_textarea_field( stripslashes( $_POST['comment'][ $index ] ) ) );
 			}
 		}
 		if ( ! $demo ) {
@@ -5690,7 +5689,6 @@ function wpt_json() {
 	}
 
 	$json = json_encode( $json_data );
-	// rsvpmaker_debug_log($json,'json to submit for '.$current_user->user_login);
 
 	$url      = 'https://wp4toastmasters.com/?wpt_stats_warehouse=' . santize_text_field($_SERVER['SERVER_NAME']);
 	$args     = array(
@@ -5784,9 +5782,7 @@ function wpt_json_batch_upload() {
 	$wpdb->show_errors();
 	$last_wpt_json_batch_upload = (int) get_option( 'last_wpt_json_batch_upload' );
 	$sql                        = "SELECT * from $wpdb->usermeta WHERE umeta_id > $last_wpt_json_batch_upload AND meta_key LIKE 'tm|%" . $_SERVER['SERVER_NAME'] . "%' ORDER BY umeta_id LIMIT 0, 200";
-	// rsvpmaker_debug_log($sql,'batch upload sql');
 	$results = $wpdb->get_results( $sql );
-	// rsvpmaker_debug_log($results,'batch upload db result');
 	if ( $results ) {
 		$tmids = get_toastmasters_ids();
 		foreach ( $results as $row ) {
@@ -5798,7 +5794,6 @@ function wpt_json_batch_upload() {
 		update_option( 'last_wpt_json_batch_upload', $last );
 	}
 	if ( isset( $json_data ) ) {
-		// rsvpmaker_debug_log($json_data,'batch upload json');
 		$result = wpt_json_send( $json_data, true );
 		global $successful_upload;
 		if ( $successful_upload ) {
@@ -5814,7 +5809,6 @@ function wpt_json_send( $json_data, $upload_only = false ) {
 	global $successful_upload;
 	$successful_upload = false;
 	$json              = json_encode( $json_data );
-	// rsvpmaker_debug_log($json,'wpt_json_send data to upload');
 	$p = get_option( 'wpt_stats_warehouse_password' );
 	if ( empty( $p ) ) {
 		$p = wp_generate_password();
@@ -5838,24 +5832,7 @@ function wpt_json_send( $json_data, $upload_only = false ) {
 		'data_format' => 'body',
 	);
 	$response = wp_remote_request( $url, $args );
-	/*
-	$ch = curl_init();
-	curl_setopt($ch,  CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	//Tell cURL that we want to send a POST request.
-	curl_setopt($ch, CURLOPT_POST, 1);
-
-	//Set the content type to application/json
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-	$response  = curl_exec($ch);
-	curl_close($ch);
-	*/
 	$json_response = json_decode( $response['body'], true );
-	// rsvpmaker_debug_log($response,'wpt_json_send response');
 
 	if ( ! isset( $json_response['log'] ) ) {
 		update_option( 'sync_error_json_log', $response );
@@ -6898,7 +6875,6 @@ function pathways_project_map( $slug ) {
 function fetch_evaluation_form( $slug ) {
 
 	$slug = pathways_project_map( $slug );
-	printf( '<p>Project code: %s</p>', $slug );
 
 	$slug    = 'wpteval_' . $slug;
 	$default = array(
@@ -6916,12 +6892,10 @@ Interest: Engages audience with interesting, well-constructed content|5 (Exempla
 	);
 
 	$form = get_option( $slug ); // check for cached copy
-	printf( '<p>%s</p><pre></pre>', $slug, var_export( $form, true ) );
 	if ( ! empty( $form ) ) {
 		if ( is_array( $form ) ) {
 			$form = (object) $form;
 		}
-		rsvpmaker_debug_log( $form, $slug );
 		return $form;
 	}
 	$url = 'http://wp4toastmasters.com/wp-json/evaluation/v1/form/' . urlencode( $slug );
@@ -6930,7 +6904,6 @@ Interest: Engages audience with interesting, well-constructed content|5 (Exempla
 	}
 	$args    = array( 'timeout' => 20 );
 	$request = wp_remote_get( $url, $args );
-	// rsvpmaker_debug_log($request);
 	if ( is_wp_error( $request ) ) {
 		return $default; // Bail early
 	}
