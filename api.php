@@ -443,7 +443,7 @@ function wpt_suggest_role() {
 	$template = $templates['suggest'];
 	$note = '';
 	if(!empty($_POST['suggest_note'])){
-		$note = wpautop(stripslashes($_POST['suggest_note']))."\n".$link;
+		$note = wpautop(stripslashes($_POST['suggest_note']));
 		$note = wp_kses_post($note);	
 	}
 	$mail['subject'] = str_replace('[rsvpdate]',$date,str_replace('[wptrole]',$cleanrole,$template['subject']));//$cleanrole,$date);
@@ -453,9 +453,10 @@ function wpt_suggest_role() {
 	$mail['from'] = $current_user->user_email;
 	$mail['to'] = $member->user_email;
 	$mail['override'] = 1;//works with rsvpmailer override on toastmost
-	rsvpmailer($mail);
+	if(2 != (int) $_POST['ccme'])
+		rsvpmailer($mail);
 	$msg = $mail['html'];
-	if(isset($_POST['ccme']))
+	if(!empty($_POST['ccme']))
 	{
 		$mail['to'] = $current_user->user_email;
 		$mail['subject'] = '(For '.$member->user_email.') '.$mail['subject'];
@@ -469,6 +470,7 @@ function wpt_suggest_role() {
 		if(!empty($member->work_phone)) {
 			$mail['html'] .= "\n" . sprintf('<p>Work: <a href="tel:%s">%s</p>',$member->work_phone,$member->work_phone);
 		}
+		$mail['html'] .= (1 == (int) $_POST['ccme']) ? '<p>'.__('Sent to member','rsvpmaker-for_toastmasters').'</p>' : '<p>'.__('Sent ONLY to you','rsvpmaker-for_toastmasters').'</p>';
 		rsvpmailer($mail);
 	}
 	add_post_meta($post_id,'_suggest'.$roletag,$member_id);

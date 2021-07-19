@@ -19,7 +19,7 @@ function tm_welcome_screen_assets( $hook ) {
 
 function toastmasters_css_js() {
 	global $post, $current_user;
-	$version = '4.6.9';
+	$version = '4.7';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
 		return; // don't load all this in editor or post listings
 	}

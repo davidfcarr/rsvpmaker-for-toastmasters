@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.6.5
+Version: 4.6.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4805,11 +4805,16 @@ $formbottom = '<p><button>Take Role</button></p></form>';
 foreach($data as $item){
 	if(isset($item['role']) && ($item['role'] == $role))
 	{
+		//print_r($item);
 		$count = (isset($item['count'])) ? $item['count'] : 1;
-		for($i = 1; $i <= $count; $i++)
+		$start = (isset($item['start'])) ? $item['start'] : 1;
+		$end = $start + $count;
+		for($i = $start; $i < $end; $i++)
 		{
 			$field = '_'.str_replace(' ','_',$role).'_'.$i;
+			//echo 'check'.$field.'<br />';
 			$assigned = get_post_meta($post->ID,$field,true);
+			//echo 'check'.$field.' '.$assigned.'<br />';
 			if(!$assigned) {
 				$output .= $formtop.sprintf('<input type="hidden" name="oneclickrole" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
 				$output .= sprintf("<p>Let's sign you up for %s !</p>",$role);
