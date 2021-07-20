@@ -572,7 +572,7 @@ jQuery( document ).ready(
 				$( '#' + field + '_form' ).hide();
 				$( '#remove' + field + '_form' ).hide();
 				$( '.speaker_details_form' ).hide();
-				$('#suggest' + field).html('<p>Nominate the member for a role. Send them an email with your note and a one-click signup link.</p><p><textarea name="suggest_note" rows="3" cols="80"></textarea><br />Send to <input type="radio" name="ccme" value="0" checked="checked" /> member <input type="radio" name="ccme" value="1" /> ... with a copy to me member <input type="radio" name="ccme" value="2" /> only to me </p>');
+				$('#suggest' + field).html('<p>Nominate the member for a role. Send them an email with your note and a one-click signup link.</p><p><textarea name="suggest_note" rows="3" cols="80"></textarea><br />Send to <input type="radio" name="ccme" value="0" checked="checked" /> member <input type="radio" name="ccme" value="1" /> member + copy to me <input type="radio" name="ccme" value="2" /> only to me </p>');
 			}
 		);
 

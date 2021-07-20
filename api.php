@@ -462,7 +462,7 @@ function wpt_suggest_role() {
 		$mail['subject'] = '(For '.$member->user_email.') '.$mail['subject'];
 		if(!empty($member->mobile_phone)) {
 			$mail['html'] .= "\n" . sprintf('<p><br><br>Mobile: <a href="tel:%s">%s</p>',$member->mobile_phone,$member->mobile_phone);
-			$mail['html'] .= sprintf("<p>Text message version<br><br></p><p>Nominating you for %s on %s<br>To accept %s<br><br></p>",$cleanrole, $date, $url);
+			$mail['html'] .= sprintf("<p>Text message version<br><br></p><p>Nominating you for %s on %s<br>To accept %s<br>(no password required)<br><br></p>",$cleanrole, $date, $url);
 		}
 		if(!empty($member->home_phone)) {
 			$mail['html'] .= "\n" . sprintf('<p>Home: <a href="tel:%s">%s</p>',$member->home_phone,$member->home_phone);

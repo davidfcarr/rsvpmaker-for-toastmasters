@@ -401,33 +401,38 @@ class RoleInspector extends Component {
 
 return (	
 <InspectorControls key="roleinspector">
-<div><div><label>Role</label></div> 
-<select id="role" value={ role } onChange={ ( role ) => setAttributes( { role } ) }>
-<option value=""></option>
-<option value="custom">Custom Role</option>
-<option value="Ah Counter">Ah Counter</option>
-<option value="Body Language Monitor">Body Language Monitor</option>
-<option value="Evaluator">Evaluator</option>
-<option value="General Evaluator">General Evaluator</option>
-<option value="Grammarian">Grammarian</option>
-<option value="Humorist">Humorist</option>
-<option value="Speaker">Speaker</option>
-<option value="Backup Speaker">Backup Speaker</option>
-<option value="Topics Master">Topics Master</option>
-<option value="Table Topics">Table Topics</option>
-<option value="Timer">Timer</option>
-<option value="Toastmaster of the Day">Toastmaster of the Day</option>
-<option value="Vote Counter">Vote Counter</option>
-<option value="Contest Chair">Contest Chair</option>
-<option value="Contest Master">Contest Master</option>
-<option value="Chief Judge">Chief Judge</option>
-<option value="Ballot Counter">Ballot Counter</option>
-<option value="Contestant">Contestant</option>
-</select>			
-</div>
-<p id="customline"><label>Custom Role:</label><br /> <input type="text" id="custom_role" onChange={ ( custom_role ) => setAttributes( { custom_role } ) } defaultValue={custom_role} /></p>
-<div>
-</div>
+<SelectControl
+				label={ __( 'Role', 'rsvpmaker-for-toastmasters' ) }
+				value={ role }
+				onChange={ ( role ) => setAttributes( { role } ) }
+				options={ [
+					{value: '', label: ''},
+					{value: 'custom', label: 'Custom Role'},
+					{value: 'Ah Counter', label: 'Ah Counter'},
+					{value: 'Body Language Monitor', label: 'Body Language Monitor'},
+					{value: 'Evaluator', label: 'Evaluator'},
+					{value: 'General Evaluator', label: 'General Evaluator'},
+					{value: 'Grammarian', label: 'Grammarian'},
+					{value: 'Humorist', label: 'Humorist'},
+					{value: 'Speaker', label: 'Speaker'},
+					{value: 'Backup Speaker', label: 'Backup Speaker'},
+					{value: 'Topics Master', label: 'Topics Master'},
+					{value: 'Table Topics', label: 'Table Topics'},
+					{value: 'Timer<', label: 'Timer<'},
+					{value: 'Vote Counter', label: 'Vote Counter'},
+					{value: 'Contest Chair', label: 'Contest Chair'},
+					{value: 'Contest Master', label: 'Contest Master'},
+					{value: 'Chief Judge', label: 'Chief Judge'},
+					{value: 'Ballot Counter', label: 'Ballot Counter'},
+					{value: 'Contestant', label: 'Contestant'},
+					] }
+/>
+
+<TextControl
+        label="Custom Role"
+        value={ custom_role }
+        onChange={ ( custom_role ) => setAttributes( { custom_role } ) }
+/>
 
 <div style={ {width: '60%'} }>	<NumberControl
 		label={ __( 'Count', 'rsvpmaker-for-toastmasters' ) }

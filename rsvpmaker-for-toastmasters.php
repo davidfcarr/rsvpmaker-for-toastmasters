@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.6.6
+Version: 4.6.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1746,7 +1746,7 @@ function role_post() {
 
 			$title        = sanitize_text_field( $_POST['_title'][ $basefield ] );
 			$project      = sanitize_text_field( $_POST['_project'][ $basefield ] );
-			$intro        = ( isset( $_POST['_intro'][ $basefield ] ) ) ? sanitize_textarea_field( $_POST['_intro'][ $basefield ] ) : '';
+			$intro        = ( isset( $_POST['_intro'][ $basefield ] ) ) ? wp_kses_post( $_POST['_intro'][ $basefield ] ) : '';
 			$time         = (int) ( isset( $_POST['_maxtime'][ $basefield ] ) ) ? sanitize_text_field( $_POST['_maxtime'][ $basefield ] ) : 0;
 			$display_time = ( isset( $_POST['_display_time'][ $basefield ] ) ) ? sanitize_text_field( $_POST['_display_time'][ $basefield ] ) : '';
 			if ( $time == 0 ) {
@@ -3547,13 +3547,14 @@ if(!$hours)
 global $wpdb, $rsvp_options;
 $sql = "SELECT * FROM ".$wpdb->prefix."rsvpmaker_event WHERE event=$post_id AND date > NOW() AND date <= DATE_ADD(NOW(), INTERVAL $hours HOUR) ";
 $row = $wpdb->get_row($sql);
+rsvpmaker_debug_log($sql,'speech intros sql');
+rsvpmaker_debug_log($row,'speech intros row');
 if($row)
 	{
 		$date = rsvpmaker_date($rsvp_options['long_date'], (int) $row->ts_start);
 		$msg = '';
 		echo $sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_Speaker%' AND meta_value > 0";
 		$results = $wpdb->get_results($sql);
-		print_r($results);
 		foreach($results as $row) {
 			if($row->meta_value > 0)
 				$msg .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $post_id, $row->meta_key ) ) . '</div>';
@@ -7634,15 +7635,10 @@ p
 
 	global $wpdb;
 
-	$signup = get_post_custom( $event );
-	// print_r($signup);
+	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = $event and meta_key LIKE '_Speaker_%' AND meta_value > 0 ");
 
-	for ( $i = 1; $i < 20; $i++ ) {
-		if ( isset( $signup[ '_Speaker_' . $i ][0] ) && ( $speaker = $signup[ '_Speaker_' . $i ][0] ) ) {
-			echo '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $speaker, $event, '_Speaker_' . $i ) ) . '</div>';
-		} else {
-			break;
-		}
+	foreach ( $results as $row ) {
+			echo '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $event, $row->meta_key ) ) . '</div>';
 	}
 	if ( ! $agenda ) {
 		?>
@@ -12381,6 +12377,8 @@ function rsvptoast_showbutton( $showbutton ) {
 add_filter( 'rsvpmaker_showbutton', 'rsvptoast_showbutton' );
 
 function tm_absence( $atts ) {
+	global $email_context;
+
 	if ( is_admin() && isset( $_GET['convert'] ) ) {
 		$show = ( empty( $atts['show_on_agenda'] ) ) ? 0 : 1;
 		return '<!-- wp:wp4toastmasters/absences {"show_on_agenda":"' . $show . '"} /-->';
@@ -12391,7 +12389,125 @@ function tm_absence( $atts ) {
 	if ( empty( $atts['show_on_agenda'] ) && ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) ) ) {
 		return;
 	}
-	if ( ! is_user_member_of_blog() ) {
+	if ( ! is_user_member_of_blog() && empty($email_context) ) {
+		return '<div><strong>Planned Absences</strong> - Only displayed for logged in members of this site</div>';
+	}
+	global $post;
+	global $current_user;
+	global $wpdb;
+	global $rsvp_options;
+	$output = '';
+	if ( isset( $_POST['absences'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		foreach ( $_POST['absences'] as $a ) {
+			if ( ! empty( $a ) ) {
+				add_post_meta( $post->ID, 'tm_absence', sanitize_text_field($a) );
+			}
+		}
+	}
+	if ( isset( $_POST['cancel_absences'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		foreach ( $_POST['cancel_absences'] as $a ) {
+			if ( ! empty( $a ) ) {
+				delete_post_meta( $post->ID, 'tm_absence', $a );
+			}
+		}
+	}
+	if ( isset( $_POST['add_absence'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		add_post_meta( $post->ID, 'tm_absence', $current_user->ID );
+	}
+	if ( isset( $_POST['cancel_absence'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		delete_post_meta( $post->ID, 'tm_absence', $current_user->ID );
+	}
+	$absences = get_post_meta( $post->ID, 'tm_absence' );
+	if ( is_array( $absences ) ) {
+		$absences = array_unique( $absences );
+	}
+
+	if ( is_edit_roles() || isset( $_GET['recommend_roles'] ) || isset( $_GET['signup_sheet_editor'] ) ) {
+		if ( ! empty( $absences ) && is_array( $absences ) ) {
+			$output .= '<div><strong>Planned Absences</strong> : ';
+			foreach ( $absences as $absent ) {
+				$userdata = get_userdata( $absent );
+				$output  .= sprintf( '<div id="current_absences%s%s">%s %s <input type="checkbox" id="absences_remove%d" class="absences_remove" name="cancel_absences[]" post_id="%s" value="%d" /> Cancel</div>', $post->ID, $absent, $userdata->first_name, $userdata->last_name, $absent, $post->ID, $absent );
+			}
+			$output .= '</div>';
+		}
+		$output .= '<div>Add to Planned Absences list</div>';
+		for ( $i = 0; $i < 4; $i++ ) {
+			$select  = awe_user_dropdown( 'absences[]', 0, true );
+			$select  = str_replace( '<select ', '<select id="absences' . $i . $post->ID . '" class="absences" post_id="' . $post->ID . '"', $select );
+			$output .= sprintf( '<div>%s</div>', $select );
+		}
+		$output .= '<div id="status_absences' . $post->ID . '"></div>';
+		return $output;
+	}
+
+	if ( ! empty( $absences ) && is_array( $absences ) ) {
+		$output .= '<div><strong>Planned Absences</strong>: ';
+		foreach ( $absences as $absent ) {
+			$userdata = get_userdata( $absent );
+			if ( ! empty( $userdata->first_name ) ) {
+				$output .= sprintf( '<br />%s %s', $userdata->first_name, $userdata->last_name );
+			}
+		}
+
+		$output .= '</div>';
+	}
+		$time      = rsvpmaker_strtotime( get_rsvp_date( $post->ID ) );
+		$away      = '';
+		$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+		// Array of WP_User objects.
+	foreach ( $blogusers as $user ) {
+		$exp = get_user_meta( $user->ID, 'status_expires', true );
+		if ( empty( $exp ) ) {
+			continue;
+		}
+		if ( $exp < $time ) {
+			delete_user_meta( $user->ID, 'status_expires' );
+			delete_user_meta( $user->ID, 'status' );
+		} else {
+			$status = get_user_meta( $user->ID, 'status', true );
+			if ( ! empty( $status ) ) {
+				$userdata = get_userdata( $user->ID );
+				$away    .= '<br />' . $userdata->first_name . ' ' . $userdata->last_name . ' ' . $status . sprintf( ' (Expires: %s)', rsvpmaker_date( $rsvp_options['long_date'], $exp ) );
+			}
+		}
+	}
+
+	if ( ! empty( $away ) ) {
+		$output .= '<div><strong>Away Messages:</strong>' . $away . '</div>';
+	}
+
+	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['signup_sheet_editor'] ) ) {
+		return $output; // don't display button
+	}
+
+	if ( ! empty( $absences ) && is_array( $absences ) && in_array( $current_user->ID, $absences ) ) {
+		$output .= sprintf( '<form method="post" action="%s"><input type="hidden" name="cancel_absence" value="1"><button>Cancel My Absence </button>%s</form>', get_permalink(),rsvpmaker_nonce('return') );
+	} else {
+		$output .= sprintf( '<form class="planned_absence_form" method="post" action="%s"><input type="hidden" name="add_absence" value="1"><button>Planned Absence </button>%s</form>', get_permalink(), rsvpmaker_nonce('return') );
+	}
+
+	$output .= sprintf( '<p>%s <a href="%s">Away Message</a> %s</p>', __( 'Click here to mark yourself unavailable for this specific meeting. Or, if you will be away for several weeks, you can set an ', 'rsvpmaker-for-toastmasters' ), admin_url( 'profile.php?page=wp4t_set_status_form' ), __( 'with an expiration date', 'rsvpmaker-for-toastmasters' ) );
+
+	return $output;
+}
+
+add_shortcode('tm_absence_2021','tm_absence_2021');
+
+function tm_absence_2021( $atts ) {
+	global $email_context;
+
+	if ( is_admin() && isset( $_GET['convert'] ) ) {
+		$show = ( empty( $atts['show_on_agenda'] ) ) ? 0 : 1;
+		return '<!-- wp:wp4toastmasters/absences {"show_on_agenda":"' . $show . '"} /-->';
+	}
+	if ( is_admin() ) {
+		return;
+	}
+	if ( empty( $atts['show_on_agenda'] ) && ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) ) ) {
+		return;
+	}
+	if ( ! is_user_member_of_blog() && empty($email_context) ) {
 		return '<div><strong>Planned Absences</strong> - Only displayed for logged in members of this site</div>';
 	}
 	global $post;
