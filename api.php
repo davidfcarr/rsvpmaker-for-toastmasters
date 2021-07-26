@@ -345,13 +345,7 @@ class Editor_Assign extends WP_REST_Controller {
 			delete_post_meta( $post_id, '_intro' . $role );
 		}
 		if ( time() > rsvpmaker_strtotime( $timestamp ) ) {
-			$key      = make_tm_usermeta_key( $role, $timestamp, $post_id );
-			$roledata = make_tm_roledata_array( 'wp_ajax_editor_assign' );
-			if ( $user_id ) {
-				update_user_meta( $user_id, $key, $roledata );
-			}
-			$sql = $wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE meta_key=%s AND user_id != %d", $key, $user_id );
-			$wpdb->query( $sql );
+			wp4t_record_history($user_id, $role, $timestamp, $post_id, 'wp_ajax_editor_assign');
 		}
 		$name   = get_member_name( $user_id );
 		$status = sprintf( '%s assigned to %s', preg_replace( '/[\_0-9]/', ' ', $role ), $name );

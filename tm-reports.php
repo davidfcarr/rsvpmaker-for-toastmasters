@@ -15,8 +15,8 @@ function toastmasters_reports_menu() {
 
 	add_menu_page( __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_screen', 'toastmasters_screen', 'dashicons-microphone', '2.01' );
 
-	add_submenu_page( 'toastmasters_screen', __( 'My Progress', 'rsvpmaker-for-toastmasters' ), __( 'My Progress', 'rsvpmaker-for-toastmasters' ), 'read', 'my_progress_report', 'my_progress_report' );
-	add_submenu_page( 'toastmasters_screen', __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports', 'toastmasters_reports' );
+	add_submenu_page( 'toastmasters_screen', __( 'My Progress', 'rsvpmaker-for-toastmasters' ), __( 'My Progress', 'rsvpmaker-for-toastmasters' ), 'read', 'my_progress_report', 'wp4toastmasters_history' );
+	add_submenu_page( 'toastmasters_screen', __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports', 'wp4toastmasters_history' );
 	add_submenu_page( 'toastmasters_screen', __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'pathways_report', 'pathways_report' );
 	add_submenu_page( 'toastmasters_screen', __( 'Multi-Meeting Role Planner', 'rsvpmaker-for-toastmasters' ), __( 'Role Planner', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_planner', 'toastmasters_planner' );
 	add_submenu_page( 'toastmasters_screen', __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports_dashboard', 'toastmasters_reports_dashboard' );
@@ -29,7 +29,7 @@ function toastmasters_reports_menu() {
 
 	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Update History', 'rsvpmaker-for-toastmasters' ), __( 'Update History', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_reconcile', 'toastmasters_reconcile' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Stats', 'rsvpmaker-for-toastmasters' ), __( 'Edit Member Stats', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'tm_member_edit', 'tm_member_edit' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'add_member_speech', 'add_member_speech' );
 
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Record Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Record Attendance', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_attendance', 'toastmasters_attendance' );
@@ -42,7 +42,8 @@ function toastmasters_reports_menu() {
 	// add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
 	// add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'wp4toastmasters_history', 'wp4toastmasters_history' );
 	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 
 }
@@ -176,16 +177,16 @@ function tm_select_member( $page, $field ) {
 	return $user_id;
 }
 
-function add_member_speech( $user_id = 0 ) {
-	if ( ! $user_id ) {
-		printf( '<form method="get" action="%s" id="tm_select_member_tab"><input type="hidden" id="tm_page" name="page" value="toastmasters_reports" />', admin_url( 'admin.php' ) );
+function add_member_speech(  ) {
+		$user_id = (isset($_REQUEST['toastmaster'])) ? intval($_REQUEST['toastmaster']) : 0;
+		printf( '<form method="get" action="%s" id="tm_select_member_tab"><input type="hidden" id="tm_page" name="page" value="add_member_speech" />', admin_url( 'admin.php' ) );
 		echo awe_user_dropdown( 'toastmaster', $user_id, true, __( 'Select Member', 'rsvpmaker-for-toastmasters' ) );
 		echo '<button>' . __( 'Get', 'rsvpmaker-for-toastmasters' ) . '</button>';
 		echo '<input type="hidden" name="active" class="tab" value="add_member_speech">';
 		rsvpmaker_nonce();
 		echo '</form>';
+		if(!$user_id)
 			return;
-	}
 	global $rsvp_options;
 	if ( isset( $_REQUEST['_manual_meta'] ) ) {
 		$manual = sanitize_text_field($_REQUEST['_manual_meta']);
@@ -194,24 +195,26 @@ function add_member_speech( $user_id = 0 ) {
 		} elseif ( isset( $_REQUEST['project'] ) ) {
 			$p = sanitize_text_field($_REQUEST['project']);
 		}
-		$speech_title = sanitize_text_field($_REQUEST['_title_meta']);
+		$title = sanitize_text_field($_REQUEST['_title_meta']);
 		$intro        = sanitize_text_field($_REQUEST['_intro_meta']);
 		$projectslug  = preg_replace( '/[ _]/', '', $manual ) . '_project';
 		$year         = sanitize_text_field($_REQUEST['project_year']);
 		$month        = sanitize_text_field($_REQUEST['project_month']);
 		$day          = sanitize_text_field($_REQUEST['project_day']);
 		if ( $year && $month && $day ) {
-			$date = strtotime( $year . '-' . $month . '-' . $day );
+			$date = rsvpmaker_strtotime( $year . '-' . $month . '-' . $day.' 12:00:00' );
 		} else {
 			$date = time();
 		}
-		$project_text = ( empty( $p ) ) ? '' : get_project_text( $p );
 
 		// new data model
-		$key      = make_tm_usermeta_key( 'Speaker_' . time(), date( 'Y-m-d G:i:s', $date ), 0 );
-		$roledata = make_tm_speechdata_array( make_tm_roledata_array( 'add_member_speech' ), $manual, $p, $speech_title, $intro );
-		update_user_meta( $user_id, $key, $roledata );
+		$role = 'Speaker_' . time();
+		$timestamp = rsvpmaker_date( 'Y-m-d G:i:s', $date );
+		$post_id = 0;
+		$function = 'add_member_speech';
+		wp4t_record_history_to_table($user_id, $role, $timestamp, 0, $function, $manual,$p,$title,$intro, sanitize_text_field($_SERVER['SERVER_NAME']));
 
+		//wp4t_record_history($user_id, $role, $timestamp, $post_id, $function,$manual,$p,$speech_title,$intro);
 		$speech_url = admin_url( 'admin.php?page=toastmasters_reports&tab=speeches&toastmaster=' . $user_id );
 
 		echo '<em>' . __( 'Saved:', 'rsvpmaker-for-toastmasters' ) . ' ' . $manual . ' ' . $project_text . ' ' . $speech_title . ' for ' . date( 'F j, Y', $date ) . '</em> ';
@@ -230,18 +233,22 @@ function add_member_speech( $user_id = 0 ) {
 		} else {
 			$date = time();
 		}
-
-		$key = make_tm_usermeta_key( $role . '_' . time(), date( 'Y-m-d G:i:s', $date ), 0 );
-		update_user_meta( $user_id, $key, $roledata );
+		$role .= '_'.time();
+		$timestamp = rsvpmaker_date( 'Y-m-d G:i:s', $date );
+		$post_id = 0;
+		$function = 'add_member_role';
+		wp4t_record_history_to_table($user_id, $role, $timestamp, 0, $function);
 
 		$speech_url = admin_url( 'admin.php?page=toastmasters_reports&toastmaster=' . $user_id );
 
 		echo '<em>' . __( 'Saved:', 'rsvpmaker-for-toastmasters' ) . ' ' . $role . ' for ' . date( 'F j, Y', $date ) . '</em> ';
 		printf( '<a href="%s">%s</a>', $speech_url, __( 'Refresh to see changes', 'rsvpmaker-for-toastmasters' ) );
-	} elseif ( $user_id ) {
+	} 
+	
+	if ( $user_id ) {
 		global $post;
 		$post = (object) array( 'ID' => 0 ); // fake post object, expected by speaker_details function
-		printf( '<div id="add_speech_div"><h2>%s</h2><form id="add_speech_form" method="post" action="%s"><input type="hidden" name="member" id="member" value="%d" /><input type="hidden" name="add_speech" value="1" />', __( 'Add Speech' ), admin_url( 'admin.php?page=add_member_speech' ), $user_id );
+		printf( '<div id="add_speech_div"><h2>%s</h2><form id="add_speech_form" method="post" action="%s"><input type="hidden" name="toastmaster" id="toastmaster" value="%d" /><input type="hidden" name="add_speech" value="1" />', __( 'Add Speech' ), admin_url( 'admin.php?page=add_member_speech' ), $user_id );
 		echo str_replace( '[]', '_meta', speaker_details( '', 0, array() ) );
 		printf( '<div>%s: <input name="project_month" id="project_month_add" size="4" value="%s" /> %s: <input name="project_day" id="project_day_add" size="4" value="%s" /> %s: <input name="project_year" id="project_year_add" size="8" value="%s" /></div>', __( 'Month', 'rsvpmaker-for-toastmasters' ), date( 'm' ), __( 'Day', 'rsvpmaker-for-toastmasters' ), date( 'd' ), __( 'Year', 'rsvpmaker-for-toastmasters' ), date( 'Y' ) );
 		submit_button( __( 'Save', 'rsvpmaker-for-toastmasters' ) );
@@ -262,7 +269,7 @@ function add_member_speech( $user_id = 0 ) {
 			$role_list .= '<option value="' . $code . '">' . $role . '</option>';
 		}
 
-		printf( '<div id="add_role_div"><h2>%s</h2><form id="add_role_form" method="post" action="%s"><input type="hidden" name="member" id="member" value="%d" /><input type="hidden" name="add_speech" value="1" />', __( 'Add Role' ), admin_url( 'admin.php?page=add_member_speech' ), $user_id );
+		printf( '<div id="add_role_div"><h2>%s</h2><form id="add_role_form" method="post" action="%s"><input type="hidden" name="toastmaster" id="toastmaster" value="%d" /><input type="hidden" name="add_speech" value="1" />', __( 'Add Role' ), admin_url( 'admin.php?page=add_member_speech' ), $user_id );
 		printf( '<p><select name="_role_meta" id="_role_meta">%s</select></p>', $role_list );
 		printf( '<div>%s: <input name="project_month" id="role_month_add" size="4" value="%s" /> %s: <input name="project_day" id="role_day_add" size="4" value="%s" /> %s: <input name="role_year" id="role_year_add" size="8" value="%s" /></div>', __( 'Month', 'rsvpmaker-for-toastmasters' ), date( 'm' ), __( 'Day', 'rsvpmaker-for-toastmasters' ), date( 'd' ), __( 'Year', 'rsvpmaker-for-toastmasters' ), date( 'Y' ) );
 		submit_button( __( 'Save', 'rsvpmaker-for-toastmasters' ) );
@@ -488,242 +495,6 @@ function update_user_role_archive_all() {
 	}
 }
 
-function toastmasters_reports() {
-	global $pagenow, $current_user, $rsvp_options;
-
-	if ( isset( $_POST['pathwaysnote'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		$note   = sanitize_textarea_field(stripslashes( $_POST['pathwaysnote'] ));
-		$key    = sanitize_text_field(stripslashes( $_POST['tmnote'] ));
-		$author = get_userdata( $current_user->ID );
-		$note  .= "\n\n<em>" . __( 'Added by', 'rspvpmaker-for-toastmasters' ) . ': ' . esc_html($author->first_name . ' ' . $author->last_name . ', ' . rsvpmaker_date( $rsvp_options['long_date'] )) . '</em>';
-		add_user_meta( $_GET['toastmaster'], $key, $note );
-	}
-
-	if ( isset( $_GET['updatearchive'] ) ) {
-		update_user_role_archive_all();
-		return;
-	}
-
-	if ( ! wp_next_scheduled( 'update_user_role_archive_all' ) ) {
-		wp_schedule_event( strtotime( 'midnight tomorrow' ), 'daily', 'update_user_role_archive_all' );
-	}
-
-	if ( $_REQUEST['page'] == 'my_progress_report' ) {
-		$hook = tm_admin_page_top( __( 'My Progress Report', 'rsvpmaker-for-toastmasters' ) );
-		global $current_user;
-		$user_id = $current_user->ID;
-		printf( '<input type="hidden" id="toastmaster_select" value="%d">', $user_id );
-	} else {
-		$hook    = tm_admin_page_top( __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ) );
-		$user_id = tm_select_member( 'toastmasters_reports', 'toastmaster' );
-	}
-	if ( isset( $_GET['member'] ) ) {
-		$user_id = (int) $_GET['member'];
-	}
-	tm_reports_disclaimer();
-	global $wpdb;
-	global $toast_all_roles;
-	$toast_all_roles = array();
-	global $toast_roles;
-
-	// display routines
-
-	// if changes are submitted, process them first
-	ob_start();
-	tm_member_edit( $user_id );
-	$edit_form = ob_get_clean();
-
-	?>
-	<h2 class="nav-tab-wrapper">
-	  <a class="nav-tab 
-	  <?php
-		if ( empty( $_GET['active'] ) ) {
-			echo ' nav-tab-active ';}
-		?>
-		" href="#overview">Overview</a>
-	  <a id="show_speeches_by_manual" class="nav-tab 
-	  <?php
-		if ( ! empty( $_GET['active'] ) && ( $_GET['active'] == 'speeches' ) ) {
-			echo ' nav-tab-active ';}
-		?>
-		" href="#speeches">Speeches</a>
-	  <a id="show_pathways" class="nav-tab 
-	  <?php
-		if ( ! empty( $_GET['active'] ) && ( $_GET['active'] == 'pathways' ) ) {
-			echo ' nav-tab-active ';}
-		?>
-		"  href="#pathways">Pathways</a>
-	  <a id="show_traditional_program" class="nav-tab" href="#profile_main">Traditional Program</a>
-	  <a id="show_traditional_advanced" class="nav-tab " href="#advanced">Traditional Advanced</a>
-	<?php
-	if ( ( ( $_REQUEST['page'] == 'my_progress_report' ) && current_user_can( 'edit_own_stats' ) ) || current_user_can( 'edit_member_stats' ) ) {
-		?>
-	 <a class="nav-tab 
-		<?php
-		if ( isset( $_REQUEST['active'] ) && ( $_REQUEST['active'] == 'edit' ) ) {
-			echo 'nav-tab-active';}
-		?>
-		" href="#edit" id="edit_tab">Edit</a>
-	 <a class="nav-tab 
-		<?php
-		if ( isset( $_REQUEST['active'] ) && ( $_REQUEST['active'] == 'edit_stats' ) ) {
-			echo 'nav-tab-active';}
-		?>
-		" href="#edit_stats" id="edit_stats_tab">Edit Stats</a>
-	 <a class="nav-tab 
-		<?php
-		if ( isset( $_REQUEST['active'] ) && ( $_REQUEST['active'] == 'add_member_speech' ) ) {
-			echo 'nav-tab-active';}
-		?>
-		" href="#add_member_speech" id="speech_tab">Add Speech/Role</a>
-		<?php
-	}
-	if ( current_user_can( 'manage_options' ) ) {
-		?>
-<a class="nav-tab 
-		<?php
-		if ( isset( $_REQUEST['active'] ) && ( $_REQUEST['active'] == 'deleterecords' ) ) {
-			echo 'nav-tab-active';}
-		?>
-" href="#deleterecords" id="deleterecords_tab">Delete</a>
-		<?php
-	}
-	?>
-	</h2>
-
-	<div id="sections" class="rsvpmaker" >
-
-	<section class="rsvpmaker"  id="overview">
-	<?php
-	tm_participation_overview( 0, 0, $user_id );
-	?>
-	</section>
-	<section class="rsvpmaker"  id="speeches">
-	<?php
-	if ( empty( $user_id ) ) {
-		echo speeches_by_manual( $user_id );
-	} else {
-		wpt_fetch_report( 'speeches_by_manual', $user_id );
-	}
-	?>
-	</section>
-<section class="rsvpmaker"  id="pathways">
-	<?php
-	wpt_fetch_report( 'pathways', $user_id ); // pathways_report();
-	?>
-</section>
-<section class="rsvpmaker"  id="profile_main">
-	<?php
-	wpt_fetch_report( 'traditional_program', $user_id );
-	// echo toastmasters_progress_report($user_id);
-	?>
-</section>
-<section class="rsvpmaker"  id="advanced">
-	<?php
-	wpt_fetch_report( 'traditional_advanced', $user_id );
-	?>
-</section>
-	<?php
-	if ( ( ( $_REQUEST['page'] == 'my_progress_report' ) && current_user_can( 'edit_own_stats' ) ) || current_user_can( 'edit_member_stats' ) ) {
-		?>
-<section class="rsvpmaker"  id="edit">
-		<?php
-		echo $edit_form;
-		?>
-</section>
-<section class="rsvpmaker"  id="add_member_speech">
-		<?php
-		add_member_speech( $user_id );
-		?>
-</section>
-		<?php
-	}
-	?>
-	<?php
-	if ( current_user_can( 'manage_options' ) ) {
-		?>
-<section class="rsvpmaker"  id="deleterecords">
-		<?php
-		wpt_delete_records( $user_id );
-		?>
-</section>
-		<?php
-	}
-	?>
-</div>
-	<?php
-	if ( isset( $_REQUEST['tab'] ) ) {
-		?>
-<script>
-(function($) {
-		$('section').hide();
-		$('section#<?php echo sanitize_text_field($_REQUEST['tab']); ?>').show();
-		return false;
-})( jQuery );
-</script>
-		<?php
-	}
-
-	tm_admin_page_bottom( $hook );
-}
-
-function wpt_delete_records( $user_id = 0 ) {
-	global $wpdb, $current_user;
-	$wpdb->show_errors();
-	$output = '';
-	$sql = "select * from $wpdb->usermeta WHERE meta_key LIKE 'tm|%" . sanitize_text_field($_SERVER['SERVER_NAME']) . "%' ";
-
-	if ( $user_id ) {
-		$sql .= ' AND user_id=' . $user_id;
-	}
-	$sql    .= ' ORDER BY user_id, meta_key';
-	$results = $wpdb->get_results( $sql );
-	if ( $results ) {
-		foreach ( $results as $row ) {
-			if ( $user_id != $row->user_id ) {
-				$userdata = get_userdata( $row->user_id );
-				if ( isset( $userdata->first_name ) ) {
-					$output .= '<h3>' . $userdata->first_name . ' ' . $userdata->last_name . '</h3>';
-				} else {
-					$output .= '<h3>User record missing</h3>';
-				}
-			}
-			$parts   = explode( '|', $row->meta_key );
-			$output .= sprintf( '<p><input type="checkbox" name="deleterecords[]" value="%d" /> %s %s %s</p>', $row->umeta_id, $parts[1], $parts[2], $parts[4] );
-			$user_id = $row->user_id;
-		}
-	}
-	if ( ! empty( $output ) ) {
-		?>
-<p>This screen, visible only to a site administrator, is meant to allow you to delete bad data such as records created while you were testing the website and the agenda system.
-<form method="post" action="<?php echo admin_url( 'admin.php?page=toastmasters_reports' ); ?>">
-<p><input id="checkAllDelete" type="checkbox"> Check All</p>
-		<?php echo $output; ?>
-<button>Delete</button>
-<?php rsvpmaker_nonce(); ?>
-</form>
-		<?php
-	} else {
-		echo 'No detailed records found.';
-	}
-
-}
-
-function wpt_deleterecords_post() {
-	if ( ! isset( $_POST['deleterecords'] ) || !wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		return;
-	}
-	if ( ! current_user_can( 'manage_options' ) ) {
-		return;
-	}
-	global $wpdb;
-	foreach ( $_POST['deleterecords'] as $d ) {
-		$wpdb->query( "DELETE FROM $wpdb->usermeta where umeta_id=". (int) $d );
-	}
-}
-
-add_action( 'admin_init', 'wpt_deleterecords_post' );
-
 function awesome_get_stats( $user_id ) {
 	$tmstats = get_tm_stats( $user_id );
 	return $tmstats['count'];
@@ -746,25 +517,11 @@ function get_speaking_track( $user_id ) {
 	global $current_user;
 	$manuals  = get_manuals_options();
 	$projects = get_projects_array( 'options' );
-
-	$wpdb->show_errors();
-	if ( $user_id ) {
-		$sql      = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_key as speech
-			FROM " . $wpdb->posts . '
-			JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-			JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=" . $user_id . " 
-			WHERE a1.meta_value < DATE_ADD(CURDATE(), INTERVAL 6 MONTH) AND post_status='publish'
-			ORDER BY a1.meta_value DESC
-			LIMIT 0, 10";
-		$speeches = $wpdb->get_results( $sql );
-
-		foreach ( $speeches as $s ) {
-			$manual = get_post_meta( $s->post_id, '_manual' . $s->speech, true );
-			if ( ! empty( $manual ) && ( $manual != 'Select Manual/Path' ) ) {
-				break;
-			}
-		}
-	}
+	$history_table = $wpdb->base_prefix.'tm_history';
+	$speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+	
+	$sql = "SELECT manual FROM `$history_table` JOIN `$speech_history_table` ON `$history_table`.id=`$speech_history_table`.history_id WHERE user_id=$user_id AND manual NOT LIKE 'Other%' ORDER BY datetime DESC";
+	$manual = $wpdb->get_var($sql);
 	if ( empty( $manual ) ) {
 		$manual_type  = 'Path Not Set';
 		$manual_label = 'Level 1 Mastering Fundamentals';
@@ -886,7 +643,7 @@ function get_latest_speeches( $user_id, $myroles = array() ) {
 
 function toastmasters_reconcile() {
 	$hook = tm_admin_page_top( __( 'Reconcile Meeting Activity / Add History', 'rsvpmaker-for-toastmasters' ) );
-
+	refresh_tm_history();
 	echo '<p><em>' . __( 'Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
 	printf( '<p>You can use this information as the basis for <a href="%s">Meeting Minutes</a>, as well as other reports.</p>', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=minutes' ) );
 	echo '<style>.agenda_note{display: none;}</style>';
@@ -985,29 +742,8 @@ function toastmasters_reconcile() {
 			}
 			$options .= sprintf( '<option value="%d" %s>%s %s</option>', $row->ID, $s, $row->date, $r );
 		}
-
-		$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.meta_value,'%M %e, %Y') as date
-	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_sked_Varies'
-	 ORDER BY $wpdb->posts.ID";
-
-		$ot      = '<option value="">' . __( 'Choose Template', 'rsvpmaker-for-toastmasters' ) . '</option>';
-		$results = $wpdb->get_results( $sql );
-		foreach ( $results as $row ) {
-			$s = '';
-			if ( isset( $_REQUEST['history'] ) && ( $row->ID == $_REQUEST['history'] ) ) {
-				$s = ' selected="selected" ';
-			}
-			$ot .= sprintf( '<option value="%d" %s>%s</option>', $row->ID, $s, $row->post_title );
-		}
 		?>
-<table>
-<tr>
-<th style="text-align: left;">Update Meeting Records</th>
-<th style="width: 250px; text-align: left;">Add History for Other Dates</th>
-<th></th>
-</tr>
-<tr><td valign="top">
+<p><strong>Update Meeting Records</strong></p>
 <form method="get" action="<?php echo admin_url( 'admin.php' ); ?>">
 <input type="hidden" name="page" value="toastmasters_reconcile" />
 <select id="pick_event" name="post_id">
@@ -1016,26 +752,6 @@ function toastmasters_reconcile() {
 <br /><button><?php _e( 'Get', 'rsvpmaker-for-toastmasters' ); ?></button>
 <?php rsvpmaker_nonce(); ?>
 </form>
-</td>
-<td valign="top">
-<form method="get" action="<?php echo admin_url( 'admin.php' ); ?>">
-<input type="hidden" name="page" value="toastmasters_reconcile" />
-<select id="history" name="history">
-		<?php echo $ot; ?>
-</select>
-<br /><button><?php _e( 'Get', 'rsvpmaker-for-toastmasters' ); ?></button>
-<?php rsvpmaker_nonce(); ?>
-</form>
-</td>
-<td>
-<em>
-		<?php
-		printf( __( 'Use the "Add History" option if you want to add detailed records of meetings from before you began using this software. (To add summary data such as number of speeches per manual, use Edit tab under <a href="%s">Progress Reports</a>)', 'rsvpmaker-for-toastmasters' ), admin_url( 'admin.php?page=toastmasters_reports' ) );
-		?>
-		</em>
-</td>
-</tr>
-</table>
 
 		<?php
 		if ( isset( $_REQUEST['post_id'] ) ) {
@@ -1103,17 +819,20 @@ function toastmasters_reconcile() {
 	}
 
 	if ( $r_post->postID ) {
-		$sql     = "SELECT meta_key, meta_value FROM `$wpdb->postmeta` where post_id=" . $r_post->postID . " AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' GROUP BY meta_key";
+		$history_table = $wpdb->base_prefix.'tm_history';
+
+
+		$sql     = "SELECT * FROM $history_table WHERE post_id=$r_post->postID";
 		$results = $wpdb->get_results( $sql );
 		foreach ( $results as $row ) {
 			// print_r($row);
-			$present[] = $row->meta_value; // all the people who filled any role
-			if ( strpos( $row->meta_key, 'Attended' ) ) {
-				$marked_attended[] = $row->meta_value;
+			$present[] = $row->user_id; // all the people who filled any role
+			if ( $row->role == 'Attended' ) {
+				$marked_attended[] = $row->user_id;
 			} elseif ( $row->meta_value ) {
-				$role_holder[] = $row->meta_value;
+				$role_holder[] = $row->user_id;
 			}
-			$meeting_roles[] = $row->meta_key;
+			$meeting_roles[] = $row->role;
 		}
 	}
 	$members   = array();
@@ -1305,17 +1024,16 @@ function toastmasters_meeting_minutes() {
 		);
 
 	if ( $r_post->postID ) {
-		$sql     = "SELECT meta_key, meta_value FROM `$wpdb->postmeta` where post_id=" . $r_post->postID . " AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' GROUP BY meta_key";
-		$results = $wpdb->get_results( $sql );
+		$results = wp4t_history_query( "post_id=$r_post->postID" );
 		foreach ( $results as $row ) {
 			// print_r($row);
-			$present[] = $row->meta_value; // all the people who filled any role
-			if ( strpos( $row->meta_key, 'Attended' ) ) {
-				$marked_attended[] = $row->meta_value;
-			} elseif ( is_numeric( $row->meta_value ) && ( $row->meta_value > 0 ) ) {
-				$role_holder[] = $row->meta_value;
+			$present[] = $row->user_id; // all the people who filled any role
+			if ( $row->role == 'Attended' ) {
+				$marked_attended[] = $row->user_id;
+			} elseif ( is_numeric( $row->user_id ) && ( $row->user_id > 0 ) ) {
+				$role_holder[] = $row->user_id;
 			}
-			$meeting_roles[] = $row->meta_key;
+			$meeting_roles[] = $row->role;
 		}
 	}
 	$members   = array();
@@ -1585,7 +1303,7 @@ function toastmasters_attendance_report() {
 		$userdata = get_userdata( $user_id );
 
 		echo '<tr><td>';
-		printf( '<a href="%s&member=%d">', admin_url( sanitize_text_field($_SERVER['REQUEST_URI']) ), intval($userdata->ID) );
+		printf( '<a href="%s&member=%d">', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=attendance' ), intval($userdata->ID) );
 		echo esc_attr($userdata->first_name);
 		echo ' ';
 		echo esc_attr($userdata->last_name);
@@ -1600,12 +1318,7 @@ function toastmasters_attendance_report() {
 function awesome_get_attendance_detail( $user_id ) {
 	global $wpdb;
 	global $rsvp_options;
-	$sql      = 'SELECT a1.meta_value as datetime
-	 FROM ' . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
-	 WHERE a1.meta_value < '" . get_sql_now() . "' AND a2.meta_value = $user_id"; // ORDER BY a1.meta_value
-	$results  = $wpdb->get_results( $sql );
+	$results = wp4t_history_query("user_id=$user_id AND domain='".$_SERVER['SERVER_NAME']."' ");
 	$userdata = get_userdata( $user_id );
 	$output   = sprintf( '<h2>%s %s</h2>', $userdata->first_name, $userdata->last_name );
 	$dates    = array();
@@ -1646,16 +1359,11 @@ function awesome_get_attendance( $user_id ) {
 		$start_date = '';
 	}
 
-	$sql         = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_key as role
-	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$' 
-	 WHERE post_status='publish' AND a1.meta_value < '" . get_sql_now() . "' $start_date AND a2.meta_value = $user_id";
 	$appearances = array();
-	$results     = $wpdb->get_results( $sql );
+	$results     = wp4t_history_query( " user_id =$user_id " );
 	foreach ( $results as $row ) {
-		if ( ! in_array( $row->ID, $appearances ) ) {
-			$appearances[] = $row->ID;
+		if ( ! in_array( $row->post_id, $appearances ) ) {
+			$appearances[] = $row->post_id;
 		}
 	}
 	return sizeof( $appearances );
@@ -3795,7 +3503,7 @@ function tm_export() {
 			die( 'invalid import code' );
 		}
 		global $wpdb;
-		$users = get_users();
+		$users = get_club_members();
 		foreach ( $users as $user ) {
 			$u    = array(
 				'user_login'    => $user->user_login,
@@ -3837,7 +3545,8 @@ function tm_export() {
 		$json = json_encode( $members );
 		if ( isset( $_GET['jout'] ) ) {
 			echo $json;
-		} else {
+		} 
+		else {
 			header( 'Content-Type: text/json' );
 			header( 'Content-Disposition: attachment;filename="' . sanitize_text_field($_SERVER['SERVER_NAME']) . '-members-' . date( 'Y-m-d' ) . '.json"' );
 			header( 'Cache-Control: max-age=0' );
@@ -3846,8 +3555,40 @@ function tm_export() {
 			fclose( $out );
 		}
 		exit();
-	} else {
-		$users   = get_users();
+	}
+	elseif (isset($_GET['role'])) {
+		$users   = get_club_members();
+		foreach($users as $user) {
+			$index = preg_replace('[^a-z]','',strtolower(get_user_meta($user->ID,'last_name',true).get_user_meta($user->ID,'first_name',true).$user->user_login));
+			$sortuser[$index] = $user;
+		}
+		ksort($sortuser);
+
+		$header = ['Name','Toastmasters ID','Role','Count','Datetime','Domain','Manual','Project','Title'];
+
+		header( 'Content-Type: text/csv' );
+		header( 'Content-Disposition: attachment;filename="' . sanitize_text_field($_SERVER['SERVER_NAME']) . '-members-' . date( 'Y-m-d' ) . '.csv"' );
+		header( 'Cache-Control: max-age=0' );
+		$out = fopen( 'php://output', 'w' );
+		fputcsv( $out, $header );
+
+		foreach($sortuser as $user) {
+			$tmid = get_user_meta($user->ID,'toastmasters_id',true);
+			$results = wp4t_history_query(['select'=>'role,rolecount,datetime,domain,manual,project,title','where'=>"user_id=$user->ID",'orderby'=>'role, datetime']);
+			foreach($results as $row) {
+				$export = ['name'=>$user->display_name,'toastmasters_id'=>$tmid];
+				$row = (array) $row;
+				foreach($row as $key => $value)  {
+					$export[$key] = $value;
+				}
+			fputcsv($out,$export);
+			}
+		}
+		fclose( $out );
+		exit();
+	}
+	else {
+		$users   = get_club_members();
 		$contact = array();
 		$urls    = array( 'facebook_url', 'twitter_url', 'linkedin_url', 'business_url' );
 
@@ -4019,6 +3760,117 @@ function toastmasters_import_export() {
 	$hook = tm_admin_page_top( 'Import/Export' );
 	global $wpdb;
 
+	$nonce       = wp_create_nonce( 'tm_export' );
+	$timelord = rsvpmaker_nonce('query');
+	$export_link = sprintf( '<a href="%s?page=%s&tm_export=%s&%s">Export Summary</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
+	$export_role = sprintf( '<a href="%s?page=%s&tm_export=%s&%s&role=1">Export Role Report</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
+
+	printf( '<p>Click %s for a listing of member contact info and a summary of their achievements or %s for a listing of all member roles and speeches.</p>', $export_link, $export_role );
+	printf( '<p>%s <a href="%s">%s</a></p>', __( 'If you want to import or sync a member spreadsheet from toastmasters.org, see the', 'rsvpmaker-for-toastmasters' ), admin_url( 'users.php?page=add_awesome_member#import' ), __( 'Add Members page', 'rsvpmaker-for-toastmasters' ) );
+?>
+<h2>Importing Data from Free Toast Host or easySpeak</h2>
+<p>If you want to importing data from one of the other club website platforms, contact <a href="mailto:david@wp4toastmasters.com">david@wp4toastmasters.com</a> to volunteer for a software beta test program.</p>
+<?php
+return;//disabled for now
+?>
+
+<h2>Transfer Member Accounts Between WP4Toastmasters Websites</h2>		
+	<?php
+
+	// print_r($_REQUEST);
+	if ( isset( $_POST['importurl'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		$message = file_get_contents( sanitize_url($_POST['importurl']) );
+		if ( empty( $message ) ) {
+			echo '<div style="color:red">error</div>';
+		} elseif ( ! strpos( $message, '}' ) ) {
+			echo '<div style="color:red">No data returned</div>' . $message;
+		} else {
+			$data = json_decode( trim( $message ) );
+			foreach ( $data as $index => $user ) {
+				$member_id  = 0;
+				$usernumber = 0;
+				$member     = get_user_by( 'email', $user->user_email );
+				if ( empty( $member ) && ! strpos( $index, '@' ) ) {
+					$member = get_user_by_tmid( $index );
+				}
+				if ( ! empty( $member->ID ) ) {
+					$member_id = $member->ID;
+				}
+				if ( $member_id ) {
+					printf( '<p>looked up %s = user #%d</p>', $user->user_login, $member_id );
+				} else {
+					while ( get_user_by( 'login', $user->user_login ) ) {
+						printf( '<p>existing user by %s</p>', $user->user_login );
+						$usernumber++;
+						$user->user_login = $user->user_login . $usernumber;
+						printf( '<p>login changed to %s</p>', $user->user_login );
+					}
+					$newuser   = array(
+						'user_login'    => $user->user_login,
+						'user_email'    => $user->user_email,
+						'user_nicename' => $user->user_nicename,
+						'display_name'  => $user->display_name,
+						'user_pass'     => wp_generate_password(),
+					);
+					$member_id = wp_insert_user( $newuser );
+					print_r( $member_id );
+					printf( '<p>adding %s, user id %d</p>', $user->user_login, $member_id );
+				}
+				$record_count = 0;
+				if ( ! empty( $user->usermeta ) ) {
+					foreach ( $user->usermeta as $meta_key => $meta_value ) {
+						// echo '<div>'.$meta_key.' value:</div>';
+						if ( is_serialized( $meta_value ) ) {
+							$value = unserialize( $meta_value );
+						} else {
+							$value = $meta_value;
+						}
+						// print_r($value);
+						// echo '<br />';
+						update_user_meta( $member_id, $meta_key, $value );
+						$record_count++;
+					}
+				}
+				printf( '<div>%d member records</div>', $record_count );
+			}
+		}
+	}
+
+	// $json_link = sprintf('<a href="%s?page=%s&tm_export=%s&json=1">Export</a>', admin_url('admin.php') ,'import_export',$nonce );
+
+	$joutcode = get_option( 'joutcode' );
+	$j        = explode( ':', $joutcode );
+	$jt       = empty( $j[1] ) ? 0 : (int) $j[1];
+	if ( isset( $_GET['joutcode'] ) || ( $jt < time() ) ) {
+		$jt       = strtotime( '+ 24 hour' );
+		$joutcode = rand() . ':' . $jt;
+		update_option( 'joutcode', $joutcode );
+	}
+	rsvpmaker_fix_timezone();
+	global $rsvp_options;
+	printf(
+		'<p><strong>Step 1. Export:</strong> To move your club\'s member records to another website that also uses this software, copy this web address:</p>
+<pre>%s</pre>
+<p>This link will expire at %s. (<a href="%s">reset</a>)</p>',
+		site_url( '?jout=' . $joutcode . '&tm_export=' . $nonce ),
+		rsvpmaker_date( $rsvp_options['short_date'] . ' ' . $rsvp_options['time_format'] . ' T', $jt ),
+		admin_url( 'admin.php?page=import_export&joutcode=1' )
+	);
+	?>
+<p>The next step will take place on your new website.</p>
+<form method="post" action="<?php echo admin_url( 'admin.php?page=import_export' ); ?>">
+	<p><strong>Step 2. Import:</strong> After obtaining the export link from your old website, paste it here to import.<br /><input type="text" name="importurl" value="
+	<?php
+	if ( isset( $_POST['importurl'] ) ) {
+		echo esc_html(sanitize_url($_POST['importurl']));
+	}
+	?>
+	" />
+<br /><button>Import</button>
+<?php rsvpmaker_nonce(); ?>
+</form>
+
+<?php
 	?>
 	<h2 class="nav-tab-wrapper">
 	  <a class="nav-tab nav-tab-active" href="#main">WP4Toastmasters Data</a>
@@ -4290,16 +4142,15 @@ function post_user_role_archive( $timestamp ) {
 			if ( !$user_id ) {
 				continue;
 			}
-			$key      = make_tm_usermeta_key( $role, $timestamp, 0 );
-			$roledata = make_tm_roledata_array( 'post_user_role_archive' );
 			if ( strpos( $role, 'peaker' ) ) {
 				$manual        = sanitize_text_field($_POST['_manual'][ $role ]);
 				$project_index = sanitize_text_field($_POST['_project'][ $role ]);
 				$title         = sanitize_text_field($_POST['_title'][ $role ]);
 				$intro         = ( isset( $_POST['_intro'][ $role ] ) ) ? wp_kses_post($_POST['_intro'][ $role ]) : '';
-				$roledata      = make_tm_speechdata_array( $roledata, $manual, $project_index, $title, $intro );
+				wp4t_record_history($user_id, $role, $timestamp, $post_id, ' post_user_role_archive', $manual,$project_index,$title,$intro);
 			}
-			update_user_meta( $user_id, $key, $roledata );
+			else
+				wp4t_record_history($user_id, $role, $timestamp, $post_id, ' post_user_role_archive');
 		}
 	}
 	return strtotime( $timestamp . ' +1 week' );
@@ -4345,21 +4196,16 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 			if ( $user_id < 1 ) {
 				continue;
 			}
-			$key      = make_tm_usermeta_key( $row->role, $timestamp, $post_id );
-			$roledata = make_tm_roledata_array( 'update_user_role_archive' );
+			$function = 'update_user_role_archive';
 			if ( strpos( $row->role, 'Speaker' ) ) {
 				$manual        = get_post_meta( $post_id, '_manual' . $row->role, true );
 				$project_index = get_post_meta( $post_id, '_project' . $row->role, true );
 				$title         = get_post_meta( $post_id, '_title' . $row->role, true );
 				$intro         = get_post_meta( $post_id, '_intro' . $row->role, true );
-				$roledata      = make_tm_speechdata_array( $roledata, $manual, $project_index, $title, $intro );
+				wp4t_record_history($user_id, $row->role, $timestamp, $post_id, $function, $manual,$project_index,$title,$intro);
 			}
-			if ( $user_id ) { // not for id 0
-				update_user_meta( $user_id, $key, $roledata );
-			}
-			// don't give 2 people credit for same role;
-			$sql = $wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE meta_key=%s AND user_id != %d", $key, $user_id );
-			$wpdb->query( $sql );
+			else
+				wp4t_record_history($user_id, $row->role, $timestamp, $post_id, $function);
 		}
 	}
 
@@ -4373,22 +4219,22 @@ function archive_legacy_roles_usermeta( $user_id, $start = '', $display = false 
 		$start = " AND a2.meta_value > '$start' ";
 	}
 
-	$sql     = "SELECT a1.meta_key as role, a2.meta_value as event_timestamp, a1.post_id as postID FROM `$wpdb->postmeta` a1 JOIN  `$wpdb->postmeta` a2 ON a1.post_id = a2.post_id AND a2.meta_key='_rsvp_dates' where a1.meta_value=" . $user_id . " AND BINARY a1.meta_key RLIKE '^_[A-Z].+[0-9]$' $start AND a2.meta_value < '" . get_sql_now() . "' ORDER BY a1.meta_key DESC";
+	$sql     = "SELECT a1.meta_key as role, a2.meta_value as event_timestamp, a1.post_id as postID FROM `$wpdb->postmeta` a1 JOIN  `$wpdb->postmeta` a2 ON a1.post_id = a2.post_id AND a2.meta_key='_rsvp_dates' where a1.meta_value=" . $user_id . " AND BINARY a1.meta_key RLIKE '^_[A-Z].+[0-9]$' $start AND a2.meta_value < '" . get_sql_now() . "' ORDER BY a1.meta_key DESC LIMIT 0, 10";
 	$results = $wpdb->get_results( $sql );
 	if ( $results ) {
 		foreach ( $results as $row ) {
 			if ( $display ) {
 				printf( '<p>Meeting record %s</p>', var_export( $row ) );
 			}
-			$key      = make_tm_usermeta_key( $row->role, $row->event_timestamp, $row->postID );
-			$roledata = make_tm_roledata_array( 'archive_legacy_roles_usermeta' );
 			if ( strpos( $row->role, 'Speaker' ) ) {
 				$manual        = get_post_meta( $row->postID, '_manual' . $row->role, true );
 				$project_index = get_post_meta( $row->postID, '_project' . $row->role, true );
 				$title         = get_post_meta( $row->postID, '_title' . $row->role, true );
 				$intro         = get_post_meta( $row->postID, '_intro' . $row->role, true );
-				$roledata      = make_tm_speechdata_array( $roledata, $manual, $project_index, $title, $intro );
+				wp4t_record_history($user_id, $row->role, $row->event_timestamp, $row->id, 'archive_legacy_roles_usermeta', $manual,$project_index,$title,$intro);
 			}
+			else
+				wp4t_record_history($user_id, $row->role, $row->event_timestamp, $row->post_id, 'archive_legacy_roles_usermeta');
 			if ( $display ) {
 				printf( '<p>User meta record %s %s</p>', $key, var_export( $roledata, true ) );
 			}
@@ -4396,26 +4242,6 @@ function archive_legacy_roles_usermeta( $user_id, $start = '', $display = false 
 		}
 	}
 
-	// old method of logging speeches from dashboard
-	$meta_speeches = get_user_meta( $user_id, 'Speaker' );
-	if ( ! empty( $meta_speeches ) ) {
-		foreach ( $meta_speeches as $speech ) {
-			$manual  = $speech['manual'];
-			$project = $speech['project'];
-			$title   = $speech['speech_title'];
-			$date    = (int) $speech['date'];
-			$check   = 'tm|Speaker|' . date( 'Y-m-d', $date );
-			$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user_id AND meta_key LIKE '" . $check . "%' ";
-			$row     = $wpdb->get_row( $sql );
-			if ( $row ) {
-				continue;
-			}
-			$key      = make_tm_usermeta_key( '_Speaker_0', date( 'Y-m-d G:i:s', $date ), 0 );
-			$roledata = make_tm_speechdata_array( make_tm_roledata_array( 'archive_legacy_roles_usermeta/meta' ), $manual, $project, $title, '' );
-			update_user_meta( $user_id, $key, $roledata );
-		}
-		delete_user_meta( $user_id, 'Speaker' );
-	}
 }
 
 function wp_ajax_tm_edit_detail() {
@@ -4515,13 +4341,8 @@ function wp_ajax_editor_assign() {
 		delete_post_meta( $post_id, '_intro' . $role );
 	}
 	if ( time() > strtotime( $timestamp ) ) {
-		$key      = make_tm_usermeta_key( $role, $timestamp, $post_id );
-		$roledata = make_tm_roledata_array( 'wp_ajax_editor_assign' );
-		if ( $user_id ) {
-			update_user_meta( $user_id, $key, $roledata );
-		}
-		$sql = $wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE meta_key=%s AND user_id != %d", $key, $user_id );
-		$wpdb->query( $sql );
+		$function = 'wp_ajax_editor_assign';
+		wp4t_record_history($user_id, $role, $timestamp, $post_id, $function);
 	}
 	$name = get_member_name( $user_id );
 	printf( '%s assigned to %s', preg_replace( '/[\_0-9]/', ' ', $role ), $name );
@@ -4600,35 +4421,18 @@ function get_tm_stats( $user_id = 0 ) {
 	if ( isset( $_GET['start_date'] ) ) {
 		$start_ts = strtotime( sanitize_text_field($_GET['start_date']) );
 	}
-
-	$sql     = "SELECT * FROM `$wpdb->usermeta` WHERE user_id = $user_id AND meta_key LIKE 'tm|%' ORDER BY meta_key";
+    $history_table = $wpdb->base_prefix.'tm_history';
+	$speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+	$sql     = "SELECT * FROM `$history_table`  LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id WHERE user_id = $user_id AND datetime < NOW()";
 	$results = $wpdb->get_results( $sql );
 	// print_r($results);
 	if ( $results ) {
 		foreach ( $results as $row ) {
-			$key_array = explode( '|', $row->meta_key );
-			if ( ! isset( $key_array[5] ) ) {
-				delete_user_meta( $user_id, $row->meta_key );
-				add_user_meta( $user_id, 'wp4t_stats_delete', $row->meta_key );
-			}
-			$role       = $key_array[1];
-			$event_date = $key_array[2];
-			$rolecount  = $key_array[3];
-			$domain     = $key_array[4];
-			$post_id    = $key_array[5];
-			if ( ! empty( $start_ts ) ) {
-				$event_ts = strtotime( $event_date );
-				if ( $event_ts < $start_ts ) {
-					continue;
-				}
-			}
-			$roledata = unserialize( $row->meta_value );
-			if ( isset( $_REQUEST['details'] ) ) {
-				echo esc_html($role) . ' ';
-				echo esc_html($event_date) . ' ';
-				echo esc_html($domain) . ' ';
-				echo esc_html($post_id) . '<br />';
-			}
+			$role       = $row->role;
+			$event_date = $row->datetime;
+			$rolecount  = $row->rolecount;
+			$domain     = $row->domain;
+			$post_id    = $row->post_id;
 			if ( empty( $count[ $role ] ) ) {
 				$count[ $role ] = 1;
 			} else {
@@ -4636,58 +4440,36 @@ function get_tm_stats( $user_id = 0 ) {
 			}
 			$roledates[ $role ][] = date( 'M j Y', strtotime( $event_date ) );
 			if ( $role == 'Speaker' ) {
-				$manual = ( empty( $roledata['manual'] ) ) ? 'Other' : $roledata['manual'];
-				if ( empty( $speech_count[ $manual ] ) ) {
-					$count[ $manual ] = $speech_count[ $manual ] = 1;
-				} else {
-					$count[ $manual ] = $speech_count[ $manual ] = $speech_count[ $manual ] + 1;
+				if ( !empty($row->manual) && empty( $speech_count[ $row->manual ] ) ) {
+					$count[ $row->manual ] = $speech_count[ $row->manual ] = 1;
+				} elseif ( !empty($row->manual) ) {
+					$count[ $row->manual ] = $speech_count[ $row->manual ] = $speech_count[ $row->manual ] + 1;
 				}
-				if ( empty( $roledata['project'] ) ) {
+				if ( empty( $row->project_key ) ) {
 					$speech_details = 'Project not specified';
 				} else {
-					$project_text   = get_project_text( $roledata['project'] );
-					$speech_details = $manual . ': ' . $project_text;
-					if ( empty( $project_text ) ) {
-						$speech_details = $roledata['project'];
-					}
+					$speech_details = $row->manual . ': ' . $row->project;
 				}
 				// $speech_details .= '<br />'.var_export($roledata,true);
-				if ( ! empty( $roledata['title'] ) ) {
-					$speech_details .= '<br />' . $roledata['title'];
+				if ( ! empty( $row->title ) ) {
+					$speech_details .= '<br />' . $row->title;
 				}
-				if ( isset( $_REQUEST['intro'] ) && ! empty( $roledata['intro'] ) ) {
-					$speech_details .= '<br />' . nl2br( $roledata['intro'] );
+				if ( !empty($row->intro) ) {
+					$speech_details .= '<br />' . $row->intro;
 				}
 				if ( $domain != $_SERVER['SERVER_NAME'] ) {
 					$speech_details .= '<br /><em>' . $domain . '</em>';
 				}
 
-				if ( isset( $_REQUEST['debug'] ) ) {
-					$speech_details .= '<br />' . $row->meta_key;
-				}
-
 				$speech_details = '<p>' . rsvpmaker_date( $rsvp_options['long_date'], strtotime( $event_date ) ) . '<br />' . $speech_details . '</p>';
-				if ( empty( $speeches[ $manual ] ) ) {
-					$speeches[ $manual ] = $speech_details;
+				if ( empty( $speeches[ $row->manual ] ) ) {
+					$speeches[ $row->manual ] = $speech_details;
 				} else {
-					$speeches[ $manual ] .= $speech_details;
+					$speeches[ $row->manual ] .= $speech_details;
 				}
 				$speech_list .= $speech_details;
 
-				if ( isset( $_REQUEST['debug'] ) ) {
-					$speech_list .= '<pre>' . var_export( $row, true ) . '</pre>';
-				}
 			}
-			/*
-					  else
-				{
-					if(empty($count[$role]))
-					$count[$role] = 1;
-				else
-					$count[$role]++;
-				$roledates[$role][] = date('M j Y',strtotime($event_date));
-				}
-			*/
 			if ( ( current_user_can( 'edit_member_stats' ) ) || ( ( $user_id == $current_user->ID ) && current_user_can( 'edit_own_stats' ) ) ) {
 				$form = '';
 				if ( $lastdate == $event_date . $role ) {
@@ -5657,79 +5439,11 @@ function wp_ajax_edit_member_stats() {
 	wp_die();
 }
 
-function wpt_json() {
-	global $wpdb;
-	global $current_user;
-	if ( isset( $_REQUEST['all'] ) ) {
-		$users = get_users();
-		foreach ( $users as $user ) {
-			$toastmasters_id = get_user_meta( $user->ID, 'toastmasters_id', true );
-			if ( ! $toastmasters_id ) {
-				continue;
-			}
-			$sname = sanitize_text_field($_SERVER['SERVER_NAME']);
-			$sql     = "SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id=" . $user->ID . " AND meta_key LIKE 'tm|Sp%$sname%' ORDER BY umeta_id";
-			$results = $wpdb->get_results( $sql );
-			foreach ( $results as $row ) {
-				$json_data[ $toastmasters_id ][] = $row;
-			}
-		}
-	} else {
-		$toastmasters_id = get_user_meta( $current_user->ID, 'toastmasters_id', true );
-		$sname = sanitize_text_field($_SERVER['SERVER_NAME']);
-		$sql             = "SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id=" . $current_user->ID . " AND meta_key LIKE 'tm|%$sname%' ";
-		$results         = $wpdb->get_results( $sql );
-		foreach ( $results as $row ) {
-			$json_data[ $toastmasters_id ][] = $row;
-		}
-	}
-
-	$json = json_encode( $json_data );
-
-	$url      = 'https://wp4toastmasters.com/?wpt_stats_warehouse=' . santize_text_field($_SERVER['SERVER_NAME']);
-	$args     = array(
-		'method'      => 'PUT',
-		'body'        => $json,
-		'headers'     => array(
-			'Content-Type' => 'application/json',
-		),
-		'timeout'     => 60,
-		'redirection' => 5,
-		'blocking'    => true,
-		'httpversion' => '1.0',
-		'sslverify'   => false,
-		'data_format' => 'body',
-	);
-	$response = wp_remote_request( $url, $args );
-	$parts = explode( '+++++', $response['body'] );
-	echo $parts[0];
-	$json     = trim( $parts[1] );
-	$download = json_decode( $json, true );
-	json_debug_log( $download, 'download from sync attempt' );
-	foreach ( $download as $toastmasters_id => $keys ) {
-		if ( ! $toastmasters_id ) {
-			continue;
-		}
-		$user_id = $wpdb->get_var( "SELECT user_id FROM $wpdb->usermeta WHERE meta_key='toastmasters_id' AND meta_value=" . $toastmasters_id );
-		if ( ! $user_id ) {
-			continue;
-		}
-		foreach ( $keys as $kv ) {
-			$umeta_id = $wpdb->get_var( "SELECT umeta_id FROM $wpdb->usermeta WHERE meta_key='" . $kv['meta_key'] . "' AND user_id=" . $user_id );
-			if ( $umeta_id ) {
-				$sql = $wpdb->prepare( "UPDATE $wpdb->usermeta SET meta_value=%s WHERE umeta_id=%d", $kv['meta_value'], $umeta_id );
-			} else {
-				$sql = $wpdb->prepare( "INSERT INTO $wpdb->usermeta SET meta_key=%s, meta_value=%s, user_id=%d", $kv['meta_key'], $kv['meta_value'], $user_id );
-			}
-			echo esc_html($sql) . '<br />';
-			$wpdb->query( $sql );
-		}
-	}
-}
-
 function wpt_json_user_id( $user_id, $toastmasters_id ) {
 	global $wpdb;
 	global $rsvp_options;
+	$history_table = $wpdb->base_prefix.'tm_history';
+
 	$up   = 0;
 	$down = 0;
 	if ( ! get_option( 'wp4toastmasters_enable_sync' ) ) {
@@ -5743,12 +5457,13 @@ function wpt_json_user_id( $user_id, $toastmasters_id ) {
 		return 'Last data sync within 24 hours (<a href="' . $_SERVER['REQUEST_URI'] . '&syncnow=1">sync now</a>)';
 	}
 	update_user_meta( $user_id, 'tm_last_stats_sync', time() );
-	$sql     = "SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id=" . $user_id . " AND meta_key LIKE 'tm|%" . $_SERVER['SERVER_NAME'] . "%' ";
-	$results = $wpdb->get_results( $sql );
+	$results = wp4t_history_query("user_id=" . $user_id . " AND domain='" . $_SERVER['SERVER_NAME'] . "' '");
 	foreach ( $results as $row ) {
-		$json_data[ $toastmasters_id ][] = $row;
+	$row->toastmasters_id = $toastmasters_id;
+	$json_data[] = $row;
 	}
 	// check for deleted records
+	/*
 	$deleted = get_user_meta( $user_id, 'wp4t_stats_delete' );
 	if ( is_array( $deleted ) ) {
 		foreach ( $deleted as $key ) {
@@ -5758,6 +5473,7 @@ function wpt_json_user_id( $user_id, $toastmasters_id ) {
 			);
 		}
 	}
+	*/
 	return wpt_json_send( $json_data ) . ' user id: ' . $user_id . ' toastmasters id: ' . $toastmasters_id;
 }
 
@@ -5776,18 +5492,21 @@ function get_toastmasters_ids() {
 function wpt_json_batch_upload() {
 	global $wpdb;
 	$wpdb->show_errors();
-	$last_wpt_json_batch_upload = (int) get_option( 'last_wpt_json_batch_upload' );
-	$sql                        = "SELECT * from $wpdb->usermeta WHERE umeta_id > $last_wpt_json_batch_upload AND meta_key LIKE 'tm|%" . $_SERVER['SERVER_NAME'] . "%' ORDER BY umeta_id LIMIT 0, 200";
-	$results = $wpdb->get_results( $sql );
+	$where = "domain='".$_SERVER['SERVER_NAME']."' ";
+	$last_wpt_json_batch_upload_timestamp = get_option( 'last_wpt_json_batch_upload_timestamp' );
+	if($last_wpt_json_batch_upload_timestamp)
+		$where .= " AND timestamp > '$last_wpt_json_batch_upload_timestamp' ";
+	$results = wp4t_history_query(['where' => $where, 'orderby' => 'timestamp', 'limit' => 500]);
 	if ( $results ) {
 		$tmids = get_toastmasters_ids();
 		foreach ( $results as $row ) {
-			$last = $row->umeta_id;
+			$last = $row->timestamp;
 			if ( isset( $tmids[ $row->user_id ] ) ) {
-				$json_data[ $tmids[ $row->user_id ] ][] = $row;
+				$row->toastmasters_id = $tmids[ $row->user_id ];
+				$json_data[] = $row;
 			}
 		}
-		update_option( 'last_wpt_json_batch_upload', $last );
+		update_option( 'last_wpt_json_batch_upload_timestamp', $last );
 	}
 	if ( isset( $json_data ) ) {
 		$result = wpt_json_send( $json_data, true );
@@ -5797,11 +5516,12 @@ function wpt_json_batch_upload() {
 		}
 		return $result;
 	}
-
 }
 
 function wpt_json_send( $json_data, $upload_only = false ) {
 	global $wpdb;
+	$history_table = $wpdb->base_prefix.'tm_history';
+
 	global $successful_upload;
 	$successful_upload = false;
 	$json              = json_encode( $json_data );
@@ -5828,16 +5548,17 @@ function wpt_json_send( $json_data, $upload_only = false ) {
 		'data_format' => 'body',
 	);
 	$response = wp_remote_request( $url, $args );
+	rsvpmaker_debug_log($response['body'],'response to data upload');
 	$json_response = json_decode( $response['body'], true );
 
 	if ( ! isset( $json_response['log'] ) ) {
 		update_option( 'sync_error_json_log', $response );
-		return 'Sync error, logged to sync_error_json_log';
+		//return 'Sync error, logged to sync_error_json_log';
 	}
 	$log = $json_response['log'];
 	if ( ! isset( $json_response['uploaded'] ) ) {
 		update_option( 'sync_error_json_log', $json_response['log'] );
-		return 'Sync error, logged to sync_error_json_log';
+		//return 'Sync error, logged to sync_error_json_log';
 	}
 	update_option( 'last_sync_result', var_export( $json_response, true ) );
 	$download = $json_response['download'];
@@ -5845,37 +5566,36 @@ function wpt_json_send( $json_data, $upload_only = false ) {
 	$deleted  = $json_response['deleted'];
 	$members  = $json_response['members'];
 	if ( isset( $_REQUEST['debug'] ) ) {
-		echo $parts[0];
 		echo '<pre>';
 		echo "JSON UP\n";
 		print_r( $json_data );
-		echo "\ndownload:";
-		print_r( $download );
+		echo "response\n";
+		print_r( $json_response );
 		echo '</pre>';
 	}
 	$down = 0;
 	if ( isset( $download ) && is_array( $download ) ) {
-		foreach ( $download as $toastmasters_id => $keys ) {
-			if ( ! $toastmasters_id ) {
+		$down = sizeof($download);
+		foreach ( $download as $row ) {
+			if ( ! $row["toastmasters_id"] ) {
 				continue;
 			}
-			$user_id = $wpdb->get_var( "SELECT user_id FROM $wpdb->usermeta WHERE meta_key='toastmasters_id' AND meta_value=" . $toastmasters_id );
+			$sql = "SELECT user_id FROM $wpdb->usermeta WHERE meta_key='toastmasters_id' AND meta_value='" . $row["toastmasters_id"]."' ";
+			$user_id = $wpdb->get_var( $sql );
 			if ( ! $user_id ) {
 				continue;
 			}
-			foreach ( $keys as $kv ) {
-				if ( $kv['meta_key'] == 'delete' ) {
-					delete_user_meta( $user_id, $kv['meta_value'] );
-					continue;
+			$sql = $wpdb->prepare("SELECT timestamp from $history_table WHERE role=%s AND domain=%s AND datetime=%s",$row['role'],$row['domain'],$row['datetime']);
+			$local_timestamp = $wpdb->get_var($sql);
+			if(empty($local_timestamp) || ($local_timestamp < $row['timestamp_origin']) )//if we don't have it or our copy is older
+				{
+					wp4t_record_history_to_table($user_id, $row['role'], $row['datetime'], 0, 'sync with wp4toastmasters.com', $row["manual"],$row['project'],$row['title'],'', $row['domain'], $row['rolecount']);
+					if(isset($_GET['debug']))
+						printf('<p>Newer %s < %s</p>',$local_timestamp,$row['timestamp_origin']);
 				}
-				$umeta_id = $wpdb->get_var( "SELECT umeta_id FROM $wpdb->usermeta WHERE meta_key='" . $kv['meta_key'] . "' AND user_id=" . $user_id );
-				if ( $umeta_id ) {
-					$sql = $wpdb->prepare( "UPDATE $wpdb->usermeta SET meta_value=%s WHERE umeta_id=%d", $kv['meta_value'], $umeta_id );
-				} else {
-					$sql = $wpdb->prepare( "INSERT INTO $wpdb->usermeta SET meta_key=%s, meta_value=%s, user_id=%d", $kv['meta_key'], $kv['meta_value'], $user_id );
-				}
-				$wpdb->query( $sql );
-				$down++;
+			else {
+				if(isset($_GET['debug']))
+					printf('<p>Older %s > %s</p>',$local_timestamp,$row['timestamp_origin']);
 			}
 		}
 	}
@@ -5885,7 +5605,6 @@ function wpt_json_send( $json_data, $upload_only = false ) {
 
 function toastmasters_role_report() {
 	global $wpdb, $rsvp_options;
-	// $hook = tm_admin_page_top('Role Report');
 	echo '<p>' . __( 'This page shows the number of times a member has served in a given role, followed by the month and year of the most recent occurrance', 'rsvpmaker-for-toastmasters' ),'</p>';
 	$allroles = array();
 	$users    = get_users( 'blog_id=' . get_current_blog_id() );
@@ -5893,21 +5612,17 @@ function toastmasters_role_report() {
 		$ud = get_userdata( $user->ID );
 		$userroles[ $ud->last_name . $ud->first_name ]['name'] = $ud->first_name . ' ' . $ud->last_name;
 		if ( isset( $_GET['all'] ) ) {
-			$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%' ORDER BY meta_key DESC ";
+			$where = " user_id=$user->ID ";
 		} else {
-			$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%|" . $_SERVER['SERVER_NAME'] . "|%' ORDER BY meta_key DESC ";
+			$where = " user_id=$user->ID AND domain='" . $_SERVER['SERVER_NAME'] . "' ";
 		}
-		$results = $wpdb->get_results( $sql );
+		$results = wp4t_history_query($where);
 		if ( ! $results ) {
 			continue;
 		}
 		foreach ( $results as $row ) {
-			preg_match( '/tm\|([^|]+)\|([^|]+)/', $row->meta_key, $matches );
-			if ( empty( $matches[1] ) || empty( $matches[1] ) ) {
-				continue;
-			}
-			$role = $matches[1];
-			$date = $matches[2];
+			$role = $row->role;
+			$date = $row->datetime;
 			$userroles[ $ud->last_name . $ud->first_name ]['roledates'][ $role ][] = $date;
 			if ( ! in_array( $role, $allroles ) ) {
 				$allroles[] = $role;
@@ -6017,8 +5732,7 @@ function get_speech_points( $user_id ) {
 	}
 	$start_date = $rules['start_date'] . ' 00:00:00';
 	$sname = sanitize_text_field($_SERVER['SERVER_NAME']);
-	$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user_id AND meta_key LIKE 'tm|%|$sname|%' ORDER BY meta_key DESC ";
-	$results = $wpdb->get_results( $sql );
+	$results = wp4t_history_query(['where'=>"user_id=$user_id AND domain ='$sname'",'orderby'=>'datetime']);
 	if ( ! $results ) {
 		return sanitize_text_field($rules['start']);
 	}
@@ -6026,12 +5740,8 @@ function get_speech_points( $user_id ) {
 	$userroles = array();
 
 	foreach ( $results as $row ) {
-		preg_match( '/tm\|([^|]+)\|([^|]+)/', $row->meta_key, $matches );
-		if ( empty( $matches[1] ) || empty( $matches[1] ) ) {
-			continue;
-		}
-		$role = $matches[1];
-		$date = $matches[2];
+		$role = $row->role;
+		$date = $row->datetime;
 		if ( $date < $start_date ) {
 			continue;
 		}
@@ -6083,19 +5793,14 @@ function speech_points_report() {
 	foreach ( $users as $user ) {
 		$ud = get_userdata( $user->ID );
 		$userroles[ $ud->last_name . $ud->first_name ]['name'] = $ud->first_name . ' ' . $ud->last_name;
-		$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%|" . $_SERVER['SERVER_NAME'] . "|%' ORDER BY meta_key DESC ";
-		$results = $wpdb->get_results( $sql );
+		$results = wp4t_history_query(['where'=>"user_id=$user->ID AND domain='" . $_SERVER['SERVER_NAME'] . "' ",'orderby'=>'datetime']);
 		if ( ! $results ) {
 			continue;
 		}
 
 		foreach ( $results as $row ) {
-			preg_match( '/tm\|([^|]+)\|([^|]+)/', $row->meta_key, $matches );
-			if ( empty( $matches[1] ) || empty( $matches[1] ) ) {
-				continue;
-			}
-			$role = $matches[1];
-			$date = $matches[2];
+			$role = $row->role;
+			$date = $row->datetime;
 			if ( $date < $start_date ) {
 				continue;
 			}
@@ -6223,37 +5928,31 @@ label {
 		$ud = get_userdata( $user->ID );
 		$userroles[ $ud->last_name . $ud->first_name ]['name'] = '<strong>' . $ud->first_name . ' ' . $ud->last_name . '</strong>';
 		if ( $allclubs ) {
-			$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%|%' ORDER BY meta_key DESC ";
+			$where = "user_id=$user->ID";
 		} else {
 			$sname = sanitize_text_field($_SERVER['SERVER_NAME']);
-			$sql = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user->ID AND meta_key LIKE 'tm|%|$sname|%' ORDER BY meta_key DESC ";
+			$where = "user_id=$user->ID AND domain LIKE '$sname'";
 		}
-		$results = $wpdb->get_results( $sql );
+		$results = wp4t_history_query( $where );
 		if ( ! $results ) {
 			continue;
 		}
 
 		$mostrecent = '';
 		foreach ( $results as $row ) {
-			preg_match( '/tm\|([^|]+)\|([^|]+)/', $row->meta_key, $matches );
-			if ( empty( $matches[1] ) || empty( $matches[1] ) ) {
-				continue;
-			}
-			$role = $matches[1];
-			$ts   = strtotime( $matches[2] );
+			$role = $row->role;
+			$ts   = strtotime( $row->datetime );
 			$date = date( 'F j, Y', $ts );
 			// printf('<p>%s %s %s</p>',$ud->last_name,$role,$date);
 			if ( ( $role == 'Speaker' ) && empty( $mostrecent ) ) {
 				$mostrecent = ' Most recent speech: ' . $date;
-				// printf('<p>%s %s</p>',$mostrecent);
 			}
 			if ( ! $alldates && ( $ts < $start ) ) {
 				continue;
 			}
 			if ( $role == 'Speaker' ) {
-				$data   = unserialize( $row->meta_value );
-				$manual = empty( $data['manual'] ) ? 'Manual left blank' : $data['manual'];
-				$manuals[ $ud->last_name . $ud->first_name ][ $data['manual'] ][] = $data['title'] . ' - ' . $data['project'] . ' - ' . $date;
+				$manual = $row->manual;
+				$manuals[ $ud->last_name . $ud->first_name ][ $data['manual'] ][] = $row->title . ' - ' . $row->project . ' - ' . $date;
 			}
 			$userroles[ $ud->last_name . $ud->first_name ]['roledates'][ $role ][] = $date;
 		}
@@ -6310,6 +6009,9 @@ label {
 
 function toastmasters_reports_dashboard() {
 	global $wpdb, $rsvp_options;
+	$history_table = $wpdb->base_prefix.'tm_history';
+	$speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+
 	$titles['pathways']      = 'Pathways Progress Report';
 	$titles['cc']            = 'Competent Communication Progress Report';
 	$titles['cl']            = 'Competent Leader Progress Report';
@@ -6337,26 +6039,22 @@ function toastmasters_reports_dashboard() {
 
 		if ( $report_slug == 'speeches' ) {
 			$sname = sanitize_text_field($_SERVER['SERVER_NAME']);
-			$sql = "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE 'tm|Speaker%$sname%' ORDER BY meta_key DESC";
-			// die($sql);
-			$speakers = $wpdb->get_results( $sql );
+			$speakers = wp4t_history_query("role='Speaker' AND domain='$sname' ");// $wpdb->get_results( $sql );
 
-			foreach ( $speakers as $speech ) {
-				$speaker_id = (int) $speech->user_id;
+			foreach ( $speakers as $row ) {
+				$speaker_id = $row->user_id;
 				$name       = get_member_name( $speaker_id );
 				if ( empty( trim( $name ) ) ) {
 					continue;
 				}
-				$details      = unserialize( $speech->meta_value );
-				$manual       = $details['manual'];
-				$project_key  = $details['project'];
-				$project_text = get_project_text( $project_key );
-				$title        = $details['title'];
+				$manual       = $row->manual;
+				$project_key  = $row->project_key;
+				$project_text =  $row->project ;
+				$title        = $row->title;
 				if ( ! empty( $title ) ) {
 					$title = ', "' . $title . '"';
 				}
-				$keydata = explode( '|', $speech->meta_key );
-				$date    = rsvpmaker_date( $rsvp_options['long_date'], strtotime( $keydata[2] ) );
+				$date    = rsvpmaker_date( $rsvp_options['long_date'], strtotime( $row->datetime ) );
 
 				printf( '<p><strong>%s%s</strong><br />%s %s<br />%s</p>', $name, $title, $manual, $project_text, $date );
 			}
@@ -7466,25 +7164,24 @@ Show <input type="checkbox" name="speeches" value="1"
 
 	if ( isset( $_GET['evaluations'] ) || isset( $_GET['everything'] ) ) {
 		echo '<h3 id="my_data_evaluations">Evaluations</h3>';
-		$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=" . $current_user->ID . " AND meta_key LIKE 'evaluation|%' ORDER BY meta_key DESC";
-		$results = $wpdb->get_results( $sql );
+		$results = wp4t_history_query( ['where'=>"user_id=$current_user->ID AND role = 'Evaluator' ",'orderby'=>'datetime'] );
 		if ( $results ) {
 			foreach ( $results as $row ) {
-				echo esc_html($row->meta_value);
+				$t     = rsvpmaker_strtotime( $row->datetime );
+				$date  = date( 'F j, Y', $t );
+				printf( '<p>%s %s %s</p>', $row->role, $date, $row->domain );
 			}
 		}
 	}
 
 	if ( isset( $_GET['other_roles'] ) || isset( $_GET['everything'] ) ) {
 		echo '<h2 id="my_data_other">Other Roles</h2>';
-		$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=$current_user->ID AND meta_key LIKE 'tm|%' AND meta_key NOT LIKE 'tm|Speaker%' ORDER BY meta_key";
-		$results = $wpdb->get_results( $sql );
+		$results = wp4t_history_query( ['where'=>"user_id=$current_user->ID AND role != 'Speaker' AND role != 'Evaluator' ",'orderby'=>'datetime'] );
 		if ( $results ) {
 			foreach ( $results as $row ) {
-				$parts = explode( '|', $row->meta_key );
-				$t     = rsvpmaker_strtotime( $parts[2] );
+				$t     = rsvpmaker_strtotime( $row->datetime );
 				$date  = date( 'F j, Y', $t );
-				printf( '<p>%s %s %s</p>', $parts[1], $date, $parts[4] );
+				printf( '<p>%s %s %s</p>', $row->role, $date, $row->domain );
 			}
 		}
 	}
@@ -7500,42 +7197,6 @@ Show <input type="checkbox" name="speeches" value="1"
 	$data = wpt_data_disclosure( $current_user->ID );
 	echo '<div>Data inventory: ' . implode( ', ', $data ) . '</div>';
 
-}
-
-function wpt_data_disclosure( $user_id ) {
-	global $wpdb;
-	$contact                = wp_get_user_contact_methods( $user_id );
-	$contact['description'] = 'Description';
-	$userdata               = get_userdata( $user_id );
-	if ( ! empty( $userdata->first_name ) ) {
-		$data[] = 'First Name';
-	}
-	if ( ! empty( $userdata->last_name ) ) {
-		$data[] = 'Last Name';
-	}
-	foreach ( $contact as $index => $label ) {
-		if ( ! empty( $userdata->$index ) ) {
-			$data[] = $label;
-		}
-	}
-	$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=" . $user_id . " AND meta_key LIKE 'tm|Speaker%' ORDER BY meta_key DESC";
-	$results = $wpdb->get_results( $sql );
-	$data[]  = 'Speech records: ' . sizeof( $results );
-	$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=" . $user_id . " AND meta_key LIKE 'evaluation|%' ORDER BY meta_key DESC";
-	$results = $wpdb->get_results( $sql );
-	$data[]  = 'Evaluations: ' . sizeof( $results );
-	$sql     = "SELECT * FROM $wpdb->usermeta WHERE user_id=$user_id AND meta_key LIKE 'tm|%' AND meta_key NOT LIKE 'tm|Speaker%' ORDER BY meta_key";
-	$results = $wpdb->get_results( $sql );
-	$data[]  = 'Other meeting role records: ' . sizeof( $results );
-	$blogs   = get_blogs_of_user( $user_id );
-	$data[]  = 'Active club websites you are listed as a member of ' . sizeof( $blogs );
-	if ( $blogs ) {
-		foreach ( $blogs as $blog ) {
-			$bloglist[] = '<a href="' . $blog->siteurl . '">' . $blog->blogname . '</a>';// var_export($blog,true);
-		}
-		$data[] = implode( ', ', $bloglist );
-	}
-	return $data;
 }
 
 ?>

@@ -1,11 +1,5 @@
 <?php
 
-function refresh_tm_history() {
-	$histories = tm_get_histories();
-	update_option( 'tm_histories', $histories );
-}
-add_action( 'refresh_tm_history', 'refresh_tm_history' );
-
 function wp4t_haverole($post_id) {
 	global $wpdb;
 	$haverole[999999] = 'placeholder';
@@ -19,6 +13,17 @@ function wp4t_haverole($post_id) {
 	return $haverole;
 }
 
+function wp4t_last_held_role($user_id, $role) {
+	global $wpdb, $rsvp_options;
+	$history_table = $wpdb->base_prefix.'tm_history';
+	$sql = "SELECT datetime FROM $history_table WHERE role='$role' AND user_id=$user_id AND datetime < NOW() ORDER BY datetime DESC";
+	$d = $wpdb->get_var($sql);
+	if(empty($d))
+		return;
+	$t = rsvpmaker_strtotime($d);
+	return rsvpmaker_date($rsvp_options['long_date'],$t);
+}
+
 function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel = 'Open' ) {
 
 	if ( rsvpmaker_is_template() ) {
@@ -27,17 +32,12 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 	global $wpdb, $sortmember, $fnamesort, $histories, $post, $haverole;
 	if(empty($haverole) && !empty($post->ID))
 		$haverole = wp4t_haverole($post->ID);
-
+	if(!empty($post->ID))
+		$absences = get_post_meta( $post->ID, 'tm_absence' );
+	if(empty($absences))
+		$absences = array();
 	if ( ! wp_next_scheduled( 'refresh_tm_history' ) ) {
 		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'refresh_tm_history' );
-	}
-
-	if ( empty( $histories ) ) {
-		$histories = get_option( 'tm_histories' );
-	}
-	if ( empty( $histories ) ) {
-		$histories = tm_get_histories();
-		update_option( 'tm_histories', $histories );
 	}
 
 	$options = '<option value="0">' . $openlabel . '</option>';
@@ -122,23 +122,11 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 		$status = '';
 		if(isset($haverole[$member->ID]))
 			$status = $haverole[$member->ID];
-		elseif ( ( $member->ID > 0 ) && ( ! empty( $histories[ $member->ID ] ) ) ) {
-
-			$held = $histories[ $member->ID ]->get_last_held( $role );
-
-			if ( ! empty( $histories[ $member->ID ]->away_active ) ) {
-
-				$status_msg = wp4t_get_member_status( $member->ID );
-
-				if ( empty( $status_msg ) ) {
-
-					$status_msg = 'Planned Absence';
-				}
-
-				$status = 'Away  ' . $status_msg;
-
-			} elseif ( ! empty( $held ) ) {
-
+		elseif(in_array($member->ID,$absences))
+			$status = __('Planned Absence','rsvpmaker-for-toastmasters');
+		elseif ( $member->ID > 0 ) {
+			$held = wp4t_last_held_role($member->ID, clean_role($role));
+			if ( ! empty( $held ) ) {
 				$status = __( 'Last did', 'rsvpmaker-for_toastmasters' ) . ': ' . $held;
 			}
 		}
@@ -195,11 +183,15 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 		return '<select name="editor_suggest[' . $role . ']" id="editor_suggest' . $role . '" class="editor_suggest" >' . $options . '</select>';
 
-	} elseif ( is_edit_roles() ) {
+	}
+	/*
+	 elseif ( is_edit_roles() ) {
 
 		return "\n\n" . '<input type="checkbox" class="recommend_instead" name="recommend_instead' . $role . '" id="recommend_instead' . $role . '" class="editor_assign" post_id="' . $post->ID . '" value="_rm' . $role . '" /> ' . __( 'Recommend instead of assign', 'rsvpmaker-for-toastmasters' ) . '<br /><select name="editor_assign[' . $role . ']" id="editor_assign' . $role . '" class="editor_assign"  post_id="' . $post->ID . '">' . $options . '</select><span id="_rm' . $role . '"></span>';
 
-	} else {
+	}
+	*/
+	else {
 		return "\n\n" . '<select name="editor_assign[' . $role . ']" id="' . $post->ID . '_editor_assign' . $role . '" class="editor_assign" post_id="' . $post->ID . '" role="' . $role . '">' . $options . '</select>';
 	}
 
@@ -1085,8 +1077,6 @@ function make_tm_roledata_array( $function = '' ) {
 
 }
 
-
-
 function make_tm_usermeta_key( $role, $event_timestamp, $post_id ) {
 
 	$slug = preg_replace( '/[^0-9]/', '', $role );
@@ -1103,8 +1093,6 @@ function make_tm_usermeta_key( $role, $event_timestamp, $post_id ) {
 	return 'tm|' . trim( preg_replace( '/[^\sa-zA-Z]/', ' ', $role ) ) . '|' . $event_timestamp . '|' . $slug . '|' . sanitize_text_field($_SERVER['SERVER_NAME']) . '|' . $post_id;
 
 }
-
-
 
 function extract_usermeta_key_data( $key ) {
 

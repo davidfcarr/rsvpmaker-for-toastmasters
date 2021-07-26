@@ -21,10 +21,10 @@ function toastmasters_css_js() {
 	global $post, $current_user;
 	$version = '4.7.1';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
-		return; // don't load all this in editor or post listings
+		return; // don't load all this in editor or post listings wp4toastmasters_history_edit
 	}
 	if ( ( isset( $post->post_content ) && is_wp4t() ) || ( isset( $_REQUEST['page'] ) &&
-	( ( $_REQUEST['page'] == 'toastmasters_reconcile' ) || ( $_REQUEST['page'] == 'my_progress_report' )
+	( ( $_REQUEST['page'] == 'toastmasters_reconcile' ) || ( $_REQUEST['page'] == 'add_member_speech' ) || ( $_REQUEST['page'] == 'wp4toastmasters_history_edit' ) || ( $_REQUEST['page'] == 'my_progress_report' )
 	|| ( $_REQUEST['page'] == 'wp4t_evaluations' ) || ( $_REQUEST['page'] == 'toastmasters_reports' )
 	|| ( $_REQUEST['page'] == 'toastmasters_planner' ) ) ) ) {
 		wp_enqueue_style( 'jquery' );
@@ -40,13 +40,14 @@ function toastmasters_css_js() {
 		wp_localize_script( 'script-toastmasters', 'project_times', $times );
 		$display_times = get_projects_array( 'display_times' );
 		wp_localize_script( 'script-toastmasters', 'display_times', $display_times );
+		$post_id = (empty($post->ID)) ? 0 : $post->ID;
 		wp_localize_script(
 			'script-toastmasters',
 			'wpt_rest',
 			array(
 				'nonce'   => wp_create_nonce( 'wp_rest' ),
 				'url'     => get_rest_url(),
-				'post_id' => $post->ID,
+				'post_id' => $post_id,
 			)
 		);
 		$tm_vars               = array_map('sanitize_text_field',$_GET);

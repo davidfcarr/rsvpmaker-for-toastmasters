@@ -68,46 +68,42 @@ function rsvptoast_exporter( $email_address, $page = 1 ) {
 		);
 	}
 	if ( ! empty( $user->ID ) ) {
-		$sql     = "SELECT * FROM `$wpdb->usermeta` WHERE user_id = $user->ID AND meta_key LIKE 'tm|%' ORDER BY meta_key";
-		$results = $wpdb->get_results( $sql );
-		// print_r($results);
+		$results = $wp4t_history_query( "user_id=$user->ID" );
 		if ( $results ) {
 			foreach ( $results as $row ) {
 				$data      = array();
-				$key_array = explode( '|', $row->meta_key );
-				$role      = $key_array[1];
+				$role      = $row->role;
 				$data[]    = array(
 					'name'  => 'role',
 					'value' => $role,
 				);
 				$data[]    = array(
 					'name'  => 'event_date',
-					'value' => $key_array[2],
+					'value' => $row->datetime,
 				);
-				$roledata  = unserialize( $row->meta_value );
 				if ( $role == 'Speaker' ) {
-					if ( ! empty( $roledata['manual'] ) ) {
+					if ( ! empty( $row->manual ) ) {
 						$data[] = array(
 							'name'  => 'manual',
-							'value' => $roledata['manual'],
+							'value' => $row->manual,
 						);
 					}
-					if ( ! empty( $roledata['project'] ) ) {
+					if ( ! empty( $row->project ) ) {
 						$data[] = array(
 							'name'  => 'project',
-							'value' => get_project_text( $roledata['project'] ),
+							'value' => $row->project,
 						);
 					}
-					if ( ! empty( $roledata['title'] ) ) {
+					if ( ! empty( $row->title ) ) {
 						$data[] = array(
 							'name'  => 'title',
-							'value' => $roledata['title'],
+							'value' => $row->title,
 						);
 					}
 				}
 				$data[] = array(
 					'name'  => 'domain',
-					'value' => $key_array[4],
+					'value' => $row->domain,
 				);
 
 				$export_items[] = array(
