@@ -54,6 +54,12 @@ if($ver < $version)
 } // end build tables
 
 function wp4toastmasters_history() {
+	$export_link = sprintf( '<a href="%s?page=%s&tm_export=%s&%s">Export Summary</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
+	$export_role = sprintf( '<a href="%s?page=%s&tm_export=%s&%s&role=1">Export Role Report</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
+    $sidebar = sprintf('<div>Export Options (Spreadsheet/CSV)<br>%s<br>%s</div>',$export_link,$export_role);
+    $hook = tm_admin_page_top(__('Reports','rsvpmaker-for-toastmasters'),$sidebar);
+    if(empty($_GET['rsvp_print']))
+        update_user_role_archive_all();
     global $wpdb, $rsvp_options, $current_user, $page;
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
@@ -75,6 +81,7 @@ function wp4toastmasters_history() {
         $speakerchecked = '';
         $pathchecked = '';
         $countbyrolechecked = '';
+        $countspeecheschecked = '';
         $mostactivechecked = '';
         $latestchecked = '';
 
@@ -120,9 +127,23 @@ function wp4toastmasters_history() {
         {
             $speakerchecked = ' checked="checked" ';
             $where .= " AND role LIKE '%Speaker%' ";
-            $filters[] = 'speaker roles only';        
+            $filters[] = 'speaker roles only';
+            $sql = "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where ORDER BY datetime DESC ".$limitsql;
+            $results = $wpdb->get_results($sql);
+            foreach($results as $row) {
+                $temp = sprintf('<p><strong>%s</strong>, %s %s %s</p>',get_member_name($row->user_id),$row->role,rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
+                $temp .= sprintf('<p class="speech_details">Title: <em>%s</em>, Path/Level: %s, Project: %s</p>',$row->title,$row->manual,$row->project);
+                $output .= $temp;
+                if(!empty($row->manual)) {
+                    $index = (strpos($row->manual,'Level')) ? ' '.$row->manual : $row->manual;//pathways at top of list
+                    $manualsort[$index] = $temp;
+                }
+            }
+            ksort($manualsort);
+            foreach($manualsort as $manual => $content)
+                $output .= '<h2>'.$manual.'</h2>'.$content;
         }
-        if(isset($_GET['type']) && ($_GET['type'] == 'path'))
+        elseif(isset($_GET['type']) && ($_GET['type'] == 'path'))
         {
             $pathchecked = 'checked="checked"';
             $filters[] = 'speech by path';
@@ -130,14 +151,35 @@ function wp4toastmasters_history() {
             $sql = "SELECT  user_id, manual, count(manual) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, manual ORDER BY user_id, manual".$limitsql;
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
-                $output .= sprintf('<p><strong>%s</strong>, %s %s</p>',get_member_name($row->user_id),$row->manual,$row->tally);
+                $index = wp4t_name_index($row->user_id);
+                if(empty($msort[$index]))
+                    $msort[$index] = '';
+                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s <strong>%s</strong></p>',get_member_name($row->user_id),$row->manual,$row->tally);
             }
+            ksort($msort);
+            $output .= implode("\n",$msort);
         }
         elseif(isset($_GET['type']) && ($_GET['type'] == 'countbyrole'))
         {
             $countbyrolechecked = ' checked="checked" ';
             $filters[] = 'count by member, by role';
             $sql = "SELECT  user_id, role, count(*) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, role ORDER BY user_id, role ".$limitsql;
+            $results = $wpdb->get_results($sql);
+            foreach($results as $row) {
+                $index = wp4t_name_index($row->user_id);
+                if(empty($msort[$index]))
+                    $msort[$index] = '';
+                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s %s</p>',get_member_name($row->user_id),$row->role,$row->tally);
+            }
+            ksort($msort);
+            $output .= implode("\n",$msort);
+        }
+        elseif(isset($_GET['type']) && ($_GET['type'] == 'countspeeches'))
+        {
+            $countspeecheschecked = ' checked="checked" ';
+            $filters[] = 'count speeches';
+            $where .= " AND role = 'speaker' ";
+            $sql = "SELECT  user_id, role, count(*) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, role ORDER BY tally DESC ".$limitsql;
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
                 $output .= sprintf('<p><strong>%s</strong>, %s %s</p>',get_member_name($row->user_id),$row->role,$row->tally);
@@ -169,28 +211,28 @@ function wp4toastmasters_history() {
     $since = (empty($_GET['since'])) ?  $year.'-07-01': sanitize_text_field($_GET['since']);
     $nonce       = wp_create_nonce( 'tm_export' );
 	$timelord = rsvpmaker_nonce('query');
-	$export_link = sprintf( '<a href="%s?page=%s&tm_export=%s&%s">Export Summary</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
-	$export_role = sprintf( '<a href="%s?page=%s&tm_export=%s&%s&role=1">Export Role Report</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
-    printf('<div style="width: 150px; float: right;">Export Options<br>%s<br>%s</div>',$export_link,$export_role);
-    printf("<p>Active filters: %s</p>",implode(', ',$filters));
-    printf('<form method="get" action="%s">
-    <p>%s</p>
-    <input type="hidden" name="page" value="toastmasters_reports" >
-    Available filters: <br>
-    <input type="radio" name="type" value="latest" %s> Latest <input type="radio" name="type" value="speaker" %s> Speeches <input type="radio" name="type" value="path" %s> Speeches by manual/path & level <input type="radio" name="type" value="mostactive" %s> Most Active <input type="radio" name="type" value="countbyrole" %s> Count by role<br>
-    <input type="radio" name="all" value="0" %s> Just for this club website <input type="radio" name="all" value="1" %s> Include data from other clubs (where available)<br>
-    <input type="radio" name="datefilter" value="0" %s> Not filtered by date <input type="radio" name="datefilter" value="1" %s> Filtered by date > <input type="text" name="since" value="%s" > (YEAR-MONTH-DATE)<br>
-    Up to <select name="limit"><option value="%s">%s</option> records
-    <option value="100">100</option>
-    <option value="200">200</option>
-    <option value="300">300</option>
-    <option value="400">400</option>
-    <option value="500">500</option>
-    <option value="all">%s</option>
-    </select><br>
-    <button>Filter</button>
-    </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $pathchecked, $mostactivechecked, $countbyrolechecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
+    if(empty($_GET['rsvp_print'])) {
+        printf("<p>Active filters: %s</p>",implode(', ',$filters));
+        printf('<form method="get" action="%s">
+        <p>%s</p>
+        <input type="hidden" name="page" value="toastmasters_reports" >
+        Available filters: <br>
+        <input type="radio" name="type" value="latest" %s> Latest <input type="radio" name="type" value="speaker" %s> Speeches <input type="radio" name="type" value="path" %s> Speeches by manual/path & level <input type="radio" name="type" value="mostactive" %s> Most Active <input type="radio" name="type" value="countbyrole" %s> Count by role <input type="radio" name="type" value="countspeeches" %s> Count speeches<br>
+        <input type="radio" name="all" value="0" %s> Just for this club website <input type="radio" name="all" value="1" %s> Include data from other clubs (where available)<br>
+        <input type="radio" name="datefilter" value="0" %s> Not filtered by date <input type="radio" name="datefilter" value="1" %s> Filtered by date > <input type="text" name="since" value="%s" > (YEAR-MONTH-DATE)<br>
+        Up to <select name="limit"><option value="%s">%s</option> records
+        <option value="100">100</option>
+        <option value="200">200</option>
+        <option value="300">300</option>
+        <option value="400">400</option>
+        <option value="500">500</option>
+        <option value="all">%s</option>
+        </select><br>
+        <button>Filter</button>
+        </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'All Members'), $latestchecked, $speakerchecked, $pathchecked, $mostactivechecked, $countbyrolechecked, $countspeecheschecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );    
+    }
     echo $output;
+    tm_admin_page_bottom($hook);
 }
 
 function wp4toastmasters_history_edit() {
@@ -258,7 +300,7 @@ function wp4toastmasters_history_edit() {
             echo '<h3>'.__('Confirm: Delete These Records?','rsvpmaker-for-toastmasters').'</h3>';
             foreach($delete as $history_id) {
                 $row = $wpdb->get_row("select * from $history_table WHERE id=$history_id");
-                printf('<p><input type="checkbox" name="confirmed_delete[]" value="%s"> %s %s %s</p>',$row->id,get_member_name($row->user_id),$row->role,$row->datetime);
+                printf('<p><input type="checkbox" name="confirmed_delete[]" value="%s" checked="checked"> %s %s %s</p>',$row->id,get_member_name($row->user_id),$row->role,$row->datetime);
             }
         }
         printf('<p><button style="font-size: larger;">%s</button></p></form>',__('Submit Edits','rsvpmaker_for_toastmasters'));
@@ -368,6 +410,40 @@ function wp4toastmasters_history_edit() {
     <button>Filter</button>
     </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
     echo $output;
+
+$examined = array();
+echo $sql = "SELECT * from $history_table order by datetime DESC LIMIT 0, 30";
+$results = $wpdb->get_results($sql);
+//print_r($results);
+foreach($results as $row) {
+    if(in_array($row->id,$examined))
+        continue;
+    $examined[] = $row->id;
+    $sql = $wpdb->prepare("SELECT * FROM $history_table WHERE role=%s AND datetime=%s AND domain=%s AND id != %d",$row->role, $row->datetime,$row->domain,$row->ID);
+    $dres = $wpdb->get_results($sql);
+    if(sizeof($dres))
+    {
+    printf('<p>%s %s %s %s %s</p>',$row->role, $row->rolecount, $row->user_id, $row->datetime, $row->domain);
+        //print_r($dres);
+    foreach($dres as $drow) {
+        if(in_array($drow->id,$examined))
+            continue;
+        $examined[] = $drow->id;
+        //echo 'possible duplicate';
+        printf('<p><em>Duplicate?</em> %s %s %s %s %s</p>',$drow->role, $drow->rolecount, $drow->user_id, $drow->datetime, $drow->domain);
+    }
+    }
+}
+return;
+echo '<h3>Debugging</h3>';
+echo $sql = "SELECT * FROM $wpdb->usermeta where meta_key LIKE 'tm|Ah%' ORDER BY umeta_id DESC LIMIT 0,100";
+$results = $wpdb->get_results($sql);
+foreach($results as $row) {
+    printf('<p>%s</p>',$row->meta_key);
+    $data = unserialize($row->meta_value);
+    printf('<pre>%s</pre>',var_export($data,true));
+}
+
 }
 
 add_action('wp4t_history_overview','wp4t_history_overview');
@@ -377,18 +453,26 @@ function wp4t_history_overview($startover = false) {
 global $wpdb;
 $history_table = $wpdb->base_prefix.'tm_history';
 $speech_history_table = $wpdb->base_prefix.'tm_speech_history';  
+$checkimported = (function_exists('get_blog_option')) ? (int) get_blog_option(1,'wp4t_imported_usermeta') : (int) get_option('wp4t_imported_usermeta');
 if($startover) {
     $wpdb->query('truncate table '.$speech_history_table);
     $wpdb->query('truncate table '.$history_table);
     $startfrom = 0;
     echo "<p style=\"color:red\">Starting over to rebuild table</p>";
 }
+elseif($checkimported)
+    return;//don't keep pulling in old records
 else
     $startfrom = (int) get_option('wp4history_start');
+
 $sql     = "SELECT * FROM `$wpdb->usermeta` WHERE meta_key LIKE 'tm|%' AND umeta_id > $startfrom ORDER BY umeta_id LIMIT 0, 500";
 $results = $wpdb->get_results( $sql );
 if(empty($results)) {
     wp_clear_scheduled_hook( 'wp4t_history_overview' );
+    if(function_exists('update_blog_option'))
+        update_blog_option(1,'wp4t_imported_usermeta',1);
+    else
+        update_option('wp4t_imported_usermeta',1);
     return;
 }
 else {
@@ -428,24 +512,6 @@ update_user_role_archive
 archive_legacy_roles_usermeta - called on login from archive_site_user_roles
 wp_ajax_editor_assign
 */
-
-//wp4t_record_history($user_id, $role, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro);
-function wp4t_record_history($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='') {
-	global $wpdb;
-	if(empty($role) || empty($user_id))
-		return;
-	$key      = make_tm_usermeta_key( $role, $timestamp, $post_id );
-	$roledata = make_tm_roledata_array( $function );
-	if($manual) {
-		$roledata = make_tm_speechdata_array( $roledata, $manual, $project_key, $title, $intro );		
-	}
-	if ( $user_id ) {
-		update_user_meta( $user_id, $key, $roledata );
-	}
-	$sql = $wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE meta_key=%s AND user_id != %d", $key, $user_id );
-	$wpdb->query( $sql );
-    wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro);
-}
 
 function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0) {
 	global $wpdb;

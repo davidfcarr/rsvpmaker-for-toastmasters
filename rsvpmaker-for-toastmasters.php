@@ -8,13 +8,13 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.6.8
+Version: 4.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
 	load_plugin_textdomain( 'rsvpmaker-for-toastmasters', false, basename( dirname( __FILE__ ) ) . '/translations/' );
 }
-add_action( 'plugins_loaded', 'rsvptoast_load_plugin_textdomain' );
+add_action( 'init', 'rsvptoast_load_plugin_textdomain' );
 
 require 'tm-reports.php';
 require 'contest.php';
@@ -46,14 +46,10 @@ add_filter( 'excerpt_more', 'toast_excerpt_more' );
 add_filter( 'lectern_default_header', 'wp4t_header' );
 add_filter( 'user_contactmethods', 'awesome_contactmethod', 10, 1 );
 add_filter( 'user_row_actions', 'wp4t_user_row_edit_member', 9, 2 );
-if ( strpos( $_SERVER['REQUEST_URI'], 'agenda_sidebar' ) ) {
-	add_filter( 'mce_css', 'toastmasters_sidebar_mce_css' );
-}
 add_action( 'init', 'signup_sheet' );
 add_action( 'init', 'print_contacts' );
 add_action( 'init', 'awesome_open_roles' );
 add_action( 'init', 'role_post' );
-add_action( 'init', 'placeholder_image' );
 add_action( 'widgets_init', 'wptoast_widgets' );
 add_action( 'wp_enqueue_scripts', 'toastmasters_css_js' );
 add_action( 'pre_get_posts', 'toast_modify_query_exclude_category' );
@@ -884,7 +880,7 @@ function speaker_details_minutes( $field, $assigned ) {
 	if(empty($results))
 		return 'error';
 	$manual = $results[0]->manual.': <span class="project">'.$results[0]->project.'</span>';
-	$title   = ( empty( $results[0]->title ) ) ? '' : '<span class="title">&quot;' . $$results[0]->title . '&quot;</span> ';
+	$title   = ( empty( $results[0]->title) ) ? '' : '<span class="title">&quot;' . $results[0]->title . '&quot;</span> ';
 	$output .= '<div>' . $title . '<span class="manual-project">' . $manual . '</span></div>';
 	$output  = "\n" . '<div class="speaker-details">' . $output . '</div>' . "\n";
 	return $output;
@@ -964,7 +960,7 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 		} else {
 			$output .= '<span class="notime"></span>';
 		}
-		$output .= '<span class="role">' . $role;
+		$output .= '<span class="role">' . wp4t_role_display ($role);
 		if ( ( $count > 1 ) || ( $i > 1 ) ) {
 			$output .= ' <span class="role_number">' . $i . '</span>';
 		}
@@ -1153,7 +1149,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 			$tmroles[ $field ] = $assigned;
 		}
 		$output .= '<div class="role-block" id="' . $field . '"><div class="role-title" style="font-weight: bold;">';
-		$output .= $role . ': </div><div class="role-data"> ';
+		$output .= wp4t_role_display ($role) . ': </div><div class="role-data"> ';
 		$ajaxclass = 'toastrole'; // ($assigned) ? 'toastupdate' :
 		if ( is_club_member() && ! ( is_edit_roles() || isset( $_REQUEST['recommend_roles'] ) ) ) {
 			$output .= sprintf( ' <form id="%s_form" method="post" class="%s" action="%s" style="display: inline;"><input type="hidden" name="user_id" value="%d" /> <input type="hidden" name="role" value="%s"><input type="hidden" name="post_id" value="%d">', $field, $ajaxclass, $permalink, $current_user->ID, $field, $post->ID ).rsvpmaker_nonce('return');
@@ -1203,7 +1199,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 				}
 			} elseif ( ! $assigned ) {
 				if ( rsvpmaker_is_template() ) {
-					$output .= '(Take Role button appears here)';
+					$output .= '('.__('Take Role button appears here','rsvpmaker-for-toastmasters').')';
 				} elseif ( strpos( $field, 'Speaker' ) ) {
 					$points = get_speech_points( $current_user->ID );
 					$rules  = get_option( 'toastmasters_rules' );
@@ -1212,24 +1208,24 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 						// $makeup = abs($points);
 						if ( $rules['points'] == 'prevent' ) {
 							if ( ! $points_warning ) {
-								$output        .= '<p><strong>Based on the points system we use, you are at <span style="color: red">' . $points . '</span></strong></p><p>Please sign up for other supporting roles to balance out your participation in the club.</p>';
+								$output        .= '<p><strong>'.__('Based on the points system we use, you are at','rsvpmaker-for-toastmasters').' <span style="color: red">' . $points . '</span></strong></p><p>'.__('Take Role','rsvpmaker-for-toastmasters').'</p>';
 								$points_warning = true;
 							}
 						} else {
 							if ( ! $points_warning ) {
-								$output        .= '<p><strong>Based on the points system we use, you are at <span style="color: red">' . $points . '</span></p> Please sign up for other supporting roles (if not for this meeting, then soon) to balance out your participation in the club</p>';
+								$output        .= '<p><strong>'.__('Based on the points system we use, you are at','rsvpmaker-for-toastmasters').' <span style="color: red">' . $points . '</span></p>'.__('Please sign up for other supporting roles (if not for this meeting, then soon) to balance out your participation in the club.','rsvpmaker-for-toastmasters').'</p>';
 								$points_warning = true;
 							}
 								$output .= sprintf( '<div class="update_form" id="update' . $field . '">%s</div>', $detailsform );
-								$output .= '<button name="take_role" id="take_role' . $field . '" value="1">Take Role</button>';
+								$output .= '<button name="take_role" id="take_role' . $field . '" value="1">'.__('Take Role','rsvpmaker-for-toastmasters').'</button>';
 
 						}
 					} else {
 							$output .= sprintf( '<div class="update_form" id="update' . $field . '">%s</div>', $detailsform );
-							$output .= '<button name="take_role" id="take_role' . $field . '" value="1">Take Role</button>';
+							$output .= '<button name="take_role" id="take_role' . $field . '" value="1">'.__('Take Role','rsvpmaker-for-toastmasters').'</button>';
 					}
 				} else {
-							$output .= '<button name="take_role" id="take_role' . $field . '" value="1">Take Role</button>';
+							$output .= '<button name="take_role" id="take_role' . $field . '" value="1">'.__('Take Role','rsvpmaker-for-toastmasters').'</button>';
 							$last    = last_filled_role( $current_user->ID, $field );
 							$output .= $last['text'];
 				}
@@ -1379,7 +1375,6 @@ function tm_agenda_content($post_id = 0) {
 		}
 	return $content;
 }
-
 
 function toastmasters_officer_single( $atts ) {
 	$title                          = ( isset( $atts['title'] ) ) ? $atts['title'] : 'VP of Education';
@@ -4477,7 +4472,7 @@ function wpt_custom_layout_default($sidebar_officers = false) {
 	return '<!-- wp:columns {"className":"titleblock"} -->
 	<div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
 	<div class="wp-block-column" style="flex-basis:10%"><!-- wp:image {"align":"center","id":666,"width":50,"sizeSlug":"large","linkDestination":"media"} -->
-	<div class="wp-block-image"><figure class="aligncenter size-large is-resized"><a href="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" class="wp-image-666" width="50"/></a></figure></div>
+	<div class="wp-block-image"><figure class="aligncenter size-large is-resized"><a href="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" class="wp-image-666" width="50" height="50"/></a></figure></div>
 	<!-- /wp:image --></div>
 	<!-- /wp:column -->
 	
@@ -4906,7 +4901,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 		$link .= '<li ><a href="' . $permalink . 'tweak_times=1" ' . $blank . '>' . __( 'Agenda Time Planner', 'rsvpmaker-for-toastmasters' ) . '</a><li>';
 		$link .= '<li><a href="' . $permalink . 'reorder=1"' . $blank . '>' . __( 'Reorder', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 		if ( $frontend ) {
-			$events = get_future_events( "(post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ", 10 );
+			$events = future_toastmaster_meetings();
 
 			if ( $events ) {
 				foreach ( $events as $event ) {
@@ -8478,6 +8473,8 @@ function wp4toast_template( $user_id = 1 ) {
 	} elseif ( $sked ) {
 		$template = $sked;
 	} else {
+		$template['week'] = 0;
+		$template['dow'] = 9;
 		$template['hour']    = 19;
 		$template['minutes'] = '00';
 		$template['week']    = 0;
@@ -9483,6 +9480,7 @@ function wptoast_ajax_notice_handler() {
 }
 
 function rsvptoast_admin_notice() {
+
 	if ( isset( $_GET['action'] ) && ( $_GET['action'] == 'edit' ) ) {
 		return; // don't clutter edit page with admin notices. Gutenberg hides them anyway.
 	}
@@ -9528,36 +9526,6 @@ function rsvptoast_admin_notice() {
 		show_wpt_promo();
 		$next_show_promo = strtotime( '+ 1 day' );
 		update_user_meta( $current_user->ID, 'next_show_promo', $next_show_promo );
-	}
-
-	if ( function_exists( 'do_blocks' ) && current_user_can( 'manage_options' ) && ! isset( $_GET['convert'] ) ) {
-		$active = $wpdb->get_row( "SELECT ID from $wpdb->posts WHERE post_content LIKE '%wp:wp4toastmasters%' AND post_status='publish' " );
-		if ( ! $active ) {
-			echo '<div class="notice notice-info"><p>Your meeting agenda templates need to be converted to work with the new WordPress editor. <a href="' . admin_url( 'edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&convert=1' ) . '">Convert Now?</a></p></div>';
-		}
-	}
-
-	if ( isset( $_REQUEST['action'] ) && ( $_REQUEST['action'] == 'edit' ) && isset( $post->post_content ) && is_wp4t() ) {
-		$template_id = get_post_meta( $post->ID, '_meet_recur', true );
-		?>
-<div class="notice notice-info"><div style="float: right; width: 225px; padding: 5px; background-color: #fff; margin-left:5px;"><img src="<?php echo plugins_url( 'rsvpmaker-for-toastmasters/mce/toastmasters_editor_buttons.png' ); ?>" /><br /><em>Toastmasters custom buttons</em></div>
-
-<p><?php _e( 'You can drag-and-drop to reorder roles or add new roles using the Toastmasters Roles button. Double-click on the placeholder for a role to edit options. Setting the count for a role to more than one opens up multiple signup slots (for example, multiple speakers and multiple evaluators). Your choices determine the roles that will appear on the online signup form, the printable signup form, and the agenda.', 'rsvpmaker-for-toastmasters' ); ?></p>
-<p><?php _e( "Use the Agenda Note button to provide additional 'stage directions' that will appear on thet agenda. Entering a label such as 'Meeting Theme' in the 'Editable field' blank will allow you to add meeting-specific content as part of the same process where you edit signups for roles. You can specify whether agenda notes should appear on the agenda only, on the signup form only, or both.", 'rsvpmaker-for-toastmasters' ); ?></p>
-
-		<?php
-		if ( $template_id ) {
-			printf( '<p>%s <a href="%s">%s</a>', __( 'Changes made below will be applied to a single event. To change the agenda for all future events: ' ), admin_url( 'post.php?action=edit&post=' . $template_id ), __( 'Edit Template' ) );
-		}
-
-		$timing = '';
-		if ( ! function_exists( 'do_blocks' ) ) {
-			$timing = sprintf( ' | <a href="%s" target="_blank">%s</a>', admin_url( 'edit.php?post_type=rsvpmaker&page=agenda_timing&post_id=' . $post->ID ), __( 'Agenda Timing', 'rsvpmaker-for-toastmasters' ) );
-		}
-		printf( '<div>%s: <a href="%s">%s</a> </div>', __( 'Related', 'rsvpmaker-for-toastmasters' ), rsvpmaker_permalink_query( $post->ID, 'print_agenda=1&no_print=1' ), __( 'Show Agenda', 'rsvpmaker-for-toastmasters' ) );
-		?>
-</div>
-		<?php
 	}
 
 	if ( isset( $_REQUEST['page'] ) && ( $_REQUEST['page'] == 'agenda_timing' ) && isset( $_REQUEST['post_id'] ) ) {
@@ -9634,36 +9602,75 @@ function rsvptoast_admin_notice() {
 			echo '<div class="updated">';
 			global $current_user;
 
-			$welcome = '<span style="color: #ff0000;"><strong>Your custom welcome message here:</strong></span> Delete this and replace it with what YOU want to say about your club.
-
-Some boilerplate content from toastmasters.org is concluded below to get you started, but right up at the top of the page here you should say <em>what makes your club special</em>. Don\'t be afraid to <a href="http://wp4toastmasters.com/2014/11/16/your-toastmasters-club-website-show-some-personality/">show some personality</a>!
-
-<a href="http://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/06_Networking_LR.jpg"><img class="aligncenter wp-image-516 size-full" src="http://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/06_Networking_LR.jpg" alt="06_Networking_LR" width="864" height="576" /></a>
-
-A group photo of smiling club members is a very common element to include at the top of the page, but also try to include photos of your members in action -- speaking, laughing, and learning. If you have video of a members giving dynamic speeches, or improvising their way through Table Topics, including one of those on the home page could be a good way of showing what Toastmasters is all about.
-
-Make sure you hit the basics -- where and when does your club meet? If the location is tricky to find, consider including a map or a link to an online mapping service or a photo of the entry to the building.
-
-See the video tutorial on <a href="http://wp4toastmasters.com/2016/02/10/adding-and-editing-club-website-content/">adding and editing content for a WordPress for Toastmasters website</a>.
-
-<h3>The proven way to help you speak and lead.</h3>
-
-<a href="http://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/28_ClubMeetings.jpg"><img class="alignright size-medium wp-image-513" src="http://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/28_ClubMeetings-300x278.jpg" alt="28_ClubMeetings" width="300" height="278" /></a>Congratulations - you\'re on your way to becoming a better communicator and leader! Toastmasters International, founded in 1924, is a proven product, regarded as the leading organization dedicated to communication and leadership skill development. As a member, you will gain all the tools, resources and support you need.
-
-Through its worldwide network of clubs, Toastmasters helps nearly 280,000 people communicate effectively and achieve the confidence to lead others. Why pay thousands of dollars for a seminar or class when you can join a Toastmasters club for a fraction of the cost and have fun in the process?
-<h3>What\'s in it for you?</h3>
-Toastmasters is a place where you develop and grow - both personally and professionally. You join a community of learners, and in Toastmasters meetings we learn by doing. Whether you\'re an executive or a stay-at-home parent, a college student or a retiree, you will improve yourself; building skills to express yourself in a variety of situations. You\'ll open up a world of new possibilities: giving better work presentations; leading meetings - and participating in them - more confidently; speaking more smoothly off the cuff; even handling one-on-one interactions with family, friends and colleagues more positively.
-
-<h3>How does it work?</h3>
-<a href="http://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/02_Evaluations_LR.jpg"><img class="alignright size-medium wp-image-514" src="http://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/02_Evaluations_LR-200x300.jpg" alt="02_Evaluations_LR" width="200" height="300" /></a>The environment in a Toastmasters club is friendly and supportive. Everyone at a Toastmasters meeting feels welcome and valued - from complete beginners to advanced speakers. In a club meeting, you practice giving prepared speeches as well as brief impromptu presentations, known as Table Topics. There is no rush and no pressure: The Toastmasters program allows you to progress at your own pace.
-
-Constructive evaluation is central to the Toastmasters philosophy. Each time you give a prepared speech, an evaluator will point out strengths as well as suggest improvements. Receiving - and giving - such feedback is a great learning experience. In Toastmasters, encouragement and improvement go hand-in-hand.
-
-Toastmasters currently has more than 332,000 members in 135 countries. Our club is just one of the more than 15,400 clubs located around the world.
-
-<h3>Good leaders are good communicators</h3>
-
-Anyone who is a strong leader has to first be an effective communicator. In Toastmasters you will hone your speaking skills, and you will develop leadership abilities - through evaluations, listening, mentoring, serving as club officers and filling roles in club meetings. You will take those leadership skills out into the world, running businesses, mentoring youths, organizing fund-raisers, coaching teams and heading up families.';
+			$welcome = '<!-- invite widget -->	
+				
+			<!-- wp:paragraph -->
+			<p><strong>Your custom welcome message here:</strong> Delete this and replace it with what YOU want to say about your club. See the video tutorial on <a target="_blank" href="https://wp4toastmasters.com/2018/09/09/creating-and-editing-pages-and-blog-posts-with-the-new-wordpress-editor/" rel="noreferrer noopener">adding and editing content for a WordPress for Toastmasters website</a>. If you would like to change the design/layout of your website, <a href="https://www.wp4toastmasters.com/2020/11/03/new-website-design-choices-for-toastmost-org-users/" target="_blank">see these instructions</a>.</p>
+			<!-- /wp:paragraph -->
+						
+				<!-- wp:paragraph -->
+				<p>Some boilerplate content from toastmasters.org is included below to get you started, but right up at the top of the page here you should say <em>what makes your club special</em>. Don\'t be afraid to <a href="https://wp4toastmasters.com/2014/11/16/your-toastmasters-club-website-show-some-personality/" target="_blank" rel="noreferrer noopener">show some personality</a>!</p>
+				<!-- /wp:paragraph -->
+				
+				<!-- wp:paragraph -->
+				<p><strong>Make sure to include the basics -- where and when does your club meet?</strong> Include the town/city and as much additional detail as is necessary to prevent ambiguity ("Chicago" vs. "Melbourne, Florida"). If the location is tricky to find, consider including a map or a link to an online mapping service or a photo of the entry to the building.</p>
+				<!-- /wp:paragraph -->
+			
+				<!-- wp:paragraph -->
+				<p>A group photo of smiling club members is a very common element to include at the top of the page, but also try to include photos of your members in action -- speaking, laughing, and learning. If you have video of a members giving dynamic speeches, or improvising their way through Table Topics, including one of those on the home page could be a good way of showing what Toastmasters is all about.</p>
+				<!-- /wp:paragraph -->
+					
+				<!-- wp:separator -->
+				<hr class="wp-block-separator"/>
+				<!-- /wp:separator -->
+				
+				<!-- wp:heading {"level":3} -->
+				<h3>The proven way to help you speak and lead.</h3>
+				<!-- /wp:heading -->
+				
+				<!-- wp:image {"id":513,"align":"right","linkDestination":"custom"} -->
+				<figure class="wp-block-image alignright"><a href="https://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/28_ClubMeetings.jpg"><img src="https://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/28_ClubMeetings-300x278.jpg" alt="28_ClubMeetings" class="wp-image-513"/></a></figure>
+				<!-- /wp:image -->
+				
+				<!-- wp:paragraph -->
+				<p>Congratulations - you\'re on your way to becoming a better communicator and leader! Toastmasters International, founded in 1924, is a proven product, regarded as the leading organization dedicated to communication and leadership skill development. As a member, you will gain all the tools, resources and support you need.</p>
+				<!-- /wp:paragraph -->
+				
+				<!-- wp:paragraph -->
+				<p>Through its worldwide network of clubs, <a href="http://www.toastmasters.org" target="_blank" rel="noreferrer noopener">Toastmasters International</a> helps people communicate effectively and achieve the confidence to lead others. Why pay thousands of dollars for a seminar or class when you can join a Toastmasters club for a fraction of the cost and have fun in the process?</p>
+				<!-- /wp:paragraph -->
+				
+				<!-- wp:heading {"level":3} -->
+				<h3>What\'s in it for you?</h3>
+				<!-- /wp:heading -->
+				
+				<!-- wp:paragraph -->
+				<p>Toastmasters is a place where you develop and grow - both personally and professionally. You join a community of learners, and in Toastmasters meetings we learn by doing. Whether you\'re an executive or a stay-at-home parent, a college student or a retiree, you will improve yourself; building skills to express yourself in a variety of situations. You\'ll open up a world of new possibilities: giving better work presentations; leading meetings - and participating in them - more confidently; speaking more smoothly off the cuff; even handling one-on-one interactions with family, friends and colleagues more positively.</p>
+				<!-- /wp:paragraph -->
+				
+				<!-- wp:heading {"level":3} -->
+				<h3>How does it work?</h3>
+				<!-- /wp:heading -->
+				
+				<!-- wp:image {"id":514,"align":"right","linkDestination":"custom"} -->
+				<figure class="wp-block-image alignright"><a href="https://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/02_Evaluations_LR.jpg"><img src="https://demo.toastmost.org/wp-content/uploads/sites/22/2014/08/02_Evaluations_LR-200x300.jpg" alt="02_Evaluations_LR" class="wp-image-514"/></a></figure>
+				<!-- /wp:image -->
+				
+				<!-- wp:paragraph -->
+				<p>The environment in a Toastmasters club is friendly and supportive. Everyone at a Toastmasters meeting feels welcome and valued - from complete beginners to advanced speakers. In a club meeting, you practice giving prepared speeches as well as brief impromptu presentations, known as Table Topics. There is no rush and no pressure: The Toastmasters program allows you to progress at your own pace.</p>
+				<!-- /wp:paragraph -->
+				
+				<!-- wp:paragraph -->
+				<p>Constructive evaluation is central to the Toastmasters philosophy. Each time you give a prepared speech, an evaluator will point out strengths as well as suggest improvements. Receiving - and giving - such feedback is a great learning experience. In Toastmasters, encouragement and improvement go hand-in-hand.</p>
+				<!-- /wp:paragraph -->
+				
+				<!-- wp:heading {"level":3} -->
+				<h3>Good leaders are good communicators</h3>
+				<!-- /wp:heading -->
+				
+				<!-- wp:paragraph -->
+				<p>Anyone who is a strong leader has to first be an effective communicator. In Toastmasters you will hone your speaking skills, and you will develop leadership abilities - through evaluations, listening, mentoring, serving as club officers and filling roles in club meetings. You will take those leadership skills out into the world, running businesses, mentoring youths, organizing fund-raisers, coaching teams and heading up families.</p>
+				<!-- /wp:paragraph -->';
 			$post    = array(
 				'post_content' => $welcome,
 				'post_name'    => 'welcome',
@@ -9708,9 +9715,8 @@ Anyone who is a strong leader has to first be an effective communicator. In Toas
 	</form>
 			<?php
 				$message = ob_get_clean();
-				rsvptoast_admin_notice_format( $message, 'front', $cleared, 'info' );
+				$notice[] = rsvptoast_admin_notice_format( $message, 'front', $cleared, 'info' );
 		}
-		return;
 	} // end page on front routine
 
 	if ( isset( $_REQUEST['addpages'] ) ) {
@@ -9753,43 +9759,56 @@ Anyone who is a strong leader has to first be an effective communicator. In Toas
 
 		if ( ! empty( $missing ) && ! ( isset( $_GET['page'] ) && ( $_GET['page'] == 'wp4toastmasters_settings' ) ) ) {
 			$message = sprintf( __( 'Visit the <a href="%s">Toastmasters Settings</a> screen', 'rsvpmaker-for-toastmasters' ) . '<p><ul>' . $missing . '</ul>', admin_url( 'options-general.php?page=wp4toastmasters_settings' ) );
-			rsvptoast_admin_notice_format( $message, 'visit_settings', $cleared, 'info' );
+			$notice[] = rsvptoast_admin_notice_format( $message, 'visit_settings', $cleared, 'info' );
 		}
 	}
 
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 	if ( sizeof( $blogusers ) == 1 ) {
 		$message = sprintf( __( '<a href="%s">Add club members</a> as website users. You can import your whole roster, using the spreadsheet from toastmasters.org\'s Club Central. Or selectively add a few members to help you with testing.', 'rsvpmaker-for-toastmasters' ), admin_url( 'users.php?page=add_awesome_member' ) );
-		rsvptoast_admin_notice_format( $message, 'users', $cleared, 'info' );
+		$notice[] = rsvptoast_admin_notice_format( $message, 'users', $cleared, 'info' );
 	}
 
-	if ( ! in_array( 'wp-user-avatar', $cleared ) && ! is_plugin_active( 'wp-user-avatar/wp-user-avatar.php' ) ) {
-		if ( file_exists( $pdir . 'wp-user-avatar/wp-user-avatar.php' ) ) {
-			$message = sprintf( __( 'The WP User Avatar plugin is recommended for allowing members to add a profile picture. WP User Avatar is installed but must be activated. <a href="%1$s#name">Activate now</a> or <a href="%2$s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugins.php?s=wp-user-avatar' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=wp-user-avatar' ) );
-			rsvptoast_admin_notice_format( $message, 'wp-user-avatar', $cleared, 'info' );
+	if ( ! in_array( 'simple-local-avatars', $cleared ) && ! is_plugin_active( 'simple-local-avatars/simple-local-avatars.php' ) && ! is_plugin_active( 'wp-user-avatar/wp-user-avatar.php' ) ) {
+		if ( file_exists( $pdir . 'simple-local-avatars/simple-local-avatars.php' ) ) {
+			$message = sprintf( __( 'The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. WP User Avatar is installed but must be activated. <a href="%1$s#name">Activate now</a> or <a href="%2$s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugins.php?s=simple-local-avatars' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=simple-local-avatars' ) );
+			$notice[] = rsvptoast_admin_notice_format( $message, 'wp-user-avatar', $cleared, 'info' );
 		} else {
-			$message = sprintf( __( 'The WP User Avatar plugin is recommended for allowing members to add a profile picture. <a href="%1$s">Install now</a> or <a href="%2$s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugin-install.php?tab=search&s=wp-user-avatar#plugin-filter' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=wp-user-avatar' ) );
-			rsvptoast_admin_notice_format( $message, 'wp-user-avatar', $cleared, 'info' );
+			$message = sprintf( __( 'The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. <a href="%1$s">Install now</a> or <a href="%2$s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugin-install.php?tab=search&s=simple-local-avatars#plugin-filter' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=simple-local-avatars' ) );
+			$notice[] = rsvptoast_admin_notice_format( $message, 'wp-user-avatar', $cleared, 'info' );
 		}
 	}
 
 	if ( ! in_array( 'meetings_nag', $cleared ) && ! strpos( $_SERVER['REQUEST_URI'], 'rsvpmaker_template_list' ) && ! strpos( $_SERVER['REQUEST_URI'], 'agenda_setup' ) ) {
 		global $wpdb;
-		$future   = get_future_events( " (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') " );
+		$future   = future_toastmaster_meetings();
 		$upcoming = sizeof( $future );
 		if ( $upcoming == 0 ) {
 			$message = sprintf( __( 'No meetings currently published. Add based on template (standard schedule and roles):</p><ul>%s</ul>', 'rsvpmaker-for-toastmasters' ), get_toast_templates() );
-			rsvptoast_admin_notice_format( $message, 'meetings_nag', $cleared, 'info' );
+			$notice[] = rsvptoast_admin_notice_format( $message, 'meetings_nag', $cleared, 'info' );
 		} elseif ( $upcoming < 5 ) {
 			$message = sprintf( $upcoming . ' ' . __( 'meetings currently published. Add more based on template (standard schedule and roles):</p><ul>%s</ul>', 'rsvpmaker-for-toastmasters' ) . 'or <a href="%s">clear reminder</a>', get_toast_templates(), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=meetings_nag' ) );
-			rsvptoast_admin_notice_format( $message, 'meetings_nag', $cleared, 'info' );
+			$notice[] = rsvptoast_admin_notice_format( $message, 'meetings_nag', $cleared, 'info' );
 		}
 	}
 
 	if ( $sync_ok == '' ) {
 		$message = sprintf( __( 'You can choose to allow the member data on the Progress Reports screen to sync with other websites that use this software. See <a target="_blank" href="https://wp4toastmasters.com/2017/05/13/sync-member-progress-report-data/">blog post</a>.</p><p>Choose whether this should be on our off: <a href="%s">Toastmasters Settings.</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'options-general.php?page=wp4toastmasters_settings' ) );
-		rsvptoast_admin_notice_format( $message, 'sync_ok', $cleared, 'info' );
+		$notice[] = rsvptoast_admin_notice_format( $message, 'sync_ok', $cleared, 'info' );
 	}
+
+	if(!empty($notice))
+	{
+		if(isset($_GET['show_rsvpmaker_notices']))
+			echo implode("\n",$notice);
+		else {
+			$size = sizeof($notice);
+			$message = __('Toastmasters setup notices for administrator','rsvpmaker').': '.$size;
+			$message .= sprintf(' - <a href="%s">%s</a>',admin_url('?show_rsvpmaker_notices=1'),__('Display','rsvpmaker'));
+			echo rsvptoast_admin_notice_format($message, 'RSVPMaker', $cleared, $type='info');	
+		}
+	}
+
 }
 
 function rsvptoast_admin_notice_format( $message, $slug, $cleared, $type = 'info' ) {
@@ -9799,7 +9818,7 @@ function rsvptoast_admin_notice_format( $message, $slug, $cleared, $type = 'info
 	if ( empty( $message ) ) {
 		return;
 	}
-	printf(
+	return sprintf(
 		'<div class="notice notice-%s wptoast-notice is-dismissible" data-notice="%s">
 <p>%s</p>
 </div>',
@@ -9974,54 +9993,6 @@ function rsvptoast_pages( $user_id ) {
 	$locations['primary']      = $menu->term_id;
 	$locations['menu-1']       = $menu->term_id;
 	set_theme_mod( 'nav_menu_locations', $locations );
-}
-
-function placeholder_image() {
-	if ( ! isset( $_REQUEST['placeholder_image'] ) ) {
-		return;
-	}
-	if ( isset( $_REQUEST['role'] ) ) {
-		$impath = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'mce' . DIRECTORY_SEPARATOR . 'placeholder.png';
-	} elseif ( isset( $_REQUEST['agenda_note'] ) && strpos( $_REQUEST['agenda_note'], 'editable' ) ) {
-		$impath = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'mce' . DIRECTORY_SEPARATOR . 'editable_placeholder.png';
-	} else {
-		$impath = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'mce' . DIRECTORY_SEPARATOR . 'note_placeholder.png';
-	}
-	$im = imagecreatefrompng( $impath );
-	if ( ! $im ) {
-		$im = imagecreate( 800, 50 );
-		imagefilledrectangle( $im, 5, 5, 790, 45, imagecolorallocate( $im, 50, 50, 255 ) );
-	}
-
-	// White text
-	$border    = imagecolorallocate( $im, 0, 0, 0 );
-	$textcolor = imagecolorallocate( $im, 255, 255, 255 );
-
-	$tip = $text = '';
-
-	if ( isset( $_REQUEST['role'] ) ) {
-		$text = sprintf( 'Role: %s Count: %s', sanitize_text_field($_REQUEST['role']), sanitize_text_field($_REQUEST['count']) );
-		$tip  = '(double-click for popup editor)';
-	} elseif ( isset( $_REQUEST['agenda_note'] ) ) {
-		$text = sprintf( 'Note: %s Display: %s', sanitize_text_field($_REQUEST['agenda_note']), sanitize_text_field($_REQUEST['agenda_display']) );
-		$tip  = '(double-click for popup editor)';
-	} elseif ( isset( $_REQUEST['themewords'] ) ) {
-		$text = 'Placeholder for Theme/Words of the Day';
-		$tip  = '(no popup editor)';
-	} else {
-		$text = 'error: unrecognized';
-	}
-
-	// Write the string at the top left
-	imagestring( $im, 5, 40, 10, $text, $textcolor );
-	imagestring( $im, 5, 40, 25, $tip, $textcolor );
-
-	// Output the image
-	header( 'Content-type: image/png' );
-
-	imagepng( $im );
-	imagedestroy( $im );
-	exit();
 }
 
 function get_manuals_by_type_options( $type ) {
@@ -11196,7 +11167,7 @@ function tm_youtube_tool() {
 
 	$ptext = '';
 	$count = 1;
-	$past  = get_past_events( " (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ", 5 );
+	$past  = get_toastmaster_meetings(5);
 	if ( $past ) {
 		foreach ( $past as $pst ) {
 			$wrapup[]       = $pst->date;
@@ -11534,7 +11505,7 @@ function wpt_agenda_layout_change () {
 			$update['post_content'] = '<!-- wp:columns {"className":"titleblock"} -->
 			<div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
 			<div class="wp-block-column" style="flex-basis:10%"><!-- wp:image {"align":"center","id":666,"width":50,"sizeSlug":"large","linkDestination":"media"} -->
-			<div class="wp-block-image"><figure class="aligncenter size-large is-resized"><a href="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" class="wp-image-666" width="50"/></a></figure></div>
+			<div class="wp-block-image"><figure class="aligncenter size-large is-resized"><a href="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" class="wp-image-666" width="50" height="50" /></a></figure></div>
 			<!-- /wp:image --></div>
 			<!-- /wp:column -->
 			

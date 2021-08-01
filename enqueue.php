@@ -60,6 +60,35 @@ function toastmasters_css_js() {
 		wp_enqueue_style( 'select2', plugins_url( 'rsvpmaker-for-toastmasters/select2/dist/css/select2.min.css' ), array(), $version );
 		wp_enqueue_script( 'select2', plugins_url( 'rsvpmaker-for-toastmasters/select2/dist/js/select2.min.js' ), array( 'jquery', 'jquery-ui-core', 'jquery-ui-sortable' ), $version );
 	}
+	if(strpos($_SERVER['REQUEST_URI'],'valuation-forms')) {
+		wp_enqueue_style( 'jquery' );
+		wp_enqueue_style( 'jquery-ui-core' );
+		wp_enqueue_style( 'jquery-ui-sortable' );
+		wp_register_script( 'script-toastmasters', plugins_url( 'rsvpmaker-for-toastmasters/toastmasters.js' ), array( 'jquery', 'jquery-ui-core', 'jquery-ui-sortable' ), $version );
+		wp_enqueue_script( 'script-toastmasters' );
+		$manuals = get_manuals_options();
+		wp_localize_script( 'script-toastmasters', 'manuals_list', $manuals );
+		$projects = get_projects_array( 'options' );
+		wp_localize_script( 'script-toastmasters', 'project_list', $projects );
+		wp_localize_script(
+			'script-toastmasters',
+			'wpt_rest',
+			array(
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+				'url'     => get_rest_url(),
+				'post_id' => $post_id,
+			)
+		);
+		$tm_vars               = array_map('sanitize_text_field',$_GET);
+		$tm_vars['php_self']   = sanitize_text_field($_SERVER['PHP_SELF']);
+		$tm_vars['user_id']    = ( empty( $current_user->ID ) ) ? 0 : $current_user->ID;
+		$tm_vars['user_roles'] = ( empty( $current_user->roles ) ) ? array() : $current_user->roles;
+		$tm_vars['post_id']    = ( empty( $post->ID ) ) ? 0 : $post->ID;
+		wp_localize_script( 'script-toastmasters', 'tm_vars', $tm_vars );
+		wp_enqueue_style( 'select2', plugins_url( 'rsvpmaker-for-toastmasters/select2/dist/css/select2.min.css' ), array(), $version );
+		wp_enqueue_script( 'select2', plugins_url( 'rsvpmaker-for-toastmasters/select2/dist/js/select2.min.js' ), array( 'jquery', 'jquery-ui-core', 'jquery-ui-sortable' ), $version );
+	}
+
 	if ( ( isset( $post->post_content ) && is_wp4t() )
 	|| ( strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) || strpos( $_SERVER['REQUEST_URI'], 'user-edit.php' ) )
 	) {

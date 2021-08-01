@@ -213,8 +213,6 @@ function add_member_speech(  ) {
 		$post_id = 0;
 		$function = 'add_member_speech';
 		wp4t_record_history_to_table($user_id, $role, $timestamp, 0, $function, $manual,$p,$title,$intro, sanitize_text_field($_SERVER['SERVER_NAME']));
-
-		//wp4t_record_history($user_id, $role, $timestamp, $post_id, $function,$manual,$p,$speech_title,$intro);
 		$speech_url = admin_url( 'admin.php?page=toastmasters_reports&tab=speeches&toastmaster=' . $user_id );
 
 		echo '<em>' . __( 'Saved:', 'rsvpmaker-for-toastmasters' ) . ' ' . $manual . ' ' . $project_text . ' ' . $speech_title . ' for ' . date( 'F j, Y', $date ) . '</em> ';
@@ -259,8 +257,8 @@ function add_member_speech(  ) {
 		global $competent_leader;
 		$projects  = get_advanced_projects();
 		$role_list = '';
-		foreach ( $toast_roles as $role ) {
-			$role_list .= '<option value="' . $role . '">' . $role . '</option>';
+		foreach ( $toast_roles as $index => $role ) {
+			$role_list .= '<option value="' . $index . '">' . $role . '</option>';
 		}
 		foreach ( $competent_leader as $role ) {
 			$role_list .= '<option value="' . $role . '">' . $role . '</option>';
@@ -453,19 +451,26 @@ function toastmasters_screen() {
 } // end toastmasters_screen
 
 $toast_roles = array(
-	'Ah Counter',
-	'Body Language Monitor',
-	'Evaluator',
-	'General Evaluator',
-	'Grammarian',
-	'Humorist',
-	'Speaker',
-	'Topics Master',
-	'Table Topics',
-	'Timer',
-	'Toastmaster of the Day',
-	'Vote Counter',
+	'Ah Counter' => __('Ah Counter','rsvpmaker-for-toastmasters'),
+	'Body Language Monitor' => __('Body Language Monitor','rsvpmaker-for-toastmasters'),
+	'Evaluator' => __('Evaluator','rsvpmaker-for-toastmasters'),
+	'General Evaluator' => __('General Evaluator','rsvpmaker-for-toastmasters'),
+	'Grammarian' => __('Grammarian','rsvpmaker-for-toastmasters'),
+	'Humorist' => __('Humorist','rsvpmaker-for-toastmasters'),
+	'Speaker' => __('Speaker','rsvpmaker-for-toastmasters'),
+	'Topics Master' => __('Topics Master','rsvpmaker-for-toastmasters'),
+	'Table Topics' => __('Table Topics','rsvpmaker-for-toastmasters'),
+	'Timer' => __('Timer','rsvpmaker-for-toastmasters'),
+	'Toastmaster of the Day' => __('Toastmaster of the Day','rsvpmaker-for-toastmasters'),
+	'Vote Counter' => __('Vote Counter','rsvpmaker-for-toastmasters'),
 );
+
+function wp4t_role_display ($role) {
+	global $toast_roles;
+	if(!empty($toast_roles[$role]))
+		return $toast_roles[$role];
+	return $role;
+}
 
 $competent_leader = array(
 	'Help Organize a Club Speech Contest',
@@ -489,9 +494,10 @@ $competent_leader = array(
 
 add_action( 'update_user_role_archive_all', 'update_user_role_archive_all' );
 function update_user_role_archive_all() {
-	$events = get_past_events();
+	$events = get_past_events('',5);
 	foreach ( $events as $event ) {
 		update_user_role_archive( $event->ID, $event->datetime );
+		//printf('<p>checking for updates on %s %s</p>',$event->ID,$event->datetime);
 	}
 }
 
@@ -903,9 +909,6 @@ function toastmasters_reconcile() {
 }
 
 function toastmasters_meeting_minutes() {
-	?>
-<p>Use this report to gather information recorded through the agenda and the <a href="<?php echo admin_url( 'admin.php?page=toastmasters_reconcile' ); ?>">Update History</a> screen for each meeting date. If your club publishes weekly meeting minutes, this gives you the raw data.</p>
-	<?php
 	global $wpdb, $post, $rsvp_options;
 	if ( ! empty( $_REQUEST['history'] ) ) {
 		$r_post = get_post( $_REQUEST['history'] );
@@ -961,20 +964,24 @@ function toastmasters_meeting_minutes() {
 			}
 			$options .= sprintf( '<option value="%d" %s>%s %s</option>', $row->ID, $s, $row->date, $r );
 		}
-
+if(empty($_GET['rsvp_print'])) {
 		?>
+<p>Use this report to gather information recorded through the agenda and the <a href="<?php echo admin_url( 'admin.php?page=toastmasters_reconcile' ); ?>">Update History</a> screen for each meeting date. If your club publishes weekly meeting minutes, this gives you the raw data.</p>
 	<form method="get" action="<?php echo admin_url( 'admin.php' ); ?>">
 	<input type="hidden" name="page" value="toastmasters_reports_dashboard" />
 	<input type="hidden" name="report" value="minutes" />
 	<select id="pick_event" name="post_id">
 		<?php echo $options; ?>
 	</select>
-	<br /><button><?php _e( 'Get', 'rsvpmaker-for-toastmasters' ); ?></button>
+	<input type="checkbox" name="rsvp_print" value="1"> Print <input type="checkbox" name="rsvp_print" value="word"> Export to Word
+	<button><?php _e( 'Get', 'rsvpmaker-for-toastmasters' ); ?></button>
 	<?php rsvpmaker_nonce(); ?>
 	</form>
 	
-		<?php
-		if ( isset( $_REQUEST['post_id'] ) ) {
+		<?php	
+}
+
+if ( isset( $_REQUEST['post_id'] ) ) {
 			$id             = (int) $_REQUEST['post_id'];
 			$r_post         = get_post( $id );
 			$r_post->postID = $r_post->ID;
@@ -1024,7 +1031,7 @@ function toastmasters_meeting_minutes() {
 		);
 
 	if ( $r_post->postID ) {
-		$results = wp4t_history_query( "post_id=$r_post->postID" );
+		$results = wp4t_history_query( "post_id=$r_post->postID AND domain='".$_SERVER['SERVER_NAME']."'" );
 		foreach ( $results as $row ) {
 			// print_r($row);
 			$present[] = $row->user_id; // all the people who filled any role
@@ -1085,7 +1092,7 @@ function toastmasters_meeting_minutes() {
 	if ( $notes ) {
 		echo wpautop( $notes );
 	}
-
+	if(empty($_GET['rsvp_print']))
 	printf('<p><a href="%s">Make Corrections</a></p>',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID.'&'.rsvpmaker_nonce('query')) );
 }
 
@@ -4114,7 +4121,7 @@ function wp4t_stats_check( $display = true ) {
 	// print_r($users);
 	foreach ( $users as $user ) {
 		printf( '<h3>%s</h3>', $user->display_name );
-		archive_legacy_roles_usermeta( $user->ID, '', true );
+		//archive_legacy_roles_usermeta( $user->ID, '', true );
 	}
 }
 
@@ -4147,10 +4154,10 @@ function post_user_role_archive( $timestamp ) {
 				$project_index = sanitize_text_field($_POST['_project'][ $role ]);
 				$title         = sanitize_text_field($_POST['_title'][ $role ]);
 				$intro         = ( isset( $_POST['_intro'][ $role ] ) ) ? wp_kses_post($_POST['_intro'][ $role ]) : '';
-				wp4t_record_history($user_id, $role, $timestamp, $post_id, ' post_user_role_archive', $manual,$project_index,$title,$intro);
+				wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, ' post_user_role_archive', $manual,$project_index,$title,$intro);
 			}
 			else
-				wp4t_record_history($user_id, $role, $timestamp, $post_id, ' post_user_role_archive');
+				wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, ' post_user_role_archive');
 		}
 	}
 	return strtotime( $timestamp . ' +1 week' );
@@ -4183,9 +4190,11 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 			$aggregated = md5( $aggregated );
 		}
 		if ( ! empty( $archive_code ) && ( $archive_code == $aggregated ) ) {
+			//echo '<p>Nothing new</p>';
 			return; // nothing new here
 		}
 		if ( empty( $aggregated ) ) {
+			//echo '<p>Nothing to record</p>';
 			return; // nothing to record
 		}
 		echo '<p>' . __( 'Updating', 'rsvpmaker-for-toastmasters' ) . '</p>';
@@ -4202,16 +4211,16 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 				$project_index = get_post_meta( $post_id, '_project' . $row->role, true );
 				$title         = get_post_meta( $post_id, '_title' . $row->role, true );
 				$intro         = get_post_meta( $post_id, '_intro' . $row->role, true );
-				wp4t_record_history($user_id, $row->role, $timestamp, $post_id, $function, $manual,$project_index,$title,$intro);
+				wp4t_record_history_to_table($user_id, $row->role, $timestamp, $post_id, $function, $manual,$project_index,$title,$intro);
 			}
 			else
-				wp4t_record_history($user_id, $row->role, $timestamp, $post_id, $function);
+				wp4t_record_history_to_table($user_id, $row->role, $timestamp, $post_id, $function);
 		}
 	}
-
 }
 
 function archive_legacy_roles_usermeta( $user_id, $start = '', $display = false ) {
+	return; // disabled
 	global $wpdb;
 	global $current_user;
 	$wpdb->show_errors();
@@ -4231,17 +4240,16 @@ function archive_legacy_roles_usermeta( $user_id, $start = '', $display = false 
 				$project_index = get_post_meta( $row->postID, '_project' . $row->role, true );
 				$title         = get_post_meta( $row->postID, '_title' . $row->role, true );
 				$intro         = get_post_meta( $row->postID, '_intro' . $row->role, true );
-				wp4t_record_history($user_id, $row->role, $row->event_timestamp, $row->id, 'archive_legacy_roles_usermeta', $manual,$project_index,$title,$intro);
+				wp4t_record_history_to_table($user_id, $row->role, $row->event_timestamp, $row->id, 'archive_legacy_roles_usermeta', $manual,$project_index,$title,$intro);
 			}
 			else
-				wp4t_record_history($user_id, $row->role, $row->event_timestamp, $row->post_id, 'archive_legacy_roles_usermeta');
+				wp4t_record_history_to_table($user_id, $row->role, $row->event_timestamp, $row->post_id, 'archive_legacy_roles_usermeta');
 			if ( $display ) {
 				printf( '<p>User meta record %s %s</p>', $key, var_export( $roledata, true ) );
 			}
 			update_user_meta( $user_id, $key, $roledata );
 		}
 	}
-
 }
 
 function wp_ajax_tm_edit_detail() {
@@ -4342,7 +4350,7 @@ function wp_ajax_editor_assign() {
 	}
 	if ( time() > strtotime( $timestamp ) ) {
 		$function = 'wp_ajax_editor_assign';
-		wp4t_record_history($user_id, $role, $timestamp, $post_id, $function);
+		wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function);
 	}
 	$name = get_member_name( $user_id );
 	printf( '%s assigned to %s', preg_replace( '/[\_0-9]/', ' ', $role ), $name );
@@ -4702,6 +4710,7 @@ function wp4t_evaluations_demo2021() {
 	//if(is_user_logged_in())
 		//return 'Please log out before using this version of the evaluation form.';
 	ob_start();
+	echo '<style>.time_required, .speaker_introduction {display: none}</style>';
 	wp4t_evaluations( true ); // show in demo mode
 	return ob_get_clean();
 }
@@ -4763,7 +4772,7 @@ function wp4t_evaluations( $demo = false ) {
 		if ( $updated ) {
 			$updated_text = rsvpmaker_date( 'r', $updated );
 		}
-		printf( '<div class="notice notice-info"><p><a href="%s">Check for updates</a> from wp4toastmasters.com. Current as of: %s</p></div>', admin_url( 'admin.php?page=wp4t_evaluations&import_eval=1' ), $updated_text );
+		//printf( '<div class="notice notice-info"><p><a href="%s">Check for updates</a> from wp4toastmasters.com. Current as of: %s</p></div>', admin_url( 'admin.php?page=wp4t_evaluations&import_eval=1' ), $updated_text );
 	}
 
 	if ( ! $demo ) {
@@ -6022,20 +6031,19 @@ function toastmasters_reports_dashboard() {
 	$titles['speaker']       = 'Speaker Points System Report';
 	$titles['attendance']    = 'Attendance';
 	$titles['participation'] = 'Participation Overview';
-	$titles['minutes']       = 'Information for Minutes';
+	$titles['minutes']       = 'Minutes';
 
 	if ( isset( $_GET['report'] ) ) {
 		$report_slug = sanitize_text_field($_GET['report']);
 		$headline    = $titles[ $report_slug ];
+		$sidebar = sprintf( '<div><a href="%s">Back to Reports Listing</a></div>', admin_url( 'admin.php?page=toastmasters_reports_dashboard' ) );
 	} else {
 		$headline = 'Report Dashboard';
+		$sidebar = '';
 	}
-	$hook = tm_admin_page_top( $headline );
+	$hook = tm_admin_page_top( $headline, $sidebar );
 
 	if ( isset( $_GET['report'] ) ) {
-		if ( ! isset( $_GET['rsvp_print'] ) ) {
-			printf( '<div style="float: right; margin-left: 20px;"><a href="%s">Back to Report Listing</a></div>', admin_url( 'admin.php?page=toastmasters_reports_dashboard' ) );
-		}
 
 		if ( $report_slug == 'speeches' ) {
 			$sname = sanitize_text_field($_SERVER['SERVER_NAME']);

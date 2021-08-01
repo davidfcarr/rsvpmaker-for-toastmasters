@@ -345,7 +345,7 @@ class Editor_Assign extends WP_REST_Controller {
 			delete_post_meta( $post_id, '_intro' . $role );
 		}
 		if ( time() > rsvpmaker_strtotime( $timestamp ) ) {
-			wp4t_record_history($user_id, $role, $timestamp, $post_id, 'wp_ajax_editor_assign');
+			wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, 'wp_ajax_editor_assign');
 		}
 		$name   = get_member_name( $user_id );
 		$status = sprintf( '%s assigned to %s', preg_replace( '/[\_0-9]/', ' ', $role ), $name );

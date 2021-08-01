@@ -212,25 +212,30 @@ function clean_role( $role ) {
 	return trim( $role );
 }
 
-function future_toastmaster_meetings( $limit = 10, $buffer = 4 ) {
-
-	return get_future_events( $where = "(post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')", $limit, OBJECT, $buffer );
-
+function future_toastmaster_meetings( $limit = 10 ) {
+	global $wpdb;
+	$event_table = $wpdb->prefix.'rsvpmaker_event';
+	$sql = "SELECT * from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND date > NOW() AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
+	return $wpdb->get_results($sql);
 }
-
-
 
 function past_toastmaster_meetings( $limit = 10000, $buffer = 0 ) {
-
-	return get_past_events( $where = "(post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')", $limit, OBJECT, $buffer );
-
+	global $wpdb;
+	$event_table = $wpdb->prefix.'rsvpmaker_event';
+	$sql = "SELECT * from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND date < NOW() AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date DESC LIMIT 0,$limit";
+	return $wpdb->get_results($sql);
 }
 
-
+function last_toastmaster_meeting() {
+	global $wpdb;
+	$sql = "SELECT * FROM $wpdb->posts JOIN ".$wpdb->prefix."rsvpmaker_event WHERE post_status='publish' AND date < NOW() AND post_status='publish' AND post_content LIKE LIKE '%wp:wp4toastmasters%' ORDER BY date DESC";
+	return $wpdb->get_row($sql);
+}
 
 function next_toastmaster_meeting() {
 	global $wpdb;
-	$sql = "SELECT * FROM $wpdb->posts JOIN ".$wpdb->prefix."rsvpmaker_event WHERE date > NOW() AND post_status='publish' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%')";
+	$event_table = $wpdb->prefix.'rsvpmaker_event';
+	$sql = "SELECT * from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND date > NOW() AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date";
 	return $wpdb->get_row($sql);
 }
 
@@ -512,12 +517,12 @@ function is_wp4t( $content = '' ) {
 		$content = $post->post_content;
 
 	}
-
-	if ( strpos( $content, 'wp4t_evaluations_demo2020' ) ) {
+/*
+	if ( strpos( $content, 'wp4t_evaluations_demo2021' ) ) {
 
 		return true;
 	}
-
+*/
 	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) ) {
 
 		return false;
@@ -528,15 +533,11 @@ function is_wp4t( $content = '' ) {
 
 }
 
-
-
-function tm_admin_page_top( $headline ) {
+function tm_admin_page_top( $headline, $sidebar = '' ) {
 
 	/*
 	$hook = tm_admin_page_top(__('Headline','rsvpmaker-for-toastmasters'));
-
 	tm_admin_page_bottom($hook);
-
 	*/
 
 	$hook = '';
@@ -548,8 +549,14 @@ function tm_admin_page_top( $headline ) {
 		$hook = $screen->id;
 
 	}
+	$printlink = admin_url( str_replace( '/wp-admin/', '', $_SERVER['REQUEST_URI'] ) ) . '&rsvp_print=1&'.rsvpmaker_nonce('query');
+	$wordlink = admin_url( str_replace( '/wp-admin/', '', $_SERVER['REQUEST_URI'] ) ) . '&rsvp_print=word&'.rsvpmaker_nonce('query');
+	$print = ( isset( $_REQUEST['page'] ) && ! isset( $_REQUEST['rsvp_print'] ) ) ? '<div style="border: thin dotted #000;width: 250px; padding: 10px; float: right;"><a target="_blank" href="' . $printlink .'">'.__('Print','rsvpmaker-for-toastmasters').'</a><br><a target="_blank" href="' . $wordlink .'">'.__('Export to Word','rsvpmaker-for-toastmasters').'</a>'.$sidebar.'</div>' : '';
 
-	$print = ( isset( $_REQUEST['page'] ) && ! isset( $_REQUEST['rsvp_print'] ) ) ? '<div style="width: 200px; text-align: right; float: right;"><a target="_blank" href="' . admin_url( str_replace( '/wp-admin/', '', $_SERVER['REQUEST_URI'] ) ) . '&rsvp_print=1&'.rsvpmaker_nonce('query').'">Print</a></div>' : '';
+	if(isset($_GET['rsvp_print'])) {
+		$name = get_bloginfo('name');
+		printf('<p><img src="https://toastmost.org/tmbranding/agenda-rays.png" width="525" height="60" /></p><h1>%s</h1>',$name);
+	}
 
 	printf( '<div id="wrap" class="%s toastmasters">%s<h1>%s</h1>', $hook, $print, $headline );
 
@@ -557,10 +564,9 @@ function tm_admin_page_top( $headline ) {
 
 }
 
-
-
 function tm_admin_page_bottom( $hook = '' ) {
-
+if(isset($_GET['rsvp_print']))
+	return;
 	if ( is_admin() && empty( $hook ) ) {
 
 		$screen = get_current_screen();
@@ -573,7 +579,25 @@ function tm_admin_page_bottom( $hook = '' ) {
 
 }
 
-
+//$fname = apply_filters('rsvp_print_to_word',$fname);
+add_filter('rsvp_print_to_word','wp4t_print_to_word');
+function wp4t_print_to_word($fname) {
+	if(isset($_GET['report'])) {
+		if('minutes' == $_GET['report']) {
+			if(isset($_GET['post_id']))
+				{
+					$post_id = intval($_GET['post_id']);
+					$date = get_rsvp_date($post_id);
+				}
+			else {
+				$event = last_toastmaster_meeting();
+				$date = $event->date;
+			}
+			$fname = 'minutes-'.$date;
+		}
+	}
+	return $fname;
+}
 
 function wpt_get_member_emails() {
 
@@ -1584,3 +1608,14 @@ if(($post->post_type != 'rsvpmailer') && ($special != 'Agenda Layout'))
 
 add_action('admin_head','wp4t_editor_style_override');
 
+function wp4t_name_index($user) {
+	if(is_numeric($user))
+		$name = get_member_name($user).$user;
+	elseif(!empty($user->first_name) && !empty($user->last_name))
+		$name = $user->first_name.$user->last_name.$user->ID;
+	elseif(empty($user->display_name))
+		return time();
+	else
+		$name = $user->display_name.$user->ID;
+	return preg_replace('/[^a-z0-9]/','',strtolower($name));
+}

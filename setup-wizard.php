@@ -970,6 +970,9 @@ function wpt_wizard_prompt() {
 		return;
 
 	global $current_user;
+	$used = get_option( 'wp4t_setup_wizard_used' );
+	if($used)
+		return;
 
 	$members = get_club_members();
 
@@ -987,17 +990,15 @@ function wpt_wizard_prompt() {
 		$cleared = array();
 	}
 
-	$used = get_option( 'wp4t_setup_wizard_used' );
-
-	$message = '<div style="height: 100px; padding: 20px;">';
+	$message = '<div>';
 
 	$message .= sprintf( '<h2>Try the <a href="%s">Club Website Setup Wizard</a></h2>', admin_url( 'admin.php?page=wp4t_setup_wizard' ) );
 
-	$message .= sprintf( '<h3>Use the <a href="%s">setup wizard</a> to quickly tweak your agenda, invite others to test the site, and begin using your club website productively.</h3>', admin_url( 'admin.php?page=wp4t_setup_wizard' ) );
+	$message .= sprintf( '<p>Use the <a href="%s">setup wizard</a> to quickly tweak your agenda, invite others to test the site, and begin using your club website productively.</p>', admin_url( 'admin.php?page=wp4t_setup_wizard' ) );
 
 	$message .= '</div>';
 
-	rsvptoast_admin_notice_format( $message, 'wizard', $cleared, 'info' );
+	echo rsvptoast_admin_notice_format( $message, 'wizard', $cleared, 'info' );
 
 }
 
