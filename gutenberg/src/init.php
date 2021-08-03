@@ -44,14 +44,14 @@ add_action( 'enqueue_block_assets', 'wpt_cgb_block_assets' );
  * @since 1.0.0
  */
 function wpt_cgb_editor_assets() {
-	global $post;
+	global $post, $toast_roles;
 	if(!isset($_GET['action']) || !isset($post->post_type) || ($post->post_type != 'rsvpmaker'))
 		return;
 	// Scripts.
 	wp_enqueue_script(
 		'wpt-cgb-block-js', // Handle.
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ), // Block.build.js: We register the block here. Built with Webpack.
-		array( 'wp-blocks', 'wp-i18n', 'wp-element' ), // Dependencies, defined above.
+		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-block-editor' ), // Dependencies, defined above.
 		filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: filemtime — Gets file modification time.
 		true // Enqueue the script in the footer.
 	);
@@ -61,7 +61,33 @@ function wpt_cgb_editor_assets() {
 	if(!empty($rsvpmaker_special))
 		$wpt_rest['special'] = $rsvpmaker_special;
 	wp_localize_script('wpt-cgb-block-js', 'wpt_rest', $wpt_rest );
-
+	$toast[] = array('value' =>'custom', 'label' => 'Custom Role');
+	foreach($toast_roles as $key => $value)
+		$toast[] = array('value' => $key, 'label' => $value);
+	wp_localize_script('wpt-cgb-block-js', 'toast_roles', $toast );
+/*	[
+		{value: '', label: ''},
+		{value: 'custom', label: __('Custom Role','rsvpmaker-for-toastmasters')},
+		{value: 'Ah Counter', label: __('Ah Counter','rsvpmaker-for-toastmasters')},
+		{value: 'Body Language Monitor', label: __('Body Language Monitor','rsvpmaker-for-toastmasters')},
+		{value: 'Evaluator', label: __('Evaluator','rsvpmaker-for-toastmasters')},
+		{value: 'General Evaluator', label: __('General Evaluator','rsvpmaker-for-toastmasters')},
+		{value: 'Grammarian', label: __('Grammarian','rsvpmaker-for-toastmasters')},
+		{value: 'Humorist', label: __('Humorist','rsvpmaker-for-toastmasters')},
+		{value: 'Speaker', label: __('Speaker','rsvpmaker-for-toastmasters')},
+		{value: 'Backup Speaker', label: __('Backup Speaker','rsvpmaker-for-toastmasters')},
+		{value: 'Topics Master', label: __('Topics Master','rsvpmaker-for-toastmasters')},
+		{value: 'Table Topics', label: __('Table Topics','rsvpmaker-for-toastmasters')},
+		{value: 'Toastmaster of the Day', label: __('Toastmaster of the Day','rsvpmaker-for-toastmasters')},
+		{value: 'Timer', label: __('Timer','rsvpmaker-for-toastmasters')},
+		{value: 'Vote Counter', label: __('Vote Counter','rsvpmaker-for-toastmasters')},
+		{value: 'Contest Chair', label: __('Contest Chair','rsvpmaker-for-toastmasters')},
+		{value: 'Contest Master', label: __('Contest Master','rsvpmaker-for-toastmasters')},
+		{value: 'Chief Judge', label: __('Chief Judge','rsvpmaker-for-toastmasters')},
+		{value: 'Ballot Counter', label: __('Ballot Counter','rsvpmaker-for-toastmasters')},
+		{value: 'Contestant', label: __('Contestant','rsvpmaker-for-toastmasters')},
+		]
+*/
 	// Styles.
 	wp_enqueue_style(
 		'wpt-cgb-block-editor-css', // Handle.
@@ -73,6 +99,7 @@ function wpt_cgb_editor_assets() {
 
 // Hook: Editor assets.
 add_action( 'enqueue_block_editor_assets', 'wpt_cgb_editor_assets' );
+
 
 function wpt_server_block_render(){
 	$roleatts = array('role' => array('type' => 'string', 'default' => ''),'custom_role' => array('type' => 'string', 'default' => ''),'count' => array('type' => 'int', 'default' => 1),'start' => array('type' => 'int', 'default' => 1),'agenda_note' => array('type' => 'string', 'default' => ''),'time_allowed' => array('type' => 'string', 'default' => '0'),'padding_time' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'int', 'default' => 0),'backup' => array('type' => 'string', 'default' => ''));

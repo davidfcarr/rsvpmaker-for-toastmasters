@@ -405,28 +405,7 @@ return (
 				label={ __( 'Role', 'rsvpmaker-for-toastmasters' ) }
 				value={ role }
 				onChange={ ( role ) => setAttributes( { role } ) }
-				options={ [
-					{value: '', label: ''},
-					{value: 'custom', label: __('Custom Role','rsvpmaker-for-toastmasters')},
-					{value: 'Ah Counter', label: __('Ah Counter','rsvpmaker-for-toastmasters')},
-					{value: 'Body Language Monitor', label: __('Body Language Monitor','rsvpmaker-for-toastmasters')},
-					{value: 'Evaluator', label: __('Evaluator','rsvpmaker-for-toastmasters')},
-					{value: 'General Evaluator', label: __('General Evaluator','rsvpmaker-for-toastmasters')},
-					{value: 'Grammarian', label: __('Grammarian','rsvpmaker-for-toastmasters')},
-					{value: 'Humorist', label: __('Humorist','rsvpmaker-for-toastmasters')},
-					{value: 'Speaker', label: __('Speaker','rsvpmaker-for-toastmasters')},
-					{value: 'Backup Speaker', label: __('Backup Speaker','rsvpmaker-for-toastmasters')},
-					{value: 'Topics Master', label: __('Topics Master','rsvpmaker-for-toastmasters')},
-					{value: 'Table Topics', label: __('Table Topics','rsvpmaker-for-toastmasters')},
-					{value: 'Toastmaster of the Day', label: __('Toastmaster of the Day','rsvpmaker-for-toastmasters')},
-					{value: 'Timer', label: __('Timer','rsvpmaker-for-toastmasters')},
-					{value: 'Vote Counter', label: __('Vote Counter','rsvpmaker-for-toastmasters')},
-					{value: 'Contest Chair', label: __('Contest Chair','rsvpmaker-for-toastmasters')},
-					{value: 'Contest Master', label: __('Contest Master','rsvpmaker-for-toastmasters')},
-					{value: 'Chief Judge', label: __('Chief Judge','rsvpmaker-for-toastmasters')},
-					{value: 'Ballot Counter', label: __('Ballot Counter','rsvpmaker-for-toastmasters')},
-					{value: 'Contestant', label: __('Contestant','rsvpmaker-for-toastmasters')},
-					] }
+				options={ toast_roles }
 />
 
 <TextControl

@@ -215,7 +215,7 @@ function clean_role( $role ) {
 function future_toastmaster_meetings( $limit = 10 ) {
 	global $wpdb;
 	$event_table = $wpdb->prefix.'rsvpmaker_event';
-	$sql = "SELECT * from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND date > NOW() AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
+	$sql = "SELECT *, date as datetime from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND ts_end > ".time()." AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
 	return $wpdb->get_results($sql);
 }
 
@@ -1366,7 +1366,7 @@ function is_edit_roles() {
 add_filter( 'wp_nav_menu', 'wp_nav_menu_wpt', 10, 2 );
 
 function wp_nav_menu_wpt( $menu_html, $menu_args ) {
-
+global $rsvp_options;
 	if ( strpos( $menu_html, '#rolesignup' ) || strpos( $menu_html, '#tmlogin' ) ) {
 
 		$evlist = '';
@@ -1383,7 +1383,7 @@ function wp_nav_menu_wpt( $menu_html, $menu_args ) {
 
 				foreach ( $future as $event ) {
 
-					$evlist .= sprintf( '<li class="menu-item menu-item-type-post_type menu-item-object-rsvpmaker menu-item-%d"><a href="%s">%s</a></li>', $event->ID, wpt_login_permalink( $event->ID ), $event->date );
+					$evlist .= sprintf( '<li class="menu-item menu-item-type-post_type menu-item-object-rsvpmaker menu-item-%d"><a href="%s">%s</a></li>', $event->ID, wpt_login_permalink( $event->ID ), rsvpmaker_date($rsvp_options['long_date'],intval($event->ts_start)) );
 
 				}
 			}

@@ -49,7 +49,7 @@ function toastmasters_reports_menu() {
 }
 
 function toastmasters_admin_screen() {
-	global $submenu, $current_user;
+	global $submenu, $current_user, $rsvp_options;
 	$hook = tm_admin_page_top( __( 'Toastmasters Administration', 'rsvpmaker-for-toastmasters' ) . ': ' . get_member_name( $current_user->ID ) );
 
 	echo '<div style="width: 50%; float: right; padding-left: 10px;">';
@@ -73,7 +73,7 @@ function toastmasters_admin_screen() {
 	<li><a href="%s" target="_blank">%s</a></li>
 	</ul>',
 				$meeting->post_title,
-				$meeting->date,
+				rsvpmaker_date($rsvp_options['long_date'], intval($meeting->ts_start)),
 				$signupslink,
 				__( 'Edit Signups', 'rsvpmaker-for-toastmasters' ),
 				$viewlink,
@@ -450,20 +450,25 @@ function toastmasters_screen() {
 	tm_admin_page_bottom( $hook );
 } // end toastmasters_screen
 
-$toast_roles = array(
-	'Ah Counter' => __('Ah Counter','rsvpmaker-for-toastmasters'),
-	'Body Language Monitor' => __('Body Language Monitor','rsvpmaker-for-toastmasters'),
-	'Evaluator' => __('Evaluator','rsvpmaker-for-toastmasters'),
-	'General Evaluator' => __('General Evaluator','rsvpmaker-for-toastmasters'),
-	'Grammarian' => __('Grammarian','rsvpmaker-for-toastmasters'),
-	'Humorist' => __('Humorist','rsvpmaker-for-toastmasters'),
-	'Speaker' => __('Speaker','rsvpmaker-for-toastmasters'),
-	'Topics Master' => __('Topics Master','rsvpmaker-for-toastmasters'),
-	'Table Topics' => __('Table Topics','rsvpmaker-for-toastmasters'),
-	'Timer' => __('Timer','rsvpmaker-for-toastmasters'),
-	'Toastmaster of the Day' => __('Toastmaster of the Day','rsvpmaker-for-toastmasters'),
-	'Vote Counter' => __('Vote Counter','rsvpmaker-for-toastmasters'),
-);
+function wp4t_role_array() {
+	global $toast_roles;
+	$toast_roles = array(
+		'Ah Counter' => __('Ah Counter','rsvpmaker-for-toastmasters'),
+		'Body Language Monitor' => __('Body Language Monitor','rsvpmaker-for-toastmasters'),
+		'Evaluator' => __('Evaluator','rsvpmaker-for-toastmasters'),
+		'General Evaluator' => __('General Evaluator','rsvpmaker-for-toastmasters'),
+		'Grammarian' => __('Grammarian','rsvpmaker-for-toastmasters'),
+		'Humorist' => __('Humorist','rsvpmaker-for-toastmasters'),
+		'Speaker' => __('Speaker','rsvpmaker-for-toastmasters'),
+		'Topics Master' => __('Topics Master','rsvpmaker-for-toastmasters'),
+		'Table Topics' => __('Table Topics','rsvpmaker-for-toastmasters'),
+		'Timer' => __('Timer','rsvpmaker-for-toastmasters'),
+		'Toastmaster of the Day' => __('Toastmaster of the Day','rsvpmaker-for-toastmasters'),
+		'Vote Counter' => __('Vote Counter','rsvpmaker-for-toastmasters'),
+	);	
+}
+
+add_action('init','wp4t_role_array',15);
 
 function wp4t_role_display ($role) {
 	global $toast_roles;
@@ -3411,7 +3416,7 @@ function toastmasters_welcome() {
 	$results = future_toastmaster_meetings( 5 );
 	if ( $results ) {
 		foreach ( $results as $index => $row ) {
-					$t         = strtotime( $row->datetime );
+					$t         = (int)  $row->ts_start;
 					$title     = $row->post_title . ' ' . date( 'F jS', $t );
 					$permalink = rsvpmaker_permalink_query( $row->ID );
 					printf( '<li><a href="%s">%s</a></li>', $permalink, $title );
