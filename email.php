@@ -37,7 +37,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	if ( empty( $next ) ) {
 		return;
 	}
-	$t      = rsvpmaker_strtotime( get_rsvp_date( $next->ID ) );
+	$t      = (!empty($next->ts_start)) ? (int) $next->ts_start : rsvpmaker_strtotime( get_rsvp_date( $next->ID ) );
 	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
 	$post   = $next;
 	$dupkey = 'email_reminder_' . $meeting_hours;
