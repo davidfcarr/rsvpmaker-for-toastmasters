@@ -915,6 +915,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	} else {
 		$sync        = get_post_meta( $post->ID, 'tm_contest_sync', true );
 		$slave       = ( $sync && ( $sync['copy_from'] != $post->ID ) );
+		if(!isset($timer_user)) $timer_user = 0;
 		$addtodrop   = contest_user_list_top( $judges, $timer_user, $dashboard_users );
 		$genericdrop = wp_dropdown_users( array( 'echo' => false ) );
 		$genericdrop = preg_replace( '/<select[^>]+>/', '$0' . $addtodrop . '<optgroup label="All Users">', $genericdrop );

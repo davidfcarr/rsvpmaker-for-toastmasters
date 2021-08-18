@@ -553,25 +553,22 @@ class WPTM_Dues extends WP_REST_Controller {
 	public function handle( $request ) {
 		global $wpdb, $current_user;
 		$confirmation = array();
-		$ti_paid_key  = sanitize_text_field($_POST['ti_paid_key']);
 		$paidkey      = sanitize_text_field($_POST['paidkey']);
 		$norenew      = sanitize_text_field($_POST['norenew']);
-		if ( isset( $_POST['markpaid'] ) ) {
-			foreach ( $_POST['markpaid'] as $member_id => $value ) {
-				$until = sanitize_text_field($_POST['until'][ $member_id ]);
-				update_user_meta( $member_id, $paidkey, $until );
-				delete_user_meta( $member_id, $norenew );
-				$confirmation['marked_paid'] = 'Marked paid until ' . $until;
-			}
+		$member_id = intval($_POST['member_id']);
+		$blog_id = intval($_POST['blog_id']);
+		$paidkey = "TIpayment_".get_current_blog_id()."_".$_POST['until'];
+		$until_key = "paid_until_".get_current_blog_id();
+		$paid_to_ti = (empty($_POST['paid_to_ti'])) ? 0 : sanitize_text_field($_POST['paid_to_ti']);
+		if ( isset( $_POST['markpaid'] ) && ('1' == $_POST['markpaid']) ) {
+			$until = sanitize_text_field($_POST['until']);
+			update_user_meta( $member_id, $until_key, $until );
+			delete_user_meta( $member_id, $norenew );
+			$confirmation['marked_paid'] = 'Marked paid until ' . $until;
 		}
-		if ( isset( $_POST[ $ti_paid_key ] ) ) {
-			foreach ( $_POST[ $ti_paid_key ] as $member_id => $amount ) {
-				$member_id = (int) $member_id;
-				$amount = sanitize_text_field($amount);
-				update_user_meta( $member_id, $ti_paid_key, $amount );
-				delete_user_meta( $member_id, $norenew );
-				$confirmation['paid_ti'] = 'Paid to TI: ' . $amount;
-			}
+		if($paid_to_ti) {
+			update_user_meta($member_id,$paidkey,$paid_to_ti);
+			$confirmation['paid_to_ti'] = "$member_id $paidkey $paid_to_ti";
 		}
 
 		if ( isset( $_POST['updatevoid'] ) && is_numeric( $_POST['updatevoid'] ) ) {

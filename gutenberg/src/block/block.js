@@ -538,3 +538,29 @@ class DocInspector extends Component {
 		);
 	}
 }
+
+registerBlockType( 'wp4toastmasters/duesrenewal', {
+	// Role [toastmaster role="Toastmaster of the Day" count="1" agenda_note="Introduces supporting roles. Leads the meeting." time="" time_allowed="2" padding_time="0" ]
+
+	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
+	title: __( 'Dues Renewal' ), // Block title.
+	icon: 'groups', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
+	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	description: __('Displays a member dues renewal form.'),
+	keywords: [
+		__( 'Toastmasters' ),
+		__( 'Dues' ),
+		__( 'Payment' ),
+	],
+	edit: function( props ) {
+	const { attributes: { amount }, setAttributes, isSelected } = props;
+		return (			
+<div className={ props.className }>
+<p><strong>Toastmasters Dues Renewal</strong> - displays the payment form</p>
+<p>{__('Payment will be calculated according to the dues schedule set in','rsvpmaker-for-toastmasters')}<br />{__('Settings > TM Member Application','rsvpmaker-for-toastmasters')}</p>
+</div>
+		);
+	},
+    save: function (props) { return null; },
+
+} );

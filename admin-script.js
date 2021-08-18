@@ -6,7 +6,6 @@
 			}
 		}
 	);
-
 	$( '.editvoid' ).click(
 		function() {
 			let x = $( this ).val();
@@ -47,6 +46,7 @@
 
 						$( '#confirm' + data.member_id ).html( message );
 						$( '#data-entry-' + data.member_id ).hide();
+						$( '#paid-ti-' + data.member_id ).hide();
 						$( '#member_dues_update_' + data.member_id + ' .enter_notes' ).hide();
 					},
 					error: function(errorThrown){
@@ -438,19 +438,6 @@
 		.then( response => response.json() )
 		.then( data => $( '#' + report + '_content' ).html( data.content ) );
 	}
-
-	$( '.markpaid' ).click(
-		function() {
-			var id        = $( this ).attr( 'id' );
-			var paidplan  = id.replace( 'markpaid','paidplan' );
-			var member_id = id.replace( 'markpaid','' );
-			var key       = $( '#tipaymentkey' ).val();
-
-			$( '#' + paidplan ).html( ' Paid to TI <input type="text" name="' + key + '[' + member_id + ']" value="" /> ' );
-
-			console.log( 'member id ' + member_id );
-		}
-	);
 
 	$( '#ti-transactions-refresh, #ti-transactions-tab' ).click(
 		function () {

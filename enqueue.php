@@ -2,10 +2,10 @@
 
 function tm_welcome_screen_assets( $hook ) {
 	// everywhere except posts screen
-	$ver = '3.36';
+	$ver = '3.4';
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'post.php' ) ) {
 		wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css', array(), $ver );
-		wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery','rsvpmaker_admin_script' ), $ver, true );
+		wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), $ver, true );
 		wp_localize_script(
 			'tm_welcome_screen_js',
 			'wpt_rest',

@@ -1049,7 +1049,7 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 		}
 	}
 	$members   = array();
-	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+	$blogusers = get_club_members();
 	foreach ( $blogusers as $user ) {
 		if ( ! in_array( $user->ID, $role_holder ) && ! in_array( $user->ID, $marked_attended ) ) {
 			$absent[] = $user->ID;
@@ -1060,12 +1060,10 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 		$marked_out = '<p><strong>Held a role:</strong> ';
 		foreach ( $role_holder as $index => $marked ) {
 			$user = get_userdata( $marked );
-			if ( $index ) {
-				$marked_out .= ', ';
-			}
-			$marked_out .= esc_html($user->display_name);
+			$held_name[] = esc_html($user->display_name);
 		}
-		echo $marked_out . '</p>';
+		sort($held_name);
+		echo $marked_out .implode(', ',$held_name). '</p>';
 	}
 
 	if ( ! empty( $marked_attended ) ) {
@@ -1195,16 +1193,6 @@ function toastmasters_attendance() {
 		_e( 'Error: no event selected', 'rsvpmaker-for-toastmasters' );
 	}
 
-	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
-	foreach ( $blogusers as $user ) {
-		$userdata = get_userdata( $user->ID );
-		if ( $userdata->hidden_profile ) {
-			continue;
-		}
-		$index             = preg_replace( '/[^A-Za-z]/', '', $userdata->last_name . $userdata->first_name . $userdata->user_login );
-		$members[ $index ] = $userdata;
-	}
-
 	// TO DO add routine to edit list of roles for table
 
 	printf( '<h2>%s</h2>', $r_post->date );
@@ -1214,12 +1202,11 @@ function toastmasters_attendance() {
 	$l = '<tr><th>Name</th><th>Attended</th></tr>';
 	echo $l;
 	$count = 0;
-
-	ksort( $members );
+	$members = get_club_members();
 	foreach ( $members as $index => $userdata ) {
 		$count++;
 		if ( ( $count % 10 ) == 0 ) {
-			echo esc_html($l);
+			echo $l;
 		}
 		if ( in_array( $userdata->ID, $present ) ) { // || in_array('_Attended_'.$userdata->ID,$meeting_roles))
 			$att = ' <strong>' . __( 'YES', 'rsvpmaker-for-toastmasters' ) . '</strong> ';
@@ -6764,9 +6751,26 @@ function get_treasurer_notes( $member_id, $treasurer_note ) {
 	return $notes;
 }
 
+function wpt_renewal_dates() {
+	$t = strtotime('March');
+	for($i = 0; $i < 6; $i++) {
+		if($i > 0)
+			$t += (182  * DAY_IN_SECONDS);
+		$day = ('3' == date('m',$t)) ? '-31' : '-30';
+		if($t > time())
+			$renewal_dates[] = date('Y-m',$t).$day;
+	}
+	return $renewal_dates;
+}
+
+add_action('rsvpmaker_payments_setting_top','wpt_dues_navigation');
+function wpt_dues_navigation () {
+	echo '<p style="text-align: right; width: 100%;"><a href="'.admin_url('admin.php?page=wpt_dues_report').'">Dues Tracker</a> | <a href="'.admin_url('admin.php?page=wpt_dues_report&tx').'">Transaction List</a>  | <a href="'.admin_url('admin.php?page=wpt_dues_report&followup').'">Follow Up</a> | <a href="'.admin_url('options-general.php?page=member_application_settings').'">Dues & Application Setup</a>  | <a href="'.admin_url('options-general.php?page=rsvpmaker-admin.php&tab=payments').'">Online Payments Setup</a> </p>';
+}
+
 function wpt_dues_report() {
 
-	echo '<p style="text-align: right; width: 100%;"><a href="'.admin_url('admin.php?page=wpt_dues_report').'">Overview</a> | <a href="'.admin_url('admin.php?page=wpt_dues_report&tx').'">Transaction List</a>  | <a href="'.admin_url('admin.php?page=wpt_dues_report&followup').'">Follow Up</a> | <a href="'.admin_url('options-general.php?page=member_application_settings').'">Dues & Application</a> </p>';
+	wpt_dues_navigation();
 
 	if(isset($_GET['tx']))
 	{
@@ -6781,8 +6785,24 @@ function wpt_dues_report() {
 	return;
 	}
 
-	global $wpdb;
+	global $wpdb, $rsvp_options;
 	$nonce = wp_nonce_field( 'wpt_dues_report', 'tmn', true, false );
+	$stripetable    = $wpdb->prefix . 'rsvpmaker_money';
+
+	if ( isset( $_POST['manual_payment'] )  && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		$amount = sanitize_text_field($_POST['manual_payment']);
+		$user_id = (isset($_POST['user_id'])) ? intval($_POST['user_id']) : -1;
+		if($user_id > 0) {
+			$name = get_member_name($user_id);
+			update_user_meta($user_id,'paid_until_' . get_current_blog_id(),sanitize_text_field($_POST['until']));
+		}
+		else
+			$name = sanitize_text_field($_POST['name']);
+		$description = sanitize_text_field($_POST['description']);
+		$date = date('Y-m-d H:i:s');
+		$sql = $wpdb->prepare("INSERT INTO $stripetable SET amount=%s, name=%s, description=%s, user_id=%d, date=%s, status='Other' ",$amount,$name,$description,$user_id,$date);
+		$wpdb->query($sql);
+	}
 
 	$keys      = get_rsvpmaker_stripe_keys();
 	$stripe_on = ( empty( $keys ) || empty( $keys['pk'] ) ) ? false : true;
@@ -6791,14 +6811,57 @@ function wpt_dues_report() {
 		printf( '<div class="notice notice-info"><p>If you set up Stripe online payments for dues renewals and specify your dues schedule as part of the <a href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/" target="_blank">online application form setup</a>. You can specify those settings on the <strong>Dues and Application</strong> tab, below.</p></div>' );
 	}
 
-	$extractor = new DuesExtractor();
 	$action    = admin_url( 'admin.php?page=wpt_dues_report' );
 
-	$paidkey        = 'paid_until_' . get_current_blog_id();
 	$norenew        = 'no_renew_' . get_current_blog_id();
 	$treasurer_note = 'treasurer_note_' . get_current_blog_id();
+	$renewal_dates = wpt_renewal_dates();
 	$members        = get_club_members();
-	$stripetable    = $wpdb->prefix . 'rsvpmaker_money';
+	$sql = "SELECT * FROM $stripetable WHERE (description LIKE '%Renewal %' OR description LIKE '%Application %' )  ORDER BY id DESC LIMIT 0,100";
+	$results = $wpdb->get_results($sql);
+	foreach($results as $row) {
+		preg_match('/Renewal \(([0-9]+)\)/',$row->description,$match);
+		//print_r($match);
+		if(isset($match[1])) {
+			$user_id = $match[1];
+		}
+		preg_match('/Application ([0-9]+)/',$row->description,$match);
+		//echo '<br>application match';
+		//print_r($match);
+		if(isset($match[1])) {
+			$app_id = $match[1];
+			$email = get_post_meta($app_id,'user_email',true);
+			$sql = "SELECT user_id FROM $wpdb->usermeta WHERE meta_key='application_id_".get_current_blog_id()."' AND meta_value=$app_id ";
+			//printf('<p>%s</p>',$sql);
+			$user_id = $wpdb->get_var($sql);
+			if($user_id) {
+				$until = get_post_meta($app_id,'tm_application_until',true);
+				update_user_meta($user_id,'tm_renew_until_'.get_current_blog_id(),$until);
+				//printf('<p>until %s for %d</p>',$until,$user_id);
+			}
+		}
+		if($user_id) {
+			$sql = "update $stripetable SET user_id=$user_id WHERE id=$row->id";
+			$wpdb->query($sql);
+		}
+	}
+
+	$sql = "SELECT * FROM $stripetable WHERE user_id=0 ORDER BY id DESC LIMIT 0,100";
+	$results = $wpdb->get_results($sql);
+	foreach($results as $row) {
+		$user = get_user_by('email',$row->email);
+		if(isset($user->ID)) 
+			$wpdb->query("update $stripetable SET user_id=$user->ID WHERE id=$row->id");
+	}
+
+	$sql = "SELECT $wpdb->usermeta.user_id, amount, meta_value FROM $stripetable JOIN $wpdb->usermeta ON $stripetable.user_id=$wpdb->usermeta.user_id WHERE meta_key='".'tm_renew_until_'.get_current_blog_id()."' AND (description LIKE '%Renewal%' OR description LIKE '%Application %' ) ";
+	$results = $wpdb->get_results($sql); //recorded as intent
+	foreach($results as $row) {
+		update_user_meta($row->user_id,'member_paid_' . get_current_blog_id().'_'.$row->meta_value,$row->amount);
+		update_user_meta($row->user_id,'paid_until_' . get_current_blog_id(),$row->meta_value);
+	}
+	$wpdb->query("delete from $wpdb->usermeta WHERE meta_key='".'tm_renew_until_'.get_current_blog_id()."' ");
+
 	if ( isset( $_POST['match'] )  && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		foreach ( $_POST['match'] as $row_id => $match ) {
 			$row_id = (int) $row_id;
@@ -6849,13 +6912,28 @@ function wpt_dues_report() {
 		// echo 'renewal: '.$expected_renewal; print_r($plus6);
 	}
 
-	if ( $stripe_on ) {
+	$sql = "SELECT * FROM $stripetable WHERE user_id != 0 AND date > DATE_SUB(CURDATE(), INTERVAL 3 MONTH) ORDER BY date DESC LIMIT 0,10";
+	$latest = $wpdb->get_results($sql);
+	if($latest) {
+	echo '<h2>Latest Payments</h2>';
+		foreach($latest as $tx)
+		{
+			$status = '';
+			if($tx->user_id == -1)
+				$status = 'Not a member transaction';
+			else {
+				$member_name = get_member_name($tx->user_id);
+				$paid_until = wpt_member_paid_until($tx->user_id);
+				if($paid_until)
+					$status = sprintf('<br>%s paid until %s <a href="%s">(Edit Dues Status)</a>',$member_name,date('F Y',strtotime($paid_until)), '#status'.$tx->user_id );
+			}
+			printf('<p>%s %s %s payment date: %s %s %s</p>', $tx->amount, $tx->name, $tx->description, rsvpmaker_date($rsvp_options['short_date'],rsvpmaker_strtotime($tx->date)), $tx->status, $status );
+		}
+	}
 
-		$latest = stripe_latest_logged();
-		printf( '<p>Latest stripe transaction %s <a href="%s">check for updates</a></p>', $latest, admin_url( 'admin.php?page=wpt_dues_report&check=1' ) );
 		$orphans = rsvpmaker_stripe_transactions_no_user();
 		if ( $orphans ) {
-			printf( '<p>These transactions could not be automatically matched to a member record. Please assign them to a member or indicate if they are not member transactions.</p><form method="post" action="%s">', $action );
+			echo '<p>These transactions could not be automatically matched to a member record. Please assign them to a member or indicate if they are not member transactions.</p>';
 			$member_options = '<option value="-1">Not a Member Transaction</option>';
 			foreach ( $members as $member ) {
 				$names[ $member->ID ]  = get_user_meta( $member->ID, 'first_name', true ) . ' ' . get_user_meta( $member->ID, 'last_name', true );
@@ -6863,6 +6941,7 @@ function wpt_dues_report() {
 				$member_options       .= sprintf( '<option value="%s">%s %s</option>', $member->ID, $member->display_name, $member->user_email );
 			}
 			foreach ( $orphans as $orphan ) {
+				printf( '<form method="post" action="%s">', $action );
 				$possible_matches = '';
 				foreach ( $names as $user_id => $name ) {
 					similar_text( $orphan->name, $name, $perc );
@@ -6870,14 +6949,14 @@ function wpt_dues_report() {
 						$possible_matches .= sprintf( '<option value="%d">%s %s</option>', $user_id, $name, $emails[ $user_id ] );
 					}
 				}
-				printf( '<p><select name="match[%d]">%s</select> %s %s %s %s %s</p>', $orphan->id, $possible_matches . $member_options, $orphan->name, $orphan->email, $orphan->amount, $orphan->date, $orphan->description );
+				$appstatus = (preg_match('/Application [0-9]/',$orphan->description)) ? '<br><em>New member, account not yet created?</em>' : '';
+				printf( '<p><select name="match[%d]">%s</select> %s %s %s %s %s %s</p>', $orphan->id, $possible_matches . $member_options, $orphan->name, $orphan->email, $orphan->amount, $orphan->date, $orphan->description,$appstatus );
+				submit_button( 'Update' );
+				rsvpmaker_nonce();
+				echo '</form>';
 			}
-			submit_button( 'Update' );
-			rsvpmaker_nonce();
-			echo '</form>';
 		}
 		// print_r($orphans);
-	}
 
 	$month = (int) date( 'n' );
 	$year  = (int) date( 'Y' );
@@ -6891,59 +6970,61 @@ function wpt_dues_report() {
 		$ti_paid_key   = 'TIpayment_' . get_current_blog_id() . '_' . $year . '-03-31';
 		$renewal_start = date( 'Y' ) . '-07-01 00:00:00';
 	}
-	printf( '<p>Checking for Dues Paid Through %s</p>', $paid_until );
 	printf( '<input type="hidden" id="tipaymentkey" value="%s" />', $ti_paid_key );
 	if ( isset( $_POST[ $ti_paid_key ] )  && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		foreach ( $_POST[ $ti_paid_key ] as $member_id => $amount ) {
 			update_user_meta( (int) $member_id, $ti_paid_key, sanitize_text_field($amount) );
 		}
-	}
+
 
 	if ( isset( $_GET['correct'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$member_id = (int) $_GET['correct'];
 		delete_user_meta( $member_id, $ti_paid_key );
 	}
+}
 
 	$members = get_club_members();
 	foreach ( $members as $member ) {
 		if ( isset( $_GET['reset'] ) ) {
 			delete_user_meta( $member->ID, $paidkey );
 		}
+
 		$member      = get_userdata( $member->ID );
+		$until = wpt_member_paid_until($member->ID);
+		/*
+		if(empty($until)) {
+			$paidkey = '';
+			$until = '0000-00-00';
+		}
+		else
+			$paidkey = "TIpayment_".get_current_blog_id()."_".$until;
+		$paid_to_ti = (empty($paidkey)) ? '' : get_user_meta($member->ID,$paidkey,true);
+		*/
 		$index       = $member->display_name;
 		$last_stripe = $checked = '';
-		$until       = ( empty( $member->$paidkey ) ) ? '' : $member->$paidkey;
 		$no          = get_user_meta( $member->ID, $norenew, true );
-		$answer      = array();
-		if ( $stripe_on ) {
-			if ( isset( $_GET['debug'] ) ) {
-				printf( '<p>Check transactions for %s %s</p>', $member->ID, $member->display_name );
-			}
-			$tx = rsvpmaker_stripe_latest_transaction_by_user( $member->ID, $renewal_start );
-			if ( $tx ) {
-				$txdate = $tx->date;
-				$amount = $tx->amount;
-				if ( $tx->metadata ) {
-					$metadata = unserialize( $tx->metadata );
-				}
-				$last_stripe = '<p>recent online payment ' . $amount . ' ' . $txdate . ' <span style="color:red">' . $tx->description . '</span> <p>';
-				$answer      = $extractor->get_paid_owed( $amount, $txdate, $until );
-			}
+		if ( isset( $_GET['debug'] ) ) {
+			printf( '<p>Check transactions for %s %s</p>', $member->ID, $member->display_name );
 		}
-		if ( $until ) { // add label after comparison above in get_paid_owed
-			$until = 'Paid until: ' . $until;
+		$tx = rsvpmaker_stripe_latest_transaction_by_user( $member->ID, $renewal_start );
+		if ( $tx ) {
+			$txdate = $tx->date;
+			$amount = $tx->amount;
+			$last_stripe = '<p>recent online payment ' . $amount . ' ' . $txdate . ' <span style="color:red">' . $tx->description . '</span> <p>';
 		}
-		$log  = '<form method="post" action="' . $action . '" class="member_dues_update" id="member_dues_update_' . $member->ID . '"><input type="hidden" name="ti_paid_key" value="' . $ti_paid_key . '" /><input type="hidden" name="norenew" value="' . $norenew . '" /><input type="hidden" name="paidkey" value="' . $paidkey . '" /><input type="hidden" name="member_id" value="' . $member->ID . '"><input type="hidden" name="treasurer_note_key" value="' . $treasurer_note . '" />' . $nonce;
-		$log .= '<h3 id="status' . $member->ID . '">' . $member->display_name . ' ' . $member->user_email . ' ' . $until . ' <span id="confirm' . $member->ID . '"><button>Update</button> </span></h3>' . $last_stripe;
-		if ( ( empty( $member->$paidkey ) || ( $member->$paidkey != $paid_until ) ) && ( empty( $member->$norenew ) || ( $member->$norenew != $paid_until ) ) ) {
-			if ( empty( $answer ) ) {
-				$log .= sprintf( '<p id="data-entry-' . $member->ID . '"><input type="checkbox" name="markpaid[%d]" id="markpaid%d" class="markpaid" value="1" %s /> Mark paid until <input type="text" name="until[%d]" value="%s"> <span id="paidplan%d"><input type="checkbox" name="no[%d]" value="%s"> Not planning to renew</span></p>', $member->ID, $member->ID, $checked, $member->ID, $paid_until, $member->ID, $member->ID, $paid_until );
-			} else {
-				$log  .= '<p id="data-entry-' . $member->ID . '"><input type="checkbox" name="markpaid[' . $member->ID . ']" id="markpaid' . $member->ID . '" checked="checked" value="1" /> Mark paid until <input type="text" name="until[' . $member->ID . ']" value="' . $answer['paid_month'] . '"> Paid to TI <input type="text" name="' . $ti_paid_key . '[' . $member->ID . ']" value="' . $answer['owe_ti'] . '" /> </p>';
-				$index = '00' . $index;
-			}
+
+		$log = '';
+		$renew_options = '';
+		foreach($renewal_dates as $r) {
+			$s = ($r == $until) ? ' selected="selected" ' : '';
+			$renew_options .= sprintf('<option value="%s" %s>%s</option>',$r,$s,$r);
 		}
-		$log  .= ( empty( $no ) ) ? '' : sprintf( '<p id="editline%d">Not planning to renew <input type="checkbox" name="updatevoid" member_id="%d" class="editvoid" value="edit" until="%s" paid_to_ti="%s" /> Edit </p>', $member->ID, $member->ID, $paid_until, $paid_ti, $member->ID );
+		$log  .= '<form method="post" action="' . $action . '" class="member_dues_update" id="member_dues_update_' . $member->ID . '"><input type="hidden" name="norenew" value="' . $norenew . '" /><input type="hidden" name="blog_id" value="' . get_current_blog_id() . '" /><input type="hidden" name="member_id" value="' . $member->ID . '"><input type="hidden" name="treasurer_note_key" value="' . $treasurer_note . '" />' . $nonce;
+		$log .= '<h3 id="status' . $member->ID . '">' . $member->display_name . ' ' . $member->user_email . ' <span id="confirm' . $member->ID . '"><button>Update</button> </span></h3>' . $last_stripe;
+		$log .= sprintf( '<p id="data-entry-' . $member->ID . '"><input type="radio" name="markpaid" id="markpaid%d" class="markpaid" value="1" checked="checked" /> Mark paid until <select name="until">'.$renew_options.'</select> <input type="radio" name="markpaid" id="markpaid%d" class="markpaid" value="0" /> Other update <span id="paidplan%d"><input type="checkbox" name="no[%d]" value="%s"> Not planning to renew</span></p>', $member->ID, $member->ID, $paid_until, $member->ID, $paid_until );
+		//$paidnote = ($paid_to_ti) ? $paid_to_ti.' '.__('recorded as paid for the period ending','rsvpmaker-for-toastmasters').' '.$until : '';
+		//$log .= '<p id="paid-ti-'.$member->ID.'">'.__('Paid to TI','rsvpmaker-for-toastmasters').' <input type="text" name="paid_to_ti" value="'.$paid_to_ti.'"> '.$paidnote.'</p>';
+		$log  .= ( empty( $no ) ) ? '' : sprintf( '<p id="editline%d">Not planning to renew <input type="checkbox" name="updatevoid" member_id="%d" class="editvoid" value="edit" until="%s" paid_to_ti="%s" /> Edit </p>', $member->ID, $member->ID, $paid_until, $paid_to_ti, $member->ID );
 		$log  .= '<p class="enter_notes">Notes <input type="text" name="note">';
 		$notes = get_treasurer_notes( $member->ID, $treasurer_note );
 		if ( ! empty( $notes ) ) {
@@ -6953,6 +7034,10 @@ function wpt_dues_report() {
 		if ( isset( $_GET['checkpaid'] ) ) {
 			$log .= sprintf( '<p>paidkey "%s" paid until "%s"</p>', $member->$paidkey, $paid_until );
 		}
+		if($no)
+			$notrenewing[ $index ] = $log . rsvpmaker_nonce('return').'</form>';
+		$until_sort[$until][$index] = $log.rsvpmaker_nonce('return').'</form>';
+/*
 		if ( ! empty( $member->$paidkey ) && ( $member->$paidkey == $paid_until ) ) {
 			$paid_ti = get_user_meta( $member->ID, $ti_paid_key, true );
 			if ( $paid_ti ) {
@@ -6968,7 +7053,20 @@ function wpt_dues_report() {
 		} else {
 			$logs[ $index ] = $log . rsvpmaker_nonce('return').'</form>';
 		}
+	*/
 	}
+	if(!empty($until_sort)) {
+		ksort($until_sort);
+		foreach($until_sort as $date => $records) {
+			if(empty($date) || ('0000-00-00' == $date))
+				$date = '?';
+			printf('<h1>Paid until: %s</h1>',$date);
+			foreach($records as $record) {
+				echo $record;
+			}
+		} 
+	}
+
 	if ( ! empty( $logs ) ) {
 		ksort( $logs );
 		echo '<div style="padding: 5px; border: medium solid red">';
@@ -6986,23 +7084,57 @@ function wpt_dues_report() {
 		ksort( $notrenewing );
 		echo '<div style="padding: 5px; border: medium solid gray; margin-top: 20px;">';
 		printf( '<h3>Not Planning to Renew (%s)</h3>%s', sizeof( $notrenewing ), implode( "\n", $notrenewing ) );
+		echo '</div>';
 	}
+
+?>
+<h3 id="manual_payment_dues">Record Dues Payment</h3>
+<form method="post" action="<?php echo admin_url('admin.php?page=wpt_dues_report'); ?> ">
+<p>Amount <input type="text" name="manual_payment"> Description <input type="text" name="description" value="Dues">
+<?php 
+echo __('for','rsvpmaker-for-toastmasters').' '.awe_user_dropdown('user_id',0,true,'').' ';
+$renew_options = '';
+foreach($renewal_dates as $r) {
+	$renew_options .= sprintf('<option value="%s">%s</option>',$r,$r);
+}
+printf('until <select name="until">%s</select>',$renew_options);
+rsvpmaker_nonce();
+submit_button(); ?>
+</form>
+<h3 id="manual_payment_other">Other Payment</h3>
+<form method="post" action="<?php echo admin_url('admin.php?page=wpt_dues_report'); ?> ">
+<p>Amount <input type="text" name="manual_payment"> Description <input type="text" name="description" value="">
+<?php 
+echo __('from','rsvpmaker-for-toastmasters').' '.'<input type="text" name="name" >';
+rsvpmaker_nonce();
+submit_button(); ?>
+</form>
+
+<?php
 
 }//end wpt_dues_report()
 
+function wpt_member_paid_until($member_id) {
+	global $wpdb;
+	$until = get_user_meta($member_id,'paid_until_' . get_current_blog_id(),true);
+	if(strpos($until,'/'))
+	{
+		$until = date('Y-m-d',strtotime($until));
+	}
+	if(empty($until)) {
+		$lookup = "TIpayment_".get_current_blog_id().'_';
+		$sql = "SELECT meta_key FROM $wpdb->usermeta WHERE user_id=$member_id AND meta_key LIKE '$lookup%' ORDER BY umeta_id ";
+		$key = $wpdb->get_var($sql);
+		$until = str_replace($lookup,'',$key);
+	}
+	return $until;
+}
+
 function wpt_dues_reminders() {
 	global $current_user;
-	$month = (int) date( 'n' );
-	$year  = (int) date( 'Y' );
-	if ( $month < 5 ) {
-		$paid_until    = '9/30/' . $year;
-		$ti_paid_key   = 'TIpayment_' . get_current_blog_id() . '_' . $year . '-09-30';
-		$renewal_start = date( 'Y' ) . '-01-01 00:00:00';
-	} else {
-		$paid_until    = '3/31/' . $year++;
-		$ti_paid_key   = 'TIpayment_' . get_current_blog_id() . '_' . $year . '-03-31';
-		$renewal_start = date( 'Y' ) . '-07-01 00:00:00';
-	}
+	$renewal_dates = wpt_renewal_dates();
+	$earliest = strtotime($renewal_dates[0]);
+	$now = time();
 	$paidkey           = 'paid_until_' . get_current_blog_id();
 	$norenew           = 'no_renew_' . get_current_blog_id();
 	$members           = get_club_members();
@@ -7014,35 +7146,45 @@ function wpt_dues_reminders() {
 	foreach ( $members as $member ) {
 		$member = get_userdata( $member->ID );
 		$index  = $member->display_name;
-		$until  = ( empty( $member->$paidkey ) ) ? '' : 'Paid until: ' . $member->$paidkey;
-		$no     = get_user_meta( $member->ID, $norenew, true );
-		if ( ( empty( $member->$paidkey ) || ( $member->$paidkey != $paid_until ) ) && ( empty( $member->$norenew ) || ( $member->$norenew != $paid_until ) ) ) {
-			$phones = '';
-			if ( ! empty( $member->home_phone ) ) {
-				$phones .= ' Home Phone: ' . $member->home_phone;
+		$until  = wpt_member_paid_until($member->ID);
+		if(empty($until))
+			{
+				$until = '0000-00-00';
+				$t = 0;
 			}
-			if ( ! empty( $member->mobile_phone ) ) {
-				$phones .= ' Mobile Phone: ' . $member->mobile_phone;
+		else
+			$t = strtotime($until);
+		$phones = '';
+		if ( ! empty( $member->home_phone ) ) {
+			$phones .= ' Home Phone: ' . $member->home_phone;
+		}
+		if ( ! empty( $member->mobile_phone ) ) {
+			$phones .= ' Mobile Phone: ' . $member->mobile_phone;
+		}
+		if ( ! empty( $member->work_phone ) ) {
+			$phones .= ' Work Phone: ' . $member->work_phone;
+		}
+		$phones;
+		$style = ($t < $now) ? ' style="color: red;" ' : '';
+		if(!isset($reminders[$until]))
+			{
+				$reminders[$until] = '';
+				$reminder_emails[$until] = array();
 			}
-			if ( ! empty( $member->work_phone ) ) {
-				$phones .= ' Work Phone: ' . $member->work_phone;
-			}
-			$reminder         .= sprintf( '<p>Reminder: %s <a target="_blank" href="mailto:%s?subject=%s&body=%s">%s</a> %s</p> ', $member->display_name, $member->user_email, $reminder_subject, $reminder_body, $member->user_email, $phones );
-			$reminder_emails[] = $member->user_email;
-		} elseif ( ! $no ) {
-			$thanks .= sprintf( '<p>Thank you: %s <a target="_blank" href="mailto:%s?subject=%s">%s</a></p> ', $member->display_name, $member->user_email, $thank_you_subject, $member->user_email );
+		$reminders[$until] .= sprintf( '<p %s >Reminder: %s <a target="_blank" href="mailto:%s?subject=%s&body=%s">%s</a> %s</p> ', $style , $member->display_name, $member->user_email, $reminder_subject, $reminder_body, $member->user_email, $phones );
+		$reminder_emails[$until][] = $member->user_email;
+	}
+	$output = '';
+	if ( $reminders ) {
+		ksort($reminders);
+		ksort($reminder_emails);
+		foreach($reminders as $until => $reminder) {
+			$remindernote = ($until == '0000-00-00') ? '' : ' (Paid until '.$until.')';
+			$output .= '<h2>Reminders '.$remindernote.'</h2>' . $reminder;
+			$output .= sprintf( '<p><a target="_blank" href="mailto:%s?bcc=%s&subject=%s&body=%s">Email All</a></p> ', $current_user->user_email, implode( ',', $reminder_emails[$until] ), $reminder_subject, $reminder_body );
 		}
 	}
-
-	if ( $reminder ) {
-		$reminder  = '<h2>Reminders</h2>' . $reminder;
-		$reminder .= '<h3>Reminder Mass Email<h3>' . sprintf( '<p><a target="_blank" href="mailto:%s?bcc=%s&subject=%s&body=%s">Email All</a></p> ', $current_user->user_email, implode( ',', $reminder_emails ), $reminder_subject, $reminder_body, $member->user_email, $phones );
-	}
-	if ( $thanks ) {
-		$thanks = '<h2>Thank You</h2>' . $thanks;
-	}
-
-	return $reminder . $thanks;
+	return $output;
 }
 
 function wpt_stripe_transactions() {
@@ -7059,8 +7201,8 @@ function wpt_stripe_transactions() {
 			$th     .= '<th>' . $column . '</th>';
 			$export .= $column . ',';
 		}
-		$th     .= '<th>paid ti</th></tr>';
-		$export .= "paid ti\n";
+		//$th     .= '<th>paid ti</th></tr>';
+		//$export .= "paid ti\n";
 		foreach ( $transactions as $transaction ) {
 			$line        = '';
 			$td         .= '<tr>';
@@ -7070,17 +7212,6 @@ function wpt_stripe_transactions() {
 				$metadata                = unserialize( $transaction['metadata'] );
 				$transaction['metadata'] = var_export( $metadata, true );
 			}
-
-			$t     = strtotime( $transaction['date'] );
-			$month = (int) date( 'n', $t );
-			$year  = (int) date( 'Y', $t );
-			if ( $month < 8 ) {
-				$ti_paid_key = 'TIpayment_' . get_current_blog_id() . '_' . $year . '-09-30';
-			} else {
-				$year++;
-				$ti_paid_key = 'TIpayment_' . get_current_blog_id() . '_' . $year . '-03-31';
-			}
-			$paid_ti = get_user_meta( $transaction['user_id'], $ti_paid_key, true );
 
 			foreach ( $transaction as $column => $value ) {
 				if ( ( $column == 'id' ) || ( $column == 'metadata' ) || ( $column == 'status' ) || ( $column == 'transaction_id' ) || ( $column == 'user_id' ) ) {
@@ -7095,9 +7226,7 @@ function wpt_stripe_transactions() {
 				}
 				$line .= $value . ',';
 			}
-			$line   .= "$paid_ti";
 			$lines[] = $line;
-			$td     .= "<td>$paid_ti</td></tr>\n";
 		}
 		krsort( $lines );
 		$export .= implode( "\n", $lines );

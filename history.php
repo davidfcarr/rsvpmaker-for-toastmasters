@@ -505,6 +505,37 @@ foreach($results as $row) {
 update_option('wp4history_start',$startfrom);
 }
 
+function former_member_history($user_id,$old_id = 0) {
+global $wpdb;
+$history_table = $wpdb->base_prefix.'tm_history';
+$sql     = "SELECT * FROM `$wpdb->usermeta` WHERE meta_key LIKE 'tm|%' AND user_id=$user_id";
+$results = $wpdb->get_results( $sql );
+$function = 'former_member_history';
+foreach($results as $row) {
+    $startfrom = $row->umeta_id;
+    $user_id = $row->user_id;
+    $key_array  = explode( '|', $row->meta_key );
+    $role       = $key_array[1];
+    $timestamp = $key_array[2];
+    $rolecount  = $key_array[3];
+    $domain     = $key_array[4];
+    $post_id    = $key_array[5];
+    $manual = $project_key = $title = $intro = '';
+    if(strpos($role,'peaker'))
+    {
+    $roledata = unserialize( $row->meta_value );
+    $manual   = ( empty( $roledata['manual'] ) ) ? 'Other' : $roledata['manual'];
+    $project_key = (empty( $roledata['project'] ) ) ? '' : $roledata['project'];
+    $project = (empty( $roledata['project'] ) ) ? '' : get_project_text( $roledata['project'] );
+    $title = (empty($roledata['title'])) ? '' : $roledata['title'];
+    $intro = (empty($roledata['intro'])) ? '' : $roledata['intro'];
+    }
+    wp4t_record_history_to_table($user_id, '_'.$role.'_'.$rolecount, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain);
+    if($old_id && ($old_id != $user_id))
+        $wpdb->query("UPDATE $history_table SET user_id=$user_id WHERE user_id=$old_id");
+}//foreach usermeta
+
+}
 /*
 add_member_speech
 post_user_role_archive

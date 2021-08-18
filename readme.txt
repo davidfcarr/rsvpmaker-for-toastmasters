@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.8
-Stable tag: 4.7.2
+Stable tag: 4.7.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,8 @@ https://www.youtube.com/watch?v=D1E9GMwnImM
 As an alternative to other club web software options that include a custom content management system, this WordPress-based solution allows website operators to take advantage of the same technology that powers major publishing websites (newyorker.com and time.com, for example) and countless blogs, small business websites, and online marketing campaigns. That makes it a more powerful tool for recruiting new members and showcasing what makes your club special.
 
 Part of a broader WordPress for Toastmasters solution, this plugin lets members sign up for roles on the website. Meeting organizers can also assign members to roles. In addition, club leaders can track member participation and performance through the administrator's dashboard.
+
+Dues collection and dues tracking are enabled through integration with the Stripe and PayPal online payment services.
 
 The related [Lectern WordPress theme](https://wordpress.org/themes/lectern/) makes it easy to meet Toastmasters International branding guidelines with your WordPress website, adding the logo and the required legal disclaimers.
 
@@ -62,6 +64,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 4.7.5 =
+
+* Updated dues collection / online payment functions
+
+= 4.7.3 =
+
+* French translation - early stage
+* Date routine fixes
 
 = 4.7.1 =
 

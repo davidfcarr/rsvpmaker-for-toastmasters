@@ -215,7 +215,7 @@ function clean_role( $role ) {
 function future_toastmaster_meetings( $limit = 10 ) {
 	global $wpdb;
 	$event_table = $wpdb->prefix.'rsvpmaker_event';
-	$sql = "SELECT *, date as datetime from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND ts_end > ".time()." AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
+	$sql = "SELECT *, date as datetime, ID as postID from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND ts_end > ".time()." AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
 	return $wpdb->get_results($sql);
 }
 
@@ -303,6 +303,7 @@ function wpt_multiple_blocks_same( $post_id, $post_after, $post_before ) {
 	$content    = $post_after->post_content;
 	$newcontent = '';
 	$do_update  = false;
+	$uids = array();
 
 	$newcontent = '';
 	if ( strpos( $content, 'wp:wp4toastmasters/role' ) ) {
@@ -314,7 +315,7 @@ function wpt_multiple_blocks_same( $post_id, $post_after, $post_before ) {
 				if ( empty( $atts->count ) ) {
 					$atts->count = 1;
 				}
-				$atts->start               = ( empty( $next_start[ $atts->role ] ) ) ? 1 : $next_start[ $atts->role ];
+				$atts->start               = ( empty( $next_start[ $atts->role ] ) || ('custom' == $atts->role) ) ? 1 : $next_start[ $atts->role ];
 				$next_start[ $atts->role ] = $atts->start + $atts->count;
 				$line                      = preg_replace( '/{"role":[^}]+}/', json_encode( $atts ), $line );
 			} elseif ( strpos( $line, '"uid":"' ) ) {
@@ -923,7 +924,7 @@ function wpt_blocks_to_data( $content, $include_backup = true, $aggregate = fals
 
 				}
 
-				if ( ! empty( $thisdata['backup'] ) && $include_backup ) {
+				if ( ! empty( $thisdata['backup'] ) && $include_backup && !empty($thisdata['role']) ) {
 
 					$key = $backup['role'] = 'Backup ' . $thisdata['role'];
 
@@ -934,8 +935,6 @@ function wpt_blocks_to_data( $content, $include_backup = true, $aggregate = fals
 				}
 			}
 		}
-
-		// printf('<pre>%s</pre>',var_export($data,true));
 
 		return $data;
 
@@ -1618,4 +1617,10 @@ function wp4t_name_index($user) {
 	else
 		$name = $user->display_name.$user->ID;
 	return preg_replace('/[^a-z0-9]/','',strtolower($name));
+}
+
+//for integration with WP PayPal plugin
+add_action('wp_paypal_ipn_processed','wp4t_wp_paypal_ipn_processed');
+function wp4t_wp_paypal_ipn_processed($response) {
+	mail('david@carrcommunications.com','paypal IPN Toastmasters',var_export($response,true));
 }

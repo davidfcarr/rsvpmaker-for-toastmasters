@@ -1,13 +1,21 @@
 <?php
+//do_action('rsvpmaker_paypal_record_payment',$response,$_REQUEST);
+add_action('rsvpmaker_paypal_record_payment',10,2);
+function wp4t_paypal_application_payment($response,$get) {
+	rsvpmaker_debug_log($response,'wp4t_paypal_application_payment');
+	rsvpmaker_debug_log($get,'wp4t_paypal_application_payment http request');
+	global $wpdb;
+}
 
 function tm_member_application( $atts ) {
+	global $rsvp_options;
 	rsvpmaker_fix_timezone();
 	if ( isset( $_GET['rsvpstripeconfirm'] ) ) {
 		return; // let rsvpmaker show payment message
 	}
 
-	if ( isset( $_GET['pay'] ) ) {
-		return pay_later();
+	if ( isset( $_GET['paydues'] ) ) {
+		return paydues_later();
 	}
 
 	global $post;
@@ -16,6 +24,18 @@ function tm_member_application( $atts ) {
 	}
 
 	$notifications = get_option( 'tm_application_notifications' );
+	$titles = get_option('tm_application_titles');
+	if(!empty($titles))
+		{
+			foreach($titles as $title)
+			{
+				$officer_email = toastmasters_officer_email_by_title($title);
+				if(!empty($notifications) && !empty($officer_email))
+					$notifications .= ", ";
+				if(!empty($officer_email))
+					$notifications .= $officer_email;
+			}
+		}
 	if ( empty( $notifications ) ) {
 		$notifications = get_option( 'admin_email' );
 	}
@@ -50,15 +70,26 @@ label {
 		foreach ( $_POST as $slug => $value ) {
 			update_post_meta( $post_id, $slug, sanitize_text_field($value) );
 		}
-		$public = get_option( 'rsvpmaker_stripe_pk' );
-		if ( ! empty( $public ) ) {
-			$vars['amount'] = get_post_meta( $post->ID, 'tm_application_fee', true );// fetch from page for form
-			update_post_meta( $post_id, 'tm_application_fee', $vars['amount'] );// record to app document
-			$vars['description'] = 'Toastmasters Dues Payment';
-			$vars['name']        = sanitize_text_field($_POST['first_name'] . ' ' . $_POST['last_name']);
-			$vars['email']       = sanitize_text_field($_POST['user_email']);
-			$vars['tracking']    = 'tmapplication' . $post_id;
+		$chosen_gateway = get_rsvpmaker_payment_gateway ();
+		$vars['amount'] = get_post_meta( $post->ID, 'tm_application_fee', true );// fetch from page for form
+		update_post_meta( $post_id, 'tm_application_fee', $vars['amount'] );// record to app document
+		$until = get_post_meta( $post->ID, 'tm_application_until', true );// fetch from page for form
+		update_post_meta( $post_id, 'tm_application_until', $until );// record to app document
+		$vars['name']        = sanitize_text_field($_POST['first_name'] . ' ' . $_POST['last_name']);
+		$vars['email']       = sanitize_text_field($_POST['user_email']);
+		$vars['tracking']    = 'tmapplication' . $post_id;
+		$payprompt = '';
+		$vars['description'] = 'Toastmasters Application '.$post_id.' '.$vars['name'];
+		$vars['name']        = sanitize_text_field($_POST['first_name'] . ' ' . $_POST['last_name']);
+		$vars['email']       = sanitize_text_field($_POST['user_email']);
+		$vars['tracking']    = 'tmapplication' . $post_id;
+		if ( ('Stripe' == $chosen_gateway ) || strpos($chosen_gateway,'Stripe') ) {
 			$payprompt           = rsvpmaker_stripe_form( $vars );
+		}
+		if ( ('PayPal' == $chosen_gateway ) || strpos($chosen_gateway,'PayPal') ) {
+			if(!empty($payprompt))
+				$payprompt .= '<p>Or pay with PayPal</p>';
+			$payprompt .= rsvpmaker_paypal_button( $vars['amount'], $rsvp_options['paypal_currency'], $vars['description'], array('tracking_key' => 'tm_application', 'tracking_value' => $post_id) );
 		}
 
 		$mail['subject']  = 'PENDING ' . $newpost['post_title'];
@@ -142,8 +173,13 @@ function tm_application_fee() {
 			$feetext .= '<p>(Paid member of another club requesting transfer.)</p>';
 		}
 		$feetext .= sprintf( '<p>New member fee (US$20): <strong>%s</strong><br /><em>Paid only by new members, this fee covers the cost of the first education path, online copy of The Navigator and processing</em></p>', number_format( $new, 2 ) );
+		$renewal_dates = wpt_renewal_dates();
+		if($ti_dues_calc > 45)
+			array_shift($renewal_dates);
+		$renew = array_shift($renewal_dates);
+		//printf('<p>Pay Until: %s</p>',$renew);
+		update_post_meta($post->ID,'tm_application_until',$renew);
 		$feetext .= sprintf( '<p>Total Payment to Toastmasters International: %s</p>', number_format( $ti_dues_calc + $new, 2 ) );
-
 		$feetext .= sprintf( '<p>Club Dues: <strong>%s</strong></p>', number_format( $club_dues_calc, 2 ) );
 		$feetext .= sprintf( '<p>Club New Member Fee: <strong>%s</strong></p>', number_format( $club_new, 2 ) );
 		$feetext .= sprintf( '<p>Total Payment to Club: <strong>%s</strong></p>', number_format( $club_dues_calc + $club_new, 2 ) );
@@ -154,7 +190,6 @@ function tm_application_fee() {
 	} else {
 		echo get_post_meta( $post->ID, 'tm_application_feetext', true );
 	}
-
 }
 
 function tm_application_form_start( $atts ) {
@@ -263,6 +298,7 @@ function tm_application_form_choice( $slug, $choices ) {
 }
 
 function member_application_settings( $action = '' ) {
+	wpt_dues_navigation();
 	echo '<div style="width: 800px;"><div style="float: right;"><a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/"><button>Setup Instructions</button></a></div>';
 	echo '<h1>Toastmasters Dues Schedule and Application Form</h1></div>';
 
@@ -281,6 +317,7 @@ function member_application_settings( $action = '' ) {
 		update_option( 'club_dues', array_map('sanitize_text_field',$_POST['club_dues']) );
 		update_option( 'club_new_member_fee', sanitize_text_field($_POST['club_new_member_fee']) );
 		update_option( 'tm_application_notifications', sanitize_text_field($_POST['tm_application_notifications']) );
+		update_option( 'tm_application_titles', $_POST['tm_application_titles'] );
 		if ( isset( $_POST['rsvpmaker_stripe_pk'] ) ) {
 			update_option( 'rsvpmaker_stripe_pk', sanitize_text_field($_POST['rsvpmaker_stripe_pk']) );
 			update_option( 'rsvpmaker_stripe_sk', sanitize_text_field($_POST['rsvpmaker_stripe_sk']) );
@@ -317,7 +354,7 @@ function member_application_settings( $action = '' ) {
 			$renew                = $ti_dues[3] + $club_dues[3];
 			$page['post_title']   = 'Dues Renewal';
 			$page['post_name']    = 'renew';
-			$page['post_content'] = '<!-- wp:rsvpmaker/stripecharge {"description":"Dues Renewal","showdescription":"yes","amount":"' . $renew . '"} /-->';
+			$page['post_content'] = '<!-- wp:wp4toastmasters/duesrenewal /-->';
 			$page['post_status']  = 'publish';
 			$page['post_type']    = 'page';
 			$stripepage           = wp_insert_post( $page );
@@ -327,6 +364,9 @@ function member_application_settings( $action = '' ) {
 	}
 
 	$notifications = get_option( 'tm_application_notifications' );
+	$titles = get_option( 'tm_application_titles' );
+	if(empty($titles))
+		$titles = array();
 	if ( empty( $notifications ) ) {
 		$notifications = get_option( 'admin_email' );
 	}
@@ -343,45 +383,69 @@ function member_application_settings( $action = '' ) {
 	<?php
 	foreach ( $months as $i => $month ) {
 		?>
-<tr><td><?php echo esc_attr($month); ?></td><td><input type="text" name="ti_dues[<?php echo $i; ?>]" value="<?php echo esc_attr($ti_dues[ $i ]); ?>"  /></td><td><input type="text" name="club_dues[<?php echo $i; ?>]" value="<?php echo esc_attr($club_dues[ $i ]); ?>"  /></td></tr>
+<tr><td><?php echo esc_attr($month); ?></td><td><input type="text" name="ti_dues[<?php echo $i; ?>]" id="ti_dues<?php echo $i; ?>" value="<?php echo esc_attr($ti_dues[ $i ]); ?>"  /></td><td><input type="text" name="club_dues[<?php echo $i; ?>]" id="club_dues<?php echo $i; ?>"" value="<?php echo esc_attr($club_dues[ $i ]); ?>"  /></td></tr>
 		<?php
 	}
 	?>
 </table>
 <p><strong>Club New Member Fee:</strong><br /><input type="text" name="club_new_member_fee" value="<?php echo esc_attr(get_option( 'club_new_member_fee' )); ?>" /> </p>
+<p><strong>Renewal Fee:</strong><br>
+<?php
+if(isset($_POST['tm_renew6_type'])) {
+	$type = sanitize_text_field($_POST['tm_renew6_type']);
+	if($type == 'auto')
+		$tm_6momthfee = sanitize_text_field($_POST['tm_renew6_auto']);
+	else
+		$tm_6momthfee = sanitize_text_field($_POST['tm_6monthfee']);
+	update_option('tm_renew6_type',$type);
+	update_option('tm_6monthfee',$tm_6momthfee);
+	update_option("tm_renew12",sanitize_text_field($_POST["tm_renew12"]));
+}
+$tm_renew6_type = get_option('tm_renew6_type') ?>
+<input type="radio" name="tm_renew6_type" value="auto" <?php if(empty($tm_renew6_type) || ($tm_renew6_type == 'auto') ) echo ' checked="checked" ' ?> ><input type="hidden" name="tm_renew6_auto" id="tm_renew6_auto" value=""> Set the six month renewal fee to <strong><span id="renew6"></span></strong>, based on the schedule above.<br>
+<input type="radio" name="tm_renew6_type" value="manual" <?php if($tm_renew6_type == 'manual') echo ' checked="checked" ' ?>> Set the six month renewal fee to <input type="text" name="tm_6monthfee" value="<?php echo esc_attr(get_option("tm_6monthfee")) ?>" ><br>
+Optional: Offer a one-year renewal with a fee of <input type="text" name="tm_renew12" value="<?php echo esc_attr(get_option("tm_renew12")); ?>" >
+</p>
 <p><strong>Email Approval Notifications To:</strong><br /><input style="width: 90%" type="text" name="tm_application_notifications" value="<?php echo esc_attr($notifications); ?>" /><br />
 Multiple email addresses may be entered, separated by a comma.</p>
 	<?php
-	$public = get_option( 'rsvpmaker_stripe_pk' );
-	$secret = get_option( 'rsvpmaker_stripe_sk' );
-	if ( empty( $public ) || empty( $secret ) ) {
-		?>
-<h3>Stripe Online Payment Service</h3>
-<p>To enable online payments, obtain these credentials from stripe.com. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/online-payments-for-dues-and-events/">Learn How</a></p>
-<p>Publishable Key:<br />
-	<input name="rsvpmaker_stripe_pk" value="<?php echo esc_attr(get_option( 'rsvpmaker_stripe_pk' )); ?>"></p>
-<p>Secret Key:<br />
-	<input name="rsvpmaker_stripe_sk" value="<?php echo esc_attr(get_option( 'rsvpmaker_stripe_sk' )); ?>"></p>
-		<?php
-		printf( '<p>Additional options, including test or "sandbox" payment key setup, in <a href="%s">RSVPMaker settings</a>.</p>', admin_url( 'https://toastmost.org/wp-admin/options-general.php?page=rsvpmaker-admin.php&tab=payments' ) );
+$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+if($wp4toastmasters_officer_titles)
+{
+	echo '<p>'.__('Notification by Title','rsvpmaker-for-toastmasters').'</p>';
+	foreach($wp4toastmasters_officer_titles as $title) {
+		if(empty($title))
+			continue;
+		$checked = '';
+		$email = toastmasters_officer_email_by_title( $title );
+		if(in_array($title,$titles) || ('Treasurer' == $title) || strpos($title,'Membership') || (__('Treasurer','rsvpmaker-for-toastmasters') == $title)  || strpos($title,__('Membership','rsvpmaker-for-toastmasters')) )
+			$checked = ' checked="checked" ';
+		printf('<div><input type="checkbox" name="tm_application_titles[]" value="%s" %s>%s (%s)</div>',$title,$checked,$title,$email);
+	}	
+}
+printf('<h2></h2>',__('Online Payments Services','rsvpmaker-for-toastmasters'));
+$chosen_gateway = get_rsvpmaker_payment_gateway ();
+if(empty($chosen_gateway) || ('Cash or Custom' == $chosen_gateway))
+	printf('<p>%s</p>',__('Not configured'));
+else
+	printf('<p>%s %s</p>',__('Configured to use','rsvpmaker-for-toastmasters'),$chosen_gateway);
+printf('<p><a href="%s">%s</a></p>',admin_url('options-general.php?page=rsvpmaker-admin.php&tab=payments'),__('Configure online payment service (Stripe or PayPal)','rsvpmaker-for-toastmasters'));
+
+	$renew_page = get_option( 'ti_dues_renewal_page' );
+	if ( $renew_page ) {
+		printf( '<p><a href="%s">Edit page</a> with dues renewal button.</p>', admin_url( 'post.php?post=' . esc_attr($renew_page) . '&action=edit' ) );
 	} else {
-		printf( '<p><strong>Stripe Online Payments: Enabled</strong> <a href="%s">RSVPMaker settings</a>.</p>', admin_url( 'options-general.php?page=rsvpmaker-admin.php&tab=payments' ) );
-		$stripepage = get_option( 'ti_dues_renewal_page' );
-		if ( $stripepage ) {
-			printf( '<p><a href="%s">Edit page</a> with dues renewal button.</p>', admin_url( 'post.php?post=' . esc_attr($stripepage) . '&action=edit' ) );
-		} else {
-			$sql     = "SELECT * FROM $wpdb->posts WHERE post_status='publish' AND post_content LIKE '%wp:rsvpmaker/stripecharge%' ORDER BY ID DESC";
-			$pages   = $wpdb->get_results( $sql );
-			$create  = '<p><input type="radio" name="ti_dues_renewal_page" value="create" ';
-			$create .= ( empty( $pages ) ) ? ' checked="checked" >' : '>';
-			echo $create;
-			echo ' Create dues renewal page</p>';
-			echo '<p><input type="radio" name="ti_dues_renewal_page" value="" > No thanks</p>';
-			if ( $pages ) {
-				foreach ( $pages as $index => $page ) {
-					$checked = ( $index == 0 ) ? ' checked="checked" ' : '';
-					printf( '<p><input type="radio" name="ti_dues_renewal_page" value="%d" %s > Existing page: %s</p>', intval($page->ID), $checked, esc_html($page->post_title) );
-				}
+		$sql     = "SELECT * FROM $wpdb->posts WHERE post_status='publish' AND post_content LIKE '%wp:wp4toastmasters/duesrenewal%' ORDER BY ID DESC";
+		$pages   = $wpdb->get_results( $sql );
+		$create  = '<p><input type="radio" name="ti_dues_renewal_page" value="create" ';
+		$create .= ( empty( $pages ) ) ? ' checked="checked" >' : '>';
+		echo $create;
+		echo ' Create dues renewal page</p>';
+		echo '<p><input type="radio" name="ti_dues_renewal_page" value="" > No thanks</p>';
+		if ( $pages ) {
+			foreach ( $pages as $index => $page ) {
+				$checked = ( $index == 0 ) ? ' checked="checked" ' : '';
+				printf( '<p><input type="radio" name="ti_dues_renewal_page" value="%d" %s > Existing page: %s</p>', intval($page->ID), $checked, esc_html($page->post_title) );
 			}
 		}
 	}
@@ -397,6 +461,19 @@ Multiple email addresses may be entered, separated by a comma.</p>
 </form>
 	<?php echo club_fee_schedule(); ?>
 <p>To display this table on the website, use the shortcode [club_fee_schedule] as a placeholder in the text of a page or blog post.</p>
+<script>
+jQuery( document ).ready(
+	function($) {
+		var formatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+		var renew = parseFloat($('#ti_dues3').val()) + parseFloat($('#club_dues3').val());
+		$('#renew6').html(formatter.format(renew));
+		$('#tm_renew6_auto').val(renew);
+	}
+);	
+</script>
 	<?php
 }
 
@@ -423,6 +500,17 @@ function verification_by_officer() {
 
 function check_application_payment( $app_id ) {
 	global $wpdb;
+	$money = $wpdb->prefix.'rsvpmaker_money';
+	$row = $wpdb->get_row("select * from $money WHERE description='Toastmasters Application $app_id' ");
+	if($row)
+	{
+		if(empty($row->name)) {
+			$name = get_post_meta( $app_id, 'first_name', true ) . ' ' . get_post_meta( $app_id, 'last_name', true );
+			$sql = $wpdb->prepare("UPDATE $money SET name=%s WHERE id=%d ",$name,$row->id);
+			$wpdb->query($sql);
+		}
+		return sprintf('<span style="color: green; font-weight: bold;">Paid: %s Fee: %s (%s)</span>',$row->amount,$row->fee,$row->status);
+	}
 	$key      = 'tmapplication' . $app_id;
 	$sql      = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='$key' ";
 	$paid     = $wpdb->get_row( $sql );
@@ -482,6 +570,9 @@ width: 150px;
 		$mail['fromname'] = $current_user->display_name;
 		$mail['from']     = $current_user->user_email;
 		$notifications    = get_option( 'tm_application_notifications' );
+		$titles = get_option('tm_application_titles');
+		if(empty($titles))
+			$titles = array();
 		$n                = explode( ',', $notifications );
 
 		foreach ( $n as $to ) {
@@ -501,6 +592,7 @@ width: 150px;
 		$user['home_phone']      = get_post_meta( $app_id, 'home_phone', true );
 		$user['mobile_phone']    = get_post_meta( $app_id, 'mobile_phone', true );
 		$user['toastmasters_id'] = get_post_meta( $app_id, 'toastmasters_id', true );
+		$user['application_id'] = $app_id;
 		$member_factory->check( $user );
 		$member_factory->show_prompts();
 	} elseif ( ! empty( $_POST['notes'] ) ) {
@@ -521,6 +613,7 @@ width: 150px;
 		$user['home_phone']      = get_post_meta( $app_id, 'home_phone', true );
 		$user['mobile_phone']    = get_post_meta( $app_id, 'mobile_phone', true );
 		$user['toastmasters_id'] = get_post_meta( $app_id, 'toastmasters_id', true );
+		$user['application_id'] = $app_id;
 		$member_factory->check( $user );
 		$member_factory->show_prompts();
 	}
@@ -592,7 +685,7 @@ width: 150px;
 			} else {
 				$verified = check_application_payment( $post->ID );
 			}
-			echo esc_html($log);
+			//echo esc_html($log);
 			printf( '<p><a href="%s">%s</a> %s %s</p>', admin_url( 'admin.php?page=member_application_approval&app=' . $post->ID ), $post->post_title, $post->post_modified, $verified );
 		}
 		echo '<div>';
@@ -684,3 +777,76 @@ function tm_application_menus() {
 	add_submenu_page( 'member_application_approval', 'Add File or Link', 'Add File or Link', 'edit_users', 'member_application_upload', 'member_application_upload' );
 }
 add_action( 'admin_menu', 'tm_application_menus' );
+
+add_shortcode('wp4t_dues_renewal','wp4t_dues_renewal');
+
+function wp4t_dues_renewal($atts) {
+	global $current_user;
+	$payprompt = '';
+	$renew6 = get_option('tm_6monthfee');
+	$renew12 = get_option("tm_renew12");
+	if(empty($renew6))
+	{
+		$ti_dues             = get_option( 'ti_dues' );
+		$club_dues           = get_option( 'club_dues' );
+		$renew6 = $ti_dues[3] + $club_dues[3];
+	}
+	if(isset($atts['amount']) && !empty($atts['amount']))
+		$vars['amount'] = $atts['amount'];
+	elseif(isset($_GET['renew12']) && $renew12)
+		$vars['amount'] = $renew12;
+	elseif($renew6) {
+		$vars['amount'] = $renew6;
+	}
+	else 
+		return '<p>Dues not set</p>';
+
+	if((is_user_logged_in() && is_club_member()) || isset($_GET['user_id'])) {
+		$user_id = 0;
+		if(isset($_GET['user_id']))
+		{
+			$user_id = intval($_GET['user_id']);
+			if(!$user_id)
+				return '<p>Invalid user ID</p>';
+		}
+		else
+			$user_id = $current_user->ID;
+		$user = get_userdata($user_id);
+		$vars['name']        = get_member_name($user_id);
+		$vars['email']       = $user->user_email;
+		$vars['description']    = $vars['name'].' Dues Renewal ('.$user_id.')';
+		$chosen_gateway = get_rsvpmaker_payment_gateway ();
+		if ( ('Stripe' == $chosen_gateway ) || strpos($chosen_gateway,'Stripe') ) {
+			$payprompt           = rsvpmaker_stripe_form( $vars );
+		}
+		if ( ('PayPal' == $chosen_gateway ) || strpos($chosen_gateway,'PayPal') ) {
+			if(!empty($payprompt))
+				$payprompt .= '<p>Or pay with PayPal</p>';
+			$payprompt .= rsvpmaker_paypal_button( $vars['amount'], $rsvp_options['paypal_currency'], $vars['description'], array('tracking_key' => 'tm_application', 'tracking_value' => $post_id) );
+		}
+		$rdates = wpt_renewal_dates();
+		$paid_until = wpt_member_paid_until($user_id);
+		$month = date('m');
+		$renewal_months = array('1','2','3','7','8','9');
+		if(empty($paid_until) && in_array($month,$renewal_months))
+			array_shift($rdates);
+		elseif($paid_until == $rdates[0])
+			array_shift($rdates);
+		if(isset($_GET['renew12']))
+			array_shift($rdates);
+
+		update_user_meta($user_id,'tm_renew_until_'.get_current_blog_id(),array_shift($rdates));
+	}
+	$output = $payprompt;
+	$output .= sprintf('<h3>%s: %s</h3>',__('Dues','rsvpmaker-for-toastmasters'),number_format($vars['amount'],2));
+	if($user_id)
+		$output .= sprintf('<h3>%s: %s</h3>',__('Selected Member','rsvpmaker-for-toastmasters'),$vars['name']);
+	else {
+		$login = wp_login_url( get_permalink() );
+		$output .= '<p>'.__('<a href="'.$login.'">Login</a> or select your name from the member list','rsvpmaker-for-toastmasters').'</p>';
+	}
+	$r12 = ($renew12) ? '<div><input type="checkbox" name="renew12" value="1" '.( (isset($_GET['renew12'])) ? 'checked="checked"' : '' ).'> '.__('Option: renew for 12 months, not 6. Fee:','rsvpmaker-for-toastmasters'). ' $'.$renew12.'</div>' : '';
+
+	$output .= sprintf('<form method="get" action="%s" >%s %s %s <button>%s</button></form>',get_permalink(), __('Paying Dues For','rsvpmaker-for-toastmasters'),awe_user_dropdown('user_id',$user_id,true),$r12,__('Submit','rsvpmaker-for-toastmasters'));
+	return $output;
+}
