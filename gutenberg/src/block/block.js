@@ -8,6 +8,7 @@
 //  Import CSS.
 import './style.scss';
 import './editor.scss';
+import './agenda_context.js';
 
 const { __ } = wp.i18n; // Import __() from wp.i18n
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
@@ -84,11 +85,15 @@ attributes: {
 			type: 'int',
 			default: agenda,
 		},
+        show_timing_summary: {
+            type: 'boolean',
+            default: false,
+        },
     },
 
     edit: function( props ) {	
 
-	const { attributes, attributes: { time_allowed }, className, setAttributes, isSelected } = props;
+	const { attributes, attributes: { show_timing_summary, time_allowed }, className, setAttributes, isSelected } = props;
 	var uid = props.attributes.uid;
 	if(!uid)
 		{
@@ -107,7 +112,26 @@ attributes: {
 	multiline=' '
 	onChange={(content) => setAttributes({ content })}
 />
-{isSelected && <div><em>Options: see sidebar</em><ServerSideRender block="wp4toastmasters/agendanoterich2" attributes={ props.attributes } /></div>}
+{isSelected && <div>
+	<p><em>Options: see sidebar</em></p>
+	<ToggleControl
+            label="Show Timing Summary"
+            help={
+                show_timing_summary
+                    ? 'Show'
+                    : 'Do not show'
+            }
+            checked={ show_timing_summary }
+			onChange={ (show_timing_summary) => setAttributes( {show_timing_summary} ) }
+		/>
+
+{show_timing_summary && 
+	<ServerSideRender
+block="wp4toastmasters/agendanoterich2"
+attributes={ props.attributes }
+/>}
+
+</div>}
 </div>
 </Fragment>
 );
@@ -212,20 +236,36 @@ attributes: {
             type: 'string',
             default: '',
         },
+        show_timing_summary: {
+            type: 'boolean',
+            default: false,
+        },
     },
 	edit: function( props ) {
-	const { attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected } = props;
+	const { attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup, show_timing_summary }, setAttributes, isSelected } = props;
 
 		return (			
 <Fragment>
 <RoleInspector { ...props } />
 <div className={ props.className }>
 <strong>Toastmasters Role {role} {custom_role}</strong>
-{isSelected && <div><em>Options: see sidebar</em>
+{isSelected && <div><p><em>Options: see sidebar</em></p>
+	<ToggleControl
+            label="Show Timing Summary"
+            help={
+                show_timing_summary
+                    ? 'Show'
+                    : 'Do not show'
+            }
+            checked={ show_timing_summary }
+			onChange={ (show_timing_summary) => setAttributes( {show_timing_summary} ) }
+		/>
+{show_timing_summary && 
 	<ServerSideRender
 block="wp4toastmasters/role"
 attributes={ props.attributes }
-/></div>
+/>}
+</div>
 }
 </div>
 </Fragment>
@@ -268,10 +308,14 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
 			type: 'int',
 			default: 0,
 		},
+		show_timing_summary: {
+            type: 'boolean',
+            default: false,
+        },
     },
 	edit: function( props ) {
 
-	const { attributes: { editable, inline }, setAttributes, isSelected } = props;
+	const { attributes: { editable, show_timing_summary }, setAttributes, isSelected } = props;
 
 	var uid = props.attributes.uid;
 	if(!uid)
@@ -291,7 +335,25 @@ registerBlockType( 'wp4toastmasters/agendaedit', {
         value={ editable }
         onChange={ ( editable ) => setAttributes( { editable } ) }
     />
-{isSelected && <div><em>Options: see sidebar</em><ServerSideRender block="wp4toastmasters/agendaedit" attributes={ props.attributes } /></div>}
+
+{isSelected && <div><em>Options: see sidebar</em>
+	<ToggleControl
+            label="Show Timing Summary"
+            help={
+                show_timing_summary
+                    ? 'Show'
+                    : 'Do not show'
+            }
+            checked={ show_timing_summary }
+			onChange={ (show_timing_summary) => setAttributes( {show_timing_summary} ) }
+		/>
+
+	{show_timing_summary && 
+	<ServerSideRender
+block="wp4toastmasters/agendaedit"
+attributes={ props.attributes }
+/>}
+</div>}
 </div>
 </Fragment>
 		);

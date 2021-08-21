@@ -77,16 +77,18 @@ add_action( 'enqueue_block_editor_assets', 'wpt_cgb_editor_assets' );
 
 
 function wpt_server_block_render(){
-	$roleatts = array('role' => array('type' => 'string', 'default' => ''),'custom_role' => array('type' => 'string', 'default' => ''),'count' => array('type' => 'integer', 'default' => 1),'start' => array('type' => 'integer', 'default' => 1),'agenda_note' => array('type' => 'string', 'default' => ''),'time_allowed' => array('type' => 'string', 'default' => '0'),'padding_time' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'integer', 'default' => 0),'backup' => array('type' => 'string', 'default' => ''));
-	$noteatts = array('time_allowed' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'integer', 'default' => 0),'uid' => array('type' => 'string', 'default' => ''),'content' => array('type' => 'array', 'default' => array() ) );
+	$roleatts = array('role' => array('type' => 'string', 'default' => ''),'custom_role' => array('type' => 'string', 'default' => ''),'count' => array('type' => 'integer', 'default' => 1),'start' => array('type' => 'integer', 'default' => 1),'agenda_note' => array('type' => 'string', 'default' => ''),'time_allowed' => array('type' => 'string', 'default' => '0'),'padding_time' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'integer', 'default' => 0),'backup' => array('type' => 'string', 'default' => ''),'show_timing_summary' => array('type' => 'boolean', 'default' => false));
+	$noteatts = array('time_allowed' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'integer', 'default' => 0),'uid' => array('type' => 'string', 'default' => ''),'content' => array('type' => 'array', 'default' => array() ),'show_timing_summary' => array('type' => 'boolean', 'default' => false) );
 	register_block_type('wp4toastmasters/agendanoterich2', ['render_callback' => 'agendanoterich2', 'attributes' => $noteatts]);
-	$noteatts = array('editable' => array('type' => 'string', 'default' => ''),'time_allowed' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'integer', 'default' => 0),'uid' => array('type' => 'string', 'default' => ''),'inline' => array('type' => 'integer', 'default' => 0 ) );
+	$noteatts = array('editable' => array('type' => 'string', 'default' => ''),'time_allowed' => array('type' => 'string', 'default' => '0'),'timing_updated' => array('type' => 'integer', 'default' => 0),'uid' => array('type' => 'string', 'default' => ''),'inline' => array('type' => 'integer', 'default' => 0 ),'show_timing_summary' => array('type' => 'boolean', 'default' => false) );
 	register_block_type('wp4toastmasters/agendaedit', ['render_callback' => 'editable_note', 'attributes' => $noteatts]);
 	register_block_type('wp4toastmasters/role', ['render_callback' => 'toastmaster_short', 'attributes' => $roleatts ]);
 	register_block_type('wp4toastmasters/agendamain', ['render_callback' => 'tmlayout_main_block']);
 	register_block_type('wp4toastmasters/officers', ['render_callback' => 'toastmaster_officers']);	
 	register_block_type('wp4toastmasters/absences', ['render_callback' => 'tm_absence']);	
-	register_block_type('wp4toastmasters/duesrenewal', ['render_callback' => 'wp4t_dues_renewal']);	
+	register_block_type('wp4toastmasters/duesrenewal', ['render_callback' => 'wp4t_dues_renewal']);
+	$atts = array('webContext' => array('type' => 'boolean', 'default' => true),'agendaContext' => array('type' => 'boolean', 'default' => true),'emailContext' => array('type' => 'boolean', 'default' => true),'printContext' => array('type' => 'boolean', 'default' => true) );
+	register_block_type('wp4toastmasters/context', ['render_callback' => 'wp4t_agenda_display_context' ]); //, 'attributes' => $atts	
 }
 
 function agendanoterich2($atts, $content) {

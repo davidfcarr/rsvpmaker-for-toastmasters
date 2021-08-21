@@ -418,8 +418,12 @@ if($wp4toastmasters_officer_titles)
 			continue;
 		$checked = '';
 		$email = toastmasters_officer_email_by_title( $title );
-		if(in_array($title,$titles) || ('Treasurer' == $title) || strpos($title,'Membership') || (__('Treasurer','rsvpmaker-for-toastmasters') == $title)  || strpos($title,__('Membership','rsvpmaker-for-toastmasters')) )
+		if(!empty($titles)) {
+			if(in_array($title,$titles))
 			$checked = ' checked="checked" ';
+		}
+		elseif(('Treasurer' == $title) || strpos($title,'Membership') || (__('Treasurer','rsvpmaker-for-toastmasters') == $title)  || strpos($title,__('Membership','rsvpmaker-for-toastmasters')) )
+			$checked = ' checked="checked" ';//defaults if this has not been set
 		printf('<div><input type="checkbox" name="tm_application_titles[]" value="%s" %s>%s (%s)</div>',$title,$checked,$title,$email);
 	}	
 }

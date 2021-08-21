@@ -465,6 +465,14 @@ function wp4t_role_array() {
 		'Timer' => __('Timer','rsvpmaker-for-toastmasters'),
 		'Toastmaster of the Day' => __('Toastmaster of the Day','rsvpmaker-for-toastmasters'),
 		'Vote Counter' => __('Vote Counter','rsvpmaker-for-toastmasters'),
+		'Contest Master' => __('Contest Master','rsvpmaker-for-toastmasters'),
+		'Chief Judge' => __('Chief Judge','rsvpmaker-for-toastmasters'),
+		'Ballot Counter' => __('Ballot Counter','rsvpmaker-for-toastmasters'),
+		'Evaluation Contestant' => __('Evaluation Contestant','rsvpmaker-for-toastmasters'),
+		'Table Topics Contestant' => __('Table Topics Contestant','rsvpmaker-for-toastmasters'),
+		'Humorous Contest Speaker' => __('Humorous Contest Speaker','rsvpmaker-for-toastmasters'),
+		'International Contest Speaker' => __('International Contest Speaker','rsvpmaker-for-toastmasters'),
+		'Tall Tales Contest Speaker' => __('Tall Tales Contest Speaker','rsvpmaker-for-toastmasters'),
 	);	
 }
 
@@ -6857,6 +6865,8 @@ function wpt_dues_report() {
 	$sql = "SELECT $wpdb->usermeta.user_id, amount, meta_value FROM $stripetable JOIN $wpdb->usermeta ON $stripetable.user_id=$wpdb->usermeta.user_id WHERE meta_key='".'tm_renew_until_'.get_current_blog_id()."' AND (description LIKE '%Renewal%' OR description LIKE '%Application %' ) ";
 	$results = $wpdb->get_results($sql); //recorded as intent
 	foreach($results as $row) {
+		if(empty($row->meta_value))
+			continue;
 		update_user_meta($row->user_id,'member_paid_' . get_current_blog_id().'_'.$row->meta_value,$row->amount);
 		update_user_meta($row->user_id,'paid_until_' . get_current_blog_id(),$row->meta_value);
 	}

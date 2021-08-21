@@ -444,7 +444,7 @@ function get_role_assignments( $post_id, $atts ) {
 
 
 function get_member_name( $user_id, $credentials = true ) {
-
+	$member = null;
 	if ( ! empty( $user_id ) && ! is_numeric( $user_id ) ) {
 
 		return $user_id . ' (' . __( 'guest', 'rsvpmaker-for-toastmasters' ) . ')'; // guest ?
@@ -503,11 +503,9 @@ function get_member_name( $user_id, $credentials = true ) {
 
 	$name = strip_tags( $name );
 
-	return $name;
+	return apply_filters('get_member_name',$name, $user_id, $member);
 
 }
-
-
 
 function is_wp4t( $content = '' ) {
 
@@ -518,12 +516,6 @@ function is_wp4t( $content = '' ) {
 		$content = $post->post_content;
 
 	}
-/*
-	if ( strpos( $content, 'wp4t_evaluations_demo2021' ) ) {
-
-		return true;
-	}
-*/
 	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) ) {
 
 		return false;
