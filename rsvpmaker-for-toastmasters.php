@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.7.7
+Version: 4.7.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1343,6 +1343,8 @@ function tm_calc_time( $minutes ) {
 }
 
 function decode_timeblock( $matches ) {
+	if(get_option('wp4t_disable_timeblock'))
+	return '>';
 	return '><span class="timeblock">' . tm_calc_time( $matches[1] ) . '&nbsp;</span>';
 }
 
@@ -1507,35 +1509,8 @@ function awesome_wall( $comment_content, $post_id, $member_id = 0 ) {
 	$comment_content .= ' for ' . date( 'F jS, Y', $ts ) . ' ' . $stamp;
 
 	add_post_meta( $post_id, '_activity', $comment_content, false );
-
-	$signup = get_post_custom( $post_id );
-
-	$meeting_leader = get_post_meta( $post_id, 'meeting_leader', true );
-	if ( empty( $meeting_leader ) ) {
-		$meeting_leader = '_Toastmaster_of_the_Day_1';
-	}
-	if ( isset( $signup[ $meeting_leader ][0] ) ) {
-		$toastmaster = $signup[ $meeting_leader ][0];
-	} else {
-		$toastmaster = 0; // no meeting leader active
-	}
-
-	if ( $toastmaster && is_numeric( $toastmaster ) ) {
-		$userdata = get_userdata( $toastmaster );
-		if ( ! empty( $userdata->user_email ) ) {
-			$toastmaster_email = $userdata->user_email;
-			$subject           = $message = $comment_content;
-			$url               = rsvpmaker_permalink_query( $post_id );
-			$message          .= "\n\nThis is an automated message. Replies will be sent to " . $current_user->user_email;
-			$mail['subject']   = substr( strip_tags( $subject ), 0, 100 );
-			$mail['replyto']   = $current_user->user_email;
-			$mail['html']      = "<html>\n<body>\n" . wpautop( $message ) . "\n</body></html>";
-			$mail['to']        = $toastmaster_email;
-			$mail['from']      = $current_user->user_email;
-			$mail['fromname']  = $current_user->display_name;
-			awemailer( $mail );
-		}
-	}
+	if(!wp_next_scheduled( 'wp4t_log_notify', array( $post_id ) ))
+		wp_schedule_single_event( time() + 1800, 'wp4t_log_notify', array($post_id));
 }
 
 function role_post() {
@@ -2939,6 +2914,21 @@ See also:
 	?>
 	 /> <?php _e( 'No', 'rsvpmaker-for-toastmasters' ); ?>.</p>
 
+ <h3><?php _e( 'Show Estimated Times Next to Roles and Notes', 'rsvpmaker-for-toastmasters' ); ?></h3>
+	<?php $disable_timeblock = get_option('wp4t_disable_timeblock'); ?>
+<p><input type="radio" name="wp4t_disable_timeblock" value="0" 
+	<?php
+	if ( empty($disable_timeblock) ) {
+		echo ' checked="checked" ';}
+	?>
+	 /> <?php _e( 'Yes', 'rsvpmaker-for-toastmasters' ); ?></p>
+<p><input type="radio" name="wp4t_disable_timeblock" value="1" 
+	<?php
+	if ( !empty($disable_timeblock) ) {
+		echo ' checked="checked" ';}
+	?>
+	 /> <?php _e( 'No', 'rsvpmaker-for-toastmasters' ); ?>.</p>
+
 <h3><?php _e( 'Show Speech Introductions on Agenda', 'rsvpmaker-for-toastmasters' ); ?></h3>
 	<?php $intros = get_option( 'wp4toastmasters_intros_on_agenda' ); ?>
 <p><input type="radio" name="wp4toastmasters_intros_on_agenda" value="1" 
@@ -3098,11 +3088,14 @@ if(isset($_POST['wpt_notification_emails'])) {
 		$titles = array_map('sanitize_text_field', $_POST['wpt_notification_titles']);
 		update_option('wpt_notification_titles',$titles);
 	}
+	else
+		update_option('wpt_notification_titles',array());
 }
 
+$titles = get_option('wpt_notification_titles');
 printf('<form method="post" action="%s">',admin_url('options-general.php?page=wp4toastmasters_settings'));
 $wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
-echo '<p>'.__('Who Gets Email Notifications of Role Signups','rsvpmaker-for-toastmasters').'</p>';
+echo '<p>'.__('Who gets email notifications of role signups?','rsvpmaker-for-toastmasters').'</p>';
 $checked = !empty(get_option("wpt_notification_leader")) ? ' checked="checked" ': '';
 printf('<div><input type="checkbox" name="wpt_notification_leader" value="1" %s>%s</div>',$checked,__('Meeting Leader (Toastmaster of the Day or Contest Master)','rsvpmaker-for-toastmasters'));
 if($wp4toastmasters_officer_titles)
@@ -3112,11 +3105,13 @@ if($wp4toastmasters_officer_titles)
 			continue;
 		$checked = '';
 		$email = toastmasters_officer_email_by_title( $title );
-		if(!empty($titles)) {
+		if(empty($email))
+			$email = __('member id / email not set','rsvpmaker-for-toastmasters');
+		if(is_array($titles)) {
 			if(in_array($title,$titles))
 			$checked = ' checked="checked" ';
 		}
-		elseif(('Treasurer' == $title) || strpos($title,'Membership') || (__('Treasurer','rsvpmaker-for-toastmasters') == $title)  || strpos($title,__('Membership','rsvpmaker-for-toastmasters')) )
+		elseif(strpos($title,'Education') || strpos($title,__('Education','rsvpmaker-for-toastmasters')) )
 			$checked = ' checked="checked" ';//defaults if this has not been set
 		printf('<div><input type="checkbox" name="wpt_notification_titles[]" value="%s" %s>%s (%s)</div>',$title,$checked,$title,$email);
 	}
@@ -3343,6 +3338,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_contributor_notification' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_agenda_lock_policy' );
 	register_setting( 'wp4toastmasters-settings-group', 'show_legacy_manuals' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4t_disable_timeblock' );
 
 	if ( isset( $_POST['wp4toast_reminder'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 				// clear cron
@@ -12972,4 +12968,50 @@ function wp4t_agenda_display_context($atts, $content) {
 	if(isset($atts['printContext']) && (false == $atts['printContext']) && $print_context )
 		return;
 	return $content;
+}
+
+add_action('wp4t_log_notify','wp4t_log_notify');
+function wp4t_log_notify($post_id) {
+	global $wpdb, $rsvp_options;
+	$emails = get_option('wpt_notification_emails');
+	$leader_notify = get_option('wpt_notification_leader'); // 1 or 0 if set;
+	if($leader_notify == '')
+		$leader_notify = true;
+	$titles = get_option('wpt_notification_titles');
+
+	if(!empty($emails)) {
+		$send = explode(',',$emails);
+	}
+	else
+		$send = array();
+	if($leader_notify) {
+		$meeting_leader = get_post_meta( $post_id, '_Toastmaster_of_the_Day_1', true );
+		if(empty($meeting_leader))
+			$meeting_leader = get_post_meta( $post_id, '_Contest_Master_1', true );
+		if(!empty($meeting_leader))
+			$user = get_userdata($meeting_leader);
+		if(isset($user->user_email))
+			$send[] = $user->user_email;
+	}
+	if($titles && is_array($titles)) {
+		foreach($titles as $title)
+			$send[] = toastmasters_officer_email_by_title($title);
+	}
+	else
+		$send[] =  toastmasters_officer_email_by_title('VP of Education');
+	$mail['from'] = get_bloginfo('admin_email');
+	$mail['subject'] = 'Roles signups for '.rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime(get_rsvp_date($post_id)));
+	$mail['html'] = '';
+	$sql = "select meta_value from $wpdb->postmeta where meta_key='_activity' AND post_id=$post_id ORDER by meta_id DESC ";
+	$results = $wpdb->get_results($sql);
+	foreach($results as $row)
+		$mail['html'] .= '<div>'.$row->meta_value.'</div>'."\n";
+
+	foreach($send as $to) {
+		$to = trim($to);
+		$mail['to'] = $to;
+		rsvpmailer( $mail );	
+	}
+	rsvpmaker_debug_log($mail,'wpt_log_notify');
+	rsvpmaker_debug_log($send,'wpt_log_notify');
 }
