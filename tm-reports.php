@@ -664,7 +664,9 @@ function toastmasters_reconcile() {
 	$hook = tm_admin_page_top( __( 'Reconcile Meeting Activity / Add History', 'rsvpmaker-for-toastmasters' ) );
 	refresh_tm_history();
 	echo '<p><em>' . __( 'Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
-	printf( '<p>You can use this information as the basis for <a href="%s">Meeting Minutes</a>, as well as other reports.</p>', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=minutes' ) );
+	$minutes_link = (empty($_REQUEST['post_id'])) ? '' : sprintf(' (<a href="%s">Show Minutes for This Date</a>)',admin_url('admin.php?page=toastmasters_reports_dashboard&report=minutes&post_id='.intval($_REQUEST['post_id']) ));
+	printf( '<p>You can use this information as the basis for <a href="%s">Meeting Minutes</a>, as well as other reports. %s</p>', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=minutes' ),$minutes_link );
+
 	echo '<style>.agenda_note{display: none;}</style>';
 	global $wpdb;
 	global $post;
@@ -1004,7 +1006,8 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 			$past   = get_past_events( " (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ", 1 );
 			$r_post = $past[0];
 		}
-		printf( '<h2>%s</h2>', $r_post->date );
+		$edit = (isset($_REQUEST['rsvp_print'])) ? '' : sprintf(' (<a href="%s">Edit</a>)',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID));
+		printf( '<h2>%s %s</h2>', $r_post->date,$edit );
 	} // not history
 
 	$post = get_post( $r_post->ID );
@@ -1109,28 +1112,28 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 
 function toastmaster_minutes_display( $atts ) {
 	global $post;
+	global $wpdb;
+	$history_table = $wpdb->base_prefix.'tm_history';
+	$speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+	$domain = $_SERVER['SERVER_NAME'];
 	$start  = ( empty( $atts['start'] ) ) ? 1 : (int) $atts['start'];
 	$count  = ( empty( $atts['count'] ) ) ? 1 : (int) $atts['count'];
 	$role   = $atts['role'];
 	$output = '';
 	for ( $i = $start; $i < $count + $start; $i++ ) {
-		$field = '_' . str_replace( ' ', '_', $role ) . '_' . $i;
-		$id    = get_post_meta( $post->ID, $field, true );
-		if ( empty( $id ) ) {
+		$sql = $wpdb->prepare("SELECT * FROM $history_table WHERE domain=%s AND post_id=%d AND role=%s AND rolecount=%d ",$domain,$post->ID,$role,$i);
+		$row = $wpdb->get_row($sql);
+		if ( empty( $row ) ) {
 			continue;
 		}
-		if ( is_numeric( $id ) ) {
-			if ( $id < 1 ) {
-				continue;
-			}
-			$name = get_member_name( $id );
-		} else {
-			// guest
-			$name = $id;
-		}
+		$name = get_member_name( $row->user_id );
 		$output .= sprintf( '<p><strong>%s:</strong> %s</p>', $role, $name );
 		if ( $role == 'Speaker' ) {
-			$output .= speaker_details_minutes( $field, $id );
+			$sql = "SELECT * FROM $speech_history_table WHERE history_id=$row->id ";
+			$speech_row = $wpdb->get_row($sql);
+			$manual = $speech_row->manual.': <span class="project">'.$speech_row->project.'</span>';
+			$title   = ( empty( $speech_row->title) ) ? '' : '<span class="title">&quot;' . $speech_row->title . '&quot;</span> ';
+			$output .= '<div>' . $title . '<span class="manual-project">' . $manual . '</span></div>';
 		}
 	}
 	return $output;
@@ -3462,6 +3465,7 @@ function tm_welcome_screen_remove_menus() {
 
 
 function toastmasters_support() {
+	global $current_user;
 	$hook = tm_admin_page_top( __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ) );
 	echo '<div style="background-color: #fff; padding: 5px;">';
 	show_wpt_promo();
@@ -3483,7 +3487,7 @@ function toastmasters_support() {
 	<label for="mce-EMAIL">Subscribe to the WordPress for Toastmasters mailing list</label>
 	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" required value="<?php echo esc_attr($current_user->user_email); ?>">
 	<!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
-	<div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_98249af77569f1d331f14fb25_5d7256b1ba" tabindex="-1" value="<?php echo esc_attr($email); ?>"></div>
+	<div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_98249af77569f1d331f14fb25_5d7256b1ba" tabindex="-1" value=""></div>
 	<div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"></div>
 	</div>
 </form>
@@ -7348,7 +7352,37 @@ Show <input type="checkbox" name="speeches" value="1"
 	}
 	$data = wpt_data_disclosure( $current_user->ID );
 	echo '<div>Data inventory: ' . implode( ', ', $data ) . '</div>';
+}
 
+function wpt_data_disclosure ($user_id) {
+	global $wpdb;
+	$history_table = $wpdb->base_prefix.'tm_history';
+
+		$contact = wp_get_user_contact_methods($user_id);
+		$contact['description'] = 'Description';
+		$userdata = get_userdata($user_id);
+		if(!empty($userdata->first_name))
+			$data[] = 'First Name';
+		if(!empty($userdata->last_name))
+			$data[] = 'Last Name'.$userdata->last_name;
+		foreach($contact as $index => $label) {
+			if(!empty($userdata->$index))
+				$data[] = $label;
+		}
+		$sql = "SELECT * FROM $history_table WHERE role='Speaker' AND user_id=".$user_id;
+		$results = $wpdb->get_results($sql);
+		$data[] = "Speech records: ".sizeof($results);
+		$sql = "SELECT * FROM $history_table WHERE role!='Speaker' AND user_id=".$user_id;
+		$results = $wpdb->get_results($sql);
+		$data[] = "Other meeting role records: ".sizeof($results);
+		$blogs = get_blogs_of_user($user_id);
+		$data[] = 'Active club websites you are listed as a member of '.sizeof($blogs);
+		if($blogs) {
+			foreach($blogs as $blog)
+				$bloglist[] = '<a href="'.$blog->siteurl.'">'.$blog->blogname.'</a>';// var_export($blog,true);
+			$data[] = implode(', ',$bloglist);
+		}
+		return $data;
 }
 
 ?>
