@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.7.8
+Version: 4.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -876,19 +876,6 @@ function get_role_signups( $post_id, $role, $count ) {
 		}
 	}
 	return implode( ', ', $volunteers );
-}
-
-function speaker_details_minutes( $field, $assigned ) {
-	global $post;
-	$output  = '';
-	$results = wp4t_history_query("user_id=$assigned AND post_id=$post->ID AND role='Speaker' ");
-	if(empty($results))
-		return 'error';
-	$manual = $results[0]->manual.': <span class="project">'.$results[0]->project.'</span>';
-	$title   = ( empty( $results[0]->title) ) ? '' : '<span class="title">&quot;' . $results[0]->title . '&quot;</span> ';
-	$output .= '<div>' . $title . '<span class="manual-project">' . $manual . '</span></div>';
-	$output  = "\n" . '<div class="speaker-details">' . $output . '</div>' . "\n";
-	return $output;
 }
 
 function speaker_details_agenda( $field, $assigned ) {
@@ -4874,6 +4861,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&word_agenda=1">' . __( 'Export to Word', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&simple=1">' . __( 'Simple Copy and Paste', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'voting=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$online   = get_option( 'tm_online_meeting' );
 	$platform = ( isset( $online['platform'] ) ) ? $online['platform'] : '';
 	if ( ( $platform == 'Jitsi' ) || empty( $platform ) ) {
@@ -7810,6 +7798,10 @@ if ( ! function_exists( 'rsvpmaker_print_redirect' ) ) {
 			}
 			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/email_agenda.php';
 			die();
+		}
+		elseif ( isset( $_REQUEST['voting'] ) ) {
+			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/voting.php';
+			die();
 		} elseif ( isset( $_REQUEST['intros'] ) ) {
 			speech_intros();
 			die();
@@ -9831,13 +9823,13 @@ function rsvptoast_admin_notice() {
 		$notice[] = rsvptoast_admin_notice_format( $message, 'users', $cleared, 'info' );
 	}
 
-	if ( ! in_array( 'simple-local-avatars', $cleared ) && ! is_plugin_active( 'simple-local-avatars/simple-local-avatars.php' ) && ! is_plugin_active( 'wp-user-avatar/wp-user-avatar.php' ) ) {
+	if ( ! in_array( 'simple-local-avatars', $cleared ) && ! is_plugin_active( 'simple-local-avatars/simple-local-avatars.php' ) && ! is_plugin_active( 'simple-local-avatars/simple-local-avatars.php' ) ) {
 		if ( file_exists( $pdir . 'simple-local-avatars/simple-local-avatars.php' ) ) {
-			$message = sprintf( __( 'The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. WP User Avatar is installed but must be activated. <a href="%1$s#name">Activate now</a> or <a href="%2$s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugins.php?s=simple-local-avatars' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=simple-local-avatars' ) );
-			$notice[] = rsvptoast_admin_notice_format( $message, 'wp-user-avatar', $cleared, 'info' );
+			$message = sprintf( __( 'The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. WP User Avatar is installed but must be activated. <a href="%s#name">Activate now</a> or <a href="%s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugins.php?s=simple-local-avatars' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=simple-local-avatars' ) );
+			$notice[] = rsvptoast_admin_notice_format( $message, 'simple-local-avatars', $cleared, 'info' );
 		} else {
-			$message = sprintf( __( 'The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. <a href="%1$s">Install now</a> or <a href="%2$s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugin-install.php?tab=search&s=simple-local-avatars#plugin-filter' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=simple-local-avatars' ) );
-			$notice[] = rsvptoast_admin_notice_format( $message, 'wp-user-avatar', $cleared, 'info' );
+			$message = sprintf( __( 'The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. <a href="%s">Install now</a> or <a href="%s">No thanks</a>', 'rsvpmaker-for-toastmasters' ), admin_url( 'plugin-install.php?tab=search&s=simple-local-avatars#plugin-filter' ), admin_url( 'options-general.php?page=wp4toastmasters_settings&cleared_rsvptoast_notices=simple-local-avatars' ) );
+			$notice[] = rsvptoast_admin_notice_format( $message, 'simple-local-avatars', $cleared, 'info' );
 		}
 	}
 
@@ -9861,8 +9853,9 @@ function rsvptoast_admin_notice() {
 
 	if(!empty($notice))
 	{
-		if(isset($_GET['show_rsvpmaker_notices']))
+		if(isset($_GET['show_rsvpmaker_notices'])) {
 			echo implode("\n",$notice);
+		}
 		else {
 			$size = sizeof($notice);
 			$message = __('Toastmasters setup notices for administrator','rsvpmaker').': '.$size;
@@ -9873,12 +9866,15 @@ function rsvptoast_admin_notice() {
 
 }
 
-function rsvptoast_admin_notice_format( $message, $slug, $cleared, $type = 'info' ) {
-	if ( in_array( $slug, $cleared ) ) {
-		return;
+function rsvptoast_admin_notice_format( $message, $slug='', $cleared = array(), $type = 'info' ) {
+	if ( is_array($cleared) && in_array( $slug, $cleared ) ) {
+		return $slug.' cleared';
+	}
+	if ( empty( $slug ) ) {
+		return '<div>No message slug set</div>';
 	}
 	if ( empty( $message ) ) {
-		return;
+		return '<div>empty message:'.$slug.'</div>';
 	}
 	return sprintf(
 		'<div class="notice notice-%s wptoast-notice is-dismissible" data-notice="%s">
@@ -12959,6 +12955,7 @@ function wp4t_agenda_display_context($atts, $content) {
 		$email_context = true;
 	$agenda_context = (isset($_GET['print_agenda']) || isset($_GET['agenda_email']));
 	$print_context = isset($_GET['print_agenda']);
+	$anon_context = (!$email_context && !is_user_member_of_blog());
 	if(isset($atts['emailContext']) && (false == $atts['emailContext']) && $email_context )
 		return;
 	if(isset($atts['agendaContext']) && (false == $atts['agendaContext']) && $agenda_context )
@@ -12966,6 +12963,8 @@ function wp4t_agenda_display_context($atts, $content) {
 	if(isset($atts['webContext']) && (false == $atts['webContext']) && !$print_context && !$agenda_context && !$email_context )
 		return;
 	if(isset($atts['printContext']) && (false == $atts['printContext']) && $print_context )
+		return;
+	if(isset($atts['anonContext']) && (false == $atts['anonContext']) && $anon_context )
 		return;
 	return $content;
 }

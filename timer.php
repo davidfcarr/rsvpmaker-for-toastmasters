@@ -545,7 +545,7 @@ if ( ! empty( $_GET['embed'] ) && empty( $name ) ) {
 	echo '<div id="jitsi"></div><input type="hidden" id="is_jitsi" value="1" >';
 }
 
-$users = get_users();
+$users = get_club_members();
 foreach ( $users as $user ) {
 	$userdata = get_userdata( $user->ID );
 	$u[]      = $userdata->first_name . ' ' . $userdata->last_name;

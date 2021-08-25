@@ -42,6 +42,10 @@ attributes: {
 		type: 'boolean',
 		default: true,
 	},
+	anonContext: {
+		type: 'boolean',
+		default: true,
+	},
 },
 
     edit: function( props ) {	
@@ -53,6 +57,7 @@ attributes: {
 		<Fragment>
 		<ContextInspector { ...props } />
 <div className={className} >
+<div class="context-block-label">CLICK TO SET DISPLAY CONTEXT</div>
 	<InnerBlocks />
 </div>
 		</Fragment>
@@ -68,7 +73,7 @@ class ContextInspector extends Component {
 	render() {
 		
 		const { attributes, className, setAttributes, isSelected } = this.props;
-		const {webContext, emailContext, agendaContext, printContext } = attributes;
+		const {webContext, emailContext, agendaContext, printContext, anonContext } = attributes;
 		return (
 			<InspectorControls key="contextInspector">
 			<PanelBody title={ __( 'Display', 'rsvpmaker-for-toastmasters' ) } >
@@ -113,6 +118,16 @@ class ContextInspector extends Component {
             }
             checked={ printContext }
 			onChange={ (printContext) => setAttributes( {printContext} ) }
+		/>
+			<ToggleControl
+            label="Anonymous Users"
+            help={
+                anonContext
+                    ? 'No login required.'
+                    : 'Limit to logged in users and club email notifications.'
+            }
+            checked={ anonContext }
+			onChange={ (anonContext) => setAttributes( {anonContext} ) }
 		/>
 		</PanelBody>
 			</InspectorControls>
