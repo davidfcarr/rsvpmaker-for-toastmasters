@@ -22,6 +22,8 @@ else {
 <style>
     body {padding: 15px; background-color: #fff; background-image:none;}
     p {font-size: large;}
+    #votingresults {padding: 10px; border: thin dotted #000;}
+    .votinglink {width: 95%;}
 </style>
 </style>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -41,10 +43,62 @@ else {
     $claimed = (int) get_post_meta($post->ID,'vote_counter_claimed',true);
 }
 
-if(is_user_member_of_blog() && ($current_user->ID == $vote_counter)) {
-    printf('<p>Logged in as vote counter <a href="%s">check for votes</a></p>',$actionlink);
+if(isset($_POST['addvote_contest'])) {
+    $contest = sanitize_text_field($_POST['addvote_contest']);
+    $addvote = array_map('sanitize_text_field',$_POST['addvote']);
+    update_post_meta($post->ID,'addvote_'.$contest,$addvote);
+}
 
+    printf('<p>Vote counter: %s</p>',get_member_name($vote_counter));
+    if(isset($_POST['my_vote'])){
+        $vote = sanitize_text_field($_POST['my_vote']);
+        $key = sanitize_text_field($_POST['key']);
+        $identifier = sanitize_text_field($_POST['identifier']);
+        $metakey = 'myvote_'.$key.'_'.$identifier;
+        update_post_meta($post->ID,$metakey,$vote);
+        echo '<div style="border: thin solid red; padding: 10px; background-color:#ffe">Vote recorded: '.$key.'</div>';
+    }
+    elseif(isset($_GET['key'])) {
+        $key = sanitize_text_field($_GET['key']);
+        $label = get_post_meta($post->ID,'votelabel_'.$key,true);
+        printf('<h3>Voting for %s</h3>',$label);
+        $check = 'voting_'.$key;
+        $contestants = get_post_meta($post->ID,$check,true);
+        if(is_array($contestants)) {
+            printf('<form method="post" action="%s">',$actionlink);
+            $indentifier = (is_user_member_of_blog()) ? $current_user->ID : $_SERVER['REMOTE_ADDR'];
+            foreach($contestants as $contestant) {
+                printf('<p><input type="radio" name="my_vote" value="%s" > %s</p>',$contestant,$contestant);
+            }
+            rsvpmaker_nonce();
+            printf('<input type="hidden" name="key" value="%s">',$key);
+            printf('<input type="hidden" name="identifier" value="%s">',$identifier);
+            echo '<button>Submit</button></form>';        
+        }
+    }
+
+if(is_user_member_of_blog() && ($current_user->ID == $vote_counter)) {
+    $open = get_post_meta($post->ID,'openvotes'); // get array
+        $prompt = (empty($open)) ? '' : sprintf('<a href="%s">Check for votes</a> | <a href="#addvotes">Add votes</a></p>',$actionlink);
+    printf('<p>Logged in as vote counter %s</p>',$prompt);
+?>
+<p>This tool is intended for use in online meetings, as well as those with both online and in-person participants, to gather and score votes for best speaker,
+best evaluator, best table topics, and any other contests or procedural votes. Members signed up on the agenda are checked off by default, and you can type in
+additional names. Then copy the digital ballot link and paste into Zoom. As vote counter, you can also record votes on behalf of other members if they you
+received them on paper or by any other means. Once members have started voting, click "Check for Votes" to check for results.</p>
+<?php
     $metakey = 'myvote_'.$key.'_'.$identifier;
+
+    if(is_array($open)) {
+            foreach($open as $v) {
+                $addvote = get_post_meta($post->ID,'addvote_'.$v,true);
+                if(empty($addvote))
+                    $addvote = array();
+                $votes[$v] = $addvote;
+            }
+    }    
+
+
     $sql = "SELECT * FROM $wpdb->postmeta where post_id=$post->ID AND meta_key LIKE 'myvote%' ORDER BY meta_key, meta_value";
     $results = $wpdb->get_results($sql);
     //print_r($results);
@@ -57,12 +111,20 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter)) {
         $votes[$contest][$row->meta_value] = 1;
     }
 
-    foreach($votes as $contest => $contestvote) {
-        printf('<h3>%s</h3>',$contest);
-        //print_r($contestvote);
-        arsort($contestvote);
-        foreach($contestvote as $name => $score)
-        printf('<p>%s: %s</p>',$name,$score);
+    if(!empty($votes)) {
+        echo '<div id="votingresults"><h2>Voting Results</h2>';
+        foreach($votes as $contest => $contestvote) {
+            $label = get_post_meta($post->ID,'votelabel_'.$contest,true);
+            printf('<h3>Votes for %s as of %s</h3>',$label,rsvpmaker_date('H:i:s',time()));
+            if(empty($contestvote))
+                echo '<p>none</p>';
+            else {
+                arsort($contestvote);
+                foreach($contestvote as $name => $score)
+                printf('<p>%s: %s</p>',$name,$score);    
+            }
+    }
+    echo '</div>';
     }
 
     //show vote counter controls
@@ -97,7 +159,7 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter)) {
             $label = get_post_meta($post->ID,'votelabel_'.$v,true);
             printf('<h3>Contest set %s: %s</h3>',$label,implode(', ',$contestants));
             $voting_link = $actionlink.'&key='.$v;
-            printf('<p><a href="%s">Voting link for %s %s</a></p>',$voting_link, $label, $voting_link);
+            printf('<p>Link to share:<br><input type="text" class="votinglink" status="status_%s" value="Vote for %s %s"></p><div id="status_%s"></div>',$v,$label, $voting_link,$v);
         }
     }
 
@@ -175,52 +237,33 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter)) {
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     echo '<p>Label: <input type="text" name="openvotes" value="Other Procedural Vote"></p>';
     rsvpmaker_nonce();
-    echo '<button>Submit</button></form>';    
-    } // end vote counter controls
-else {
-    printf('<p>Vote counter: %s</p>',get_member_name($vote_counter));
-    if(isset($_POST['my_vote'])){
-        $vote = sanitize_text_field($_POST['my_vote']);
-        $key = sanitize_text_field($_POST['key']);
-        $identifier = sanitize_text_field($_POST['identifier']);
-        $metakey = 'myvote_'.$key.'_'.$identifier;
-        update_post_meta($post->ID,$metakey,$vote);
-        echo '<div style="border: thin solid red; padding: 10px; background-color:#ffe">Vote recorded: '.$key.'</div>';
-    }
-    elseif(isset($_GET['key'])) {
-        $key = sanitize_text_field($_GET['key']);
-        $label = get_post_meta($post->ID,'votelabel_'.$key,true);
-        printf('<h3>Voting for %s</h3>',$label);
-        $check = 'voting_'.$key;
-        $contestants = get_post_meta($post->ID,$check,true);
-        if(is_array($contestants)) {
-            printf('<form method="post" action="%s">',$actionlink);
-            $indentifier = (is_user_member_of_blog()) ? $current_user->ID : $_SERVER['REMOTE_ADDR'];
-            foreach($contestants as $contestant) {
-                printf('<p><input type="radio" name="my_vote" value="%s" > %s</p>',$contestant,$contestant);
-            }
-            rsvpmaker_nonce();
-            printf('<input type="hidden" name="key" value="%s">',$key);
-            printf('<input type="hidden" name="identifier" value="%s">',$identifier);
-            echo '<button>Submit</button></form>';        
-        }
-    }
+    echo '<button>Submit</button></form>';
 
     $open = get_post_meta($post->ID,'openvotes'); // get array
     if(is_array($open)) {
-        printf('<h3>%s (<a href="%s">%s</a>)</h3>',__('Active contests','rsvpmaker-for-toastmasters'),$actionlink,__('Reload to see more','rsvpmaker-for-toastmasters'));
+        printf('<h3 id="addvotes">%s</h3>',__('Add votes','rsvpmaker-for-toastmasters'));
             foreach($open as $v) {
                 $check = 'voting_'.$v;
-                $voting_link = $actionlink.'&key='.$v;
-                $metakey = 'myvote_'.$v.'_'.$identifier;
-                $label = get_post_meta($post->ID,'votelabel_'.$v,true);
-                if(get_post_meta($post->ID,$metakey,true))
-                    printf('<p>Vote recorded for %s</a></p>',$label);
-                else
-                    printf('<p><a href="%s">Vote for %s</a></p>',$voting_link,$label);
-            }
-        }    
-}
+                $contestants = get_post_meta($post->ID,$check,true);
+                $addvote = get_post_meta($post->ID,'addvote_'.$v,true);
+                if(empty($addvote))
+                    $addvote = array();
+                if(is_array($contestants)) {
+                    $label = get_post_meta($post->ID,'votelabel_'.$v,true);
+                    printf('<h3>Add Votes for %s</h3><form method="post" action="%s">',$label,$actionlink);
+                    foreach($contestants as $contestant) {
+                        //calculate current value
+                        $value = (isset($addvote[$contestant])) ? $addvote[$contestant] : 0;
+                        printf('<p><input type="number" name="addvote[%s]" value="%d" > %s</p>',$contestant,$value,$contestant);
+                    }
+                    rsvpmaker_nonce();
+                    printf('<input type="hidden" name="addvote_contest" value="%s">',$v);
+                    echo '<button>Submit</button></form>';        
+                }
+        }
+    }    
+    
+} // end vote counter controls
 
 if(!$claimed) {
     if(is_user_member_of_blog()) {
@@ -230,6 +273,22 @@ if(!$claimed) {
         printf('<p><a href="%s">Login</a> to claim the vote counter role.</p>',wp_login_url(add_query_arg('voting',1,get_permalink())));
     }
 }
+
+$open = get_post_meta($post->ID,'openvotes'); // get array
+if(is_array($open)) {
+    printf('<h3>%s (<a href="%s">%s</a>)</h3>',__('Active contests','rsvpmaker-for-toastmasters'),$actionlink,__('Reload to see more','rsvpmaker-for-toastmasters'));
+        foreach($open as $v) {
+            $check = 'voting_'.$v;
+            $voting_link = $actionlink.'&key='.$v;
+            $metakey = 'myvote_'.$v.'_'.$identifier;
+            $label = get_post_meta($post->ID,'votelabel_'.$v,true);
+            if(get_post_meta($post->ID,$metakey,true))
+                printf('<p>Vote recorded for %s</a></p>',$label);
+            else
+                printf('<p><a href="%s">Vote for %s</a></p>',$voting_link,$label);
+        }
+}    
+
 
 $users = get_club_members();
 foreach ( $users as $user ) {
@@ -247,6 +306,18 @@ jQuery( document ).ready(
 	$( ".candidates" ).autocomplete({
 	  source: members
 	});
+
+    $('.votinglink').click(
+        function() {
+        this.select();
+        this.setSelectionRange(0, 99999); /* For mobile devices */
+        /* Copy the text inside the text field */
+        navigator.clipboard.writeText(this.value);
+        /* Alert the copied text */
+        var statusid = $(this).attr('status');
+        $('#'+statusid).html('<p style="color:green">Copied!</p>');
+        }
+    );
 } );
 </script>
 
