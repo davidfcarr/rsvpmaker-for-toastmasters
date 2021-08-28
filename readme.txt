@@ -65,6 +65,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
+= 4.8.2 =
+
+* Refinements to vote counter's tool
+
 = 4.8.1 =
 
 * Vote counter's tool for online and hybrid meetings

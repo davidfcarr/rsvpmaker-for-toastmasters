@@ -1,5 +1,11 @@
 <?php
-global $wpdb, $post, $rsvp_options, $current_user;
+global $wpdb, $post, $rsvp_options, $current_user, $wp_styles;
+
+foreach( $wp_styles->queue as $style ) {
+    if($style != 'admin-bar')
+    wp_dequeue_style($style);
+}
+
 if(is_user_member_of_blog()) 
 $identifier = $current_user->ID;
 else {
@@ -14,25 +20,50 @@ else {
             $identifier = $_SERVER['REMOTE_ADDR'];
     }
 }
+if(isset($_POST['switch_vote_counter']) && rsvpmaker_verify_nonce()) {
+    $user_id = intval($_POST['switch_vote_counter']);
+    if($user_id) {
+        update_post_meta($post->ID,'_Vote_Counter_1',$user_id);
+        update_post_meta($post->ID,'vote_counter_claimed',$current_user->ID);
+    }
+}
+
 ?>
 <html>
 <head>
 <title><?php wp_title( '|', true, 'right' ); ?></title>
 <?php wp_head(); ?>
 <style>
+    h1, h2, h3 {font-family: Arial, Helvetica, sans-serif; }
+    h1 {font-size: 40px;}
+    h2 {font-size: 36px;}
+    h3 {font-size: 30px;}
+    button {
+    border: medium solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 30px;
+    line-height: 1.2;
+    padding: 5px;
+    text-decoration: none;
+    }
+    input[type="radio"] {width: 2em; height: 2em;}
     body {padding: 15px; background-color: #fff; background-image:none;}
     p {font-size: large;}
     #votingresults {padding: 10px; border: thin dotted #000;}
     .votinglink {width: 95%;}
+    .more, .editblock {display: none}
 </style>
 </style>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 <body>
-<h2>Voting for <?php echo rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime(get_rsvp_date($post->ID))) ?></h2>
+<h2>Voting for <?php echo rsvpmaker_date($rsvp_options['short_date'],rsvpmaker_strtotime(get_rsvp_date($post->ID))) ?></h2>
 <?php
 $actionlink = add_query_arg('voting',1,get_permalink());
-if(isset($_POST['claim']) && isset($current_user->ID))
+if(isset($_POST['claim']) && isset($current_user->ID) && rsvpmaker_verify_nonce())
 {
     update_post_meta($post->ID,'_Vote_Counter_1',$current_user->ID);
     update_post_meta($post->ID,'vote_counter_claimed',$current_user->ID);
@@ -43,14 +74,22 @@ else {
     $claimed = (int) get_post_meta($post->ID,'vote_counter_claimed',true);
 }
 
-if(isset($_POST['addvote_contest'])) {
+if(isset($_POST['addvote_contest']) && rsvpmaker_verify_nonce()) {
     $contest = sanitize_text_field($_POST['addvote_contest']);
     $addvote = array_map('sanitize_text_field',$_POST['addvote']);
     update_post_meta($post->ID,'addvote_'.$contest,$addvote);
 }
 
-    printf('<p>Vote counter: %s</p>',get_member_name($vote_counter));
-    if(isset($_POST['my_vote'])){
+if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
+    {
+        $input = sanitize_text_field($_POST['custom_club_contests']);
+        $c = explode(',',$input);
+        update_option('custom_club_contests',$c);
+    }
+
+    $vote_counter_name = ($vote_counter) ? get_member_name($vote_counter) : 'not yet claimed';
+    printf('<h3>Vote counter: %s</h3>',$vote_counter_name);
+    if(isset($_POST['my_vote']) && rsvpmaker_verify_nonce()){
         $vote = sanitize_text_field($_POST['my_vote']);
         $key = sanitize_text_field($_POST['key']);
         $identifier = sanitize_text_field($_POST['identifier']);
@@ -61,32 +100,26 @@ if(isset($_POST['addvote_contest'])) {
     elseif(isset($_GET['key'])) {
         $key = sanitize_text_field($_GET['key']);
         $label = get_post_meta($post->ID,'votelabel_'.$key,true);
-        printf('<h3>Voting for %s</h3>',$label);
+        printf('<h2>Voting for %s</h2>',$label);
         $check = 'voting_'.$key;
         $contestants = get_post_meta($post->ID,$check,true);
         if(is_array($contestants)) {
             printf('<form method="post" action="%s">',$actionlink);
             $indentifier = (is_user_member_of_blog()) ? $current_user->ID : $_SERVER['REMOTE_ADDR'];
             foreach($contestants as $contestant) {
-                printf('<p><input type="radio" name="my_vote" value="%s" > %s</p>',$contestant,$contestant);
+                printf('<h3><input type="radio" name="my_vote" value="%s" > %s</h3>',$contestant,$contestant);
             }
             rsvpmaker_nonce();
             printf('<input type="hidden" name="key" value="%s">',$key);
             printf('<input type="hidden" name="identifier" value="%s">',$identifier);
-            echo '<button>Submit</button></form>';        
+            echo '<button>Vote!</button></form>';        
         }
     }
 
-if(is_user_member_of_blog() && ($current_user->ID == $vote_counter)) {
+if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_GET['preview'])) {
     $open = get_post_meta($post->ID,'openvotes'); // get array
         $prompt = (empty($open)) ? '' : sprintf('<a href="%s">Check for votes</a> | <a href="#addvotes">Add votes</a></p>',$actionlink);
     printf('<p>Logged in as vote counter %s</p>',$prompt);
-?>
-<p>This tool is intended for use in online meetings, as well as those with both online and in-person participants, to gather and score votes for best speaker,
-best evaluator, best table topics, and any other contests or procedural votes. Members signed up on the agenda are checked off by default, and you can type in
-additional names. Then copy the digital ballot link and paste into Zoom. As vote counter, you can also record votes on behalf of other members if they you
-received them on paper or by any other means. Once members have started voting, click "Check for Votes" to check for results.</p>
-<?php
     $metakey = 'myvote_'.$key.'_'.$identifier;
 
     if(is_array($open)) {
@@ -130,22 +163,26 @@ received them on paper or by any other means. Once members have started voting, 
     //show vote counter controls
     $claimed = $current_user->ID;
 
-    if(isset($_POST['openvotes']))
+    if(isset($_POST['candidates']))
     {
-        $label = $openvotes = sanitize_text_field($_POST['openvotes']);
-        $openvotes = preg_replace('/[^a-z]/','',strtolower($openvotes));
-        update_post_meta($post->ID,'votelabel_'.$openvotes,$label);
+        if(isset($_POST['openvotes'])){
+            $label = $openvotes = sanitize_text_field($_POST['openvotes']);
+            $openvotes = preg_replace('/[^a-z]/','',strtolower($openvotes));
+            update_post_meta($post->ID,'votelabel_'.$openvotes,$label);    
+            add_post_meta($post->ID,'openvotes',$openvotes);
+        }
+        else
+            $openvotes = sanitize_text_field($_POST['edit_candidates']);
         $raw = $_POST['candidates'];
         foreach($raw as $r) {
             $r = trim($r);
             if(!empty($r)) {
-                $candidates[] = $r;
+                $candidates[] = sanitize_text_field($r);
             }
         }
         //print_r($candidates);
         $key = 'voting_'.$openvotes;
         update_post_meta($post->ID,$key,$candidates);
-        add_post_meta($post->ID,'openvotes',$openvotes);
     }
 
     $open = get_post_meta($post->ID,'openvotes'); // get array
@@ -157,13 +194,34 @@ received them on paper or by any other means. Once members have started voting, 
             if(empty($contestants))
                 continue;
             $label = get_post_meta($post->ID,'votelabel_'.$v,true);
-            printf('<h3>Contest set %s: %s</h3>',$label,implode(', ',$contestants));
             $voting_link = $actionlink.'&key='.$v;
+            printf('<h3>Contest set %s: %s - <a href="#" target="edit_%s" class="editnow">Edit</a> - <a href="%s" target="_blank">Preview Ballot</a></h3>',$label,implode(', ',$contestants),$v,$voting_link.'&preview=1');
             printf('<p>Link to share:<br><input type="text" class="votinglink" status="status_%s" value="Vote for %s %s"></p><div id="status_%s"></div>',$v,$label, $voting_link,$v);
+            printf('<div class="editblock" id="edit_%s">',$v);
+            printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink())); 
+            printf('<p>%s</p>',__('Make any necessary edits and click Update','rsvpmaker-for-toastmasters'));
+            foreach($contestants as $contestant)
+                printf('<div><input type="checkbox" name="candidates[]" value="%s" checked="checked"> %s</div>',$contestant,$contestant);
+            for($i=0; $i < 5; $i++)
+                echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+            echo '<input type="hidden" name="edit_candidates" value="'.$v.'">';
+            rsvpmaker_nonce();
+            echo '<button>Update</button></form></div>';
         }
     }
+    else {
+        ?>
+        <p>This tool is intended for use in online meetings, as well as those with both online and in-person participants, to gather and score votes for best speaker,
+        best evaluator, best table topics, and any other contests or procedural votes. Members signed up on the agenda are checked off by default, and you can type in
+        additional names. Then copy the digital ballot link and paste into Zoom. As vote counter, you can also record votes on behalf of other members if they you
+        received them on paper or by any other means. Once members have started voting, click "Check for Votes" to check for results.</p>
+        <?php    
+    }
+    
 
-    if(!is_array($open) || !in_array('speakers',$open)) {
+    $more = 0;
+
+    if(!is_array($open) || !in_array('speaker',$open)) {
         $sql = "SELECT * FROM $wpdb->postmeta where post_id=$post->ID AND meta_key LIKE '_Speaker_%' ";
         $results = $wpdb->get_results($sql);
         foreach($results as $row) {
@@ -178,17 +236,21 @@ received them on paper or by any other means. Once members have started voting, 
         }
         
         printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
-        printf('<h2>%s</h2>',__('Vote for Speaker','rsvpmaker-for-toastmasters'));
+        printf('<h2>%s</h2>',__('Set up vote for Speaker','rsvpmaker-for-toastmasters'));
         foreach($speakers as $speaker)
             printf('<div><input type="checkbox" name="candidates[]" value="%s" checked="checked"> %s</div>',$speaker,$speaker);
+        echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+        printf('<div id="moreprompt%d"><a href="#" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more);
+        $more++;
         for($i=0; $i < 5; $i++)
             echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
-        echo '<input type="hidden" name="openvotes" value="Speakers">';
+        echo '</div>';
+        echo '<input type="hidden" name="openvotes" value="Speaker">';
         rsvpmaker_nonce();
         echo '<button>Submit</button></form>';    
     }
 
-    if(!is_array($open) || !in_array('evaluators',$open)) {
+    if(!is_array($open) || !in_array('evaluator',$open)) {
     $sql = "SELECT * FROM $wpdb->postmeta where post_id=$post->ID AND meta_key LIKE '_Evaluator_%' ";
     $results = $wpdb->get_results($sql);
     foreach($results as $row) {
@@ -203,39 +265,79 @@ received them on paper or by any other means. Once members have started voting, 
     }
 
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
-    printf('<h2>%s</h2>',__('Vote for Evaluator','rsvpmaker-for-toastmasters'));
+    printf('<h2>%s</h2>',__('Set up vote for Evaluator','rsvpmaker-for-toastmasters'));
     foreach($evaluators as $evaluator)
         printf('<div><input type="checkbox" name="candidates[]" value="%s" checked="checked"> %s</div>',$evaluator,$evaluator);
+    echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+    printf('<div id="moreprompt%d"><a href="#moreprompt%d" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
+    $more++;
     for($i=0; $i < 5; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
-    echo '<input type="hidden" name="openvotes" value="Evaluators">';
+    echo '</div>';
+    echo '<input type="hidden" name="openvotes" value="Evaluator">';
     rsvpmaker_nonce();
     echo '<button>Submit</button></form>';
     
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
-    printf('<h2>%s</h2>',__('Vote for Table Topics Speaker','rsvpmaker-for-toastmasters'));
-    for($i=0; $i < 10; $i++)
+    printf('<h2>%s</h2>',__('Set up vote for Table Topics Speaker','rsvpmaker-for-toastmasters'));
+    for($i=0; $i < 5; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
-    echo '<input type="hidden" name="openvotes" value="Table Topics">';
+    printf('<div id="moreprompt%d"><a href="#moreprompt%d" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
+    $more++;
+    for($i=0; $i < 5; $i++)
+        echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+    echo '</div>';
+    echo '<input type="hidden" name="openvotes" value="Table Topics Speaker">';
     rsvpmaker_nonce();
     echo '<button>Submit</button></form>';
     }//end show evaluators setup
 
+    $club_contests = get_option('custom_club_contests');
+    if(is_array($club_contests))
+    foreach($club_contests as $contest) {
+        $contest = trim($contest);
+        printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));
+        echo '<input type="hidden" name="openvotes" value="'.$contest.'">';
+        echo '<h2>Set up vote for '.$contest.'</h2>';
+        for($i=0; $i < 5; $i++)
+            echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+        printf('<div id="moreprompt%d"><a href="#moreprompt%d" class="moreprompt" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
+        $more++;
+        for($i=0; $i < 5; $i++)
+            echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+        echo '</div>';
+        rsvpmaker_nonce();
+        echo '<button>Submit</button></form>';    
+    }
+
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));
-    printf('<h2>%s</h2>',__('Other Vote for Member','rsvpmaker-for-toastmasters'));
-    for($i=0; $i < 10; $i++)
+    echo '<h2>Custom</h2><p>Label: <input type="text" name="openvotes" value="Other Vote for Member"></p><p>Choices</p>';
+    for($i=0; $i < 5; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
-    echo '<p>Label: <input type="text" name="openvotes" value="Other Member Vote"></p>';
+    printf('<div id="moreprompt%d"><a href="#moreprompt%d" class="moreprompt" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
+    $more++;
+    for($i=0; $i < 5; $i++)
+        echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+    echo '</div>';
     rsvpmaker_nonce();
     echo '<button>Submit</button></form>';
 
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
-    printf('<h2>%s</h2>',__('Other Vote','rsvpmaker-for-toastmasters'));
+    echo '<h2>Custom</h2><p>Label: <input type="text" name="openvotes" value="Other Procedural Vote"></p><p>Choices</p>';
     echo '<div><input class="candidates" type="text" name="candidates[]" value="Yes"></div>';
     echo '<div><input class="candidates" type="text" name="candidates[]" value="No"></div>';
-    for($i=0; $i < 8; $i++)
+    printf('<div id="moreprompt%d"><a href="#moreprompt%d" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
+    $more++;
+    for($i=0; $i < 5; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
-    echo '<p>Label: <input type="text" name="openvotes" value="Other Procedural Vote"></p>';
+    echo '</div>';
+    rsvpmaker_nonce();
+    echo '<button>Submit</button></form>';
+
+    //$club_contests = get_option('custom_club_contests');
+    printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
+    echo '<h2>Custom Club Contests</h2>';
+    printf('<div>Enter a list separated by commas <input type="text" name="custom_club_contests" value="%s"><br><em>For example, some clubs do a Word of the Day contest</em></div>',implode(',',$club_contests));
     rsvpmaker_nonce();
     echo '<button>Submit</button></form>';
 
@@ -261,13 +363,21 @@ received them on paper or by any other means. Once members have started voting, 
                     echo '<button>Submit</button></form>';        
                 }
         }
-    }    
+    }
+    
+    printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
+    echo '<h2>Switch Vote Counter Role to Another Member</h2>';
+    echo awe_user_dropdown( 'switch_vote_counter', 0, true, 'Select Member' );
+    rsvpmaker_nonce();
+    echo '<button>Submit</button></form>';
     
 } // end vote counter controls
 
 if(!$claimed) {
     if(is_user_member_of_blog()) {
-        printf('<form method="post" adtion="%s"><input type="hidden" name="claim" value="1"><button>Make Yourself Vote Counter</button></form>',add_query_arg('voting',1,get_permalink()));
+        printf('<form method="post" adtion="%s"><input type="hidden" name="claim" value="1">',add_query_arg('voting',1,get_permalink()));
+        rsvpmaker_nonce();
+        echo '<button>Make Yourself Vote Counter</button></form>';
     }
     else {
         printf('<p><a href="%s">Login</a> to claim the vote counter role.</p>',wp_login_url(add_query_arg('voting',1,get_permalink())));
@@ -276,19 +386,18 @@ if(!$claimed) {
 
 $open = get_post_meta($post->ID,'openvotes'); // get array
 if(is_array($open)) {
-    printf('<h3>%s (<a href="%s">%s</a>)</h3>',__('Active contests','rsvpmaker-for-toastmasters'),$actionlink,__('Reload to see more','rsvpmaker-for-toastmasters'));
+    printf('<h3>%s (<a href="%s">%s</a>)</h3>',__('Active contests','rsvpmaker-for-toastmasters'),$actionlink,__('Check for updates','rsvpmaker-for-toastmasters'));
         foreach($open as $v) {
             $check = 'voting_'.$v;
             $voting_link = $actionlink.'&key='.$v;
             $metakey = 'myvote_'.$v.'_'.$identifier;
             $label = get_post_meta($post->ID,'votelabel_'.$v,true);
             if(get_post_meta($post->ID,$metakey,true))
-                printf('<p>Vote recorded for %s</a></p>',$label);
+                printf('<h3>Vote recorded for %s</a></h3>',$label);
             else
-                printf('<p><a href="%s">Vote for %s</a></p>',$voting_link,$label);
+                printf('<h3><a href="%s">Vote for %s</a></h3>',$voting_link,$label);
         }
-}    
-
+}
 
 $users = get_club_members();
 foreach ( $users as $user ) {
@@ -318,10 +427,29 @@ jQuery( document ).ready(
         $('#'+statusid).html('<p style="color:green">Copied!</p>');
         }
     );
+
+    $('.showmore').click(
+        function(e) {
+        e.preventDefault();
+        let id = $(this).attr('more');
+        console.log('more id '+id);
+        $('#more'+id).show();
+        $('#moreprompt'+id).hide();
+        }
+    );
+
+    $('.editnow').click(
+        function(e) {
+        e.preventDefault();
+        let target = $(this).attr('target');
+        $('#'+target).show();
+        }
+    );
+
 } );
 </script>
 
 <p style="margin-top: 30px;"><em>This tool is intended for casual voting at weekly meetings. See the Contest Dashboard to set up digital ballots for contests.</em></p>
-<?php wp_footer(); ?>
+<?php //wp_footer(); ?>
 </body>
 </html>
