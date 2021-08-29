@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.8.2
+Version: 4.8.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -528,15 +528,14 @@ function toastmasters_reminder_preview() {
 	$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 	if ( sizeof( $future ) ) {
 		$next = $future[0];
-		ob_start();
-		echo esc_html($next->datetime);
-		wp4_speech_prompt( $next, strtotime( $next->datetime ), true ); // preview mode set to true
-		$content = ob_get_clean();
+		$content = email_with_without_role('',true);
+		//wp4_speech_prompt( $next, strtotime( $next->datetime ), true ); // preview mode set to true
 	} else {
 		$content = 'No upcoming meetings found';
 	}
 	wp_die( $content, 'Preview of Toastmasters reminders' );
 }
+
 if ( isset( $_GET['tm_reminders_preview'] ) ) {
 	add_action( 'init', 'toastmasters_reminder_preview' );
 }
@@ -1347,6 +1346,8 @@ function agendanoterich2_timeblock( $matches ) {
 }
 
 function tm_agenda_content($post_id = 0) {
+	if(is_admin())
+		return;
 	global $post, $wp_query;
 	if($post_id)
 		{
@@ -2876,7 +2877,7 @@ See also:
 	wp4toastmasters_agenda_layout_check(); // add layout post if doesn't already exist
 	$layout_id = get_option( 'rsvptoast_agenda_layout' );
 	if ( $layout_id ) {
-		printf( '<br />&nbsp;<a href="%s">%s</a> | <a href="%s">%s</a>  | <a href="%s">%s</a> ', admin_url( 'post.php?action=edit&post=' . $layout_id ), __( 'Edit Custom Agenda Layout', 'rsvpmaker-for-toastmasters' ), admin_url('?reset_agenda_layout=1'),__('Reset to Default (July 2021 version)'), admin_url('?reset_agenda_layout=no_sidebar'),__('Get No-Sidebar Version') );
+		printf( '<br />&nbsp;<a href="%s">%s</a> | <a href="%s">%s</a>  | <a href="%s">%s</a> ', admin_url( 'post.php?action=edit&post=' . $layout_id ), __( 'Edit Custom Agenda Layout', 'rsvpmaker-for-toastmasters' ), admin_url('?reset_agenda_layout=1'),__('Reset to Default','rsvpmaker-for-toastmasters').' (August 2021)', admin_url('?reset_agenda_layout=no_sidebar'),__('Get No-Sidebar Version') );
 	}
 	$layout_mod = get_the_modified_date( 'Y-m-d', $layout_id );
 		echo '<p><em>Last updated ' . $layout_mod . '</em></p>';
@@ -4389,29 +4390,21 @@ function stoplight_shortcode( $atts ) {
 
 function wpt_custom_layout_default($sidebar_officers = false) {
 	global $wpdb;
-	if(empty($sidebar_officers)) {
-		$sql = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='_sidebar_officers' ORDER BY meta_id DESC";
-		$sidebar_officers = $wpdb->get_var($sql);	
-	}
-	if($sidebar_officers) {
-		$sql = "DELETE FROM $wpdb->postmeta WHERE meta_key='_tm_sidebar' OR meta_key='_sidebar_officers'";
-		$wpdb->query($sql);
-	}
 	$sidebar_content = '<!-- wp:paragraph -->
 		<p><br><strong>Club Mission: </strong>We provide a supportive and positive learning experience in which members are empowered to develop communication and leadership skills, resulting in greater self-confidence and personal growth.</p>
 		<!-- /wp:paragraph -->';
-	$officers_content = ($sidebar_officers) ? '<!-- wp:wp4toastmasters/officers /-->' : '';
+	$officers_content = '<!-- wp:wp4toastmasters/officers /-->';
 
 	return '<!-- wp:columns {"className":"titleblock"} -->
 	<div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
-	<div class="wp-block-column" style="flex-basis:10%"><!-- wp:image {"align":"center","id":666,"width":50,"sizeSlug":"large","linkDestination":"media"} -->
-	<div class="wp-block-image"><figure class="aligncenter size-large is-resized"><a href="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" class="wp-image-666" width="50" height="50"/></a></figure></div>
-	<!-- /wp:image --></div>
+	<div class="wp-block-column" style="flex-basis:10%"><!-- wp:wp4toastmasters/logo -->
+	<div class="tm-logo" class="wp-block-wp4toastmasters-logo"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" width="50" height="50"/></div>
+	<!-- /wp:wp4toastmasters/logo --></div>
 	<!-- /wp:column -->
 	
 	<!-- wp:column {"width":"90%"} -->
 	<div class="wp-block-column" style="flex-basis:90%"><!-- wp:paragraph {"style":{"typography":{"fontSize":22}}} -->
-	<p id="block-25ecbefc-681f-4f15-aee4-936431ed20f3" style="font-size:22px">'.get_bloginfo('name').'</p>
+	<p id="block-25ecbefc-681f-4f15-aee4-936431ed20f3" style="font-size:22px">'.get_bloginfo('name').' [tmlayout_post_title]</p>
 	<!-- /wp:paragraph -->
 	
 	<!-- wp:paragraph {"fontSize":"medium"} -->
@@ -4434,6 +4427,7 @@ function wpt_custom_layout_default($sidebar_officers = false) {
 }
 
 function wp4toastmasters_agenda_layout_check( $sidebar_officers = false ) {
+
 	global $current_user;
 		global $wpdb;
 		$layout_id = get_option( 'rsvptoast_agenda_layout');
@@ -7757,9 +7751,9 @@ function pack_roles( $count, $fieldbase ) {
 }//end pack_roles()
 
 if ( ! function_exists( 'rsvpmaker_print_redirect' ) ) {
-	add_action( 'template_redirect', 'rsvpmaker_print_redirect' );
+	add_action( 'template_redirect', 'wp4t_redirect' );
 
-	function rsvpmaker_print_redirect() {
+function wp4t_redirect() {
 		global $post;
 
 		if ( isset( $_REQUEST['tm_reports'] ) ) {
@@ -7782,8 +7776,17 @@ if ( ! function_exists( 'rsvpmaker_print_redirect' ) ) {
 		if ( ! ( isset( $post ) ) || $post->post_type != 'rsvpmaker' ) {
 			return;
 		}
+		if(is_admin())
+			return;
 
-		if ( isset( $_REQUEST['print_agenda'] ) || (strpos($post->post_title,'Layout') && get_post_meta($post->ID,'_rsvpmaker_special')) ) {
+		if ( isset( $_REQUEST['word_agenda'] )) {
+			if ( get_option( 'wp4toastmasters_stoplight' ) ) {
+				add_filter( 'agenda_time_display', 'display_time_stoplight' );
+			}
+			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/agenda-word.php';
+			die();
+		} 
+		elseif ( isset( $_REQUEST['print_agenda'] ) ) {
 			if ( get_option( 'wp4toastmasters_stoplight' ) ) {
 				add_filter( 'agenda_time_display', 'display_time_stoplight' );
 			}
@@ -7792,7 +7795,8 @@ if ( ! function_exists( 'rsvpmaker_print_redirect' ) ) {
 			$agendapath = apply_filters( 'toastmasters_agendapath', $agendapath );
 			include $agendapath;
 			die();
-		} elseif ( is_email_context() ) {
+		}
+		 elseif ( is_email_context() ) {
 			if ( get_option( 'wp4toastmasters_stoplight' ) ) {
 				add_filter( 'agenda_time_display', 'display_time_stoplight' );
 			}
@@ -11582,7 +11586,7 @@ function wpt_agenda_layout_change () {
 		else {
 			$update['post_content'] = wpt_custom_layout_default(true);
 		}
-		wp_update_post($update);
+		$result = wp_update_post($update);
 		$destination = admin_url( 'post.php?action=edit&post=' ) . $id;
 		header( 'Location: ' . $destination );
 		exit();
@@ -11601,6 +11605,13 @@ function tmlayout_tag_line( $atts ) {
 		return;
 	}
 	return get_bloginfo( 'description' );
+}
+
+function tmlayout_post_title( $atts ) {
+	if ( is_admin() || wp_is_json_request() ) {
+		return;
+	}
+	return get_the_title();
 }
 
 function tmlayout_meeting_date( $atts = array() ) {
@@ -11670,13 +11681,11 @@ function tmlayout_main( $atts ) {
 	global $post;
 	$layout = get_option( 'rsvptoast_agenda_layout' );
 	if ( get_post_meta($post->ID,'_rsvpmaker_special',true) ) {
-		if($post->post_parent)
-			return tm_agenda_content($post->post_parent);
 		$next = next_toastmaster_meeting();
 		if ( empty( $next ) ) {
 			return 'View the agenda of a current meeting to test this';
 		}
-		return '<div><em>Preview based on next meeting id: '.$next->ID.'</em></div>'.tm_agenda_content($next->ID);
+		return '<div><em>Preview based on next meeting</em></div>'.tm_agenda_content($next->ID);
 	}
 	$content = tm_agenda_content();
 	return $content;
@@ -12878,6 +12887,7 @@ if ( ! wp_is_json_request() ) {
 	add_shortcode( 'members_only', 'members_only' );
 	add_shortcode( 'tmlayout_club_name', 'tmlayout_club_name' );
 	add_shortcode( 'tmlayout_tag_line', 'tmlayout_tag_line' );
+	add_shortcode( 'tmlayout_post_title', 'tmlayout_post_title' );
 	add_shortcode( 'tmlayout_meeting_date', 'tmlayout_meeting_date' );
 	add_shortcode( 'tmlayout_sidebar', 'tmlayout_sidebar' );
 	add_shortcode( 'tmlayout_main', 'tmlayout_main' );

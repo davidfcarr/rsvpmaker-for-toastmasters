@@ -40,11 +40,14 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	$t      = (!empty($next->ts_start)) ? (int) $next->ts_start : rsvpmaker_strtotime( get_rsvp_date( $next->ID ) );
 	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
 	$post   = $next;
-	$dupkey = 'email_reminder_' . $meeting_hours;
-	if ( get_post_meta( $post->ID, $dupkey, true ) ) {
-		return; // don't do more than once
+	if(!$test)
+	{
+		$dupkey = 'email_reminder_' . $meeting_hours;
+		if ( get_post_meta( $post->ID, $dupkey, true ) ) {
+			return; // don't do more than once
+		}
+		update_post_meta( $post->ID, $dupkey, true );
 	}
-	update_post_meta( $post->ID, $dupkey, true );
 	$members   = get_club_members();
 	$templates = get_rsvpmaker_notification_templates();
 	$permalink = get_permalink( $next->ID );
@@ -80,24 +83,37 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 		}
 	}
 
+	$output = '';
+
 	$mail['from']     = get_option( 'admin_email' );
 	$mail['fromname'] = get_option( 'name' );
 	foreach ( $reminders as $index => $email ) {
-		echo esc_html($email);
 		$mail['to']      = ( $test ) ? $mail['from'] : $email;
 		$testtext        = ( $test ) ? "<p>$email</p>" : '';
 		$mail['html']    = wpt_email_agenda_wrapper($testtext . wp_kses_post('<p>Your role(s) :' . $reminder_roles[ $index ] . '<p>' . $reminder_details[ $index ] . $content));
 		$mail['subject'] = 'You are signed up for ' . esc_attr($reminder_roles[ $index ] . ' on ' . $date . ' - ' . $next->post_title);
-		$result          = rsvpmaker_qemail( $mail, array($mail['to']) );
-		update_post_meta( $post->ID, 'reminder', $mail );
+		if($test) {
+			$output .= sprintf('<h3>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],$mail['to'],$mail['html']);
+		}
+		else {
+			$result          = rsvpmaker_qemail( $mail, array($mail['to']) );
+			update_post_meta( $post->ID, 'reminder', $mail );	
+		}
 	}
 	if(!empty($norole)) {
 		$mail['html'] = wpt_email_agenda_wrapper("<p>You're not yet signed up for a role.</p>\n" . $content);
-		$mail['subject'] = 'Reminder: ' . $date . ' - ' . $next->post_title;	
-		rsvpmaker_qemail($mail,$norole);
+		$mail['subject'] = 'Reminder: ' . $date . ' - ' . $next->post_title;
+		if($test) {
+			$output .= sprintf('<h2>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],implode(', ',$norole),$mail['html']);
+		}
+		else {
+			rsvpmaker_qemail($mail,$norole);
+		}
 	}
-	update_post_meta( $post->ID, '_role_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $norole ).rsvpmaker_date('r') );
+	if(!$test)
+		update_post_meta( $post->ID, '_role_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $norole ).rsvpmaker_date('r') );
 	$post = $waspost;
+	return $output;
 }
 
 function awemailer( $mail ) {
@@ -356,17 +372,22 @@ function tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor
 }
 
 function wpt_email_agenda_wrapper($content) {
-$header   = '<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+ob_start();
+?>
+<html <?php language_attributes(); ?> >
 <head>
+	<meta charset="<?php bloginfo( 'charset' ); ?>" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-' . wpt_default_agenda_css() . "\n" . get_option( 'wp4toastmasters_agenda_css' ) . '
+<?php echo wpt_default_agenda_css() . "\n" . get_option( 'wp4toastmasters_agenda_css' ) ; ?>
 #message p, #message li {
 font-size: 16px;
 }
 </style>
 <head>
-<body>';
+<body>
+<?php
+$header = ob_get_clean();
 return rsvpmaker_inliner($header.$content.'<body></html>');
 }
 

@@ -1,10 +1,7 @@
 <?php
-if ( isset( $_GET['word_agenda'] ) ) {
-	global $post;
-	header( 'Content-Type: application/msword' );
-	header( 'Content-disposition: attachment; filename=' . $post->post_name . '.doc' );
-}
 global $post;
+header( 'Content-Type: application/msword' );
+header( 'Content-disposition: attachment; filename=' . $post->post_name . '.doc' );
 $layout = get_post_meta($post->ID,'rsvptoast_agenda_layout',true);
 if(empty($layout)) {
 	$template_id = rsvpmaker_has_template($post->ID);
@@ -20,10 +17,6 @@ if ( empty( $layout_css ) ) {
 	$layout_css = wpt_default_agenda_css();
 	update_post_meta( $layout, '_rsvptoast_agenda_css_2018-07', $layout_css );
 }
-if ( isset( $_GET['word_agenda'] ) ) {
-	echo '.dateblock {margin-bottom: -1em;}';
-}
-
 ?>
 <html <?php language_attributes(); ?> >
 <head>
@@ -32,31 +25,25 @@ if ( isset( $_GET['word_agenda'] ) ) {
 <title><?php wp_title( '|', true, 'right' ); ?></title>
 <style>
 <?php 
-if(empty($_GET['simple']))
-{
-	echo wpt_default_agenda_css(); 
-	echo get_option( 'wp4toastmasters_agenda_css' );
-}
+echo wpt_default_agenda_css(); 
+echo get_option( 'wp4toastmasters_agenda_css' );
 ?>
+.dateblock {margin-bottom: -1em;}
 </style>
 </head>
 
 <body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['no_print'])) echo ' id="show" '; ?> >
 <div class="Section1">
 <?php
-if(isset($_GET['simple'])) {
-	$output = '<h2>'.tmlayout_meeting_date()."</h2>\n".tm_agenda_content();
-}
-else {
-	if ( function_exists( 'do_blocks' ) ) {
-		$layout_post->post_content = do_blocks( $layout_post->post_content );
-	}
-	$output = wpautop( convert_chars( wptexturize( do_shortcode( $layout_post->post_content ) ) ) );	
-}
-if ( isset( $_GET['word_agenda'] ) || isset( $_GET['word_test'] ) ) {
-	$output = str_replace( '</p>', '</p><p>&nbsp;</p>', $output );
-	$output = str_replace( '</div>', '</div><p>&nbsp;</p>', $output );
-}
+$content = $layout_post->post_content;
+$content = preg_replace('|<!-- wp:columns -->[^<]+<div class="wp-block-columns">|s','<table class="layout_table" style="width: 700px;"><tr>',$content);
+$content = preg_replace("|<\/div>[^<]+<!-- \/wp:columns -->|s",'</tr></table>',$content);
+$content = preg_replace('|<!-- wp:column {"width":"([0-9\.\%]+)"} -->[^<]+<div[^>]+>|s','<td style="width: $1">',$content);
+$content = preg_replace("|<\/div>[^<]+<!-- \/wp:column -->|s",'</td>',$content);
+$content = do_blocks( $content );
+$output = wpautop( convert_chars( wptexturize( do_shortcode( $content ) ) ) );	
+$output = str_replace( '</p>', '</p><p>&nbsp;</p>', $output );
+$output = str_replace( '</div>', '</div><p>&nbsp;</p>', $output );
 
 echo $output;
 ?>
