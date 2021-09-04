@@ -1313,7 +1313,7 @@ function toastmasters_attendance_report() {
 		$userdata = get_userdata( $user_id );
 
 		echo '<tr><td>';
-		printf( '<a href="%s&member=%d">', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=attendance' ), intval($userdata->ID) );
+		printf( '<a href="%s&member=%d">', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=attendance'.$start ), intval($userdata->ID) );
 		echo esc_attr($userdata->first_name);
 		echo ' ';
 		echo esc_attr($userdata->last_name);
@@ -1328,7 +1328,18 @@ function toastmasters_attendance_report() {
 function awesome_get_attendance_detail( $user_id ) {
 	global $wpdb;
 	global $rsvp_options;
-	$results = wp4t_history_query("user_id=$user_id AND domain='".$_SERVER['SERVER_NAME']."' ");
+	if ( isset( $_REQUEST['start_year'] ) && $_REQUEST['start_year'] ) {
+		$year  = (int) $_REQUEST['start_year'];
+		$month = (int) $_REQUEST['start_month'];
+		if ( $month < 10 ) {
+			$month = '0' . $month;
+		}
+		$start_date = " AND datetime > '" . $year . '-' . $month . "-01' ";
+	} else {
+		$start_date = '';
+	}
+
+	$results = wp4t_history_query("user_id=$user_id AND domain='".$_SERVER['SERVER_NAME']."' ".$start_date);
 	$userdata = get_userdata( $user_id );
 	$output   = sprintf( '<h2>%s %s</h2>', $userdata->first_name, $userdata->last_name );
 	$dates    = array();
@@ -1364,13 +1375,13 @@ function awesome_get_attendance( $user_id ) {
 		if ( $month < 10 ) {
 			$month = '0' . $month;
 		}
-		$start_date = " AND a1.meta_value > '" . $year . '-' . $month . "-01' ";
+		$start_date = " AND datetime > '" . $year . '-' . $month . "-01' ";
 	} else {
 		$start_date = '';
 	}
 
 	$appearances = array();
-	$results     = wp4t_history_query( " user_id =$user_id " );
+	$results     = wp4t_history_query( " user_id =$user_id AND domain='".$_SERVER['SERVER_NAME']."' ".$start_date );
 	foreach ( $results as $row ) {
 		if ( ! in_array( $row->post_id, $appearances ) ) {
 			$appearances[] = $row->post_id;

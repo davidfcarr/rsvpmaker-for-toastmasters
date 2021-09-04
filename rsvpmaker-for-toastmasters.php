@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.8.4
+Version: 4.8.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1126,8 +1126,10 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 	}
 	if(wp_is_json_request())
 		return toastmasters_agenda_display( $atts, $assignments ).summarize_agenda_times($atts);
-
-	if ( ! is_edit_roles() && ( ( isset( $_REQUEST['print_agenda'] ) || is_email_context() || is_agenda_locked() || !is_rsvpmaker_future($post->ID) ) ) ) {
+	if( wp4t_hour_past($post->ID)) {
+		return toastmasters_agenda_display( $atts, $assignments );
+	}
+	if ( ! is_edit_roles() && ( ( isset( $_REQUEST['print_agenda'] ) || is_email_context() || is_agenda_locked() ) ) ) {
 		return toastmasters_agenda_display( $atts, $assignments );
 	}
 
@@ -4801,7 +4803,10 @@ function awesome_event_content( $content ) {
 		}
 	}
 
-	if(isset($_GET['edit_roles_new'])) $link .= '<input type="hidden" id="edit_roles_new" value="1" >';
+	if(isset($_GET['edit_roles_new'])) 
+		$link .= '<input type="hidden" id="edit_roles_new" value="1" >';
+	if(wp4t_hour_past($post->ID) && current_user_can( 'edit_member_stats' )) 
+		$link .= sprintf('<h3>%s - <a href="%s">%s</a></h3>',__('Role data archived','rsvpmaker-for-toastmasters'),admin_url('admin.php?page=toastmasters_reconcile&post_id='.$post->ID),__('Edit','rsvpmaker-for-toastmasters'));
 	return $output . $link . $content;
 
 }
@@ -9520,11 +9525,10 @@ function wptoast_ajax_notice_handler() {
 	// Pick up the notice "type" - passed via jQuery (the "data-notice" attribute on the notice)
 	$cleared[] = sanitize_text_field($_REQUEST['type']);
 	update_option( 'cleared_rsvptoast_notices', $cleared );
-	print_r( $cleared );
+	//print_r( $cleared );
 }
 
 function rsvptoast_admin_notice() {
-
 	if ( isset( $_GET['action'] ) && ( $_GET['action'] == 'edit' ) ) {
 		return; // don't clutter edit page with admin notices. Gutenberg hides them anyway.
 	}
@@ -9872,7 +9876,7 @@ function rsvptoast_admin_notice() {
 
 function rsvptoast_admin_notice_format( $message, $slug='', $cleared = array(), $type = 'info' ) {
 	if ( is_array($cleared) && in_array( $slug, $cleared ) ) {
-		return $slug.' cleared';
+		return; // $slug.' cleared';
 	}
 	if ( empty( $slug ) ) {
 		return '<div>No message slug set</div>';
@@ -13024,3 +13028,81 @@ function wp4t_log_notify($post_id) {
 	rsvpmaker_debug_log($mail,'wpt_log_notify');
 	rsvpmaker_debug_log($send,'wpt_log_notify');
 }
+
+function tmlayout_role_output($atts) {
+$content = '<table class="roletable">
+<tr><th>Speaker</th><th>Speech Title</th><th>Evaluator</th></div>
+[tmlayout_role_iterator role="Speaker"]
+<tr><td>{Speaker}</td><td>{Title}</td><td>{Evaluator}</td></tr>
+[/tmlayout_role_iterator]
+</table>
+';
+return do_shortcode($content);
+}
+
+function tmlayout_role_iterator($atts, $content) {
+global $post, $role_data, $role_count;
+$role = $atts['role'];
+if(empty($role_data))
+	$role_data = wpt_blocks_to_data($post->post_content);
+$role_count = $role_data[$role.'1']['count'];
+$output = '';
+for($i = 1; $i <= $role_count; $i++){
+	$row = $content;
+	$key = '_'.str_replace(' ','_',$role).'_'.$i;
+	$id = get_post_meta($post->ID,$key,true);
+	$name = get_member_name($id);
+	$row = str_replace("{".$role."}",$name,$row);
+	$row = str_replace("{Role}",$name,$row);
+	$title = $intro = $path = $project = '';
+	if('Speaker' == $role) {
+		$key = '_title_Speaker_'.$i;
+		$title = get_post_meta($post->ID,$key,true);
+		$key = '_intro_Speaker_'.$i;
+		$intro = get_post_meta($post->ID,$key,true);	
+		$key = '_manual_Speaker_'.$i;
+		$path = get_post_meta($post->ID,$key,true);
+		$key = '_project_Speaker_'.$i;
+		$project_key = get_post_meta($post->ID,$key,true);
+		if(!empty($project_key))
+			$project = get_project_text($project_key);
+		}
+	$row = str_replace("{Title}",$title,$row);
+	$row = str_replace("{Intro}",$intro,$row);
+	$row = str_replace("{Path}",$path,$row);
+	$row = str_replace("{Project}",$project,$row);
+	preg_match('/\{([^}]+)\}/',$row,$match);
+	if(isset($match[1]))
+	{
+		$role2 = $match[1];
+		$key = '_'.str_replace(' ','_',$role2).'_'.$i;
+		$id = get_post_meta($post->ID,$key,true);
+		$name = get_member_name($id);
+		$row = str_replace($match[0],$name,$row);
+	}
+	//print_r($match);
+	$output .= $row;
+}
+return $output;//'<pre>'.var_export($role_data,true).'</pre>';
+}
+
+function tm_role_member($atts) {
+	global $post, $role_data, $role_count;
+	$key = '_'.str_replace($atts['role']).'_'.$role_count;
+	$assigned = get_post_meta($post->ID,$key,true);
+	return get_member_name($assigned);
+}
+
+function tm_speech_title($atts) {
+	global $post, $role_data, $role_count;
+	$key = '_title_Speaker_'.$role_count;
+	return get_post_meta($post->ID,$key,true);
+}
+
+add_shortcode('tmlayout_speech_title','tmlayout_speech_title');
+add_shortcode('tmlayout_speech_project','tmlayout_speech_project');
+add_shortcode('tmlayout_speech_path','tmlayout_speech_path');
+add_shortcode('tmlayout_role_member','tmlayout_role_member');
+add_shortcode('tmlayout_role_name','tmlayout_role_name');
+add_shortcode('tmlayout_role_iterator','tmlayout_role_iterator');
+add_shortcode('tmlayout_role_output','tmlayout_role_output');

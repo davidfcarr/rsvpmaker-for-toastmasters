@@ -916,6 +916,34 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 	}
 }
 
+class WPTM_Regular_Voting extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'regularvoting/(?P<post_id>[0-9]+)';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		$output = wptm_count_votes($request['post_id']);
+		return new WP_REST_Response( $output, 200 );
+	}
+}
+
 add_action(
 	'rest_api_init',
 	function () {
@@ -951,5 +979,7 @@ add_action(
 		$role->register_routes();
 		$tweak = new WPTM_Tweak_Times();
 		$tweak->register_routes();
+		$reg = new WPTM_Regular_Voting();
+		$reg->register_routes();
 	}
 );

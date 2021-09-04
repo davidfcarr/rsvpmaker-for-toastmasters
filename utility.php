@@ -25,7 +25,6 @@ function wp4t_last_held_role($user_id, $role) {
 }
 
 function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel = 'Open' ) {
-
 	if ( rsvpmaker_is_template() ) {
 		return 'Member dropdown will appear here';
 	}
@@ -1615,4 +1614,68 @@ function wp4t_name_index($user) {
 add_action('wp_paypal_ipn_processed','wp4t_wp_paypal_ipn_processed');
 function wp4t_wp_paypal_ipn_processed($response) {
 	mail('david@carrcommunications.com','paypal IPN Toastmasters',var_export($response,true));
+}
+
+function wptm_count_votes($post_id) {
+	global $wpdb;
+	$output = '';
+
+	$open = get_post_meta($post_id,'openvotes');
+	foreach($open as $v) {
+		$addvote = get_post_meta($post_id,'addvote_'.$v,true);
+		if(empty($addvote))
+			$addvote = array();
+		$votes[$v] = $addvote;
+	}
+
+	$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%' ORDER BY meta_key, meta_value";
+	$results = $wpdb->get_results($sql);
+	foreach($results as $row) {
+		$p = explode('_',$row->meta_key);
+		$contest = $p[1];
+		if(isset($votes[$contest][$row->meta_value]))
+		$votes[$contest][$row->meta_value]++;
+			else
+		$votes[$contest][$row->meta_value] = 1;
+	}
+
+
+
+	if(!empty($votes)) {
+		$output .= '<div id="votingresults"><h2>Voting Results as of '.rsvpmaker_date('H:i:s',time()).'</h2>';
+		foreach($votes as $contest => $contestvote) {
+			$label = get_post_meta($post_id,'votelabel_'.$contest,true);
+			$ranking[$contest] = sprintf('<h3>Votes for %s</h3>',$label);
+			if(empty($contestvote))
+			$ranking[$contest] .= '<p>none</p>';
+			else {
+				arsort($contestvote);
+				$count = 0;
+				$last = 0;
+				foreach($contestvote as $name => $score)
+				{
+					if(empty($winner[$contest]))
+						$winner[$contest] = sprintf('%s: %s',$label,$name);
+					if(($count == 1) && ($last == $score))
+						$winner[$contest] .= ' (tie with '.$name.')';
+					$ranking[$contest] .= sprintf('<p>%s: %s</p>',$name,$score);
+					$last = $score;
+					$count++;
+				}
+			}
+	}
+	foreach($winner as $w)
+		$output .= '<p>'.$w.'</p>';
+	foreach($ranking as $r)
+		$output .= $r;
+	$output .= '</div>';
+	}
+	return $output;
+}
+
+function wp4t_hour_past($post_id) {
+	global $wpdb;
+	$event_table = get_rsvpmaker_event_table();
+	$end = (int) $wpdb->get_var("select ts_end from $event_table WHERE event=$post_id");
+	return (time() > ($end + 3600));
 }

@@ -24,7 +24,7 @@ if(isset($_POST['switch_vote_counter']) && rsvpmaker_verify_nonce()) {
     $user_id = intval($_POST['switch_vote_counter']);
     if($user_id) {
         update_post_meta($post->ID,'_Vote_Counter_1',$user_id);
-        update_post_meta($post->ID,'vote_counter_claimed',$current_user->ID);
+        update_post_meta($post->ID,'vote_counter_claimed',$user_id);
     }
 }
 
@@ -55,6 +55,8 @@ if(isset($_POST['switch_vote_counter']) && rsvpmaker_verify_nonce()) {
     #votingresults {padding: 10px; border: thin dotted #000;}
     .votinglink {width: 95%;}
     .more, .editblock {display: none}
+    .editblock {border: thick solid yellow; padding: 10px;}
+    button {color: red;}
 </style>
 </style>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -118,47 +120,11 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
 
 if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_GET['preview'])) {
     $open = get_post_meta($post->ID,'openvotes'); // get array
-        $prompt = (empty($open)) ? '' : sprintf('<a href="%s">Check for votes</a> | <a href="#addvotes">Add votes</a></p>',$actionlink);
-    printf('<p>Logged in as vote counter %s</p>',$prompt);
+    $prompt = sprintf('<p><button id="votecheck">START VOTE COUNT</button> | <a href="%s">Check Now</a> | <a href="#addvotes">Add votes</a></p>',$actionlink);
+    printf('<p>Logged in as vote counter </p>%s',$prompt);
     $metakey = 'myvote_'.$key.'_'.$identifier;
 
-    if(is_array($open)) {
-            foreach($open as $v) {
-                $addvote = get_post_meta($post->ID,'addvote_'.$v,true);
-                if(empty($addvote))
-                    $addvote = array();
-                $votes[$v] = $addvote;
-            }
-    }    
-
-
-    $sql = "SELECT * FROM $wpdb->postmeta where post_id=$post->ID AND meta_key LIKE 'myvote%' ORDER BY meta_key, meta_value";
-    $results = $wpdb->get_results($sql);
-    //print_r($results);
-    foreach($results as $row) {
-        $p = explode('_',$row->meta_key);
-        $contest = $p[1];
-        if(isset($votes[$contest][$row->meta_value]))
-        $votes[$contest][$row->meta_value]++;
-            else
-        $votes[$contest][$row->meta_value] = 1;
-    }
-
-    if(!empty($votes)) {
-        echo '<div id="votingresults"><h2>Voting Results</h2>';
-        foreach($votes as $contest => $contestvote) {
-            $label = get_post_meta($post->ID,'votelabel_'.$contest,true);
-            printf('<h3>Votes for %s as of %s</h3>',$label,rsvpmaker_date('H:i:s',time()));
-            if(empty($contestvote))
-                echo '<p>none</p>';
-            else {
-                arsort($contestvote);
-                foreach($contestvote as $name => $score)
-                printf('<p>%s: %s</p>',$name,$score);    
-            }
-    }
-    echo '</div>';
-    }
+    echo '<div id="score_status"></div><div id="scores">'.wptm_count_votes($post->ID).'</div>';
 
     //show vote counter controls
     $claimed = $current_user->ID;
@@ -196,7 +162,6 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_
             $label = get_post_meta($post->ID,'votelabel_'.$v,true);
             $voting_link = $actionlink.'&key='.$v;
             printf('<h3>Contest set %s: %s - <a href="#" target="edit_%s" class="editnow">Edit</a> - <a href="%s" target="_blank">Preview Ballot</a></h3>',$label,implode(', ',$contestants),$v,$voting_link.'&preview=1');
-            printf('<p>Link to share:<br><input type="text" class="votinglink" status="status_%s" value="Vote for %s %s"></p><div id="status_%s"></div>',$v,$label, $voting_link,$v);
             printf('<div class="editblock" id="edit_%s">',$v);
             printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink())); 
             printf('<p>%s</p>',__('Make any necessary edits and click Update','rsvpmaker-for-toastmasters'));
@@ -207,6 +172,7 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_
             echo '<input type="hidden" name="edit_candidates" value="'.$v.'">';
             rsvpmaker_nonce();
             echo '<button>Update</button></form></div>';
+            printf('<p>Link to share:<br><input type="text" class="votinglink" status="status_%s" value="Vote for %s %s"></p><div id="status_%s"></div>',$v,$label, $voting_link,$v);
         }
     }
     else {
@@ -276,8 +242,11 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_
     echo '</div>';
     echo '<input type="hidden" name="openvotes" value="Evaluator">';
     rsvpmaker_nonce();
-    echo '<button>Submit</button></form>';
-    
+    echo '<button>Submit</button></form>';    
+    }//end show evaluators setup
+
+
+    if(!is_array($open) || !in_array('tabletopicsspeaker',$open)) {
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
     printf('<h2>%s</h2>',__('Set up vote for Table Topics Speaker','rsvpmaker-for-toastmasters'));
     for($i=0; $i < 5; $i++)
@@ -290,24 +259,26 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_
     echo '<input type="hidden" name="openvotes" value="Table Topics Speaker">';
     rsvpmaker_nonce();
     echo '<button>Submit</button></form>';
-    }//end show evaluators setup
+    }
 
     $club_contests = get_option('custom_club_contests');
     if(is_array($club_contests))
     foreach($club_contests as $contest) {
         $contest = trim($contest);
-        printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));
-        echo '<input type="hidden" name="openvotes" value="'.$contest.'">';
-        echo '<h2>Set up vote for '.$contest.'</h2>';
-        for($i=0; $i < 5; $i++)
-            echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
-        printf('<div id="moreprompt%d"><a href="#moreprompt%d" class="moreprompt" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
-        $more++;
-        for($i=0; $i < 5; $i++)
-            echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
-        echo '</div>';
-        rsvpmaker_nonce();
-        echo '<button>Submit</button></form>';    
+        if(!empty($contest)) {
+            printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));
+            echo '<input type="hidden" name="openvotes" value="'.$contest.'">';
+            echo '<h2>Set up vote for '.$contest.'</h2>';
+            for($i=0; $i < 5; $i++)
+                echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+            printf('<div id="moreprompt%d"><a href="#moreprompt%d" class="moreprompt" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
+            $more++;
+            for($i=0; $i < 5; $i++)
+                echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
+            echo '</div>';
+            rsvpmaker_nonce();
+            echo '<button>Submit</button></form>';    
+        }
     }
 
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));
@@ -373,11 +344,13 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_
     
 } // end vote counter controls
 
-if(!$claimed) {
+if(!$claimed || (($claimed != $current_user->ID) && current_user_can('manage_options')) ) {
     if(is_user_member_of_blog()) {
         printf('<form method="post" adtion="%s"><input type="hidden" name="claim" value="1">',add_query_arg('voting',1,get_permalink()));
         rsvpmaker_nonce();
         echo '<button>Make Yourself Vote Counter</button></form>';
+        if($claimed)
+            echo '<p><em>Website administrator can override</em></p>';
     }
     else {
         printf('<p><a href="%s">Login</a> to claim the vote counter role.</p>',wp_login_url(add_query_arg('voting',1,get_permalink())));
@@ -445,6 +418,69 @@ jQuery( document ).ready(
         $('#'+target).show();
         }
     );
+
+    var checkvoteinterval;
+    var countdown = 30;
+    var iterations = 0;
+
+    $( '#votecheck' ).click(
+        function (e) {
+            e.preventDefault();
+            var label = $( '#votecheck' ).text();
+            console.log( label + ' checking for scores' );
+            if (label == 'START VOTE COUNT') {
+                checkvoteinterval = setInterval(
+                    function(){
+                        refreshScores();
+                    },
+                    1000
+                );
+                $( '#votecheck' ).text( 'STOP VOTE COUNT' );
+            } else {
+                clearInterval( checkvoteinterval );
+                $( '#votecheck' ).text( 'START VOTE COUNT' );
+            }
+        }
+    );
+<?php
+//start automatically
+if(!empty($open)) {
+echo "checkvoteinterval = setInterval(
+    function(){
+        refreshScores();
+    },
+    1000
+);
+$( '#votecheck' ).text( 'START/STOP VOTE COUNT' );
+";
+}
+?>
+    function refreshScores() {
+			if (countdown == 0) {
+				$( '#score_status' ).html( 'Checking for new scores ...' );
+				console.log( 'checking for scores' );
+				$.get(
+					<?php echo "'".rest_url('rsvptm/v1/regularvoting/').$post->ID."'"; ?>,
+					function( data ) {
+						$( "#scores" ).html( data );
+						$( '#score_status' ).html( 'Updated' );
+					}
+				);
+				countdown = 30;
+                iterations++;
+			} else {
+                if(iterations == 90) {
+                    /* stop after 45 minutes */ 
+                    clearInterval( checkvoteinterval );
+                    $( '#score_status' ).html( 'Timed out. Click <strong>START VOTE COUNT</strong> to restart.' );
+                    $( '#votecheck' ).text( 'START VOTE COUNT' );
+                } 
+                else {
+                    $( '#score_status' ).html( 'Checking for votes in ' + countdown );
+                    countdown--;
+                }
+			}
+	}
 
 } );
 </script>
