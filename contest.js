@@ -19,6 +19,8 @@ jQuery( document ).ready(
 			}
 		);
 
+		$('.contest_scoring').change(function() { $('#custom_contest').hide(); }) ;
+
 		// hide to start with
 		$( '.morejudges' ).hide();
 
@@ -77,6 +79,12 @@ jQuery( document ).ready(
 		// check initial state of voting links
 		votingLinkToggle();
 		$( "input#showlinks" ).on( "click", votingLinkToggle );
+		
+		$('#multicontest').click(
+			function() {
+				$('#morecontests').show();
+			}
+		);
 
 		votingFormsToggle();
 		$( "input#showvotingforms" ).on( "click", votingFormsToggle );
@@ -509,3 +517,16 @@ jQuery( document ).ready(
 
 	}
 );
+
+tinymce.init({
+	selector:"textarea",plugins: "link",
+	block_formats: "Paragraph=p",
+	menu: {
+	format: { title: "Format", items: "bold italic | removeformat" },
+	style_formats: [
+	{ title: "Inline", items: [
+		{ title: "Bold", format: "bold" },
+		{ title: "Italic", format: "italic" },
+	]},]},
+	toolbar: "bold italic link",
+	});

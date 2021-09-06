@@ -19,7 +19,7 @@ function tm_welcome_screen_assets( $hook ) {
 
 function toastmasters_css_js() {
 	global $post, $current_user;
-	$version = '4.7.1';
+	$version = '4.7.4';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
 		return; // don't load all this in editor or post listings wp4toastmasters_history_edit
 	}
@@ -99,7 +99,8 @@ function toastmasters_css_js() {
 		wp_enqueue_script( 'user-profile' );
 	}
 	if ( isset( $_GET['scoring'] ) ) {
-		wp_register_script( 'contest-toastmasters', plugins_url( 'rsvpmaker-for-toastmasters/contest.js' ), array( 'jquery' ), $version );
+		wp_enqueue_script( 'wp-tinymce' );
+		wp_register_script( 'contest-toastmasters', plugins_url( 'rsvpmaker-for-toastmasters/contest.js' ), array( 'jquery','wp-tinymce' ), $version );
 		wp_enqueue_script( 'contest-toastmasters' );
 		$contestvars = array(
 			'rest_nonce'     => wp_create_nonce( 'wp_rest' ),

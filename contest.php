@@ -93,6 +93,15 @@ function wpt_get_contest_array( $type = 'selection' ) {
 	}
 }
 
+function wpt_get_contest_default($role) {
+	$contest['International Contest Speaker'] = '<option value="International Speech Contest">International Speech Contest</option>';
+	$contest['Video Contest Speaker']         = '<option value="Video Speech Contest">Video Speech Contest</option>';
+	$contest['Humorous Contest Speaker']      = '<option value="Humorous Speech Contest">Humorous Speech Contest</option>';
+	$contest['Table Topics Contestant']         = '<option value="Table Topics Contest">Table Topics Contest</option>';
+	$contest['Evaluation Contestant']           = '<option value="Evaluation Contest">Evaluation Contest</option>';
+	return (isset($contest[$role])) ? $contest[$role] : '';
+}
+
 function set_contest_parameters( $post_id, $contest ) {
 	global $current_user;
 	$contest_selection = wpt_get_contest_array();
@@ -114,12 +123,6 @@ function toast_contest( $mode ) {
 	$output        .= wpt_mycontests_links( $practice );
 	if ( $mode == 'dashboard' ) {
 		$output .= '<h1>Scoring Dashboard - ' . $date . ' ' . $dashboard_name . '</h1>';
-		$related = get_post_meta( $post->ID, '_contest_related', true );
-		if ( $related ) {
-			$other_contest_name = get_post_meta( $related, 'toast_contest_name', true );
-			$otherprompt        = ( isset( $_POST['judge'] ) && ! empty( get_post_meta( $post->ID, 'tm_contest_sync', true ) ) ) ? ' - Reload ' . $other_contest_name . ' dashboard to see synchronized list of judges' : '';
-			printf( '<p>Related: <a target="_blank" href="%s?scoring=dashboard">%s</a> %s</p>', get_permalink( $related ), $other_contest_name, $otherprompt );
-		}
 		$output .= toast_scoring_dashboard( $related, $practice );
 	} elseif ( $mode == 'voting' ) {
 		$output .= '<h1>Voting - ' . $date . ' ' . $dashboard_name . '</h1>';
@@ -235,39 +238,62 @@ function wpt_mycontests() {
 	return $output;
 }
 
+function contest_get_master($post_id) {
+	global $master;
+	if(!empty($master))
+		return $master;
+	$master = get_post_meta($post_id,'_contest_tracking_post',true);
+	if(empty($master))
+		$master = $post_id;
+	return $master;
+}
+
+function toast_related_contests($post_id) {
+	$master = get_post_meta($post_id,'_contest_tracking_post',true);
+	$all_related = array();
+	if($master) {
+		$all_related = get_post_meta( $master, '_contest_related' );
+		array_unshift($all_related,$master);
+	}
+	else {
+		$all_related = get_post_meta( $post_id, '_contest_related' );
+		array_unshift($all_related,$post_id);
+	}
+	return $all_related;
+}
+
+function contest_get_edits($master) {
+	global $post;
+	$edits = array($master);
+	$temp = get_post_meta($master,'contest_sync_to');
+	if(!empty($temp) && is_array($temp)) {
+		foreach($temp as $value)
+		$edits[] = $value;
+	}
+	else {
+		//check old method
+		$sync = get_post_meta( $post->ID, 'tm_contest_sync', true );
+		if(isset($sync['copy_to']) && $sync['copy_from'])
+			{
+				add_post_meta($sync['copy_from'],'contest_sync_to',$sync['copy_to']);
+				add_post_meta($sync['copy_to'],'contest_sync_from',$sync['copy_from']);
+				delete_post_meta( $sync['copy_from'], 'tm_contest_sync' );
+				delete_post_meta( $sync['copy_to'], 'tm_contest_sync' );
+				$edits[] = $sync['copy_to'];
+			}
+	}
+	return $edits;
+}
+
 function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	ob_start();
 	global $post, $wpdb;
 	global $current_user;
 	$contest_name = get_post_meta( $post->ID, 'toast_contest_name', true );
 
-	if ( isset( $_POST['sync'] )  && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		$related  = (int) $_POST['related'];
-		$synctype = sanitize_text_field($_POST['sync']);
-		if ( $synctype == 'master' ) {
-			$sync = array(
-				'copy_from' => $post->ID,
-				'copy_to'   => $related,
-			);
-		} elseif ( $synctype == 'slave' ) {
-			$sync = array(
-				'copy_from' => $related,
-				'copy_to'   => $post->ID,
-			);
-		}
-		if ( empty( $sync ) ) {
-			delete_post_meta( $post->ID, 'tm_contest_sync' );
-			delete_post_meta( $related, 'tm_contest_sync' );
-		} else {
-			update_post_meta( $post->ID, 'tm_contest_sync', $sync );
-			update_post_meta( $related, 'tm_contest_sync', $sync );
-		}
-	} else {
-		$sync = get_post_meta( $post->ID, 'tm_contest_sync', true );
-	}
-
-	if ( ! empty( $sync ) ) {
-		tm_contest_sync( $sync );
+	if ( isset( $_POST['break_connection'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		delete_post_meta(intval($_POST['break_connection']),'contest_sync_to',$post->ID);
+		delete_post_meta($post->ID,'contest_sync_from');
 	}
 
 	if ( isset( $_POST['dashboardvote'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -297,14 +323,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	} elseif ( ! is_user_logged_in() ) {
 		return '<p>You must be logged in as the site administrator, chief judge, or ballot counter.</p>' . $link;
 	} else {
-		$dashboard_users = get_post_meta( $post->ID, 'tm_contest_dashboard_users', true );
-		if ( empty( $dashboard_users ) ) {
-			$dashboard_users = array();
-		}
-		if ( ! in_array( $post->post_author, $dashboard_users ) ) {
-			$dashboard_users[] = $post->post_author;
-			update_post_meta( $post->ID, 'tm_contest_dashboard_users', $dashboard_users );
-		}
 		if ( ! current_user_can( 'edit_others_posts' ) ) {
 			if ( ! is_array( $dashboard_users ) ) {
 				return '<p>Logged in user not recognized as a site administrator, chief judge, or ballot counter.</p>' . wpt_mycontests();
@@ -317,42 +335,44 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 	$default_dashboard_users = array( $current_user->ID );
 
-	if ( ! empty( $_POST['contest_scoring2'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		$scoring_index        = sanitize_text_field($_POST['contest_scoring2']);
-		$contest_scoring      = $contest_selection[ $scoring_index ];
-		$timing               = $contest_timing[ $scoring_index ];
-		$data['post_title']   = $scoring_index;
-		$data['post_content'] = '[wpt_contests_prompt]';
-		$data['post_author']  = $current_user->ID;
-		$data['post_type']    = 'rsvpmaker';
-		$data['post_status']  = 'publish';
-		$id                   = wp_insert_post( $data );
-		if ( ! empty( $contest_scoring ) ) {
-			update_post_meta( $id, 'toast_contest_name', $scoring_index );
-			update_post_meta( $id, 'toast_contest_scoring', $contest_scoring );
-			update_post_meta( $id, 'toast_timing', $timing );
-			update_post_meta( $id, '_rsvpmaker_special', 'Contest document' );
-			update_post_meta( $id, '_contest_tracking_post', $post->ID );
-			update_post_meta( $id, '_contest_related', $post->ID );
-			update_post_meta( $id, '_rsvp_dates', get_rsvp_date( $post->ID ) );
-			update_post_meta( $post->ID, '_contest_related', $id );
-			update_post_meta( $id, 'tm_contest_dashboard_users', $default_dashboard_users );
-			$track_role = sanitize_text_field($_POST['track_role2']);
-			if ( ! empty( $track_role ) ) {
-				update_post_meta( $id, 'tm_track_role', $track_role );
-			}
-			if ( $id ) {
-				$rp = get_post( $id );
-				printf( '<p>Created related contest: <a target="_blank" href="%s?scoring=dashboard">%s</a></p>', get_permalink( $id ), $rp->post_title );
-			}
-			if ( ! empty( $_POST['syncwith1'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-				$sync = array(
-					'copy_from' => $post->ID,
-					'copy_to'   => $id,
-				);
-				update_post_meta( $post->ID, 'tm_contest_sync', $sync );
-				update_post_meta( $id, 'tm_contest_sync', $sync );
-			}
+	if ( ! empty( $_POST['contest_scoring_more'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		update_post_meta($post->ID,'contest_data_model',1);
+		foreach($_POST['contest_scoring_more'] as $index => $scoring_index) {
+			if(empty($scoring_index))
+				continue;
+			$scoring_index        = sanitize_text_field($scoring_index);
+			$contest_scoring      = $contest_selection[ $scoring_index ];
+			$timing               = $contest_timing[ $scoring_index ];
+			$data['post_title']   = $scoring_index;
+			$data['post_content'] = '[wpt_contests_prompt]';
+			$data['post_author']  = $current_user->ID;
+			$data['post_type']    = 'rsvpmaker';
+			$data['post_status']  = 'publish';
+			$id                   = wp_insert_post( $data );
+			if ( ! empty( $contest_scoring ) ) {
+				add_contest_userlink( $current_user->ID, add_query_arg('scoring','dashboard',get_permalink($id)), $id );
+				update_post_meta( $id, 'toast_contest_name', $scoring_index );
+				update_post_meta( $id, 'toast_contest_scoring', $contest_scoring );
+				update_post_meta( $id, 'toast_timing', $timing );
+				update_post_meta( $id, '_rsvpmaker_special', 'Contest document' );
+				update_post_meta( $id, '_contest_tracking_post', $post->ID );
+				add_post_meta( $id, '_contest_related', $post->ID );
+				update_post_meta( $id, '_rsvp_dates', get_rsvp_date( $post->ID ) );
+				add_post_meta( $post->ID, '_contest_related', $id );
+				update_post_meta( $id, 'tm_contest_dashboard_users', $default_dashboard_users );
+				$track_role = sanitize_text_field($_POST['track_role_more'][$index]);
+				if ( ! empty( $track_role ) ) {
+					update_post_meta( $id, 'tm_track_role', $track_role );
+				}
+				if ( $id ) {
+					$rp = get_post( $id );
+					printf( '<p>Created related contest: <a target="_blank" href="%s">%s</a></p>', add_query_arg('scoring','dashboard',get_permalink( $id )), $rp->post_title );
+				}
+				if ( ! empty( $_POST['syncwith1'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+					add_post_meta($post->ID,'contest_sync_to',$id);
+					add_post_meta($id,'contest_sync_from',$post->ID);
+				}
+			}	
 		}
 	}
 
@@ -365,6 +385,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			update_post_meta( $post->ID, 'toast_contest_scoring', $contest_scoring );
 			update_post_meta( $post->ID, 'toast_timing', $timing );
 			update_post_meta( $post->ID, 'tm_contest_dashboard_users', $default_dashboard_users );
+			add_contest_userlink( $current_user->ID, add_query_arg('scoring','dashboard',get_permalink($post->ID)), $post->ID );
 		}
 	} elseif ( ! empty( $_POST['scoring_label'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		foreach ( $_POST['scoring_label'] as $index => $label ) {
@@ -397,50 +418,52 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		} else {
 			$options .= get_option( 'toast_custom_contest' );
 		}
-		$syncrole = track_roles_ui();
+		preg_match_all('/{"role":"([a-zA-Z ]+ Contest[^"]+)/',$post->post_content,$matches);
+		$roles = (isset($matches[1])) ? $matches[1] : array();
+		if(!empty($roles)) {
+			foreach($roles as $role){
+				$default_option = wpt_get_contest_default($role);
+				$contest_defaults[] = array('role' => $role, 'option' => $default_option);
+			}
+		}			
 		$output  .= '<p>Use this dashboard to pick a contest, add your list of contestants and judges, and generate personalized links to a page where each judge can score contestants and enter their votes.</p><p>As the judges vote, you will see their votes appear on the dashboard within seconds. If you have the Timer and Tiebreaking Judge record their work online, their input can also be factored in to show if any contestants were disqualified or how any ties were broken.</p><p><a href="https://www.wp4toastmasters.com/knowledge-base/contest-setup/" target="_blank">Step-By-Step Directions</a></p>';
-		$output  .= '<h1>Choose Contest</h1>' . sprintf(
-			'<form method="post" action="%s">
-	<div>Contest:<br /><select name="contest_scoring">%s</select>
-	%s
-	<div>Contest #2 (optional):<br /><select name="contest_scoring2">%s</select>
-	%s
-	<p><input type="checkbox" name="syncwith1" value="checked" checked="checked" /> Use same list of judges and functionaries for second contest</p>
-	<p><input type="radio" name="ballot_no_password" value="0"  checked="checked" /> User password required for access to ballot, timer\'s report form</p>
+		$default_option = (isset($contest_defaults[0])) ? $contest_defaults[0]['option'] : '';
+		$default_role = (isset($contest_defaults[0])) ? $contest_defaults[0]['role'] : '';
+		$output  .= '<h1>Choose Contest</h1>' . sprintf('<form method="post" action="%s">
+	<div>Contest:<br /><select name="contest_scoring" class="contest_scoring">%s</select> %s</div>',$actionlink,$default_option.$options,track_roles_ui($default_role));
+	$i = 2;
+	if(isset($contest_defaults) && (sizeof($contest_defaults) > 1)) {
+		array_shift($contest_defaults);
+		foreach($contest_defaults as $defaults)
+		{
+			$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$defaults['option'].$options,track_roles_ui($defaults['role'],'_more[]'));
+			$i++;
+		}
+	}
+	$output .= '<p><a href="#morecontests" id="multicontest">+ Show options for multiple contests</a> (optionally, you can set the judges to be the same for all contests held on the same day)</p><div id="morecontests">';
+	for($i; $i < 6; $i++)
+		$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$options,track_roles_ui('','_more[]'));
+	$output .= '<p><input type="checkbox" name="syncwith1" value="checked" checked="checked" /> Use same list of judges and functionaries for all contests</p></div>';
+	$output .= sprintf('<p><input type="radio" name="ballot_no_password" value="0"  checked="checked" /> User password required for access to ballot, timer\'s report form</p>
 	<p><input type="radio" name="ballot_no_password" value="1"  /> No password. Ballots protected by coded links</p>
 	<p><em>By default, a password is required for all voting forms associated with a user account. You may turn off password protection to make it easier for judges to access thier ballots, which will still be private as long as the link is only shared with the individual judges. This setting also applies to the timer\'s report. Guest judge links, created by entering a name rather than choosing a user account, are not password protected. The contest dashboard is always password protected.</em></p>
 		<button>Set</button></div>
-%s</form>
-',
-			$actionlink,
-			$options,
-			track_roles_ui(),
-			$options,
-			track_roles_ui( '', 2 ),
-			rsvpmaker_nonce('return')
-		);
-
-		$output .= '<h1>Custom Contest</h1>' . sprintf(
-			'<form method="post" action="%s" id="custom_contest"><p>Contest Name: <input type="input" name="contest_name" value="My Custom Contest" /></p>
-',
-			$actionlink
-		);
+%s</form>',rsvpmaker_nonce('return'));
+$output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form method="post" action="%s" id="custom_contest"><p>Contest Name: <input type="input" name="contest_name" value="My Custom Contest" /></p>
+',	$actionlink);
 
 		for ( $i = 1; $i < 15; $i++ ) {
 			$output .= sprintf( '<div>Label: <input type="text" name="scoring_label[%d]" /> Score: <input class="setscore" type="text" name="scoring_score[%d]" /></div>', $i, $i );
 		}
 		$output .= '<div>Timing <input type="text" name="toast_timing" value="5 to 7" size="10"> minutes</div>';
 		$output .= '<div id="readyprompt"></div><button>Set</button></div>'.rsvpmaker_nonce('return').'
-</form>';
-		ob_start();
-		?>
-<p><a href="<?php echo esc_attr($actionlink); ?>&reset_scoring=1&clear_custom_scoring">Clear Custom Scoring</a></p>
-		<?php
-		$output .= ob_get_clean();
+</form></div>';
 		return $output;
 	}
 
 	if ( true ) { // kludge
+		$master = contest_get_master($post->ID);
+		$edits = contest_get_edits($master);
 
 		if ( ! empty( $_POST['copy_judges'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 			$copyfrom = (int) $_POST['copy_judges'];
@@ -480,17 +503,20 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 		if ( isset( $_POST['tm_tiebreaker'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 			$tiebreaker = (int) $_POST['tm_tiebreaker'];
-			update_post_meta( $post->ID, 'tm_scoring_tiebreaker', $tiebreaker );
+			foreach($edits as $edit)
+			update_post_meta( $edit, 'tm_scoring_tiebreaker', $tiebreaker );
 		} else {
 			$tiebreaker = get_post_meta( $post->ID, 'tm_scoring_tiebreaker', true );
 		}
 
 		if ( isset( $_POST['contest_timer_user'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-			update_post_meta( $post->ID, 'contest_timer', (int) $_POST['contest_timer_user'] );
+			foreach($edits as $edit)
+			update_post_meta( $edit, 'contest_timer', (int) $_POST['contest_timer_user'] );
 		}
 
 		if ( isset( $_POST['timer_named'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-			update_post_meta( $post->ID, 'contest_timer_named', sanitize_text_field($_POST['timer_named']) );
+			foreach($edits as $edit)
+			update_post_meta( $edit, 'contest_timer_named', sanitize_text_field($_POST['timer_named']) );
 		}
 
 		if ( isset( $_POST['tm_scoring_dashboard_users'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -501,11 +527,14 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			foreach ( $_POST['tm_scoring_dashboard_users'] as $user_id ) {
 				$user_id = (int) $user_id;
 				if ( $user_id && ! in_array( $user_id, $dashboard_users ) ) {
-					add_contest_userlink( $user_id, $dashboard );
+					foreach($edits as $edit){
+						add_contest_userlink( $user_id, add_query_arg('scoring','dashboard',get_permalink($edit)), $edit );
+					}
 					$dashboard_users[] = $user_id;
 				}
 			}
-			update_post_meta( $post->ID, 'tm_contest_dashboard_users', $dashboard_users );
+			foreach($edits as $edit)
+			update_post_meta( $edit, 'tm_contest_dashboard_users', $dashboard_users );
 		}
 
 		if ( ! empty( $track_role ) ) {
@@ -559,14 +588,16 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			foreach ( $_POST['judge'] as $index => $judge_id ) {
 				$judge_id = sanitize_text_field($judge_id);
 				if ( ! empty( $judge_id ) ) {
-					$link = add_query_arg(
-						array(
-							'scoring' => 'voting',
-							'judge'   => $index,
-						),
-						get_permalink()
-					);
-					add_contest_userlink( $judge_id, $link );
+					foreach($edits as $edit){
+						$link = add_query_arg(
+							array(
+								'scoring' => 'voting',
+								'judge'   => $index,
+							),
+							get_permalink($edit)
+						);
+							add_contest_userlink( $judge_id, $link, $edit );
+					}
 					$judge[ $index ] = $judge_id;
 				}
 			}
@@ -576,7 +607,8 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 					$email = ( empty( $_POST['judge_email'][ $index ] ) ) ? '' : sanitize_text_field($_POST['judge_email'][ $index ]);
 					if ( ! empty( $email ) && is_email( $email ) ) {
 						echo "judge email $email";
-						update_post_meta( $post->ID, 'judge_email' . $index, $email );
+						foreach($edits as $edit)
+						update_post_meta( $edit, 'judge_email' . $index, $email );
 					}
 				}
 			}
@@ -587,26 +619,39 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 				$judge_id = $judge[ $judge_index ];
 				unset( $judge[ $judge_index ] );
 				if ( is_numeric( $judge_id ) ) {
-					delete_post_meta( $post->ID, 'contest_user', $judge_id );
-					delete_post_meta( $post->ID, 'contest_link_' . $judge_id );
+					foreach($edits as $edit)
+					{
+						delete_post_meta( $edit, 'contest_user', $judge_id );
+						delete_post_meta( $edit, 'contest_link_' . $judge_id );	
+					}
 					echo 'delete contest_link_' . $judge_id . ' post ' . $post->ID;
 				}
 			}
 		}
 
 		if ( isset( $judge ) ) {
-			update_post_meta( $post->ID, 'tm_scoring_judges', $judge );
-		}
-
-		if ( ! empty( $sync ) ) {
-			tm_contest_sync( $sync );
+			foreach($edits as $edit)
+			update_post_meta( $edit, 'tm_scoring_judges', $judge );
 		}
 	}
 
 	if ( empty( $contestants ) ) {
 		$contestants = toast_get_contestants( $post->ID );
 	}
-	$judges = get_post_meta( $post->ID, 'tm_scoring_judges', true );
+	$contests = toast_related_contests($post->ID);
+	$master = contest_get_master($post->ID);
+	$edits = contest_get_edits($master);
+
+	$judges = get_post_meta( $master, 'tm_scoring_judges', true );
+	$timer_user = (int) get_post_meta( $master, 'contest_timer', true );
+	$dashboard_users = get_post_meta( $master, 'tm_contest_dashboard_users', true );
+	if ( empty( $dashboard_users ) ) {
+		$dashboard_users = array();
+	}
+	if ( ! in_array( $post->post_author, $dashboard_users ) ) {
+		$dashboard_users[] = $post->post_author;
+		update_post_meta( $master, 'tm_contest_dashboard_users', $dashboard_users );
+	}
 
 	$is_locked = get_post_meta( $post->ID, 'contest_locked', true );
 
@@ -681,15 +726,18 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			get_permalink( $post->ID )
 		);
 		printf( '<p>Set order for %s <a target="_blank" href="%s">open in new tab</a></p>', $contest_name, $shuffle_link );
-		if ( $related ) {
-			$other_shuffle_link = add_query_arg(
-				array(
-					'scoring' => 'shuffle',
-				),
-				get_permalink( $related )
-			);
-			$other_contest_name = get_post_meta( $related, 'toast_contest_name', true );
-			printf( '<p class="other">Set order for %s <a target="_blank" href="%s">open in new tab</a></p>', $other_contest_name, $other_shuffle_link );
+		$all_related = toast_related_contests($post->ID);
+		if ( !empty($all_related) ) {
+			foreach($all_related as $related) {
+				$other_shuffle_link = add_query_arg(
+					array(
+						'scoring' => 'shuffle',
+					),
+					get_permalink( $related )
+				);
+				$other_contest_name = get_post_meta( $related, 'toast_contest_name', true );
+				printf( '<p class="other">Set order for %s <a target="_blank" href="%s">open in new tab</a></p>', $other_contest_name, $other_shuffle_link );	
+			}
 		}
 	} elseif ( ! empty( $order ) ) {
 		echo '<h3>Speaking Order</h3>';
@@ -708,7 +756,9 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 	if ( isset( $_POST['ballot_no_password'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$ballot_no_password = (int) $_POST['ballot_no_password'];
-		update_post_meta( $post->ID, 'ballot_no_password', $ballot_no_password );
+		foreach($edits as $edit) {
+			update_post_meta( $edit, 'ballot_no_password', $ballot_no_password );
+		}
 	} else {
 		$ballot_no_password = get_post_meta( $post->ID, 'ballot_no_password', true );
 	}
@@ -730,13 +780,13 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			if ( $dashboard_users ) {
 				update_post_meta( $post->ID, 'tm_contest_dashboard_users', $dashboard_users );
 			}
-			$timer_user = (int) get_post_meta( $post->ID, 'contest_timer', true );
+			$timer_user = (int) get_post_meta( $import, 'contest_timer', true );
 			if ( $timer_user ) {
-				update_post_meta( $post_id, 'contest_timer', $timer_user );
+				update_post_meta( $post->ID, 'contest_timer', $timer_user );
 			}
-			$tie_breaker = get_post_meta( $post->ID, 'tm_scoring_tiebreaker', true );
+			$tie_breaker = get_post_meta( $import, 'tm_scoring_tiebreaker', true );
 			if ( $tie_breaker ) {
-				update_post_meta( $post_id, 'tm_scoring_tiebreaker', $tie_breaker );
+				update_post_meta( $post->ID, 'tm_scoring_tiebreaker', $tie_breaker );
 			}
 
 			$sql     = "SELECT * FROM $wpdb->postmeta WHERE post_id=$import AND meta_key LIKE 'contest_link%' ";
@@ -754,21 +804,11 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 	if ( ! empty( $judges ) ) {
 		$dashboard_forms = '';
-		$related         = get_post_meta( $post->ID, '_contest_related', true );
-		if ( $related ) {
-			$other_contest_name = get_post_meta( $related, 'toast_contest_name', true );
-			$other_judges       = get_post_meta( $related, 'tm_scoring_judges', true );
-		}
-
 		$checked          = ( $nolinks ) ? '' : ' checked="checked" ';
-		$othercontest     = ( $related ) ? '<input type="checkbox" id="showboth" /> Show links for both contests. ' : '';
-		$samedifferent    = ( $related ) ? sprintf( 'Judge lists %s between contests', ( $judges == $other_judges ) ? 'the same' : '<span style="color: red;">different</span>' ) : '';
 		$practice_contest = get_option( 'tm_practice_contest' );
 		$practice_judges  = get_post_meta( $practice_contest, 'tm_scoring_judges', true );
-
 		$update_practice = false;
-
-		echo '<h2>Voting Links</h2><p><input type="checkbox" id="showlinks" value="1" ' . $checked . ' /> Show Links ' . $othercontest . ' ' . $samedifferent . '</p><p class="votinglink">Share these personalized voting links with the judges. </p> ';
+		echo '<h2>Voting Links</h2><p><input type="checkbox" id="showlinks" value="1" ' . $checked . ' /> Show Links </p><p class="votinglink">Share these personalized voting links with the judges. </p> ';
 		wpt_contest_emaillinks_post();
 		if ( empty( $_POST['email_link'] ) ) {
 			echo '<p>To send these links by email, see the Email Links tab, below.</p>';
@@ -781,7 +821,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		$email_links = '';
 
 		foreach ( $judges as $key => $value ) {
-			$v = $votinglink . '&judge=' . $key;
 
 			$name = get_member_name( $value );
 			if ( is_numeric( $value ) ) {
@@ -800,14 +839,15 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			echo '<div class="votinglink">';
 			$links  = '';
 			$links .= '<h4>Voting for ' . esc_attr($name) . '</h4>' . "\n";
-			$links .= sprintf( '<p>%s <a target="_blank" href="%s">%s</a></p>', esc_html($contest_name), esc_attr($v), esc_html($v) );
-			if ( ! empty( $other_judges[ $key ] ) ) {
-				$v      = get_permalink( $related ) . '?scoring=voting&judge=' . esc_attr($key);
-				$links .= sprintf( '<p class="other">%s <a target="_blank" href="%s">%s</a></p>', esc_html($other_contest_name), esc_attr($v), esc_html($v) );
-				unset( $other_judges[ $key ] );
+			foreach($contests as $c) {
+				$votinglink = add_query_arg('scoring','voting',get_permalink($c));
+				$contest_name   = get_post_meta( $c, 'toast_contest_name', true );
+				$v = $votinglink . '&judge=' . $key;
+				$links .= sprintf( '<p>%s <a target="_blank" href="%s">%s</a></p>', esc_html($contest_name), esc_attr($v), esc_html($v) );
 			}
+	
 			if ( ! empty( $username ) && ! $ballot_no_password ) {
-				$links .= sprintf( '<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>', $username, wp_login_url( $v ), wp_login_url() . '?action=lostpassword' );
+				$links .= sprintf( '<p>Voting links are password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>', $username, wp_login_url( $v ), wp_login_url() . '?action=lostpassword' );
 			}
 			echo $links;
 			if ( empty( $practice_judges[ $key ] ) ) {
@@ -856,7 +896,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		);
 
 		$links      = '<h4>Timer</h4>' . "\n";
-		$timer_user = (int) get_post_meta( $post->ID, 'contest_timer', true );
 		if ( $timer_user && ! $ballot_no_password ) {
 			$userdata = get_userdata( $timer_user );
 			$username = $userdata->user_login;
@@ -913,8 +952,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			<?php
 		}
 	} else {
-		$sync        = get_post_meta( $post->ID, 'tm_contest_sync', true );
-		$slave       = ( $sync && ( $sync['copy_from'] != $post->ID ) );
 		if(!isset($timer_user)) $timer_user = 0;
 		$addtodrop   = contest_user_list_top( $judges, $timer_user, $dashboard_users );
 		$genericdrop = wp_dropdown_users( array( 'echo' => false ) );
@@ -929,11 +966,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	<a class="nav-tab" href="#backup_ballots">Backup Ballots</a>
 	  <a class="nav-tab" href="#security">Security</a>
 	  <a class="nav-tab" href="#lock-reset">Lock/Reset</a>
-		<?php
-		if ( $related ) {
-			echo '<a class="nav-tab" href="#sync">Sync with Related Contest</a>';
-		}
-		?>
 	</h2>
 
 	<div id="sections" class="rsvpmaker" >
@@ -990,8 +1022,8 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		<?php
 		if ( $is_locked ) {
 			echo 'Settings are locked';
-		} elseif ( $slave ) {
-			echo 'Judges list controlled from related contest';
+		} elseif ( $sync_from = get_post_meta($post->ID,'contest_sync_from',true) ) {
+			contest_break_connection($sync_from);
 		} else {
 			$related = get_post_meta( $post->ID, '_contest_related', true );
 			?>
@@ -1113,8 +1145,9 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	</section>
 	<section class="rsvpmaker"  id="security">
 		<?php
-		if ( $slave || isset( $_GET['test'] ) ) {
-			echo 'Settings controlled from related contest';
+		//retrieved on judging screen
+		if ( $sync_from ) {
+			contest_break_connection($sync_from);
 		} else {
 			?>
 	<form method="post" action="<?php echo esc_attr($actionlink); ?>" >
@@ -1173,37 +1206,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	<?php rsvpmaker_nonce(); ?>
 </form>
 	</section>
-		<?php
-		if ( $related ) {
-			$other_contest_name = get_post_meta( $related, 'toast_contest_name', true );
-			?>
-	<section id="sync">
-	<form method="post" action="<?php echo esc_attr($actionlink); ?>">
-	<h2>Sync Settings</h2>
-	<div><input type="radio" name="sync" value="" 
-			<?php
-			if ( empty( $sync ) ) {
-				echo ' checked="checked" ';}
-			?>
-	 > Off</div>
-	<div><input type="radio" name="sync" value="slave" 
-			<?php
-			if ( $slave ) {
-				echo ' checked="checked" ';}
-			?>
-	 > Sync based on <?php echo esc_html($other_contest_name); ?></div>
-	<div><input type="radio" name="sync" value="master" 
-			<?php
-			if ( ! empty( $sync ) && ! $slave ) {
-				echo ' checked="checked" ';}
-			?>
-	 > Sync based on this contest</div>
-	<input type="hidden" name="related" value="<?php echo esc_attr($related); ?>" />
-	<button>Save</button>
-	<?php rsvpmaker_nonce(); ?>
-</form>
-	</section>
-		<?php } //end if related show sync ?>
 	</div><!--end of sections--->
 </div>
 		<?php
@@ -1472,7 +1474,7 @@ function toast_scoring_sheet() {
 			add_query_arg(
 				array(
 					'scoring' => 'voting',
-					'judge'   => $judge,
+					'judge'   => sanitize_text_field($_GET['judge']),
 					'check'   => time(),
 				),
 				get_permalink()
@@ -1654,6 +1656,8 @@ function check_contest_collaborators() {
 
 function judge_import_form( $action ) {
 	global $post, $wpdb, $current_user;
+	if( get_post_meta($post->ID,'contest_sync_from',true) )
+		return;
 	$judges = get_post_meta( $post->ID, 'tm_scoring_judges', true );
 	if ( empty( $judges ) && check_contest_collaborators() ) {
 		$opt     = '<option value="">Choose Previous Contest</option>';
@@ -1668,7 +1672,7 @@ function judge_import_form( $action ) {
 				$opt .= sprintf( '<option value="%d">%s %s</option>', $event->ID, $event->post_title, rsvpmaker_date( '', $date ) );
 			}
 		}
-		if ( ! empty( $opt ) && empty( get_post_meta( $post->ID, 'tm_contest_sync', true ) ) ) {
+		if ( ! empty( $opt )  ) {
 			printf(
 				'<form action="%s" method="post"><h3>Import judges/settings (optional)</h3><p><select name="importfrom">%s</select></p>
 			<p>If the list of judges will be the same (or mostly the same) as for another contest, you can import those settings rather than setting them individually.</p>
@@ -1709,7 +1713,6 @@ function track_roles_ui( $track_role = '', $slug = '' ) {
 		}
 
 		return sprintf( '<p>Sync With Agenda Role for Contestants <br /><select id="track_role%s" name="track_role%s" >%s<option value="cancel">Cancel Selection</option></select></p>', $slug, $slug, $track_top . $track );
-
 	}
 
 }
@@ -1842,9 +1845,22 @@ function get_practice_contest_links() {
 }
 
 function wpt_mycontests_links( $practice ) {
+	global $post;
 	$mycontests = get_permalink() . '?scoring=mycontests';
 	$output     = '<div style="width: 300px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="' . $mycontests . '">My Contests</a>';
 	if ( isset( $practice['dashboard'] ) ) {
+		$master = contest_get_master($post->ID);
+		$edits = contest_get_edits($master);
+		$all_related = toast_related_contests($post->ID);
+		if ( !empty($all_related) ) {
+			foreach($all_related as $index => $related) {
+				if($related != $post->ID) {
+					$other_contest_name = get_post_meta( $related, 'toast_contest_name', true );
+					//fix to for multiple
+					$output .= sprintf( '<div>Related: <a target="_blank" href="%s">%s</a></div>', add_query_arg('scoring','dashboard',get_permalink( $related )), $other_contest_name );
+				}
+			}
+		}
 		$output .= sprintf( '<div><a href="%s" target="_blank">Practice Contest Dashboard</a></div>', $practice['dashboard'] );
 	}
 	$output .= sprintf( '<div><a href="%s" target="_blank">Practice Contest Ballot</a></div>', esc_attr($practice['judge']) );
@@ -1862,7 +1878,7 @@ function wpt_contest_emaillinks_post() {
 				$code = sanitize_text_field($code);
 				$mail['to']       = sanitize_text_field($email);
 				$mail['subject']  = stripslashes( $_POST['email_subject'][ $code ] );
-				$mail['html']     = '<p>' . nl2br( wp_kses_post(stripslashes( $_POST['intro_note'] ))) . "\n\n" . wp_kses_post(stripslashes( $_POST['email_link_note'][ $code ] ) )  . "</p>\n";
+				$mail['html']     = '<p>' . wp_kses_post(stripslashes( $_POST['intro_note'] )) . "\n\n" . wp_kses_post(stripslashes( $_POST['email_link_note'][ $code ] ) )  . "</p>\n";
 				$mail['from']     = $current_user->user_email;
 				$mail['fromname'] = $current_user->display_name;
 				rsvpmailer( $mail );
@@ -1904,7 +1920,7 @@ function wpt_contest_emaillinks( $links, $code, $role, $user_id ) {
 		
 		printf('<br />Note:<br /><textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br />',$code,
 		$code,
-		"Your role: $role\n\n" . trim( strip_tags( str_replace( '</p>', "\n\n", $links ), '<a><strong><h3>' ) ));
+		"<p>Your role: $role</p>" . $links );
 
 		echo '<button class="send_contest_link" id="'.$code.'" >Send to '.$name.'</button>';
 
@@ -1982,4 +1998,17 @@ function contest_user_list_top( $judges, $timer_user, $dashboard_users ) {
 	}
 
 	return apply_filters( 'wpt_contest_user_dropdown', $top );
+}
+
+function contest_break_connection($sync_from) {
+$contest_name   = get_post_meta( $sync_from, 'toast_contest_name', true );
+$sync_link = add_query_arg('scoring','dashboard',get_permalink($sync_from));
+?>
+<p>Controlled from <a href="<?php echo $sync_link; ?>"><?php echo $contest_name; ?></a>. Use the button below if you wish to break the connection and edit judges, timer, and security settings for this contest independently.</p>
+	<form method="post" action="<?php echo esc_attr($actionlink); ?>" >
+	<button>Break Connection</button>
+	<input type="hidden" name="break_connection" value="<?php echo $sync_from; ?>">
+	<?php rsvpmaker_nonce(); ?>
+	</form>
+<?php
 }

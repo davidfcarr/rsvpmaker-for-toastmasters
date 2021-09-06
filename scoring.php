@@ -105,6 +105,14 @@ h1, h2, h3, h4 {
 input[type=checkbox],input[type=radio]{
 	min-width: auto !important;
 }
+#morecontests {
+	display: none;
+}
+.more {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	border-bottom: thin dotted #000;
+}
 </style>
 </head>
 <body>
