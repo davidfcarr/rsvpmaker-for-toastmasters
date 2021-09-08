@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.8.8
+Version: 4.8.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -9541,6 +9541,11 @@ function rsvptoast_admin_notice() {
 	global $current_user;
 	global $post;
 	global $rsvp_options;
+
+	$problem = rsvpmail_is_problem($current_user->user_email);
+	if($problem) {
+		echo '<div class="notice notice-info"><p>Email delivery issue, <span style="color:red;">' . $problem . '</span></p></div>';
+	}
 
 	/* notices NOT just for admin */
 	/* upgrade renewals page */

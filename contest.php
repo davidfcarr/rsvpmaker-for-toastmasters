@@ -316,19 +316,27 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 	$contest_selection = wpt_get_contest_array();
 	$contest_timing    = wpt_get_contest_array( 'timing' );
-
 	$demo = get_post_meta( $post->ID, '_contest_demo', true );
-	if ( $demo ) {
+	$dashboard_users = get_post_meta( $master, 'tm_contest_dashboard_users', true );
+	if(is_array($dashboard_users) && !in_array($post->post_author,$dashboard_users))
+		$dashboard_users[] = $post->post_author;
+	else
+		$dashboard_users = array($post->post_author);
+
+	$is_setup =	get_post_meta( $post->ID, 'toast_contest_scoring' );
+	if(empty($is_setup))
+		; //if not yet set up, don't require login
+	elseif ( $demo ) {
 		$output .= '<p>This page is configured as a demo, no password required.</p>';
 	} elseif ( ! is_user_logged_in() ) {
-		return '<p>You must be logged in as the site administrator, chief judge, or ballot counter.</p>' . $link;
+		return '<p>You must be logged in as the site administrator or editor, chief judge, or ballot counter.</p>' . $link;
 	} else {
 		if ( ! current_user_can( 'edit_others_posts' ) ) {
 			if ( ! is_array( $dashboard_users ) ) {
-				return '<p>Logged in user not recognized as a site administrator, chief judge, or ballot counter.</p>' . wpt_mycontests();
+				return '<p>Logged in user not recognized as a site editor, administrator, chief judge, or ballot counter.</p>' . wpt_mycontests();
 			}
 			if ( ! in_array( $current_user->ID, $dashboard_users ) ) {
-				return '<p>Logged in user not recognized as a site administrator, chief judge, or ballot counter.</p>' . wpt_mycontests();
+				return '<p>Logged in user not recognized as a site editor, administrator, chief judge, or ballot counter.</p>' . wpt_mycontests();
 			}
 		}
 	}
@@ -1913,6 +1921,8 @@ function wpt_contest_emaillinks( $links, $code, $role, $user_id ) {
 		'<p class="email_links_new"><strong>Email links for %s</strong>',
 		$name);
 		echo '<input type="text" name="email_link['.$code.']" id="email_link'.$code.'" value="'.$email.'" />';
+		if($problem = rsvpmail_is_problem($email))
+			printf('<br /><span style="color:red">%s</span>',$problem);
 		printf('<br /><input type="text" name="email_subject[%s]" id="email_subject%s" value="%s" size="80" />',
 		$code,
 		$code,
