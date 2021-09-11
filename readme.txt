@@ -68,6 +68,7 @@ The toastmost.org service is supported by subscriptions from member clubs.
 = 4.8.9 =
 
 * Contest tool tweaks
+* Allow members to undo "unsubscribed" status. Alert to blocked email.
 
 = 4.8.8 =
 

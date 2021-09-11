@@ -41,6 +41,7 @@ function toastmasters_reports_menu() {
 	// add_submenu_page( 'toastmasters_screen', __('Sync','rsvpmaker-for-toastmasters'), __('Sync','rsvpmaker-for-toastmasters'), 'manage_options', 'wpt_json', 'wpt_json');
 	// add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
 	// add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'wp4toastmasters_history', 'wp4toastmasters_history' );

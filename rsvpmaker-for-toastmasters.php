@@ -31,6 +31,7 @@ require 'enqueue.php';
 require 'setup-wizard.php';
 require 'email.php';
 require 'history.php';
+require 'todo-list.php';
 //require 'block-patterns.php';
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
@@ -9542,9 +9543,15 @@ function rsvptoast_admin_notice() {
 	global $post;
 	global $rsvp_options;
 
+	if(isset($_GET['remove_problem']) && rsvpmaker_verify_nonce()) {
+		rsvpmail_remove_problem(sanitize_text_field($_GET['remove_problem']));
+	}
+
 	$problem = rsvpmail_is_problem($current_user->user_email);
 	if($problem) {
-		echo '<div class="notice notice-info"><p>Email delivery issue, <span style="color:red;">' . $problem . '</span></p></div>';
+		$fix = admin_url('?remove_problem='.$current_user->user_email.'&'.rsvpmaker_nonce('query'));
+		$block = strpos($problem,'block') ? 'You may need to "whitelist" email from this domain with your email provider' : '';
+		echo '<div class="notice notice-info"><p>Email delivery issue, <span style="color:red;">' . $problem . ' </span> '.$block.' (<a href="'.$fix.'">Re-enable email delivery</a>)</p></div>';
 	}
 
 	/* notices NOT just for admin */
