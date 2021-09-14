@@ -59,7 +59,8 @@ function wpt_cgb_editor_assets() {
 	if(!empty($rsvpmaker_special))
 		$wpt_rest['special'] = $rsvpmaker_special;
 	wp_localize_script('wpt-cgb-block-js', 'wpt_rest', $wpt_rest );
-	$toast[] = array('value' =>'custom', 'label' => 'Custom Role');
+	$toast[] = array('value' =>'', 'label' => __('Select Role (not set)','rsvpmaker-for-toastmasters'));
+	$toast[] = array('value' =>'custom', 'label' => __('Custom Role','rsvpmaker-for-toastmasters'));
 	foreach($toast_roles as $key => $value)
 		$toast[] = array('value' => $key, 'label' => $value);
 	wp_localize_script('wpt-cgb-block-js', 'toast_roles', $toast );
