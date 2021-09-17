@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.9.1
+Version: 4.9.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4880,7 +4880,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 			$agenda_menu[ __( 'Setup: Template', 'rsvpmaker-for-toastmasters' ) ] = admin_url( 'post.php?action=edit&post=' . $template_id );
 		}
 	}
-	if ( current_user_can( 'manage_options' ) ) {
+	if ( current_user_can( 'edit_others_posts' ) ) {
 		if ( $agenda_lock ) {
 			$agenda_menu[ __( 'Unlock Agenda', 'rsvpmaker-for-toastmasters' ) ]              = $permalink . 'lock=unlockall';
 			$agenda_menu[ __( 'Unlock Agenda (Admin Only)', 'rsvpmaker-for-toastmasters' ) ] = $permalink . 'lock=unlockadmin';
@@ -4952,9 +4952,9 @@ function agenda_menu( $post_id, $frontend = true ) {
 	$link .= '</ul></div>';
 
 	if ( $agenda_lock ) {
-		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked against changes and can only be unlocked by an administrator.</p>';
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked against changes and can only be unlocked by an administratoradministrator/manager/editor.</p>';
 	} elseif ( ! empty( $post_lock ) && strpos( $post_lock, 'admin' ) ) {
-		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator).</p>';
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator/manager/editor).</p>';
 	}
 	return $link;
 }

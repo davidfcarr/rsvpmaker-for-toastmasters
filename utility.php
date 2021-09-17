@@ -1249,13 +1249,13 @@ function is_agenda_locked() {
 
 		$locked = false;
 
-	} elseif ( ( $post_lock == 'unlockadmin' ) && current_user_can( 'manage_options' ) ) {
+	} elseif ( ( $post_lock == 'unlockadmin' ) && current_user_can( 'edit_others_posts' ) ) {
 
 		$locked = false;
 
 	} elseif ( $post_lock == 'lockexceptadmin' ) {
 
-		if ( current_user_can( 'manage_options' ) ) {
+		if ( current_user_can( 'edit_others_posts' ) ) {
 
 			$locked = false;
 

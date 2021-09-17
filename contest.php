@@ -845,13 +845,14 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 				}
 			}
 			echo '<div class="votinglink">';
-			$links  = '';
+			$plainlinks = $links  = '';
 			$links .= '<h4>Voting for ' . esc_attr($name) . '</h4>' . "\n";
 			foreach($contests as $c) {
 				$votinglink = add_query_arg('scoring','voting',get_permalink($c));
 				$contest_name   = get_post_meta( $c, 'toast_contest_name', true );
 				$v = $votinglink . '&judge=' . $key;
 				$links .= sprintf( '<p>%s <a target="_blank" href="%s">%s</a></p>', esc_html($contest_name), esc_attr($v), esc_html($v) );
+				$plainlinks .= esc_html($contest_name)."\n".$v."\n\n";
 			}
 	
 			if ( ! empty( $username ) && ! $ballot_no_password ) {
@@ -871,10 +872,12 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 				get_permalink( $practice_contest )
 			);
 			$links .= sprintf( '<p>%s <a target="_blank" href="%s">%s</a></p>', 'Practice Contest Ballot for ' . esc_html($name), esc_attr($v), esc_html($v) );
+			$plainlinks .= "Practice Ballot\n".$v."\n\n";
 
 			$links .= '<p>See this <a href="https://www.wp4toastmasters.com/knowledge-base/digital-ballot-for-toastmasters-contests/">tutorial</a> on how the digital ballot works.</a>';
+			$plainlinks .= "Tutorial\nhttps://www.wp4toastmasters.com/knowledge-base/digital-ballot-for-toastmasters-contests/\n\n";
 			// $email_links .= $links;
-			$email_links .= wpt_contest_emaillinks( $links, $key, 'judge', $value ); // value is user id or name
+			$email_links .= wpt_contest_emaillinks( $plainlinks, $key, 'judge', $value ); // value is user id or name
 			echo '</div>';
 			//sanitization occurs within dashboard_vote function
 			$dashboard_forms .= dashboard_vote( $contestants, $key, $name, $actionlink, $is_tiebreaker );
@@ -894,34 +897,29 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 			$timer_code = time() + rand( 1, 99 );
 			update_post_meta( $post->ID, 'tm_timer_code', $timer_code );
 		}
-		$timer_link = add_query_arg(
-			array(
-				'timer'       => 1,
-				'claim_timer' => 1,
-				'contest'     => $timer_code,
-			),
-			get_permalink( $post->ID )
-		);
+
 
 		$links      = '<h4>Timer</h4>' . "\n";
-		if ( $timer_user && ! $ballot_no_password ) {
-			$userdata = get_userdata( $timer_user );
-			$username = $userdata->user_login;
-			$name     = $userdata->first_name . ' ' . $userdata->last_name;
-			$links   .= sprintf( '<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>', $username, wp_login_url( $timer_link ), wp_login_url() . '?action=lostpassword' );
-		}
-		$links .= sprintf( "<p>%s Timer's Report" . '<br /><a target="_blank" href="%s">%s</a></p>', $contest_name, $timer_link, $timer_link );
-
-		if ( $related ) {
-			$other_timer_link = add_query_arg(
+		$plainlinks = "Timer\n";
+		foreach($contests as $c) {
+			$timer_link = add_query_arg(
 				array(
 					'timer'       => 1,
 					'claim_timer' => 1,
 					'contest'     => $timer_code,
 				),
-				get_permalink( $related )
+				get_permalink( $c )
 			);
-			$links           .= sprintf( "<p class=\"other\">%s Timer's Report" . '<br /><a target="_blank" href="%s">%s</a></p>', $other_contest_name, $other_timer_link, $other_timer_link );
+			$contest_name   = get_post_meta( $c, 'toast_contest_name', true );
+			$links .= sprintf( "<p>%s Timer's Report" . '<br /><a target="_blank" href="%s">%s</a></p>', $contest_name, $timer_link, $timer_link );
+			$plainlinks .= $contest_name."\n".$timer_link."\n\n";		
+			if ( $timer_user && ! $ballot_no_password ) {
+				$userdata = get_userdata( $timer_user );
+				$username = $userdata->user_login;
+				$name     = $userdata->first_name . ' ' . $userdata->last_name;
+				$links   .= sprintf( '<p>This link is password protected, user name: <strong>%s</strong> | <a href="%s">Login</a> | <a href="%s">Set/Reset password</a></p>', $username, wp_login_url( $timer_link ), wp_login_url() . '?action=lostpassword' );
+				$plainlinks .= "Login required to access: ".wp_login_url( $timer_link )."\n";
+			}
 		}
 
 		$timer_code          = get_post_meta( $practice_contest, 'tm_timer_code', true );
@@ -935,9 +933,10 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 			get_permalink( $practice_contest )
 		);
 		$links              .= sprintf( "<p>%s Timer's Report" . '<br /><a target="_blank" href="%s">%s</a></p>', 'Practice Contest', $practice_timer_link, $practice_timer_link );
+		$plainlinks .= "Practice Timer's Report\n$practice_timer_link\n\n";
 		echo $links;
 		// $email_links .= $links;
-		$email_links .= wpt_contest_emaillinks( $links, $timer_code, 'timer', $timer_user );
+		$email_links .= wpt_contest_emaillinks( $plainlinks, $timer_code, 'timer', $timer_user );
 		echo $links;
 		echo '</div>';
 
@@ -1886,7 +1885,7 @@ function wpt_contest_emaillinks_post() {
 				$code = sanitize_text_field($code);
 				$mail['to']       = sanitize_text_field($email);
 				$mail['subject']  = stripslashes( $_POST['email_subject'][ $code ] );
-				$mail['html']     = '<p>' . wp_kses_post(stripslashes( $_POST['intro_note'] )) . "\n\n" . wp_kses_post(stripslashes( $_POST['email_link_note'][ $code ] ) )  . "</p>\n";
+				$mail['html']     = '<p>' . wpautop(stripslashes( sanitize_textarea_field($_POST['intro_note'] ))) . "\n\n" . wpautop(stripslashes( sanitize_textarea_field($_POST['email_link_note'][ $code ]) ) )  . "</p>\n";
 				$mail['from']     = $current_user->user_email;
 				$mail['fromname'] = $current_user->display_name;
 				rsvpmailer( $mail );
@@ -1930,7 +1929,7 @@ function wpt_contest_emaillinks( $links, $code, $role, $user_id ) {
 		
 		printf('<br />Note:<br /><textarea name="email_link_note[%s]" id="email_link_note%s" rows="4">%s</textarea><br />',$code,
 		$code,
-		"<p>Your role: $role</p>" . $links );
+		"Your role: $role\n\n" . $links );
 
 		echo '<button class="send_contest_link" id="'.$code.'" >Send to '.$name.'</button>';
 

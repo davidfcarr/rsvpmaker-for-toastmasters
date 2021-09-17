@@ -518,15 +518,3 @@ jQuery( document ).ready(
 	}
 );
 
-tinymce.init({
-	selector:"textarea",plugins: "link",
-	block_formats: "Paragraph=p",
-	menu: {
-	format: { title: "Format", items: "bold italic | removeformat" },
-	style_formats: [
-	{ title: "Inline", items: [
-		{ title: "Bold", format: "bold" },
-		{ title: "Italic", format: "italic" },
-	]},]},
-	toolbar: "bold italic link",
-	});
