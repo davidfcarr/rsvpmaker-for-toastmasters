@@ -118,7 +118,15 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
         }
     }
 
-if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_GET['preview'])) {
+$admin_view = false;
+if(isset($_GET['admin_view']) && current_user_can('manage_options')) {
+    $admin_view = true;
+    add_post_meta($post->ID,'voting_admin_view',true);
+}
+elseif(current_user_can('manage_options'))
+    $admin_view = get_post_meta($post->ID,'voting_admin_view',true);
+
+if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['preview'])) {
     $open = get_post_meta($post->ID,'openvotes'); // get array
     $prompt = sprintf('<p><button id="votecheck">START VOTE COUNT</button> | <a href="%s">Check Now</a> | <a href="#addvotes">Add votes</a></p>',$actionlink);
     printf('<p>Logged in as vote counter </p>%s',$prompt);
@@ -344,19 +352,6 @@ if(is_user_member_of_blog() && ($current_user->ID == $vote_counter) && !isset($_
     
 } // end vote counter controls
 
-if(!$claimed || (($claimed != $current_user->ID) && current_user_can('manage_options')) ) {
-    if(is_user_member_of_blog()) {
-        printf('<form method="post" adtion="%s"><input type="hidden" name="claim" value="1">',add_query_arg('voting',1,get_permalink()));
-        rsvpmaker_nonce();
-        echo '<button>Make Yourself Vote Counter</button></form>';
-        if($claimed)
-            echo '<p><em>Website administrator can override</em></p>';
-    }
-    else {
-        printf('<p><a href="%s">Login</a> to claim the vote counter role.</p>',wp_login_url(add_query_arg('voting',1,get_permalink())));
-    }
-}
-
 $open = get_post_meta($post->ID,'openvotes'); // get array
 if(is_array($open)) {
     printf('<h3>%s (<a href="%s">%s</a>)</h3>',__('Active contests','rsvpmaker-for-toastmasters'),$actionlink,__('Check for updates','rsvpmaker-for-toastmasters'));
@@ -486,6 +481,24 @@ $( '#votecheck' ).text( 'START/STOP VOTE COUNT' );
 </script>
 
 <p style="margin-top: 30px;"><em>This tool is intended for casual voting at weekly meetings. See the Contest Dashboard to set up digital ballots for contests.</em></p>
+<?php
+
+if(!$claimed || (($vote_counter != $current_user->ID) && current_user_can('manage_options')) ) {
+    if(is_user_member_of_blog() || current_user_can('manage_network')) {
+        printf('<form method="post" adtion="%s"><input type="hidden" name="claim" value="1">',add_query_arg('voting',1,get_permalink()));
+        rsvpmaker_nonce();
+        echo '<button>'.__('Make Yourself Vote Counter','rsvpmaker-for-toastmasters').'</button></form>';
+        if($claimed) {
+            echo '<p><em>Website administrator can override</em></p>';
+            if(current_user_can('manage_options'))
+                printf('<p><a href="%s">%s</a></p>',add_query_arg(array('voting' => 1,'admin_view' => 1),get_permalink()), __('View as vote counter','rsvpmaker-for-toastmasters'));
+        }
+    }
+    else {
+        printf('<p><a href="%s">Login</a> to claim the vote counter role.</p>',wp_login_url(add_query_arg('voting',1,get_permalink())));
+    }
+}
+?>
 <?php //wp_footer(); ?>
 </body>
 </html>

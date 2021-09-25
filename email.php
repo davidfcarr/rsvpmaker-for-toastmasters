@@ -16,8 +16,15 @@ function email_with_without_role_test() {
 	email_with_without_role( '', true );
 }
 
+function wp4t_role($role) {
+	global $toast_roles;
+	if(empty($toast_roles))
+		wp4t_role_array();
+	return (isset($toast_roles[$role])) ? $toast_roles[$role] : $role;
+}
+
 function email_with_without_role( $meeting_hours, $test = false ) {
-	global $wpdb, $email_context, $post, $rsvp_options;
+	global $wpdb, $email_context, $post, $rsvp_options, $toast_roles;
 	$waspost       = $post;
 	$email_context = true;
 	if ( empty( $meeting_hours ) ) {
@@ -61,37 +68,68 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 		$role_results                    = $wpdb->get_results( $sql );
 		$roles                           = array();
 		$reminder_details[ $member->ID ] = '';
+        $reminder_body[ $member->ID ] = '';
+        $reminder_subject[ $member->ID ] = '';
 		if ( in_array( $member->ID, $absences ) ) {
 			$absent[] = $member->user_email;
 		} elseif ( $role_results ) {
-			foreach ( $role_results as $role_row ) {
+			foreach ( $role_results as $index => $role_row ) {
 				$role    = trim( preg_replace( '/[^A-Za-z]/', ' ', $role_row->meta_key ) );
-				$roles[] = $role;
+				$rt = wp4t_role($role);
+				if(sizeof($role_results) > 1)
+					$reminder_body[$member->id] .= '<h1>'.$rt.'</h1>';
+				$roles[] = $rt;
 				if ( $role == 'Speaker' ) {
 					$manual                           = get_post_meta( $next->ID, '_manual' . $role_row->meta_key, true );
 					$title                            = get_post_meta( $next->ID, '_title' . $role_row->meta_key, true );
 					$project_key                      = get_post_meta( $next->ID, '_project' . $role_row->meta_key, true );
 					$project                          = ( $project_key ) ? get_project_text( $project_key ) : 'Please specify project';
 					$intro                            = get_post_meta( $next->ID, '_intro' . $role_row->meta_key, true );
-					$reminder_details[ $member->ID ] .= sprintf( '<p>Manual: %s<br />Project: %s<br />Title: %s<br />Intro: %s</p>', $manual, $project, $title, $intro );
+					$speaker_details = sprintf( '<p>Manual: %s<br />Project: %s<br />Title: %s<br />Intro: %s</p>', $manual, $project, $title, $intro );
+                    $reminder_body[$member->id] .= str_replace('[wpt_speech_details]',$speaker_details,str_replace('[wptrole]',$rt,wpautop($templates['Speaker']['body'])));
+                    $reminder_subject[ $member->ID ] .= str_replace('[wptrole]',$rt,$templates['Speaker']['subject']);
 				}
+                elseif(isset($templates[$role]['body'])) {
+                    $reminder_body[$member->id] .= str_replace('[wptrole]',$rt,wpautop($templates[$role]['body']));
+                    $reminder_subject[ $member->ID ] .= str_replace('[wptrole]',$rt,$templates[$role]['subject']);
+                }
+                else {
+                    $reminder_body[$member->id] .= str_replace('[wptrole]',$rt,wpautop($templates['role_reminder']['body']));
+                    $reminder_subject[ $member->ID ] .= str_replace('[wptrole]',$rt,$templates['role_reminder']['subject']);
+                }
 			}
 			$reminders[ $member->ID ]      = $member->user_email;
-			$reminder_roles[ $member->ID ] = implode( ', ', $roles );
+            if(sizeof($roles) > 1) {
+				// member has multiple roles
+                $multirole = implode(', ',$roles);
+                $reminder_subject[ $member->ID ] = str_replace('[wptrole]',$multirole,$templates['role_reminder']['subject']);
+                //$reminder_body[ $member->ID ] = str_replace('[wptrole]',$multirole,$templates['role_reminder']['body']);
+            } 
+            if(!strpos($reminder_body[$member->id],'[wpt_open_roles]') && !strpos($reminder_body[$member->id],'[wp4t_assigned_open] '))
+                $reminder_body[$member->id] .= $content;
 		} else {
 			$norole[] = $member->user_email;
 		}
 	}
 
 	$output = '';
+	if(isset($_GET['debug']))
+	$output = '<pre>'.var_export($toast_roles,true).'</pre>';
 
 	$mail['from']     = get_option( 'admin_email' );
 	$mail['fromname'] = get_option( 'name' );
 	foreach ( $reminders as $index => $email ) {
 		$mail['to']      = ( $test ) ? $mail['from'] : $email;
 		$testtext        = ( $test ) ? "<p>$email</p>" : '';
-		$mail['html']    = wpt_email_agenda_wrapper($testtext . wp_kses_post('<p>Your role(s) :' . $reminder_roles[ $index ] . '<p>' . $reminder_details[ $index ] . $content));
-		$mail['subject'] = 'You are signed up for ' . esc_attr($reminder_roles[ $index ] . ' on ' . $date . ' - ' . $next->post_title);
+        $mail['html'] = str_replace('[wpt_open_roles]',$content,$reminder_body[$index]);
+        $mail['html'] = str_replace('[rsvpdate]',$date,$mail['html']);
+        $mail['html'] = str_replace('[rsvptitle]',$next->post_title,$mail['html']);
+		$mail['html']    = wpt_email_agenda_wrapper(do_shortcode($mail['html']));
+		$mail['subject'] = $reminder_subject[$index];
+        $mail['subject'] = str_replace('[rsvpdate]',$date,$mail['subject']);
+        $mail['subject'] = str_replace('[rsvptitle]',$next->post_title,$mail['subject']);
+        $mail['subject'] = do_shortcode($mail['subject']);
+		$role = array_shift($reminder_roles[ $index ]);
 		if($test) {
 			$output .= sprintf('<h3>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],$mail['to'],$mail['html']);
 		}
@@ -101,7 +139,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 		}
 	}
 	if(!empty($norole)) {
-		$mail['html'] = wpt_email_agenda_wrapper("<p>You're not yet signed up for a role.</p>\n" . $content);
+		$mail['html'] = wpt_email_agenda_wrapper("<p>".__("You're not yet signed up for a role",'rsvpmaker-for-toastmasters')."</p>\n" . $content);
 		$mail['subject'] = 'Reminder: ' . $date . ' - ' . $next->post_title;
 		if($test) {
 			$output .= sprintf('<h2>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],implode(', ',$norole),$mail['html']);
@@ -467,7 +505,7 @@ $header .= '</head>
 		$output .= '<h3>' . __( 'Open Roles', 'rsvpmaker-for-toastmasters' ) . "</h3>\n<p>";
 
 		foreach ( $open as $role => $count ) {
-			$output .= $role;
+			$output .= wp4t_role($role);
 			if ( $count > 1 ) {
 				$output .= ' (' . $count . ')';
 			}

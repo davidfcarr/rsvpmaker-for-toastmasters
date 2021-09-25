@@ -474,7 +474,7 @@ function wp4t_role_array() {
 		'Humorous Contest Speaker' => __('Humorous Contest Speaker','rsvpmaker-for-toastmasters'),
 		'International Contest Speaker' => __('International Contest Speaker','rsvpmaker-for-toastmasters'),
 		'Tall Tales Contest Speaker' => __('Tall Tales Contest Speaker','rsvpmaker-for-toastmasters'),
-	);	
+	);
 }
 
 add_action('init','wp4t_role_array',15);
@@ -533,6 +533,8 @@ function latest_manual_test() {
 }
 
 function get_speaking_track( $user_id ) {
+	if(is_null($user_id))
+		return array();
 	global $wpdb;
 	global $current_user;
 	$manuals  = get_manuals_options();

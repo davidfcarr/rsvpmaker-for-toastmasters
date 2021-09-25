@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.9.2
+Version: 4.9.3
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -618,7 +618,7 @@ function wpt_open_roles( $atts = array() ) {
 		$output .= '<h3>' . __( 'Open Roles', 'rsvpmaker-for-toastmasters' ) . "</h3>\n<p>";
 
 		foreach ( $open as $role => $count ) {
-			$output .= $role;
+			$output .= wp4t_role($role);
 			if ( $count > 1 ) {
 				$output .= ' (' . $count . ')';
 			}
@@ -1836,8 +1836,10 @@ function speaker_details( $field, $atts = array(), $user = null ) {
 
 	if ( empty( $manual ) || strpos( $manual, 'hoose Manual' ) || strpos( $manual, 'elect Manual' ) ) {
 		if ( is_edit_roles() || isset( $_REQUEST['recommend_roles'] ) ) {
+			rsvpmaker_debug_log(0,'user id - get speaking track called from recommend roles or edit roles');
 			$track = get_speaking_track( 0 );
 		} else {
+			rsvpmaker_debug_log($current_user->ID,'user id - get speaking track called from role signup');
 			$track = get_speaking_track( $current_user->ID );
 		}
 		$current_manual = $track['manual'];
@@ -8158,7 +8160,7 @@ function wp4t_assigned_open() {
 			$count = ( empty( $d['count'] ) ) ? 1 : (int) $d['count'];
 			for ( $i = 1; $i <= $count; $i++ ) {
 				$field           = '_' . str_replace( ' ', '_', $role ) . '_' . $i;
-				$roles[ $field ] = $role;
+				$roles[ $field ] = wp4t_role($role);
 			}
 		}
 	}
@@ -8180,7 +8182,7 @@ function wp4t_assigned_open() {
 		} else {
 			$status = $assigned;
 		}
-		   $roster .= sprintf( "<strong>%s:</strong>\n%s" . "\n", str_replace( '_', ' ', $role ), $status );
+		   $roster .= sprintf( "<strong>%s:</strong>\n%s" . "\n", str_replace( '_', ' ', wp4t_role($role) ), $status );
 	}
 	$absences       = get_absences_array( $post->ID );
 	$has_assignment = array_merge( $has_assignment, $absences );
@@ -8193,7 +8195,7 @@ function wp4t_assigned_open() {
 	}
 
 	if ( ! empty( $absent_names ) ) {
-		$roster .= '<p><strong>Planned Absences:</strong> ' . implode( ', ', $absent_names ) . '</p>';
+		$roster .= '<p><strong>'.__('Planned Absences','rsvpmaker-for-toastmasters').':</strong> ' . implode( ', ', $absent_names ) . '</p>';
 	}
 	$roster .= wp4_email_contacts( $has_assignment );
 
@@ -8248,8 +8250,6 @@ function wp4_email_contacts( $has_assignment = array() ) {
 			continue;
 		}
 		$userdata = get_userdata( $user->ID );
-		// print_r($userdata);
-		// echo " $userdata->first_name test<br />";
 		$index             = preg_replace( '/[^A-Za-z]/', '', $userdata->last_name . $userdata->first_name . $userdata->user_login );
 		$members[ $index ] = $userdata;
 	}
@@ -8260,7 +8260,7 @@ function wp4_email_contacts( $has_assignment = array() ) {
 			$output .= wp4_format_contact( $userdata );
 			if(!empty($sugg[$userdata->ID])) {
 				$roletag = str_replace('_suggest','',$sugg[$userdata->ID]);
-				$role = clean_role($sugg[$userdata->ID]);
+				$role = wp4t_role(clean_role($sugg[$userdata->ID]));
 				$args = array('oneclick' => $nonce,'role' => $roletag,'e' => $userdata->user_email);
 				$url = add_query_arg($args,get_permalink($post->ID)).'#oneclick';
 				$output .= sprintf('<div>Suggested role for %s: %s<br><a href="%s">One-Click Signup: %s</a></p>',$userdata->display_name,clean_role($sugg[$userdata->ID]),$url,$url);	
@@ -11860,32 +11860,36 @@ add_filter( 'rsvp_yes_emails', 'rsvp_yes_emails_filter_users' );
 
 function wpt_notification_forms( $template_forms ) {
 	$template_forms['role_reminder']          = array(
-		'subject' => 'Your role: [wptrole] for [rsvpdate]',
+		'subject' => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]',
 		'body'    => "You are scheduled to serve as [wptrole] for [rsvpdate].\n\nIf for any reason you cannot fulfill this duty, please post an update to the agenda\n\n[wptagendalink]\n\n\n\n[wpt_tod] ",
 	);
 	$template_forms['Toastmaster of the Day'] = array(
-		'subject' => 'You are the Toastmaster of the Day for [rsvpdate]',
-		'body'    => "You are scheduled to serve as [wptrole] for [rsvpdate].\n\nHere is the lineup so far:\n\n[wp4t_assigned_open]",
+		'subject' => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]',
+		'body'    => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]'.".\n\n[wp4t_assigned_open]",
 	);
 	$template_forms['Speaker']                = array(
-		'subject' => 'You are signed up to speak on [rsvpdate]',
-		'body'    => "You are scheduled to speak on [rsvpdate].\n\n[wpt_speech_details]\n\nIf for any reason you cannot speak as scheduled, please post an update to the agenda\n\n[wptagendalink]\n\n[wpt_tod]",
+		'subject' => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]',
+		'body'    => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]'.".\n\n[wpt_speech_details]\n\n".__('If for any reason you cannot speak as scheduled, please post an update to the agenda','rsvpmaker-for-toastmasters')."\n\n[wptagendalink]\n\n[wpt_tod]",
 	);
 	$template_forms['Evaluator']              = array(
-		'subject' => 'You are signed up as an evaluator for [rsvpdate]',
-		'body'    => "You are signed up as an evaluator for [rsvpdate].\n\n[speaker_evaluator]\n\n[evaluation_links]\n\n[tmlayout_intros]\n\n\n\n[wpt_speakers]\n\nEvaluation Team:\n\n[wpt_evaluators]\n\n[wpt_general_evaluator]\n\nAgenda:\n[wptagendalink]\n\n[wpt_tod] ",
+		'subject' => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]',
+		'body'    => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]'.".\n\n[speaker_evaluator]\n\n[evaluation_links]\n\n[tmlayout_intros]\n\n\n\n[wpt_speakers]\n\nEvaluation Team:\n\n[wpt_evaluators]\n\n[wpt_general_evaluator]\n\[wptagendalink]\n\n[wpt_tod] ",
 	);
 	$template_forms['General Evaluator']      = array(
-		'subject' => 'You are signed up as General Evaluator for [rsvpdate]',
-		'body'    => "You are signed up as General Evaluator for [rsvpdate].\n\n[speaker_evaluator]\n\n[evaluation_links]\n\n[wpt_speakers]\n\nEvaluation Team:\n\n[wpt_evaluators]\n\nAgenda:\n[wptagendalink]\n\n[wpt_tod] ",
+		'subject' => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]',
+		'body'    => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]'.".\n\n[speaker_evaluator]\n\n[evaluation_links]\n\n[wpt_speakers]\n\nEvaluation Team:\n\n[wpt_evaluators]\n\n[wptagendalink]\n\n[wpt_tod] ",
+	);
+	$template_forms['Vote Counter']      = array(
+		'subject' => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]',
+		'body'    => __('Your role','rsvpmaker-for-toastmasters').': [wptrole] - [rsvpdate]'.".\n\n[wpt_voting_tool_link]\n\n[wptagendalink]\n\n[wpt_tod] ",
 	);
 	$template_forms['norole']                 = array(
-		'subject' => 'Meeting Reminder for [rsvpdate]',
+		'subject' => __('Meeting Reminder','rsvpmaker-for-toastmasters').'; [rsvpdate]',
 		'body'    => "[wpt_open_roles]\n\n[tmlayout_main]\n\n[wpt_tod]",
 	);
 	$template_forms['suggest']  = array(
-		'subject' => 'Nominating you for [wptrole] on [rsvpdate]',
-		'body'    => "[custom_message]\n\nTo confirm:\n[oneclicklink]\n(no password required)",
+		'subject' => __('Nominating you for','rsvpmaker-for-toastmasters').' [wptrole] - [rsvpdate]',
+		'body'    => "[custom_message]\n\n".__('To confirm','rsvpmaker-for-toastmasters').":\n[oneclicklink]\n(".__('no password required','rsvpmaker-for-toastmasters').")",
 	);
 	return $template_forms;
 }
@@ -12175,6 +12179,13 @@ function wptagendalink() {
 	}
 	$permalink                            = get_permalink( $post->ID );
 	return $tmagendadata['wptagendalink'] = sprintf( '%s<br /><a href="%s">%s</a>', __( 'Agenda', 'rsvpmaker-for-toastmasters' ), $permalink, $permalink );
+}
+
+add_shortcode('wpt_voting_tool_link','wpt_voting_tool_link');
+function wpt_voting_tool_link() {
+	global $post;
+	$permalink                            = get_permalink( $post->ID );
+	return sprintf( '<a href="%s">%s</a>', add_query_arg('voting',1,$permalink), __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) );
 }
 
 class role_history {
