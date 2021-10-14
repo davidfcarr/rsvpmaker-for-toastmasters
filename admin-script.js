@@ -76,6 +76,7 @@
 		if (activetab) {
 			$( '.toastmasters section' ).hide();
 			$( 'section' + activetab ).show();
+			$('#welcome').show();
 			if (activetab == '#pathways') {
 				let user_id = $( '#toastmaster_select' ).val();
 				wpt_fetch_report( 'pathways',user_id );

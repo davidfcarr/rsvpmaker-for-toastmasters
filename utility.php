@@ -1677,5 +1677,7 @@ function wp4t_hour_past($post_id) {
 	global $wpdb;
 	$event_table = get_rsvpmaker_event_table();
 	$end = (int) $wpdb->get_var("select ts_end from $event_table WHERE event=$post_id");
-	return (time() > ($end + 3600));
+	if(!$end)
+		return false;
+	return (time() > ($end + DAY_IN_SECONDS));
 }

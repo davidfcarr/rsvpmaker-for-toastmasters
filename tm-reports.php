@@ -3381,7 +3381,7 @@ function toastmasters_welcome() {
 	</h2>
 
 	<div id="sections" class="rsvpmaker" >
-	<section class="rsvpmaker"  id="main">
+	<section class="rsvpmaker"  id="welcome">
 	<p>This website takes advantage of software from the <a href="http://wp4toastmasters.com">WordPress for Toastmasters</a> project, which adds Toastmasters-specific features such as meeting and membership management to WordPress, a popular web publishing and online marketing platform. Here is a quick orientation.</p>
 	<p>You are viewing the website's administrative back end, or "Dashboard." This is where you come to <a href="<?php echo admin_url( 'profile.php' ); ?>">update your member profile</a> (please verify your contact information!) and <a href="<?php echo admin_url( 'profile.php#password' ); ?>">change your password</a>. Site administrators can also edit the content of the website and tweak settings from here. To sign up for meeting roles, you will want to return to the public website, as shown below.</p>
 	<p>The basic dashboard menu for a member looks something like this:</p>

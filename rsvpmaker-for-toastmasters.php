@@ -8667,6 +8667,12 @@ function new_agenda_template() {
 }
 
 function toast_activate( $db_version ) {
+	if(!function_exists('rsvpmaker_create_post_type'))
+	{
+		//rsvpmaker is not active
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+		wp_die('<strong>RSVPMaker</strong> must be activated before <strong>RSVPMaker for Toastmasters</strong> can be used.');
+	}
 
 	global $wpdb;
 	$wpdb->show_errors();
@@ -11917,6 +11923,7 @@ function wpt_notifications_doc() {
 <p>[wpt_evaluators] listing of evaluators</p>
 <p>[wpt_general_evaluator] general evaluator</p>
 <p>[officer title="VP of Education"] name and contact info for the officer with the specified title (title must exactly match how it's specified on your settings page)</p>
+<p>[wpt_voting_tool_link] link to vote counter's tools and tutorial</p>
 
 <p>You can create a custom notification for a specific role, such as Timer or Ah Counter, by creating a custom notification template with the name of that role (as used on the agenda) in the Custom label field.</p>
 
@@ -12185,7 +12192,7 @@ add_shortcode('wpt_voting_tool_link','wpt_voting_tool_link');
 function wpt_voting_tool_link() {
 	global $post;
 	$permalink                            = get_permalink( $post->ID );
-	return sprintf( '<a href="%s">%s</a>', add_query_arg('voting',1,$permalink), __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) );
+	return sprintf( '<a href="%s">%s</a> - <a href="https://www.wp4toastmasters.com/knowledge-base/how-to-use-the-vote-counters-tool/">%s</a>', add_query_arg('voting',1,$permalink), __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ), __( 'Tutorial', 'rsvpmaker-for-toastmasters' ) );
 }
 
 class role_history {
