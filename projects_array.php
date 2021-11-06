@@ -615,6 +615,7 @@ $projects['Pathways Mentor Program Level 1 Educational Program 991']      = __( 
 $project_times['Pathways Mentor Program Level 1 Educational Program 991'] = 7;
 $display_times['Pathways Mentor Program Level 1 Educational Program 991'] = '5-7 minutes';
 
+$path = 'Path Not Set';
 $projects['Path Not Set Level 1 Mastering Fundamentals 0']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Path Not Set Level 1 Mastering Fundamentals 0'] = 6;
 $display_times['Path Not Set Level 1 Mastering Fundamentals 0'] = '4 - 6 minutes';
@@ -631,10 +632,19 @@ $projects['Path Not Set Level 1 Mastering Fundamentals 7']      = __( 'Evaluatio
 $project_times['Path Not Set Level 1 Mastering Fundamentals 7'] = 3;
 $display_times['Path Not Set Level 1 Mastering Fundamentals 7'] = '2-3 minutes';
 
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
+
 $projects['Path Not Set Level 1 Mastering Fundamentals 11']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Path Not Set Level 1 Mastering Fundamentals 11'] = 7;
 $display_times['Path Not Set Level 1 Mastering Fundamentals 11'] = '5 - 7 minutes';
 
+$path = 'Dynamic Leadership';
 $projects['Dynamic Leadership Level 1 Mastering Fundamentals 0']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 1 Mastering Fundamentals 0'] = 6;
 $display_times['Dynamic Leadership Level 1 Mastering Fundamentals 0'] = '4 - 6 minutes';
@@ -650,6 +660,14 @@ $display_times['Dynamic Leadership Level 1 Mastering Fundamentals 6'] = '5-7 min
 $projects['Dynamic Leadership Level 1 Mastering Fundamentals 7']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 1 Mastering Fundamentals 7'] = 3;
 $display_times['Dynamic Leadership Level 1 Mastering Fundamentals 7'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Dynamic Leadership Level 1 Mastering Fundamentals 11']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 1 Mastering Fundamentals 11'] = 7;
@@ -707,7 +725,6 @@ $projects['Dynamic Leadership Level 3 Increasing Knowledge 87']      = __( 'Insp
 $project_times['Dynamic Leadership Level 3 Increasing Knowledge 87'] = 7;
 $display_times['Dynamic Leadership Level 3 Increasing Knowledge 87'] = '5 - 7 minutes';
 
-$path  = 'Dynamic Leadership';
 $index = 89;
 $projects[ $path . ' Level 3 Increasing Knowledge ' . $index ]      = __( 'Know Your Sense of Humor', 'rsvpmaker-for-toastmasters' );
 $project_times[ $path . ' Level 3 Increasing Knowledge ' . $index ] = 7;
@@ -720,6 +737,10 @@ $display_times['Dynamic Leadership Level 3 Increasing Knowledge 93'] = '5 - 7 mi
 $projects['Dynamic Leadership Level 3 Increasing Knowledge 99']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 3 Increasing Knowledge 99'] = 7;
 $display_times['Dynamic Leadership Level 3 Increasing Knowledge 99'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Dynamic Leadership Level 3 Increasing Knowledge 105']      = __( 'Using Descriptive Language', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 3 Increasing Knowledge 105'] = 7;
@@ -809,6 +830,15 @@ $projects['Dynamic Leadership Level 5 Demonstrating Expertise 224']      = __( '
 $project_times['Dynamic Leadership Level 5 Demonstrating Expertise 224'] = 22;
 $display_times['Dynamic Leadership Level 5 Demonstrating Expertise 224'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Effective Coaching';
 $projects['Effective Coaching Level 1 Mastering Fundamentals 233']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Effective Coaching Level 1 Mastering Fundamentals 233'] = 6;
 $display_times['Effective Coaching Level 1 Mastering Fundamentals 233'] = '4 - 6 minutes';
@@ -824,6 +854,14 @@ $display_times['Effective Coaching Level 1 Mastering Fundamentals 241'] = '5-7 m
 $projects['Effective Coaching Level 1 Mastering Fundamentals 242']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Effective Coaching Level 1 Mastering Fundamentals 242'] = 3;
 $display_times['Effective Coaching Level 1 Mastering Fundamentals 242'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Effective Coaching Level 1 Mastering Fundamentals 246']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Effective Coaching Level 1 Mastering Fundamentals 246'] = 7;
@@ -885,7 +923,6 @@ $projects['Effective Coaching Level 3 Increasing Knowledge 327']      = __( 'Ins
 $project_times['Effective Coaching Level 3 Increasing Knowledge 327'] = 7;
 $display_times['Effective Coaching Level 3 Increasing Knowledge 327'] = '5 - 7 minutes';
 
-$path  = 'Effective Coaching';
 $index = 330;
 $projects[ $path . ' Level 3 Increasing Knowledge ' . $index ]      = __( 'Know Your Sense of Humor', 'rsvpmaker-for-toastmasters' );
 $project_times[ $path . ' Level 3 Increasing Knowledge ' . $index ] = 7;
@@ -898,6 +935,10 @@ $display_times['Effective Coaching Level 3 Increasing Knowledge 333'] = '5 - 7 m
 $projects['Effective Coaching Level 3 Increasing Knowledge 339']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Effective Coaching Level 3 Increasing Knowledge 339'] = 7;
 $display_times['Effective Coaching Level 3 Increasing Knowledge 339'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Effective Coaching Level 3 Increasing Knowledge 345']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Effective Coaching Level 3 Increasing Knowledge 345'] = 7;
@@ -983,6 +1024,15 @@ $projects['Effective Coaching Level 5 Demonstrating Expertise 461']      = __( '
 $project_times['Effective Coaching Level 5 Demonstrating Expertise 461'] = 22;
 $display_times['Effective Coaching Level 5 Demonstrating Expertise 461'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Engaging Humor';
 $projects['Engaging Humor Level 1 Mastering Fundamentals 14004']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 1 Mastering Fundamentals 14004'] = 6;
 $display_times['Engaging Humor Level 1 Mastering Fundamentals 14004'] = '4 - 6 minutes';
@@ -998,6 +1048,14 @@ $display_times['Engaging Humor Level 1 Mastering Fundamentals 14012'] = '5-7 min
 $projects['Engaging Humor Level 1 Mastering Fundamentals 14013']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 1 Mastering Fundamentals 14013'] = 3;
 $display_times['Engaging Humor Level 1 Mastering Fundamentals 14013'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Engaging Humor Level 1 Mastering Fundamentals 14017']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 1 Mastering Fundamentals 14017'] = 7;
@@ -1062,6 +1120,10 @@ $display_times['Engaging Humor Level 3 Increasing Knowledge 14097'] = '5 - 7 min
 $projects['Engaging Humor Level 3 Increasing Knowledge 15003']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 3 Increasing Knowledge 15003'] = 7;
 $display_times['Engaging Humor Level 3 Increasing Knowledge 15003'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Engaging Humor Level 3 Increasing Knowledge 15009']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 3 Increasing Knowledge 15009'] = 7;
@@ -1147,10 +1209,19 @@ $projects['Engaging Humor Level 5 Demonstrating Expertise 16019']      = __( 'Mo
 $project_times['Engaging Humor Level 5 Demonstrating Expertise 16019'] = 40;
 $display_times['Engaging Humor Level 5 Demonstrating Expertise 16019'] = '20 - 40 minutes';
 
-$projects['Dynamic Leadership Level 5 Demonstrating Expertise 16224']      = __( 'Prepare to Speak Professionally', 'rsvpmaker-for-toastmasters' );
-$project_times['Dynamic Leadership Level 5 Demonstrating Expertise 16224'] = 22;
-$display_times['Dynamic Leadership Level 5 Demonstrating Expertise 16224'] = '18 - 22 minutes';
+$projects['Engaging Humor Level 5 Demonstrating Expertise 16224']      = __( 'Prepare to Speak Professionally', 'rsvpmaker-for-toastmasters' );
+$project_times['Engaging Humor Level 5 Demonstrating Expertise 16224'] = 22;
+$display_times['Engaging Humor Level 5 Demonstrating Expertise 16224'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Innovative Planning';
 $projects['Innovative Planning Level 1 Mastering Fundamentals 470']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 1 Mastering Fundamentals 470'] = 6;
 $display_times['Innovative Planning Level 1 Mastering Fundamentals 470'] = '4 - 6 minutes';
@@ -1166,6 +1237,14 @@ $display_times['Innovative Planning Level 1 Mastering Fundamentals 478'] = '5-7 
 $projects['Innovative Planning Level 1 Mastering Fundamentals 479']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 1 Mastering Fundamentals 479'] = 3;
 $display_times['Innovative Planning Level 1 Mastering Fundamentals 479'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Innovative Planning Level 1 Mastering Fundamentals 483']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 1 Mastering Fundamentals 483'] = 7;
@@ -1232,6 +1311,10 @@ $display_times['Innovative Planning Level 3 Increasing Knowledge 563'] = '5 - 7 
 $projects['Innovative Planning Level 3 Increasing Knowledge 569']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 3 Increasing Knowledge 569'] = 7;
 $display_times['Innovative Planning Level 3 Increasing Knowledge 569'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Innovative Planning Level 3 Increasing Knowledge 575']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 3 Increasing Knowledge 575'] = 7;
@@ -1313,6 +1396,15 @@ $projects['Innovative Planning Level 5 Demonstrating Expertise 685']      = __( 
 $project_times['Innovative Planning Level 5 Demonstrating Expertise 685'] = 22;
 $display_times['Innovative Planning Level 5 Demonstrating Expertise 685'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Leadership Development';
 $projects['Leadership Development Level 1 Mastering Fundamentals 694']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 1 Mastering Fundamentals 694'] = 6;
 $display_times['Leadership Development Level 1 Mastering Fundamentals 694'] = '4 - 6 minutes';
@@ -1328,6 +1420,14 @@ $display_times['Leadership Development Level 1 Mastering Fundamentals 702'] = '5
 $projects['Leadership Development Level 1 Mastering Fundamentals 703']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 1 Mastering Fundamentals 703'] = 3;
 $display_times['Leadership Development Level 1 Mastering Fundamentals 703'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Leadership Development Level 1 Mastering Fundamentals 707']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 1 Mastering Fundamentals 707'] = 7;
@@ -1398,6 +1498,10 @@ $display_times['Leadership Development Level 3 Increasing Knowledge 793'] = '5 -
 $projects['Leadership Development Level 3 Increasing Knowledge 799']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 3 Increasing Knowledge 799'] = 7;
 $display_times['Leadership Development Level 3 Increasing Knowledge 799'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Leadership Development Level 3 Increasing Knowledge 805']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 3 Increasing Knowledge 805'] = 7;
@@ -1487,6 +1591,15 @@ $projects['Leadership Development Level 5 Demonstrating Expertise 927']      = _
 $project_times['Leadership Development Level 5 Demonstrating Expertise 927'] = 22;
 $display_times['Leadership Development Level 5 Demonstrating Expertise 927'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Motivational Strategies';
 $projects['Motivational Strategies Level 1 Mastering Fundamentals 937']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 1 Mastering Fundamentals 937'] = 6;
 $display_times['Motivational Strategies Level 1 Mastering Fundamentals 937'] = '4 - 6 minutes';
@@ -1502,6 +1615,14 @@ $display_times['Motivational Strategies Level 1 Mastering Fundamentals 945'] = '
 $projects['Motivational Strategies Level 1 Mastering Fundamentals 946']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 1 Mastering Fundamentals 946'] = 3;
 $display_times['Motivational Strategies Level 1 Mastering Fundamentals 946'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Motivational Strategies Level 1 Mastering Fundamentals 950']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 1 Mastering Fundamentals 950'] = 7;
@@ -1568,6 +1689,10 @@ $display_times['Motivational Strategies Level 3 Increasing Knowledge 1030'] = '5
 $projects['Motivational Strategies Level 3 Increasing Knowledge 1036']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 3 Increasing Knowledge 1036'] = 7;
 $display_times['Motivational Strategies Level 3 Increasing Knowledge 1036'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Motivational Strategies Level 3 Increasing Knowledge 1042']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 3 Increasing Knowledge 1042'] = 7;
@@ -1657,6 +1782,15 @@ $projects['Motivational Strategies Level 5 Demonstrating Expertise 1164']      =
 $project_times['Motivational Strategies Level 5 Demonstrating Expertise 1164'] = 22;
 $display_times['Motivational Strategies Level 5 Demonstrating Expertise 1164'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Persuasive Influence';
 $projects['Persuasive Influence Level 1 Mastering Fundamentals 1173']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 1 Mastering Fundamentals 1173'] = 6;
 $display_times['Persuasive Influence Level 1 Mastering Fundamentals 1173'] = '4 - 6 minutes';
@@ -1672,6 +1806,14 @@ $display_times['Persuasive Influence Level 1 Mastering Fundamentals 1181'] = '5-
 $projects['Persuasive Influence Level 1 Mastering Fundamentals 1182']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 1 Mastering Fundamentals 1182'] = 3;
 $display_times['Persuasive Influence Level 1 Mastering Fundamentals 1182'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Persuasive Influence Level 1 Mastering Fundamentals 1186']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 1 Mastering Fundamentals 1186'] = 7;
@@ -1738,6 +1880,10 @@ $display_times['Persuasive Influence Level 3 Increasing Knowledge 1266'] = '5 - 
 $projects['Persuasive Influence Level 3 Increasing Knowledge 1272']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 3 Increasing Knowledge 1272'] = 7;
 $display_times['Persuasive Influence Level 3 Increasing Knowledge 1272'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Persuasive Influence Level 3 Increasing Knowledge 1278']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 3 Increasing Knowledge 1278'] = 7;
@@ -1823,6 +1969,15 @@ $projects['Persuasive Influence Level 5 Demonstrating Expertise 1394']      = __
 $project_times['Persuasive Influence Level 5 Demonstrating Expertise 1394'] = 22;
 $display_times['Persuasive Influence Level 5 Demonstrating Expertise 1394'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Presentation Mastery';
 $projects['Presentation Mastery Level 1 Mastering Fundamentals 1404']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 1 Mastering Fundamentals 1404'] = 6;
 $display_times['Presentation Mastery Level 1 Mastering Fundamentals 1404'] = '4 - 6 minutes';
@@ -1838,6 +1993,14 @@ $display_times['Presentation Mastery Level 1 Mastering Fundamentals 1412'] = '5-
 $projects['Presentation Mastery Level 1 Mastering Fundamentals 1413']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 1 Mastering Fundamentals 1413'] = 3;
 $display_times['Presentation Mastery Level 1 Mastering Fundamentals 1413'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Presentation Mastery Level 1 Mastering Fundamentals 1417']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 1 Mastering Fundamentals 1417'] = 7;
@@ -1904,6 +2067,10 @@ $display_times['Presentation Mastery Level 3 Increasing Knowledge 1497'] = '5 - 
 $projects['Presentation Mastery Level 3 Increasing Knowledge 1503']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 3 Increasing Knowledge 1503'] = 7;
 $display_times['Presentation Mastery Level 3 Increasing Knowledge 1503'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Presentation Mastery Level 3 Increasing Knowledge 1509']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 3 Increasing Knowledge 1509'] = 7;
@@ -1985,6 +2152,15 @@ $projects['Presentation Mastery Level 5 Demonstrating Expertise 1619']      = __
 $project_times['Presentation Mastery Level 5 Demonstrating Expertise 1619'] = 40;
 $display_times['Presentation Mastery Level 5 Demonstrating Expertise 1619'] = '20 - 40 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Strategic Relationships';
 $projects['Strategic Relationships Level 1 Mastering Fundamentals 1628']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Strategic Relationships Level 1 Mastering Fundamentals 1628'] = 6;
 $display_times['Strategic Relationships Level 1 Mastering Fundamentals 1628'] = '4 - 6 minutes';
@@ -2000,6 +2176,14 @@ $display_times['Strategic Relationships Level 1 Mastering Fundamentals 1636'] = 
 $projects['Strategic Relationships Level 1 Mastering Fundamentals 1637']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Strategic Relationships Level 1 Mastering Fundamentals 1637'] = 3;
 $display_times['Strategic Relationships Level 1 Mastering Fundamentals 1637'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Strategic Relationships Level 1 Mastering Fundamentals 1641']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Strategic Relationships Level 1 Mastering Fundamentals 1641'] = 7;
@@ -2066,6 +2250,10 @@ $display_times[ $path . ' Level 3 Increasing Knowledge ' . $index ] = '5 - 7 min
 $projects['Strategic Relationships Level 3 Increasing Knowledge 1727']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Strategic Relationships Level 3 Increasing Knowledge 1727'] = 7;
 $display_times['Strategic Relationships Level 3 Increasing Knowledge 1727'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Strategic Relationships Level 3 Increasing Knowledge 1733']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Strategic Relationships Level 3 Increasing Knowledge 1733'] = 7;
@@ -2147,6 +2335,15 @@ $projects['Strategic Relationships Level 5 Demonstrating Expertise 1843']      =
 $project_times['Strategic Relationships Level 5 Demonstrating Expertise 1843'] = 22;
 $display_times['Strategic Relationships Level 5 Demonstrating Expertise 1843'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Team Collaboration';
 $projects['Team Collaboration Level 1 Mastering Fundamentals 1852']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Team Collaboration Level 1 Mastering Fundamentals 1852'] = 6;
 $display_times['Team Collaboration Level 1 Mastering Fundamentals 1852'] = '4 - 6 minutes';
@@ -2162,6 +2359,14 @@ $display_times['Team Collaboration Level 1 Mastering Fundamentals 1860'] = '5-7 
 $projects['Team Collaboration Level 1 Mastering Fundamentals 1861']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Team Collaboration Level 1 Mastering Fundamentals 1861'] = 3;
 $display_times['Team Collaboration Level 1 Mastering Fundamentals 1861'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Team Collaboration Level 1 Mastering Fundamentals 1865']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Team Collaboration Level 1 Mastering Fundamentals 1865'] = 7;
@@ -2228,6 +2433,10 @@ $display_times['Team Collaboration Level 3 Increasing Knowledge 1945'] = '5 - 7 
 $projects['Team Collaboration Level 3 Increasing Knowledge 1951']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Team Collaboration Level 3 Increasing Knowledge 1951'] = 7;
 $display_times['Team Collaboration Level 3 Increasing Knowledge 1951'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Team Collaboration Level 3 Increasing Knowledge 1957']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Team Collaboration Level 3 Increasing Knowledge 1957'] = 7;
@@ -2317,6 +2526,15 @@ $projects['Team Collaboration Level 5 Demonstrating Expertise 2079']      = __( 
 $project_times['Team Collaboration Level 5 Demonstrating Expertise 2079'] = 22;
 $display_times['Team Collaboration Level 5 Demonstrating Expertise 2079'] = '18 - 22 minutes';
 
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
+
+$path = 'Visionary Communication';
 $projects['Visionary Communication Level 1 Mastering Fundamentals 2088']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 1 Mastering Fundamentals 2088'] = 6;
 $display_times['Visionary Communication Level 1 Mastering Fundamentals 2088'] = '4 - 6 minutes';
@@ -2332,6 +2550,14 @@ $display_times['Visionary Communication Level 1 Mastering Fundamentals 2096'] = 
 $projects['Visionary Communication Level 1 Mastering Fundamentals 2097']      = __( 'Evaluation and Feedback - Evaluator Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 1 Mastering Fundamentals 2097'] = 3;
 $display_times['Visionary Communication Level 1 Mastering Fundamentals 2097'] = '2-3 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 12']      = __( 'Writing a Speech with Purpose', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 12'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 12'] = '5 - 7 minutes';
+
+$projects[$path.' Level 1 Mastering Fundamentals 13']      = __( 'Introduction to Vocal Variety and Body Language', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 1 Mastering Fundamentals 13'] = 7;
+$display_times[$path.' Level 1 Mastering Fundamentals 13'] = '5 - 7 minutes';
 
 $projects['Visionary Communication Level 1 Mastering Fundamentals 2101']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 1 Mastering Fundamentals 2101'] = 7;
@@ -2402,6 +2628,10 @@ $display_times['Visionary Communication Level 3 Increasing Knowledge 2187'] = '5
 $projects['Visionary Communication Level 3 Increasing Knowledge 2193']      = __( 'Prepare for an Interview', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 3 Increasing Knowledge 2193'] = 7;
 $display_times['Visionary Communication Level 3 Increasing Knowledge 2193'] = '5 - 7 minutes';
+
+$projects[$path.' Level 3 Increasing Knowledge 512']      = __( 'Researching and Presenting', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 3 Increasing Knowledge 512'] = 7;
+$display_times[$path.' Level 3 Increasing Knowledge 512'] = '5 - 7 minutes';
 
 $projects['Visionary Communication Level 3 Increasing Knowledge 2199']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 3 Increasing Knowledge 2199'] = 7;
@@ -2494,6 +2724,14 @@ $display_times['Visionary Communication Level 5 Demonstrating Expertise 2315'] =
 $projects['Visionary Communication Level 5 Demonstrating Expertise 2321']      = __( 'Prepare to Speak Professionally', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 5 Demonstrating Expertise 2321'] = 22;
 $display_times['Visionary Communication Level 5 Demonstrating Expertise 2321'] = '18 - 22 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233071']      = __( 'DTM Project Speech 1', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233071'] = 7;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233071'] = '5 - 7 minutes';
+
+$projects[$path.' Level 5 Demonstrating Expertise 1233072']      = __( 'DTM Project Speech 2', 'rsvpmaker-for-toastmasters' );
+$project_times[$path.' Level 5 Demonstrating Expertise 1233072'] = 10;
+$display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minutes';
 
 $projects['HIGH PERFORMANCE LEADERSHIP 1']      = __( 'Sharing Your Vision', 'rsvpmaker-for-toastmasters' );
 $project_times['HIGH PERFORMANCE LEADERSHIP 1'] = 7;

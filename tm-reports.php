@@ -3340,9 +3340,11 @@ function member_list() {
 
 function tm_member_welcome_redirect() {
 	global $current_user;
-	if ( isset( $_GET['page'] ) && $_GET['page'] == 'wp4t_setup_wizard' ) {
-		// don't interfere with setup wizard
+	if ( !empty($_GET) ) // isset( $_GET['page'] ) && $_GET['page'] == 'wp4t_setup_wizard' ) 
+	{
+		// don't interfere with setup wizard or any admin or edit page
 		add_user_meta( $current_user->ID, 'tm_member_welcome', time() );
+		set_transient('todo_shown',1, time() +HOUR_IN_SECONDS);
 		return;
 	}
 	if ( isset( $_REQUEST['forget_welcome'] ) ) {
@@ -3350,6 +3352,11 @@ function tm_member_welcome_redirect() {
 		wp_logout();
 		wp_safe_redirect( site_url( 'wp-login.php' ) );
 		return;
+	}
+	if(current_user_can('manage_options') && !get_option('blog_public') && !get_transient('todo_shown')) {
+	wp_safe_redirect( add_query_arg( array( 'page' => 'wp4t_todolist_screen' ), admin_url( 'admin.php' ) ) );
+	set_transient('todo_shown',1, time() +HOUR_IN_SECONDS);
+	return;
 	}
 	if ( get_user_meta( $current_user->ID, 'tm_member_welcome', true ) ) {
 		return;
@@ -3380,8 +3387,8 @@ function toastmasters_welcome() {
 	  <a class="nav-tab" href="#credits">Credits</a>
 	</h2>
 
-	<div id="sections" class="rsvpmaker" >
-	<section class="rsvpmaker"  id="welcome">
+	<div id="sections" class="toastmasters" >
+	<section  id="main">
 	<p>This website takes advantage of software from the <a href="http://wp4toastmasters.com">WordPress for Toastmasters</a> project, which adds Toastmasters-specific features such as meeting and membership management to WordPress, a popular web publishing and online marketing platform. Here is a quick orientation.</p>
 	<p>You are viewing the website's administrative back end, or "Dashboard." This is where you come to <a href="<?php echo admin_url( 'profile.php' ); ?>">update your member profile</a> (please verify your contact information!) and <a href="<?php echo admin_url( 'profile.php#password' ); ?>">change your password</a>. Site administrators can also edit the content of the website and tweak settings from here. To sign up for meeting roles, you will want to return to the public website, as shown below.</p>
 	<p>The basic dashboard menu for a member looks something like this:</p>
@@ -3901,8 +3908,8 @@ return;//disabled for now
 	  <a class="nav-tab nav-tab-active" href="#main">WP4Toastmasters Data</a>
 	  <a class="nav-tab" href="#fth">Import from Free Toast Host</a>
 	</h2>
-	<div id="sections" class="rsvpmaker" >
-	<section class="rsvpmaker"  id="main">
+	<div id="sections" class="toastmasters" >
+	<section id="main">
 	<?php
 	$nonce       = wp_create_nonce( 'tm_export' );
 	$timelord = rsvpmaker_nonce('query');
@@ -4797,13 +4804,13 @@ function wp4t_evaluations( $demo = false ) {
 		$hook = tm_admin_page_top( __( 'Evaluations', 'rsvpmaker-for-toastmasters' ) );
 		?>
 			<h2 class="nav-tab-wrapper">
-	  <a class="nav-tab nav-tab-active" href="#pending">Give Evaluations</a>
+	  <a class="nav-tab nav-tab-active" href="#main">Give Evaluations</a>
 	  <a class="nav-tab" href="#evalreq">Request Evaluation</a>
 	  <a class="nav-tab" href="#myevaluations">Evaluations Received</a>
 	  <a class="nav-tab" href="#others">Evaluations Given</a>
 	</h2>
-	<div id="sections" class="rsvpmaker" >
-	<section class="rsvpmaker"  id="pending">
+	<div id="sections" class="toastmasters" >
+	<section id="main">
 		<?php
 	}
 

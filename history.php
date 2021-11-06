@@ -54,6 +54,8 @@ if($ver < $version)
 } // end build tables
 
 function wp4toastmasters_history() {
+    $nonce = wp_create_nonce( 'tm_export' );
+	$timelord = rsvpmaker_nonce('query');
 	$export_link = sprintf( '<a href="%s?page=%s&tm_export=%s&%s">Export Summary</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
 	$export_role = sprintf( '<a href="%s?page=%s&tm_export=%s&%s&role=1">Export Role Report</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
     $sidebar = sprintf('<div>Export Options (Spreadsheet/CSV)<br>%s<br>%s</div>',$export_link,$export_role);
@@ -209,8 +211,6 @@ function wp4toastmasters_history() {
 
     $year = (date('n') < 7) ? (date('Y') - 1) : date('Y');
     $since = (empty($_GET['since'])) ?  $year.'-07-01': sanitize_text_field($_GET['since']);
-    $nonce       = wp_create_nonce( 'tm_export' );
-	$timelord = rsvpmaker_nonce('query');
     if(empty($_GET['rsvp_print'])) {
         printf("<p>Active filters: %s</p>",implode(', ',$filters));
         printf('<form method="get" action="%s">

@@ -14,7 +14,7 @@ function wp4t_todolist_screen() {
 
 function wp4t_todolist($blog_id, $send = false) {
     global $wpdb;
-    if(!get_site($blog_id))
+    if(is_multisite() && !get_site($blog_id))
         return; //maybe a deleted test site
 
     if(is_multisite())
@@ -32,6 +32,9 @@ function wp4t_todolist($blog_id, $send = false) {
         else
             $done['homepage'] = 'Freshen up your home page?';        
     }
+
+    if(!get_option('blog_public'))
+        $todo['make_public'] = 'If you are ready to make your blog public (advertised in search engines), change the option at the top of the Toastmasters settings page.';
 
     //customize the agenda 
     $template = get_option('default_toastmasters_template');
@@ -144,6 +147,10 @@ function wp4t_todolist($blog_id, $send = false) {
     $label['homepage'] = 'Edit Home Page';
     $link['homepage'] = admin_url('post.php?action=edit&post='.$home);
     $help['homepage'] = 'https://www.wp4toastmasters.com/knowledge-base/how-to-add-wordpress-blocks-content-types/';
+
+    $label['make_public'] = 'Make Site Public';
+    $link['make_public'] = admin_url('admin.php?page=wp4toastmasters_settings');
+    $help['make_public'] = 'https://www.wp4toastmasters.com/knowledge-base/toastmasters-settings/';
 
     $label['agenda_customized'] = 'Edit Agenda';
     $link['agenda_customized'] = admin_url('post.php?action=edit&post='.$template);

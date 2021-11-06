@@ -1399,8 +1399,9 @@ function toast_scoring_sheet() {
 	$judges             = get_post_meta( $post->ID, 'tm_scoring_judges', true );
 	$tiebreaker         = get_post_meta( $post->ID, 'tm_scoring_tiebreaker', true );
 	$ballot_no_password = get_post_meta( $post->ID, 'ballot_no_password', true );
+	$is_demo = get_post_meta( $post->ID, 'ballot_demo', true );
 
-	if ( isset( $_REQUEST['judge'] ) ) {
+	if ( isset( $_REQUEST['judge'] ) && !$is_demo ) {
 		$id = (int) $_REQUEST['judge'];
 		if ( ! isset( $judges[ $id ] ) ) {
 			return 'Invalid judge code' . wpt_mycontests();
@@ -1418,9 +1419,15 @@ function toast_scoring_sheet() {
 			}
 			$judge_name = get_member_name( $judge_name );
 		}
-	} elseif ( is_user_logged_in() ) {
+	} 
+	elseif($is_demo) {
+		$ballot_no_password = true;
+		$id = 1;
+		$judge_name = 'Demo Ballot';
+	} 
+	elseif ( is_user_logged_in() ) {
 		$id   = $judge_id = array_search( $current_user->ID, $judges );
-		$name = get_member_name( $judge_id );
+		$judge_name = $name = get_member_name( $judge_id );
 		if ( ! $id ) {
 			echo '<div style="color: red;">Logged in user is not on the list of judges</div>';
 		}
@@ -1533,7 +1540,11 @@ function toast_scoring_sheet() {
 	?>
 
 <div id="autorank"><button id="autorank_now">Show Ranking</button></div>
-
+<?php
+if($is_demo)
+	echo '<hr><h2>Stand-alone demo mode</h2><p>The full-featured version of this contest voting tool allows judges to cast their vote and includes a scoring dashboard where the chief judge and vote counters can watch the votes come in. See <a href="https://contest.toastmost.org">contest.toastmost.org</a></p>';
+else {
+?>
 <p>Use the scoresheet above to guide your vote. If two contestants have the same score, use your judgement to break the tie -- you must choose first, second, and third.</p>
 
 <h2>Vote</h2>
@@ -1567,6 +1578,7 @@ function toast_scoring_sheet() {
 <?php rsvpmaker_nonce(); ?>
 </form>
 	<?php
+}//end not demo
 	return ob_get_clean();
 }
 
@@ -2020,4 +2032,74 @@ $sync_link = add_query_arg('scoring','dashboard',get_permalink($sync_from));
 	<?php rsvpmaker_nonce(); ?>
 	</form>
 <?php
+}
+
+add_shortcode('toast_ballot_standalone','toast_ballot_standalone');
+
+function toast_ballot_standalone() {
+	$contest_selection = wpt_get_contest_array();
+	$output = '';
+	if ( ! empty( $_POST['contest_scoring_more'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		update_post_meta($post->ID,'contest_data_model',1);
+		foreach($_POST['contest_scoring_more'] as $index => $scoring_index) {
+			if(empty($scoring_index))
+				continue;
+			$scoring_index        = sanitize_text_field($scoring_index);
+			$contest_scoring      = $contest_selection[ $scoring_index ];
+			$timing               = $contest_timing[ $scoring_index ];
+			$data['post_title']   = $scoring_index;
+			$data['post_content'] = '[wpt_contests_prompt]';
+			$data['post_author']  = $current_user->ID;
+			$data['post_type']    = 'rsvpmaker';
+			$data['post_status']  = 'publish';
+			$id                   = wp_insert_post( $data );
+			$contestants = sanitize_textarea_field(trim($_POST['contestants'][$index]));
+			$contestants = explode("\n",$contestants);
+			//echo '<div>'.$id;
+			//print_r($contestants);
+			update_post_meta($id,'tm_scoring_order',$contestants);
+			update_post_meta($id,'toast_contest_scoring',$contest_scoring);
+			update_post_meta( $id, 'ballot_demo', true );
+			$permalink = get_permalink($id);
+			$permalink = add_query_arg('scoring','voting',$permalink);
+			$output .= sprintf('<p><a href="%s" target="_blank">%s voting link</a></p>',$permalink,$scoring_index);
+			//echo '</div>';
+	}
+	$output .= sprintf('<hr><p><a href="%s">Reset</a></p>',get_permalink());
+	return $output;
+}
+else {
+	//setup form
+	$options = '<option value="">Select Contest</option>';
+
+	foreach ( $contest_selection as $contest => $score_array ) {
+		$options .= sprintf( '<option value="%s">%s</option>', $contest, $contest );
+	}
+
+	if ( isset( $_GET['clear_custom_scoring'] ) ) {
+		delete_option( 'toast_custom_contest' );
+	} else {
+		$options .= get_option( 'toast_custom_contest' );
+	}
+	preg_match_all('/{"role":"([a-zA-Z ]+ Contest[^"]+)/',$post->post_content,$matches);
+	$roles = (isset($matches[1])) ? $matches[1] : array();
+	if(!empty($roles)) {
+		foreach($roles as $role){
+			$default_option = wpt_get_contest_default($role);
+			$contest_defaults[] = array('role' => $role, 'option' => $default_option);
+		}
+	}			
+	$default_option = (isset($contest_defaults[0])) ? $contest_defaults[0]['option'] : '';
+	$default_role = (isset($contest_defaults[0])) ? $contest_defaults[0]['role'] : '';
+$output  .= '<h1>Choose One or More Contests</h1>' . sprintf('<form method="post" action="%s">',$actionlink);
+$i = 1;
+for($i; $i < 6; $i++) {
+	$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$options,track_roles_ui('','_more[]'));
+	$output .= '<p>Contestants (enter in order, one per line)<br /><textarea name="contestants[]"></textarea></p>';
+}
+$output .= sprintf('<button>Set</button></div>
+%s</form>',rsvpmaker_nonce('return'));
+	return $output;
+}
+
 }

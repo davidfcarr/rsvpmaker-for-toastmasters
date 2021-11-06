@@ -70,13 +70,12 @@
 	$( '.speech_update' ).hide();
 
 	$( '.toastmasters section' ).hide();
+	$('section#main').show();
 
 	$('a.nav-tab-active').click( function() {
 		var activetab = $( 'a.nav-tab-active' ).attr( 'href' );
 		if (activetab) {
 			$( '.toastmasters section' ).hide();
-			$( 'section' + activetab ).show();
-			$('#welcome').show();
 			if (activetab == '#pathways') {
 				let user_id = $( '#toastmaster_select' ).val();
 				wpt_fetch_report( 'pathways',user_id );
@@ -84,7 +83,7 @@
 		}	
 	});
 	/*$('section#pending.rsvpmaker').show();*/
-	$('section:first-child').show();
+	$('#sections:first-child').show();
 
 	$( document ).on(
 		'click',

@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.9.3
+Version: 4.9.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -13013,15 +13013,21 @@ function wp4t_agenda_display_context($atts, $content) {
 	return $content;
 }
 
+function wp4t_log_notify_test() {
+	return wp4t_log_notify(0,true);
+}
+add_shortcode('wp4t_log_notify_test','wp4t_log_notify_test');
 add_action('wp4t_log_notify','wp4t_log_notify');
-function wp4t_log_notify($post_id) {
+function wp4t_log_notify($post_id, $test = false) {
+	global $post;
+	if(!$post_id)
+		$post_id = $post->ID;
+	else
+		rsvpmaker_debug_log($post_id,'wp4t_notify post id');
 	global $wpdb, $rsvp_options;
 	$emails = get_option('wpt_notification_emails');
 	$leader_notify = get_option('wpt_notification_leader'); // 1 or 0 if set;
-	if($leader_notify == '')
-		$leader_notify = true;
 	$titles = get_option('wpt_notification_titles');
-
 	if(!empty($emails)) {
 		$send = explode(',',$emails);
 	}
@@ -13042,6 +13048,16 @@ function wp4t_log_notify($post_id) {
 	}
 	else
 		$send[] =  toastmasters_officer_email_by_title('VP of Education');
+	$send = array_unique($send);
+	if($test) {
+		$output = var_export($send,true);
+		$output .= ' titles '.var_export($titles,true);
+		$output .= ' post_id '.$post_id;
+		$output .= ' notify leader '.$leader_notify;
+		$output .= ' meeting leader '.$meeting_leader;
+		return $output;
+	}
+	else {
 	$mail['from'] = get_bloginfo('admin_email');
 	$mail['subject'] = 'Roles signups for '.rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime(get_rsvp_date($post_id)));
 	$mail['html'] = '';
@@ -13057,6 +13073,7 @@ function wp4t_log_notify($post_id) {
 	}
 	rsvpmaker_debug_log($mail,'wpt_log_notify');
 	rsvpmaker_debug_log($send,'wpt_log_notify');
+	}
 }
 
 function tmlayout_role_output($atts) {
