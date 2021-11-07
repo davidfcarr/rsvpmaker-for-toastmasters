@@ -1681,3 +1681,13 @@ function wp4t_hour_past($post_id) {
 		return false;
 	return (time() > ($end + DAY_IN_SECONDS));
 }
+
+function wp4t_evaluation_link($atts) {
+	if(isset($atts['project']))
+	{
+		$get = $_GET;
+		$get['project'] = preg_replace('/Level.+/',$atts['project'],$get['project']);
+		$url = add_query_arg($get,admin_url('admin.php'));
+		return sprintf('<a href="%s">%s</a>',$url,get_project_text($get['project']));
+	}
+}

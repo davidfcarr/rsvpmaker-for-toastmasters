@@ -4605,6 +4605,8 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 
 	$form    = fetch_evaluation_form( $project );
 	$intro   = $form->intro;
+	add_shortcode('evaluation_link','wp4t_evaluation_link');//only used in this context
+	$intro = do_shortcode($intro);
 	$prompts = $form->prompts;
 
 	// $prompts = get_option('evalprompts:'.$project);
@@ -6145,12 +6147,6 @@ function toastmasters_reports_dashboard() {
 			toastmasters_meeting_minutes();
 		}
 
-		/*
-		add_submenu_page( 'toastmasters_screen', __('Competent Communicator Progress Report','rsvpmaker-for-toastmasters'), __('CC Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_cc', 'toastmasters_cc');
-		add_submenu_page( 'toastmasters_screen', __('Competent Leader Progress Report','rsvpmaker-for-toastmasters'), __('CL Progress','rsvpmaker-for-toastmasters'), $security['view_reports'], 'cl_report', 'cl_report');
-		add_submenu_page( 'toastmasters_screen', __('Advanced Awards Progress Report','rsvpmaker-for-toastmasters'), __('Advanced Awards','rsvpmaker-for-toastmasters'), $security['view_reports'], 'toastmasters_advanced', 'toastmasters_advanced');
-
-		*/
 	} else {
 		foreach ( $titles as $slug => $title ) {
 			printf( '<p><a href="%s&report=%s">%s</a></p>', admin_url( 'admin.php?page=toastmasters_reports_dashboard' ), $slug, $title );
@@ -6593,7 +6589,33 @@ function pathways_project_map( $slug ) {
 		'Visionary Communication Level 5 Demonstrating Expertise 2315' => 'Pathways:Moderate a Panel Discussion',
 		'Visionary Communication Level 5 Demonstrating Expertise 2321' => 'Pathways:Prepare to Speak Professionally',
 	);
-	if ( ! empty( $map[ $slug ] ) ) {
+	$paths = array('Dynamic Leadership',
+	'Effective Coaching',
+	'Engaging Humor',
+	'Innovative Planning',
+	'Leadership Development',
+	'Motivational Strategies',
+	'Persuasive Influence',
+	'Presentation Mastery',
+	'Strategic Relationships',
+	'Team Collaboration',
+	'Visionary Communication');
+	foreach($paths as $path) {
+		$map[$path.' Level 1 Mastering Fundamentals 12'] = 'Pathways:Writing a Speech with Purpose';
+		$map[$path.' Level 1 Mastering Fundamentals 13'] = 'Pathways:Introduction to Vocal Variety and Body Language';
+		$map[$path.' Level 1 Mastering Fundamentals 14'] = 'Pathways:Introduction to Vocal Variety and Body Language - Emphasis on Vocal Variety';
+		$map[$path.' Level 3 Increasing Knowledge 512'] = 'Pathways:Researching and Presenting';
+	}
+
+	if(strpos($slug,'1233071'))
+		return 'Pathways:DTM Project Speech 1';
+	elseif(strpos($slug,'1233072'))
+		return 'Pathways:DTM Project Speech 2';
+	elseif(strpos($slug,'9999'))
+		return 'Pathways 360 Level 5 Demonstrating Expertise 99';
+	elseif(strpos($slug,'9999'))
+		return 'Pathways 360 Level 5 Demonstrating Expertise 99';
+	elseif ( ! empty( $map[ $slug ] ) ) {
 		return $map[ $slug ];
 	}
 	return $slug;

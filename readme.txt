@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 5.8.1
-Stable tag: 4.9.4
+Stable tag: 4.9.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,9 +65,13 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
+= 4.9.5 =
+
+* Added evaluation forms for new Level 1 Pathways projects, Level 3 version of Researching and Presenting
+
 = 4.9.4 =
 
-* Update for new Level 1 pathways projects
+* Update for new Level 1 Pathways projects
 
 = 4.9.3 =
 
