@@ -65,6 +65,11 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
+= 4.9.6 =
+
+* YouTube Replay tool enhancements
+* UI changes to Add Members screen for clarity
+
 = 4.9.5 =
 
 * Added evaluation forms for new Level 1 Pathways projects, Level 3 version of Researching and Presenting

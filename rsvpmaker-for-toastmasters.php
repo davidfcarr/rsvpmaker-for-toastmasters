@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.9.5
+Version: 4.9.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -5790,7 +5790,7 @@ function add_awesome_member() {
 
 <div id="ajax-response"></div>
 
-<p><?php _e( 'Create a website user account for a new member', 'rsvpmaker-for-toastmasters' ); ?>.</p>
+<p><?php _e( 'Create a website user account for a new member. The only required fields are name and email address.', 'rsvpmaker-for-toastmasters' ); ?></p>
 <form action="<?php echo admin_url( 'users.php?page=add_awesome_member' ); ?>" method="post" name="createuser" id="createuser" class="add:users: validate">
 <input name="action" type="hidden" value="createuser" />
 <input type="hidden" id="_wpnonce_create-user" name="_wpnonce_create-user" value="6f56987dd6" /><input type="hidden" name="_wp_http_referer" value="/wp-admin/user-new.php" /><table class="form-table">
@@ -5832,8 +5832,8 @@ function add_awesome_member() {
 		<td><input name="toastmasters_id" type="text" id="toastmasters_id" value="" /></td>
 	</tr>
 	</table>
-
-<p class="submit"><input type="submit" name="createuser" id="createusersub" class="button-primary" value="<?php _e( 'Add Member', 'rsvpmaker-for-toastmasters' ); ?>"  /></p>
+<p>You will be prompted to confirm this information on the next page.</p>
+<p class="submit"><input type="submit" name="createuser" id="createusersub" class="button-primary" value="<?php _e( 'Add Member (Step 1 of 2)', 'rsvpmaker-for-toastmasters' ); ?>"  /></p>
 <?php rsvpmaker_nonce(); ?>
 </form>
 
@@ -6321,7 +6321,7 @@ class Toastmasters_Member {
 				echo ' checked="checked" ';}
 			?>
 	 /> Do not send email invites (for example, if you are still testing the site).</p> 
-<input type="submit"  class="button-primary" value="<?php _e( 'Submit', 'rsvpmaker-for-toastmasters' ); ?>" />
+<input type="submit"  class="button-primary" value="<?php _e( 'Confirm Add Member(s)', 'rsvpmaker-for-toastmasters' ); ?>" />
 <?php rsvpmaker_nonce(); ?>
 </form>
 			<?php
@@ -8271,6 +8271,16 @@ function wp4_email_contacts( $has_assignment = array() ) {
 }
 
 function toolbar_add_member( $wp_admin_bar ) {
+	if ( current_user_can( 'edit_others_posts' ) ) {
+	$args = array(
+		'id'     => 'youtube_tool',
+		'title'  => __( 'YouTube Replay', 'rsvpmaker-for-toastmasters' ),
+		'href'   => admin_url( 'upload.php?page=tm_youtube_tool' ),
+		'parent' => 'new-content',
+		'meta'   => array( 'class' => 'youtube_tool' ),
+	);
+	$wp_admin_bar->add_node( $args );
+	}
 
 	if ( ! current_user_can( 'list_users' ) ) {
 		return $wp_admin_bar;
@@ -11254,9 +11264,11 @@ function tm_youtube_tool() {
 	$past  = past_toastmaster_meetings(5);
 	if ( $past ) {
 		foreach ( $past as $pst ) {
-			$wrapup[]       = rsvpmaker_date($rsvp_options['long_date'], (int) $pst->ts_start);
-			$alldetails[]   = '<strong>' . rsvpmaker_date($rsvp_options['long_date'], (int) $pst->ts_start) . '</strong>';
-			$ptext         .= '<strong>' . rsvpmaker_date($rsvp_options['long_date'], (int) $pst->ts_start) . "</strong>\n";
+			$speakerdate = rsvpmaker_date($rsvp_options['long_date'], (int) $pst->ts_start);
+			$wrapup[]       = $speakerdate;
+			$alldetails[]   = '<strong>' . $speakerdate . '</strong>';
+			$ptext .= (empty($ptext)) ? '<div>' : '<div class="ptextmore">';
+			$ptext         .= '<strong>' . $speakerdate . "</strong>\n";
 			$nameanddetails = '';
 			$sql            = "SELECT *, meta_value as user_id FROM $wpdb->postmeta WHERE post_id=$pst->ID AND meta_key LIKE '_Speaker%' ORDER BY meta_key";
 			$speakers       = $wpdb->get_results( $sql );
@@ -11266,7 +11278,7 @@ function tm_youtube_tool() {
 					if ( ! empty( $row->user_id ) && is_numeric( $row->user_id ) ) {
 						$user    = get_userdata( $row->user_id );
 						$name    = ( empty( $user->first_name ) ) ? 'User ' . $row->user_id : $user->first_name . ' ' . $user->last_name;
-						$ptext  .= sprintf( '<div><input class="youtube_speaker_check" type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ', $count, $count, $name );
+						$ptext  .= sprintf( '<div class="checkbox_section"><input class="youtube_speaker_check" type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ', $count, $count, $name );
 						$title   = get_post_meta( $pst->ID, '_title' . $row->meta_key, true );
 						$details = '';
 						if ( ! empty( $title ) ) {
@@ -11281,39 +11293,49 @@ function tm_youtube_tool() {
 							$details .= __( 'Project:', 'rsvpmaker-for-toastmasters' ) . ' ' . $project;
 						}
 						// $alldetails[] = '<strong>'.$user->first_name.' '.$user->last_name.'</strong> '.$details;
-						$ptext .= sprintf( '%s: %s<br />Details: <input type="text" name="speech[%d]" value="%s"> YouTube Link: <input type="text" name="link[%d]" class="checkboxlink" i="%d">', $name, $details, $count, htmlentities( $details . ' ' . $pst->date ), $count, $count );
+						$ptext .= sprintf( '%s: %s<br />Details: <input type="text" name="speech[%d]" id="speech%d" value="%s" class="speech"> YouTube Link: <input type="text" name="link[%d]" id="%d" class="checkboxlink" i="%d" class="link">', $name, $details, $count, $count, htmlentities( $details . ' ' . $speakerdate ), $count, $count, $count );
 						$ptext .= "</div>\n\n";
 						$count++;
 					}
 					$nameanddetails .= '<p>' . $name . ': ' . $details . '</p>';
 				}
+				$ptext .= '</div>';
 			}
 			$summaries[] = $nameanddetails;
 		}
 	}
 
+	$ptext .= '<p class="morecheckboxes-wrapper"><input type="checkbox" class="morecheckboxes"> Show more dates</p>';
+
 	$stop = $count + 3;
 
 	while ( $count < $stop ) {
-		$ptext .= sprintf( '<p><select name="speakers[%d]"  class="youtube_speaker_select" >%s</select> Details: <input type="text" name="speech[%d]"> YouTube Link: <input type="text" name="link[%d]"></p>', $count, $options, $count, $count );
+		$ptext .= sprintf( '<p><select name="speakers[%d]" id="speaker%d" class="youtube_speaker_select" >%s</select> Details: <input type="text" class="speech" name="speech[%d]" id="speech%d"> YouTube Link: <input type="text" class="link" name="link[%d]" id="link%d"></p>', $count, $count, $options, $count, $count, $count, $count );
 		$count++;
 	}
 
 	$stop = $count + 2;
 
 	while ( $count < $stop ) {
-		$ptext .= sprintf( '<p>Name: <input type="text" name="speakers[%d]" class="youtube_speaker_blank"> Details: <input type="text" name="speech[%d]"> YouTube Link: <input type="text" name="link[%d]"></p>', $count, $count, $count );
+		$ptext .= sprintf( '<p>Name: <input type="text" name="speakers[%d]" class="youtube_speaker_blank" id="speaker%d"> Details: <input type="text" name="speech[%d]" id="speech%d" class="speech"> YouTube Link: <input type="text" name="link[%d]" id="link%d" class="link"></p>', $count, $count, $count, $count, $count, $count );
 		$count++;
 	}
 
 	$ptext .= '<p>Wrapup video, for example Zoom recording of a whole meeting</p>';
 	foreach ( $wrapup as $index => $wrap ) {
-		$ptext .= sprintf( '<p><input type="text" name="wrapuptext[]" class="wrapuptext" value="%s" /> YouTube link <input class="wrapuplink" wrapindex="%d" name="wrapuplink[]" /></p>', $wrap, $index );
-		$ptext .= '<div class="speech-summaries">' . $summaries[ $index ] . '</div>';
+		$ptext .= ($index) ? '<div class="ptextmore">' : '<div>';
+		$ptext .= sprintf( '<p><input type="text" name="wrapuptext[]" id="wrapuptext%d" class="wrapuptext" value="%s" /> YouTube link <input class="wrapuplink" id="wrapuplink%d" wrapindex="%d" name="wrapuplink[]" /></p>', $index, $wrap, $index, $index );
+		$ptext .= '</div>';
+		//$ptext .= '<div class="speech-summaries">' . $summaries[ $index ] . '</div>';
 	}
-	$ptext .= '<p id="show-summaries-wrapper"><input type="checkbox" id="show-summaries" > Show speech summaries for each week.</p>';
+	$ptext .= '<p class="morecheckboxes-wrapper"><input type="checkbox" class="morecheckboxes"> Show more dates</p>';
 
 	echo $ptext; 
+?>	
+<p id="youtube_subject_wrapper">Subject <input type="text" id="youtube_subject" name="youtube_subject" style="width: 80%;" /> </p>
+<p id="customize_subject_wrapper"><button id="customize_subject">Customize Subject</button></p>
+<div id="youtube_preview"></div>
+<?php
 	$policy = get_option( 'tm_video_policy' );
 	if ( empty( $policy ) ) {
 		$policy = "<strong>Video policy</strong>: speech videos are intended as a tool for speakers to see their own performances and think about how they can improve. Even though these are on YouTube, they are published as \"unlisted\" by default, meaning they won't show up in search results. Don't forward these links or post them on Facebook or in any other forum without the speaker's permission. From time to time, we may ask a speaker for permission to use a video as part of our marketing of the club. Volunteers are also welcome - if you're proud of a particular speech, let us know.";
@@ -11368,9 +11390,6 @@ function tm_youtube_tool() {
 				?>
  ><?php _e( 'No', 'rsvpmaker-for-toastmasters' ); ?>
 </p>
-
-<p id="youtube_subject_wrapper">Subject <input type="text" id="youtube_subject" name="youtube_subject" style="width: 80%;" /> </p>
-<p><button id="customize_subject">Customize Subject</button></p>
 <h3><?php _e( 'Policy to include in email', 'rsvpmaker-for-toastmasters' ); ?></h3>
 <p><textarea name="policy" rows="3" style="width: 90%"><?php echo wp_kses_post($policy); ?></textarea></p>
 	<?php submit_button(); ?>
@@ -11380,7 +11399,74 @@ function tm_youtube_tool() {
 <p>To display a listing of videos and blog posts indexed by member name on your website, include the code [blogs_by_member_tag] on the page where you want it to appear.</p>
 
 <script>
+
 jQuery(document).ready(function($) {
+
+$('.ptextmore').hide();
+$('.morecheckboxes').click( function() {
+	$('.ptextmore').show();
+	$('.morecheckboxes-wrapper').hide();
+});
+
+function make_youtube_preview() {
+	let preview = '';
+	let checkid;
+	let count;
+	$('.youtube_speaker_check').each( function() {
+		checkid = $(this).attr('id');
+		count = checkid.replace('speaker','');
+		if($('#'+checkid).is(':checked')) {
+			preview = preview + '<p>'+$('#'+checkid).val();
+			preview = preview + ' '+$('#speech'+count).val() + '</p>';
+		}
+	});
+	let selectname;	
+	$('.youtube_speaker_select').each( function() {
+		checkid = $(this).attr('id');
+		count = checkid.replace('speaker','');
+		count = count.replace('link','');
+		count = count.replace('speech','');
+		checkid = $(this).attr('id');
+		selectname = $(this).val();
+		if(selectname != '') {
+			preview = preview + '<p>' +selectname;
+			preview = preview + ' '+$('#speech'+count).val() + '</p>';
+		}
+	});
+
+	$('.youtube_speaker_blank').each( function() {
+		checkid = $(this).attr('id');
+		count = checkid.replace('speaker','');
+		count = count.replace('link','');
+		count = count.replace('speech','');
+		selectname = $(this).val();
+		if(selectname != '') {
+			preview = preview + '<p>' +selectname;
+			preview = preview + ' '+$('#speech'+count).val() + '</p>';
+		}
+	});
+
+	let link;
+
+	$('.wrapuplink').each( function() {
+		checkid = $(this).attr('id');
+		count = checkid.replace('wrapuplink','');
+		link = $(this).val();
+		if(link != '') {
+			preview = preview + '<p>' +$('#wrapuptext'+count).val();
+			preview = preview + ' '+ link + '</p>';
+		}
+	});
+
+	$('#youtube_preview').html(preview);
+}
+
+$('.youtube_speaker_check').click( function() { make_youtube_preview() } );
+$('.youtube_speaker_select').change( function() { make_youtube_preview() } );
+$('.speech').change( function() { make_youtube_preview() } );
+$('.link').change( function() { make_youtube_preview() } );
+$('.youtube_speaker_blank').change( function() { make_youtube_preview() } );
+$('.wrapuplink').change( function() { make_youtube_preview() } );
 
 $('#youtube_subject_wrapper').hide();
 

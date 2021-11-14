@@ -142,8 +142,9 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
         if(isset($_POST['openvotes'])){
             $label = $openvotes = sanitize_text_field($_POST['openvotes']);
             $openvotes = preg_replace('/[^a-z]/','',strtolower($openvotes));
-            update_post_meta($post->ID,'votelabel_'.$openvotes,$label);    
-            add_post_meta($post->ID,'openvotes',$openvotes);
+            update_post_meta($post->ID,'votelabel_'.$openvotes,$label);
+            if(!in_array($open,$openvotes)) // don't add duplicates
+                add_post_meta($post->ID,'openvotes',$openvotes);
         }
         else
             $openvotes = sanitize_text_field($_POST['edit_candidates']);
@@ -160,7 +161,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
     }
 
     $open = get_post_meta($post->ID,'openvotes'); // get array
-
+    
     if(is_array($open)) {
         foreach($open as $v) {
             $check = 'voting_'.$v;
