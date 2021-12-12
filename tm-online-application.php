@@ -597,6 +597,7 @@ width: 150px;
 		$user['mobile_phone']    = get_post_meta( $app_id, 'mobile_phone', true );
 		$user['toastmasters_id'] = get_post_meta( $app_id, 'toastmasters_id', true );
 		$user['application_id'] = $app_id;
+		$email_choice = get_post_meta($app_id,'club_email_choice',true);
 		$member_factory->check( $user );
 		$member_factory->show_prompts();
 	} elseif ( ! empty( $_POST['notes'] ) ) {
@@ -853,4 +854,27 @@ function wp4t_dues_renewal($atts) {
 
 	$output .= sprintf('<form method="get" action="%s" >%s %s %s <button>%s</button></form>',get_permalink(), __('Paying Dues For','rsvpmaker-for-toastmasters'),awe_user_dropdown('user_id',$user_id,true),$r12,__('Submit','rsvpmaker-for-toastmasters'));
 	return $output;
+}
+
+function tm_application_form_radio( $slug, $choices ) {
+	global $post;
+	if ( isset( $_POST['first_name'] ) ) {
+		$posted = sanitize_text_field($_POST[$slug]);
+		foreach ( $choices as $value => $choice ) {
+			$checked = tm_application_checked_display($value == $posted);
+			echo ' '.$checked .' '.$choice.' ';
+		}	
+	}
+	else {
+		foreach ( $choices as $value => $choice ) {
+			printf( ' <input type="radio" name="%s" value="%s">	%s ', $slug, $value, $choice );
+		}	
+	}
+}
+
+function tm_application_checked_display($is_checked) {
+	if($is_checked)
+		return '&#11044;';
+	else
+		return '&#9675;';
 }

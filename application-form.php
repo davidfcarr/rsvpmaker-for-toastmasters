@@ -29,7 +29,7 @@ Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
 
 <p><strong>Applicant Information</strong></p>
 
-<p>Gender <?php tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Other' ) ); ?></p>
+<p>Gender <?php tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Non-binary', 'Decline to respond' ) ); ?></p>
 
 <p><label>Last name/Surname</label> <?php tm_application_form_field( 'last_name' ); ?>
 <br><label>First name</label> <?php tm_application_form_field( 'first_name' ); ?>
@@ -83,6 +83,12 @@ if ( isset( $_POST['sponsor'] ) ) {
 }
 ?>
 
+<p><strong>A Toastmaster’s Promise</strong></p>
+
+<p>As a member of Toastmasters International and my club, I promise</p>
+
+<ul><li>To attend club meetings regularly</li><li>To prepare all of my projects to the best of my ability, basing them on the Toastmasters education program</li><li>To prepare for and fulfill meeting assignments</li><li>To provide fellow members with helpful, constructive evaluations</li><li>To help the club maintain the positive, friendly environment necessary for all members to learn and grow</li><li>To serve my club as an officer when called upon to do so</li><li>To treat my fellow club members and our guests with respect and courtesy</li><li>To bring guests to club meetings so they can see the benefits Toastmasters membership offers</li><li>To adhere to the guidelines and rules for all Toastmasters education and recognition programs</li><li>To act within Toastmasters core values of integrity, respect, service and excellence during the conduct of all Toastmasters activities</li></ul>
+
 <p><strong>Member’s Agreement and Release</strong></p>
 
 <p>Consistent with my desire to take personal responsibility for my conduct, individually and as a member of a Toastmasters club, I agree to abide by the principles contained in A Toastmaster’s Promise and the Toastmasters International Governing Documents and my club. I will refrain from any form of discrimination, harassment, bullying, derogatory, illegal, or unethical conduct, and I understand that if I engage in such conduct, I agree to reimburse Toastmasters International, my club or other clubs, or other individuals involved with Toastmasters, for any damages, losses or costs resulting from my conduct. Understanding that Toastmasters programs are conducted by volunteers who cannot be effectively screened or supervised by Toastmasters International or its clubs, I release and discharge Toastmasters International, its clubs, governing bodies, officers, employees, agents, and representatives from any liability for the intentional or negligent acts or omissions of any member or officer of my club or other clubs, or any officer of Toastmasters International. Should a dispute of some nature arise, I expressly agree to resolve all disputes, claims, and charges relating to Toastmasters, districts, clubs and Toastmasters members in accordance with Protocol 3.0: Ethics and Conduct.</p>
@@ -94,17 +100,15 @@ if ( isset( $_POST['sponsor'] ) ) {
 <li>Maintain&nbsp;changes to my personal contact information to ensure it is accurate and current by updating my personal profile page located on the Toastmasters International website:&nbsp;<strong>www.toastmasters.org/login</strong>. I understand that the majority of the data requested in this application is necessary for administrative and planning purposes.</li>
 </ul>
 
-<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> Mail <?php tm_application_form_choice( 'mail_ok', array( 'Yes', 'No' ) ); ?> Email <?php tm_application_form_choice( 'email_ok', array( 'Yes', 'No' ) ); ?> Phone <?php tm_application_form_choice( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
+<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> Mail <?php tm_application_form_radio( 'mail_ok', array( 'Yes', 'No' ) ); ?> <br>Email <?php tm_application_form_radio( 'email_ok', array( 'Yes', 'No' ) ); ?> <br>Phone <?php tm_application_form_radio( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
 
 <p>If you would rather not receive non-essential communications from us, please select "No" <?php tm_application_form_choice( 'opt_out', array( 'Yes, communication is welcome', 'No, I wish to opt out of non-esssential communications' ) ); ?></p>
 
 <p>For our full privacy policy, you may visit&nbsp;<strong><a target="_blank" href="https://www.toastmasters.org/footer/privacy-policy">www.toastmasters.org/footer/privacy-policy</a></strong>.</p>
 
-<p><strong>A Toastmaster’s Promise</strong></p>
-
-<p>As a member of Toastmasters International and my club, I promise</p>
-
-<ul><li>To attend club meetings regularly</li><li>To prepare all of my projects to the best of my ability, basing them on the Toastmasters education program</li><li>To prepare for and fulfill meeting assignments</li><li>To provide fellow members with helpful, constructive evaluations</li><li>To help the club maintain the positive, friendly environment necessary for all members to learn and grow</li><li>To serve my club as an officer when called upon to do so</li><li>To treat my fellow club members and our guests with respect and courtesy</li><li>To bring guests to club meetings so they can see the benefits Toastmasters membership offers</li><li>To adhere to the guidelines and rules for all Toastmasters education and recognition programs</li><li>To act within Toastmasters core values of integrity, respect, service and excellence during the conduct of all Toastmasters activities</li></ul>
+<p><strong>Club email and privacy settings</strong></p>
+<p>Do you grant the club permission to send you email communications such as meeting updates.<br><?php tm_application_form_radio( 'tm_privacy_prompt', array( '0' => 'Yes, permission granted', '2' => 'No, permission DENIED' ) ); ?> </p>
+<p>Do you grant permission for your contact information to be shared with other members in the member directory.<br><?php tm_application_form_radio( 'tm_directory_blocked', array( '0' => 'Yes, permission granted', '1' => 'No, permission DENIED' ) ); ?> </p>
 
 <p><strong>Verification of Applicant</strong></p>
 

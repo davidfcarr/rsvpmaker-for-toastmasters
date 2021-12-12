@@ -807,8 +807,8 @@ $project_times['Dynamic Leadership Level 5 Demonstrating Expertise 182'] = 7;
 $display_times['Dynamic Leadership Level 5 Demonstrating Expertise 182'] = '5 - 7 minutes';
 
 $projects['Dynamic Leadership Level 5 Demonstrating Expertise 187']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Dynamic Leadership Level 5 Demonstrating Expertise 187'] = 7;
-$display_times['Dynamic Leadership Level 5 Demonstrating Expertise 187'] = '5 - 7 minutes';
+$project_times['Dynamic Leadership Level 5 Demonstrating Expertise 187'] = 12;
+$display_times['Dynamic Leadership Level 5 Demonstrating Expertise 187'] = '10 - 12 minutes';
 
 $projects['Dynamic Leadership Level 5 Demonstrating Expertise 193']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 5 Demonstrating Expertise 193'] = 40;
@@ -1018,8 +1018,8 @@ $project_times['Effective Coaching Level 5 Demonstrating Expertise 425'] = 7;
 $display_times['Effective Coaching Level 5 Demonstrating Expertise 425'] = '5 - 7 minutes';
 
 $projects['Effective Coaching Level 5 Demonstrating Expertise 431']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Effective Coaching Level 5 Demonstrating Expertise 431'] = 7;
-$display_times['Effective Coaching Level 5 Demonstrating Expertise 431'] = '5 - 7 minutes';
+$project_times['Effective Coaching Level 5 Demonstrating Expertise 431'] = 12;
+$display_times['Effective Coaching Level 5 Demonstrating Expertise 431'] = '10 - 12 minutes';
 
 $projects['Effective Coaching Level 5 Demonstrating Expertise 437']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Effective Coaching Level 5 Demonstrating Expertise 437'] = 40;
@@ -1207,8 +1207,8 @@ $project_times['Engaging Humor Level 5 Demonstrating Expertise 15082'] = 22;
 $display_times['Engaging Humor Level 5 Demonstrating Expertise 15082'] = '18 - 22 minutes';
 
 $projects['Engaging Humor Level 5 Demonstrating Expertise 15089']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Engaging Humor Level 5 Demonstrating Expertise 15089'] = 7;
-$display_times['Engaging Humor Level 5 Demonstrating Expertise 15089'] = '5 - 7 minutes';
+$project_times['Engaging Humor Level 5 Demonstrating Expertise 15089'] = 12;
+$display_times['Engaging Humor Level 5 Demonstrating Expertise 15089'] = '10 - 12 minutes';
 
 $projects['Engaging Humor Level 5 Demonstrating Expertise 15095']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 5 Demonstrating Expertise 15095'] = 40;
@@ -1406,8 +1406,8 @@ $project_times['Innovative Planning Level 5 Demonstrating Expertise 649'] = 7;
 $display_times['Innovative Planning Level 5 Demonstrating Expertise 649'] = '5 - 7 minutes';
 
 $projects['Innovative Planning Level 5 Demonstrating Expertise 655']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Innovative Planning Level 5 Demonstrating Expertise 655'] = 7;
-$display_times['Innovative Planning Level 5 Demonstrating Expertise 655'] = '5 - 7 minutes';
+$project_times['Innovative Planning Level 5 Demonstrating Expertise 655'] = 12;
+$display_times['Innovative Planning Level 5 Demonstrating Expertise 655'] = '10 - 12 minutes';
 
 $projects['Innovative Planning Level 5 Demonstrating Expertise 661']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 5 Demonstrating Expertise 661'] = 40;
@@ -1601,8 +1601,8 @@ $project_times['Leadership Development Level 5 Demonstrating Expertise 884'] = 7
 $display_times['Leadership Development Level 5 Demonstrating Expertise 884'] = '5 - 7 minutes';
 
 $projects['Leadership Development Level 5 Demonstrating Expertise 891']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Leadership Development Level 5 Demonstrating Expertise 891'] = 7;
-$display_times['Leadership Development Level 5 Demonstrating Expertise 891'] = '5 - 7 minutes';
+$project_times['Leadership Development Level 5 Demonstrating Expertise 891'] = 12;
+$display_times['Leadership Development Level 5 Demonstrating Expertise 891'] = '10 - 12 minutes';
 
 $projects['Leadership Development Level 5 Demonstrating Expertise 897']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 5 Demonstrating Expertise 897'] = 40;
@@ -1800,8 +1800,8 @@ $project_times['Motivational Strategies Level 5 Demonstrating Expertise 1121'] =
 $display_times['Motivational Strategies Level 5 Demonstrating Expertise 1121'] = '5 - 7 minutes';
 
 $projects['Motivational Strategies Level 5 Demonstrating Expertise 1128']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Motivational Strategies Level 5 Demonstrating Expertise 1128'] = 7;
-$display_times['Motivational Strategies Level 5 Demonstrating Expertise 1128'] = '5 - 7 minutes';
+$project_times['Motivational Strategies Level 5 Demonstrating Expertise 1128'] = 12;
+$display_times['Motivational Strategies Level 5 Demonstrating Expertise 1128'] = '10 - 12 minutes';
 
 $projects['Motivational Strategies Level 5 Demonstrating Expertise 1134']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 5 Demonstrating Expertise 1134'] = 40;
@@ -2003,8 +2003,8 @@ $project_times['Persuasive Influence Level 5 Demonstrating Expertise 1358'] = 7;
 $display_times['Persuasive Influence Level 5 Demonstrating Expertise 1358'] = '5 - 7 minutes';
 
 $projects['Persuasive Influence Level 5 Demonstrating Expertise 1364']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Persuasive Influence Level 5 Demonstrating Expertise 1364'] = 7;
-$display_times['Persuasive Influence Level 5 Demonstrating Expertise 1364'] = '5 - 7 minutes';
+$project_times['Persuasive Influence Level 5 Demonstrating Expertise 1364'] = 12;
+$display_times['Persuasive Influence Level 5 Demonstrating Expertise 1364'] = '10 - 12 minutes';
 
 $projects['Persuasive Influence Level 5 Demonstrating Expertise 1370']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 5 Demonstrating Expertise 1370'] = 40;
@@ -2190,8 +2190,8 @@ $project_times['Presentation Mastery Level 5 Demonstrating Expertise 1582'] = 22
 $display_times['Presentation Mastery Level 5 Demonstrating Expertise 1582'] = '18 - 22 minutes';
 
 $projects['Presentation Mastery Level 5 Demonstrating Expertise 1589']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Presentation Mastery Level 5 Demonstrating Expertise 1589'] = 7;
-$display_times['Presentation Mastery Level 5 Demonstrating Expertise 1589'] = '5 - 7 minutes';
+$project_times['Presentation Mastery Level 5 Demonstrating Expertise 1589'] = 12;
+$display_times['Presentation Mastery Level 5 Demonstrating Expertise 1589'] = '10 - 12 minutes';
 
 $projects['Presentation Mastery Level 5 Demonstrating Expertise 1595']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 5 Demonstrating Expertise 1595'] = 40;
@@ -2381,8 +2381,8 @@ $project_times['Strategic Relationships Level 5 Demonstrating Expertise 1806'] =
 $display_times['Strategic Relationships Level 5 Demonstrating Expertise 1806'] = '5 - 7 minutes';
 
 $projects['Strategic Relationships Level 5 Demonstrating Expertise 1813']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Strategic Relationships Level 5 Demonstrating Expertise 1813'] = 7;
-$display_times['Strategic Relationships Level 5 Demonstrating Expertise 1813'] = '5 - 7 minutes';
+$project_times['Strategic Relationships Level 5 Demonstrating Expertise 1813'] = 12;
+$display_times['Strategic Relationships Level 5 Demonstrating Expertise 1813'] = '10 - 12 minutes';
 
 $projects['Strategic Relationships Level 5 Demonstrating Expertise 1819']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Strategic Relationships Level 5 Demonstrating Expertise 1819'] = 40;
@@ -2576,8 +2576,8 @@ $project_times['Team Collaboration Level 5 Demonstrating Expertise 2036'] = 7;
 $display_times['Team Collaboration Level 5 Demonstrating Expertise 2036'] = '5 - 7 minutes';
 
 $projects['Team Collaboration Level 5 Demonstrating Expertise 2043']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Team Collaboration Level 5 Demonstrating Expertise 2043'] = 7;
-$display_times['Team Collaboration Level 5 Demonstrating Expertise 2043'] = '5 - 7 minutes';
+$project_times['Team Collaboration Level 5 Demonstrating Expertise 2043'] = 12;
+$display_times['Team Collaboration Level 5 Demonstrating Expertise 2043'] = '10 - 12 minutes';
 
 $projects['Team Collaboration Level 5 Demonstrating Expertise 2049']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Team Collaboration Level 5 Demonstrating Expertise 2049'] = 40;
@@ -2783,8 +2783,8 @@ $project_times['Visionary Communication Level 5 Demonstrating Expertise 2279'] =
 $display_times['Visionary Communication Level 5 Demonstrating Expertise 2279'] = '5 - 7 minutes';
 
 $projects['Visionary Communication Level 5 Demonstrating Expertise 2285']      = __( 'Reflect on Your Path', 'rsvpmaker-for-toastmasters' );
-$project_times['Visionary Communication Level 5 Demonstrating Expertise 2285'] = 7;
-$display_times['Visionary Communication Level 5 Demonstrating Expertise 2285'] = '5 - 7 minutes';
+$project_times['Visionary Communication Level 5 Demonstrating Expertise 2285'] = 12;
+$display_times['Visionary Communication Level 5 Demonstrating Expertise 2285'] = '10 - 12 minutes';
 
 $projects['Visionary Communication Level 5 Demonstrating Expertise 2291']      = __( 'Ethical Leadership', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 5 Demonstrating Expertise 2291'] = 40;

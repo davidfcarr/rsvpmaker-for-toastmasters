@@ -10,6 +10,12 @@ function wp4t_todolist_short () {
 function wp4t_todolist_screen() {
     $blog_id = (is_multisite()) ? get_current_blog_id() : 1;
     echo wp4t_todolist($blog_id);
+    if(isset($_GET['weekly_reminder'])) {
+        wp_schedule_event( time() + DAY_IN_SECONDS, 'weekly', 'wp4t_todolist_cron', array($blog_id, true) );
+    }
+    elseif(! wp_next_scheduled ( 'wp4t_todolist_cron', array($blog_id, true) )) {
+        printf('<p><a href="%s">Send Weekly Reminder</a></p>',admin_url('admin.php?page=wp4t_todolist_screen&weekly_reminder=1'));
+    }
 }
 
 function wp4t_todolist($blog_id, $send = false) {
@@ -207,6 +213,16 @@ function wp4t_todolist($blog_id, $send = false) {
     $link['change_custom_header'] = admin_url('customize.php');
     $help['change_custom_header'] = 'https://wordpress.com/support/custom-header-image/';
 
+    if(is_plugin_active('jetpack/jetpack.php') && (get_option('jetpack_activated') != '1') ) // 2 if not connected
+    {
+        $done['jetpack'] = 'Jetpack plugin provides access to additional search engine optimization, performance, and social media features. Requires you to connect to the WordPress.com online service.';
+    }
+
+    $label['jetpack'] = 'Configure Jetpack';
+    $link['jetpack'] = admin_url('admin.php?page=jetpack#/');
+    $help['jetpack'] = 'https://www.wp4toastmasters.com/2020/11/19/jetpack-the-swiss-army-knife-plugin-for-your-website/';
+
+
     $output = '<h2>This Is The Website Administrator Todo List</h2>'."\n";
 
     if(empty($todo))
@@ -233,6 +249,13 @@ function wp4t_todolist($blog_id, $send = false) {
     $output .= '<h2>Volunteer Help</h2><p>The WordPress for Toastmasters project is looking for volunteers to help with documentation and training materials.
     If you have web programming or design skills, this is open source software for which your contributions are welcome. 
     Write to <a href="mailto:david@wp4toastmasters.com?subject=Todo page volunteer">david@wp4toastmasters.com</a>.</p>';
+
+    if(isset($_GET['cancel_reminder'])) {
+        wp_clear_scheduled_hook('wp4t_todolist_cron', array($blog_id, true) );
+    }
+    elseif( wp_next_scheduled ( 'wp4t_todolist_cron', array($blog_id, true) )) {
+        $output .= sprintf('<p><a href="%s">Cancel Todo List reminder emails</a></p>',admin_url('admin.php?page=wp4t_todolist_screen&cancel_reminder=1'));
+    }
 
     if($send) {
         $mail['html'] = "<p>This email is intended to nudge you toward fleshing out your Toastmost website and taking full advantage of it. You can find the same list on the administrative dashboard under TM Administration.</p>\n".$output;

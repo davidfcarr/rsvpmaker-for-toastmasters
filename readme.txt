@@ -4,8 +4,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 5.8.1
-Stable tag: 4.9.5
+Tested up to: 5.8.2
+Stable tag: 5.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,7 +15,9 @@ This Toastmasters-specific extension to the RSVPMaker events plugin adds role si
 
 This plugin adds Toastmasters-specific functions to your WordPress website. Once you activate RSVPMaker for Toastmasters, a series of prompts guide you through the process of installing and activating the other required and recommended software and setting up your home page and meetings schedule. See this video for a preview.
 
-https://www.youtube.com/watch?v=D1E9GMwnImM
+This demo of the hosted version at [Toastmost.org](https://toastmost.org) covers the key features. 
+
+https://www.youtube.com/watch?v=11DlRIs_b3Y
 
 As an alternative to other club web software options that include a custom content management system, this WordPress-based solution allows website operators to take advantage of the same technology that powers major publishing websites (newyorker.com and time.com, for example) and countless blogs, small business websites, and online marketing campaigns. That makes it a more powerful tool for recruiting new members and showcasing what makes your club special.
 
@@ -64,6 +66,18 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 5.0 =
+
+* Privacy prompt questions added to online member application
+* Members who have not previously set privacy preferences will be prompted to do so
+* Separate permissions for sending email and sharing contact info in the member directory
+
+= 4.9.7 =
+
+* New functionality for compliance with privacy regulations such as the EU's GDPR.
+* New member accounts now default to 'permission pending' status meaning broadcast email messages and role reminders are blocked until the member give permission. Password resets and prompts to set privacy permissions can still be sent.
+* Website administrators can see who has and has not given permission on the new Privacy Preferences screen (a submenu under Users). If members were addded before this requirement was in place, you can send them an email prompt to set their preference, and other routine website emails will be blocked until they grant permission.
 
 = 4.9.6 =
 

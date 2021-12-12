@@ -3303,12 +3303,14 @@ function member_list() {
 	}
 	foreach ( $members as $index => $userdata ) {
 		?>
-			
-
 
 <h3><?php echo esc_html($userdata->first_name . ' ' . $userdata->last_name); ?></h3>
 
 		<?php
+		if(	$userdata->tm_directory_blocked	)
+		{
+			continue;
+		}
 		$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
 		$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
 		$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );

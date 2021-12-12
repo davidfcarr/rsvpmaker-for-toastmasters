@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 4.9.6
+Version: 5.0
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -2467,6 +2467,7 @@ function awesome_menu() {
 	add_options_page( 'Toastmasters Security', 'TM Security', 'manage_options', 'tm_security_caps', 'tm_security_caps' );
 
 	add_submenu_page( 'upload.php', __( 'YouTube Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'YouTube Toastmasters', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'tm_youtube_tool', 'tm_youtube_tool' );
+	add_submenu_page( 'profile.php', __( 'Privacy Preferences', 'rsvpmaker-for-toastmasters' ), __( 'Privacy Preferences', 'rsvpmaker-for-toastmasters' ), 'edit_members', 'tm_privacy_prompt', 'tm_privacy_prompt' );
 
 }
 
@@ -4820,6 +4821,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 	$permalink  = get_permalink( $post_id );
 	$permalink .= strpos( $permalink, '?' ) ? '&' : '?';
 	$link       = '';
+	$link .= tm_grant_privacy_permission_ui(true);
 	if ( $frontend ) {
 		$link .= rsvpmaker_agenda_notifications( $permalink );
 	}
@@ -5478,7 +5480,9 @@ function display_member( $userdata, $title = '' ) {
 							?>
 	</p>
 	<?php
-
+	if(	$userdata->tm_directory_blocked	)
+		return;
+		
 	foreach ( $contactmethods as $name => $value ) {
 		if ( strpos( $name, 'phone' ) ) {
 			if ( ( ! $public_context ) && current_user_can( 'view_contact_info' ) && $userdata->$name ) {
@@ -5765,7 +5769,7 @@ function add_awesome_member() {
 				array(
 					'user_login' => $user->user_login,
 					'user_email' => $user->user_email,
-				)
+				), $user->user_id
 			);
 		}
 		$member_factory->show_confirmations();
@@ -6073,7 +6077,7 @@ class Toastmasters_Member {
 			if ( $user_id = wp_insert_user( $user ) ) {
 				$this->active_ids[] = $user_id;
 				// Generate something random for a password reset key.
-				$this->sendWelcome( $user );
+				$this->sendWelcome( $user, $user_id );
 				if ( empty( $user['club_member_since'] ) ) {
 					update_user_meta( $user_id, 'joined' . get_current_blog_id(), date( 'm/d/Y' ) );
 				} else {
@@ -6083,8 +6087,13 @@ class Toastmasters_Member {
 					update_user_meta( $user_id, 'application_id_' . get_current_blog_id(), $user['application_id'] );
 					$until = get_post_meta($user['application_id'],'tm_application_until',true);
 					update_user_meta($user_id,'tm_renew_until_'.get_current_blog_id(),$until);
+					$email_prompt = get_post_meta($user['application_id'],'tm_privacy_prompt',true);
+					if($email_prompt != '') {
+						update_user_meta($user_id,'tm_privacy_prompt',intval($email_prompt));
+						update_user_meta($user_id,'tm_directory_blocked',intval(get_post_meta($user['application_id'],'tm_directory_blocked',true)));
+					}
 				}
-			} else {
+				} else {
 				echo '<h3 style="color: red;">WordPress ' . __( 'registration error', 'rsvpmaker-for-toastmasters' ) . '</h3>';
 				print_r( $user );
 				echo '<br />';
@@ -6094,7 +6103,7 @@ class Toastmasters_Member {
 		return $user_id;
 	}
 
-	function sendWelcome( $user ) {
+	function sendWelcome( $user, $user_id ) {
 		$key = wp_generate_password( 20, false );
 
 		do_action( 'retrieve_password_key', $user['user_login'], $key );
@@ -6144,7 +6153,11 @@ class Toastmasters_Member {
 			$mail['cc']       = $admin_email;
 			$mail['from']     = $admin_email;
 			$mail['fromname'] = get_bloginfo( 'name' );
+			$mail['skip_check'] = true;
 			$return           = awemailer( $mail );
+			$message .= $return;
+			if(!isset($user['tm_application_id']))
+				update_user_meta($user_id,'tm_privacy_prompt',1);
 			if ( $return === false ) {
 				$this->confirmations[] = '<h3>' . __( 'Emailing notifications disabled', 'rsvpmaker-for-toastmasters' ) . '</h3><pre>' . $message . '</pre>';
 			} else {
@@ -7343,8 +7356,8 @@ function detect_default_password() {
 	<?php
 }
 
-
 function awesome_user_profile_fields( $user ) {
+	tm_grant_privacy_permission_ui (false, true, $user);
 	if(wp4t_is_district())
 		return;
 	?>
@@ -7443,6 +7456,8 @@ function awesome_user_profile_fields( $user ) {
 function save_awesome_user_profile_fields( $user_id ) {
 	if ( ! current_user_can( 'edit_user', $user_id ) ) {
 		return false; }
+	update_user_meta( $user_id,'tm_privacy_prompt',intval($_POST['tm_privacy_permission']));
+	update_user_meta( $user_id,'tm_directory_blocked',intval($_POST['tm_directory_blocked']));
 	update_user_meta( $user_id, 'public_profile', ! empty( $_POST['public_profile'] ) );
 	update_user_meta( $user_id, 'public_email', ! empty( $_POST['public_email'] ) );
 	update_user_meta( $user_id, 'hidden_profile', ! empty( $_POST['hidden_profile'] ) );
@@ -11730,12 +11745,12 @@ function tmlayout_meeting_date( $atts = array() ) {
 	global $rsvp_options;
 	$datestring = get_rsvp_date( $post->ID );
 	if ( ! empty( $datestring ) ) {
-		return date( $rsvp_options['long_date'], rsvpmaker_strtotime( $datestring ) );
+		return rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $datestring ) );
 	}
 	else {
 		$next = next_toastmaster_meeting();
 		if($next) 
-			return date( $rsvp_options['long_date'], rsvpmaker_strtotime( $next->date ) );
+			return rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $next->date ) );
 	}
 }
 function tmlayout_sidebar( $atts ) {

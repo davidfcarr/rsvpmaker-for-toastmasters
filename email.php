@@ -8,7 +8,6 @@ add_action( 'wp4toast_reminders_cron', 'wp4toast_reminders_cron', 10, 1 );
 function wp4toast_reminders_cron( $meeting_hours ) {
 	email_with_without_role( $meeting_hours );
 	return;
-	// replaces wp4_speech_prompt
 }
 
 add_shortcode( 'email_with_without_role', 'email_with_without_role_test' );
@@ -634,3 +633,141 @@ function backup_speaker_notify( $assigned ) {
 			$result           = awemailer( $mail ); // notify leader
 }
 
+add_filter('rsvpmail_is_problem','rsvpmail_tm_privacy',10,2);
+function rsvpmail_tm_privacy($code, $email) {
+	if(is_tm_privacy_pending($email)) {
+		return 'user privacy permission not granted';
+	}
+	return $code;
+}
+
+function is_tm_privacy_pending($id_or_email, $return_not_set = false) {
+	global $wpdb;
+	if(is_numeric($id_or_email)) {
+		$sql = "SELECT meta_value fROM $wpdb->usermeta WHERE user_id=$id_or_email AND meta_key='tm_privacy_prompt'";
+	}
+	else { // by email
+		$sql = $wpdb->prepare("SELECT meta_value FROM $wpdb->users JOIN $wpdb->usermeta ON $wpdb->users.ID = $wpdb->usermeta.user_id WHERE user_email LIKE %s AND meta_key='tm_privacy_prompt'",$id_or_email);
+	}
+	//echo $sql;
+	$status = $wpdb->get_var($sql);
+	if(($status == '') && $return_not_set)
+		return 'not set';
+	else
+		return $status;
+}
+
+function tm_privacy_prompt() {
+?>
+<h1>User Privacy Preferences</h1>
+<p>Use this screen to see which users have given permission for club email and for their information to be included in the member directory. You can send a prompt to their email address asking them to grant permission. If their status is set to "permission pending" or "permission DENIED," any other Toastmasters email will be blocked from being sent to their address. The goal of these functions is to improve compliance with privacy regulations such as the EU's GDPR.</p>
+<p>A status of "not set" means the member was not asked to grant permission when their account was set up. New member accounts are now set to "permission pending" until the member grants permission.</p>
+<?php
+	$current_user;
+	if(isset($_POST['prompt'])) {
+		foreach($_POST['prompt'] as $id) {
+			update_user_meta($id,'tm_privacy_prompt',1);
+			$user = get_userdata($id);
+			$message = sprintf("Please log into the website at %s to grant permission for the Toastmasters club to send you email, including club news and email notifications. There is also an option for you to DENY permission, although this may hinder our ability to communicate with you.",admin_url());
+			wp_mail($user->user_email,'Please set your preference for Toastmasters email privacy',$message);
+		}
+	}
+	$members = get_club_members();
+	$permission_given = $permission_denied = array();
+	printf('<form method="post" action="%s"><p><input type="checkbox" id="checkAll"> %s</p>',admin_url('users.php?page=tm_privacy_prompt'),__('Check All','rsvpmaker-for-toastmasters'));
+	foreach($members as $member) {
+		$capsemail = strtoupper($member->user_email);
+		/*
+		if($code = rsvpmail_is_problem($capsemail))
+		{
+			echo $capsemail .':' .$code;
+		}
+		*/
+		$pending = is_tm_privacy_pending($member->ID, true);
+		$checkbox = sprintf('<input type="checkbox" name="prompt[]" value="%d"> Request permission ',$member->ID);
+		if($pending == '0') {
+			$permission_given[] = $member->display_name;
+			continue;
+		}
+		elseif($pending == '1')
+			$pending = 'permission pending';
+		elseif($pending == '2') {
+			$checkbox = sprintf('<input type="checkbox" name="prompt[]" value="%d"> Reset ',$member->ID);
+			$permission_denied[] = sprintf('<p>%s <strong>%s</strong></p>',$checkbox,$member->display_name);
+			continue;
+		}
+		printf('<p>%s <strong>%s</strong>: %s</p>',$checkbox,$member->display_name,$pending);	
+	}
+	submit_button();
+	echo '</form>';
+	if(!empty($permission_given))
+		printf('<p>%s %s</p>',__('Permission given','rsvpmaker-for-toastmasters'),implode(', ',$permission_given));
+	if(!empty($permission_denied)) {
+		printf('<form method="post" action="%s">',admin_url('users.php?page=tm_privacy_prompt'));
+		printf('<p>%s %s</p>',__('Permission denied','rsvpmaker-for-toastmasters'),implode(', ',$permission_denied));
+		submit_button();
+		echo '</form>';
+	}
+?>
+<script>
+jQuery(document).ready(function($) {
+
+$("#checkAll").click(function(){
+    $('input:checkbox').not(this).prop('checked', this.checked);
+});
+
+});
+</script>
+<?php
+}
+
+add_action('admin_notices', 'tm_grant_privacy_permission_ui',1);
+
+function tm_grant_privacy_permission_ui ($return = false, $profile_form = false, $userdata = NULL) {
+global $current_user;
+if(!$userdata)
+	$userdata = $current_user;
+$output = '';
+$pending = is_tm_privacy_pending($userdata->ID);
+if($pending == '')
+	$pending = '1';
+	if(isset($_POST['tm_privacy_permission'])) {
+		$value = intval($_POST['tm_privacy_permission']);
+		update_user_meta($userdata->ID,'tm_privacy_prompt',$value);
+		update_user_meta($userdata->ID,'tm_directory_blocked',intval($_POST['tm_directory_blocked']));
+	}
+	elseif($profile_form || ($pending == '1'))
+	{
+	$current = get_user_meta($userdata->ID,'tm_privacy_prompt',true);
+	if($return)
+		ob_start();
+	if(!$profile_form)
+		printf('<form method="post" action="%s">',admin_url('profile.php'));
+	$checked = ($current == '0') ? ' checked="checked" ' : '';
+	printf('<h1>%s</h1><p>%s</p>',__('Please set your club privacy preference.','rsvpmaker-for-toastmasters'),__('Allow club websites to send you email such as meeting notifications.'));
+	printf('<p><input type="radio" name="tm_privacy_permission" value="0" %s> %s</p> ',$checked,__('Permission given','rsvpmaker-for-toastmasters'));
+	$checked = ($current == '2') ? ' checked="checked" ' : '';
+	printf('<p><input type="radio" name="tm_privacy_permission" value="2" %s> %s</p> ',$checked,__('Permission DENIED','rsvpmaker-for-toastmasters'));
+	printf('<p>%s</p>',__("Allow contact information to be shared with other members"));
+	$current = get_user_meta($userdata->ID,'tm_directory_blocked',true);
+	$checked = (empty($current)) ? ' checked="checked" ' : '';
+	printf('<p><input type="radio" name="tm_directory_blocked" value="0" %s> %s</p> ',$checked,__('Permission given','rsvpmaker-for-toastmasters'));
+	$checked = ($current) ? ' checked="checked" ' : '';
+	printf('<p><input type="radio" name="tm_directory_blocked" value="1" %s> %s</p> ',$checked,__('Permission DENIED','rsvpmaker-for-toastmasters'));
+	if(!$profile_form) {
+		submit_button();
+		echo '</form>';	
+	}
+	if($return)
+		return ob_get_clean();
+	}
+}
+
+add_action('login_footer','login_footer_tm_privacy',1);
+function login_footer_tm_privacy() {
+	global $current_user;
+	if(isset($_GET['action']) && ($_GET['action'] == 'resetpass') )
+	{
+		printf('<p style="text-align:center; border: thin solid red"><strong>%s</strong> %s</p>',__('IMPORTANT','rsvpmaker-for-toastmasters'),__('If you are a new member, please log in to set your email and privacy preference.','rsvpmaker-for-toastmasters'));
+	}
+}
