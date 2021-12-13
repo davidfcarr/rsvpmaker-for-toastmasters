@@ -732,31 +732,31 @@ $pending = is_tm_privacy_pending($userdata->ID);
 if($pending == '')
 	$pending = '1';
 	if(isset($_POST['tm_privacy_permission'])) {
-		$value = intval($_POST['tm_privacy_permission']);
+		$pending = sanitize_text_field($_POST['tm_privacy_permission']);
+		$value = intval($pending);
 		update_user_meta($userdata->ID,'tm_privacy_prompt',$value);
 		update_user_meta($userdata->ID,'tm_directory_blocked',intval($_POST['tm_directory_blocked']));
 	}
-	elseif($profile_form || ($pending == '1'))
+	if($profile_form || ($pending == '1'))
 	{
 	$current = get_user_meta($userdata->ID,'tm_privacy_prompt',true);
 	if($return)
 		ob_start();
 	if(!$profile_form)
-		printf('<form method="post" action="%s">',admin_url('profile.php'));
+		printf('<form method="post" action="%s" style="margin-bottom: 20px;">',admin_url('profile.php'));
 	$checked = ($current == '0') ? ' checked="checked" ' : '';
-	printf('<h1>%s</h1><p>%s</p>',__('Please set your club privacy preference.','rsvpmaker-for-toastmasters'),__('Allow club websites to send you email such as meeting notifications.'));
-	printf('<p><input type="radio" name="tm_privacy_permission" value="0" %s> %s</p> ',$checked,__('Permission given','rsvpmaker-for-toastmasters'));
+	printf('<h1>%s</h1><p>%s</p>',__('Please set your club privacy preference.','rsvpmaker-for-toastmasters'),__('Allow club websites to send you email such as meeting notifications'));
+	printf('<p><input type="radio" name="tm_privacy_permission" value="0" %s> %s</p> ',$checked,__('Yes, give permission','rsvpmaker-for-toastmasters'));
 	$checked = ($current == '2') ? ' checked="checked" ' : '';
-	printf('<p><input type="radio" name="tm_privacy_permission" value="2" %s> %s</p> ',$checked,__('Permission DENIED','rsvpmaker-for-toastmasters'));
-	printf('<p>%s</p>',__("Allow contact information to be shared with other members"));
+	printf('<p><input type="radio" name="tm_privacy_permission" value="2" %s> %s</p> ',$checked,__('No, DENY permission','rsvpmaker-for-toastmasters'));
+	printf('<p>%s <a href="%s">%s</a></p>',__("Allow contact information to be shared with other members in the private"),admin_url('admin.php?page=contacts_list'),__('Member Directory','rsvpmaker-for-toastmasters'));
 	$current = get_user_meta($userdata->ID,'tm_directory_blocked',true);
-	$checked = (empty($current)) ? ' checked="checked" ' : '';
-	printf('<p><input type="radio" name="tm_directory_blocked" value="0" %s> %s</p> ',$checked,__('Permission given','rsvpmaker-for-toastmasters'));
+	$checked = ($current == '0') ? ' checked="checked" ' : '';
+	printf('<p><input type="radio" name="tm_directory_blocked" value="0" %s> %s</p> ',$checked,__('Yes, give permission','rsvpmaker-for-toastmasters'));
 	$checked = ($current) ? ' checked="checked" ' : '';
-	printf('<p><input type="radio" name="tm_directory_blocked" value="1" %s> %s</p> ',$checked,__('Permission DENIED','rsvpmaker-for-toastmasters'));
+	printf('<p><input type="radio" name="tm_directory_blocked" value="1" %s> %s</p> ',$checked,__('No, DENY permission','rsvpmaker-for-toastmasters'));
 	if(!$profile_form) {
-		submit_button();
-		echo '</form>';	
+		echo '<button>'.__('Save Changes').'</button></form>';	
 	}
 	if($return)
 		return ob_get_clean();
