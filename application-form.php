@@ -31,6 +31,8 @@ Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
 
 <p>Gender <?php tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Non-binary', 'Decline to respond' ) ); ?></p>
 
+<?php rsvphoney_ui(); ?>
+
 <p><label>Last name/Surname</label> <?php tm_application_form_field( 'last_name' ); ?>
 <br><label>First name</label> <?php tm_application_form_field( 'first_name' ); ?>
 <br><label>Middle name</label> <?php tm_application_form_field( 'middle_name' ); ?></p>
