@@ -158,12 +158,12 @@ function tm_application_fee() {
 		if ( empty( $club_dues ) ) {
 			$club_dues = array( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
 		}
-		$monthindex     = date( 'n' ) - 1;
+		$monthindex     = rsvpmaker_date( 'n' ) - 1;
 		$club_new       = (int) get_option( 'club_new_member_fee' );
 		$ti_dues_calc   = ( $_POST['membership_type'] == 'Transfer' ) ? 0 : $ti_dues[ $monthindex ];
 		$club_dues_calc = $club_dues[ $monthindex ];
 		$fee            = $ti_dues_calc + $club_dues_calc + $new + $club_new;
-		$feetext        = sprintf( '<p>Membership Starting: %s</p>', date( 'F' ) );
+		$feetext        = sprintf( '<p>Membership Starting: %s</p>', rsvpmaker_date( 'F' ) );
 		$feetext       .= sprintf(
 			'<p>Toastmasters International Dues: <strong>%s</strong><br>
     <em>Paid twice a year by all members, membership dues are pro-rated from the member’s start month.</em></p>',
@@ -264,7 +264,7 @@ function tm_application_form_field( $slug ) {
 		'club_name'   => get_option( 'club_name' ),
 		'club_number' => get_option( 'club_number' ),
 		'club_city'   => get_option( 'club_city' ),
-		'date'        => date( 'F j, Y' ),
+		'date'        => rsvpmaker_date( 'F j, Y' ),
 	);
 
 	if ( isset( $_POST[ $slug ] ) ) {
@@ -542,7 +542,7 @@ function check_application_payment( $app_id ) {
 
 function tm_note_format() {
 	global $current_user;
-	return '<p>Note: ' . stripslashes( $_POST['notes'] ) . ' <br /><small>(' . $current_user->user_email . ' ' . date( 'r' ) . ')</small></p>';
+	return '<p>Note: ' . stripslashes( $_POST['notes'] ) . ' <br /><small>(' . $current_user->user_email . ' ' . rsvpmaker_date( 'r' ) . ')</small></p>';
 }
 
 
@@ -740,7 +740,7 @@ function member_application_upload() {
 				echo '<p>Marking approved</p>';
 				global $current_user;
 				update_post_meta( $post_id, 'officer_signature', get_user_meta( $current_user->ID, 'first_name', false ) . ' ' . get_user_meta( $current_user->ID, 'last_name', false ) );
-				update_post_meta( $post_id, 'officer_signature_date', date( 'F j, Y' ) );
+				update_post_meta( $post_id, 'officer_signature_date', rsvpmaker_date( 'F j, Y' ) );
 				$member_factory          = new Toastmasters_Member();
 				$user['first_name']      = get_post_meta( $post_id, 'first_name', true );
 				$user['last_name']       = get_post_meta( $post_id, 'last_name', true );
@@ -831,7 +831,7 @@ function wp4t_dues_renewal($atts) {
 		}
 		$rdates = wpt_renewal_dates();
 		$paid_until = wpt_member_paid_until($user_id);
-		$month = date('m');
+		$month = rsvpmaker_date('m');
 		$renewal_months = array('1','2','3','7','8','9');
 		if(empty($paid_until) && in_array($month,$renewal_months))
 			array_shift($rdates);

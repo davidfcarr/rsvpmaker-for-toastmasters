@@ -23,7 +23,7 @@ if ( ! isset( $custom['_sked'][0] ) ) {
 			echo "<p>$sql : $datestring </p>";
 		}
 	}
-	$date = date( $rsvp_options['long_date'], strtotime( $datestring ) );
+	$date = rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $datestring ) );
 } else {
 	$date = ' (' . __( 'Template', 'rsvpmaker-for-toastmasters' ) . ')';
 }

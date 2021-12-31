@@ -43,7 +43,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	if ( empty( $next ) ) {
 		return;
 	}
-	$t      = (!empty($next->ts_start)) ? (int) $next->ts_start : rsvpmaker_strtotime( get_rsvp_date( $next->ID ) );
+	$t      = (!empty($next->ts_start)) ? (int) $next->ts_start : get_rsvpmaker_timestamp( $next->ID );
 	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
 	$post   = $next;
 	if(!$test)
@@ -273,7 +273,7 @@ function wp4t_intro_notification( $post_id, $actiontext, $user_id, $field = '', 
 		}
 		$title = get_post_meta( $post_id, '_title' . $field, true );
 
-		$t        = rsvpmaker_strtotime( get_rsvp_date( $post_id ) );
+		$t        = get_rsvpmaker_timestamp( $post_id );
 		$date     = rsvpmaker_date( $rsvp_options['short_date'], $t );
 		$userdata = get_userdata( $toastmaster );
 		$url      = get_permalink( $post_id );
@@ -303,8 +303,7 @@ function editor_signup_notification( $post_id, $user_id, $role, $manual = '', $p
 	global $current_user;
 	global $wpdb;
 	global $rsvp_options;
-	$datetime    = get_rsvp_date( $post_id );
-	$meetingdate = rsvpmaker_date( $rsvp_options['short_date'], rsvpmaker_strtotime( $datetime ) );
+	$meetingdate = rsvpmaker_date( $rsvp_options['short_date'], get_rsvpmaker_timestamp( $post_id ) );
 	if ( ! is_numeric( $user_id ) ) {
 		return;
 	}
@@ -373,9 +372,7 @@ function tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor
 		return;
 	}
 		$_SESSION[ $invite_check ] = 1;
-
-		$date     = get_rsvp_date( $post_id );
-		$date     = rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $date ) );
+		$date     = rsvpmaker_date( $rsvp_options['long_date'], get_rsvpmaker_timestamp( $post_id ) );
 		$neatname = trim( preg_replace( '/[_\-0-9]/', ' ', $name ) );
 		$user     = get_userdata( $editor_id );
 		$msg      = sprintf( '<p>Toastmaster %s %s %s %s %s %s</p>', $user->first_name, $user->last_name, __( 'has recomended you for the role of', 'rsvpmaker-for-toastmasters' ), $neatname, __( 'for', 'rsvpmaker-for-toastmasters' ), $date );
@@ -473,7 +470,6 @@ function awesome_open_roles( $post_id = null, $scheduled = false ) {
 	} else {
 		$time_format = $dateformat;
 	}
-	rsvpmaker_fix_timezone();
 	$date = rsvpmaker_date( $time_format, rsvpmaker_strtotime( $row->datetime ) );
 
 	$header   = '<!DOCTYPE html>
@@ -589,8 +585,7 @@ function backup_speaker_notify( $assigned ) {
 		return;
 	}
 
-		$datetime    = get_rsvp_date( $post->ID );
-		$meetingdate = rsvpmaker_date( $rsvp_options['short_date'], rsvpmaker_strtotime( $datetime ) );
+		$meetingdate = rsvpmaker_date( $rsvp_options['short_date'], get_rsvpmaker_timestamp( $post->ID ) );
 
 		$meeting_leader = get_post_meta( $post->ID, 'meeting_leader', true );
 	if ( empty( $meeting_leader ) ) {

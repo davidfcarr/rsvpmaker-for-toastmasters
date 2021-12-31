@@ -114,10 +114,9 @@ function set_contest_parameters( $post_id, $contest ) {
 
 function toast_contest( $mode ) {
 	global $post, $rsvp_options;
-	$date           = get_rsvp_date( $post->ID );
 	$contest_name   = get_post_meta( $post->ID, 'toast_contest_name', true );
 	$dashboard_name = ( empty( $contest_name ) ) ? $post->post_title : $contest_name;
-	$date           = rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $date ) );
+	$date           = rsvpmaker_date( $rsvp_options['long_date'], get_rsvpmaker_timestamp( $post->ID ) );
 	$output         = '<div id="scoring">';
 	$practice       = get_practice_contest_links();
 	$output        .= wpt_mycontests_links( $practice );
@@ -195,14 +194,14 @@ function wpt_mycontests() {
 		if ( empty( $post ) || ( $post->post_status != 'publish' ) ) {
 			continue;
 		}
-			$datetime = get_rsvp_date( $row->post_id );
-			$t        = strtotime( $datetime );
+			$event = get_rsvpmaker_event( $row->post_id );
+			$t        = intval( $event->ts_start );
 		// if($_GET['debug'])
 			// print_r($row);
 		if ( isset( $_GET['debug'] ) ) {
 			print_r( $row );
 		}
-			$date      = date( 'F j, Y', $t );
+			$date      = rsvpmaker_date( 'F j, Y', $t );
 			$link      = get_post_meta( $row->post_id, 'contest_link_' . $current_user->ID, true );
 			$permalink = get_permalink( $row->post_id );
 		if ( strpos( $link, $permalink ) === false ) {

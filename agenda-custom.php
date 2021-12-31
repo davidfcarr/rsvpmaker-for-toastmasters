@@ -13,6 +13,16 @@ if(empty($layout)) {
 if(empty($layout)) // default
 	$layout      = wp4toastmasters_agenda_layout_check(  );
 $layout_post = get_post( $layout );
+if(empty($layout_post))
+{
+	$layout      = wp4toastmasters_agenda_layout_check(  );
+	$layout_post = get_post( $layout );
+}
+if(isset($_GET["test"])) {
+	echo "layout id $layout";
+	print_r($layout_post);
+	exit();	
+}
 if ( ! isset( $_GET['reset'] ) ) {
 	$layout_css = get_post_meta( $layout, '_rsvptoast_agenda_css_2018-07', true );
 }

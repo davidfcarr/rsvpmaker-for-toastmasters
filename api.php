@@ -353,7 +353,7 @@ class Editor_Assign extends WP_REST_Controller {
 		if ( $was ) {
 			$log .= ' (was: ' . get_member_name( $was ) . ')';
 		}
-		$log .= ' <small><em>(Posted: ' . date( 'm/d/y H:i' ) . ')</em></small>';
+		$log .= ' <small><em>(Posted: ' . rsvpmaker_date( 'm/d/y H:i' ) . ')</em></small>';
 
 		add_post_meta( $post_id, '_activity_editor', $log );
 		$type     = '';
@@ -407,12 +407,22 @@ class TM_Role extends WP_REST_Controller {
 	}
 
 	public function handle( $request ) {
+
 		if(isset($_POST['suggest_note']))
 			$response['content'] = wpt_suggest_role();
+		elseif(isset($_POST['away_user_id']))
+			$response['content'] = wpt_api_add_absence();
 		else
 			$response['content'] = toastmasters_role_signup();
 		return new WP_REST_Response( $response, 200 );
 	}
+}
+
+function wpt_api_add_absence() {
+	$away_user_id = intval($_POST['away_user_id']);
+	$post_id = intval($_POST['post_id']);
+	add_post_meta( $post_id, 'tm_absence', $away_user_id );
+	return get_member_name($away_user_id)." added to absences.";
 }
 
 function wpt_suggest_role() {
@@ -423,8 +433,7 @@ function wpt_suggest_role() {
 	$member_id = intval($_POST['user_id']);
 	$member = get_userdata($member_id);
 	$post_id = intval($_POST['post_id']);
-	$datetime = get_rsvp_date($post_id);
-	$t = rsvpmaker_strtotime($datetime);
+	$t = get_rsvpmaker_timestamp( $post_id );
 	$date = rsvpmaker_date($rsvp_options['short_date'],$t);
 	$cleanrole = clean_role($_POST['role']);
 	$nonce = get_post_meta($post_id,'oneclicknonce',true);
@@ -758,9 +767,9 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			foreach ( $data as $d ) {
 				$t               = $ts_start + ( $elapsed * 60 );
 				$waselapsed      = $elapsed;
-				$start_time_text = date( $time_format, $t );
+				$start_time_text = rsvpmaker_date( $time_format, $t );
 				if ( ! $start_time_text ) {
-					$start_time_text = date( 'h:i A', $t );
+					$start_time_text = rsvpmaker_date( 'h:i A', $t );
 				}
 				$start_time = $elapsed;
 
@@ -800,10 +809,10 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 				$block_count++;
 			}
 			$t               = $ts_start + ( $elapsed * 60 );
-			$start_time_text = date( $time_format, $t );
-			$start_time_text = date( $time_format, $t );
+			$start_time_text = rsvpmaker_date( $time_format, $t );
+			$start_time_text = rsvpmaker_date( $time_format, $t );
 			if ( ! $start_time_text ) {
-				$start_time_text = date( 'h:i A', $t );
+				$start_time_text = rsvpmaker_date( 'h:i A', $t );
 			}
 
 			$output[] = array(
@@ -910,7 +919,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			$response['next'] .= sprintf( '<p><a href="%s">Create/Update</a> events from tempate</p>', admin_url( 'edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t=' . $post->ID ) );
 		}
 		rsvpmaker_fix_timezone();
-		$response['next'] .= sprintf( '<p>Updated: %s</p>', date( 'r' ) );
+		$response['next'] .= sprintf( '<p>Updated: %s</p>', rsvpmaker_date( 'r' ) );
 		$response['note']  = $note;
 		$response['log']   = $log;
 		return new WP_REST_Response( $response, 200 );

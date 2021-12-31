@@ -209,7 +209,7 @@ function wp4toastmasters_history() {
             }    
         }
 
-    $year = (date('n') < 7) ? (date('Y') - 1) : date('Y');
+    $year = (rsvpmaker_date('n') < 7) ? (rsvpmaker_date('Y') - 1) : rsvpmaker_date('Y');
     $since = (empty($_GET['since'])) ?  $year.'-07-01': sanitize_text_field($_GET['since']);
     if(empty($_GET['rsvp_print'])) {
         printf("<p>Active filters: %s</p>",implode(', ',$filters));
@@ -389,7 +389,7 @@ function wp4toastmasters_history_edit() {
     <p>Pick records to edit or delete and click Select.</p>
     <button style="font-size: larger;">'.__('Select','rsvpmaker-for-toastmasters').'</button></div></form>';
 
-    $year = (date('n') < 7) ? (date('Y') - 1) : date('Y');
+    $year = (rsvpmaker_date('n') < 7) ? (rsvpmaker_date('Y') - 1) : rsvpmaker_date('Y');
     $since = (empty($_GET['since'])) ?  $year.'-07-01': sanitize_text_field($_GET['since']);
     printf("<p>Active filters: %s</p>",implode(', ',$filters));
     printf('<form method="get" action="%s">

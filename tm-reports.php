@@ -216,7 +216,7 @@ function add_member_speech(  ) {
 		wp4t_record_history_to_table($user_id, $role, $timestamp, 0, $function, $manual,$p,$title,$intro, sanitize_text_field($_SERVER['SERVER_NAME']));
 		$speech_url = admin_url( 'admin.php?page=toastmasters_reports&tab=speeches&toastmaster=' . $user_id );
 
-		echo '<em>' . __( 'Saved:', 'rsvpmaker-for-toastmasters' ) . ' ' . $manual . ' ' . $project_text . ' ' . $speech_title . ' for ' . date( 'F j, Y', $date ) . '</em> ';
+		echo '<em>' . __( 'Saved:', 'rsvpmaker-for-toastmasters' ) . ' ' . $manual . ' ' . $project_text . ' ' . $speech_title . ' for ' . rsvpmaker_date( 'F j, Y', $date ) . '</em> ';
 		printf( '<a href="%s">%s</a>', $speech_url, __( 'Refresh speech list', 'rsvpmaker-for-toastmasters' ) );
 	} elseif ( isset( $_REQUEST['_role_meta'] ) || isset( $_REQUEST['project'] ) ) {
 		if ( isset( $_REQUEST['project'] ) ) {
@@ -240,7 +240,7 @@ function add_member_speech(  ) {
 
 		$speech_url = admin_url( 'admin.php?page=toastmasters_reports&toastmaster=' . $user_id );
 
-		echo '<em>' . __( 'Saved:', 'rsvpmaker-for-toastmasters' ) . ' ' . $role . ' for ' . date( 'F j, Y', $date ) . '</em> ';
+		echo '<em>' . __( 'Saved:', 'rsvpmaker-for-toastmasters' ) . ' ' . $role . ' for ' . rsvpmaker_date( 'F j, Y', $date ) . '</em> ';
 		printf( '<a href="%s">%s</a>', $speech_url, __( 'Refresh to see changes', 'rsvpmaker-for-toastmasters' ) );
 	} 
 	
@@ -249,7 +249,7 @@ function add_member_speech(  ) {
 		$post = (object) array( 'ID' => 0 ); // fake post object, expected by speaker_details function
 		printf( '<div id="add_speech_div"><h2>%s</h2><form id="add_speech_form" method="post" action="%s"><input type="hidden" name="toastmaster" id="toastmaster" value="%d" /><input type="hidden" name="add_speech" value="1" />', __( 'Add Speech' ), admin_url( 'admin.php?page=add_member_speech' ), $user_id );
 		echo str_replace( '[]', '_meta', speaker_details( '', 0, array() ) );
-		printf( '<div>%s: <input name="project_month" id="project_month_add" size="4" value="%s" /> %s: <input name="project_day" id="project_day_add" size="4" value="%s" /> %s: <input name="project_year" id="project_year_add" size="8" value="%s" /></div>', __( 'Month', 'rsvpmaker-for-toastmasters' ), date( 'm' ), __( 'Day', 'rsvpmaker-for-toastmasters' ), date( 'd' ), __( 'Year', 'rsvpmaker-for-toastmasters' ), date( 'Y' ) );
+		printf( '<div>%s: <input name="project_month" id="project_month_add" size="4" value="%s" /> %s: <input name="project_day" id="project_day_add" size="4" value="%s" /> %s: <input name="project_year" id="project_year_add" size="8" value="%s" /></div>', __( 'Month', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'm' ), __( 'Day', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'd' ), __( 'Year', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'Y' ) );
 		submit_button( __( 'Save', 'rsvpmaker-for-toastmasters' ) );
 		rsvpmaker_nonce();
 		echo '</form></div><div id="add_speech_status"></div>';
@@ -270,7 +270,7 @@ function add_member_speech(  ) {
 
 		printf( '<div id="add_role_div"><h2>%s</h2><form id="add_role_form" method="post" action="%s"><input type="hidden" name="toastmaster" id="toastmaster" value="%d" /><input type="hidden" name="add_speech" value="1" />', __( 'Add Role' ), admin_url( 'admin.php?page=add_member_speech' ), $user_id );
 		printf( '<p><select name="_role_meta" id="_role_meta">%s</select></p>', $role_list );
-		printf( '<div>%s: <input name="project_month" id="role_month_add" size="4" value="%s" /> %s: <input name="project_day" id="role_day_add" size="4" value="%s" /> %s: <input name="role_year" id="role_year_add" size="8" value="%s" /></div>', __( 'Month', 'rsvpmaker-for-toastmasters' ), date( 'm' ), __( 'Day', 'rsvpmaker-for-toastmasters' ), date( 'd' ), __( 'Year', 'rsvpmaker-for-toastmasters' ), date( 'Y' ) );
+		printf( '<div>%s: <input name="project_month" id="role_month_add" size="4" value="%s" /> %s: <input name="project_day" id="role_day_add" size="4" value="%s" /> %s: <input name="role_year" id="role_year_add" size="8" value="%s" /></div>', __( 'Month', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'm' ), __( 'Day', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'd' ), __( 'Year', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'Y' ) );
 		submit_button( __( 'Save', 'rsvpmaker-for-toastmasters' ) );
 		rsvpmaker_nonce();
 		echo '</form></div><div id="add_role_status"></div>';
@@ -677,7 +677,7 @@ function toastmasters_reconcile() {
 
 	if ( ! empty( $_POST['post_id'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$post_id = (int) $_POST['post_id'];
-		update_post_meta( $post_id, '_reconciled', date( 'F j, Y' ) );
+		update_post_meta( $post_id, '_reconciled', rsvpmaker_date( 'F j, Y' ) );
 		printf(
 			'<div id="message" class="updated">
 		<p><strong>%s.</strong></p>',
@@ -697,12 +697,12 @@ function toastmasters_reconcile() {
 
 	if ( ! empty( $_POST['year'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$t         = rsvpmaker_strtotime( intval($_POST['year']) . '-' . intval($_POST['month']) . '-' . intval($_POST['day']) . ' 12:00:00' );
-		$timestamp = date( 'Y-m-d H:i:s', $t );
+		$timestamp = rsvpmaker_date( 'Y-m-d H:i:s', $t );
 		$nextdate  = post_user_role_archive( $timestamp );
 		$sql       = "SELECT * FROM $wpdb->usermeta WHERE meta_key LIKE '%" . $timestamp . "%' order BY meta_key";
 		$results   = $wpdb->get_results( $sql );
 		if ( $results ) {
-			printf( '<h3>%s %s</h3>', __( 'Updates posted for', 'rsvpmaker-for-toastmasters' ), date( 'F j, Y', $t ) );
+			printf( '<h3>%s %s</h3>', __( 'Updates posted for', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'F j, Y', $t ) );
 			foreach ( $results as $row ) {
 				$parts    = explode( '|', $row->meta_key );
 				$role     = $parts[1];
@@ -718,9 +718,9 @@ function toastmasters_reconcile() {
 		if ( ! isset( $nextdate ) ) {
 			$nextdate = strtotime( '-1 year' );
 		}
-		$year  = date( 'Y', $nextdate );
-		$month = date( 'n', $nextdate );
-		$day   = date( 'j', $nextdate );
+		$year  = rsvpmaker_date( 'Y', $nextdate );
+		$month = rsvpmaker_date( 'n', $nextdate );
+		$day   = rsvpmaker_date( 'j', $nextdate );
 		echo '<p>Year <select name="year">';
 		$yearback = (int) date( 'Y', strtotime( '-1 year' ) );
 		$yearnow  = (int) date( 'Y' );
@@ -1627,7 +1627,7 @@ function toastmasters_advanced_user( $userdata, $showempty = false ) {
 			$project_array = $counts[ $project ];
 			foreach ( $project_array as $project_row ) {
 				$t = (int) $project_row['date'];
-				printf( '<li>%s - %s</li>', $project_row['title'], date( 'F jS, Y', $t ) );
+				printf( '<li>%s - %s</li>', $project_row['title'], rsvpmaker_date( 'F jS, Y', $t ) );
 			}
 			echo '</ul>';
 		}
@@ -1676,7 +1676,7 @@ function toastmasters_advanced_user( $userdata, $showempty = false ) {
 			$project_array = $counts[ $project ];
 			foreach ( $project_array as $project_row ) {
 				$t = (int) $project_row['date'];
-				printf( '<li>%s - %s</li>', $project_row['title'], date( 'F jS, Y', $t ) );
+				printf( '<li>%s - %s</li>', $project_row['title'], rsvpmaker_date( 'F jS, Y', $t ) );
 			}
 			echo '</ul>';
 		}
@@ -1906,7 +1906,7 @@ width: 150px;
 
 	if ( ! isset( $_REQUEST['all'] ) ) {
 		$datefilter = strtotime( '3 months ago' );
-		printf( __( '<p><em>Filtered by default to show members active within the last 3 months (since %1$s) <a href="%2$s">(show all)</a></em></p>', 'rsvpmaker-for-toastmasters' ), date( 'm/d/Y', $datefilter ), site_url( sanitize_text_field($_SERVER['REQUEST_URI']) ) . '&all=1' );
+		printf( __( '<p><em>Filtered by default to show members active within the last 3 months (since %1$s) <a href="%2$s">(show all)</a></em></p>', 'rsvpmaker-for-toastmasters' ), rsvpmaker_date( 'm/d/Y', $datefilter ), site_url( sanitize_text_field($_SERVER['REQUEST_URI']) ) . '&all=1' );
 	}
 
 	$text = '';
@@ -1922,7 +1922,7 @@ width: 150px;
 		}
 		$ts = strtotime( get_latest_visit( $userdata->ID ) );
 		if ( $ts ) {
-			$d = sprintf( '<br />' . __( 'Last attended', 'rsvpmaker-for-toastmasters' ) . ': %s', date( 'm/d/Y', $ts ) );
+			$d = sprintf( '<br />' . __( 'Last attended', 'rsvpmaker-for-toastmasters' ) . ': %s', rsvpmaker_date( 'm/d/Y', $ts ) );
 		} else {
 			$d = '';
 		}
@@ -3438,7 +3438,7 @@ function toastmasters_welcome() {
 	if ( $results ) {
 		foreach ( $results as $index => $row ) {
 					$t         = (int)  $row->ts_start;
-					$title     = $row->post_title . ' ' . date( 'F jS', $t );
+					$title     = $row->post_title . ' ' . rsvpmaker_date( 'F jS', $t );
 					$permalink = rsvpmaker_permalink_query( $row->ID );
 					printf( '<li><a href="%s">%s</a></li>', $permalink, $title );
 		}
@@ -3753,7 +3753,7 @@ function toastmasters_dues() {
 			if ( ! empty( $order_payments ) ) {
 				krsort( $order_payments );
 				foreach ( $order_payments as $timestamp => $usd ) {
-					$pay .= '$' . $usd . ' paid ' . date( 'F Y', (int) $timestamp ) . '<br />';
+					$pay .= '$' . $usd . ' paid ' . rsvpmaker_date( 'F Y', (int) $timestamp ) . '<br />';
 				}
 			}
 		}
@@ -4381,11 +4381,11 @@ function wp_ajax_editor_assign() {
 	}
 	$name = get_member_name( $user_id );
 	printf( '%s assigned to %s', preg_replace( '/[\_0-9]/', ' ', $role ), $name );
-	$log = get_member_name( $editor_id ) . ' assigned ' . clean_role( $role ) . ' to ' . get_member_name( $user_id ) . ' for ' . date( 'F jS, Y', strtotime( $timestamp ) );
+	$log = get_member_name( $editor_id ) . ' assigned ' . clean_role( $role ) . ' to ' . get_member_name( $user_id ) . ' for ' . rsvpmaker_date( 'F jS, Y', strtotime( $timestamp ) );
 	if ( $was ) {
 		$log .= ' (was: ' . get_member_name( $was ) . ')';
 	}
-	$log .= ' <small><em>(Posted: ' . date( 'm/d/y H:i' ) . ')</em></small>';
+	$log .= ' <small><em>(Posted: ' . rsvpmaker_date( 'm/d/y H:i' ) . ')</em></small>';
 
 	add_post_meta( $post_id, '_activity_editor', $log );
 	wp_die();
@@ -4473,7 +4473,7 @@ function get_tm_stats( $user_id = 0 ) {
 			} else {
 				$count[ $role ]++;
 			}
-			$roledates[ $role ][] = date( 'M j Y', strtotime( $event_date ) );
+			$roledates[ $role ][] = rsvpmaker_date( 'M j Y', rsvpmaker_strtotime( $event_date ) );
 			if ( $role == 'Speaker' ) {
 				if ( !empty($row->manual) && empty( $speech_count[ $row->manual ] ) ) {
 					$count[ $row->manual ] = $speech_count[ $row->manual ] = 1;
@@ -4593,7 +4593,7 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 	$evaluator = get_userdata( $current_user->ID );
 	if ( isset( $_GET['project_year'] ) && ! $demo ) {
 		$t         = strtotime( $_GET['project_year'] . '-' . $_GET['project_month'] . '-' . $_GET['project_day'] );
-		$timestamp = date( 'Y-m-d', $t ) . ' 00:00:00';
+		$timestamp = rsvpmaker_date( 'Y-m-d', $t ) . ' 00:00:00';
 		add_member_speech( $speaker_id );
 	} else {
 		$timestamp = get_rsvp_date( $meeting_id );
@@ -4849,7 +4849,7 @@ function wp4t_evaluations( $demo = false ) {
 			$message .= $link;
 			$date     = '';
 			if ( $meeting_id ) {
-				$ts   = strtotime( get_rsvp_date( $meeting_id ) );
+				$ts   = get_rsvpmaker_timestamp( $meeting_id );
 				$date = rsvpmaker_date( $rsvp_options['long_date'], $ts );
 			}
 			$message         .= sprintf( '<p>%s <br />%s</p>', $project_text, $date );
@@ -5169,7 +5169,7 @@ Other Comments';
 		$project_widget = str_replace( 'name="_project_meta"', 'name="project"', $project_widget );
 		$action_url     = ( $demo ) ? get_permalink() : admin_url( 'admin.php?page=wp4t_evaluations' );
 		$member_prompt  = ( $demo ) ? '' : 'Member: ' . awe_user_dropdown( 'speaker', 0, true );
-		printf( '<h2>Evaluate Any Speech Project</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0">%s<br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button>%s</form>', $action_url, $member_prompt, $project_widget, date( 'Y' ), date( 'm' ), date( 'd' ), rsvpmaker_nonce('return') );
+		printf( '<h2>Evaluate Any Speech Project</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0">%s<br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button>%s</form>', $action_url, $member_prompt, $project_widget, rsvpmaker_date( 'Y' ), rsvpmaker_date( 'm' ), rsvpmaker_date( 'd' ), rsvpmaker_nonce('return') );
 
 		$o        = '';
 		$projects = get_projects_array( 'projects' );
@@ -5181,7 +5181,7 @@ Other Comments';
 		}
 
 		if ( ! $demo ) {
-			printf( '<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">Member: %s</select><br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button>%s</form>', admin_url( 'admin.php' ), $o, awe_user_dropdown( 'speaker', 0, true ), date( 'Y' ), date( 'm' ), date( 'd' ), rsvpmaker_nonce('return') );
+			printf( '<h2>Evaluate a Role for Competent Leadership</h2><form method="get" action="%s"><input type="hidden" name="page" value="wp4t_evaluations"><input type="hidden" name="meeting_id" value="0"><select name="project">Member: %s</select><br />%s<br /><input type="text" size="8" name="project_year" value="%s" /><input type="text" size="8" name="project_month" value="%s" /><input type="text" size="8" name="project_day" value="%s" /><br /><button>Get Form</button>%s</form>', admin_url( 'admin.php' ), $o, awe_user_dropdown( 'speaker', 0, true ), rsvpmaker_date( 'Y' ), rsvpmaker_date( 'm' ), rsvpmaker_date( 'd' ), rsvpmaker_nonce('return') );
 
 			?>
 		</section>
@@ -5199,8 +5199,8 @@ Other Comments';
 				$rawrole     = $row->role;
 				$role        = preg_replace( '/[0-9]/', '', $rawrole );
 				$role        = trim( str_replace( '_', ' ', $role ) );
-				$t           = strtotime( $row->datetime );
-				$date        = date( 'F j, Y', $t );
+				$t           = rsvpmaker_strtotime( $row->datetime );
+				$date        = rsvpmaker_date( 'F j, Y', $t );
 				if ( $role == 'Speaker' ) {
 					$project_key = get_post_meta( $row->postID, '_project' . $rawrole, true );
 					$options    .= sprintf( '<option value="%s:ID%d">%s %s</option>', $project_key, $row->postID, get_project_text( $project_key ), $date );
@@ -5679,7 +5679,7 @@ function toastmasters_role_report() {
 				$d = '';
 				if ( ! empty( $dates ) ) {
 					foreach ( $dates as $date ) {
-						$d .= date( 'M d, Y', strtotime( $date ) ) . ' ';
+						$d .= rsvpmaker_date( 'M d, Y', rsvpmaker_strtotime( $date ) ) . ' ';
 					}
 				}
 				printf( '<div>%s: <strong>%d</strong>, %s</div>', $role, count( $dates ), $d );
@@ -5979,8 +5979,8 @@ label {
 		$mostrecent = '';
 		foreach ( $results as $row ) {
 			$role = $row->role;
-			$ts   = strtotime( $row->datetime );
-			$date = date( 'F j, Y', $ts );
+			$ts   = rsvpmaker_strtotime( $row->datetime );
+			$date = rsvpmaker_date( 'F j, Y', $ts );
 			// printf('<p>%s %s %s</p>',$ud->last_name,$role,$date);
 			if ( ( $role == 'Speaker' ) && empty( $mostrecent ) ) {
 				$mostrecent = ' Most recent speech: ' . $date;
@@ -6856,7 +6856,7 @@ function wpt_dues_report() {
 		else
 			$name = sanitize_text_field($_POST['name']);
 		$description = sanitize_text_field($_POST['description']);
-		$date = date('Y-m-d H:i:s');
+		$date = rsvpmaker_date('Y-m-d H:i:s');
 		$sql = $wpdb->prepare("INSERT INTO $stripetable SET amount=%s, name=%s, description=%s, user_id=%d, date=%s, status='Other' ",$amount,$name,$description,$user_id,$date);
 		$wpdb->query($sql);
 	}
@@ -7369,7 +7369,7 @@ Show <input type="checkbox" name="speeches" value="1"
 		if ( $results ) {
 			foreach ( $results as $row ) {
 				$t     = rsvpmaker_strtotime( $row->datetime );
-				$date  = date( 'F j, Y', $t );
+				$date  = rsvpmaker_date( 'F j, Y', $t );
 				printf( '<p>%s %s %s</p>', $row->role, $date, $row->domain );
 			}
 		}
@@ -7381,7 +7381,7 @@ Show <input type="checkbox" name="speeches" value="1"
 		if ( $results ) {
 			foreach ( $results as $row ) {
 				$t     = rsvpmaker_strtotime( $row->datetime );
-				$date  = date( 'F j, Y', $t );
+				$date  = rsvpmaker_date( 'F j, Y', $t );
 				printf( '<p>%s %s %s</p>', $row->role, $date, $row->domain );
 			}
 		}
@@ -7430,4 +7430,4 @@ function wpt_data_disclosure ($user_id) {
 		return $data;
 }
 
-?>
+

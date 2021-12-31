@@ -42,7 +42,7 @@ if ( function_exists( 'get_rsvp_date' ) ) {
 	$sql        = 'SELECT datetime FROM ' . $wpdb->prefix . 'rsvp_dates WHERE postID=' . $post->ID . ' ORDER BY datetime';
 	$datestring = $wpdb->get_var( $sql );
 }
-$date = date( $rsvp_options['long_date'], strtotime( $datestring ) );
+$date = rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $datestring ) );
 
 global $wp_filter;
 $corefilters = array( 'convert_chars', 'wpautop', 'wptexturize' );

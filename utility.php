@@ -1518,7 +1518,7 @@ function time_planner_2020( $atts ) {
 
 	global $post, $rsvp_options;
 
-	$t = strtotime( get_rsvp_date( $post->ID ) );
+	$t = get_rsvpmaker_timestamp( $post_id );
 
 	$output = sprintf( '<h3>Start at %s</h3>', date( 'H:i', $t ) );
 
@@ -1690,4 +1690,11 @@ function wp4t_evaluation_link($atts) {
 		$url = add_query_arg($get,admin_url('admin.php'));
 		return sprintf('<a href="%s">%s</a>',$url,get_project_text($get['project']));
 	}
+}
+
+if(!function_exists('get_rsvpmaker_timestamp')) {
+	function get_rsvpmaker_timestamp( $post_id ) {
+		$event = get_rsvpmaker_event($post_id);
+		return intval($event->ts);
+	}	
 }
