@@ -129,6 +129,14 @@ jQuery( document ).ready(
 			}
 		);
 
+		$( '.remove_names' ).click(
+			function() {
+				$('.remove_absences').show();
+				$('.remove_in_person').show();
+				$('.remove_names_line').hide();
+			}
+		);
+
 		$( '.tmsortable' ).sortable(
 			{
 				containment: "parent",

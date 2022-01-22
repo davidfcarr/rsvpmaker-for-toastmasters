@@ -87,6 +87,7 @@ function wpt_server_block_render(){
 	register_block_type('wp4toastmasters/agendamain', ['render_callback' => 'tmlayout_main_block']);
 	register_block_type('wp4toastmasters/officers', ['render_callback' => 'toastmaster_officers']);	
 	register_block_type('wp4toastmasters/absences', ['render_callback' => 'tm_absence']);	
+	register_block_type('wp4toastmasters/hybrid', ['render_callback' => 'tm_attend_in_person']);	
 	register_block_type('wp4toastmasters/duesrenewal', ['render_callback' => 'wp4t_dues_renewal']);
 	$atts = array('webContext' => array('type' => 'boolean', 'default' => true),'agendaContext' => array('type' => 'boolean', 'default' => true),'emailContext' => array('type' => 'boolean', 'default' => true),'printContext' => array('type' => 'boolean', 'default' => true) );
 	register_block_type('wp4toastmasters/context', ['render_callback' => 'wp4t_agenda_display_context' ]); //, 'attributes' => $atts	

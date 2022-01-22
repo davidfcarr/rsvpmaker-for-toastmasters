@@ -19,7 +19,7 @@ function wp4t_todolist_screen() {
 }
 
 function wp4t_todolist($blog_id, $send = false) {
-    global $wpdb;
+    global $wpdb, $rsvp_options;
     if(is_multisite() && !get_site($blog_id))
         return; //maybe a deleted test site
 

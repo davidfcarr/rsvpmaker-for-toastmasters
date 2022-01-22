@@ -14,7 +14,7 @@ const { __ } = wp.i18n; // Import __() from wp.i18n
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
 const { RichText } = wp.blockEditor;
 const { Component, Fragment } = wp.element;
-const { InspectorControls, PanelBody } = wp.editor;
+const { InspectorControls, PanelBody } = wp.blockEditor;
 const { TextareaControl, SelectControl, ToggleControl, TextControl, ServerSideRender } = wp.components;
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 const { subscribe } = wp.data;
@@ -404,8 +404,6 @@ registerBlockType( 'wp4toastmasters/milestone', {
 
 } ); 
 
-
-
 registerBlockType( 'wp4toastmasters/absences', {
 	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
 	title: __( 'Toastmasters Absences' ), // Block title.
@@ -445,6 +443,41 @@ return (<form onSubmit={ setShowOnAgenda } >
 		<div className={ props.className }>
 				<strong>Toastmasters Absences</strong> placeholder for widget that tracks planned absences
 			{showForm()}
+			</div>
+		</Fragment>
+);
+	
+    },
+    save: function(props) {
+    return null;
+    }
+} ); 
+
+registerBlockType( 'wp4toastmasters/hybrid', {
+	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
+	title: __( 'Toastmasters Hybrid' ), // Block title.
+	icon: 'admin-comments', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
+	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	keywords: [
+		__( 'Toastmasters' ),
+		__( 'Agenda' ),
+		__( 'Hybrid' ),
+	],
+	description: __('Allows hybrid clubs to track which members will attend in person'),
+	attributes: {
+		limit: {
+            type: 'int',
+            default: 0,
+        },
+    },
+    edit: function( props ) {	
+	const { attributes: { limit }, setAttributes, isSelected } = props;
+
+	return (
+		<Fragment>
+		<HybridInspector { ...props } />
+		<div className={ props.className }>
+				<strong>Toastmasters Hybrid</strong> Placeholder for widget that allows hybrid clubs to track who will attend in person, rather than online
 			</div>
 		</Fragment>
 );
@@ -583,6 +616,27 @@ class NoteInspector extends Component {
 					onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }
 				/>
 <p>Scheduling overview: <a href={wp.data.select('core/editor').getPermalink()+'??tweak_times=1'}>{__('Agenda Time Planner','rsvpmaker')}</a></p>
+{docContent ()}
+			</InspectorControls>
+		);
+	}
+}
+
+class HybridInspector extends Component {
+
+	render() {
+
+		const { attributes, setAttributes } = this.props;
+		const { limit } = attributes;
+
+		return (
+		<InspectorControls key="hybridinspector">
+			<NumberControl
+					label={ __( 'Attendance limit (0 for none)', 'rsvpmaker-for-toastmasters' ) }
+					min={0}
+					value={ limit }
+					onChange={ ( limit ) => setAttributes({ limit }) }
+				/>
 {docContent ()}
 			</InspectorControls>
 		);

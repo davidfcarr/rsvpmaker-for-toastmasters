@@ -1607,3 +1607,7 @@ input[type="number"].time_allowed, input[type="number"].padding_time, input[type
 .planner_edits_wrapper {
 	margin-top: 15px;
 }
+
+.remove_absences, .remove_in_person {
+	display: none;
+}

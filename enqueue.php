@@ -2,7 +2,7 @@
 
 function tm_welcome_screen_assets( $hook ) {
 	// everywhere except posts screen
-	$ver = '3.47';
+	$ver = '3.48';
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'post.php' ) ) {
 		wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css', array(), $ver );
 		wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), $ver, true );
@@ -19,7 +19,7 @@ function tm_welcome_screen_assets( $hook ) {
 
 function toastmasters_css_js() {
 	global $post, $current_user;
-	$version = '4.7.5';
+	$version = '4.7.9';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
 		return; // don't load all this in editor or post listings wp4toastmasters_history_edit
 	}
@@ -133,4 +133,3 @@ function toastmasters_css_js() {
 function wpt_fetch_report( $report, $user_id ) {
 	printf( '<div id="%s_content">Loading ...</div>', $report );
 }
-

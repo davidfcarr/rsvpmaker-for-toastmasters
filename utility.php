@@ -1357,7 +1357,7 @@ add_filter( 'wp_nav_menu', 'wp_nav_menu_wpt', 10, 2 );
 
 function wp_nav_menu_wpt( $menu_html, $menu_args ) {
 global $rsvp_options;
-	if ( strpos( $menu_html, '#rolesignup' ) || strpos( $menu_html, '#tmlogin' ) ) {
+if ( strpos( $menu_html, '#rolesignup' ) || strpos( $menu_html, '#tmlogin' ) ) {
 
 		$evlist = '';
 
@@ -1415,12 +1415,8 @@ global $rsvp_options;
 		$menu_html = preg_replace( '/<li [^>]+><a[^"]+"#tmlogin[^<]+<\/a><\/li>/', $menu, $menu_html );
 
 	}
-
 	return $menu_html;
-
 }
-
-
 
 function wpt_login_permalink( $id = 0, $permalink = '' ) {
 
@@ -1695,6 +1691,7 @@ function wp4t_evaluation_link($atts) {
 if(!function_exists('get_rsvpmaker_timestamp')) {
 	function get_rsvpmaker_timestamp( $post_id ) {
 		$event = get_rsvpmaker_event($post_id);
+		if(!empty($event) && !empty($event->ts))
 		return intval($event->ts);
 	}	
 }

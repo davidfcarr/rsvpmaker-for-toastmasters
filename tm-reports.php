@@ -41,12 +41,23 @@ function toastmasters_reports_menu() {
 	// add_submenu_page( 'toastmasters_screen', __('Sync','rsvpmaker-for-toastmasters'), __('Sync','rsvpmaker-for-toastmasters'), 'manage_options', 'wpt_json', 'wpt_json');
 	// add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
 	// add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'wp4toastmasters_history', 'wp4toastmasters_history' );
+	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.03' );
+	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
+}
 
+function toastmasters_admin_help() {
+?>
+<h1>Help for WordPress for Toastmasters Administrators</h1>
+<p>Consult the <a href="<?php echo admin_url('admin.php?page=wp4t_todolist_screen'); ?>">Todo List</a> for a prioritized list of common tasks, with links to documentation and tutorial resources as well as links to where you can turn on features such as online payments.</p>
+<p>The primary documentation is in the <a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">Knowledge Base on wp4toastmasters.com</a>.</p>
+<p>If you need more help, consider posting a question to the <a  target="_blank" href="https://www.facebook.com/groups/wp4toastmasters/">Facebook group for users of the software</a>.</p>
+<p>Or contact David F. Carr, DTM at <a target="_blank" href="mailto:david@wp4toastmasters.com?subject=WP for Toastmasters question (<?php echo $_SERVER['SERVER_NAME'] ?>)">david@wp4toastmasters.com.</a></p>
+<p>Volunteer help wanted: get in touch if you can help improve the documentation and training materials for this volunteer-led project. <a target="_blank" href="mailto:david@wp4toastmasters.com?subject=WP for Toastmasters documentation and raining">Volunteer</a></p>
+<?php
 }
 
 function toastmasters_admin_screen() {
@@ -4224,8 +4235,8 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 			//echo '<p>Nothing to record</p>';
 			return; // nothing to record
 		}
-		echo '<p>' . __( 'Updating', 'rsvpmaker-for-toastmasters' ) . '</p>';
-		// printf('<p>Updating %s %s %s</p>',$post_id,$timestamp,$aggregated);
+		if(!isset($_GET['tm_ajax']))
+			echo '<p>' . __( 'Updating', 'rsvpmaker-for-toastmasters' ) . '</p>';
 		update_post_meta( $post_id, 'wpt_archive_code', $aggregated );
 		foreach ( $results as $row ) {
 			$user_id = (int) $row->meta_value;

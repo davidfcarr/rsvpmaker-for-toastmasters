@@ -100,6 +100,11 @@ label {
 		$mail['fromname'] = $vars['name'];
 		$mail['from']     = $vars['email'];
 
+		$duesmessage = get_option('tm_application_dues_message');
+
+		echo sprintf('<p>%s: %s</p>',__('Dues amount','rsvpmaker-for-toastmasters'),number_format($vars['amount'],2));
+		echo wp_kses_post($duesmessage);
+
 		$n = explode( ',', $notifications );
 		foreach ( $n as $to ) {
 			$mail['to'] = $to;
@@ -427,7 +432,18 @@ if($wp4toastmasters_officer_titles)
 		printf('<div><input type="checkbox" name="tm_application_titles[]" value="%s" %s>%s (%s)</div>',$title,$checked,$title,$email);
 	}	
 }
-printf('<h2></h2>',__('Online Payments Services','rsvpmaker-for-toastmasters'));
+
+if(isset($_POST['tm_application_dues_message']))
+	{
+		$tm_application_dues_message = wp_kses_post(stripslashes($_POST['tm_application_dues_message']));
+		update_option('tm_application_dues_message',$tm_application_dues_message);
+	}
+else
+	$tm_application_dues_message = wp_kses_post(get_option('tm_application_dues_message'));
+
+printf('<p>%s<br><textarea name="tm_application_dues_message" class="mce">%s</textarea></p>',__('Message to applicant about dues payment (for example, instructions for paying by check)','rsvpmaker-for-toastmasters'),$tm_application_dues_message);
+
+printf('<h2>%s</h2>',__('Online Payments Services','rsvpmaker-for-toastmasters'));
 $chosen_gateway = get_rsvpmaker_payment_gateway ();
 if(empty($chosen_gateway) || ('Cash or Custom' == $chosen_gateway))
 	printf('<p>%s</p>',__('Not configured'));
@@ -459,6 +475,7 @@ printf('<p><a href="%s">%s</a></p>',admin_url('options-general.php?page=rsvpmake
 	} else {
 		printf( '<p>Application page: <a target="_blank" href="%s">View</a> or <a target="_blank" href="%s">Edit</a>', get_permalink( $apppage ), admin_url( 'post.php?action=edit&post=' . $apppage ) );
 	}
+
 	submit_button();
 	rsvpmaker_nonce();
 	?>
