@@ -10,16 +10,45 @@ function wp4toast_reminders_cron( $meeting_hours ) {
 	return;
 }
 
-add_shortcode( 'email_with_without_role', 'email_with_without_role_test' );
-function email_with_without_role_test() {
-	email_with_without_role( '', true );
-}
-
 function wp4t_role($role) {
 	global $toast_roles;
 	if(empty($toast_roles))
 		wp4t_role_array();
 	return (isset($toast_roles[$role])) ? $toast_roles[$role] : $role;
+}
+
+add_shortcode('email_with_without_role_test_shortcode','email_with_without_role_test_shortcode');
+function email_with_without_role_test_shortcode () {
+	return email_with_without_role_test('6864:24');
+}
+
+function email_with_without_role_test( $meeting_hours, $test = false ) {
+	global $wpdb, $email_context, $post, $rsvp_options, $toast_roles;
+	$waspost       = $post;
+	$email_context = true;
+	$output = '';
+	if ( empty( $meeting_hours ) ) {
+		$output .= 'empty meeting hours ';
+		$meetings      = future_toastmaster_meetings( 1 );
+		$next          = $meetings[0];
+		$date          = $next->date;
+		$meeting_hours = $next->ID . ':0';
+		if ( $test ) {
+			$meeting_hours .= time();
+		}
+	} elseif ( ! strpos( $meeting_hours, ':' ) ) {
+		return;
+	} else {
+		$p    = explode( ':', $meeting_hours );
+		$next = get_post( $p[0] );
+	}
+	if ( empty( $next ) ) {
+		return;
+	}
+	$t      = (!empty($next->ts_start)) ? (int) $next->ts_start : get_rsvpmaker_timestamp( $next->ID );
+	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
+	$output .= ' t = '.$t . ' date '.$date .' next '.var_export($next,true);
+	return $output;
 }
 
 function email_with_without_role( $meeting_hours, $test = false ) {
@@ -45,6 +74,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	}
 	$t      = (!empty($next->ts_start)) ? (int) $next->ts_start : get_rsvpmaker_timestamp( $next->ID );
 	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
+
 	$post   = $next;
 	if(!$test)
 	{

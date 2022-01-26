@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.0.5
+Version: 5.0.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1506,8 +1506,7 @@ function awesome_wall( $comment_content, $post_id, $member_id = 0 ) {
 		$comment_content = '<strong>' . $current_user->display_name . ':</strong> ' . $comment_content;
 	}
 	$stamp            = '<small><em>(Posted: ' . rsvpmaker_date( 'm/d/y H:i' ) . ')</em></small>';
-	$event             = get_rsvpmaker_event( $post_id );
-	$ts               = intval( $event->ts );
+	$ts               = get_rsvpmaker_timestamp( $post_id );
 	$comment_content .= ' for ' . rsvpmaker_date( 'F jS, Y', $ts ) . ' ' . $stamp;
 
 	add_post_meta( $post_id, '_activity', $comment_content, false );
@@ -2802,7 +2801,7 @@ See also:
 	<?php
 	// $reminder_options = array('1 hours' => '1 hour before','2 hours' => '2 hours before','3 hours' => '3 hours before','4 hours' => '4 hours before','5 hours' => '5 hours before','6 hours' => '6 hours before','7 hours' => '7 hours before','8 hours' => '8 hours before','9 hours' => '9 hours before','10 hours' => '10 hours before','11 hours' => '11 hours before','12 hours' => '12 hours before','1 days' => '1 day before','2 days' => '2 days before','3 days' => '3 days before','4 days' => '4 days before','5 days' => '5 days before','6 days' => '6 days before');
 
-	$end = 6 * 24;
+	$end = 30 * 24;
 	for ( $i = 1; $i <= $end; $i++ ) {
 		if ( $i > 6 ) {
 			$i += 5;
@@ -11108,6 +11107,15 @@ function tm_youtube_tool() {
 			'post_category' => $categories,
 		);
 
+		if(!empty($_POST['message'])) {
+			$addmessage = "<!-- wp:paragraph -->\n<p>".stripslashes(sanitize_textarea_field($_POST['message']))."</p>\n<!-- /wp:paragraph -->\n\n";
+			$for = sanitize_text_field($_POST['messagefor']);
+			if(($for == 'email') || ($for == 'both'))
+				$email_post['post_content'] .= $addmessage;
+			if(($for == 'blog') || ($for == 'both'))
+				$my_post['post_content'] = $addmessage;		
+		}
+
 		$speakers = array();
 		foreach ( $_POST['speakers'] as $index => $speaker ) {
 			if ( ! empty( $speaker ) ) {
@@ -11342,6 +11350,8 @@ function tm_youtube_tool() {
 ?>	
 <p id="youtube_subject_wrapper">Subject <input type="text" id="youtube_subject" name="youtube_subject" style="width: 80%;" /> </p>
 <p id="customize_subject_wrapper"><button id="customize_subject">Customize Subject</button></p>
+<p>Message for top (optional)<br /><textarea name="message" cols="80" rows="2"></textarea></p>
+<p>Add message to <input type="radio" name="messagefor" value="email" checked="checked" /> Email <input type="radio" name="messagefor" value="blog" /> Blog <input type="radio" name="messagefor" value="both" /> Both </p>
 <div id="youtube_preview"></div>
 <?php
 	$policy = get_option( 'tm_video_policy' );
@@ -13164,7 +13174,7 @@ function wp4t_log_notify($post_id, $test = false) {
 	}
 	else {
 	$mail['from'] = get_bloginfo('admin_email');
-	$mail['subject'] = 'Roles signups for '.rsvpmaker_date($rsvp_options['long_date'],get_rsvpmaker_timestamp( $post_id ));
+	$mail['subject'] = 'Role signups for '.rsvpmaker_date($rsvp_options['long_date'],get_rsvpmaker_timestamp( $post_id ));
 	$mail['html'] = '';
 	$sql = "select meta_value from $wpdb->postmeta where meta_key='_activity' AND post_id=$post_id ORDER by meta_id DESC ";
 	$results = $wpdb->get_results($sql);

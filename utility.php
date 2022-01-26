@@ -1691,7 +1691,7 @@ function wp4t_evaluation_link($atts) {
 if(!function_exists('get_rsvpmaker_timestamp')) {
 	function get_rsvpmaker_timestamp( $post_id ) {
 		$event = get_rsvpmaker_event($post_id);
-		if(!empty($event) && !empty($event->ts))
-		return intval($event->ts);
+		if(!empty($event) && !empty($event->ts_start))
+			return intval($event->ts_start);
 	}	
 }
