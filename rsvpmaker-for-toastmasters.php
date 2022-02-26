@@ -32,6 +32,7 @@ require 'setup-wizard.php';
 require 'email.php';
 require 'history.php';
 require 'todo-list.php';
+require 'fse-navigation-block.php';
 //require 'block-patterns.php';
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
@@ -2886,6 +2887,14 @@ See also:
 	?>
 		 /> Send role reminders and <strong>also send a meeting reminder to everyone else</strong>
 </p>
+<p>
+<?php 
+$summary_off = (int) get_option('wpt_notification_summary_off');
+?>
+<input type="radio" name="wpt_notification_summary_off" value="0" <?php if(!$summary_off) echo ' checked="checked" '; ?> > Append summary to reminder of member's specific role
+<br>
+<input type="radio" name="wpt_notification_summary_off" value="1"  <?php if($summary_off) echo ' checked="checked" '; ?> > Don't append summary to role reminders
+</p>
 
 <p><?php _e( 'Send Speech Introductions to Toastmaster of the Day', 'rsvpmaker-for-toastmasters' ); ?> 
 <select name="wp4toast_reminder_intros">
@@ -3344,6 +3353,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toast_reminder2' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toast_reminder_intros' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_remind_all' );
+	register_setting( 'wp4toastmasters-settings-group', 'wpt_notification_summary_off' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_reserved_role_label' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_agenda_timezone' );
 	register_setting( 'wp4toastmasters-settings-group', 'allow_assign' );
@@ -4672,7 +4682,8 @@ else
 $toolate = true;
 $data = wpt_blocks_to_data($post->post_content);
 $formtop = sprintf('<form method="post" action="%s"><input type="hidden" name="oneclicknonce" value="%s">',get_permalink(),$code);
-$formbottom = '<p><button>Take Role</button></p></form>';
+$formbottom = (strpos($post->post_content,'tm_attend_in_person') || strpos($post->post_content,'wp4toastmasters/hybrid')) ? tm_in_person_checkbox($user_id) : '';
+$formbottom .= '<p><button>Take Role!</button></p></form>';
 foreach($data as $item){
 	if(isset($item['role']) && ($item['role'] == $role))
 	{
@@ -5398,7 +5409,7 @@ function awesome_members( $atts ) {
 			$clubemails[]      = $userdata->user_email;
 		}
 	}
-
+/*
 	if ( ( isset( $_REQUEST['print_contacts'] ) || is_admin() ) && is_array( $members ) ) {
 		ksort( $members );
 		foreach ( $members as $userdata ) {
@@ -5408,7 +5419,7 @@ function awesome_members( $atts ) {
 		}
 		return;
 	}
-
+*/
 	if ( is_club_member() ) {
 		echo '<p><em>' . __( 'Contact details such as phone numbers and email are only displayed when you are logged into the website (and should only be used for Toastmasters business)', 'rsvpmaker-for-toastmasters' ) . '.</em></p>';
 		if ( current_user_can( 'view_contact_info' ) ) {
@@ -7776,15 +7787,20 @@ function pack_roles( $count, $fieldbase ) {
 	}
 }//end pack_roles()
 
-if ( ! function_exists( 'rsvpmaker_print_redirect' ) ) {
-	add_action( 'template_redirect', 'wp4t_redirect' );
-
+add_action( 'template_redirect', 'wp4t_redirect' );
 function wp4t_redirect() {
 		global $post;
 
 		if ( isset( $_REQUEST['tm_reports'] ) ) {
 			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/reports-fullscreen.php';
 			die();
+		} elseif ( isset( $_REQUEST['blank'] ) ) {
+
+			$template = get_block_template( get_stylesheet() . '//blank' );
+			if(!empty($template->content)) {
+				echo do_blocks($template->content);
+				die();	
+			}
 		} elseif ( isset( $_REQUEST['timer'] ) ) {
 			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/timer.php';
 			die();
@@ -7836,8 +7852,6 @@ function wp4t_redirect() {
 			speech_intros();
 			die();
 		}
-
-	}
 }
 
 function tm_sidebar_post( $post_id ) {
@@ -9999,7 +10013,9 @@ function rsvptoast_pages( $user_id ) {
 		$titles[] = $page->page_title;
 	}
 	$post = array(
-		'post_content' => '[awesome_members comment="This placeholder code displays the member listing"]',
+		'post_content' => '<!-- wp:shortcode -->
+		[awesome_members comment="This placeholder code displays the member listing"]
+		<!-- /wp:shortcode -->',
 		'post_name'    => 'members',
 		'post_title'   => 'Members',
 		'post_status'  => 'publish',
@@ -10105,6 +10121,7 @@ function rsvptoast_pages( $user_id ) {
 	$locations['primary']      = $menu->term_id;
 	$locations['menu-1']       = $menu->term_id;
 	set_theme_mod( 'nav_menu_locations', $locations );
+
 }
 
 function get_manuals_by_type_options( $type ) {
@@ -12478,6 +12495,10 @@ add_filter( 'rsvpmaker_showbutton', 'rsvptoast_showbutton' );
 
 function tm_absence( $atts ) {
 	global $email_context;
+	global $post;
+	global $current_user;
+	global $wpdb;
+	global $rsvp_options, $email_context;
 
 	if ( is_admin() && isset( $_GET['convert'] ) ) {
 		$show = ( empty( $atts['show_on_agenda'] ) ) ? 0 : 1;
@@ -12492,10 +12513,6 @@ function tm_absence( $atts ) {
 	if ( ! is_user_member_of_blog() && empty($email_context) ) {
 		return '<div><strong>Planned Absences</strong> - Only displayed for logged in members of this site</div>';
 	}
-	global $post;
-	global $current_user;
-	global $wpdb;
-	global $rsvp_options, $email_context;
 	$event_table = get_rsvpmaker_event_table();
 	$output = '';
 	if ( isset( $_POST['add_absence'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -12538,6 +12555,9 @@ function tm_absence( $atts ) {
 			$output .= '<div><strong>Planned Absences</strong> : ';
 			foreach ( $absences as $absent ) {
 				$userdata = get_userdata( $absent );
+				if(is_email_context() || isset($_GET['print_agenda']))
+				$output  .= sprintf( '<div id="current_absences%s%s">%s %s  Cancel</div>', $post->ID, $absent, $userdata->first_name, $userdata->last_name );
+				else
 				$output  .= sprintf( '<div id="current_absences%s%s">%s %s <input type="checkbox" id="absences_remove%d" class="absences_remove" name="cancel_absences[]" post_id="%s" value="%d" /> Cancel</div>', $post->ID, $absent, $userdata->first_name, $userdata->last_name, $absent, $post->ID, $absent );
 			}
 			$output .= '</div>';
@@ -12552,7 +12572,11 @@ function tm_absence( $atts ) {
 		return $output;
 	}
 
-	if ( ! empty( $absences ) && is_array( $absences ) ) {
+	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
+		return $output; // don't display button
+	}
+
+	if ( ! empty( $absences ) && is_array( $absences )  ) {
 		$output .= '<div><strong>Planned Absences</strong>: ';
 		$output .= '<form method="post" action="'.get_permalink().'">';
 		foreach ( $absences as $absent ) {
@@ -12588,10 +12612,6 @@ function tm_absence( $atts ) {
 
 	if ( ! empty( $away ) ) {
 		$output .= '<div><strong>Away Messages:</strong>' . $away . '</div>';
-	}
-
-	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
-		return $output; // don't display button
 	}
 
 	$future = future_toastmaster_meetings(26);
@@ -13303,7 +13323,8 @@ if(isset($_POST['remove_in_person'])) {
 	}
 }
 
-$in_person = tm_in_person_update($current_user->ID, $post->ID, $in_person);
+$in_person = tm_in_person_update($post->ID, $in_person);
+
 if(isset($_POST['in_person_other']) && is_numeric($_POST['in_person_other'])) {
 	$other = intval($_POST['in_person_other']);
 	if(($other > 0) && !in_array($other, $in_person) ) {
@@ -13317,40 +13338,55 @@ $limit = isset($atts['limit']) ? intval($atts['limit']) : 0;
 $limit_text = ($limit) ? '(Limit: '.$limit.' people)' : '';
 
 $output .= sprintf('<h3>%s %s</h3>',__('In person attendance','rsvpmaker-for-toastmasters'),$limit_text);
+if(!is_email_context())
+{
 if(is_club_member()) {
 	$dropdown = awe_user_dropdown( 'in_person_other', 0, true, $openlabel = __('Add another_member','rsvpmaker-for-toastmasters') );
-	$output .= sprintf('<form action="%s" method="post"><p><input type="checkbox" name="in_person_yes" %s> %s</p><p>%s</p><input type="hidden" name="in_person_check"> <button>%s</button></p></form>',get_permalink($post->ID),$checked,__('I plan to attend in person','rsvpmaker-for-toastmasters'),$dropdown,__('Submit','rsvpmaker-for-toastmasters'));
+	$output .= sprintf('<form action="%s" method="post"><p><input type="checkbox" name="in_person_yes" value="%d" %s> %s</p><p>%s</p><input type="hidden" name="in_person_check"> <button>%s</button></p></form>',get_permalink($post->ID),$current_user->ID, $checked,__('I plan to attend in person','rsvpmaker-for-toastmasters'),$dropdown,__('Submit','rsvpmaker-for-toastmasters'));
 }
 else {
 	$output .= '<p>Members please login to see list</p>';
 	return $output;
 }
+	
+}
+
 $attendees = sizeof($in_person);
 $attendee_list = '';
 if($attendees) {
-	foreach($in_person as $person)
-		$attendee_list .= '<div><input type="checkbox" name="remove_in_person[]" class="remove_in_person" value="'.$person.'" /> '.get_member_name($person).'</div>';
+	foreach($in_person as $person) {
+		if(is_email_context())
+			$attendee_list .= '<div>'.get_member_name($person).'</div>';
+		else
+			$attendee_list .= '<div><input type="checkbox" name="remove_in_person[]" class="remove_in_person" value="'.$person.'" /> '.get_member_name($person).'</div>';
+	}
 }
 if(!empty($attendee_list))
-	$output .= sprintf('<form method="post" action="%s"><p>%s (%d)</p>%s<p class="remove_in_person"><button>%s</button></p></form><p class="remove_names_line"><input type="checkbox" class="remove_names"> Remove names</p>',get_permalink($post->ID),__('In-person attendees','rsvpmaker-for-toastmasters'),$attendees,$attendee_list,__('Remove Checked','rsvpmaker-for-toastmasters'));
+	if(is_email_context())
+		$output .= sprintf('<p>%s (%d)</p>%s',__('In-person attendees','rsvpmaker-for-toastmasters'),$attendees,$attendee_list);
+	else
+		$output .= sprintf('<form method="post" action="%s"><p>%s (%d)</p>%s<p class="remove_in_person"><button>%s</button></p></form><p class="remove_names_line"><input type="checkbox" class="remove_names"> Remove names</p>',get_permalink($post->ID),__('In-person attendees','rsvpmaker-for-toastmasters'),$attendees,$attendee_list,__('Remove Checked','rsvpmaker-for-toastmasters'));
 return $output;
 }
 
 add_shortcode('tm_attend_in_person','tm_attend_in_person');
 
-function tm_in_person_checkbox() {
+function tm_in_person_checkbox($user_id = 0) {
 	global $current_user,$post, $wpdb, $in_person_checkbox;
 	if(!empty($in_person_checkbox))
 		return $in_person_checkbox;
 	$in_person = get_post_meta($post->ID,'tm_attend_in_person'); // returns array
 	if(empty($in_person))
 		$in_person = array();
-	$checked = (in_array($current_user->ID, $in_person)) ? ' checked="checked" ' : '';
-	$in_person_checkbox = sprintf('<div><input type="checkbox" name="in_person_yes" %s> %s. %s %d <input type="hidden" name="in_person_check" value="1" ></div>',$checked,__('I plan to attend in person','rsvpmaker-for-toastmasters'),__('In-person attendance so far:','rsvpmaker-for-toastmasters'), sizeof($in_person));
+	if(isset($current_user->ID))
+		$user_id = $current_user->ID;
+
+	$checked = (in_array($user_id, $in_person)) ? ' checked="checked" ' : '';
+	$in_person_checkbox = sprintf('<div><input type="checkbox" name="in_person_yes" value="%d" %s> %s. %s %d <input type="hidden" name="in_person_check" value="1" ></div>',$user_id, $checked,__('I plan to attend in person','rsvpmaker-for-toastmasters'),__('In-person attendance so far:','rsvpmaker-for-toastmasters'), sizeof($in_person));
 	return $in_person_checkbox;
 }
 
-function tm_in_person_update($user_id, $post_id = 0, $in_person = array()) {
+function tm_in_person_update($post_id = 0, $in_person = array()) {
 	if(empty($in_person))
 		$in_person = get_post_meta($post_id,'tm_attend_in_person'); // returns array
 	if(empty($in_person))
@@ -13358,6 +13394,7 @@ function tm_in_person_update($user_id, $post_id = 0, $in_person = array()) {
 	
 	if(isset($_POST['in_person_check'])) {
 		if(isset($_POST['in_person_yes']) ) {
+			$user_id = intval($_POST['in_person_yes']);
 			if( !in_array($user_id, $in_person) ) {
 				add_post_meta($post_id,'tm_attend_in_person',$user_id);
 				$in_person[] = $user_id;	
@@ -13390,3 +13427,4 @@ return '<p>'.$output.'</p>';
 }
 
 add_shortcode('rsvp_attend_in_person','rsvp_attend_in_person');
+

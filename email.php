@@ -22,6 +22,33 @@ function email_with_without_role_test_shortcode () {
 	return email_with_without_role_test('6864:24');
 }
 
+function wpt_notification_from($post_id) {
+/* have replies go to tod or vpe */
+	$mail['fromname'] = get_bloginfo( 'name' );	
+	$toastmaster = (int) get_post_meta( $post_id, '_Toastmaster_of_the_Day_1', true );
+	$mail['tmid'] = $toastmaster;
+	if ( $toastmaster )
+		$tmdata       = get_userdata( $toastmaster );
+	if(!empty($tmdata))
+		$mail['from'] = $tmdata->user_email;
+	else {
+		$officer_ids    = get_blog_option( $blog_id, 'wp4toastmasters_officer_ids' );
+        $officer_titles = get_blog_option( $blog_id, 'wp4toastmasters_officer_titles' );
+        if(is_array($officer_ids))
+        {
+            foreach($officer_titles as $index => $title) {
+                    if(strpos($title,'Education') && !empty($officer_ids[$index]))
+                        $vpe = get_userdata($officer_ids[$index]);
+			}
+		}
+		if(!empty($vpe))
+			$mail['from'] = $vpe->user_email;
+		else
+			$mail['from']     = get_option( 'admin_email' );
+	}
+	return $mail;
+}
+
 function email_with_without_role_test( $meeting_hours, $test = false ) {
 	global $wpdb, $email_context, $post, $rsvp_options, $toast_roles;
 	$waspost       = $post;
@@ -89,6 +116,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	$permalink = get_permalink( $next->ID );
 	$content   = do_shortcode( $templates['norole']['body'] );
 	$absences  = get_absences_array( $next->ID );
+	$summary = 	empty(get_option('wpt_notification_summary_off'));
 	$reminders = array();
 	$absent    = array();
 	$norole    = array();
@@ -134,7 +162,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
                 $reminder_subject[ $member->ID ] = str_replace('[wptrole]',$multirole,$templates['role_reminder']['subject']);
                 //$reminder_body[ $member->ID ] = str_replace('[wptrole]',$multirole,$templates['role_reminder']['body']);
             } 
-            if(!strpos($reminder_body[$member->id],'[wpt_open_roles]') && !strpos($reminder_body[$member->id],'[wp4t_assigned_open] '))
+            if($summary && !strpos($reminder_body[$member->id],'[wpt_open_roles]') && !strpos($reminder_body[$member->id],'[wp4t_assigned_open] '))
                 $reminder_body[$member->id] .= $content;
 		} else {
 			$norole[] = $member->user_email;
@@ -144,9 +172,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	$output = '';
 	if(isset($_GET['debug']))
 	$output = '<pre>'.var_export($toast_roles,true).'</pre>';
-
-	$mail['from']     = get_option( 'admin_email' );
-	$mail['fromname'] = get_option( 'name' );
+	$mail = wpt_notification_from($next->ID);
 	foreach ( $reminders as $index => $email ) {
 		$mail['to']      = ( $test ) ? $mail['from'] : $email;
 		$testtext        = ( $test ) ? "<p>$email</p>" : '';

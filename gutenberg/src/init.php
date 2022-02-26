@@ -54,10 +54,14 @@ function wpt_cgb_editor_assets() {
 		true // Enqueue the script in the footer.
 	);
 
-	$wpt_rest = array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url(), 'post_id' => $post->ID );
-	$rsvpmaker_special = get_post_meta($post->ID,'_rsvpmaker_special',true);
-	if(!empty($rsvpmaker_special))
-		$wpt_rest['special'] = $rsvpmaker_special;
+	$wpt_rest = array('nonce' => wp_create_nonce( 'wp_rest' ), 'url' => get_rest_url() );
+	if(isset($post->ID))
+	{
+		$wpt_test['post_id'] = $post->ID;
+		$rsvpmaker_special = get_post_meta($post->ID,'_rsvpmaker_special',true);	
+		if(!empty($rsvpmaker_special))
+			$wpt_rest['special'] = $rsvpmaker_special;
+	}
 	wp_localize_script('wpt-cgb-block-js', 'wpt_rest', $wpt_rest );
 	$toast[] = array('value' =>'', 'label' => __('Select Role (not set)','rsvpmaker-for-toastmasters'));
 	$toast[] = array('value' =>'custom', 'label' => __('Custom Role','rsvpmaker-for-toastmasters'));
@@ -89,8 +93,8 @@ function wpt_server_block_render(){
 	register_block_type('wp4toastmasters/absences', ['render_callback' => 'tm_absence']);	
 	register_block_type('wp4toastmasters/hybrid', ['render_callback' => 'tm_attend_in_person']);	
 	register_block_type('wp4toastmasters/duesrenewal', ['render_callback' => 'wp4t_dues_renewal']);
-	$atts = array('webContext' => array('type' => 'boolean', 'default' => true),'agendaContext' => array('type' => 'boolean', 'default' => true),'emailContext' => array('type' => 'boolean', 'default' => true),'printContext' => array('type' => 'boolean', 'default' => true) );
-	register_block_type('wp4toastmasters/context', ['render_callback' => 'wp4t_agenda_display_context' ]); //, 'attributes' => $atts	
+	register_block_type('wp4toastmasters/context', ['render_callback' => 'wp4t_agenda_display_context' ]);
+	register_block_type('wp4toastmasters/navigation', ['render_callback' => 'wp4t_navigation_submenu', 'attributes' => array('count',5) ] );
 }
 
 function agendanoterich2($atts, $content) {

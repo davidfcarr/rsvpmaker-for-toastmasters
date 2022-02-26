@@ -294,7 +294,7 @@
 		function() {
 			var manual = this.value;
 			var target = this.id.replace( 'manual','project' );
-			var list   = project_list[manual];
+			var list   = project_list.projects[manual];
 			$( '#' + target ).html( '<option value="">Pick a Project</option>' + list );
 		}
 	);

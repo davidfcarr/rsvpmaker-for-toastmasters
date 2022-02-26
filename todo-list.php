@@ -25,11 +25,28 @@ function wp4t_todolist($blog_id, $send = false) {
 
     if(is_multisite())
     switch_to_blog($blog_id);
+    $output = '<h2>This Is The Website Administrator Todo List</h2>'."\n";
+    $theme = wp_get_theme();
 
+    $demo_sites = array(
+        "astra-tm" => "astra.toastmost.org",
+        "lectern" => "lectern.toastmost.org",
+        "twentynineteen-tm" => "2019.toastmost.org",
+        "twentyseventeen-tm" => "2017.toastmost.org",
+        "twentysixteen-tm" => "2016.toastmost.org",
+        "twentytwenty-tm" => "2020.toastmost.org",
+        "twentytwentyone-tm" => "2021.toastmost.org",
+        "twentytwentyone-true-maroon" => "maroon.toastmost.org",
+        "twentytwentytwo-tm" => "2022.toastmost.org",
+        "wuqi-tm" => "wuqi.toastmost.org");
+    
+    if(isset($demo_sites[$theme->stylesheet]))
+        $output .= sprintf('<h3><a target="_blank" href="https://%s">%s</a></h3><p>Consult this demo site for tips related to your chosentheme (design) choice, %s </p>',$demo_sites[$theme->stylesheet],$demo_sites[$theme->stylesheet], $theme->Name);
+        
     $wizard_timestamp = (int) get_option('wp4t_setup_wizard_used');
     if(!$wizard_timestamp)
         $todo['wizard'] = 'If you are still at the beginning of setting up your website, the setup wizard can make that easier.';
-
+    $home = 0;
     if('page' == get_option('show_on_front')) {
         $home = get_option('page_on_front');
         $post = get_post($home);
@@ -61,12 +78,6 @@ function wp4t_todolist($blog_id, $send = false) {
     else
         $todo['members'] = 'Inviting in at least a few other members will make this website a more interesting place. You can create member accounts one at a time, or import your whole membership list (which can be downloaded from toastmasters.org).';
     //use the agenda to plan meetings
-    $speaker_signups = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE meta_key LIKE '_Speaker%' ");
-    $speaker_activity = sizeof($speaker_signups);
-    if($speaker_activity)
-        $done['agenda_use'] = $speaker_activity .' speaker signups on the agenda';
-    else
-        $todo['agenda_use'] = 'Get speakers to sign up on the agenda';
 
     $done['confirmation'] = '<strong>Meeting online?</strong> Edit your guest registration confirmation message to include online meeting details.';
 
@@ -100,11 +111,30 @@ function wp4t_todolist($blog_id, $send = false) {
         }
         //does the home page have a featured image? Is it one of the defaults? Instructions on how to change
     }
+
+    if($theme->stylesheet == 'twentytwentytwo-tm')
+    {
+        $label['theme2022'] = 'Edit the header and menu <em>(new Full Site Editing method)</em>';
+        $link['theme2022'] = admin_url('site-editor.php?postType=wp_template_part&postId=twentytwentytwo-tm%2F%2Fheader');
+        $help['theme2022'] = 'https://2022.toastmost.org';
+        $done['theme2022'] = 'Learn the new method for changing layout elements such as navigation menus with the new Full Site Editor feature.';
+    }
+    else {
+        /*
+        $label[$theme->stylesheet] = 'Tips for '.$theme->stylesheet;
+        $link[$theme->stylesheet] = admin_url('site-editor.php?postType=wp_template_part&postId=twentytwentytwo-tm%2F%2Fheader');
+        $help[$theme->stylesheet] = 'https://2022.toastmost.org';
+        $done[$theme->stylesheet] = 'Learn the new method for changing layout elements such as navigation menus with the new Full Site Editor feature.';
+        */
+    }
+
     //add_theme_support( 'custom-header' ); get_header_image() 
     if(current_theme_supports('custom-header')) {
         //how to change
         $done['change_custom_header'] = 'Your current theme (WordPress design) allows you to set a custom image that appears at the top of each page. You can change the one that is currently displayed.';
     }
+
+
     /*
     $theme = get_option('current_theme');
     $status['theme'] = $theme;
@@ -124,13 +154,13 @@ function wp4t_todolist($blog_id, $send = false) {
     $stripe = get_rsvpmaker_stripe_keys();
     $paypal = get_option('rsvpmaker_paypal_rest_keys');
     $payments = array();
-    if($paypal['client_id'])
+    if(!empty($paypal['client_id']))
     $payments[] = 'PayPal production keys';
-    if($paypal['sandbox_client_id'])
+    if(!empty($paypal['sandbox_client_id']))
     $payments[] = 'PayPal sandbox keys';
-    if($stripe['pk'])
+    if(!empty($stripe['pk']))
     $payments[] = 'Stripe production keys';
-    if($stripe['sandbox_pk'])
+    if(!empty($stripe['sandbox_pk']))
     $payments[] = 'Stripe sandbox keys';
 
     if(empty($payments)) {
@@ -163,10 +193,11 @@ function wp4t_todolist($blog_id, $send = false) {
     $help['agenda_customized'] = 'https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/';
 
     $next = next_toastmaster_meeting();
-    $label['agenda_use'] = 'Sign up for roles or assign them to other members.';
-    $link['agenda_use'] = get_permalink($next->ID);
-    $help['agenda_use'] = 'https://www.wp4toastmasters.com/knowledge-base/sign-up-for-a-role/';
-
+    if(!empty($next)) {
+        $label['agenda_use'] = 'Sign up for roles or assign them to other members.';
+        $link['agenda_use'] = get_permalink($next->ID);
+        $help['agenda_use'] = 'https://www.wp4toastmasters.com/knowledge-base/sign-up-for-a-role/';    
+    }
     $label['members'] = 'Create member accounts';
     $link['members'] = admin_url('users.php?page=add_awesome_member');
     $help['members'] = 'https://www.wp4toastmasters.com/knowledge-base/create-member-accounts/';
@@ -205,7 +236,7 @@ function wp4t_todolist($blog_id, $send = false) {
     $link['change_theme'] = admin_url('themes.php');
     $help['change_theme'] = 'https://www.wp4toastmasters.com/2020/11/09/video-change-the-look-of-your-club-website/';
 
-    $label['change_featured_image'] = 'Change the featured image on the home page';
+    $label['change_featured_image'] = 'Change the featured image on the home page ';//.var_export($theme,true);
     $link['change_featured_image'] = admin_url('post.php?action=edit&post='.$home);
     $help['change_featured_image'] = 'https://firstsiteguide.com/wordpress-featured-image/';
 
@@ -221,9 +252,6 @@ function wp4t_todolist($blog_id, $send = false) {
     $label['jetpack'] = 'Configure Jetpack';
     $link['jetpack'] = admin_url('admin.php?page=jetpack#/');
     $help['jetpack'] = 'https://www.wp4toastmasters.com/2020/11/19/jetpack-the-swiss-army-knife-plugin-for-your-website/';
-
-
-    $output = '<h2>This Is The Website Administrator Todo List</h2>'."\n";
 
     if(empty($todo))
         $output .= '<p>[none]</p>';
@@ -241,8 +269,9 @@ function wp4t_todolist($blog_id, $send = false) {
             $u = $link[$slug];
             $h = $help[$slug];
             $output .= sprintf('<h3><a href="%s">%s</a> - <a href="%s" target="_blank">Help</a></h3>'."\n".'<p>%s</p>',$u,$l,$h,$status)."\n";
-        }    
+        }
     }
+    //$output .= var_export($done,true);
     $output .= '<h2>Need More Help?</h2><p>See the <a href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a>. 
     Or write to <a href="mailto:david@wp4toastmasters.com?subject=Todo page query">david@wp4toastmasters.com</a>.</p>
     <p>There is also a <a href="https://www.facebook.com/groups/wp4toastmasters">Facebook group</a> where users of the software and the Toastmost service can compare notes and give feedback.</p>';

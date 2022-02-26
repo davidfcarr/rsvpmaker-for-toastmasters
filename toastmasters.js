@@ -245,7 +245,7 @@ jQuery( document ).ready(
 				var role  = parts[1];
 				if ( $( 'input[name="recommend_instead' + role + '"]' ).is( ':checked' ) ) {
 					return false;}
-				$( '#_manual_' + role ).html( manuals_list );
+				$( '#_manual_' + role ).html( project_list.manuals );
 				$( '#_project_' + role ).html( '<option value="">Pick Manual for Project List</option>' );
 				$( '#title_text' + role ).val( '' );
 				$( '#_intro_' + role ).val( '' );
@@ -294,7 +294,7 @@ jQuery( document ).ready(
 			function(){
 				var manual = this.value;
 				var target = this.id.replace( 'manual','project' );
-				var list   = project_list[manual];
+				var list   = project_list.projects[manual];
 				$( '#' + target ).html( '<option value="">Pick a Project</option>' + list );
 			}
 		);

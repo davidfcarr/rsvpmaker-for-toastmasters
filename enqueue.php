@@ -1,6 +1,9 @@
 <?php
 
 function tm_welcome_screen_assets( $hook ) {
+	if(is_network_admin())
+		return;
+
 	// everywhere except posts screen
 	$ver = '3.48';
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'post.php' ) ) {
@@ -18,6 +21,8 @@ function tm_welcome_screen_assets( $hook ) {
 }
 
 function toastmasters_css_js() {
+	if(is_network_admin())
+		return;
 	global $post, $current_user;
 	$version = '4.7.9';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
@@ -32,10 +37,9 @@ function toastmasters_css_js() {
 		wp_enqueue_style( 'jquery-ui-sortable' );
 		wp_register_script( 'script-toastmasters', plugins_url( 'rsvpmaker-for-toastmasters/toastmasters.js' ), array( 'jquery', 'jquery-ui-core', 'jquery-ui-sortable' ), $version );
 		wp_enqueue_script( 'script-toastmasters' );
-		$manuals = get_manuals_options();
-		wp_localize_script( 'script-toastmasters', 'manuals_list', $manuals );
-		$projects = get_projects_array( 'options' );
-		wp_localize_script( 'script-toastmasters', 'project_list', $projects );
+		$options['manuals'] = get_manuals_options();
+		$options['projects'] = get_projects_array( 'options' );
+		wp_localize_script( 'script-toastmasters', 'project_list', $options );
 		$times = get_projects_array( 'times' );
 		wp_localize_script( 'script-toastmasters', 'project_times', $times );
 		$display_times = get_projects_array( 'display_times' );
@@ -126,6 +130,7 @@ function toastmasters_css_js() {
 		if ( isset( $_GET['judge'] ) ) {
 			$contestvars['votereceived'] = rest_url( 'wptcontest/v1/votereceived/' . $post->ID . '/' . sanitize_text_field($_GET['judge']) );
 		}
+		if(!empty($contestvars))
 		wp_localize_script( 'contest-toastmasters', 'contest', $contestvars );
 	}
 }

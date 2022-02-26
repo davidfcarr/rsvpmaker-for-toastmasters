@@ -169,32 +169,4 @@ registerBlockType( 'wp4toastmasters/officers', {
     }
 } ); 
 
-registerBlockType( 'wp4toastmasters/logo', {
-	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
-	title: __( 'Toastmasters Logo for Agenda' ), // Block title.
-	icon: 'admin-comments', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
-	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
-	keywords: [
-		__( 'Toastmasters' ),
-		__( 'Agenda' ),
-		__( 'Logo' ),
-	],
-	description: __('Displays the Toastmasters logo.'),
-    edit: function( props ) {	
-
-	return (
-		<div class="tm-logo">
-			<img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" width="50" height="50" />
-		</div>
-);	
-    },
-    save: function(props) {
-    return (
-		<div class="tm-logo">
-			<img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" width="50" height="50" />
-		</div>
-);
-    }
-} ); 
-
 } // end of check that this is an Agenda Layout document

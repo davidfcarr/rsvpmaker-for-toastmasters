@@ -9,6 +9,7 @@
 import './style.scss';
 import './editor.scss';
 import './agenda_context.js';
+import './logo.js';
 
 const { __ } = wp.i18n; // Import __() from wp.i18n
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
@@ -680,3 +681,207 @@ registerBlockType( 'wp4toastmasters/duesrenewal', {
     save: function (props) { return null; },
 
 } );
+
+registerBlockType( 'wp4toastmasters/navigation', {
+	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
+	title: __( 'Toastmasters Navigation' ), // Block title.
+	icon: 'admin-comments', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
+	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	description: __('Meant for Full Site Editing block themes. Dropdown with member access to login/dashboard, password reset, upcoming meetings','rsvpmaker'),
+	keywords: [
+		__( 'Toastmasters' ),
+		__( 'Navigation' ),
+		__( 'Full Site Editing' ),
+	],
+attributes: {
+		count: {
+			type: 'int',
+			default: 5,
+		},
+		hidelogo: {
+			type: 'boolean',
+			default: false,
+		},
+    },
+
+    edit: function( props ) {	
+
+	const { attributes, attributes: { count, hidelogo }, className, setAttributes, isSelected } = props;
+	if(hidelogo)
+	return (
+<Fragment>
+<NavigationInspector { ...props } />	
+<div className={ props.className }>
+<nav class="wp-container-620833bf95386 is-responsive items-justified-right wp-block-navigation"><button aria-haspopup="true" aria-label="Open menu" class="wp-block-navigation__responsive-container-open " data-micromodal-trigger="modal-620833bf94e39"><svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><rect x="4" y="7.5" width="16" height="1.5" /><rect x="4" y="15" width="16" height="1.5" /></svg></button>
+	<div class="wp-block-navigation__responsive-container  " id="modal-620833bf94e39">
+		<div class="wp-block-navigation__responsive-close" tabindex="-1" data-micromodal-close>
+			<div class="wp-block-navigation__responsive-dialog" aria-label="Menu">
+					<button aria-label="Close menu" data-micromodal-close class="wp-block-navigation__responsive-container-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-hidden="true" focusable="false"><path d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"></path></svg></button>
+				<div class="wp-block-navigation__responsive-container-content" id="modal-620833bf94e39-content">
+<ul class="wp-block-navigation__container">
+<li class=" wp-block-navigation-item has-child open-on-hover-click wp-block-navigation-submenu">
+
+<a class="wp-block-navigation-item__content" href="#">Dashboard</a>
+
+<button aria-label="Dashboard submenu" class="wp-block-navigation__submenu-icon wp-block-navigation-submenu__toggle" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" role="img" aria-hidden="true" focusable="false"><path d="M1.50002 4L6.00002 8L10.5 4" stroke-width="1.5"></path></svg></button>
+
+<ul class="wp-block-navigation__submenu-container">
+
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content"  href="#"><span class="wp-block-navigation-item__label">Profile</span></a></li>
+</ul></li></ul></div></div></div></div></nav>
+</div>
+</Fragment>
+);
+else
+return (
+<Fragment>
+<NavigationInspector { ...props } />	
+<div className={ props.className }>
+<nav class="wp-container-620833bf95386 is-responsive items-justified-right wp-block-navigation"><button aria-haspopup="true" aria-label="Open menu" class="wp-block-navigation__responsive-container-open " data-micromodal-trigger="modal-620833bf94e39"><svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-hidden="true" focusable="false"><rect x="4" y="7.5" width="16" height="1.5" /><rect x="4" y="15" width="16" height="1.5" /></svg></button>
+	<div class="wp-block-navigation__responsive-container  " id="modal-620833bf94e39">
+		<div class="wp-block-navigation__responsive-close" tabindex="-1" data-micromodal-close>
+			<div class="wp-block-navigation__responsive-dialog" aria-label="Menu">
+					<button aria-label="Close menu" data-micromodal-close class="wp-block-navigation__responsive-container-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-hidden="true" focusable="false"><path d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"></path></svg></button>
+				<div class="wp-block-navigation__responsive-container-content" id="modal-620833bf94e39-content">
+<ul class="wp-block-navigation__container">
+<li class=" wp-block-navigation-item"><a href="#"><img src="https://toastmost.org/tmbranding/toastmasters-75.png" height="41" width="50" /></a></li>
+<li class=" wp-block-navigation-item has-child open-on-hover-click wp-block-navigation-submenu">
+<a class="wp-block-navigation-item__content" href="#">Dashboard</a>
+
+<button aria-label="Dashboard submenu" class="wp-block-navigation__submenu-icon wp-block-navigation-submenu__toggle" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" role="img" aria-hidden="true" focusable="false"><path d="M1.50002 4L6.00002 8L10.5 4" stroke-width="1.5"></path></svg></button>
+
+<ul class="wp-block-navigation__submenu-container">
+
+<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content"  href="#"><span class="wp-block-navigation-item__label">Profile</span></a></li>
+</ul></li></ul></div></div></div></div></nav>
+</div>
+</Fragment>
+);
+	
+    },
+    save: function( ) {
+		return null;
+    }
+});
+
+/*
+<ServerSideRender
+block="wp4toastmasters/navigation"
+attributes={ attributes }
+/>
+*/
+
+class NavigationInspector extends Component {
+
+	render() {
+		const { attributes, setAttributes } = this.props;
+		const { count, hidelogo } = attributes;
+
+return (	
+<InspectorControls key="navinspector">
+<ToggleControl
+            label="Hide Logo"
+            help={
+                hidelogo
+                    ? 'Hide'
+                    : 'Show'
+            }
+            checked={ hidelogo }
+			onChange={ (hidelogo) => setAttributes( {hidelogo} ) }
+		/>
+
+<NumberControl
+		label={ __( 'Events to Show', 'rsvpmaker-for-toastmasters' ) }
+		value={ count }
+		onChange={ ( count ) => setAttributes( { count } ) }
+	/>
+</InspectorControls>
+		);
+	}
+}
+
+registerBlockType( 'wp4toastmasters/logo', {
+	// Block name. Block names must be string that contains a namespace prefix. Example: my-plugin/my-custom-block.
+	title: __( 'Toastmasters Logo' ), // Block title.
+	icon: 'shield', // Block icon from Dashicons → https://developer.wordpress.org/resource/dashicons/.
+	category: 'common', // Block category — Group blocks together based on common traits E.g. common, formatting, layout widgets, embed.
+	keywords: [
+		__( 'toastmasters' ),
+		__( 'logo' ),
+		__( 'header' ),
+	],
+	attributes: {
+		 src: {
+		 type: 'string',
+		 default: 'https://toastmost.org/tmbranding/toastmasters-75.png',
+		 },
+	 },
+
+	/**
+	 * The edit function describes the structure of your block in the context of the editor.
+	 * This represents what the editor will render when the block is used.
+	 *
+	 * The "edit" property must be a valid function.
+	 *
+	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
+	 *
+	 * @param {Object} props Props.
+	 * @returns {Mixed} JSX Component.
+	 */
+	edit: ( props ) => {
+		// li class=" wp-block-navigation-item"><a href="#"><img src="https://toastmost.org/tmbranding/toastmasters-75.png"></a></li>
+		const { attributes: { src } } = props;
+		return (
+			<Fragment>
+			<TmLogoInspector {...props}/>
+			<div className={ props.className }>
+			<img src={src} />
+			</div>
+			</Fragment>
+		);
+
+	},
+
+	/**
+	 * The save function defines the way in which the different attributes should be combined
+	 * into the final markup, which is then serialized by Gutenberg into post_content.
+	 *
+	 * The "save" property must be specified and must be a valid function.
+	 *
+	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
+	 *
+	 * @param {Object} props Props.
+	 * @returns {Mixed} JSX Frontend HTML.
+	 */
+	save: ( props ) => {
+		const { attributes: { src } } = props;
+		return (
+			<div className={ props.className }>
+			<a href="/"><img src={src} /></a>
+			</div>
+		);
+	},
+} );
+
+/* tm_theme.images+ */
+class TmLogoInspector extends Component {
+	render() {
+		const { attributes: { src }, setAttributes, isSelected } = this.props;
+		return (
+			<InspectorControls key="upcominginspector">
+			<PanelBody title={ __( 'Logo Version', 'rsvpmaker' ) } >
+					<SelectControl
+        label={__("Choice",'rsvpmaker')}
+        value={ src }
+        options={ [
+		{value: 'https://toastmost.org/tmbranding/toastmasters-75.png', label: __('Default 75px')},
+		{value: 'https://toastmost.org/tmbranding/Toastmasters150-125.png', label: __('150px')},
+		{value: 'https://toastmost.org/tmbranding/Toastmasters180-150.png', label: __('180px')},
+		{value: 'https://toastmost.org/tmbranding/Toastmasters200-167.png', label: __('200px')},
+		{value: 'https://toastmost.org/tmbranding/Toastmasters240-200.png', label: __('240px')},
+		{value: 'https://toastmost.org/tmbranding/Toastmasters300-250.png', label: __('300px')},
+	] }
+        onChange={ ( src ) => { setAttributes( { src: src } ) } }
+    />				</PanelBody>
+				</InspectorControls>
+);	} }
