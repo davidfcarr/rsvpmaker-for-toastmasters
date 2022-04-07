@@ -568,6 +568,8 @@ $header .= '</head>
 	// print_r($open);
 	$output .= $content;
 
+	$output = "<div id=\"agenda-email\">\n".$output."\n</div>\n";
+
 	if ( isset($_POST) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( ! empty( $_POST['test'] ) && ! empty( $_POST['testto'] ) ) {
 			$mail['to'] = sanitize_text_field($_POST['testto']);
@@ -587,7 +589,7 @@ $header .= '</head>
 		$mail['subject']  = sanitize_text_field( stripslashes( $_POST['subject'] ) );
 
 if ( isset( $emails ) && is_array( $emails ) ) {
-			rsvpmaker_qemail ($mail, $emails);			
+			rsvpmaker_qemail ($mail, $emails);		
 			echo "<p>Sending to club members</p>";
 		} else {
 			echo awemailer( $mail );

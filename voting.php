@@ -90,7 +90,6 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
     }
 
     $vote_counter_name = ($vote_counter) ? get_member_name($vote_counter) : 'not yet claimed';
-    printf('<h3>Vote counter: %s</h3>',$vote_counter_name);
     if(isset($_POST['my_vote']) && rsvpmaker_verify_nonce()){
         $vote = sanitize_text_field($_POST['my_vote']);
         $key = sanitize_text_field($_POST['key']);
@@ -483,6 +482,7 @@ $( '#votecheck' ).text( 'START/STOP VOTE COUNT' );
 
 <p style="margin-top: 30px;"><em>This tool is intended for casual voting at weekly meetings. See the Contest Dashboard to set up digital ballots for contests.</em></p>
 <?php
+printf('<h3>Vote counter: %s</h3>',$vote_counter_name);
 
 if(!$claimed || (($vote_counter != $current_user->ID) && current_user_can('manage_options')) ) {
     if(is_user_member_of_blog() || current_user_can('manage_network')) {

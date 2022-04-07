@@ -361,7 +361,7 @@ class Editor_Assign extends WP_REST_Controller {
 		$projects = '';
 		$options  = '';
 		if ( strpos( $role, 'peaker' ) ) {
-			rsvpmaker_debug_log($user_id,'user id - get speaking track called from api');
+			//rsvpmaker_debug_log($user_id,'user id - get speaking track called from api');
 			$track  = get_speaking_track( $user_id );
 			$type   = $track['type'];
 			$manual = $track['manual'];

@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.0.7
+Version: 5.0.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1857,10 +1857,10 @@ function speaker_details( $field, $atts = array(), $user = null ) {
 
 	if ( empty( $manual ) || strpos( $manual, 'hoose Manual' ) || strpos( $manual, 'elect Manual' ) ) {
 		if ( is_edit_roles() || isset( $_REQUEST['recommend_roles'] ) ) {
-			rsvpmaker_debug_log(0,'user id - get speaking track called from recommend roles or edit roles');
+			//rsvpmaker_debug_log(0,'user id - get speaking track called from recommend roles or edit roles');
 			$track = get_speaking_track( 0 );
 		} else {
-			rsvpmaker_debug_log($current_user->ID,'user id - get speaking track called from role signup');
+			//rsvpmaker_debug_log($current_user->ID,'user id - get speaking track called from role signup');
 			$track = get_speaking_track( $current_user->ID );
 		}
 		$current_manual = $track['manual'];
@@ -3289,9 +3289,7 @@ function toastmasters_rule_setting() {
 
 function agenda_css_customization_form() {
 	?>
-<textarea rows="3" cols="80" name="wp4toastmasters_agenda_css">
-	<?php echo get_option( 'wp4toastmasters_agenda_css' ); ?>
-</textarea>
+<textarea rows="3" cols="80" name="wp4toastmasters_agenda_css"><?php echo get_option( 'wp4toastmasters_agenda_css' ); ?></textarea>
 <br /><?php _e( 'Examples', 'rsvpmaker-for-toastmasters' ); ?>:<br /><code>p, div, li {font-size: 14px;}</code> - <?php _e( 'increase the default font size for all text', 'rsvpmaker-for-toastmasters' ); ?>
 <br /><code>#agenda, #agenda p, #agenda div, #agenda li  {font-size: 14px;}</code> - <?php _e( 'change the font size of the actual agenda but not the sidebar content', 'rsvpmaker-for-toastmasters' ); ?>
 <br /><code>#agenda-sidebar, #agenda-sidebar p, #agenda-sidebar div, #agenda-sidebar li  {font-size: 12px; font-family: Georgia, serif; }</code> - <?php _e( 'change the font for the agenda sidebar only', 'rsvpmaker-for-toastmasters' ); ?>
@@ -3300,6 +3298,10 @@ function agenda_css_customization_form() {
 <p>When the agenda is displayed in "Show" rather than print mode, id="show" is added to the body tag. To increase the font for online viewing but not for print, you could do
 <br /><code>#show p, #show div, #show li {font-size: 14px;}</code> or 
 <br /><code>#show #agenda p, #show #agenda div, #show #agenda li {font-size: 14px;}</code>
+<p>Similarly, you can target the version of the agenda sent by email with <br>
+<code>
+#agenda-email p, #agenda-email div, #agenda-email li {font-size: 16px;}
+</code>
 </p>
 	<?php
 }
@@ -3443,8 +3445,8 @@ if(!$hours)
 global $wpdb, $rsvp_options;
 $sql = "SELECT * FROM ".$wpdb->prefix."rsvpmaker_event WHERE event=$post_id AND date > NOW() AND date <= DATE_ADD(NOW(), INTERVAL $hours HOUR) ";
 $row = $wpdb->get_row($sql);
-rsvpmaker_debug_log($sql,'speech intros sql');
-rsvpmaker_debug_log($row,'speech intros row');
+//rsvpmaker_debug_log($sql,'speech intros sql');
+//rsvpmaker_debug_log($row,'speech intros row');
 if($row)
 	{
 		$date = rsvpmaker_date($rsvp_options['long_date'], (int) $row->ts_start);
@@ -10354,6 +10356,11 @@ function get_pathways() {
 		'Effective Coaching Level 3 Increasing Knowledge'  => __( 'Effective Coaching Level 3 Increasing Knowledge', 'rsvpmaker-for-toastmasters' ),
 		'Effective Coaching Level 4 Building Skills'       => __( 'Effective Coaching Level 4 Building Skills', 'rsvpmaker-for-toastmasters' ),
 		'Effective Coaching Level 5 Demonstrating Expertise' => __( 'Effective Coaching Level 5 Demonstrating Expertise', 'rsvpmaker-for-toastmasters' ),
+		'Engaging Humor Level 1 Mastering Fundamentals'    => __( 'Engaging Humor Level 1 Mastering Fundamentals', 'rsvpmaker-for-toastmasters' ),
+		'Engaging Humor Level 2 Learning Your Style'       => __( 'Engaging Humor Level 2 Learning Your Style', 'rsvpmaker-for-toastmasters' ),
+		'Engaging Humor Level 3 Increasing Knowledge'      => __( 'Engaging Humor Level 3 Increasing Knowledge', 'rsvpmaker-for-toastmasters' ),
+		'Engaging Humor Level 4 Building Skills'           => __( 'Engaging Humor Level 4 Building Skills', 'rsvpmaker-for-toastmasters' ),
+		'Engaging Humor Level 5 Demonstrating Expertise'   => __( 'Engaging Humor Level 5 Demonstrating Expertise', 'rsvpmaker-for-toastmasters' ),
 		'Innovative Planning Level 1 Mastering Fundamentals' => __( 'Innovative Planning Level 1 Mastering Fundamentals', 'rsvpmaker-for-toastmasters' ),
 		'Innovative Planning Level 2 Learning Your Style'  => __( 'Innovative Planning Level 2 Learning Your Style', 'rsvpmaker-for-toastmasters' ),
 		'Innovative Planning Level 3 Increasing Knowledge' => __( 'Innovative Planning Level 3 Increasing Knowledge', 'rsvpmaker-for-toastmasters' ),
@@ -10423,8 +10430,8 @@ function get_project_key( $project ) {
 function get_projects_array( $choice = 'projects' ) {
 	include 'projects_array.php';
 	if ( isset( $_GET['debug'] ) ) {
-		rsvpmaker_debug_log( $projects, 'projects' );
-		rsvpmaker_debug_log( $project_options, 'options' );
+		//rsvpmaker_debug_log( $projects, 'projects' );
+		//rsvpmaker_debug_log( $project_options, 'options' );
 	}
 
 	if ( $choice == 'projects' ) {
@@ -11254,7 +11261,7 @@ function tm_youtube_tool() {
 			$email_post['post_status'] = 'publish';
 			$id                        = wp_insert_post( $email_post );
 			printf( '<p><a href="%s?post=%d&action=edit">%s</a></p>', admin_url( 'post.php' ), $id, __( 'Edit email', 'rsvpmaker-for-toastmasters' ) );
-			printf( '<p><a href="%s">%s</a></p>', get_permalink( $id ), __( 'Preview/send email', 'rsvpmaker-for-toastmasters' ) );
+			printf( '<p><a href="%s?list=members">%s</a></p>', get_permalink( $id ), __( 'Preview/send email', 'rsvpmaker-for-toastmasters' ) );
 		}
 		echo wpautop( $my_post['post_content'] );
 	}
@@ -12646,7 +12653,7 @@ function toastmasters_role_signup() {
 			}
 			$role    = sanitize_text_field($_POST['role']);
 			$post_id = (int) $_POST['post_id'];
-			tm_in_person_update($user_id, $post_id);
+			tm_in_person_update($post_id);
 			do_action('toastmasters_agenda_change',$post_id,$role,$user_id,get_post_meta($post_id,$role,true),0);
 			update_post_meta( $post_id, $role, $user_id );
 			if ( strpos( $role, 'Speaker' ) ) {
@@ -12662,17 +12669,17 @@ function toastmasters_role_signup() {
 				}
 				if ( is_array( $value ) ) {
 					foreach ( $value as $v ) {
-						$showv = sanitize_text_field( stripslashes( $v , '<p><br><strong><em><a>' ));
+						$showv = sanitize_text_field( $v );
 					}
 				} else {
-					$showv = $value;
+					$showv = sanitize_text_field($value);
 				}
 
 				if ( ! empty( $showv ) ) {
 					if ( strpos( $name, 'project' ) ) {
 						$showv = get_project_text( $showv );
 					}
-					$o .= '<br />' . clean_role( $name ) . ': ' . clean_role( $showv );
+					$o .= '<br />' . clean_role( $name ) . ': ' . $showv;
 				}
 			}
 			$actiontext = __( 'signed up for', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $role );
@@ -13389,7 +13396,7 @@ function tm_in_person_checkbox($user_id = 0) {
 function tm_in_person_update($post_id = 0, $in_person = array()) {
 	if(empty($in_person))
 		$in_person = get_post_meta($post_id,'tm_attend_in_person'); // returns array
-	if(empty($in_person))
+	if(empty($in_person) || !is_array($in_person))
 		$in_person = array();
 	
 	if(isset($_POST['in_person_check'])) {

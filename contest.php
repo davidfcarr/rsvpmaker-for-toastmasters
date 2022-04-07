@@ -58,17 +58,7 @@ function wpt_get_contest_array( $type = 'selection' ) {
 		'Technique'          => 15,
 		'Summation'          => 15,
 	);
-	$contest_selection['VTM 3-5 Min Webinar Contest']  = array(
-		'Speech Development'          => 15,
-		'Audience Engagement'         => 15,
-		'Speech Value'                => 15,
-		'Call to Action'              => 15,
-		'Visual'                      => 15,
-		'Voice'                       => 10,
-		'Manner'                      => 5,
-		'Appropriateness/Correctness' => 10,
-	);
-	$contest_selection['Mini-Webinar Contest']         = array(
+	$contest_selection['VTM CON Webinar Contest']  = array(
 		'Speech Development'          => 15,
 		'Audience Engagement'         => 15,
 		'Speech Value'                => 15,
@@ -84,8 +74,7 @@ function wpt_get_contest_array( $type = 'selection' ) {
 	$contest_timing['Humorous Speech Contest']      = '5 to 7';
 	$contest_timing['Table Topics Contest']         = '1 to 2';
 	$contest_timing['Evaluation Contest']           = '2 to 3';
-	$contest_timing['VTM 3-5 Min Webinar Contest']  = '3 to 5';
-	$contest_timing['Mini-Webinar Contest']         = '6 to 8';
+	$contest_timing['VTM CON Webinar Contest']  = '5 to 7';
 	if ( $type == 'timing' ) {
 		return $contest_timing;
 	} else {

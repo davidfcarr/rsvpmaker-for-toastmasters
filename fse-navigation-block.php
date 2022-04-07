@@ -129,7 +129,7 @@ function wp4t_block_theme_menu() {
 return $menu_id;
 }
 
-function wpt_add_menu_to_nav($content) {
+function wpt_add_menu_to_nav($content, $menu_id) {
 preg_match('/<!-- wp:navigation (\{){0,1}/',$content,$match);
 
 if(empty($match[0]))
@@ -150,14 +150,16 @@ function wp4t_header_template_part() {
         return;
     }
 	if(!empty($template_part->wp_id)) {
-		//rsvpmaker_debug_log($template_part->wp_id,'header db record');
+		rsvpmaker_debug_log($template_part->wp_id,'header db record');
 		return;
 	}
 	$menu_id = wp4t_block_theme_menu();
 	//rsvpmaker_debug_log($template_part->content,'static header exists');
 	$content = $template_part->content;
+	if(!strpos($content,'wp:navigation'))
+		return; //might be using a pattern in header.html
 
-	$content = wpt_add_menu_to_nav($content);
+	$content = wpt_add_menu_to_nav($content, $menu_id);
 
 	$header['post_type'] = $post_type;
 	$header['post_title'] = 'Header';

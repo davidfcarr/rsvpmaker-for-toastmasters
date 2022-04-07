@@ -454,8 +454,7 @@ jQuery( document ).ready(
 			'form.remove_me_form',
 			function(event) {
 				event.preventDefault();
-				var conjunction = (wpt_rest.url.indexOf( '?' )) ? '&' : '?';
-				var action      = wpt_rest.url + 'rsvptm/v1/tm_role' + conjunction + 'tm_ajax=remove_role';
+				var action      = wpt_rest.url + 'rsvptm/v1/tm_role?tm_ajax=remove_role';
 				var formid      = $( this ).attr( 'id' );
 				$( '#' + formid ).hide();
 				var signup_id = formid.replace( 'remove','' );

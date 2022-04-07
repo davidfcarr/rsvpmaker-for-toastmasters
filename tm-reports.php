@@ -18,6 +18,7 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_screen', __( 'My Progress', 'rsvpmaker-for-toastmasters' ), __( 'My Progress', 'rsvpmaker-for-toastmasters' ), 'read', 'my_progress_report', 'wp4toastmasters_history' );
 	add_submenu_page( 'toastmasters_screen', __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports', 'wp4toastmasters_history' );
 	add_submenu_page( 'toastmasters_screen', __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'pathways_report', 'pathways_report' );
+	add_submenu_page( 'toastmasters_screen', __( 'Pathways/BaseCamp checklist', 'rsvpmaker-for-toastmasters' ), __( 'Base Camp Checklist', 'rsvpmaker-for-toastmasters' ), 'read', 'pathways_checklist', 'pathways_checklist' );
 	add_submenu_page( 'toastmasters_screen', __( 'Multi-Meeting Role Planner', 'rsvpmaker-for-toastmasters' ), __( 'Role Planner', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_planner', 'toastmasters_planner' );
 	add_submenu_page( 'toastmasters_screen', __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports_dashboard', 'toastmasters_reports_dashboard' );
 
@@ -5317,6 +5318,156 @@ function show_evaluation() {
 }
 
 add_action( 'init', 'show_evaluation' );
+
+function pathways_checklist( ) {
+	?>
+<style>
+.pathways_title {font-weight: bold;}
+label {
+	display: inline-block;
+	width: 200px;
+}
+.speechdetails input {
+	width: 400px;
+}
+</style>
+	<h1>Base Camp Checklist</h1>
+	<p>Use this screen to keep track of which Pathways projects recorded on the website have also been recorded in Base Camp. If you are a member of multiple clubs, you can track which club you credited a speech to (<a href="#addclubs">Add Clubs</a>).</p>
+	<?php
+	global $current_user, $rsvp_options, $wpdb;
+	$speech_history = $wpdb->base_prefix."tm_speech_history";
+	$clubs = get_user_meta($current_user->ID,'basecamp_clubs',true);
+	if(empty($clubs))
+		$clubs = array();
+
+	if(isset($_POST['record'])) {
+		foreach($_POST['record'] as $record) {
+			$record = explode(':',sanitize_text_field($record));
+			$sql = $wpdb->prepare("UPDATE $speech_history SET basecamp_record=%s WHERE speech_id=%d",$record[1],$record[0]);
+			$wpdb->query($sql);
+		}
+	}
+	if(isset($_POST['reset']))
+		{
+			foreach($_POST['reset'] as $reset) {
+				$wpdb->query("UPDATE $speech_history set basecamp_record='' WHERE speech_id=".intval($reset));
+			}
+		}
+	if(isset($_POST['moreclubs']))
+	{
+		$lines = explode("\n",$_POST['moreclubs']);
+		foreach($lines as $line) {
+			$line = trim(sanitize_text_field($line));
+			if(!empty($line))
+				$clubs[] = $line;
+		}
+		update_user_meta($current_user->ID,'basecamp_clubs',$clubs);
+	}
+
+	if(isset($_POST['speech_edit'])) {
+		$speech_id = intval($_POST['speech_edit']);
+		$manual = sanitize_text_field($_POST['path']);
+		$project = sanitize_text_field(stripslashes($_POST['project']));
+		$title = sanitize_text_field(stripslashes($_POST['title']));
+		$basecamp_record = sanitize_text_field(stripslashes($_POST['basecamp_record']));
+		$sql =	$wpdb->prepare("UPDATE $speech_history set manual=%s, project=%s, title=%s, basecamp_record=%s WHERE speech_id=%d",$manual, $project, $title, $basecamp_record, $speech_id);
+		$wpdb->query($sql);
+	}
+
+	if(isset($_GET['speech_edit'])) {
+		$speech_id = intval($_GET['speech_edit']);
+		$sql = "SELECT * FROM `".$wpdb->base_prefix."tm_speech_history` JOIN ".$wpdb->base_prefix."tm_history ON history_id = ".$wpdb->base_prefix."tm_history.id WHERE speech_id=$speech_id";
+		$row = $wpdb->get_row($sql);
+		$pathways_levels = get_pathways();
+		$path_options = '';
+		foreach($pathways_levels as $pl) {
+			$s = ($row->manual == $pl) ? ' selected="selected" ' : '';
+			$path_options .= sprintf('<option value="%s" %s>%s</option>',$pl, $s, $pl);
+		}
+
+		printf('<form method="post" action="%s"><input type="hidden" name="speech_edit" value="%d">
+		<p><label>Path/Level</label> <select name="path">%s</select></p>
+		<div class="speechdetails">
+		<p><label>Project</label> <input type="text" name="project" value="%s"></p>
+		<p><label>Title</label> <input type="text" name="title" value="%s"></p>
+		<p><label>Club Credited in Base Camp</label> <input type="text" name="basecamp_record" value="%s"></p>
+		</div>
+		<p><button>Update</button></p>
+		</form>',admin_url('admin.php?page=pathways_checklist'),$speech_id, $path_options, $row->project, $row->title, $row->basecamp_record);
+	}
+
+	printf('<form method="post" action="%s">',admin_url('admin.php?page=pathways_checklist'));
+	$startclubs = $clubs;
+	$toastmasters_id = (isset($_REQUEST['toastmasters_id'])) ? intval($_REQUEST['toastmasters_id']) : $current_user->ID;
+
+	$results = $wpdb->get_results("SHOW COLUMNS FROM `".$wpdb->base_prefix."tm_speech_history` LIKE 'basecamp_record'");
+	if(empty($results))
+		$wpdb->query("ALTER TABLE `".$wpdb->base_prefix."tm_speech_history` ADD COLUMN basecamp_record VARCHAR(255) AFTER intro;");
+
+	$done = '';
+	$sql = "SELECT * FROM `".$wpdb->base_prefix."tm_speech_history` JOIN ".$wpdb->base_prefix."tm_history ON history_id = ".$wpdb->base_prefix."tm_history.id WHERE `project_key` LIKE '%level%' AND `user_id`=$toastmasters_id ORDER BY datetime DESC";
+	$results = $wpdb->get_results($sql);
+	//(object) array( 'speech_id' => '1330', 'history_id' => '8716', 'manual' => 'Engaging Humor Level 3 Increasing Knowledge', 'project_key' => 'Engaging Humor Level 3 Increasing Knowledge 14085', 'project' => 'Focus on the Positive', 'title' => 'In praise of in person', 'intro' => '', 'id' => '8716', 'role' => 'Speaker', 'datetime' => '2022-02-04 07:00:00', 'rolecount' => '1', 'domain' => 'www.clubawesome.org', 'user_id' => '1', 'post_id' => '6936', 'metadata' => 'a:3:{s:13:"time_recorded";i:1643977517;s:11:"recorded_by";s:5:"abern";s:8:"function";s:24:"update_user_role_archive";}', 'timestamp' => '2022-02-04 12:25:17', )
+	foreach($results as $row) {
+		if($row->domain == 'demo.toastmost.org')
+			continue;
+		$name = $row->domain;
+		if(!empty($clubs[$row->domain]))
+			$name = $clubs[$row->domain];
+		else 
+		{
+			if(is_multisite()) {
+				$sql = "SELECT blog_id FROM $wpdb->blogs WHERE domain='$row->domain' ";
+				//echo $sql;
+				$blog_id = $wpdb->get_var($sql);
+				if($blog_id) {
+					$name = get_blog_option($blog_id,'blogname');
+					//printf('<p>%d %s</p>',$blog_id, $name);
+				}
+			}
+			$clubs[$row->domain] = $name;
+		}
+		$t = rsvpmaker_strtotime($row->datetime);
+		$date = rsvpmaker_date($rsvp_options['long_date'],$t);
+
+		$speech_data = sprintf('<p>%s: %s <span class="pathways_title">%s</span> %s @ %s (<a href="%s">Edit</a>)</p>', $row->manual, $row->project, $row->title, $date, $name, admin_url('admin.php?page=pathways_checklist&speech_edit='.$row->speech_id));
+		if($row->basecamp_record) {
+			$done .= $speech_data . sprintf('<p><span style="color: green;">&check; Recorded for </span>%s <input type="checkbox" name="reset[]" value="%d" > Reset</p>',$row->basecamp_record,$row->speech_id);
+			if(empty($manual_speeches[$row->manual]))
+				$manual_speeches[$row->manual] = 1;
+			else
+				$manual_speeches[$row->manual]++;
+		}
+		else 
+			{
+				echo $speech_data;
+				echo '<p>Record for ';
+				foreach($clubs as $club)
+				printf('<input type="checkbox" name="record[]" value="%d:%s" > %s ',$row->speech_id,$club, $club);
+				echo '</p>';
+			}
+	}
+echo '<button>Update</button></form>';
+
+if(!empty($done))
+echo '<h2>Previously Recorded</h2>'.$done;
+
+if(!empty($manual_speeches)) {
+	ksort($manual_speeches);
+	foreach($manual_speeches as $manual => $count)
+		printf('<h3>%s: %d</h3>',$manual, $count);
+}
+
+printf('<h2 id="addclubs">Add Clubs</h2>
+<form method="post" action="%s">
+<p>List additional clubs, 1 per line</p>
+<textarea name="moreclubs">
+</textarea>
+<button>Add</button></form>',admin_url('admin.php?page=pathways_checklist'));
+
+if($clubs != $startclubs)
+	update_user_meta($current_user->ID,'basecamp_clubs',$clubs);
+}
 
 function pathways_report( $toastmaster = 0 ) {
 	global $current_user;
