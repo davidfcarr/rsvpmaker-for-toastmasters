@@ -4,8 +4,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 5.9.3
-Stable tag: 5.0.9
+Tested up to: 6.0
+Stable tag: 5.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

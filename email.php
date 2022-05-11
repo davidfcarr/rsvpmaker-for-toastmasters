@@ -615,8 +615,13 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 			{ title: "Italic", format: "italic" },
 		]},]},
 		toolbar: "bold italic link",
-		});	
-	</script><h3>' . __( 'Add a Note', 'rsvpmaker-for-toastmasters' ) . '</h3>
+		relative_urls: false,
+		remove_script_host : false,
+		document_base_url : "'.site_url().'/",
+	});	
+	</script>
+	<p>You can use the '.club_member_mailto($subject, 'Sign up at '.get_permalink()).' link to send from your own email client or use the form to have a message sent through the server.</p>
+	<h3>' . __( 'Add a Note', 'rsvpmaker-for-toastmasters' ) . '</h3>
 	<p>' . __( 'Your note will be emailed along with the agenda and details about which roles are filled or open. You can change the subject line to emphasize the roles you need filled or special plans for a meeting (such as a contest).', 'rsvpmaker-for-toastmasters' ) . '</p>
 	<form method="post" action="' . $permalink . 'email_agenda=1">
 Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><br />
@@ -625,6 +630,7 @@ Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><b
 <input type="submit" value="Send" />
 ' . rsvpmaker_nonce('return'). '
 </form>';
+
 
 		$output = $header . $mailform . $output.'</body></html>';
 	}
@@ -823,4 +829,18 @@ function login_footer_tm_privacy() {
 	{
 		printf('<p style="text-align:center; border: thin solid red"><strong>%s</strong> %s</p>',__('IMPORTANT','rsvpmaker-for-toastmasters'),__('If you are a new member, please log in to set your email and privacy preference.','rsvpmaker-for-toastmasters'));
 	}
+}
+
+function club_member_mailto($subject = '', $body = '') {
+	global $current_user;
+	$emails = array();
+	$members = get_club_members();
+	foreach($members as $member) {
+		$emails[] = $member->user_email;
+	}
+	$querystring = (empty($subject)) ? 'subject='.get_bloginfo('name') : 'subject='.$subject;
+	$querystring .= '&bcc='.implode(', ',$emails);
+	if(!empty($body))
+		$querystring .= '&body='.$body;
+	return sprintf('<a target="_blank" href="mailto:%s?%s">Email All Members</a>',$current_user->user_email, $querystring);
 }

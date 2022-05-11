@@ -460,4 +460,38 @@
 		}
 	);
 
+	$( '#second_language_checkbox' ).click(
+		function () {
+			var count = parseInt($( '#second_language_checkbox' ).val());
+			var prompt;
+			var prompts;
+			count++;
+			prompt = 'Pace: not too fast or too slow';
+			prompts = '<p><strong>'+prompt+'</strong><input type="hidden" name="prompt['+count+']" value="'+prompt+'"></p>'
+			+'<p><input type="radio" name="check['+count+']" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check['+count+']" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check['+count+']" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check['+count+']" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check['+count+']" value="1 (Developing)"> 1 (Developing) </p>'
+			+'<p><textarea name="comment['+count+']" style="width: 100%; height: 3em;"></textarea></p>';
+
+			count++;
+			prompt = 'Grammar and word usage';
+			prompts += '<p><strong>'+prompt+'</strong><input type="hidden" name="prompt['+count+']" value="'+prompt+'"></p>'
+			+'<p><input type="radio" name="check['+count+']" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check['+count+']" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check['+count+']" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check['+count+']" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check['+count+']" value="1 (Developing)"> 1 (Developing) </p>'
+			+'<p><textarea name="comment['+count+']" style="width: 100%; height: 3em;"></textarea></p>';
+
+			count++;
+			prompt = 'Word tense, gender, and pronouns';
+			prompts += '<p><strong>'+prompt+'</strong><input type="hidden" name="prompt['+count+']" value="'+prompt+'"></p>'
+			+'<p><input type="radio" name="check['+count+']" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check['+count+']" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check['+count+']" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check['+count+']" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check['+count+']" value="1 (Developing)"> 1 (Developing) </p>'
+			+'<p><textarea name="comment['+count+']" style="width: 100%; height: 3em;"></textarea></p>';
+
+			count++;
+			prompt = 'Clear pronunciation';
+			prompts += '<p><strong>'+prompt+'</strong><input type="hidden" name="prompt['+count+']" value="'+prompt+'"></p>'
+			+'<p><input type="radio" name="check['+count+']" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check['+count+']" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check['+count+']" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check['+count+']" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check['+count+']" value="1 (Developing)"> 1 (Developing) </p>'
+			+'<p><textarea name="comment['+count+']" style="width: 100%; height: 3em;"></textarea></p>';
+
+			$('#second_language').html(prompts);
+		}
+	);
+
+
 })( jQuery );

@@ -723,7 +723,9 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 
 		if ( isset( $_GET['post_id'] ) ) {
 			global $rsvp_options;
-			$post        = get_post( (int) $_GET['post_id'] );
+			$post  = get_post( (int) $_GET['post_id'] );
+			if(!$post)
+				return new WP_REST_Response( array('error' => 'no post found'), 200 );
 			$time_format = str_replace( 'T', '', $rsvp_options['time_format'] );
 			if ( rsvpmaker_is_template( $post->ID ) ) {
 				$sked = get_template_sked( $post->ID );

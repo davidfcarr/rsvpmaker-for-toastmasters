@@ -3334,6 +3334,7 @@ function member_list() {
 			}
 		}
 		printf( '<div>' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . ': <a href="mailto:%s">%s</a></div>' . "\n", $userdata->user_email, $userdata->user_email );
+		$emails[] = $userdata->user_email;
 		$status = wp4t_get_member_status( $userdata->ID );
 		if ( ! empty( $status ) ) {
 			printf( '<div>' . __( 'Status', 'rsvpmaker-for-toastmasters' ) . ': %s</div>' . "\n", $status );
@@ -3349,6 +3350,9 @@ function member_list() {
 	if ( $missing ) {
 		echo '<p>Some entries missing join date. Sync with member roster spreadsheet from toastmasters.org to add the dates.</p>';
 	}
+
+	printf('<p><a href="mailto:%s">Email All</a></p>',implode(',',$emails));
+
 	tm_admin_page_bottom( $hook );
 }
 
@@ -4678,6 +4682,7 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 <form action="
 	<?php
 	if ( $demo ) {
+
 		echo get_permalink();
 	} else {
 		echo admin_url( 'admin.php?page=wp4t_evaluations' );
@@ -4733,8 +4738,10 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 			} else {
 				echo '<p><textarea name="comment[' . $index . ']" style="width: 100%; height: 3em;"></textarea></p>';
 			}
+			$topcount = $index;
 		}
 	}
+	echo '<div id="second_language"><input type="checkbox" id="second_language_checkbox" value="'.$topcount.'" /> '.__('Show second language speaker prompts','rsvpmaker-for-toastmasters').'</div>';
 	rsvpmaker_nonce();
 	echo '<p><button>Submit</button></p>';
 	?>
@@ -4748,12 +4755,41 @@ function wp4t_evaluations_demo2021() {
 	if ( is_admin() ) {
 		return;
 	}
+	if($_REQUEST['project']) {
+		ob_start();
+		echo '<style>.time_required, .speaker_introduction {display: none}</style>';
+		wp4t_evaluations( true ); // show in demo mode
+		return ob_get_clean();	
+	}
+
+	$projects = get_projects_array();
+	$lastpath = '';
+	$rsvpnonce = rsvpmaker_nonce('query');
+	$output = '';
+	$list = '';
+	$pathways = false;
+	$pattern = '<p><a href="'.get_permalink().'?meeting_id=0&post_id=425&_manual_meta=%s&project=%s&_display_time_meta&_maxtime_meta=0&_title_meta&_intro_meta&project_year='.date('Y').'&project_month='.date('m').'&project_day='.date('m').'&timelord='.$rsvpnonce.'">%s: %s</a></p>';
+	foreach($projects as $index => $project) {
+		if(strpos($index,'Not Set') )
+			continue;
+		if(!$pathways && !strpos($index,'Level') )
+			continue;
+		$pathways = true;
+		$manual = preg_replace('/ \d{1,10}$/','',$index);
+		if($manual == 'HIGH PERFORMANCE LEADERSHIP')
+			break;
+		$path = preg_replace('/ Level.+/','',$manual);
+		if($path != $lastpath) {
+			$anchor = str_replace(' ','',$path);
+			$output .= sprintf('<h2 id="%s">%s</h2>',$anchor,$path);
+			$list .= sprintf('<p><a href="#%s">%s</a></p>',$anchor,$path);
+		}
+		$lastpath = $path;
+		$output .= sprintf($pattern, $manual, $index, $manual, $project);
+	}
+	return $list.$output;
 	//if(is_user_logged_in())
 		//return 'Please log out before using this version of the evaluation form.';
-	ob_start();
-	echo '<style>.time_required, .speaker_introduction {display: none}</style>';
-	wp4t_evaluations( true ); // show in demo mode
-	return ob_get_clean();
 }
 
 function get_evaluator_postdata() {
@@ -4937,6 +4973,19 @@ Other Comments';
 				$evaluation .= wpautop( sanitize_textarea_field( stripslashes( $_POST['comment'][ $index ] ) ) );
 			}
 		}
+
+		if($_POST['prompt']) {
+			foreach($_POST['prompt'] as $index => $prompt) {
+				$evaluation .= wpautop( '<strong>' . $prompt . '</strong>' );
+				if ( ! empty( $_POST['check'][ $index ] ) ) {
+					$evaluation .= wpautop( sanitize_textarea_field($_POST['check'][ $index ] ) );
+				}
+				if ( ! empty( $_POST['comment'][ $index ] ) ) {
+					$evaluation .= wpautop( sanitize_textarea_field( stripslashes( $_POST['comment'][ $index ] ) ) );
+				}	
+			}
+		}
+
 		if ( ! $demo ) {
 			update_user_meta( $speaker_id, $key, $evaluation );
 		}
@@ -5463,7 +5512,7 @@ printf('<h2 id="addclubs">Add Clubs</h2>
 <p>List additional clubs, 1 per line</p>
 <textarea name="moreclubs">
 </textarea>
-<button>Add</button></form>',admin_url('admin.php?page=pathways_checklist'));
+<button>Add</button></form><p>Current list: %s</p>',admin_url('admin.php?page=pathways_checklist'),implode(",",$clubs));
 
 if($clubs != $startclubs)
 	update_user_meta($current_user->ID,'basecamp_clubs',$clubs);

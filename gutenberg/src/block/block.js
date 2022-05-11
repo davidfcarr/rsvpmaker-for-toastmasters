@@ -41,7 +41,8 @@ function agenda_update() {
 	});	
 }
 
-agenda_update();
+if(wpt_rest.is_agenda)
+	agenda_update();
 
 /**
  * Register: aa Gutenberg Block.
@@ -744,7 +745,7 @@ return (
 					<button aria-label="Close menu" data-micromodal-close class="wp-block-navigation__responsive-container-close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-hidden="true" focusable="false"><path d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"></path></svg></button>
 				<div class="wp-block-navigation__responsive-container-content" id="modal-620833bf94e39-content">
 <ul class="wp-block-navigation__container">
-<li class=" wp-block-navigation-item"><a href="#"><img src="https://toastmost.org/tmbranding/toastmasters-75.png" height="41" width="50" /></a></li>
+<li class=" wp-block-navigation-item"><a href="#"><img src="https://toastmost.org/tmbranding/toastmasters-50.png" height="41" width="50" /></a></li>
 <li class=" wp-block-navigation-item has-child open-on-hover-click wp-block-navigation-submenu">
 <a class="wp-block-navigation-item__content" href="#">Dashboard</a>
 

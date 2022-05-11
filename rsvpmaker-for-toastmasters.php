@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.0.9
+Version: 5.1
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -33,6 +33,8 @@ require 'email.php';
 require 'history.php';
 require 'todo-list.php';
 require 'fse-navigation-block.php';
+//require 'email-forwarders-and-groups.php';
+
 //require 'block-patterns.php';
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
@@ -99,6 +101,9 @@ tinymce.init({
 		{ title: "Italic", format: "italic" },
 	]},]},
 	toolbar: "bold italic link",
+	relative_urls: false,
+	remove_script_host : false,
+	document_base_url : "'.site_url().'/",
 	});	
 </script>';
 	}
@@ -162,7 +167,7 @@ function awesome_dashboard_widget_function() {
 <br /></p>
 
 	<?php
-
+echo '<p>'.club_member_mailto().'</p>';
 	if ( function_exists( 'bp_core_get_userlink' ) ) {
 		printf( '<p>%s: %s</p>', __( 'Post a message on your club social profile' ), bp_core_get_userlink( $current_user->ID ) );
 	}
@@ -13108,6 +13113,9 @@ tinymce.init({
 		{ title: "Italic", format: "italic" },
 	]},]},
 	toolbar: "bold italic link",
+	relative_urls: false,
+	remove_script_host : false,
+	document_base_url : "'.site_url().'/",
 });	
 </script>';
 }

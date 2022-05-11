@@ -170,6 +170,14 @@ function wpt_mycontests() {
 
 	// if(current_user_can('manage_network')) contest_user_fix();
 	global $wpdb, $current_user;
+	$action = get_permalink();
+	if($_POST['trash_event']) {
+		foreach($_POST['trash_event'] as $id) {
+			$sql = $wpdb->prepare("UPDATE $wpdb->posts SET post_status='trash' WHERE post_author=%d AND ID=%d",$current_user->ID,$id);
+			echo "<p>Moved event id #$id to the trash</p>";
+			$wpdb->query($sql);
+		}
+	}
 	$output    = $past = '';
 	$displayed = array();
 	$now       = time();
@@ -208,8 +216,10 @@ function wpt_mycontests() {
 		if ( strpos( $link, 'timer' ) ) {
 			$label = '(timer)';
 		}
-			$item = sprintf( '<p><a href="%s">%s - %s %s</a></p>', $link, $post->post_title, $date, $label );// .$datetime;
-
+		$checkbox = ($post->post_author == $current_user->ID) ? '<input type="checkbox" name="trash_event[]" value="'.$event->event.'" />' : '';
+		$item = sprintf( '<p>%s <a href="%s">%s - %s %s</a></p>', $checkbox, $link, $event->post_title, $date, $label );// .$datetime;
+		if(!empty($checkbox))
+			$item .= '<p><button>Move checked items to trash</button></p>';
 		if ( $t < $now ) {
 			$past .= $item;
 		} else {
@@ -222,7 +232,7 @@ function wpt_mycontests() {
 	if ( ! empty( $past ) ) {
 		$output .= '<h3>Past Events</h3>' . $past;
 	}
-	$output = '<p>Contest links you have access to:</p>' . $output;
+	$output = '<p>Contest links you have access to:</p><form method="post" action="'.$action.'">' . $output.'</form>';
 	return $output;
 }
 
@@ -277,6 +287,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	ob_start();
 	global $post, $wpdb;
 	global $current_user;
+	$master = contest_get_master($post->ID);
 	$contest_name = get_post_meta( $post->ID, 'toast_contest_name', true );
 
 	if ( isset( $_POST['break_connection'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -305,11 +316,13 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	$contest_selection = wpt_get_contest_array();
 	$contest_timing    = wpt_get_contest_array( 'timing' );
 	$demo = get_post_meta( $post->ID, '_contest_demo', true );
+	// $master ?
 	$dashboard_users = get_post_meta( $master, 'tm_contest_dashboard_users', true );
-	if(is_array($dashboard_users) && !in_array($post->post_author,$dashboard_users))
+	if(!$dashboard_users)
+		$dashboard_users = array();
+	if(!in_array($post->post_author,$dashboard_users)) {
 		$dashboard_users[] = $post->post_author;
-	else
-		$dashboard_users = array($post->post_author);
+	}
 
 	$is_setup =	get_post_meta( $post->ID, 'toast_contest_scoring' );
 	if(empty($is_setup))
@@ -321,10 +334,10 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	} else {
 		if ( ! current_user_can( 'edit_others_posts' ) ) {
 			if ( ! is_array( $dashboard_users ) ) {
-				return '<p>Logged in user not recognized as a site editor, administrator, chief judge, or ballot counter.</p>' . wpt_mycontests();
+				return '<p>Logged in user not recognized as a site editor, administrator, chief judge, or ballot counter (empty list).</p>' . wpt_mycontests();
 			}
 			if ( ! in_array( $current_user->ID, $dashboard_users ) ) {
-				return '<p>Logged in user not recognized as a site editor, administrator, chief judge, or ballot counter.</p>' . wpt_mycontests();
+				return '<p>Logged in user not recognized as a site editor, administrator, chief judge, or ballot counter.'.var_export($dashboard_users,true).'</p>' . wpt_mycontests();
 			}
 		}
 	}
@@ -602,7 +615,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 					$judge[ $index ] = sanitize_text_field($judge_name);
 					$email = ( empty( $_POST['judge_email'][ $index ] ) ) ? '' : sanitize_text_field($_POST['judge_email'][ $index ]);
 					if ( ! empty( $email ) && is_email( $email ) ) {
-						echo "judge email $email";
+						echo "<p>judge email $email</p>";
 						foreach($edits as $edit)
 						update_post_meta( $edit, 'judge_email' . $index, $email );
 					}
@@ -1048,21 +1061,9 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 						$user = 0;
 						$name = $value;
 						$open = 'Guest';
-						printf( '<p><input type="hidden" name="judge[%s]" value="%s" /><input type="hidden" name="judge_name[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>', $index, $user, $index, $name, $name, $index, $s, $index );
+						$email = get_post_meta($post->ID,'judge_email'.$index, true);
+						printf( '<p><input type="hidden" name="judge[%s]" value="%s" /><input type="text" name="judge_name[%s]" value="%s" /><br /><input type="text" name="judge_email[%s]" value="%s" /><br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>', $index, $user, $index, $name, $index, $email, $index, $s, $index );
 					}
-					/*
-					if(isset($_GET['debug']))
-					printf('<div>%s %s - user %s open %s</div>',$index,$value,$user,$open);
-					if(!empty($tiebreaker) && ($tiebreaker == $index))
-					$s = ' checked="checked" ';
-					else
-					$s = '';
-					$drop = str_replace('user','judge['.$index.']',$genericdrop);//awe_user_dropdown ('judge['.$index.']', $user, true, $open);
-					if(!empty($selected_option))
-					$drop = preg_replace('/<select[^>]+>/','$0'.$selected_option,$drop);
-					*/
-					// printf('<p><input type="hidden" name="judge[%s]" value="%s" /><input type="hidden" name="judge_name[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$index,$name,$name,$index,$s,$index);
-					// printf('<p><input type="hidden" name="judge[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>',$index,$user,$name,$index,$s,$index);
 				}
 			}
 			$t = time();
@@ -1293,6 +1294,7 @@ function toast_scoring_update_get( $post_id ) {
 			}
 		}
 		if ( ! empty( $disqualified ) ) {
+			print_r($disqualified);
 			$order = get_post_meta( $post_id, 'tm_scoring_order', true );
 			if ( ! empty( $order ) ) {
 				foreach ( $disqualified as $id ) {
@@ -1304,7 +1306,7 @@ function toast_scoring_update_get( $post_id ) {
 		arsort( $ranking );
 		$last_contestant = '';
 		$last_points     = 0;
-		$inc             = 0.1;
+		$inc             = 0.01;
 		$tie             = false;
 		foreach ( $ranking as $contestant => $points ) {
 			if ( ! empty( $last_contestant ) && ( $points == $last_points ) ) {
@@ -1313,22 +1315,31 @@ function toast_scoring_update_get( $post_id ) {
 			$last_contestant = $contestant;
 			$last_points     = $points;
 		}
+
+		if ( ! empty( $tiebreaker_vote ) ) {
+			rsort($tiebreaker_vote);
+			$top .= '<p>Tiebreaking judge vote applied</p>';
+			foreach ( $tiebreaker_vote as $index => $contestant ) {
+					if(!isset($ranking[ $contestant ]))
+						$ranking[ $contestant ] = $inc;
+					else
+						$ranking[ $contestant ] += $inc;
+					if(isset($_GET['debug']))
+						printf('<p>Tiebreaker adjustment %s %s</p>',$contestant,$ranking[ $contestant ]);
+				$inc += 0.01;
+			}
+			arsort( $ranking );
+		}
+
 		if ( $novote ) {
 			$top .= sprintf( '<div style="color: red;">%s judges have not yet voted: %s</div>', $novote, $missing_votes );
 		} else {
 			$top .= '<div style="background-color: red; color: white; font-weight: bold; padding: 5px;">All judges have now voted</div>';
-			if ( $tie && ! empty( $tiebreaker_vote ) ) {
-				$top .= '<p>Tiebreaking judge vote applied</p>';
-				foreach ( $tiebreaker_vote as $index => $contestant ) {
-					if ( ! empty( $ranking[ $contestant ] ) ) {
-						$ranking[ $contestant ] += $inc;
-					}
-					$inc -= 0.01;
-				}
-				arsort( $ranking );
-			}
 			$alljudgesvoted = true;
 		}
+
+		if(isset($_GET['debug']))
+			print_r($ranking);
 
 		$lastpoint     = 0;
 		$lastpointsint = 0;
@@ -1340,11 +1351,11 @@ function toast_scoring_update_get( $post_id ) {
 				$top      .= sprintf( '<div>#%d %s</div>', $topcount + 1, $contestant . $is_tie );
 				$lastpoint = $points;
 			}
-			if ( $points >= 0 ) {
+			if ( $points >= -1 ) {
 				$pointsint     = (int) $points;
 				$tiemessage    = ( $pointsint == $lastpointsint ) ? ' (Tiebreaking Judge\'s vote applied)' : '';
 				$lastpointsint = $pointsint;
-				$topscores    .= sprintf( '<div>%s <span class="contestant_points">%s points %s</span></div>', $contestant, $pointsint, $tiemessage );
+				$topscores    .= sprintf( '<div>%s <span class="contestant_points">%s points %s</span></div>', $contestant, $points, $tiemessage );
 				$topnopoints  .= sprintf( '<div>%s</div>', $contestant );
 			} else {
 				$topscores .= sprintf( '<div>%s (disqualified)</div>', $contestant, $points );
@@ -1592,7 +1603,7 @@ function dashboard_vote( $contestants, $id, $judge_name, $votinglink, $tiebreake
 	$max = ( ( $tiebreaker ) || ( $contestant_count < 3 ) ) ? $contestant_count : 3;
 
 	for ( $i = 1; $i <= $max; $i++ ) {
-		printf( '<div><select class="voteselect" name="vote[]"><option value="">Vote #%d</option>%s</select></div>', esc_attr($i), esc_attr($vote_opt) );
+		printf( '<div><select class="voteselect" name="vote[]"><option value="">Vote #%d</option>%s</select></div>', esc_attr($i), $vote_opt );
 	}
 	?>
 	<p><input type="checkbox" name="dashboardvote" value="1" /> Record these choices on behalf of <?php echo esc_html($judge_name); ?></p>
