@@ -553,6 +553,10 @@ $header .= '</head>
 	
 	$openings = 0;
 	if ( $open ) {
+
+		if(isset($_GET['debug']))
+			$output .= var_export($open, true);
+
 		$output .= '<h3>' . __( 'Open Roles', 'rsvpmaker-for-toastmasters' ) . "</h3>\n<p>";
 
 		foreach ( $open as $role => $count ) {

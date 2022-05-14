@@ -545,7 +545,8 @@ wp_ajax_editor_assign
 */
 
 function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0) {
-	global $wpdb;
+	do_action('wp4t_record_history_to_table',$user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0);
+    global $wpdb;
 	//history table
     if(empty($rolecount))
     	$role_count = preg_replace( '/[^0-9]/', '', $role );

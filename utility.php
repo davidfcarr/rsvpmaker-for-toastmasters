@@ -419,7 +419,8 @@ function get_role_assignments( $post_id, $atts ) {
 
 	}
 
-	if ( ! empty( $atts['backup'] ) ) {
+	//&& empty($_GET['email_agenda'])
+	if ( ! empty( $atts['backup'] )  ) {
 
 			$field = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', 'Backup ' . $atts['role'] ) . '_1';
 
@@ -1040,7 +1041,6 @@ function wpt_blocks_to_data2( $content, $include_backup = true, $aggregate = fal
 	foreach ( $matches[1] as $index => $role ) {
 
 		if ( strpos( $role, 'ackup' ) ) {
-
 			continue;
 		}
 

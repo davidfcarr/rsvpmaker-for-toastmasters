@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.1
+Version: 5.1.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -33,7 +33,7 @@ require 'email.php';
 require 'history.php';
 require 'todo-list.php';
 require 'fse-navigation-block.php';
-//require 'email-forwarders-and-groups.php';
+require 'email-forwarders-and-groups.php';
 
 //require 'block-patterns.php';
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
@@ -59,6 +59,7 @@ add_action( 'init', 'signup_sheet' );
 add_action( 'init', 'print_contacts' );
 add_action( 'init', 'awesome_open_roles' );
 add_action( 'init', 'role_post' );
+add_action('init','minutes_post_type');
 add_action( 'widgets_init', 'wptoast_widgets' );
 add_action( 'wp_enqueue_scripts', 'toastmasters_css_js' );
 add_action( 'pre_get_posts', 'toast_modify_query_exclude_category' );
@@ -86,6 +87,55 @@ add_action( 'toastmasters_agenda_notification', 'wp4t_intro_notification', 10, 5
 add_action( 'bp_profile_header_meta', 'display_toastmasters_profile' );
 add_action( 'admin_head', 'profile_richtext' );
 add_action( 'admin_init', 'wp4t_cron_nudge_setup' );
+
+function minutes_post_type() {
+    $labels = array(
+        'name'                  => _x( 'Minutes', 'Post type general name', 'rsvpmaker-for-toastmasters' ),
+        'singular_name'         => _x( 'Minutes Item', 'Post type singular name', 'rsvpmaker-for-toastmasters' ),
+        'menu_name'             => _x( 'TM Minutes', 'Admin Menu text', 'rsvpmaker-for-toastmasters' ),
+        'name_admin_bar'        => _x( 'Minutes', 'Add New on Toolbar', 'rsvpmaker-for-toastmasters' ),
+        'add_new'               => __( 'Add New', 'rsvpmaker-for-toastmasters' ),
+        'add_new_item'          => __( 'Add New Minutes', 'rsvpmaker-for-toastmasters' ),
+        'new_item'              => __( 'New Minutes', 'rsvpmaker-for-toastmasters' ),
+        'edit_item'             => __( 'Edit Minutes', 'rsvpmaker-for-toastmasters' ),
+        'view_item'             => __( 'View Minutes', 'rsvpmaker-for-toastmasters' ),
+        'all_items'             => __( 'All Minutes', 'rsvpmaker-for-toastmasters' ),
+        'search_items'          => __( 'Search Minutes', 'rsvpmaker-for-toastmasters' ),
+        'parent_item_colon'     => __( 'Parent Minutes:', 'rsvpmaker-for-toastmasters' ),
+        'not_found'             => __( 'No minutes found.', 'rsvpmaker-for-toastmasters' ),
+        'not_found_in_trash'    => __( 'No minutes found in Trash.', 'rsvpmaker-for-toastmasters' ),
+        'featured_image'        => _x( 'Minutes Cover Image', 'Overrides the “Featured Image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'set_featured_image'    => _x( 'Set cover image', 'Overrides the “Set featured image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'remove_featured_image' => _x( 'Remove cover image', 'Overrides the “Remove featured image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'use_featured_image'    => _x( 'Use as cover image', 'Overrides the “Use as featured image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'archives'              => _x( 'Minutes archives', 'The post type archive label used in nav menus. Default “Post Archives”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'insert_into_item'      => _x( 'Insert into minutes item', 'Overrides the “Insert into post”/”Insert into page” phrase (used when inserting media into a post). Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'uploaded_to_this_item' => _x( 'Uploaded to this minutes item', 'Overrides the “Uploaded to this post”/”Uploaded to this page” phrase (used when viewing media attached to a post). Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'filter_items_list'     => _x( 'Filter minutes list', 'Screen reader text for the filter links heading on the post type listing screen. Default “Filter posts list”/”Filter pages list”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'items_list_navigation' => _x( 'Minutess list navigation', 'Screen reader text for the pagination heading on the post type listing screen. Default “Posts list navigation”/”Pages list navigation”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'items_list'            => _x( 'Minutess list', 'Screen reader text for the items list heading on the post type listing screen. Default “Posts list”/”Pages list”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+    );     
+    $args = array(
+        'labels'             => $labels,
+        'description'        => 'Minutes custom post type.',
+        'public'             => true,
+        'publicly_queryable' => true,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'query_var'          => true,
+        'rewrite'            => array( 'slug' => 'tm-minutes' ),
+        'capability_type'    => 'post',
+        'has_archive'        => true,
+        'hierarchical'       => false,
+        'menu_position'      => 3,
+        'supports'           => array( 'title', 'editor', 'author', 'thumbnail' ),
+        'taxonomies'         => array( 'category', 'post_tag' ),
+		'menu_icon' => 'dashicons-text',
+        'show_in_rest'       => true
+    );
+      
+    register_post_type( 'TM Minutes', $args );
+}
 
 function profile_richtext() {
 	if ( strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) || strpos( $_SERVER['REQUEST_URI'], 'user-edit.php' ) || (isset($_GET['page']) && ($_GET['page'] == 'member_application_settings') ) ) {
@@ -144,6 +194,7 @@ function speech_intro_data( $user_id, $post_id, $field ) {
 }
 
 function awesome_dashboard_widget_function() {
+	global $rsvp_options;
 
 	$pdir = str_replace( 'rsvpmaker-for-toastmasters/', '', plugin_dir_path( __FILE__ ) );
 	if ( ! is_plugin_active( 'rsvpmaker/rsvpmaker.php' ) ) {
@@ -167,10 +218,17 @@ function awesome_dashboard_widget_function() {
 <br /></p>
 
 	<?php
+	//awesome_dashboard_widget_function();
+
 echo '<p>'.club_member_mailto().'</p>';
 	if ( function_exists( 'bp_core_get_userlink' ) ) {
 		printf( '<p>%s: %s</p>', __( 'Post a message on your club social profile' ), bp_core_get_userlink( $current_user->ID ) );
 	}
+
+	$minutes_docs = get_posts('post_type=tmminutes');
+	$minutes_updated = ($minutes_docs) ? 'Updated: '.rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($minutes_docs[0]->post_modified)) : ''; 
+	$minutes_archive = get_post_type_archive_link( 'tmminutes' );
+	printf('<p><a href="%s">See club minutes</a> (%d on website, %s)</p>',$minutes_archive, sizeof($minutes_docs), $minutes_updated);
 
 	$count = 0;
 
@@ -603,7 +661,7 @@ function wpt_open_roles( $atts = array() ) {
 	$output = '';
 	$open   = array();
 	$signup = get_post_custom( $post->ID );
-	$data   = wpt_blocks_to_data( $post->post_content );
+	$data   = wpt_blocks_to_data( $post->post_content, false );
 	foreach ( $data as $item ) {
 		if ( ! empty( $item['role'] ) ) {
 			$role  = $item['role'];
@@ -627,7 +685,7 @@ function wpt_open_roles( $atts = array() ) {
 
 	$openings = 0;
 	if ( $open ) {
-		$output .= '<h3>' . __( 'Open Roles', 'rsvpmaker-for-toastmasters' ) . "</h3>\n<p>";
+		$output .= '<h3 class="wpt_open_roles">' . __( 'Open Roles', 'rsvpmaker-for-toastmasters' ) . "</h3>\n<p>";
 
 		foreach ( $open as $role => $count ) {
 			$output .= wp4t_role($role);
@@ -942,8 +1000,6 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 		$speaktime    = 0;
 	foreach ( $assignments as $field => $values ) {
 		$role = $values['role'];
-		// if(strpos($role,'ackup'))
-			// continue;
 		$assigned   = $values['assigned'];
 		$assignedto = $values['name'];
 		$i          = $values['iteration'];
@@ -1004,7 +1060,10 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 			$output .= '<div class="role_agenda_note">' . $note . '</div>';
 		}
 		$output .= '</div>';
-	}//end for loop ?
+	}//end for loop
+	if(!empty($atts['backup']) && !empty($open[ $atts['role'] ]))
+		$open[ $atts['role'] ]--;
+
 	if ( isset( $atts['agenda_note'] ) && ! empty( $atts['agenda_note'] ) && ! strpos( $atts['agenda_note'], 'Speaker}' ) ) {
 		$note    = $atts['agenda_note'];
 		$output .= '<div class="role_agenda_note">' . $note . '</div>';
@@ -2516,8 +2575,12 @@ function wp4toastmasters_settings() {
 	settings_fields( 'wp4toastmasters-settings-group' );
 	$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
 	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+	$wp4toastmasters_officer_slugs = get_option( 'wp4toastmasters_officer_slugs' );
+	if(empty($wp4toastmasters_officer_slugs))
+		$wp4toastmasters_officer_slugs = array();
 	if ( ! is_array( $wp4toastmasters_officer_titles ) ) {
 		$wp4toastmasters_officer_titles = array( __( 'President', 'rsvpmaker-for-toastmasters' ), __( 'VP of Education', 'rsvpmaker-for-toastmasters' ), __( 'VP of Membership', 'rsvpmaker-for-toastmasters' ), __( 'VP of Public Relations', 'rsvpmaker-for-toastmasters' ), __( 'Secretary', 'rsvpmaker-for-toastmasters' ), __( 'Treasurer', 'rsvpmaker-for-toastmasters' ), __( 'Sgt. at Arms', 'rsvpmaker-for-toastmasters' ), __( 'Immediate Past President', 'rsvpmaker-for-toastmasters' ) );
+		$wp4toastmasters_officer_ids = array();
 	}
 	$wp4toastmasters_member_message  = get_option( 'wp4toastmasters_member_message' );
 	$wp4toastmasters_officer_message = get_option( 'wp4toastmasters_officer_message' );
@@ -2633,18 +2696,22 @@ See also:
 
 <h3><?php _e( 'Officer List', 'rsvpmaker-for-toastmasters' ); ?></h3>
 	<?php
-
+    $root_domain = wpt_get_site_domain(1);
+    $domain = wpt_get_site_domain();
+	printf('<p>With email forwarding configured, addresses like %s / %s will forward messages to the officer\'s registered email account.</p>',wpt_format_email_forwarder('President'),wpt_format_email_forwarder('vpe'));
 	foreach ( $wp4toastmasters_officer_titles as $index => $title ) {
 		if ( empty( $title ) ) {
 			break;
 		}
-		$dropdown = awe_user_dropdown( 'wp4toastmasters_officer_ids[' . $index . ']', $wp4toastmasters_officer_ids[ $index ], true );
-		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="%s" /> %s</p>', $index, $title, $dropdown );
+		$current_officer = (isset($wp4toastmasters_officer_ids[ $index ])) ? $wp4toastmasters_officer_ids[ $index ] : 0;
+		$title_slug = (isset($wp4toastmasters_officer_slugs[$index])) ? $wp4toastmasters_officer_slugs[$index] : wpt_officer_title_to_slug ($title); 
+		$dropdown = awe_user_dropdown( 'wp4toastmasters_officer_ids[' . $index . ']', $current_officer, true );
+		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="%s" /> %s <input type="text" name="wp4toastmasters_officer_slugs[%s]" value="%s" /></p>', $index, $title, $dropdown, $index, $title_slug );
 	}
 	$limit = $index + 3;
 	for ( $index = $index; $index < $limit; $index++ ) {
 		$dropdown = awe_user_dropdown( 'wp4toastmasters_officer_ids[' . $index . ']', 0, true );
-		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="%s" /> %s</p>', $index, '', $dropdown );
+		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="" /> %s <input type="text" name="wp4toastmasters_officer_slug[%s]" value="" /></p>', $index, $dropdown, $index );
 	}
 	?>
 <p><?php _e( 'Officers will be listed at the top of the members page and can also be displayed on the agenda', 'rsvpmaker-for-toastmasters' ); ?>.</p>
@@ -3340,6 +3407,7 @@ function wptoast_reminder_clear() {
 function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_titles' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_ids' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_slugs' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_login_message' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_member_message' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_message' );
@@ -8855,7 +8923,8 @@ function agenda_setup_url( $post_id ) {
 }
 
 function member_only_content( $content ) {
-	if ( ! in_category( 'members-only' ) && ! has_term( 'members-only', 'rsvpmaker-type' ) ) {
+	global $post;
+	if ( ! in_category( 'members-only' ) && ! has_term( 'members-only', 'rsvpmaker-type' ) && ($post->post_type != 'tmminutes') ) {
 		return $content;
 	}
 
@@ -11922,7 +11991,6 @@ function rsvp_to_member() {
 					echo "\n";
 				}
 			}
-
 					$out[ $row->email ] .= get_rsvp_date( $row->event ) . '<br />';
 
 					$details = unserialize( $row->details );
