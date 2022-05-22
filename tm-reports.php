@@ -37,18 +37,15 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Mentors', 'rsvpmaker-for-toastmasters' ), __( 'Mentors', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_mentors', 'toastmasters_mentors' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'wpt_dues_report', 'wpt_dues_report' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_activity_log', 'toastmasters_activity_log' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Import Free Toast Host Data', 'rsvpmaker-for-toastmasters' ), __( 'Import Free Toast Host Data', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'import_fth', 'import_fth' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'import_export', 'toastmasters_import_export' );
-	// add_submenu_page( 'toastmasters_screen', __('Sync','rsvpmaker-for-toastmasters'), __('Sync','rsvpmaker-for-toastmasters'), 'manage_options', 'wpt_json', 'wpt_json');
-	// add_submenu_page( 'toastmasters_admin_screen', __('Cron Check','rsvpmaker-for-toastmasters'), __('Cron Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_reminders_nudge', 'wp4t_reminders_nudge');
-	// add_submenu_page( 'toastmasters_admin_screen', __('Stats Check','rsvpmaker-for-toastmasters'), __('Stats Check','rsvpmaker-for-toastmasters'), 'manage_options', 'wp4t_stats_check', 'wp4t_stats_check');
+	//add_submenu_page( 'toastmasters_admin_screen', __( 'Import Free Toast Host Data', 'rsvpmaker-for-toastmasters' ), __( 'Import Free Toast Host Data', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'import_fth', 'import_fth' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), __( 'History (beta)', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'wp4toastmasters_history', 'wp4toastmasters_history' );
 	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
 }
 
 function toastmasters_admin_help() {
@@ -691,6 +688,7 @@ function toastmasters_reconcile() {
 	if ( ! empty( $_POST['post_id'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$post_id = (int) $_POST['post_id'];
 		update_post_meta( $post_id, '_reconciled', rsvpmaker_date( 'F j, Y' ) );
+		do_action('toastmasters_update_history',$_POST);
 		printf(
 			'<div id="message" class="updated">
 		<p><strong>%s.</strong></p>',
@@ -943,6 +941,16 @@ function toastmasters_minutes_exist($post_id) {
 	global $wpdb;
 	$sql = "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='minutes_for' AND meta_value=$post_id";
 	return $wpdb->get_var($sql);
+}
+
+function toastmasters_minutes_help() {
+	$minutes_archive = get_post_type_archive_link( 'tmminutes' );
+?>
+<h1>Toastmasters Meeting Minutes On Your Website</h1>
+<p>You can record meeting minutes on the website to make them part of the permanent records of your club. Minutes documents can only be viewed by a logged in member of your club. To create a new minutes document for a board meeting or any other purpose, click <strong>Add New</strong> on the menu in this section.</p>
+<p>If your club creates detailed minutes for each meeting, including speeches given and members present or absent, you can use the <a href="<?php echo admin_url('edit.php?post_type=tmminutes&page=toastmasters_meeting_minutes'); ?>">Minutes from Meeting Records</a> function to simplify that process.</p>
+<p>The meeting listing can be viewed at <a href="<?php echo $minutes_archive; ?>"><?php echo $minutes_archive; ?></a>, and a link to it is at the top of the members dashboard. Optionally, you can add this link to the public menus of your website. However, website visitors who are not logged in or not members of the club will not see the contents of the minutes documents, only the headlines, followed by a login prompt.</p>
+<?php
 }
 
 function toastmasters_meeting_minutes() {
@@ -1204,6 +1212,7 @@ function toastmasters_attendance() {
 	global $wpdb;
 
 	if ( isset( $_POST['attended'] ) && $_POST['attended'] && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		do_action('toastmasters_attendance',$_POST);
 		foreach ( $_POST['attended'] as $meta_key ) {
 			$meta_key = sanitize_text_field($meta_key);
 				$parts      = explode( '_', $meta_key );
@@ -7685,5 +7694,3 @@ function wpt_data_disclosure ($user_id) {
 		}
 		return $data;
 }
-
-

@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 6.0
-Stable tag: 5.1.2
+Stable tag: 5.1.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,9 +67,18 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
-= 5.9.3 =
+= 5.1.3, 5.1.4, 5.1.5 =
 
-* Base Camp tracker untility / report.
+* Tweaks and documentation for the email functions.
+
+= 5.1.2 =
+
+* Adding email forwarding functions previously only available on Toastmost
+* Custom post type for meeting minutes
+
+= 5.1.1 =
+
+* Base Camp tracker utility / report.
 
 = 5.0.8 =
 

@@ -571,6 +571,7 @@ $header .= '</head>
 	}
 	// print_r($open);
 	$output .= $content;
+	$output = rsvpmail_filter_style( rsvpmailer_default_block_template_wrapper($output) );
 
 	$output = "<div id=\"agenda-email\">\n".$output."\n</div>\n";
 

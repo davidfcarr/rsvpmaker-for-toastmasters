@@ -16,33 +16,59 @@ function wpt_email_handler_page () {
     echo '<h1>Toastmasters Email Forwarders, Groups &amp; Tools</h1>';
     $status = rsvpmaker_relay_bot_check();
     printf('<div style="float: right; width: 250px; margin-left: 25px; margin-right: 25px; padding: 5px; border: thin solid gray"><h3>Service Status</h3>%s</div>',$status);
-    printf('<p>You can configure a variety of forwarding addresses such as <strong>%s</strong> to foward to the club president and mailing lists such as <strong>%s</strong> for discussion between club members and <strong>%s</strong> for discussions between officers.</p>',wpt_format_email_forwarder('president'),wpt_format_email_forwarder(''),wpt_format_email_forwarder('officers'));
-    printf('<p>Use <strong>%s</strong> as a general address that forwards to one or more officers, with specific forwarding rules for Base Camp notifications. Optionally, you can also set up an auto-reply that will go to prospective members who have filled out the contact form on the toastmasters.org Find a Club page. (<a href="%s">configure</a>)</p>',wpt_format_email_forwarder('info'),admin_url('admin.php?page=wpt_findaclub'));
-    echo '<h2>Forwarding Addresses</h2>';
+
     $slug_ids = get_officer_slug_ids();
-    if(empty($slug_ids)) {
-        printf('<p>Set your officers list on the <a href="%s">Toastmasters settings page</a> to enable forwarding by officer title/abbreviation.</p>',admin_url('options-general.php?page=wp4toastmasters_settings'));
-    }
-    else {
-        echo '<p>Configured officer forwarding addresses include:';
+    if(!empty($slug_ids)) {
+        $forwarder_info = '<p>Configured officer forwarding addresses include:';
         foreach($slug_ids as $slug => $id) {
-            echo '<br />'.wpt_format_email_forwarder($slug);
+            $f = wpt_format_email_forwarder($slug);
+            $forwarder_info .= sprintf('<br /><a href="mailto:%s" target="_blank">%s</a>',$f,$f);
         }
-        echo '</p>';
-        printf('<p>See the <a href="%s">Toastmasters settings page</a> to edit this list.</p>',admin_url('options-general.php?page=wp4toastmasters_settings'));
+        $forwarder_info .= '</p>';
     }
-    printf('<p>You can configure <a href="%s">custom forwarding addresses</a> for other club purposes.</p>',admin_url('admin.php?page=wpt_email_handler_forwarders'));
-    echo '<h2>Mailing Lists</h2>';
-    printf('<p>Member and officer email lists can be set to distribute messages from any member of the list to every other member of the list (<a href="%s">configure</a>).</p>',admin_url('wpt_email_handler_club_email_list'));
-    $member_status = empty(get_option('member_distribution_list')) ? 'OFF' : 'ON';
-    $officer_status = empty(get_option('officer_distribution_list')) ? 'OFF' : 'ON';
-    printf('<p>Status: member list %s officer list %s</p>',$member_status,$officer_status);
-    echo '<h2>Using your own domain</h2>';
-    if(wpt_is_own_domain()) {
-        echo '<p>If this site is <strong>not</strong> hosted as part of the Toastmost service, the site administrator must configure a default email forwarder to send messages not associated with any other mailbox to an account the server is configured to check. Contact david@wp4toastmasters.com for assistance as this feature is not completely documented yet.</p>';
+
+    if(current_user_can('manage_options')) {
+        printf('<p>You can configure a variety of forwarding addresses such as <strong>%s</strong> to foward to the club president and mailing lists such as <strong>%s</strong> for discussion between club members and <strong>%s</strong> for discussions between officers.</p>',wpt_format_email_forwarder('president'),wpt_format_email_forwarder(''),wpt_format_email_forwarder('officers'));
+        printf('<p>Use <strong>%s</strong> as a general address that forwards to one or more officers, with specific forwarding rules for Base Camp notifications. Optionally, you can also set up an auto-reply that will go to prospective members who have filled out the contact form on the toastmasters.org Find a Club page. (<a href="%s">configure</a>)</p>',wpt_format_email_forwarder('info'),admin_url('admin.php?page=wpt_findaclub'));
+        echo '<h2>Forwarding Addresses</h2>';
+        if(empty($slug_ids)) {
+            printf('<p>Set your officers list on the <a href="%s">Toastmasters settings page</a> to enable forwarding by officer title/abbreviation.</p>',admin_url('options-general.php?page=wp4toastmasters_settings'));
+        }
+        else {
+            echo $forwarder_info;
+            printf('<p>See the <a href="%s">Toastmasters settings page</a> to edit this list.</p>',admin_url('options-general.php?page=wp4toastmasters_settings'));
+        }
+        printf('<p>You can configure <a href="%s">custom forwarding addresses</a> for other club purposes.</p>',admin_url('admin.php?page=wpt_email_handler_forwarders'));
+        echo '<h2>Mailing Lists</h2>';
+        printf('<p>Member and officer email lists can be set to distribute messages from any member of the list to every other member of the list (<a href="%s">configure</a>).</p>',admin_url('wpt_email_handler_club_email_list'));
+        $member_status = empty(get_option('member_distribution_list')) ? 'OFF' : 'ON';
+        $officer_status = empty(get_option('officer_distribution_list')) ? 'OFF' : 'ON';
+        printf('<p>Status: member list %s officer list %s</p>',$member_status,$officer_status);
+        echo '<h2>Using your own domain</h2>';
+        if(wpt_is_own_domain()) {
+            echo '<p>If this site is <strong>not</strong> hosted as part of the Toastmost service, the site administrator must configure a default email forwarder to send messages not associated with any other mailbox to an account the server is configured to check. Contact david@wp4toastmasters.com for assistance as this feature is not completely documented yet.</p>';
+        }
+        else {
+            printf('<p>If you register your own domain to use with this website, you can use email addresses such as members@clubawesome.org (without the prefix).</p>');
+        }
+    
+        if(!is_multisite() || 1 == get_current_blog_id())
+        {
+            printf('<h2>Configuration</h2><p>To make this work, you must create an email account on the web server that will act as the "bot" for these automated functions. Record the username, password, and other parameters in the bot section of the <a href="%s">Group Email tab of RSVPMaker Settings</a>.</p>',admin_url('options-general.php?page=rsvpmaker-admin.php'));
+            echo "<p>Configure the default email forwarder on the server to send all messages that don't match another account or alias on the server to the bot email account. By default, many web hosts have the default set to discard any message that does not match a hard-coded email address or alias.</p>";
+        }    
     }
-    else {
-        printf('<p>If you register your own domain to use with this website, you can use email addresses such as members@clubawesome.org (without the prefix).</p>');
+    else { // viewable by all members
+        $active = get_option( 'rsvpmaker_discussion_active' );
+        if($active) {
+            $m = wpt_format_email_forwarder('members');
+            printf('<p>You can send a message for distribution to all other members by writing to <a href="mailto:%s">%s</a>.</p>',$m,$m);
+            echo '<p>Please limit use of this list to club business.</p>';    
+        }
+        else {
+            echo '<p><strong>Member email list currently not active on this site.</strong></p>';
+        }
+        echo $forwarder_info;
     }
 
     //$subdomains = wpt_get_subdomains();
@@ -52,16 +78,16 @@ function wpt_email_handler_page () {
 function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname, $toarray, $ccarray) {
     echo '<h1>wpt_email_handler_automation triggered</h1>';
 
-    $output = $to;
+    $output = "<p>$to $from $fromname ".$qpost['post_title'].'</p>';
 
     $hosts = wpt_get_hosts();
-    $output .= sprintf('<p>%s</p>',var_export($hosts,true));
+    $output .= sprintf('<p>hosts %s</p>',var_export($hosts,true));
     $subdomains = wpt_get_subdomains();
     if(empty($ccarray))
         $addresses = $toarray;
     else
         $addresses = array_merge($toarray, $ccarray);
-    $noreply = 'noreply@'.$hosts[0];
+    $noreply = (is_multisite()) ? 'noreply@'.$hosts[0] : 'noreply@'.$hosts[1];
     $mail['from'] = $noreply;
     $output .= "<p>addresses: ".var_export($addresses, true)."</p>";
     $ffemails = (is_multisite()) ? get_blog_option(1,'findclub_emails') : get_option('findclub_emails');
@@ -70,7 +96,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
         if($address->mailbox == 'noreply')
             continue;
         $forwarder = strtolower($address->mailbox.'@'.$address->host);
-        $qmail['forwarded_from'] = $forwarder;
+        $qpost['forwarded_from'] = $forwarder;
         $subdomain = '';
         $output .= sprintf('<p>processing %s</p>',$forwarder);
         if(!in_array($address->host,$hosts)) {
@@ -179,6 +205,17 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
         else
             $output .= "<p>No finda_id processing for $forwarder</p>";
 
+        $unsubscribed = get_option('rsvpmail_unsubscribed');
+        if(empty($unsubscribed))
+            $unsubscribed = array();
+        if($blog_id && is_multisite()){
+            $club_unsub = get_blog_option($blog_id,'rsvpmail_unsubscribed');
+            if($club_unsub && is_array($club_unsub))
+            {
+                $unsubscribed = array_unique(array_merge($unsubscribed,$club_unsub));
+            }
+        }
+
         if($slug == 'members') {
             $on = (int) (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list', true) : get_option('member_distribution_list', true);
             $output .= sprintf('<p>members list for %s on = %s</p>',$blog_id,$on);
@@ -188,6 +225,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
                 continue;
             $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
             $recipients = get_club_member_emails($blog_id);
+            $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
             if(!empty($listvars['additional']))
             foreach($listvars['additional'] as $email) {
                 if(!in_array($email,$unsubscribed))
@@ -195,25 +233,15 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             rsvpmaker_debug_log($recipients,'club recipients');
             if((!in_array($from,$recipients) && !in_array($from,$listvars['whitelist'])) || in_array($from,$listvars['blocked']) ) {
+                $output .= '<p>Blocked: '.$from.'</p>';
                 wpt_email_handler_qemail_blocked($qpost, $from, $forwarder, $blog_id);
                 continue;
             }
-            $unsubscribed = get_option('rsvpmail_unsubscribed');
-            if(empty($unsubscribed))
-                $unsubscribed = array();
-            if($blog_id){
-                $club_unsub = get_blog_option($blog_id,'rsvpmail_unsubscribed');
-                if($club_unsub && is_array($club_unsub))
-                {
-                    $unsubscribed = array_unique(array_merge($unsubscribed,$club_unsub));
-                }
-            }
             $qpost['post_title'] = '['.$slug.'] '.$qpost['post_title'];
             $output .= sprintf('<p><strong>members list %s</strong> to %s</p>',$forwarder, var_export($recipients,true));
-            wpt_email_handler_bcc($qpost, $recipients, $from, $fromname,$blog_id, $forwarder.' email list', $noreply);
+            wpt_email_handler_qemail($qpost, $forward_by_id, $from, $fromname, $blog_id);
+            //$output .= wpt_email_handler_bcc($qpost, $recipients, $from, $fromname,$blog_id, $forwarder.' email list', $noreply);
             $sent = true;
-            //rsvpmaker_debug_log($forwarder,'wpt_email_handler_qemail');
-            continue;
         }
         else
             $output .= "<p>No member list match for $blog_id $slug</p>";
@@ -241,12 +269,15 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             if((!in_array($from,$recipients) && !in_array($from,$listvars['whitelist'])) || in_array($from,$listvars['blocked']) ) {
                 wpt_email_handler_qemail_blocked($qpost, $from, $forwarder);
+                $output .= '<p>Blocked: '.$from.'</p>';
                 continue;
             }
             $slug = str_replace('@toastmost.org','',$forwarder);
             $qpost['post_title'] = '['.$slug.'] '.$qpost['post_title'];
             $output .= sprintf('<p><strong>officers list %s</strong> to %s</p>',$forwarder, var_export($recipients,true));
-            wpt_email_handler_bcc($qpost, $recipients, $from, $fromname, $blog_id, $forwarder.' email list', $noreply);
+            $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
+            //faster where there is less need for queuing
+            $output .= wpt_email_handler_bcc($qpost, $recipients, $from, $fromname, $blog_id, $forwarder.' email list', $noreply);
             $sent = true;
             }
             continue;
@@ -272,6 +303,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
         if(!empty($recipients)) {
             $recipients = array_unique($recipients);
             $output .= sprintf('<p><strong>forward by title %s %s</strong></p>',$forwarder, var_export($recipients,true));
+            $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
             wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
             $sent = true;
         }
@@ -291,16 +323,20 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
         $output .= '<p>No match for custom forwarder</p>';
 
         if(!$sent) {
+            $output .= 'do action hook';
+            ob_start();
+            do_action('wpt_email_handler_automation_default',$qpost, $forwarder, $from, $fromname, $slug); //wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname    
+            $output .= ob_get_clean();
             $forwarder = wpt_format_email_forwarder('default',$blog_id);
             $output .= "<p>Check for default mailbox</p>";
             if(!empty($custom_forwarders[$forwarder]))
             {
                 $qpost['post_content'] = "<p>Forwarded from $forwarder</p>\n".$qpost['post_content'];
                 $recipients = $custom_forwarders[$forwarder];
-                $output .= sprintf('<p><strong>custom forwarders wpt_email_handler_bcc</strong> %s</p>',$forwarder);
+                $output .= sprintf('<p><strong>default forwarder wpt_email_handler_bcc</strong> %s</p>',$forwarder);
                 wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
                 $sent = true;
-            }    
+            }
         }
     } // end loop through emails
     echo $output;
@@ -321,7 +357,7 @@ function wpt_email_handler_qemail ($qpost, $recipients, $from, $fromname = '', $
             switch_to_blog(1);
         $post_id = 0;
         if(!empty($qpost['forwarded_from']))
-            $qpost['post_content'] .= "\n<p>Forwarded from ".$qpost['forwarded_from']."</p>";
+            $qpost['post_content'] .= sprintf("\n<p>Forwarded from %s <a href=\"mailto:%s?subject=Re: %s\">reply to list</a></p>",$qpost['forwarded_from'],$qpost['forwarded_from'],$qpost['post_title']);
         if(!empty($qpost['post_content']) && !empty($from))  
             $post_id = wp_insert_post($qpost);
         update_post_meta($post_id,'sending website',$blog_id);
@@ -336,7 +372,7 @@ function wpt_email_handler_qemail ($qpost, $recipients, $from, $fromname = '', $
             if(empty($fromname))
                 $fromname = $from;
             add_post_meta($post_id,'rsvprelay_fromname',$fromname);
-    
+
             if(!empty($recipients))
     
             foreach($recipients as $to) {
@@ -355,6 +391,7 @@ function wpt_email_handler_qemail ($qpost, $recipients, $from, $fromname = '', $
                 add_post_meta($post_id,'rsvprelay_to',$to);
             }
         }
+        rsvpmaker_relay_queue(); // send the first few
         if(is_multisite())
         restore_current_blog();
 }
@@ -364,7 +401,7 @@ function wpt_email_handler_bcc ($qpost, $recipients, $from, $fromname = '', $blo
         unset($recipeients[$key]);
     }
     if(!empty($qpost['forwarded_from']))
-        $qpost['post_content'] .= sprintf('<p>Forwarded from %s - <a href="mailto:%s">reply to list</a></p>', $qpost['forwarded_from'], $qpost['forwarded_from']);
+        $qpost['post_content'] .= sprintf("\n<p>Forwarded from %s <a href=\"mailto:%s?subject=Re: %s\">reply to list</a></p>",$qpost['forwarded_from'],$qpost['forwarded_from'],$qpost['post_title']);
     $mail['from'] = $from;
     $mail['fromname'] = $fromname;
     $mail['bcc'] = $recipients;
@@ -373,7 +410,9 @@ function wpt_email_handler_bcc ($qpost, $recipients, $from, $fromname = '', $blo
     $mail['html'] = $qpost['post_content'];
     if($forwarder_label)
         $mail['toname'] = $forwarder_label;
-    rsvpmailer($mail);
+    $mail['result'] = rsvpmailer($mail);
+
+    return var_export($mail, true);
 }
 
 function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1) {
@@ -483,7 +522,7 @@ foreach($results as $row)
 $botchecked = ($ffemail == $botemail); 
 ?>
 <h1>Find a Club / Notifications Setup</h1>
-<form action="<?php echo admin_url('admin.php?page=findaclub'); ?>" method="post">
+<form action="<?php echo admin_url('admin.php?page=wpt_findaclub'); ?>" method="post">
 <p><input type="radio" name="bot" value="1" <?php if($botchecked) echo ' checked="checked" '; ?> >  I will register <?php echo $botemail.$ordomain; ?> as the club's email address in Club Central</p>
 <p><input type="radio" name="bot" value="0" <?php if(!$botchecked) echo ' checked="checked" '; ?> > I have set up forwarding to findaclub@toastmost.org from this address:<br />
 <input type="text" name="ffemail" value="<?php if(!$botchecked) echo $ffemail; ?>" />

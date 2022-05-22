@@ -282,7 +282,12 @@ function get_club_member_emails( $blog_id = 0 ) {
 
 }
 
-
+function wpt_remove_unsubscribed($source, $unsubscribed) {
+	foreach ($source as $email)
+		if(!in_array($email,$unsubscribed))
+			$recipients[] = $email;
+	return $recipients;
+}
 
 function is_officer() {
 

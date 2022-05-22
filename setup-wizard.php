@@ -106,15 +106,21 @@ p {
 <h1>Toastmasters Setup Wizard</h1>
 
 	<?php
+	$class1 = $class2 = $class3 = '';
 
-	$class1 = ( empty( $_REQUEST['setup_wizard'] ) ) ? ' class="current" ' : '';
+	$is_done = get_option('wp4t_setup_wizard_used');
+	if($is_done)
+		printf('<p>Completed: %s</p>',rsvpmaker_date($rsvp_options['long_date'],intval($is_done)));
 
-	$class2 = ( ! empty( $_REQUEST['setup_wizard'] ) && ( $_REQUEST['setup_wizard'] == 1 ) ) ? ' class="current" ' : '';
-
-	$class3 = ( ! empty( $_REQUEST['setup_wizard'] ) && ( $_REQUEST['setup_wizard'] == 2 ) ) ? ' class="current" ' : '';
+	if((empty( $_REQUEST['setup_wizard'] ) && !$is_done) || ('start' == $_REQUEST['setup_wizard']))
+		$class1 = 'class="current"';
+	elseif(! empty( $_REQUEST['setup_wizard'] ) && ( $_REQUEST['setup_wizard'] == 1 ))
+		$class2 = 'class="current"';
+	elseif($is_done || ( ! empty( $_REQUEST['setup_wizard'] ) && ( $_REQUEST['setup_wizard'] == 2 ) ) )
+		$class3= 'class="current"';
 
 	printf(
-		'<div id="wizardmenu"><a href="' . admin_url( 'admin.php?page=wp4t_setup_wizard' ) . '" ' . $class1 . '>Step 1:<br />Meetings &amp; Basics</a> &gt; 
+		'<div id="wizardmenu"><a href="' . admin_url( 'admin.php?page=wp4t_setup_wizard&setup_wizard=start' ) . '" ' . $class1 . '>Step 1:<br />Meetings &amp; Basics</a> &gt; 
 
 <a href="' . admin_url( 'admin.php?page=wp4t_setup_wizard' ) . '&setup_wizard=1"  ' . $class2 . '>Step 2:<br />User Accounts</a> &gt; 
 
@@ -360,6 +366,7 @@ p {
 			}
 
 			echo '<div class="notice notice-success"><p>Meeting Options Saved</p></div>';
+			update_option('tm_wizard_done',1);
 
 		}
 
@@ -453,15 +460,15 @@ p {
 
 	}
 
-	if ( empty( $_REQUEST['setup_wizard'] ) ) {
+	if ( !empty( $class1 ) ) {
 
 		wpt_setup_wizard_1();
 
-	} elseif ( $_REQUEST['setup_wizard'] == '1' ) {
+	} elseif ( !empty($class2) ) {
 
 		wpt_setup_wizard_2();
 
-	} elseif ( $_REQUEST['setup_wizard'] == '2' ) {
+	} elseif ( !empty($class3) ) {
 
 		wpt_setup_wizard_3();
 	}
@@ -802,7 +809,7 @@ function wpt_setup_wizard_3() {
 
 
 
-<iframe src="https://www.wp4toastmasters.com/knowledge-base/editing-pages-posts-and-meeting-agendas/?as_iframe=1" width="100%;" height="5000"></iframe>
+<iframe src="https://www.wp4toastmasters.com/knowledge-base/editing-pages-posts-and-meeting-agendas/" width="100%;" height="5000"></iframe>
 
 
 
@@ -962,8 +969,6 @@ function wpt_wizard_check_member( $user ) {
 	return $user;
 
 }
-
-
 
 function wpt_wizard_prompt() {
 	if(wp4t_is_district())
