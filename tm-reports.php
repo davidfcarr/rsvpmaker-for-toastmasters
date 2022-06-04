@@ -677,8 +677,21 @@ function toastmasters_reconcile() {
 	$hook = tm_admin_page_top( __( 'Reconcile Meeting Activity / Add History', 'rsvpmaker-for-toastmasters' ) );
 	refresh_tm_history();
 	echo '<p><em>' . __( 'Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
-	$minutes_link = (empty($_REQUEST['post_id'])) ? '' : sprintf(' (<a href="%s">Show Minutes for This Date</a>)',admin_url('admin.php?page=toastmasters_reports_dashboard&report=minutes&post_id='.intval($_REQUEST['post_id']) ));
-	printf( '<p>You can use this information as the basis for <a href="%s">Meeting Minutes</a>, as well as other reports. %s</p>', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=minutes' ),$minutes_link );
+	//$minutes_link = (empty($_REQUEST['post_id'])) ? '' : sprintf(' (<a href="%s">Show Minutes for This Date</a>)',admin_url('admin.php?page=toastmasters_reports_dashboard&report=minutes&post_id='.intval($_REQUEST['post_id']) ));
+	if(!empty($_POST['post_id'])) {
+		$event_id = intval($_POST['post_id']);
+		?>
+		<p>If this information is now up to date, you have the option of creating meeting minutes that include this information. You'll be able to edit them and add further notes in the WordPress editor.</p>
+		<form method="get" action="<?php echo admin_url( 'admin.php' ); ?>">
+		<input type="hidden" name="page" value="toastmasters_meeting_minutes" />
+		<input type="hidden" id="pick_event" name="post_id" value="<?php echo $event_id; ?>">
+		<input type="hidden" name="wpminutes" value="1">
+		<button><?php _e( 'Create Minutes', 'rsvpmaker-for-toastmasters' ); ?></button>
+		<?php rsvpmaker_nonce(); ?>
+		</form>
+	<?php	
+	}
+	//printf( '<p>You can use this information as the basis for <a href="%s">Meeting Minutes</a>, as well as other reports. %s</p>', admin_url( 'admin.php?page=toastmasters_reports_dashboard&report=minutes' ),$minutes_link );
 
 	echo '<style>.agenda_note{display: none;}</style>';
 	global $wpdb;
@@ -864,7 +877,7 @@ function toastmasters_reconcile() {
 			$present[] = $row->user_id; // all the people who filled any role
 			if ( $row->role == 'Attended' ) {
 				$marked_attended[] = $row->user_id;
-			} elseif ( $row->meta_value ) {
+			} elseif ( $row->user_id ) {
 				$role_holder[] = $row->user_id;
 			}
 			$meeting_roles[] = $row->role;
@@ -1009,22 +1022,6 @@ function toastmasters_meeting_minutes() {
 			}
 			$options .= sprintf( '<option value="%d" %s>%s %s</option>', $row->ID, $s, $row->date, $r );
 		}
-if(empty($_GET['rsvp_print'])) {
-		?>
-<p>Use this report to gather information recorded through the agenda and the <a href="<?php echo admin_url( 'admin.php?page=toastmasters_reconcile' ); ?>">Update History</a> screen for each meeting date. If your club publishes weekly meeting minutes, this gives you the raw data.</p>
-	<form method="get" action="<?php echo admin_url( 'admin.php' ); ?>">
-	<input type="hidden" name="page" value="toastmasters_meeting_minutes" />
-	<select id="pick_event" name="post_id">
-		<?php echo $options; ?>
-	</select>
-	<input type="checkbox" name="wpminutes" value="1"> Create Online Document
-	<input type="checkbox" name="rsvp_print" value="1"> Print <input type="checkbox" name="rsvp_print" value="word"> Export to Word 
-	<button><?php _e( 'Get', 'rsvpmaker-for-toastmasters' ); ?></button>
-	<?php rsvpmaker_nonce(); ?>
-	</form>
-	
-		<?php	
-}
 
 if ( isset( $_REQUEST['post_id'] ) ) {
 			$id             = (int) $_REQUEST['post_id'];
@@ -1036,12 +1033,7 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 			$past   = get_past_events( " (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ", 1 );
 			$r_post = $past[0];
 		}
-		if(!isset($_REQUEST['rsvp_print'])) {
-			printf( '<h2><a href="%s">Edit records for %s</a></h2>',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID), $r_post->date );
-			$existing = toastmasters_minutes_exist($r_post->ID);
-			if($existing)
-				printf('<p><a href="%s">Edit existing minutes document for %s</a></p>',admin_url("post.php?post=$existing&action=edit"),$r_post->date);
-		}
+
 	} // not history
 
 	$post = get_post( $r_post->ID );
@@ -1158,17 +1150,59 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 			printf('<p>Minutes draft created - <a href="%s">Edit</a></p>',admin_url("post.php?post=$id&action=edit"));	
 		}
 	}
-	
 
-	echo $minutes_content;
+	if(empty($_GET['rsvp_print'])) {
+		?>
+<p>Use this report to gather information recorded through the agenda and the <a href="<?php echo admin_url( 'admin.php?page=toastmasters_reconcile' ); ?>">Update History</a> screen for each meeting date. If your club publishes weekly meeting minutes, this gives you the raw data.</p>
+	<form method="get" action="<?php echo admin_url( 'admin.php' ); ?>">
+	<input type="hidden" name="page" value="toastmasters_meeting_minutes" />
+	<select id="pick_event" name="post_id">
+		<?php echo $options; ?>
+	</select>
+	<input type="checkbox" name="wpminutes" value="1"> Create Online Document
+	<input type="checkbox" name="rsvp_print" value="1"> Print <input type="checkbox" name="rsvp_print" value="word"> Export to Word 
+	<button><?php _e( 'Get', 'rsvpmaker-for-toastmasters' ); ?></button>
+	<?php rsvpmaker_nonce(); ?>
+	</form>
+	
+		<?php	
+}
+
+	if($r_post->ID && !isset($_REQUEST['rsvp_print'])) {
+		printf( '<h2><a href="%s">Edit records for %s</a></h2>',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID), $r_post->date );
+		$existing = toastmasters_minutes_exist($r_post->ID);
+		if($existing)
+			printf('<p><a href="%s">Edit existing minutes document for %s</a></p>',admin_url("post.php?post=$existing&action=edit"),$r_post->date);
+	}
 
 	echo '<h2>Notes</h2>';
 	$notes = get_post_meta( $r_post->postID, '_notes_for_minutes', true );
 	if ( $notes ) {
 		echo wpautop( $notes );
 	}
-	if(empty($_GET['rsvp_print']))
+
+	echo $minutes_content;
+
+if(empty($_GET['rsvp_print']))
 	printf('<p><a href="%s">Make Corrections</a></p>',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID.'&'.rsvpmaker_nonce('query')) );
+
+}
+
+add_action('admin_bar_menu', 'add_toolbar_items', 100);
+function add_toolbar_items($admin_bar){
+	global $post;
+	if(isset($post->post_type) && 'tmminutes' == $post->post_type)
+	{
+		$admin_bar->add_menu( array(
+			'id'    => 'email-minutes',
+			'title' => __('Email Minutes','rsvpmaker-for-toastmasters'),
+			'href'  => add_query_arg('send_by_email',1,get_permalink($post->ID)),
+			'meta'  => array(
+				'target'  => '_blank',
+				'title' => __('Email_Minutes'),            
+			),
+		));	
+	}
 }
 
 function toastmaster_minutes_display( $atts ) {

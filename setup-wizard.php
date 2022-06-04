@@ -129,7 +129,7 @@ p {
 
 	if ( isset( $_POST['setup_wizard'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( $_POST['setup_wizard'] == '1' ) {
-
+			$standard_roles = array('Ah Counter', 'Body Language Monitor', 'Grammarian', 'Humorist', 'Timer', 'Vote Counter');
 			$agenda_content = '';
 
 			$time_open = (int) $_POST['time_open'];
@@ -156,9 +156,10 @@ p {
 
 					continue;
 				}
-
-				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"' . $role . '","count":"1","time_allowed":"0","padding_time":"0"} /-->' . "\n\n";
-
+				if(in_array($role, $standard_roles))
+					$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"' . $role . '",count":"1","time_allowed":"0","padding_time":"0"} /-->' . "\n\n";
+				else
+					$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"custom","custom_role":"' . $role . '",count":"1","time_allowed":"0","padding_time":"0"} /-->' . "\n\n";
 			}
 
 			if ( $_POST['tabletopics'] == 'before' ) {
@@ -166,9 +167,9 @@ p {
 				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"' . (int) $_POST['time_tt'] . '","padding_time":"0"} /-->' . "\n\n";
 			}
 
-			if ( $_POST['break'] == 'before' ) {
-
-				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_break . '","uid":"note1534625016726"} -->
+			if ( $_POST['break'] == 'before' ) 
+			{
+			$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_break . '","uid":"note1534625016726"} -->
 
     <p class="wp-block-wp4toastmasters-agendanoterich2">' . $time_break . ' minute break</p>
 
@@ -184,7 +185,7 @@ p {
 
 			if ( $_POST['break'] == 'afterspeakers' ) {
 
-				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_break . '","uid":"note1534625016726"} -->
+			$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $time_break . '","uid":"note1534625016726"} -->
 
     <p class="wp-block-wp4toastmasters-agendanoterich2">' . $time_break . ' minute break</p>
 
@@ -196,7 +197,7 @@ p {
 				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":"1","time_allowed":"' . (int) $_POST['time_tt'] . '","padding_time":"0"} /-->' . "\n\n";
 			}
 
-			$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"General Evaluator","count":"1","agenda_note":"Explains the importance of evaluations. Introduces Evaluators.","time_allowed":"1","padding_time":"0"} /-->';
+			$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"General Evaluator","count":"1","agenda_note":"Explains the importance of evaluations. Introduces Evaluators.","time_allowed":"1","padding_time":"0"} /-->'."\n\n";
 
 			if ( $numberspeakers ) {
 
@@ -257,6 +258,8 @@ p {
 			if(!empty($_POST['agenda_officers']))
 				wp4toastmasters_agenda_layout_check(true);
 
+			mail('david@carrcommunications.com','agenda content',$agenda_content."\n\n".var_export($_POST,true));
+			
 			$rsvp_options['rsvp_on'] = $rsvp = (int) $_POST['invite'];
 
 			$sync = (int) $_POST['sync'];

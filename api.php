@@ -324,7 +324,6 @@ class Editor_Assign extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		$check = sanitize_text_field($_POST['check']);
 		return ( wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) && is_user_logged_in() && current_user_can( 'edit_signups' ) );
 	}
 
@@ -335,7 +334,7 @@ class Editor_Assign extends WP_REST_Controller {
 		$role      = sanitize_text_field( $_POST['role'] );
 		$editor_id = ( empty( $_POST['editor_id'] ) ) ? $current_user->ID : (int) $_POST['editor_id'];
 		$timestamp = get_rsvp_date( $post_id );
-		$was       = get_post_meta( $post_id, $role, true );
+		$was       = (int) get_post_meta( $post_id, $role, true );
 		do_action('toastmasters_agenda_change',$post_id,$role,$user_id,$was,$editor_id);
 		update_post_meta( $post_id, $role, $user_id );
 		if ( strpos( $role, 'Speaker' ) ) {
@@ -345,7 +344,7 @@ class Editor_Assign extends WP_REST_Controller {
 			delete_post_meta( $post_id, '_intro' . $role );
 		}
 		if ( time() > rsvpmaker_strtotime( $timestamp ) ) {
-			wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, 'wp_ajax_editor_assign');
+			wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, 'wp_ajax_editor_assign', '','','','','', 0, $was);
 		}
 		$name   = get_member_name( $user_id );
 		$status = sprintf( '%s assigned to %s', preg_replace( '/[\_0-9]/', ' ', $role ), $name );

@@ -464,7 +464,7 @@ if(!is_array($ffemails))
 $forward = get_option('wpt_forward_general');
 $basecamp = get_option('wpt_forward_basecamp');
 
-$o = '<option>Select a Message</option><option value="new">Create Message</option>';
+$o = '<option value="0">Not Set</option><option value="new">Create Message</option>';
 if(isset($_POST['ffemail'])) {
     $ffemail = $_POST['ffemail'];
     if($_POST['bot'])
@@ -485,8 +485,8 @@ if(isset($_POST['ffemail'])) {
         $forward = array();
     } 
     else {
-        preg_match_all ("/\b[A-z0-9][\w.-]*@[A-z0-9][\w\-\.]+\.[A-z0-9]{2,6}\b/", strtolower($_POST['forward']), $emails);
-        $forward = array_splice($emails[0],0,5);
+        $emails = wpt_email_list_to_array($_POST['forward']);
+        $forward = array_splice($emails,0,5);
         update_option('wpt_forward_general',$forward);
     }
     if(empty($_POST['basecamp'])) {
@@ -494,24 +494,31 @@ if(isset($_POST['ffemail'])) {
         $basecamp = array();
     }
     else {
-        preg_match_all ("/\b[A-z0-9][\w.-]*@[A-z0-9][\w\-\.]+\.[A-z0-9]{2,6}\b/", strtolower($_POST['basecamp']), $emails);
-        $basecamp = array_splice($emails[0],0,5);
+        $emails = wpt_email_list_to_array($_POST['basecamp']);
+        $basecamp = array_splice($emails,0,5);
         update_option('wpt_forward_basecamp',$basecamp);
     }
     update_option('findafriend_email',$ffemail);
     $ffpage = $_POST['ffpage'];
+    if(!is_numeric($ffpage))
+        $ffpage = 0;
     if($ffpage == 'new') {
+        $ffpage = 0;
         $content = sprintf('<!-- wp:paragraph -->
         <p>Learn more about our club at <a href="https://%s">%s</a></p>
         <!-- /wp:paragraph -->',$_SERVER['SERVER_NAME'],$_SERVER['SERVER_NAME']);
+        $content = rsvpmailer_default_block_template_wrapper($content);
         $ffpage = wp_insert_post( array('post_author' => $current_user->ID, 'post_status' => 'publish','post_type' => 'rsvpemail','post_title' => 'Thank you for your interest in '.get_option('blogname'), 'post_content' => $content) );
     }
     if($ffpage)
         update_option('findafriend_page',$ffpage);
+    else
+        delete_option('findafriend_page');
+    echo 'forwarding page '.$ffpage;
 }
 else {
     $ffemail = get_option('findafriend_email');
-    $ffpage = get_option('findafriend_page');    
+    $ffpage = get_option('findafriend_page');
 }
 $results = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type='rsvpemail' AND post_status='publish' ORDER BY post_title");
 foreach($results as $row)
@@ -528,6 +535,13 @@ $botchecked = ($ffemail == $botemail);
 <input type="text" name="ffemail" value="<?php if(!$botchecked) echo $ffemail; ?>" />
 <br /><em>Example: myclub@gmail.com (<a href="https://www.wp4toastmasters.com/2021/01/05/use-the-wpt_email_handler-find-a-club-email-bot-with-gmail/" target="_blank">GMail setup example</a>)</em></p>
 <p>Automatic response content:<br /><select name="ffpage"><?php echo $o; ?></select>
+<?php
+if($ffpage) {
+    $post = get_post($ffpage);
+    if(isset($post->post_title))
+        printf('<p>Edit Message: <a href="%s&post=%d">%s</a></p>',admin_url('post.php?&action=edit'),$ffpage,$post->post_title);
+}
+?>
 </p>
 <p>
 General forwarding (limit 5 email addresses) <br />
@@ -543,12 +557,17 @@ BaseCamp forwarding (limit 5 email addresses) <br />
 </textarea>
 <br /><em>Intended for use with <?php echo $botemail; ?>. Separate emails with commas or line breaks.</em>
 </p>
-<?php submit_button(); 
-if($ffpage) {
+<?php submit_button();
+
+if(isset($post->post_title)) {
     printf('<p><a href="%s&post=%d">Edit Message</a></p>',admin_url('post.php?&action=edit'),$ffpage);
     $post = get_post($ffpage);
-    printf('<h2>%s</h2>',$post->post_title);
-    echo (empty($post->post_content)) ? '<p>(no content)</p>' : $post->post_content;
+    if(empty($post->post_title))
+        echo '<p>Error with welcome message setup</p>';
+    else {
+        printf('<h2>%s</h2>',$post->post_title);
+        echo (empty($post->post_content)) ? '<p>(no content)</p>' : $post->post_content;    
+    }
 }
 ?>
 </form>
@@ -703,9 +722,7 @@ function wpt_email_handler_club_email_list() {
         update_option('member_distribution_list',$member_on);
         $vars = array();
         foreach($_POST['wpt_email_handler_member_list_vars'] as $index => $text) {
-            $text = strtolower($text);
-            preg_match_all ("/\b[A-z0-9][\w.-]*@[A-z0-9][\w\-\.]+\.[A-z0-9]{2,6}\b/", $text, $emails);
-            $vars[$index] = $emails[0];
+            $vars[$index] = wpt_email_list_to_array($text);
         }
         update_option('member_distribution_list_vars',$vars);
     }
@@ -714,9 +731,7 @@ function wpt_email_handler_club_email_list() {
         update_option('officer_distribution_list',$officer_on);
         $vars = array();
         foreach($_POST['wpt_email_handler_officer_list_vars'] as $index => $text) {
-            $text = strtolower($text);
-            preg_match_all ("/\b[A-z0-9][\w.-]*@[A-z0-9][\w\-\.]+\.[A-z0-9]{2,6}\b/", $text, $emails);
-            $vars[$index] = $emails[0];
+            $vars[$index] = wpt_email_list_to_array($text);
         }
         update_option('officer_distribution_list_vars',$vars);
     }
@@ -725,6 +740,10 @@ function wpt_email_handler_club_email_list() {
     $officeremail = wpt_format_email_forwarder('officers');
     $wpt_email_handler_member_list_vars = get_option('member_distribution_list_vars');
     $wpt_email_handler_officer_list_vars = get_option('officer_distribution_list_vars');
+    if(empty($wpt_email_handler_member_list_vars))
+        $wpt_email_handler_member_list_vars = array('whitelist' => [], 'blocked' =>  [], 'additional' =>  []);
+    if(empty($wpt_email_handler_officer_list_vars))
+        $wpt_email_handler_officer_list_vars = array('whitelist' =>  [], 'blocked' =>  [], 'additional' =>  []);
 ?>
 <h1>Email List Setup</h1>
 <form action="<?php echo admin_url('admin.php?page=wpt_email_handler_club_email_list'); ?>" method="post">
@@ -817,6 +836,17 @@ function wpt_toast_permit_deny ($user_id,$tag,$label) {
     printf('<p><label>%s</label> <select name="rule[%s]">%s</select></p>',$label,$tag,$permit.$deny);
 }
 
+function wpt_email_list_to_array($text) {
+    $emails = [];
+    $mess = preg_split('/[,\n\s]/',strtolower($text));
+    foreach($mess as $item) {
+        $item = trim($item);
+        if(is_email($item) && !in_array($item,$emails))
+            $emails[] = $item;
+    }
+return $emails;
+}
+
 function wpt_email_handler_forwarders() {
     $parts = explode('.',$_SERVER['SERVER_NAME']);
     $prefix = '';
@@ -841,11 +871,12 @@ function wpt_email_handler_forwarders() {
     {
         foreach($_POST['forward_update'] as $forward_from => $forward_to_text) {
             $femail = sanitize_text_field($forward_from);
+            if(empty($femail))
+                continue;
             if(empty($forward_to_text))
                 unset($wpt_email_handler_custom_forwarders[$femail]);
             else {
-                preg_match_all('/[^@\s,]+@[^@]+\.[a-z]+/',strtolower($forward_to_text),$matches);
-                $wpt_email_handler_custom_forwarders[$femail] = $matches[0];
+                $wpt_email_handler_custom_forwarders[$femail] = wpt_email_list_to_array($forward_to_text);
             }
         }
     }
@@ -860,20 +891,13 @@ function wpt_email_handler_forwarders() {
                     printf('<p>%s not allowed</p>',$slug);
                     continue;
                 }
-                $forwardto = strtolower($_POST['forwardto'][$index]);
-                preg_match_all('/[^@\s,]+@[^@]+\.[a-z]+/',$forwardto,$matches);
-                echo '<p>'.$forwardto;
-                echo ' forwards to ';
-                print_r($matches);
-                echo '</p>';
-                $femail = wpt_format_email_forwarder($slug);
-                //echo ' '.$femail = $prefix.$slug.'@'.$domain;
-                $wpt_email_handler_custom_forwarders[$femail] = $matches[0];                
+                $femail = $_POST['slug'][$index];
+                $wpt_email_handler_custom_forwarders[$femail] = wpt_email_list_to_array($_POST['forwardto'][$index]);                
             }
         }
     }
     if(!empty($_POST)) {
-        printf('<p>Updating wpt_email_handler_custom_forwarders %s</p>', var_export($wpt_email_handler_custom_forwarders,true));  
+        echo '<div class="notice notice-success"><p>Updating wpt_email_handler_custom_forwarders</p></div>';  
         update_option('custom_forwarders',$wpt_email_handler_custom_forwarders);
     }
 
@@ -1171,3 +1195,25 @@ function rsvpmaker_relay_bot_check( ) {
     return $output;
 }
 
+function wpt_get_officer_emails() {
+    $recipients = array();
+    $blog_id = get_current_blog_id();
+    $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'officer_distribution_list_vars') : get_option('officer_distribution_list_vars');
+    $officers = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'wp4toastmasters_officer_ids') : get_option('wp4toastmasters_officer_ids');
+    if($officers && is_array($officers)) {
+        foreach($officers as $id) {
+            $member = get_userdata($id);
+            if($member) {
+                $email = strtolower($member->user_email);
+                if(!in_array($email,$unsubscribed))
+                    $recipients[] = $email;
+            }
+        }
+    if(!empty($listvars['additional']))
+    foreach($listvars['additional'] as $email) {
+        if(!in_array($email,$unsubscribed))
+            $recipients[] = $email;
+    }
+    }
+    return $recipients;
+}

@@ -468,17 +468,11 @@ ob_start();
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-<?php echo wpt_default_agenda_css() . "\n" . get_option( 'wp4toastmasters_agenda_css' ) ; ?>
-#message p, #message li {
-font-size: 16px;
-}
-</style>
 <head>
 <body>
 <?php
 $header = ob_get_clean();
-return rsvpmaker_inliner($header.$content.'<body></html>');
+return $header.$content.'<body></html>';
 }
 
 function awesome_open_roles( $post_id = null, $scheduled = false ) {
@@ -530,13 +524,7 @@ function awesome_open_roles( $post_id = null, $scheduled = false ) {
 
 	$header   = '<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<style>
-' . wpt_default_agenda_css() . "\n" . get_option( 'wp4toastmasters_agenda_css' ) . '
-#message p, #message li {
-font-size: 16px;
-}
-</style>';
+<head><title>Email: '.$post->post_title.'</title>';
 //
 //'js/tinymce/plugins/compat3x/plugin.min.js?ver='.time()
 if(empty($_POST))
@@ -571,19 +559,35 @@ $header .= '</head>
 	}
 	// print_r($open);
 	$output .= $content;
+	$output = preg_replace('/<p[^>]+wp-block-wp4toastmasters-signupnote.+<\/p>/','',$output);
+	if('rsvpmaker' != $post->post_type)
+		$output = '<h1>'.$post->post_title."</h1>\n".$output;
 	$output = rsvpmail_filter_style( rsvpmailer_default_block_template_wrapper($output) );
 
 	$output = "<div id=\"agenda-email\">\n".$output."\n</div>\n";
 
+	$shortmessage = ('rsvpmaker' == $post->post_type) ? 'Sign up at '.get_permalink() : '';
+
 	if ( isset($_POST) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		if ( ! empty( $_POST['test'] ) && ! empty( $_POST['testto'] ) ) {
+		$send = $_POST['send'];
+		echo 'send: '.$send;
+		if ( ('test' == $send ) && ! empty( $_POST['testto'] ) ) {
 			$mail['to'] = sanitize_text_field($_POST['testto']);
-		} else {
+			printf('<p>Sending to %s</p>',$mail['to']);
+		} elseif('members' == $send) {
 			$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+			printf('<p>Sending to %s members</p>',sizeof($blogusers));
 			foreach ( $blogusers as $user ) {
 				// print_r($user);
 				$emails[] = $user->user_email;
 			}
+		}
+		elseif('officers' == $send) {
+			$emails = wpt_get_officer_emails();
+			printf('<p>Sending to %s officers</p>',sizeof($emails));
+		}
+		else {
+			echo 'no match for $send';
 		}
 		if ( isset( $_POST['note'] ) && $_POST['note'] && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 			$output = '<div id="message">' . wp_kses_post(stripslashes( $_POST['note'] )) . "</div>\n<p>Sent by: " . $current_user->display_name . ' <a href="mailto:' . $current_user->user_email . '">' . $current_user->user_email . "</a>\n" . $output;
@@ -595,19 +599,21 @@ $header .= '</head>
 
 if ( isset( $emails ) && is_array( $emails ) ) {
 			rsvpmaker_qemail ($mail, $emails);		
-			echo "<p>Sending to club members</p>";
 		} else {
 			echo awemailer( $mail );
-			echo "<p>Sending to ".$mail['to']."</p>";
 		}
 		// output without form
 		$output = $header . $output . '</body></html>';
 	} elseif ( ! $scheduled ) {
-		$subject = __( 'Agenda for', 'rsvpmaker-for-toastmasters' ) . ' ' . $date;
-		if ( $openings ) {
-			$subject .= ' (' . $openings . ' ' . __( 'open roles', 'rsvpmaker-for-toastmasters' ) . ')';
+		if('rsvpmaker' == $post->post_type) {
+			$subject = __( 'Agenda for', 'rsvpmaker-for-toastmasters' ) . ' ' . $date;
+			if ( $openings ) {
+				$subject .= ' (' . $openings . ' ' . __( 'open roles', 'rsvpmaker-for-toastmasters' ) . ')';
+			}
+			$subject = get_bloginfo( 'name' ) . ' ' . $subject;	
 		}
-		$subject = get_bloginfo( 'name' ) . ' ' . $subject;
+		else
+			$subject = $post->post_title;
 		$mailform = '<script>
 	tinymce.init({
 		selector:"textarea",plugins: "link",
@@ -625,13 +631,13 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 		document_base_url : "'.site_url().'/",
 	});	
 	</script>
-	<p>You can use the '.club_member_mailto($subject, 'Sign up at '.get_permalink()).' link to send from your own email client or use the form to have a message sent through the server.</p>
+	<p>You can use the '.club_member_mailto($subject, $shortmessage).' link to send to the members by BCC from your own email client or use the form to have a message sent through the server. Doing it that way, you would copy and paste the text below.</p>
 	<h3>' . __( 'Add a Note', 'rsvpmaker-for-toastmasters' ) . '</h3>
 	<p>' . __( 'Your note will be emailed along with the agenda and details about which roles are filled or open. You can change the subject line to emphasize the roles you need filled or special plans for a meeting (such as a contest).', 'rsvpmaker-for-toastmasters' ) . '</p>
 	<form method="post" action="' . $permalink . 'email_agenda=1">
 Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><br />
 <textarea name="note" rows="5" cols="80"></textarea><br />
-<input type="radio" name="test" value="0" checked="checked" > ' . __( 'Send to all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="test" value="1" > ' . __( 'Send test to', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" name="testto" /><br />
+Send to <input type="radio" name="send" value="members" checked="checked" > ' . __( 'all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="officers"  > ' . __( 'officers', 'rsvpmaker-for-toastmasters' ) . '  <input type="radio" name="send" value="test" > ' . __( 'this address', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" name="testto" /><br />
 <input type="submit" value="Send" />
 ' . rsvpmaker_nonce('return'). '
 </form>';

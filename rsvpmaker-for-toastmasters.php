@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.1.7
+Version: 5.1.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -38,7 +38,7 @@ require 'email-forwarders-and-groups.php';
 //require 'block-patterns.php';
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
-if ( isset( $_GET['email_agenda'] ) ) {
+if ( isset( $_GET['email_agenda'] ) || isset( $_GET['send_by_email'] ) ) {
 	global $email_context;
 	$email_context = true;
 }
@@ -970,14 +970,14 @@ function speaker_details_agenda( $field, $assigned ) {
 	$title   = ( empty( $speaker['title'] ) ) ? '' : '<span class="title">&quot;' . $speaker['title'] . '&quot;</span> ';
 	$output .= '<div>' . $title . '<span class="manual-project">' . $manual . '</span></div>';
 	if ( ! empty( $dt ) ) {
-		$output .= '<div class="speechtime">' . $dt . '</div>';
+		$output .= '<p class="speechtime">' . $dt . '</p>';
 	}
 	if ( ! empty( $speaker['intro'] ) && ( isset( $_GET['showintros'] ) || get_option( 'wp4toastmasters_intros_on_agenda' ) ) ) {
-		$output .= '<div class="intro">' . wpautop( '<strong>' . __( 'Introduction', 'rsvpmaker-for-toastmasters' ) . ':</strong> ' . $speaker['intro'] ) . '</div>';
+		$output .= '<p class="intro">' . wpautop( '<strong>' . __( 'Introduction', 'rsvpmaker-for-toastmasters' ) . ':</strong> ' . $speaker['intro'] ) . '</p>';
 	}
 
 	$output = apply_filters( 'speaker_details_agenda', $output, $field );
-	$output = "\n" . '<div class="speaker-details">' . $output . '</div>' . "\n";
+	$output = "\n" . '<p class="speaker-details">' . $output . '</p>' . "\n";
 	return $output;
 }
 
@@ -3733,6 +3733,9 @@ font-style: italic;
   padding-left: 0;
   margin-left: 0;
 }
+p.speechtime {
+	text-align: center;
+}
 .officers_label {font-weight: bold;}
 .officer_entity {margin-top: 10px;}
 p.agenda_note, div.role-agenda-item, div.role-agenda-note {margin-top: 0; margin-bottom: 0; padding-bottom: 3px;
@@ -4712,23 +4715,6 @@ function rsvpmaker_agenda_notifications( $permalink ) {
 				$output .= sprintf( '<div class="wpt_notify %s"><div class="wpt_clear" title="Clear Notice"><a href="%s">&times;</a></div>%s</div>', $slug, $clearedurl, $value );
 			}
 		}
-	}
-
-	if ( ! empty( $output ) ) {
-		$output = '<style>
-.wpt_notify {
-    color:#555;
-    border-radius:10px;
-    font-family:Tahoma,Geneva,Arial,sans-serif;font-size:11px;
-    padding:10px 10px 10px 36px;
-    margin:10px;
-	background-color: #fff8c4;
-    border:1px solid #f2c779;
-}
-.wpt_clear {
-float: right;
-}
-</style>' . $output;
 	}
 
 	return $output;
@@ -7890,7 +7876,7 @@ function wp4t_redirect() {
 			die();
 		}
 
-		if ( ! ( isset( $post ) ) || $post->post_type != 'rsvpmaker' ) {
+		if ( ! ( isset( $post ) )) {
 			return;
 		}
 		if(is_admin())

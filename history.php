@@ -544,8 +544,8 @@ archive_legacy_roles_usermeta - called on login from archive_site_user_roles
 wp_ajax_editor_assign
 */
 
-function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0) {
-	do_action('wp4t_record_history_to_table',$user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0);
+function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0, $was = 0) {	
+    do_action('wp4t_record_history_to_table',$user_id, $role, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $role_count, $was);
     global $wpdb;
 	//history table
     if(empty($rolecount))
