@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 6.0
-Stable tag: 5.1.9
+Stable tag: 5.2.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,20 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 5.2.2 =
+
+* Improved Update History function
+* Dropped separate Record Attendance screen
+
+= 5.2.1 =
+
+* Option to assign additional security privledges to all officers
+* Option in setup wizard to create test user accounts
+
+= 5.2 =
+
+* Updating system of displaying help articles, consistent with RSVPMaker.
 
 = 5.1.9 =
 

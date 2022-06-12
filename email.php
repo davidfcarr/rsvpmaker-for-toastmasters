@@ -629,15 +629,18 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 		relative_urls: false,
 		remove_script_host : false,
 		document_base_url : "'.site_url().'/",
-	});	
+	});
+	function checkTest() {
+		document.getElementById("sendtest").checked = true;
+	}	
 	</script>
 	<p>You can use the '.club_member_mailto($subject, $shortmessage).' link to send to the members by BCC from your own email client or use the form to have a message sent through the server. Doing it that way, you would copy and paste the text below.</p>
-	<h3>' . __( 'Add a Note', 'rsvpmaker-for-toastmasters' ) . '</h3>
-	<p>' . __( 'Your note will be emailed along with the agenda and details about which roles are filled or open. You can change the subject line to emphasize the roles you need filled or special plans for a meeting (such as a contest).', 'rsvpmaker-for-toastmasters' ) . '</p>
+	<h3>' . __( 'Add a Note (optional)', 'rsvpmaker-for-toastmasters' ) . '</h3>
+	<p>' . __( 'Your note will be emailed along with the details shown below.','rsvpmaker-for-toastmasters').'</p><p>'.__('You can also change the subject line. For example, when emailing the agenda you may want to emphasize the roles you need filled or special plans for a meeting (such as a contest).', 'rsvpmaker-for-toastmasters' ) . '</p>
 	<form method="post" action="' . $permalink . 'email_agenda=1">
 Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><br />
 <textarea name="note" rows="5" cols="80"></textarea><br />
-Send to <input type="radio" name="send" value="members" checked="checked" > ' . __( 'all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="officers"  > ' . __( 'officers', 'rsvpmaker-for-toastmasters' ) . '  <input type="radio" name="send" value="test" > ' . __( 'this address', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" name="testto" /><br />
+Send to <input type="radio" name="send" value="members" checked="checked" > ' . __( 'all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="officers"  > ' . __( 'officers', 'rsvpmaker-for-toastmasters' ) . '  <input id="sendtest" type="radio" name="send" value="test" > ' . __( 'this address', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" id+"testto" onkeypress="checkTest()" name="testto" /><br />
 <input type="submit" value="Send" />
 ' . rsvpmaker_nonce('return'). '
 </form>';

@@ -1700,3 +1700,10 @@ if(!function_exists('get_rsvpmaker_timestamp')) {
 			return intval($event->ts_start);
 	}	
 }
+
+function wpt_rsvpmaker_admin_heading($headline, $function, $tag = '', $sidebar = '') {
+	if(function_exists('rsvpmaker_admin_heading'))
+		rsvpmaker_admin_heading($headline,$function,$tag,$sidebar);
+	else
+		echo '<h1>'.$headline.'</h1>';
+}

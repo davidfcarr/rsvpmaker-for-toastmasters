@@ -5,7 +5,7 @@ function tm_welcome_screen_assets( $hook ) {
 		return;
 
 	// everywhere except posts screen
-	$ver = '3.54';
+	$ver = '3.56';
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'post.php' ) ) {
 		wp_enqueue_style( 'tm_welcome_screen_css', plugin_dir_url( __FILE__ ) . '/admin-style.css', array(), $ver );
 		wp_enqueue_script( 'tm_welcome_screen_js', plugin_dir_url( __FILE__ ) . '/admin-script.js', array( 'jquery' ), $ver, true );
@@ -33,6 +33,14 @@ function wpt_rest_array() {
 		'post_type' => $post_type,
 		'is_agenda' => $is_agenda,
 	);	
+}
+
+//use rsvpmaker script for tabbed ui
+add_filter('rsvpmaker_tab_pages','toastmasters_tabs');
+function toastmasters_tabs($hastabs) {
+	if(isset($_GET['page']) && in_array($_GET['page'],array('wp4toastmasters_settings','wp4t_evaluations','toastmasters_reports','toastmasters_welcome','wpt_dues_report')))
+		$hastabs = true;
+	return $hastabs;
 }
 
 function toastmasters_css_js() {

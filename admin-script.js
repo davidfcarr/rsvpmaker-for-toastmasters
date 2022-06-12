@@ -82,28 +82,6 @@
 			}
 		}	
 	});
-	/*$('section#pending.rsvpmaker').show();*/
-	$('#sections:first-child').show();
-
-	$( document ).on(
-		'click',
-		'.nav-tab-wrapper a',
-		function() {
-			$( 'section' ).hide();
-			$( 'section' ).eq( $( this ).index() ).show();
-			return false;
-		}
-	);
-
-	$( document ).on(
-		'click',
-		'.edit_speech',
-		function() {
-			var slug = $( this ).attr( 'slug' );
-			$( '#' + slug ).show();
-			return false;
-		}
-	);
 
 	$( document ).on(
 		'click',

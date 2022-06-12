@@ -257,9 +257,7 @@ p {
 			}
 			if(!empty($_POST['agenda_officers']))
 				wp4toastmasters_agenda_layout_check(true);
-
-			mail('david@carrcommunications.com','agenda content',$agenda_content."\n\n".var_export($_POST,true));
-			
+	
 			$rsvp_options['rsvp_on'] = $rsvp = (int) $_POST['invite'];
 
 			$sync = (int) $_POST['sync'];
@@ -371,6 +369,23 @@ p {
 			echo '<div class="notice notice-success"><p>Meeting Options Saved</p></div>';
 			update_option('tm_wizard_done',1);
 
+		}
+
+		if(isset($_POST['test_users'])) {
+			$names = array('George Test','Abraham Test','Teddy Test','John Test','Thomas Test');
+			$password = wp_generate_password();
+			foreach($names as $name) {
+				$firstlast = explode(' ',$name);
+				$slug = str_replace(' ','_',strtolower($name));
+				$exists = username_exists($slug);
+				if($exists) {
+					if(is_multisite())
+						$blog_id = get_current_blog_id();
+						add_user_to_blog( $blog_id, $exists, 'subscriber' );
+				}
+				else
+					wp_insert_user(array('user_login' => $slug ,'user_email' => $slug.'@example.com', 'user_pass' => $password,'display_name' => $name,'first_name' => $firstlast[0] ,'last_name' => $firstlast[1] ));
+			}
 		}
 
 		if ( isset( $_POST['first'] ) ) {
@@ -643,10 +658,6 @@ function wpt_setup_wizard_2() {
 	<form method="post" action="<?php echo admin_url( 'admin.php?page=wp4t_setup_wizard' ); ?>">
 	<?php wp_nonce_field('setup_wizard'); ?>
 
-	<p>If you received a randomly generated password by email, <strong style="color:red;">change it now</strong>. Picking a strong password reduces the risk your site could be hacked.</p>
-
-	<?php wpt_wizard_password(); ?>
-
 	<p><label>My Officer Role</label> <select name="myrole" >
 
 	<option value="">None</option>
@@ -660,7 +671,7 @@ function wpt_setup_wizard_2() {
    <h3>Invite Others</h3>
 
 	<p>It's a good idea to invite a few people who can review what you are doing with the website and join you in experimenting with using the online agenda. When the website is ready, you can invite in all your members using the roster spreadsheet from Club Central.</p>
-
+	<p><input type="checkbox" name="test_users" value="1"> Add test users. You can add several test user accounts ('George Test','Abraham Test','Teddy Test','John Test','Thomas Test') to experiment with assigning roles.</p>
 	<?php for ( $i = 0; $i < 5; $i++ ) { ?>
 
 	<p><label>First Name</label> <input type="text" name="first[]" />

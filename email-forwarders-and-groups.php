@@ -744,8 +744,8 @@ function wpt_email_handler_club_email_list() {
         $wpt_email_handler_member_list_vars = array('whitelist' => [], 'blocked' =>  [], 'additional' =>  []);
     if(empty($wpt_email_handler_officer_list_vars))
         $wpt_email_handler_officer_list_vars = array('whitelist' =>  [], 'blocked' =>  [], 'additional' =>  []);
+wpt_rsvpmaker_admin_heading(__('Email List Setup','rsvpmaker-for-toastmasters'),__FUNCTION__);
 ?>
-<h1>Email List Setup</h1>
 <form action="<?php echo admin_url('admin.php?page=wpt_email_handler_club_email_list'); ?>" method="post">
 <p>These are private distribution lists, meaning that by default only messages from members will be accepted for distribution to the members list, and only officers may write to the officers list. You can whitelist additional senders (for example, an alternate email address for a club officer), block senders, or add additional recipients (for example, an area director who isn't a member but you want to include).</p>
 <h3>List for Members</h3>

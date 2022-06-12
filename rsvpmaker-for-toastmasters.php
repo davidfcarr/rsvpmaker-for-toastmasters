@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.1.9
+Version: 5.2.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -2714,6 +2714,8 @@ See also:
 		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="" /> %s <input type="text" name="wp4toastmasters_officer_slug[%s]" value="" /></p>', $index, $dropdown, $index );
 	}
 	?>
+<p><input type="checkbox" name="make_manager" value="1"><?php _e( 'Grant all officers Manager security status (able to edit website content, agendas, and user accounts.)', 'rsvpmaker-for-toastmasters' ); ?>.</p>
+
 <p><?php _e( 'Officers will be listed at the top of the members page and can also be displayed on the agenda', 'rsvpmaker-for-toastmasters' ); ?>.</p>
 
 <p><?php _e( 'You may also want to appoint a backup administrator (who will have full rights to administer the site) and one or more site managers (who have editing rights and can also add and edit member records). Be judicious in awarding these additional responsibilities.', 'rsvpmaker-for-toastmasters' ); ?>.</p>
@@ -5702,7 +5704,7 @@ function wpt_member_upload_to_array() {
 					$user['mobile_phone'] = $cells[ $label['Mobile'] ];
 				}
 
-				$user['toastmasters_id'] = (empty($cells[ $label['toastmasters_id'] ])) ? '' : (int) $cells[ $label['toastmasters_id'] ];
+				$user['toastmasters_id'] = (empty($cells[ $label['toastmasters_id'] ])) ? '' : preg_replace('/[^0-9]+/','',$cells[ $label['toastmasters_id'] ]);
 
 				$blog_id = get_current_blog_id();
 				if ( isset( $label['Member of Club Since'] ) ) {
@@ -8051,11 +8053,6 @@ add_action( 'plugins_loaded', 'add_awesome_roles' );
 
 function add_awesome_roles() {
 	$manager = get_role( 'manager' );
-	/*
-	if($manager)
-	fix_user_levels_manager ();
-	else
-	*/
 
 	if ( ! $manager ) {
 		add_role(
@@ -8121,7 +8118,7 @@ function manager_author_editor() {
 		)
 	);
 	foreach ( $users as $user ) {
-		$user->add_role( 'editor' ); // set_role('manager');
+		$user->add_role( 'editor' );
 	}
 }
 add_action( 'admin_init', 'manager_author_editor' );
@@ -8139,6 +8136,21 @@ function awesome_role_activation_wrapper() {
 
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return;
+	}
+
+	if ( isset( $_POST['make_manager'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+
+		foreach($_POST['wp4toastmasters_officer_ids'] as $id) {
+			$id = intval($id);
+			if($id && !user_can($id,'edit_users'))
+			{
+				$user     = array(
+					'ID'         => $id,
+					'role'       => 'manager',
+				);
+				wp_update_user( $user );
+			}
+		}
 	}
 
 	if ( isset( $_POST['wp4toastmasters_manager_ids'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -10490,8 +10502,8 @@ function get_project_key( $project ) {
 function get_projects_array( $choice = 'projects' ) {
 	include 'projects_array.php';
 	if ( isset( $_GET['debug'] ) ) {
-		//rsvpmaker_debug_log( $projects, 'projects' );
-		//rsvpmaker_debug_log( $project_options, 'options' );
+		rsvpmaker_debug_log( $projects, 'projects' );
+		rsvpmaker_debug_log( $project_options, 'options' );
 	}
 
 	if ( $choice == 'projects' ) {
