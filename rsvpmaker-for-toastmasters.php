@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.2.2
+Version: 5.2.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1426,6 +1426,7 @@ function agendanoterich2_timeblock( $matches ) {
 }
 
 function tm_agenda_content($post_id = 0) {
+	global $post;
 	if(is_admin())
 		return;
 	global $post, $wp_query;
@@ -1443,7 +1444,7 @@ function tm_agenda_content($post_id = 0) {
 		$content = do_blocks( $content );
 	}
 	$content = wpautop( do_shortcode( $content ) );
-	if ( ! strpos( $content, 'milestone' ) ) {
+	if ( ! strpos( $content, 'milestone' ) && ($post->post_type == 'rsvpmaker') ) {
 		$content .= '<p maxtime="x">End</p>';
 	}
 	$content = preg_replace_callback( '/maxtime="([0-9x]+)[^>]+>/', 'decode_timeblock', $content );
@@ -7901,6 +7902,11 @@ function wp4t_redirect() {
 			include $agendapath;
 			die();
 		}
+		elseif ( isset( $_REQUEST['print'] ) ) {
+			$agendapath = WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/print.php';
+			include $agendapath;
+			die();
+		}
 		 elseif ( is_email_context() ) {
 			if ( get_option( 'wp4toastmasters_stoplight' ) ) {
 				add_filter( 'agenda_time_display', 'display_time_stoplight' );
@@ -8928,7 +8934,10 @@ function member_only_content( $content ) {
 
 	if ( ! is_club_member() ) {
 		return '<div style="width: 100%; background-color: #ddd;">' . __( 'You must be logged in and a member of this blog to view this content', 'rsvpmaker-for-toastmasters' ) . '</div>' . sprintf( '<div id="member_only_login"><a href="%s">' . __( 'Login to View', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url( '/wp-login.php?redirect_to=' . urlencode( get_permalink() ) ) );
-	} else {
+	}  
+	elseif(isset($_GET['print']))
+		return $content;
+	else {
 		return $content . '<div style="width: 100%; background-color: #ddd;">' . __( 'Note: This is member-only content (login required)', 'rsvpmaker-for-toastmasters' ) . '</div>';
 	}
 

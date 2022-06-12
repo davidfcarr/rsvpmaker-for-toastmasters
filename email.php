@@ -634,7 +634,7 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 		document.getElementById("sendtest").checked = true;
 	}	
 	</script>
-	<p>You can use the '.club_member_mailto($subject, $shortmessage).' link to send to the members by BCC from your own email client or use the form to have a message sent through the server. Doing it that way, you would copy and paste the text below.</p>
+	<p>Use the form below to send the agenda as shown below with a note and the subject line of your choice. Alternatively, you can use the '.club_member_mailto($subject, $shortmessage).' link to send to the members by BCC from your own email client.</p>
 	<h3>' . __( 'Add a Note (optional)', 'rsvpmaker-for-toastmasters' ) . '</h3>
 	<p>' . __( 'Your note will be emailed along with the details shown below.','rsvpmaker-for-toastmasters').'</p><p>'.__('You can also change the subject line. For example, when emailing the agenda you may want to emphasize the roles you need filled or special plans for a meeting (such as a contest).', 'rsvpmaker-for-toastmasters' ) . '</p>
 	<form method="post" action="' . $permalink . 'email_agenda=1">

@@ -29,7 +29,7 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_screen', __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_support', 'toastmasters_support' );
 
 	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Update History', 'rsvpmaker-for-toastmasters' ), __( 'Update History', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_reconcile', 'toastmasters_reconcile' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_reconcile', 'toastmasters_reconcile' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'add_member_speech', 'add_member_speech' );
 
@@ -675,22 +675,16 @@ function toastmasters_reconcile() {
 	global $wpdb;
 	$history_table = $wpdb->base_prefix.'tm_history';
 
-	$hook = tm_admin_page_top( __( 'Reconcile Meeting Activity / Add History', 'rsvpmaker-for-toastmasters' ) );
-	refresh_tm_history();
+	echo '<h1>'. __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ) .'</h1>';
+	update_user_role_archive_all();
 	echo '<p><em>' . __( 'Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
 	//$minutes_link = (empty($_REQUEST['post_id'])) ? '' : sprintf(' (<a href="%s">Show Minutes for This Date</a>)',admin_url('admin.php?page=toastmasters_reports_dashboard&report=minutes&post_id='.intval($_REQUEST['post_id']) ));
 	if(!empty($_POST['post_id'])) {
 		$event_id = intval($_POST['post_id']);
 		?>
 		<p>If this information is now up to date, you have the option of creating meeting minutes that include this information. You'll be able to edit them and add further notes in the WordPress editor.</p>
-		<form method="get" action="<?php echo admin_url( 'admin.php' ); ?>">
-		<input type="hidden" name="page" value="toastmasters_meeting_minutes" />
-		<input type="hidden" id="pick_event" name="post_id" value="<?php echo $event_id; ?>">
-		<input type="hidden" name="wpminutes" value="1">
-		<button><?php _e( 'Create Minutes', 'rsvpmaker-for-toastmasters' ); ?></button>
-		<?php rsvpmaker_nonce(); ?>
-		</form>
-	<?php	
+		<?php
+		printf('<p><a href="%s">Create Minutes</a></p>',admin_url("post-new.php?post_type=tmminutes&minutes_from_history=$event_id"));
 	}
 
 	echo '<style>.agenda_note{display: none;}</style>';
@@ -704,8 +698,10 @@ function toastmasters_reconcile() {
 		do_action('toastmasters_update_history',$_POST);
 		printf(
 			'<div id="message" class="updated">
-		<p><strong>%s.</strong></p></div>',
-			__( 'Reconciliation report updated', 'rsvpmaker-for-toastmasters' )
+		<p><strong>%s. <a href="%s">%s</a></strong></p></div>',
+			__( 'Reconciliation report updated', 'rsvpmaker-for-toastmasters' ),
+			admin_url("post-new.php?post_type=tmminutes&minutes_from_history=$event_id"),
+			__('Create Minutes','rsvpmaker-for-toastmasters')
 		);
 
 		$notes = wp_kses_post(stripslashes( $_POST['_notes_for_minutes'] ));
@@ -825,17 +821,17 @@ function toastmasters_reconcile() {
 		}
 
 		if(isset($_POST['attended'])) {
-			$t = time();
 			foreach($_POST['attended'] as $user_id) {
 				wp4t_record_history_to_table($user_id, 'Attended', $r_post->datetime, $r_post->ID, 'toastmasters_reconcile');
-				$t++;
 			}
 		}
 
 		if(isset($_POST['history_add'])) {
-			
+
 			foreach($_POST['history_add'] as $index => $user_id) {
 				$user_id = intval($user_id);
+				$count = preg_replace('/[^0-9]/','',$index);
+				$role = sanitize_text_field($_POST['history_add_role'][$index]);
 				if($user_id) {
 					$role = sanitize_text_field($_POST['history_add_role'][$index]);
 					$manual = $project_key = $title = $speech_confirm = '';
@@ -845,33 +841,70 @@ function toastmasters_reconcile() {
 						$title = stripslashes(sanitize_text_field($_POST['history_add_title'][$index]));
 						$speech_confirm = sprintf('<p>%s %s %s</p>',$manual,$project_key,$title);
 					}
-					wp4t_record_history_to_table($user_id, $role, $r_post->datetime, $r_post->ID, 'toastmasters_reconcile', $manual,$project_key,$title,'', $_SERVER['SERVER_NAME'], $index);
+					wp4t_record_history_to_table($user_id, $role, $r_post->datetime, $r_post->ID, 'toastmasters_reconcile', $manual,$project_key,$title,'', $_SERVER['SERVER_NAME'],$count);
 					if(!empty($speech_confirm))
 					echo '<div class="notice notice-success">'.$speech_confirm.'</div>';
 				}
 			}
 		}
-		
-		$history_records = wpt_get_history_by_meeting(get_rsvp_date($r_post->ID));
-		if(is_array($history_records))
-		foreach($history_records as $history_record) {
-			$ordered_record[$history_record->role.'_'.$history_record->rolecount] = $history_record;
-			$present[] = $history_record->user_id;
-			if($history_record->role == 'Attended')
-				$attended[] = $history_record->user_id;
-			else
-				$role_holder[] = $history_record->user_id;
-		}
-		ksort($ordered_record);
-		foreach($ordered_record as $index => $record) {
-			$dropdown = awe_user_dropdown( 'history_role_update['.$record->id.']', $record->user_id, true );
-			printf('<input type="hidden" name="history_role_was[%d]" value="%d">',$record->id,$record->user_id);
-			//$name = get_member_name($record->user_id);
-			printf('<p><strong>%s</strong><br>%s</p>',$record->role,$dropdown);
-			if(!empty($record->speech_id)) {
-				echo new_speaker_details_history($record->history_id, $record->manual, $record->project_key, $record->project, $record->title );
+
+		$agenda_data = wpt_blocks_to_data($r_post->post_content);
+		foreach($agenda_data as $index => $item) {
+			if(!empty($item['role'])) {
+				for($i=1; $i <= intval($item['count']); $i++)
+				$allroles['_'.str_replace(' ','_',$item['role']).'_'.$i] = '';
+				$agenda_order[$item['role']] = '';
 			}
 		}
+		$additions = '';
+
+		$attended = $role_holder = $present = array();
+		$history_records = wpt_get_history_by_meeting(get_rsvp_date($r_post->ID));
+	
+		foreach($history_records as $record) {
+			if(!in_array($record->user_id,$present))
+				$present[] = $record->user_id;
+			if($record->role == 'Attended') {
+				if(!in_array($record->user_id,$attended))
+					$attended[] = $record->user_id;
+			}
+			else {
+				if(!in_array($record->user_id,$role_holder))
+					$role_holder[] = $record->user_id;
+			}
+			$meta_index = '_'.str_replace(' ','_',$record->role).'_'.$record->rolecount;
+			$dropdown = awe_user_dropdown( 'history_role_update['.$record->id.']', $record->user_id, true );
+			$was = sprintf('<input type="hidden" name="history_role_was[%d]" value="%d">',$record->id,$record->user_id);
+			$allroles[$meta_index] .= sprintf('<p><strong>%s</strong><br>%s %s</p>',$record->role,$dropdown,$was);
+			if(!empty($record->speech_id)) {
+				$allroles[$meta_index] .= new_speaker_details_history($record->history_id, $record->manual, $record->project_key, $record->project, $record->title );
+			}
+		}
+
+		ksort($allroles);
+		foreach($allroles as $index => $roleline) {
+			$output = '';
+			$role = trim(preg_replace('/[^A-Za-z]/',' ',$index));
+			if(empty($roleline)) {
+				//echo '<p><strong>empty '.$index.'</strong></p>';
+				$i = preg_replace('/[^0-9]/','',$index);
+				$assigned = get_post_meta($r_post->ID,$index,true);
+				$output .= '<p><strong>'.$role.'</strong> ';
+				if(!empty($assigned) && (($assigned < '0') || !is_numeric($assigned)))
+					$output .= sprintf('<em>Agenda shows %s</em>',get_member_name($assigned));
+				$output .= '</p>';
+				$dropdown = awe_user_dropdown( 'history_add['.$index.']', 0, true );
+				$output .= sprintf('<p>%s <input type="hidden" name="history_add_role['.$index.']" value="%s"></p>',$dropdown, $role); 
+			}
+			else
+				$output = $roleline;
+			if(isset($agenda_order[$role]))
+				$agenda_order[$role] = $output;
+			else
+				$additions = $output;
+		}
+
+		echo implode("\n",$agenda_order).$additions;
 
 		$roles = wpt_history_get_roles();
 		if($roles) {
@@ -879,12 +912,14 @@ function toastmasters_reconcile() {
 			foreach($roles as $role) {
 				$o .= sprintf('<option value="%s">%s</option>',$role,$role);
 			}
-			$t = time();
-			for($i = $t; $i < $t+10; $i++) {
+			$sql = "SELECT rolecount from $history_table WHERE domain='$domain' AND post_id=$post_id ORDER BY rolecount DESC";
+            $t = (int) $wpdb->get_var($sql);
+            $t += 10;
+			for($i = $t; $i < $t+5; $i++) {
 				$dropdown = awe_user_dropdown( 'history_add['.$i.']', 0, true );
 				printf('<p><strong>Add</strong> %s for <select name="history_add_role['.$i.']">%s</select></p>',$dropdown, $o); 
 			}
-			for($i = $t+10; $i < $t+13; $i++) {
+			for($i = $t+5; $i < $t+8; $i++) {
 				$dropdown = awe_user_dropdown( 'history_add['.$i.']', 0, true );
 				printf('<p><strong>Add Speaker</strong><br>%s <input type="hidden" name="history_add_role['.$i.']" value="Speaker"></p>',$dropdown, $o); 
 				echo add_speaker_details_history($i);
@@ -908,6 +943,8 @@ function toastmasters_reconcile() {
 
 	$count = 0;
 	foreach ( $members as $index => $userdata ) {
+		if(in_array($userdata->ID,$present))
+			continue;
 		$att = sprintf( ' <input type="checkbox" name="attended[]" value="%d" />', $userdata->ID );
 		if ( ( $count % 5 ) == 0 ) {
 			echo '<br />';
@@ -931,7 +968,7 @@ function toastmasters_reconcile() {
 	if ( ! empty( $attended ) ) {
 		$marked_out = '<p>No role but marked present: ';
 		foreach ( $attended as $user_id ) {
-			$marked_out .= esc_html(get_member_name($user_id));
+			$marked_out .= esc_html(get_member_name($user_id)).', ';
 		}
 		echo $marked_out . '</p>';
 	}
@@ -951,7 +988,6 @@ function toastmasters_reconcile() {
 		printf( '<p>Email attendees: <a href="mailto:%s">%s</a></p>', $email_list, $email_list );
 	}
 
-	tm_admin_page_bottom( $hook );
 }
 
 function toastmasters_minutes_exist($post_id) {
@@ -1040,120 +1076,7 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 
 	} // not history
 
-	$post = get_post( $r_post->ID );
-
-	$content = $r_post->post_content;
-
-	$data = wpt_blocks_to_data( $content );
-	$minutes_title = get_bloginfo('name').' Minutes for '.$r_post->date;
-	printf( '<h2>%s</h2>', $minutes_title );
-	ob_start();
-	foreach ( $data as $item ) {
-		if ( ! empty( $item['role'] ) ) {
-			echo toastmaster_minutes_display( $item );
-			// retrieve metadata per role
-		}
-	}
-		echo toastmaster_minutes_display(
-			array(
-				'role'  => 'Table Topics',
-				'count' => 10,
-			)
-		);
-		echo toastmaster_minutes_display(
-			array(
-				'role'  => 'Best Table Topics',
-				'count' => 1,
-			)
-		);
-		echo toastmaster_minutes_display(
-			array(
-				'role'  => 'Best Speaker',
-				'count' => 1,
-			)
-		);
-		echo toastmaster_minutes_display(
-			array(
-				'role'  => 'Best Evaluator',
-				'count' => 1,
-			)
-		);
-
-	if ( $r_post->postID ) {
-		$results = wp4t_history_query( "post_id=$r_post->postID AND domain='".$_SERVER['SERVER_NAME']."'" );
-		foreach ( $results as $row ) {
-			// print_r($row);
-			$present[] = $row->user_id; // all the people who filled any role
-			if ( $row->role == 'Attended' ) {
-				$marked_attended[] = $row->user_id;
-			} elseif ( is_numeric( $row->user_id ) && ( $row->user_id > 0 ) ) {
-				$role_holder[] = $row->user_id;
-			}
-			$meeting_roles[] = $row->role;
-		}
-	}
-	$members   = array();
-	$blogusers = get_club_members();
-	foreach ( $blogusers as $user ) {
-		if ( ! in_array( $user->ID, $role_holder ) && ! in_array( $user->ID, $marked_attended ) ) {
-			$absent[] = $user->ID;
-		}
-	}
-
-	if ( ! empty( $role_holder ) ) {
-		$marked_out = '<!-- wp:paragraph -->
-		<p><strong>Held a role:</strong> ';
-		foreach ( $role_holder as $index => $marked ) {
-			$user = get_userdata( $marked );
-			$held_name[] = esc_html($user->display_name);
-		}
-		sort($held_name);
-		echo $marked_out .implode(', ',$held_name). '</p>
-		<!-- /wp:paragraph -->';
-	}
-
-	if ( ! empty( $marked_attended ) ) {
-		$marked_out = '<!-- wp:paragraph --><p><strong>Marked present:</strong> ';
-		foreach ( $marked_attended as $index => $marked ) {
-			$user = get_userdata( $marked );
-			if ( $index ) {
-				$marked_out .= ', ';
-			}
-			$marked_out .= esc_html($user->display_name);
-		}
-		echo $marked_out . '</p><!-- /wp:paragraph -->';
-	}
-
-	if ( ! empty( $absent ) ) {
-		$marked_out = ( ! empty( $marked_attended ) ) ? '<!-- wp:paragraph --><p><strong>Absent:</strong> ' : '<!-- wp:paragraph --><p><strong>Absent or No Role:</strong> ';
-		foreach ( $absent as $index => $marked ) {
-			$user = get_userdata( $marked );
-			if ( $index ) {
-				$marked_out .= ', ';
-			}
-			$marked_out .= esc_html($user->display_name);
-		}
-		echo $marked_out . '</p><!-- /wp:paragraph -->';
-	}
-
-	$minutes_content = ob_get_clean();
-	
-	if(isset($_GET['wpminutes'])) {
-		if($existing)
-			echo '<p>Online minutes document already created</p>';
-		else
-		 {
-			$newpost['post_content'] = $minutes_content;
-			$newpost['post_title'] = $minutes_title;
-			$newpost['post_type'] = 'tmminutes';
-			$newpost['post_author'] = $current_user->ID;
-			$newpost['post_status'] = 'draft';
-			echo 'create minutes';
-			$id = wp_insert_post($newpost);
-			add_post_meta($id,'minutes_for',$r_post->ID);
-			printf('<p>Minutes draft created - <a href="%s">Edit</a></p>',admin_url("post.php?post=$id&action=edit"));	
-		}
-	}
+	$minutes_content = wpt_minutes_from_history($r_post->ID);
 
 	if(empty($_GET['rsvp_print'])) {
 		?>
@@ -1163,8 +1086,6 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 	<select id="pick_event" name="post_id">
 		<?php echo $options; ?>
 	</select>
-	<input type="checkbox" name="wpminutes" value="1"> Create Online Document
-	<input type="checkbox" name="rsvp_print" value="1"> Print <input type="checkbox" name="rsvp_print" value="word"> Export to Word 
 	<button><?php _e( 'Get', 'rsvpmaker-for-toastmasters' ); ?></button>
 	<?php rsvpmaker_nonce(); ?>
 	</form>
@@ -1175,21 +1096,19 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 	if($r_post->ID && !isset($_REQUEST['rsvp_print'])) {
 		printf( '<h2><a href="%s">Edit records for %s</a></h2>',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID), $r_post->date );
 		$existing = toastmasters_minutes_exist($r_post->ID);
-		if($existing)
-			printf('<p><a href="%s">Edit existing minutes document for %s</a></p>',admin_url("post.php?post=$existing&action=edit"),$r_post->date);
-	}
-
-	echo '<h2>Notes</h2>';
-	$notes = get_post_meta( $r_post->postID, '_notes_for_minutes', true );
-	if ( $notes ) {
-		echo wpautop( $notes );
+		if($existing) {
+			printf('<p><a href="%s">Edit existing minutes document for %s</a> | <a href="%s" target="_blank">Print or Copy and Paste to Word</a></p>',admin_url("post.php?post=$existing&action=edit"),$r_post->date,add_query_arg('print',1,get_permalink($existing)));
+			$existing_post = get_post($existing);
+			$minutes_content = do_blocks($existing_post->post_content);
+		}
+		else
+			printf('<p><a href="%s">Create minutes document for %s</a></p>',admin_url('post-new.php?post_type=tmminutes&minutes_from_history='.$r_post->ID),$r_post->date);
 	}
 
 	echo $minutes_content;
 
 if(empty($_GET['rsvp_print']))
 	printf('<p><a href="%s">Make Corrections</a></p>',admin_url('admin.php?page=toastmasters_reconcile&post_id='.$r_post->ID.'&'.rsvpmaker_nonce('query')) );
-
 }
 
 add_action('admin_bar_menu', 'add_toolbar_items', 100);
@@ -1204,6 +1123,15 @@ function add_toolbar_items($admin_bar){
 			'meta'  => array(
 				'target'  => '_blank',
 				'title' => __('Email_Minutes'),            
+			),
+		));	
+		$admin_bar->add_menu( array(
+			'id'    => 'print-minutes',
+			'title' => __('Print','rsvpmaker-for-toastmasters'),
+			'href'  => add_query_arg('print',1,get_permalink($post->ID)),
+			'meta'  => array(
+				'target'  => '_blank',
+				'title' => __('Print'),           
 			),
 		));	
 	}

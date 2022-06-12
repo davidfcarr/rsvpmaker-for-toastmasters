@@ -873,6 +873,11 @@ function wpt_email_handler_forwarders() {
             $femail = sanitize_text_field($forward_from);
             if(empty($femail))
                 continue;
+            if(!strpos($femail,$domain)) {
+                unset($wpt_email_handler_custom_forwarders[$femail]);
+                $femail = $prefix.$femail.'@'.$domain;
+                $wpt_email_handler_custom_forwarders[$femail] = wpt_email_list_to_array($forward_to_text);
+            }
             if(empty($forward_to_text))
                 unset($wpt_email_handler_custom_forwarders[$femail]);
             else {
@@ -891,8 +896,8 @@ function wpt_email_handler_forwarders() {
                     printf('<p>%s not allowed</p>',$slug);
                     continue;
                 }
-                $femail = $_POST['slug'][$index];
-                $wpt_email_handler_custom_forwarders[$femail] = wpt_email_list_to_array($_POST['forwardto'][$index]);                
+                $ffemail = $prefix.$_POST['slug'][$index].'@'.$domain;
+                $wpt_email_handler_custom_forwarders[$ffemail] = wpt_email_list_to_array($_POST['forwardto'][$index]);                
             }
         }
     }
@@ -922,7 +927,11 @@ if(!empty($alias))
 <form action="<?php echo admin_url('admin.php?page=wpt_email_handler_forwarders'); ?>" method="post">
 <?php
 if(!empty($wpt_email_handler_custom_forwarders)) {
+    $index = 0;
     foreach($wpt_email_handler_custom_forwarders as $forward_from => $forward_to) {
+        $forward_from = trim($forward_from);
+        if(empty($forward_from))
+            continue;
         printf('<p><strong>Forwarder</strong>: %s</p>',$forward_from);
         printf('<p><strong>Forwards to</strong>: <br /><textarea name="forward_update[%s]" cols="120">%s</textarea></p>',$forward_from, implode(', ',$forward_to));
     }
