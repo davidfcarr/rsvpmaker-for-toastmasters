@@ -499,7 +499,8 @@ foreach($results as $row) {
     $title = (empty($roledata['title'])) ? '' : $roledata['title'];
     $intro = (empty($roledata['intro'])) ? '' : $roledata['intro'];
     }
-    wp4t_record_history_to_table($user_id, '_'.$role.'_'.$rolecount, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain);
+    wp4t_record_history_to_table($user_id, '_'.$role.'_'.$rolecount, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $rolecount);
+    
 }//foreach usermeta
 update_option('wp4history_start',$startfrom);
 }
@@ -529,7 +530,7 @@ foreach($results as $row) {
     $title = (empty($roledata['title'])) ? '' : $roledata['title'];
     $intro = (empty($roledata['intro'])) ? '' : $roledata['intro'];
     }
-    wp4t_record_history_to_table($user_id, '_'.$role.'_'.$rolecount, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain);
+    wp4t_record_history_to_table($user_id, '_'.$role.'_'.$rolecount, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $rolecount);
     if($old_id && ($old_id != $user_id))
         $wpdb->query("UPDATE $history_table SET user_id=$user_id WHERE user_id=$old_id");
 }//foreach usermeta

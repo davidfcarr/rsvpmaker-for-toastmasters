@@ -33,13 +33,13 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'add_member_speech', 'add_member_speech' );
 
-	//add_submenu_page( 'toastmasters_admin_screen', __( 'Record Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Record Attendance', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_attendance', 'toastmasters_attendance' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Mentors', 'rsvpmaker-for-toastmasters' ), __( 'Mentors', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_mentors', 'toastmasters_mentors' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'wpt_dues_report', 'wpt_dues_report' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_activity_log', 'toastmasters_activity_log' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'import_export', 'toastmasters_import_export' );
 	//add_submenu_page( 'toastmasters_admin_screen', __( 'Import Free Toast Host Data', 'rsvpmaker-for-toastmasters' ), __( 'Import Free Toast Host Data', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'import_fth', 'import_fth' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'member_application_approval', 'member_application_approval' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'member_application_settings', 'member_application_settings' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
 	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
@@ -672,13 +672,12 @@ function get_latest_speeches( $user_id, $myroles = array() ) {
 }
 
 function toastmasters_reconcile() {
-	global $wpdb;
+	rsvpmaker_admin_heading(__( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), 'toastmasters_reconcile');
+	global $wpdb, $post, $rsvp_options;
+	$domain = $_SERVER['SERVER_NAME'];
 	$history_table = $wpdb->base_prefix.'tm_history';
-
-	echo '<h1>'. __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ) .'</h1>';
 	update_user_role_archive_all();
 	echo '<p><em>' . __( 'Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
-	//$minutes_link = (empty($_REQUEST['post_id'])) ? '' : sprintf(' (<a href="%s">Show Minutes for This Date</a>)',admin_url('admin.php?page=toastmasters_reports_dashboard&report=minutes&post_id='.intval($_REQUEST['post_id']) ));
 	if(!empty($_POST['post_id'])) {
 		$event_id = intval($_POST['post_id']);
 		?>
@@ -688,9 +687,6 @@ function toastmasters_reconcile() {
 	}
 
 	echo '<style>.agenda_note{display: none;}</style>';
-	global $wpdb;
-	global $post;
-	global $rsvp_options;
 
 	if ( ! empty( $_POST['post_id'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$post_id = (int) $_POST['post_id'];
@@ -875,6 +871,8 @@ function toastmasters_reconcile() {
 			$meta_index = '_'.str_replace(' ','_',$record->role).'_'.$record->rolecount;
 			$dropdown = awe_user_dropdown( 'history_role_update['.$record->id.']', $record->user_id, true );
 			$was = sprintf('<input type="hidden" name="history_role_was[%d]" value="%d">',$record->id,$record->user_id);
+			if(empty($allroles[$meta_index]))
+				$allroles[$meta_index] = '';
 			$allroles[$meta_index] .= sprintf('<p><strong>%s</strong><br>%s %s</p>',$record->role,$dropdown,$was);
 			if(!empty($record->speech_id)) {
 				$allroles[$meta_index] .= new_speaker_details_history($record->history_id, $record->manual, $record->project_key, $record->project, $record->title );
@@ -882,11 +880,11 @@ function toastmasters_reconcile() {
 		}
 
 		ksort($allroles);
+
 		foreach($allroles as $index => $roleline) {
 			$output = '';
 			$role = trim(preg_replace('/[^A-Za-z]/',' ',$index));
 			if(empty($roleline)) {
-				//echo '<p><strong>empty '.$index.'</strong></p>';
 				$i = preg_replace('/[^0-9]/','',$index);
 				$assigned = get_post_meta($r_post->ID,$index,true);
 				$output .= '<p><strong>'.$role.'</strong> ';
@@ -895,13 +893,18 @@ function toastmasters_reconcile() {
 				$output .= '</p>';
 				$dropdown = awe_user_dropdown( 'history_add['.$index.']', 0, true );
 				$output .= sprintf('<p>%s <input type="hidden" name="history_add_role['.$index.']" value="%s"></p>',$dropdown, $role); 
+				if($role == 'Speaker')
+					$output .= add_speaker_details_history($i);
 			}
-			else
+			else {
 				$output = $roleline;
-			if(isset($agenda_order[$role]))
-				$agenda_order[$role] = $output;
-			else
-				$additions = $output;
+			}
+			if(isset($agenda_order[$role])) {
+				$agenda_order[$role] .= $output;
+			}
+			else {
+				$additions .= $output;
+			}
 		}
 
 		echo implode("\n",$agenda_order).$additions;
@@ -912,7 +915,7 @@ function toastmasters_reconcile() {
 			foreach($roles as $role) {
 				$o .= sprintf('<option value="%s">%s</option>',$role,$role);
 			}
-			$sql = "SELECT rolecount from $history_table WHERE domain='$domain' AND post_id=$post_id ORDER BY rolecount DESC";
+			$sql = "SELECT rolecount from $history_table WHERE domain='$domain' AND post_id=$r_post->ID ORDER BY rolecount DESC";
             $t = (int) $wpdb->get_var($sql);
             $t += 10;
 			for($i = $t; $i < $t+5; $i++) {
@@ -973,10 +976,6 @@ function toastmasters_reconcile() {
 		echo $marked_out . '</p>';
 	}
 
-	echo '<p>Notes for Minutes<br />
-<textarea rows="5" style="width: 90%;" name="_notes_for_minutes">' . get_post_meta( $r_post->postID, '_notes_for_minutes', true ) . '</textarea>
-</p>';
-
 	submit_button( 'Save Changes', 'primary', 'edit_roles' );
 	if ( isset( $_REQUEST['history'] ) ) {
 		$post->ID = 0;
@@ -1007,6 +1006,8 @@ function toastmasters_minutes_help() {
 }
 
 function toastmasters_meeting_minutes() {
+	rsvpmaker_admin_heading(__( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'toastmasters_meeting_minutes');
+
 	global $wpdb, $post, $rsvp_options, $current_user;
 	if ( ! empty( $_REQUEST['history'] ) ) {
 		$r_post = get_post( $_REQUEST['history'] );
@@ -4168,15 +4169,16 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 				continue;
 			}
 			$function = 'update_user_role_archive';
+			$role_count = preg_replace('/[^0-9]/','',$row->role);
 			if ( strpos( $row->role, 'Speaker' ) ) {
 				$manual        = get_post_meta( $post_id, '_manual' . $row->role, true );
 				$project_index = get_post_meta( $post_id, '_project' . $row->role, true );
 				$title         = get_post_meta( $post_id, '_title' . $row->role, true );
 				$intro         = get_post_meta( $post_id, '_intro' . $row->role, true );
-				wp4t_record_history_to_table($user_id, $row->role, $timestamp, $post_id, $function, $manual,$project_index,$title,$intro);
+				wp4t_record_history_to_table($user_id, $row->role, $timestamp, $post_id, $function, $manual,$project_index,$title,$intro,'',$role_count);
 			}
 			else
-				wp4t_record_history_to_table($user_id, $row->role, $timestamp, $post_id, $function);
+				wp4t_record_history_to_table($user_id, $row->role, $timestamp, $post_id, $function,'','','','','',$role_count);
 		}
 	}
 }

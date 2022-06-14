@@ -1707,3 +1707,11 @@ function wpt_rsvpmaker_admin_heading($headline, $function, $tag = '', $sidebar =
 	else
 		echo '<h1>'.$headline.'</h1>';
 }
+
+add_filter('rsvpmaker-admin-heading-help','wpt_rsvpmaker_admin_heading_help',12,3);
+function wpt_rsvpmaker_admin_heading_help($content,$function='',$tag='') {
+	if($function == 'rsvpmaker_template_list') {
+		$content .= '<p><a href="https://www.wp4toastmasters.com/knowledge-base/create-update-events-based-on-template/">Templates for Toastmasters Meetings</a></p>';
+	}
+	return $content; 
+}

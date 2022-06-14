@@ -303,9 +303,8 @@ function tm_application_form_choice( $slug, $choices ) {
 }
 
 function member_application_settings( $action = '' ) {
+	rsvpmaker_admin_heading('Toastmasters Dues Schedule and Application Form',__FUNCTION__);
 	wpt_dues_navigation();
-	echo '<div style="width: 800px;"><div style="float: right;"><a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/"><button>Setup Instructions</button></a></div>';
-	echo '<h1>Toastmasters Dues Schedule and Application Form</h1></div>';
 
 	global $wpdb;
 	if ( empty( $action ) ) {
@@ -564,8 +563,8 @@ function tm_note_format() {
 
 
 function member_application_approval() {
-	echo '<h1>Member Application Approval</h1>
-<style>
+rsvpmaker_admin_heading('Member Application Approval',__FUNCTION__);
+	echo '<style>
 label {
 display: inline-block;
 width: 150px;

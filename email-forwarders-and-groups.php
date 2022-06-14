@@ -77,6 +77,8 @@ function wpt_email_handler_page () {
 
 function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname, $toarray, $ccarray) {
     echo '<h1>wpt_email_handler_automation triggered</h1>';
+    rsvpmaker_debug_log($toarray,'to array');
+    rsvpmaker_debug_log($ccarray,'to array');
 
     $output = "<p>$to $from $fromname ".$qpost['post_title'].'</p>';
 
@@ -239,8 +241,8 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             $qpost['post_title'] = '['.$slug.'] '.$qpost['post_title'];
             $output .= sprintf('<p><strong>members list %s</strong> to %s</p>',$forwarder, var_export($recipients,true));
-            wpt_email_handler_qemail($qpost, $forward_by_id, $from, $fromname, $blog_id);
-            //$output .= wpt_email_handler_bcc($qpost, $recipients, $from, $fromname,$blog_id, $forwarder.' email list', $noreply);
+            wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
+            $recipients = array();
             $sent = true;
         }
         else
@@ -278,6 +280,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
             //faster where there is less need for queuing
             $output .= wpt_email_handler_bcc($qpost, $recipients, $from, $fromname, $blog_id, $forwarder.' email list', $noreply);
+            $recipients = array();
             $sent = true;
             }
             continue;
@@ -295,7 +298,8 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
                     $recipients[] = $officer->user_email;
                 }
             }
-            $output .= sprintf("<p>Officer recipeints for %s %s</p>",$forwarder, var_export($recipeints,true));
+            rsvpmaker_debug_log($recipients,'officer recipients for '.$forwarder);
+            $output .= sprintf("<p>Officer recipients for %s %s</p>",$forwarder, var_export($recipients,true));
         }
         else
             $output .= "<p>No officer ids for $forwarder $blog_id</p>";
@@ -305,6 +309,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $output .= sprintf('<p><strong>forward by title %s %s</strong></p>',$forwarder, var_export($recipients,true));
             $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
             wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
+            $recipients = array();
             $sent = true;
         }
         else
@@ -316,7 +321,9 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $qpost['post_content'] = "<p>Forwarded from $forwarder</p>\n".$qpost['post_content'];
             $recipients = $custom_forwarders[$forwarder];
             $output .= sprintf('<p><strong>custom forwarders wpt_email_handler_bcc</strong> %s</p>',$forwarder);
+            rsvpmaker_debug_log($recipients,'custom forwarder recipients for '.$forwarder);
             wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
+            $recipients = array();
             $sent = true;
         }
         else
@@ -333,8 +340,10 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             {
                 $qpost['post_content'] = "<p>Forwarded from $forwarder</p>\n".$qpost['post_content'];
                 $recipients = $custom_forwarders[$forwarder];
-                $output .= sprintf('<p><strong>default forwarder wpt_email_handler_bcc</strong> %s</p>',$forwarder);
+                rsvpmaker_debug_log($recipients,'default forwarder');
+                $output .= sprintf('<p><strong>default forwarder wpt_email_handler_qemail</strong> %s</p>',$forwarder);
                 wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
+                $recipients = array();
                 $sent = true;
             }
         }
@@ -452,6 +461,7 @@ function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1) {
 }
 
 function wpt_findaclub () {
+rsvpmaker_admin_heading(__('Find a Club / General Notifications Setup','rsvpmaker-for-toastmasters'),__FUNCTION__);
 global $wpdb, $current_user;
 $blog_id = get_current_blog_id();
 $parts = explode('.',$_SERVER['SERVER_NAME']);
@@ -528,7 +538,6 @@ foreach($results as $row)
     }
 $botchecked = ($ffemail == $botemail); 
 ?>
-<h1>Find a Club / Notifications Setup</h1>
 <form action="<?php echo admin_url('admin.php?page=wpt_findaclub'); ?>" method="post">
 <p><input type="radio" name="bot" value="1" <?php if($botchecked) echo ' checked="checked" '; ?> >  I will register <?php echo $botemail.$ordomain; ?> as the club's email address in Club Central</p>
 <p><input type="radio" name="bot" value="0" <?php if(!$botchecked) echo ' checked="checked" '; ?> > I have set up forwarding to findaclub@toastmost.org from this address:<br />
@@ -848,6 +857,7 @@ return $emails;
 }
 
 function wpt_email_handler_forwarders() {
+    rsvpmaker_admin_heading('Email Forwarders',__FUNCTION__,'','<img style="max-width: 300px;" src="https://www.wp4toastmasters.com/wp-content/uploads/2022/05/forwarders.jpg" /><br><em>Example</em>');
     $parts = explode('.',$_SERVER['SERVER_NAME']);
     $prefix = '';
     if(sizeof($parts) > 2) {
@@ -909,8 +919,6 @@ function wpt_email_handler_forwarders() {
     $info_address = wpt_format_email_forwarder('info');
     $prefix = (strpos($info_address,'-')) ? preg_replace('/-.+/','-',$info_address) : '';
 ?>
-<h2>Email Forwarders</h2>
-<div style="width: 400px; float: right; text-align: center; font-style: italic; margin-left: 15px;"><img style="max-width: 400px;" src="https://www.wp4toastmasters.com/wp-content/uploads/2022/05/forwarders.jpg" /><br>Example</div>
 <p>Use the form below to specify custom email forwarding addresses, or aliases.</p>
 <p>By default, <strong><?php echo wpt_format_email_forwarder('members'); ?></strong> is used for a members email list and <strong><?php echo wpt_format_email_forwarder('officers'); ?></strong> is for an officers email lists. Forwarding addresses in the format <?php echo wpt_format_email_forwarder('vpe'); ?> are enabled based on the officers list from the <a href="<?php echo admin_url('options-general.php?page=wp4toastmasters_settings'); ?>">Toastmasters Settings</a> screen.</p>
 <?php 
