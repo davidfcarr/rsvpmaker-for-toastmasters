@@ -48,7 +48,6 @@ if($ver < $version)
       //CONSTRAINT `".$speech_history_table."_ibfk_1` FOREIGN KEY (`history_id`) REFERENCES `$history_table` (`id`) ON DELETE CASCADE
       dbDelta($sql);
 
-      wp4t_history_overview();//start the process of importing legacy records
 }
 
 } // end build tables
@@ -445,105 +444,6 @@ foreach($results as $row) {
 
 }
 
-add_action('wp4t_history_overview','wp4t_history_overview');
-
-/* imports old usermeta records */
-function wp4t_history_overview($startover = false) {
-global $wpdb;
-$history_table = $wpdb->base_prefix.'tm_history';
-$speech_history_table = $wpdb->base_prefix.'tm_speech_history';  
-$checkimported = (function_exists('get_blog_option')) ? (int) get_blog_option(1,'wp4t_imported_usermeta') : (int) get_option('wp4t_imported_usermeta');
-if($startover) {
-    $wpdb->query('truncate table '.$speech_history_table);
-    $wpdb->query('truncate table '.$history_table);
-    $startfrom = 0;
-    echo "<p style=\"color:red\">Starting over to rebuild table</p>";
-}
-elseif($checkimported)
-    return;//don't keep pulling in old records
-else
-    $startfrom = (int) get_option('wp4history_start');
-
-$sql     = "SELECT * FROM `$wpdb->usermeta` WHERE meta_key LIKE 'tm|%' AND umeta_id > $startfrom ORDER BY umeta_id LIMIT 0, 500";
-$results = $wpdb->get_results( $sql );
-if(empty($results)) {
-    wp_clear_scheduled_hook( 'wp4t_history_overview' );
-    if(function_exists('update_blog_option'))
-        update_blog_option(1,'wp4t_imported_usermeta',1);
-    else
-        update_option('wp4t_imported_usermeta',1);
-    return;
-}
-else {
-    if(!wp_next_scheduled('wp4t_history_overview'))
-        wp_schedule_event(time()+60,'hourly','wp4t_history_overview');
-    echo '<p style="color: red; font-weight: bold;">Data refresh scheduled. The latest data should be displayed shortly.</p>';
-}
-$function = 'copied from usermeta';
-foreach($results as $row) {
-    $startfrom = $row->umeta_id;
-    $user_id = $row->user_id;
-    $key_array  = explode( '|', $row->meta_key );
-    $role       = $key_array[1];
-    $timestamp = $key_array[2];
-    $rolecount  = $key_array[3];
-    $domain     = $key_array[4];
-    $post_id    = $key_array[5];
-    $manual = $project_key = $title = $intro = '';
-    if(strpos($role,'peaker'))
-    {
-    $roledata = unserialize( $row->meta_value );
-    $manual   = ( empty( $roledata['manual'] ) ) ? 'Other' : $roledata['manual'];
-    $project_key = (empty( $roledata['project'] ) ) ? '' : $roledata['project'];
-    $project = (empty( $roledata['project'] ) ) ? '' : get_project_text( $roledata['project'] );
-    $title = (empty($roledata['title'])) ? '' : $roledata['title'];
-    $intro = (empty($roledata['intro'])) ? '' : $roledata['intro'];
-    }
-    wp4t_record_history_to_table($user_id, '_'.$role.'_'.$rolecount, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $rolecount);
-    
-}//foreach usermeta
-update_option('wp4history_start',$startfrom);
-}
-
-function former_member_history($user_id,$old_id = 0) {
-global $wpdb;
-$history_table = $wpdb->base_prefix.'tm_history';
-$sql     = "SELECT * FROM `$wpdb->usermeta` WHERE meta_key LIKE 'tm|%' AND user_id=$user_id";
-$results = $wpdb->get_results( $sql );
-$function = 'former_member_history';
-foreach($results as $row) {
-    $startfrom = $row->umeta_id;
-    $user_id = $row->user_id;
-    $key_array  = explode( '|', $row->meta_key );
-    $role       = $key_array[1];
-    $timestamp = $key_array[2];
-    $rolecount  = $key_array[3];
-    $domain     = $key_array[4];
-    $post_id    = $key_array[5];
-    $manual = $project_key = $title = $intro = '';
-    if(strpos($role,'peaker'))
-    {
-    $roledata = unserialize( $row->meta_value );
-    $manual   = ( empty( $roledata['manual'] ) ) ? 'Other' : $roledata['manual'];
-    $project_key = (empty( $roledata['project'] ) ) ? '' : $roledata['project'];
-    $project = (empty( $roledata['project'] ) ) ? '' : get_project_text( $roledata['project'] );
-    $title = (empty($roledata['title'])) ? '' : $roledata['title'];
-    $intro = (empty($roledata['intro'])) ? '' : $roledata['intro'];
-    }
-    wp4t_record_history_to_table($user_id, '_'.$role.'_'.$rolecount, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $rolecount);
-    if($old_id && ($old_id != $user_id))
-        $wpdb->query("UPDATE $history_table SET user_id=$user_id WHERE user_id=$old_id");
-}//foreach usermeta
-
-}
-/*
-add_member_speech
-post_user_role_archive
-update_user_role_archive
-archive_legacy_roles_usermeta - called on login from archive_site_user_roles
-wp_ajax_editor_assign
-*/
-
 function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0, $was = 0) {
     //echo "<p> $user_id, $role, $timestamp, $post_id, $function, $manual, $project_key, $title, $intro, $domain, role count $role_count, $was </p>";	
     do_action('wp4t_record_history_to_table',$user_id, $role, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $role_count, $was);
@@ -824,6 +724,14 @@ function wpt_minutes_from_history($history_post_id = '') {
         $label = __('No role but marked present','rsvpmaker-for-toastmasters');
         $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", $label,implode(', ',$showed_up));
 	}
+    $total_attendance = 0;
+    if(!empty($showed_up))
+        $total_attendance = sizeof($showed_up);
+    if(!empty($participant))
+        $total_attendance += sizeof($participant);
+    
+    $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", __('Total attendance','rsvpmaker-for-toastmasters'),$total_attendance);
+
 	$members   = array();
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 	foreach ( $blogusers as $user ) {    
@@ -864,7 +772,8 @@ function wp4t_add_history_to_table_log($user_id, $role, $timestamp, $post_id, $f
     //$message = "Recorded for $name $role, $timestamp, $post_id, $function, $manual, $project_key, $title, $intro, $domain, role count $role_count, $was";
     //echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
     $short_message = "<strong>$name</strong>: $role $role_count";
-    echo '<div class="notice notice-success"><p>'.$short_message.'</p></div>';
+    if('toastmasters_reconcile' == $function)
+        echo '<div class="notice notice-success"><p>'.$short_message.'</p></div>';
     //rsvpmaker_debug_log($message,'add history to table');
 }
 

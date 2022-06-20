@@ -316,6 +316,8 @@ function wpt_multiple_blocks_same( $post_id, $post_after, $post_before ) {
 			preg_match( '/{"role":[^}]+}/', $line, $match );
 			if ( ! empty( $match[0] ) ) {
 				$atts = json_decode( $match[0] );
+				if(empty($atts))
+					return;
 				if ( empty( $atts->count ) ) {
 					$atts->count = 1;
 				}
@@ -1675,12 +1677,20 @@ function wptm_count_votes($post_id) {
 }
 
 function wp4t_hour_past($post_id) {
+	$archived = get_post_meta($post_id,'role_data_archived',true);
+	if($archived)
+		return true;
+	//otherwise check how much time has passed
 	global $wpdb;
 	$event_table = get_rsvpmaker_event_table();
-	$end = (int) $wpdb->get_var("select ts_end from $event_table WHERE event=$post_id");
-	if(!$end)
+	$timerow = $wpdb->get_row("select ts_start, ts_end from $event_table WHERE event=$post_id");
+	if(empty($timerow))
 		return false;
-	return (time() > ($end + DAY_IN_SECONDS));
+	if($timerow->ts_end > $timerow->ts_start)
+		$end = (int) $timerow->ts_end;
+	else
+		$end = $timerow->ts_start + (2*HOUR_IN_SECONDS); // not set or corrupted
+	return (time() > ($end + HOUR_IN_SECONDS));
 }
 
 function wp4t_evaluation_link($atts) {
@@ -1715,3 +1725,4 @@ function wpt_rsvpmaker_admin_heading_help($content,$function='',$tag='') {
 	}
 	return $content; 
 }
+

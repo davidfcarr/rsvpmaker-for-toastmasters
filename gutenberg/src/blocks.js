@@ -11,3 +11,4 @@
 
 import './block/block.js';
 import './block/agenda-layout.js';
+import './block/help.js';

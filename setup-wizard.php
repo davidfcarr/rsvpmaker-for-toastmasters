@@ -112,7 +112,7 @@ p {
 	if($is_done)
 		printf('<p>Completed: %s</p>',rsvpmaker_date($rsvp_options['long_date'],intval($is_done)));
 
-	if((empty( $_REQUEST['setup_wizard'] ) && !$is_done) || ('start' == $_REQUEST['setup_wizard']))
+	if((empty( $_REQUEST['setup_wizard'] ) && !$is_done) || (!empty( $_REQUEST['setup_wizard'] ) && 'start' == $_REQUEST['setup_wizard']))
 		$class1 = 'class="current"';
 	elseif(! empty( $_REQUEST['setup_wizard'] ) && ( $_REQUEST['setup_wizard'] == 1 ))
 		$class2 = 'class="current"';
@@ -130,7 +130,7 @@ p {
 	if ( isset( $_POST['setup_wizard'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( $_POST['setup_wizard'] == '1' ) {
 			$standard_roles = array('Ah Counter', 'Body Language Monitor', 'Grammarian', 'Humorist', 'Timer', 'Vote Counter');
-			$agenda_content = '';
+			$agenda_content = '<!-- wp:wp4toastmasters/help /-->' . "\n\n";
 
 			$time_open = (int) $_POST['time_open'];
 

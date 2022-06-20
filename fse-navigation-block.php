@@ -95,7 +95,7 @@ function wp4t_block_theme_menu() {
 			'post_title'   => 'Calendar',
 			'post_status'  => 'publish',
 			'post_type'    => 'page',
-			'post_author'  => $user_id,
+			'post_author'  => $current_user->ID,
 			'ping_status'  => 'closed',
 		);
 		$calendar_id = wp_insert_post( $post );
@@ -113,7 +113,7 @@ function wp4t_block_theme_menu() {
 			'post_title'   => 'Members',
 			'post_status'  => 'publish',
 			'post_type'    => 'page',
-			'post_author'  => $user_id,
+			'post_author'  => $current_user->ID,
 			'ping_status'  => 'closed',
 		);
 		$members_id = wp_insert_post( $post );

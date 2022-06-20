@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.2.8
+Version: 5.3.1
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -977,7 +977,7 @@ function speaker_details_agenda( $field, $assigned ) {
 	}
 
 	$output = apply_filters( 'speaker_details_agenda', $output, $field );
-	$output = "\n" . '<p class="speaker-details">' . $output . '</p>' . "\n";
+	$output = "\n" . '<div class="speaker-details">' . $output . '</div>' . "\n";
 	return $output;
 }
 
@@ -1008,10 +1008,6 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 			$className .= ' indent';
 		}
 		$output .= "\n" . '<div class="role-agenda-item ' . $className . '">';
-		if ( isset( $_GET['agendadebug'] ) ) {
-			$output .= '<div style="color: red">Assigned: ' . $assigned . '</div>';
-		}
-
 		if ( ! empty( $atts['time_allowed'] ) && strpos( $field, 'Speaker' ) && ! strpos( $field, 'Backup' ) ) {
 				$speaktime += (int) get_post_meta( $post->ID, '_maxtime' . $field, true );
 		}
@@ -1035,11 +1031,8 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 		}
 		$output .= '</span>';
 		$output .= ' <span class="member-role">';
-		if ( isset( $_GET['debug'] ) ) {
-			$output .= 'assigned: ' . $assigned . ' ';
-		}
 		$output .= $assignedto;
-		$output .= '</span>';
+		$output .= '</span></div>';
 		if ( empty( $assigned ) ) {
 			if ( isset( $open[ $atts['role'] ] ) ) {
 				$open[ $atts['role'] ]++;
@@ -1059,7 +1052,6 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 			}
 			$output .= '<div class="role_agenda_note">' . $note . '</div>';
 		}
-		$output .= '</div>';
 	}//end for loop
 	if(!empty($atts['backup']) && !empty($open[ $atts['role'] ]))
 		$open[ $atts['role'] ]--;
@@ -1842,9 +1834,6 @@ function role_post() {
 		w3tc_pgcache_flush_post( $post_id );
 	}
 
-	if ( $is_past ) {
-		update_user_role_archive( $post_id, $timestamp );
-	}
 }
 
 function manual_type_options( $field, $type ) {
@@ -2268,7 +2257,6 @@ function wp4t_extended_list() {
 				add_user_meta( $result, $key, $value );
 			}
 		}
-	former_member_history($result, $old_id);
 	}
 
 	if ( isset( $_REQUEST['lookup'] ) ) {
@@ -4490,7 +4478,7 @@ function get_stoplight( $green, $red, $yellow = null ) {
 			}
 		}
 	}
-	return sprintf( '<span class="stoplight_block"><img src="' . plugins_url( 'rsvpmaker-for-toastmasters/stoplight-green.png' ) . '" style="padding:0; border: thin solid #000; height: 0.8em; width: 0.8em; " />&nbsp;Green: ' . $green . ' ' . '<img src="' . plugins_url( 'rsvpmaker-for-toastmasters/stoplight-yellow.png' ) . '" style="padding:0; border: thin solid #000; height: 0.8em; width: 0.8em; " />&nbsp;Yellow: ' . $yellow . ' ' . '<img src="' . plugins_url( 'rsvpmaker-for-toastmasters/stoplight-red.png' ) . '" style="padding:0; border: thin solid #000;  height: 0.8em; width: 0.8em; " />&nbsp;Red: ' . $red . '</span>' );
+	return sprintf( '<span class="stoplight_block"><img alt="green" src="' . plugins_url( 'rsvpmaker-for-toastmasters/stoplight-green.png' ) . '" style="padding:0; border: thin solid #000; height: 0.8em; width: 0.8em; " />&nbsp;Green: ' . $green . ' ' . '<img alt="yellow" src="' . plugins_url( 'rsvpmaker-for-toastmasters/stoplight-yellow.png' ) . '" style="padding:0; border: thin solid #000; height: 0.8em; width: 0.8em; " />&nbsp;Yellow: ' . $yellow . ' ' . '<img alt="red" src="' . plugins_url( 'rsvpmaker-for-toastmasters/stoplight-red.png' ) . '" style="padding:0; border: thin solid #000;  height: 0.8em; width: 0.8em; " />&nbsp;Red: ' . $red . '</span>' );
 }
 
 function stoplight_shortcode( $atts ) {
@@ -8440,7 +8428,9 @@ function wp4toast_template( $user_id = 1 ) {
 		return;
 	}
 
-	$default = '<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"5","inline":true} /-->
+	$default = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"5","inline":true} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"4"} /-->
 
@@ -8485,7 +8475,7 @@ function wp4toast_template( $user_id = 1 ) {
 		'post_name'    => 'toastmasters-meeting',
 		'post_title'   => 'Toastmasters Meeting',
 		'post_status'  => 'publish',
-		'post_type'    => 'rsvpmaker',
+		'post_type'    => 'rsvpmaker_template',
 		'post_author'  => $user_id,
 		'ping_status'  => 'closed',
 	);
@@ -8520,6 +8510,7 @@ function wp4toast_template( $user_id = 1 ) {
 	update_post_meta( $templateID, '_tm_sidebar', '<strong>Club Mission:</strong> We provide a supportive and positive learning experience in which members are empowered to develop communication and leadership skills, resulting in greater self-confidence and personal growth.' );
 	update_post_meta( $templateID, '_sidebar_officers', 1 );
 	update_option( 'default_toastmasters_template', $templateID );
+	wp4t_contest_templates ();
 }
 
 function wp4t_contest_templates () {
@@ -8527,9 +8518,11 @@ $v = 4;
 $version = (int) get_option('wpt_contest_templates_version');
 if($version >= $v)
 	return $version;
-global $wpdb;
+global $wpdb, $current_user;
 
-$contest_templates['Contest'] = '<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+$contest_templates['Contest'] = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -8567,7 +8560,9 @@ $contest_templates['Contest'] = '<!-- wp:wp4toastmasters/agendanoterich2 {"uid":
 <p class="wp-block-wp4toastmasters-agendanoterich2">Announcements and conclusion.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->';
 
-$contest_templates['International Speech Contest'] = '<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+$contest_templates['International Speech Contest'] = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -8597,7 +8592,9 @@ $contest_templates['International Speech Contest'] = '<!-- wp:wp4toastmasters/ag
 <p class="wp-block-wp4toastmasters-agendanoterich2">Announcements and conclusion.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->';
 
-$contest_templates['Humorous Speech Contest'] = '<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+$contest_templates['Humorous Speech Contest'] = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -8627,7 +8624,9 @@ $contest_templates['Humorous Speech Contest'] = '<!-- wp:wp4toastmasters/agendan
 <p class="wp-block-wp4toastmasters-agendanoterich2">Announcements and conclusion.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->';
 
-$contest_templates['Tall Tales Speech Contest'] = '<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+$contest_templates['Tall Tales Speech Contest'] = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -8657,7 +8656,9 @@ $contest_templates['Tall Tales Speech Contest'] = '<!-- wp:wp4toastmasters/agend
 <p class="wp-block-wp4toastmasters-agendanoterich2">Announcements and conclusion.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->';
 
-$contest_templates['Table Topics Contest'] = '<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+$contest_templates['Table Topics Contest'] = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -8687,7 +8688,9 @@ $contest_templates['Table Topics Contest'] = '<!-- wp:wp4toastmasters/agendanote
 <p class="wp-block-wp4toastmasters-agendanoterich2">Announcements and conclusion.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->';
 
-$contest_templates['Evaluation Contest'] = '<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+$contest_templates['Evaluation Contest'] = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -8737,8 +8740,8 @@ foreach($contest_templates as $title => $default) {
 		'post_content' => $default,
 		'post_title'   => $title,
 		'post_status'  => 'publish',
-		'post_type'    => 'rsvpmaker',
-		'post_author'  => $user_id,
+		'post_type'    => 'rsvpmaker_template',
+		'post_author'  => $current_user->ID,
 		'ping_status'  => 'closed',
 	);
 	$templateID = wp_insert_post( $post );
@@ -12735,6 +12738,8 @@ function toastmasters_role_signup() {
 			}
 			$role    = sanitize_text_field($_POST['role']);
 			$post_id = (int) $_POST['post_id'];
+			if(wp4t_hour_past($post_id))
+				return __('Role data associated with this event has now been archived and cannot be updated through the front end of the website.','rsvpmaker-for-toastmasters');
 			tm_in_person_update($post_id);
 			do_action('toastmasters_agenda_change',$post_id,$role,$user_id,get_post_meta($post_id,$role,true),0);
 			update_post_meta( $post_id, $role, $user_id );
@@ -12745,6 +12750,8 @@ function toastmasters_role_signup() {
 				update_post_meta( $post_id, '_intro' . $role, sanitize_text_field( stripslashes( $_POST['_intro'][ $role ] ), '<p><br><strong><em><a>' ) );
 			}
 			$o = 'Assigned to: ' . get_member_name( $user_id );
+			if(isset($_REQUEST['action']))
+				return $o;
 			foreach ( $_POST as $name => $value ) {
 				if ( ( $name == 'user_id' ) || ( $name == 'post_id' ) || ( $name == 'timelord' ) || ( $name == 'editor_assign' ) ) {
 					continue;
@@ -12798,57 +12805,6 @@ function toastmasters_role_signup() {
 			return $actiontext;
 		}
 	}
-}
-
-add_action( 'rsvpmaker_template_list_top', 'rsvpmaker_template_list_top_wpt' );
-
-function rsvpmaker_template_list_top_wpt() {
-	global $wpdb;
-	global $rsvp_options;
-	wp4t_contest_templates ();
-
-	if ( ! function_exists( 'do_blocks' ) ) {
-		return;
-	}
-
-	$sql = "SELECT DISTINCT $wpdb->posts.*, meta_value as sked FROM $wpdb->posts JOIN $wpdb->postmeta ON $wpdb->postmeta.post_id = $wpdb->posts.ID WHERE meta_key='_sked_Varies' AND $wpdb->posts.post_content LIKE '%role=%' AND $wpdb->posts.post_status = 'publish' GROUP BY $wpdb->posts.ID ORDER BY post_title";
-
-	$results = $wpdb->get_results( $sql );
-	if ( $results ) {
-		if ( isset( $_GET['convert'] ) ) {
-			foreach ( $results as $row ) {
-				if ( strpos( $row->post_title, 'old format' ) ) {
-					continue;
-				}
-				$backuptitle            = '(backup) ' . $row->post_title;
-				$newcode                = str_replace( "</p>\n<p>", "\n", do_shortcode( $row->post_content ) );
-				$update['ID']           = $row->ID;
-				$update['post_type']    = 'rsvpmaker';
-				$update['post_title']   = $row->post_title;
-				$update['post_content'] = $newcode;
-				$update['post_author']  = $row->post_author;
-				$update['post_status']  = 'publish';
-				wp_insert_post( $update );
-
-				$back['post_type']    = 'rsvpmaker';
-				$back['post_title']   = $backuptitle;
-				$back['post_content'] = $row->post_content;
-				$back['post_author']  = $row->post_author;
-				$back['post_status']  = 'draft';
-				$back_id              = wp_insert_post( $back );
-				$sked                 = unserialize( $row->sked );
-				new_template_schedule( $back_id, $sked );
-				printf( '<p>Updating %s <a href="%s">(Edit)</a>, backup saved as draft</p>', $row->post_title, admin_url( 'post.php?action=edit&post=' . $row->ID ) );
-			}
-			update_option( 'wpt_template_convert', 1 );
-		} elseif ( empty( $_GET['t'] ) ) {
-			echo '<h1>Convert to New Editor Format?</h1><p>Your meeting templates must be converted to display properly in the new WordPress editor. A backup copy will be saved. <a href="' . admin_url( 'edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&convert=1' ) . '">Convert Now</a></p>';
-			foreach ( $results as $row ) {
-				printf( '<p><em>Old format:</em> %s</p>', $row->post_title );
-			}
-		}
-	} //end if results
-
 }
 
 function agenda_note_convert( $atts, $content ) {
