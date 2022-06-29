@@ -7,8 +7,8 @@ function wpt_email_menu () {
     add_menu_page( __('Toastmasters Email Tools', 'rsvpmaker-for-toastmasters' ), __( 'TM Email', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_email_handler_page', 'wpt_email_handler_page', 'https://toastmost.org/click16.png', '2.03' );
     add_submenu_page('wpt_email_handler_page', 'Email Lists', 'Email Lists', 'manage_options', 'wpt_email_handler_club_email_list', 'wpt_email_handler_club_email_list');  
     add_submenu_page('wpt_email_handler_page', 'Email Forwarding', 'Email Forwarding', 'manage_options', 'wpt_email_handler_forwarders', 'wpt_email_handler_forwarders');
-    //add_submenu_page('wpt_email_handler_page', 'Email Status', 'Email Status', 'read', 'wpt_email_handler_email_status', 'wpt_email_handler_email_status');
     add_submenu_page('wpt_email_handler_page', 'Find a Club Autoresponder / Notifications Forwarding', 'Find a Club Autoresponder / Notifications Forwarding', 'manage_options', 'wpt_findaclub', 'wpt_findaclub');    
+    add_submenu_page('wpt_email_handler_page', 'Member Email Check', 'Member Email Check', 'read', 'wpt_member_email_check', 'wpt_member_email_check');
 }
 
 function wpt_email_handler_page () {
@@ -78,7 +78,20 @@ function wpt_email_handler_page () {
 function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname, $toarray, $ccarray) {
     echo '<h1>wpt_email_handler_automation triggered</h1>';
     rsvpmaker_debug_log($toarray,'to array');
-    rsvpmaker_debug_log($ccarray,'to array');
+    rsvpmaker_debug_log($ccarray,'cc array');
+
+    $toline = 'Forwarded message, originally <strong>To:</strong> ';
+    foreach($toarray as $address)
+        $toline .= $address->mailbox.'@'.$address->host.' ';
+    if(!empty($ccarray))
+        {
+            $toline .= '<strong>CC:</strong> ';
+            foreach($ccarray as $address)
+                $toline .= $address->mailbox.'@'.$address->host.' ';    
+        }
+    //for findaclub autoresponder
+    preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$qpost["post_content"],$fcmatches);
+    $qpost['post_content'] .= "\n<p>$toline</p>";
 
     $output = "<p>$to $from $fromname ".$qpost['post_title'].'</p>';
 
@@ -146,8 +159,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
             if($finda_id && strpos($from,'google.com') && strpos($qpost['post_title'],'Forward'))
             {
-                preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,5}/',$qpost["post_content"],$matches);
-                foreach($matches[0] as $email) {
+                foreach($fcmatches[0] as $email) {
                     if(strpos($email,'google') || strpos($email,'findaclub'))
                         continue;
                     $contact = $email;
@@ -164,8 +176,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             if($from == 'clubleads@toastmasters.org')
             {
                 $blog_id = $finda_id;
-                preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$qpost["post_content"],$matches);
-                foreach($matches[0] as $email) {
+                foreach($fcmatches[0] as $email) {
                     if(strpos($email,'toastmasters.org') || strpos($email,'@toastmost.org') || (strcasecmp($email, $forwarder) == 0))
                         continue;
                     $contact = $email;
@@ -386,7 +397,7 @@ function wpt_email_handler_qemail ($qpost, $recipients, $from, $fromname = '', $
     
             foreach($recipients as $to) {
     
-                $rsvpmailer_rule = apply_filters('rsvpmailer_rule','',$to, 'email_rule_group_email');
+                $rsvpmailer_rule = apply_filters('rsvpmailer_rule','permit',$to, 'email_rule_group_email');
     
                 if ($rsvpmailer_rule == 'permit')
     
@@ -397,7 +408,6 @@ function wpt_email_handler_qemail ($qpost, $recipients, $from, $fromname = '', $
                     rsvpmaker_debug_log($to,'group email blocked');            
     
                 }
-                add_post_meta($post_id,'rsvprelay_to',$to);
             }
         }
         rsvpmaker_relay_queue(); // send the first few
@@ -542,7 +552,7 @@ $botchecked = ($ffemail == $botemail);
 <p><input type="radio" name="bot" value="1" <?php if($botchecked) echo ' checked="checked" '; ?> >  I will register <?php echo $botemail.$ordomain; ?> as the club's email address in Club Central</p>
 <p><input type="radio" name="bot" value="0" <?php if(!$botchecked) echo ' checked="checked" '; ?> > I have set up forwarding to findaclub@toastmost.org from this address:<br />
 <input type="text" name="ffemail" value="<?php if(!$botchecked) echo $ffemail; ?>" />
-<br /><em>Example: myclub@gmail.com (<a href="https://www.wp4toastmasters.com/2021/01/05/use-the-wpt_email_handler-find-a-club-email-bot-with-gmail/" target="_blank">GMail setup example</a>)</em></p>
+<br /><em>Example: myclub@gmail.com (<a href="https://www.wp4toastmasters.com/2021/01/05/use-the-toastmost-find-a-club-email-bot-with-gmail/" target="_blank">GMail setup example</a>)</em></p>
 <p>Automatic response content:<br /><select name="ffpage"><?php echo $o; ?></select>
 <?php
 if($ffpage) {
@@ -586,7 +596,7 @@ if(isset($post->post_title)) {
 <p>To use <?php echo $botemail ?>, you must register <?php echo $botemail ?> as the club's official email address in Club Central. In that case, you should specify one or more forwarding email addresses for club officers who should also get those messages.</p>
 <h2>Handle Messages Forwarded from Another Email Address</h2>
 <p>To use this feature with your own club email account, you need to have those contact email messages from clubleads@toastmasters.org forwarded to findaclub@toastmost.org.</p>
-<p>One relatively easy way is to create a GMail account specifically for purposes of club correspondence and have it forward selected emails to findaclub@toastmost.org. See this <a target="_blank" href="https://www.wp4toastmasters.com/2021/01/05/use-the-wpt_email_handler-find-a-club-email-bot-with-gmail/#stepbystep">step-by-step illustrated tutorial</a>.</p>
+<p>One relatively easy way is to create a GMail account specifically for purposes of club correspondence and have it forward selected emails to findaclub@toastmost.org. See this <a target="_blank" href="https://www.wp4toastmasters.com/2021/01/05/use-the-toastmost-find-a-club-email-bot-with-gmail/#stepbystep">step-by-step illustrated tutorial</a>.</p>
 <p>The process is:</p>
 <ol>
 <li>Record your club's main email address here on the Find-a-Club Autoresponder screen under Toastmasters Administration.</li>
@@ -1233,4 +1243,19 @@ function wpt_get_officer_emails() {
     }
     }
     return $recipients;
+}
+
+function wpt_member_email_check() {
+    rsvpmaker_admin_heading('Member Email Check',__FUNCTION__);
+    echo '<p>This screen allows you to see whether any members have unsubscribed from email notifications, indicated a preference against receiving group email messages and event notifications, or have bad email addresses associated with their member profiles.</p>';
+    $members = get_club_members();
+    foreach($members as $member) {
+        $problem = rsvpmail_is_problem($member->user_email);
+        $rsvpmailer_rule = apply_filters('rsvpmailer_rule','permit',$member->user_email, 'group_email');
+        if($rsvpmailer_rule == 'deny') {
+            $problem .= ' blocks group email and forwarding';
+        }
+        $status = (empty($problem)) ? '<span style="color:green; font-weight: bold;">OK</span>' : '<span style="color:red; font-weight: bold;">'.$problem.'</span>';
+        echo '<p>'.$member->display_name.' '.$member->user_email.' '.$status.'</p>';
+    }
 }

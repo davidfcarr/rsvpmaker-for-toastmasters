@@ -66,7 +66,7 @@ function wp4toastmasters_history() {
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
     $startover = isset($_GET['startover']);
-    wp4t_history_overview($startover);
+    update_user_role_archive_all();
     $output = '';
     if(isset($_GET['user_id']))
         $user_id = intval($_GET['user_id']);
@@ -232,7 +232,6 @@ function wp4toastmasters_history() {
         </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'All Members'), $latestchecked, $speakerchecked, $pathchecked, $mostactivechecked, $countbyrolechecked, $countspeecheschecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );    
     }
     echo $output;
-    tm_admin_page_bottom($hook);
 }
 
 function wp4toastmasters_history_edit() {

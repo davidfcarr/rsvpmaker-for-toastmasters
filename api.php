@@ -438,7 +438,7 @@ function wpt_suggest_role() {
 		update_post_meta($post_id,'oneclicknonce',$nonce);
 	}
 	$url = add_query_arg(array('oneclick' => $nonce,'role' => rawurlencode($role),'member' => $member_id),get_permalink($post_id)).'#oneclick';
-	$link = sprintf('<a href="%s">%s</a>', $url, $url );
+	$link = sprintf('<a href="%s" style="display:block; width: 150px; text-align: center; text-decoration: none; background-color: black; color: white; border: thin solid gray; font-weight:bold; font-size:large; padding: 5px;">%s</a> <br>%s <a href="%s">%s</a>', $url, __('Take Role','rsvpmaker-for-toastmasters'), __('or click','rsvpmaker-for-toastmasters'), $url, $url );
 	$templates = get_rsvpmaker_notification_templates();
 	$template = $templates['suggest'];
 	$note = '';

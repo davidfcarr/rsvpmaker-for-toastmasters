@@ -300,6 +300,8 @@ function toastmasters_rsvpmailer_rule( $content, $email, $message_type ) {
 	if ( ! $user ) {
 		return '';
 	}
+	if(get_user_meta($user->ID,'tm_privacy_prompt',true) == '2')
+		return 'deny';
 	return get_user_meta( $user->ID, 'email_rule_' . $message_type, true );
 }
 
@@ -704,14 +706,6 @@ function backup_speaker_notify( $assigned ) {
 			$mail['from']     = $speakerdata->user_email;
 			$mail['fromname'] = $speakerdata->display_name;
 			$result           = awemailer( $mail ); // notify leader
-}
-
-add_filter('rsvpmail_is_problem','rsvpmail_tm_privacy',10,2);
-function rsvpmail_tm_privacy($code, $email) {
-	if(is_tm_privacy_pending($email)) {
-		return 'user privacy permission not granted';
-	}
-	return $code;
 }
 
 function is_tm_privacy_pending($id_or_email, $return_not_set = false) {
