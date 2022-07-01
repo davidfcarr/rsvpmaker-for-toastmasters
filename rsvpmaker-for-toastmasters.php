@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.3.3
+Version: 5.3.5
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -124,7 +124,7 @@ function minutes_post_type() {
         'show_in_menu'       => true,
         'query_var'          => true,
         'rewrite'            => array( 'slug' => 'tm-minutes' ),
-        'capability_type'    => 'post',
+        'capability_type'    => 'page',
         'has_archive'        => true,
         'hierarchical'       => false,
         'menu_position'      => 3,
@@ -432,7 +432,7 @@ echo '<p>'.club_member_mailto().'</p>';
 }
 
 function toastmasters_admin_widget() {
-	global $rsvp_options;
+	global $rsvp_options, $menu;
 	$publish_posts          = ( current_user_can( 'publish_posts' ) ) ? 'Yes' : 'No';
 	$edit_others_posts      = ( current_user_can( 'edit_others_posts' ) ) ? 'Yes' : 'No';
 	$publish_rsvpmaker      = ( current_user_can( 'publish_rsvpmakers' ) ) ? 'Yes' : 'No';
@@ -534,6 +534,22 @@ function toastmasters_admin_widget() {
 			admin_url( 'edit.php?post_type=rsvpemail&page=unsubscribed_list' )
 		);
 	}
+
+	global $submenu;
+	foreach ($submenu['wpt_email_handler_page'] as $index => $item) {
+		if($index) 
+			printf('<li><a href="%s">%s</a></li>',admin_url($item[2]),$item[3]);
+		else
+			printf('<p><strong><a href="%s">%s</a></strong></p><ul>',admin_url($item[2]),$item[3]);
+	}
+	echo '</ul>';
+	foreach ($submenu['toastmasters_admin_help'] as $index => $item) {
+		if($index) 
+			printf('<li><a href="%s">%s</a></li>',admin_url($item[2]),$item[3]);
+		else
+			printf('<p><strong><a href="%s">%s</a></strong></p><ul>',admin_url($item[2]),$item[3]);
+	}
+	echo '</ul>';
 
 	do_action( 'toastmasters_admin_widget_end' );
 }
