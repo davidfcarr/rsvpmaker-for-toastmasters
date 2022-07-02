@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.3.5
+Version: 5.3.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -2981,6 +2981,16 @@ $summary_off = (int) get_option('wpt_notification_summary_off');
 	<?php echo $options_intros; ?>
 </select>
 
+<p>Send written evaluation reminders to evaluators and general evaluator<br>
+<?php 
+$eval_reminder = (int) get_option('wpt_evaluation_reminder');
+?>
+<input type="radio" name="wpt_evaluation_reminder" value="1" <?php if($eval_reminder) echo ' checked="checked" '; ?> > ON
+<br>
+<input type="radio" name="wpt_evaluation_reminder" value="0"  <?php if(!$eval_reminder) echo ' checked="checked" '; ?> > OFF
+</p>
+
+
 <p>See also <a href="edit.php?post_type=rsvpemail&amp;page=rsvpmaker_notification_templates">Email Notification/Reminder Templates</a></p>
 
 <h3><?php _e( 'Agenda Formatting', 'rsvpmaker-for-toastmasters' ); ?></h3>
@@ -3444,6 +3454,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_agenda_lock_policy' );
 	register_setting( 'wp4toastmasters-settings-group', 'show_legacy_manuals' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4t_disable_timeblock' );
+	register_setting( 'wp4toastmasters-settings-group', 'wpt_evaluation_reminder' );
 
 	if ( isset( $_POST['wp4toast_reminder'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 				// clear cron
@@ -7522,6 +7533,17 @@ function awesome_user_profile_fields( $user ) {
 	}
 	?>
 </td>
+<tr>
+<th><label for="evaluation_preference"><?php _e( 'Evaluation Preference', 'rsvpmaker-for-toastmasters' ); ?></label></th>
+<td>
+<?php
+$second_language = get_user_meta($user->ID,'second_language_feedback',true);
+$checkedyes = ($second_language) ? ' checked="checked" ' : '';
+$checkedno = (!$second_language) ? ' checked="checked" ' : '';
+printf('<p><input type="radio" name="second_language_feedback" value="1" %s> Show <input type="radio" name="second_language_feedback" value="0" %s> DO NOT Show additional evaluation form prompts for those speaking a second language.</p><p>When this is checked, the evaluator will be asked to rate you on </p><ul><li>Pace: not too fast or too slow</li><li>Grammar and word usage</li><li>Word tense, gender, and pronouns</li><li>Clear pronunciation</li></ul>',$checkedyes,$checkedno);
+?>	
+</td>
+</tr>
 </tr>
 	<?php
 	if ( current_user_can( 'manage_options' ) ) {
@@ -7548,6 +7570,7 @@ function awesome_user_profile_fields( $user ) {
 function save_awesome_user_profile_fields( $user_id ) {
 	if ( ! current_user_can( 'edit_user', $user_id ) ) {
 		return false; }
+	update_user_meta( $user_id,'second_language_feedback',intval($_POST['second_language_feedback']));
 	update_user_meta( $user_id,'tm_privacy_prompt',intval($_POST['tm_privacy_permission']));
 	update_user_meta( $user_id,'tm_directory_blocked',intval($_POST['tm_directory_blocked']));
 	update_user_meta( $user_id, 'public_profile', ! empty( $_POST['public_profile'] ) );
@@ -13107,6 +13130,10 @@ function wp4t_reminders_nudge() {
 				rsvpmaker_debug_log( $result, "wp_schedule_single_event( $timestamp, 'wp4toast_reminders_cron', array( $meeting->ID.':'.$hours ) )" );
 			}
 		}
+	}
+	if(get_option('wpt_evaluation_reminder')) {
+		$timestamp = rsvpmaker_strtotime( $time . ' +4 hours' );
+		wp_schedule_single_event( $timestamp, 'wpt_evaluation_reminder');	
 	}
 }
 

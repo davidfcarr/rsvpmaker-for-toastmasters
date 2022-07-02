@@ -4561,7 +4561,15 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 			$topcount = $index;
 		}
 	}
-	echo '<div id="second_language"><input type="checkbox" id="second_language_checkbox" value="'.$topcount.'" /> '.__('Show second language speaker prompts','rsvpmaker-for-toastmasters').'</div>';
+
+	if(!empty($speaker_id)) {
+		$second_language = get_user_meta($speaker_id,'second_language_feedback',true);
+		if($second_language) {
+			echo '<h3>This Member Has Requested Additional Feedback on Language Use</h3><p><strong>Pace: not too fast or too slow</strong><input type="hidden" name="prompt[11]" value="Pace: not too fast or too slow"></p><p><input type="radio" name="check[11]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[11]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[11]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[11]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[11]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[11]" style="width: 100%; height: 3em;"></textarea></p><p><strong>Grammar and word usage</strong><input type="hidden" name="prompt[12]" value="Grammar and word usage"></p><p><input type="radio" name="check[12]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[12]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[12]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[12]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[12]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[12]" style="width: 100%; height: 3em;"></textarea></p><p><strong>Word tense, gender, and pronouns</strong><input type="hidden" name="prompt[13]" value="Word tense, gender, and pronouns"></p><p><input type="radio" name="check[13]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[13]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[13]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[13]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[13]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[13]" style="width: 100%; height: 3em;"></textarea></p><p><strong>Clear pronunciation</strong><input type="hidden" name="prompt[14]" value="Clear pronunciation"></p><p><input type="radio" name="check[14]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[14]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[14]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[14]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[14]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[14]" style="width: 100%; height: 3em;"></textarea></p>';
+		}
+	}
+	else
+		echo '<div id="second_language"><input type="checkbox" id="second_language_checkbox" value="'.$topcount.'" /> '.__('Show second language speaker prompts','rsvpmaker-for-toastmasters').'</div>';
 	rsvpmaker_nonce();
 	echo '<p><button>Submit</button></p>';
 	?>
@@ -7459,4 +7467,66 @@ function wpt_data_disclosure ($user_id) {
 			$data[] = implode(', ',$bloglist);
 		}
 		return $data;
+}
+
+function wpt_evaluation_reminder() {
+	global $wpdb;
+	$output = '';
+	$past = get_past_events( '', 1 );
+	if(!empty($past[0])) {
+		$date = preg_replace('/ [0-9]{2}:[0-9]{2}:[0-9]{2}/','',$past[0]->datetime);
+		$mail['html'] = "<p>You are receiving this message as part of the evaluation team for $date</p>";
+		$post_id = $past[0]->ID;
+		$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_Speaker%' ORDER BY meta_key";
+		$results = $wpdb->get_results($sql);
+		foreach($results as $row) {
+			if(is_numeric($row->meta_value) && $row->meta_value > 0)
+			{
+				$speaker_id = $row->meta_value;
+				if(wpt_evaluation_check($speaker_id,$date)) {
+					$output .= "<p>Evaluation recorded for $speaker_id $date</p>";
+				}
+				else
+				{
+					if(!$evaluators) {
+						$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '%Evaluator%' AND meta_value > 0 ORDER BY meta_key";
+						$evalres = $wpdb->get_results($sql);
+						foreach($evalres as $evrow) {
+							if(is_numeric($evrow->meta_value))
+							{
+								$evaluators[] = get_userdata($evrow->meta_value);
+							}
+						}
+					}
+					$speaker_name = get_member_name($speaker_id);
+					$project_index = get_post_meta($post_id,'_project'.$row->meta_key,true);
+					$project_eval_url = admin_url( sprintf( 'admin.php?page=wp4t_evaluations&speaker=%d&meeting_id=%d&project=%s', $speaker_id, $post_id, $project_index ) );
+					$project_eval_output = "<p><a href=\"$project_eval_url\">Evaluation Link</a></p>\n";
+					$mail['html'] .= sprintf('<p>%s may not yet have received a written evaluation for a speech on %s (at least not through the online system). If you were this speaker\'s evaluator, you can provide that feedback now.</p>'."\n",$speaker_name,$date).$project_eval_output;
+					$output .= $project_eval_output;
+				}
+			}
+		}
+		if(!empty($evaluators)) {
+			$mail['subject'] = 'Written evaluation reminder';
+			foreach($evaluators as $ev) {
+				$mail['to'] = $ev->user_email;
+				$mail['toname'] = $ev->display_name;
+				$mail['from'] = get_bloginfo('admin_email');
+				$mail['fromname'] = get_bloginfo('name');
+				rsvpmailer($mail);
+				$output .= var_export($mail,true);
+			}
+		}
+	}
+	return $output;
+}
+
+add_action('wpt_evaluation_reminder','wpt_evaluation_reminder');
+add_shortcode('wpt_evaluation_reminder','wpt_evaluation_reminder');
+
+function wpt_evaluation_check($speaker_id,$date) {
+	global $wpdb;
+	$sql = "SELECT umeta_id FROM $wpdb->usermeta WHERE user_id=$speaker_id AND meta_key LIKE 'evaluation|".$date."%'";
+	return $wpdb->get_var($sql);
 }
