@@ -749,14 +749,31 @@ function wpt_minutes_from_history($history_post_id = '') {
 return $content;
 }
 
-function wpt_minutes_from_history_title($title) {
+function wpt_minutes_from_history_title($title = '') {
     if(isset($_GET['minutes_from_history'])) {
-        $title = get_bloginfo('name').' '.__('Minutes for','rsvpmaker-for-toastmasters').' ';
+        $title = __('Minutes for','rsvpmaker-for-toastmasters').' ';
         $history_post_id = intval($_GET['minutes_from_history']);
         $title .= rsvpmaker_long_date($history_post_id);
     }
     return $title;
 }
+
+function wpt_minutes_from_history_draft() {
+    if(isset($_GET['minutes_from_history']) && isset($_GET['draft'])) {
+        $history_post_id = intval($_GET['minutes_from_history']);
+        $new['post_title'] = wpt_minutes_from_history_title();
+        $new['post_content'] = wpt_minutes_from_history();
+        $new['post_status'] = 'draft';
+        $new['post_type'] = 'tmminutes';
+        $new['post_date'] = get_rsvp_date($history_post_id);
+        $id = wp_insert_post($new);
+        update_post_meta($id,'minutes_for',$history_post_id);
+        wp_safe_redirect(admin_url("post.php?post=$id&action=edit"));
+        die();
+    }    
+}
+add_action('admin_init','wpt_minutes_from_history_draft');
+
 add_filter('default_title','wpt_minutes_from_history_title');
 add_filter('default_content','wpt_minutes_from_history');
 

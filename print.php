@@ -16,6 +16,7 @@
 <body>
 	<div id="primary" class="content-area">
 		<main id="main" class="site-main" role="main">
+			<h3><?php echo get_bloginfo('name'); ?></h3>
 			<?php while ( have_posts() ) : the_post(); ?>
             <h1><?php the_title(); ?></h1>
 				<?php the_content(); ?>

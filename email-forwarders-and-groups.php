@@ -71,14 +71,10 @@ function wpt_email_handler_page () {
         echo $forwarder_info;
     }
 
-    //$subdomains = wpt_get_subdomains();
-    //print_r($subdomains);
 }
 
 function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname, $toarray, $ccarray) {
     echo '<h1>wpt_email_handler_automation triggered</h1>';
-    rsvpmaker_debug_log($toarray,'to array');
-    rsvpmaker_debug_log($ccarray,'cc array');
 
     $toline = 'Forwarded message, originally <strong>To:</strong> ';
     foreach($toarray as $address)
@@ -89,14 +85,12 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             foreach($ccarray as $address)
                 $toline .= $address->mailbox.'@'.$address->host.' ';    
         }
-    //for findaclub autoresponder
     preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$qpost["post_content"],$fcmatches);
     $qpost['post_content'] .= "\n<p>$toline</p>";
 
     $output = "<p>$to $from $fromname ".$qpost['post_title'].'</p>';
 
     $hosts = wpt_get_hosts();
-    $output .= sprintf('<p>hosts %s</p>',var_export($hosts,true));
     $subdomains = wpt_get_subdomains();
     if(empty($ccarray))
         $addresses = $toarray;
@@ -106,14 +100,12 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
     $mail['from'] = $noreply;
     $output .= "<p>addresses: ".var_export($addresses, true)."</p>";
     $ffemails = (is_multisite()) ? get_blog_option(1,'findclub_emails') : get_option('findclub_emails');
-    $output .= sprintf('<p>find a club emails %s</p>',var_export($ffemails, true));
     foreach($addresses as $address) {
         if($address->mailbox == 'noreply')
             continue;
         $forwarder = strtolower($address->mailbox.'@'.$address->host);
         $qpost['forwarded_from'] = $forwarder;
         $subdomain = '';
-        $output .= sprintf('<p>processing %s</p>',$forwarder);
         if(!in_array($address->host,$hosts)) {
             $output .= sprintf('<p>%s not in hosts list</p>',$forwarder);
             continue;
@@ -121,7 +113,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
         if(is_multisite()) {
             //returns 0 for main host, blog_id for subdomains
             $blog_id = array_search($address->host,$hosts);
-            $output .= sprintf('<p>blog id based on host %s</p>',$blog_id);
+            //$output .= sprintf('<p>blog id based on host %s</p>',$blog_id);
             if($blog_id) {//has own domain
                 $slug = $address->mailbox;
             } else {
@@ -136,7 +128,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
                 $blog_id = array_search($subdomain,$subdomains); // wpt_subdomain_blog_id($subdomain, $hosts[0]);
                 if(!$blog_id && $address->host == $hosts[0])
                     $blog_id = 1;//root domain, no subdomain
-                $output .= sprintf('<p>multisite blog id %s</p>',$blog_id);
+                //$output .= sprintf('<p>multisite blog id %s</p>',$blog_id);
             }
         }
         else {
@@ -155,7 +147,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
         if(!empty($finda_id)) {
 
-            $output .= sprintf('<p>Checking finda_id %s / %s</p>',$finda_id,$forwarder);
+            //$output .= sprintf('<p>Checking finda_id %s / %s</p>',$finda_id,$forwarder);
 
             if($finda_id && strpos($from,'google.com') && strpos($qpost['post_title'],'Forward'))
             {
@@ -185,10 +177,8 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
                 $output .= sprintf('<p>autoresponder %s for %s, contact %s</p>',$finda_id,$forwarder, $contact);
                 $sent = true;
             }
-            else
-                $output .= "<p>No clubleads@toastmasters.org autoresponder for $forwarder</p>";
     
-            $output .= sprintf('<p>check Basecamp/misc forwarding for finda_id %s / %s</p>',$finda_id,$forwarder);
+            //$output .= sprintf('<p>check Basecamp/misc forwarding for finda_id %s / %s</p>',$finda_id,$forwarder);
             $blog_id = $finda_id;
             $forward_by_id = ($blog_id == 1)  ? get_option('wpt_forward_general') : get_blog_option($blog_id,'wpt_forward_general');
             $basecamp = ($blog_id == 1) ? get_option('wpt_forward_basecamp') : get_blog_option($blog_id,'wpt_forward_basecamp');
@@ -205,8 +195,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $output .= sprintf('<p>forarded %s basecamp message to %s</p>',$forwarder, var_export($fto,true));
             continue;
             }
-            else
-                $output .= "<p>$forwarder not a Base Camp match</p>";
 
             if(is_array($forward_by_id)) {
                 $output .= sprintf('<p><strong>forward by id %s %s</strong></p>',$forwarder, var_export($forward_by_id,true));
@@ -215,8 +203,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             continue;
         }
-        else
-            $output .= "<p>No finda_id processing for $forwarder</p>";
 
         $unsubscribed = get_option('rsvpmail_unsubscribed');
         if(empty($unsubscribed))
@@ -231,9 +217,9 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
         if($slug == 'members') {
             $on = (int) (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list', true) : get_option('member_distribution_list', true);
-            $output .= sprintf('<p>members list for %s on = %s</p>',$blog_id,$on);
-            $output .= sprintf('<p>members %s</p>',$forwarder);
-            $output .= sprintf('<p>%s</p>',$on);
+            //$output .= sprintf('<p>members list for %s on = %s</p>',$blog_id,$on);
+            //$output .= sprintf('<p>members %s</p>',$forwarder);
+            //$output .= sprintf('<p>%s</p>',$on);
             if(!$on)
                 continue;
             $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
@@ -256,11 +242,9 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $recipients = array();
             $sent = true;
         }
-        else
-            $output .= "<p>No member list match for $blog_id $slug</p>";
 
         if('officers' == $slug) {
-            $output .= sprintf('<p>officers %s</p>',$forwarder);
+            //$output .= sprintf('<p>officers %s</p>',$forwarder);
             $on = (int) (is_multisite()) ? get_blog_option($blog_id,'officer_distribution_list') : get_option('officer_distribution_list');
             if(!$on)
                 continue;
@@ -287,8 +271,8 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             $slug = str_replace('@toastmost.org','',$forwarder);
             $qpost['post_title'] = '['.$slug.'] '.$qpost['post_title'];
-            $output .= sprintf('<p><strong>officers list %s</strong> to %s</p>',$forwarder, var_export($recipients,true));
             $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
+            $output .= sprintf('<p><strong>officers list %s</strong> to %s</p>',$forwarder, var_export($recipients,true));
             //faster where there is less need for queuing
             $output .= wpt_email_handler_bcc($qpost, $recipients, $from, $fromname, $blog_id, $forwarder.' email list', $noreply);
             $recipients = array();
@@ -296,11 +280,9 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             continue;
         }
-        else
-            $output .= "<p>No officer list match for $blog_id $slug</p>";
 
         $slug_ids = get_officer_slug_ids($blog_id);
-        $output .= sprintf("<p>Officer slug ids %s</p>",var_export($slug_ids, true));
+        //$output .= sprintf("<p>Officer slug ids %s</p>",var_export($slug_ids, true));
         if(!empty(	$slug_ids [$slug]))
         {
             foreach($slug_ids[$slug] as $user_id) {
@@ -312,8 +294,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             rsvpmaker_debug_log($recipients,'officer recipients for '.$forwarder);
             $output .= sprintf("<p>Officer recipients for %s %s</p>",$forwarder, var_export($recipients,true));
         }
-        else
-            $output .= "<p>No officer ids for $forwarder $blog_id</p>";
 
         if(!empty($recipients)) {
             $recipients = array_unique($recipients);
@@ -323,22 +303,17 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $recipients = array();
             $sent = true;
         }
-        else
-            $output .= '<p>No match for officer email</p>';
 
         $custom_forwarders = (is_multisite()) ? get_blog_option($blog_id,'custom_forwarders') : get_option('custom_forwarders');
         if(!empty($custom_forwarders[$forwarder]))
         {
             $qpost['post_content'] = "<p>Forwarded from $forwarder</p>\n".$qpost['post_content'];
             $recipients = $custom_forwarders[$forwarder];
-            $output .= sprintf('<p><strong>custom forwarders wpt_email_handler_bcc</strong> %s</p>',$forwarder);
-            rsvpmaker_debug_log($recipients,'custom forwarder recipients for '.$forwarder);
+            $output .= sprintf('<p><strong>custom forwarder for %s</strong> %s</p>',$forwarder,var_export($recipients,true));
             wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
             $recipients = array();
             $sent = true;
         }
-        else
-        $output .= '<p>No match for custom forwarder</p>';
 
         if(!$sent) {
             $output .= 'do action hook';
@@ -352,7 +327,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
                 $qpost['post_content'] = "<p>Forwarded from $forwarder</p>\n".$qpost['post_content'];
                 $recipients = $custom_forwarders[$forwarder];
                 rsvpmaker_debug_log($recipients,'default forwarder');
-                $output .= sprintf('<p><strong>default forwarder wpt_email_handler_qemail</strong> %s</p>',$forwarder);
+                $output .= sprintf('<p><strong>default forwarder for %s</strong> %s</p>',$forwarder,var_export($recipients,true));
                 wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
                 $recipients = array();
                 $sent = true;

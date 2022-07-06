@@ -1726,3 +1726,13 @@ function wpt_rsvpmaker_admin_heading_help($content,$function='',$tag='') {
 	return $content; 
 }
 
+function clean_toastmasters_id() {
+	global $wpdb;
+	$sql = "SELECT * FROM $wpdb->usermeta WHERE `meta_key` LIKE 'toastmasters_id' AND meta_value != '0' AND (meta_value LIKE '0%' OR meta_value LIKE 'PN-%') ";
+	$results = $wpdb->get_results($sql);
+	foreach($results as $row) {
+		$row->meta_value = intval(str_replace('PN-','',$row->meta_value));
+		$sql = "update $wpdb->usermeta set meta_value = $row->meta_value WHERE umeta_id=$row->umeta_id";
+		$wpdb->query($sql);
+	}
+}

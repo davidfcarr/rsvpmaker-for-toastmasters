@@ -683,7 +683,7 @@ function toastmasters_reconcile() {
 		?>
 		<p>If this information is now up to date, you have the option of creating meeting minutes that include this information. You'll be able to edit them and add further notes in the WordPress editor.</p>
 		<?php
-		printf('<p><a href="%s">Create Minutes</a></p>',admin_url("post-new.php?post_type=tmminutes&minutes_from_history=$event_id"));
+		printf('<p><a href="%s">Create Minutes</a></p>',admin_url("?draft=tmminutes&minutes_from_history=$event_id"));
 	}
 
 	echo '<style>.agenda_note{display: none;}</style>';
@@ -1083,8 +1083,9 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 			$existing_post = get_post($existing);
 			$minutes_content = do_blocks($existing_post->post_content);
 		}
-		else
-			printf('<p><a href="%s">Create minutes document for %s</a></p>',admin_url('post-new.php?post_type=tmminutes&minutes_from_history='.$r_post->ID),$r_post->date);
+		else {
+			printf('<p><a href="%s">Create minutes document for %s</a></p>',admin_url('?draft=tmminutes&minutes_from_history='.$r_post->ID),$r_post->date);
+		}
 	}
 
 	echo $minutes_content;
@@ -4562,14 +4563,12 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 		}
 	}
 
-	if(!empty($speaker_id)) {
-		$second_language = get_user_meta($speaker_id,'second_language_feedback',true);
+		$second_language = ($speaker_id) ? get_user_meta($speaker_id,'second_language_feedback',true) : false;
 		if($second_language) {
 			echo '<h3>This Member Has Requested Additional Feedback on Language Use</h3><p><strong>Pace: not too fast or too slow</strong><input type="hidden" name="prompt[11]" value="Pace: not too fast or too slow"></p><p><input type="radio" name="check[11]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[11]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[11]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[11]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[11]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[11]" style="width: 100%; height: 3em;"></textarea></p><p><strong>Grammar and word usage</strong><input type="hidden" name="prompt[12]" value="Grammar and word usage"></p><p><input type="radio" name="check[12]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[12]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[12]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[12]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[12]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[12]" style="width: 100%; height: 3em;"></textarea></p><p><strong>Word tense, gender, and pronouns</strong><input type="hidden" name="prompt[13]" value="Word tense, gender, and pronouns"></p><p><input type="radio" name="check[13]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[13]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[13]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[13]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[13]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[13]" style="width: 100%; height: 3em;"></textarea></p><p><strong>Clear pronunciation</strong><input type="hidden" name="prompt[14]" value="Clear pronunciation"></p><p><input type="radio" name="check[14]" value="5 (Exemplary)"> 5 (Exemplary) <input type="radio" name="check[14]" value="4 (Excels)"> 4 (Excels) <input type="radio" name="check[14]" value="3 (Accomplished)"> 3 (Accomplished) <input type="radio" name="check[14]" value="2 (Emerging)"> 2 (Emerging) <input type="radio" name="check[14]" value="1 (Developing)"> 1 (Developing) </p><p><textarea name="comment[14]" style="width: 100%; height: 3em;"></textarea></p>';
 		}
-	}
-	else
-		echo '<div id="second_language"><input type="checkbox" id="second_language_checkbox" value="'.$topcount.'" /> '.__('Show second language speaker prompts','rsvpmaker-for-toastmasters').'</div>';
+		else
+			echo '<div id="second_language"><input type="checkbox" id="second_language_checkbox" value="'.$topcount.'" /> '.__('Show second language speaker prompts','rsvpmaker-for-toastmasters').'</div>';
 	rsvpmaker_nonce();
 	echo '<p><button>Submit</button></p>';
 	?>
@@ -5539,18 +5538,6 @@ function wpt_json_user_id( $user_id, $toastmasters_id ) {
 	$row->toastmasters_id = $toastmasters_id;
 	$json_data[] = $row;
 	}
-	// check for deleted records
-	/*
-	$deleted = get_user_meta( $user_id, 'wp4t_stats_delete' );
-	if ( is_array( $deleted ) ) {
-		foreach ( $deleted as $key ) {
-			$json_data[ $toastmasters_id ][] = array(
-				'meta_key'   => 'delete',
-				'meta_value' => $key,
-			);
-		}
-	}
-	*/
 	return wpt_json_send( $json_data ) . ' user id: ' . $user_id . ' toastmasters id: ' . $toastmasters_id;
 }
 

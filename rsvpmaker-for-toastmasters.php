@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.3.6
+Version: 5.3.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -2189,208 +2189,89 @@ function wp4t_extended_list() {
 
 	global $wpdb;
 	$public_context = false;
-
-	if ( ! empty( $_REQUEST['reset'] ) ) {
-		if ( ! empty( $_REQUEST['reset_confirm'] ) ) {
-			$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'users_archive' );
-			user_archive();
-		} else {
-			echo '<p>' . __( 'Are you sure you want to delete the user records archive?', 'rsvpmaker-for-toastmasters' ) . ' <a href="' . admin_url( 'users.php?page=wp4t_extended_list&reset=1&reset_confirm=1' ) . '">' . __( 'Yes', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
-		}
-	}
-
-	if ( isset( $_GET['make_user_member'] ) ) {
-		$user_id = (int) $_GET['make_user_member'];
-		if ( is_multisite() ) {
-			make_blog_member( $user_id );
-		}
-		$userdata = get_userdata( $user_id );
-		$msg      = esc_html($userdata->first_name . ' ' . $userdata->last_name) . ' ' . __( 'added to website', 'rsvpmaker-for-toastmasters' );
-		echo '<div class="notice notice-success is-dismissible"><p>' . $msg . '</p></div>';
-		return;
-	}
-
-	if ( isset( $_REQUEST['unsubscribe'] ) ) {
-		$e     = sanitize_text_field(strtolower( trim( $_REQUEST['unsubscribe'] ) ));
-		$unsub = get_option( 'rsvpmail_unsubscribed' );
-		if ( ! is_array( $unsub ) ) {
-			$unsub = array();
-		}
-		if ( ! in_array( $e, $unsub ) ) {
-			$unsub[] = $e;
-		}
-		update_option( 'rsvpmail_unsubscribed', $unsub );
-		do_action( 'rsvpmail_unsubscribe', $e );
-	}
-
-	if ( isset( $_REQUEST['resubscribe'] ) ) {
-		$e     = sanitize_text_field(strtolower( trim( $_REQUEST['resubscribe'] ) ));
-		$unsub = get_option( 'rsvpmail_unsubscribed' );
-		$key   = array_search( $e, $unsub );
-		if ( $key !== false ) {
-			unset( $unsub[ $key ] );
-			update_option( 'rsvpmail_unsubscribed', $unsub );
-		}
-	}
-
-	if ( isset( $_POST['user'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		$user                 = array_map('sanitize_text_field',stripslashes_deep( $_POST['user'] ));
-		$user['display_name'] = $user['first_name'] . ' ' . $user['last_name'];
-		$index                = preg_replace( '/[^A-Za-z]/', '', $user['last_name'] . $user['first_name'] . $user['user_email'] );
-		$guest                = sanitize_text_field($_POST['guest']);
-		if ( ! empty( $_POST['lookup'] ) ) {
-			$sql      = $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive WHERE sort=%s', sanitize_text_field($_POST['lookup']) );
-			$row      = $wpdb->get_row( $sql );
-			$userdata = unpack_user_archive_data( $row->data );
-			foreach ( $user as $name => $value ) {
-				$userdata[ $name ] = $value; // add changed values to archived data
-			}
-			$sql = $wpdb->prepare( 'UPDATE ' . $wpdb->prefix . 'users_archive SET data=%s, sort=%s, guest=%d, email=%s WHERE sort=%s', serialize( $userdata ), $index, $guest, $user['user_email'], sanitize_text_field($_POST['lookup']) );
-		} else {
-			$sql = $wpdb->prepare( 'REPLACE INTO ' . $wpdb->prefix . 'users_archive SET data=%s, sort=%s, guest=%d, email=%s', serialize( $user ), $index, $guest, $user['user_email'] );
-		}
-		$wpdb->show_errors();
-		$wpdb->query( $sql );
-		$userdata = null;
-	} elseif ( isset( $_POST['activate'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		$sql = $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive WHERE sort=%s', $_POST['activate'] );
-		$row = $wpdb->get_row( $sql );
-
-		$newuser = unpack_user_archive_data( $row->data );
-		$old_id = $newuser['ID'];
-		unset( $newuser['ID'] );
-		$newuser['user_pass'] = wp_generate_password();
-		$member_factory       = new Toastmasters_Member();
-
-		// $result = wp_insert_user($newuser);
-		$result = $member_factory->add( $newuser );
-		$member_factory->show_confirmations();
-
-		foreach ( $newuser as $key => $value ) {
-			if ( is_serialized( $value ) ) {
-				add_user_meta( $result, $key, unserialize( $value ) );
-			} elseif ( strpos( $key, 'user' ) === false ) {
-				add_user_meta( $result, $key, $value );
-			}
-		}
-	}
-
-	if ( isset( $_REQUEST['lookup'] ) ) {
-		$sql      = $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive WHERE sort=%s', sanitize_text_field($_REQUEST['lookup']) );
-		$row      = $wpdb->get_row( $sql );
-		$guest    = $row->guest;
-		$userdata = unpack_user_archive_data( $row->data );
-	} elseif ( isset( $_REQUEST['activate'] ) ) {
-		$sql = $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive WHERE sort=%s', sanitize_text_field($_REQUEST['activate']) );
-		$row = $wpdb->get_row( $sql );
-		if ( isset( $row->data ) ) {
-			$newuser = unpack_user_archive_data( $row->data );
-			?>
-<form action="<?php echo admin_url( 'users.php?page=wp4t_extended_list' ); ?>" method="post">
-<h3><?php _e( 'Activate Member Account', 'rsvpmaker-for-toastmasters' ); ?></h3>
-<p><?php echo esc_html($newuser['first_name'] . ' ' . $newuser['last_name'] . ' ' . $newuser['user_email']); ?></p>
-<p><input type="submit" value="<?php _e( 'Activate', 'rsvpmaker-for-toastmasters' ); ?>"></p>
-<input type="hidden" name="activate" value="<?php echo esc_attr($_REQUEST['activate']); ?>" />
-<?php rsvpmaker_nonce(); ?>
-</form>
-			<?php
-		}
-	}
-
-	$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['facebook_url'] = __( 'Facebook Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['twitter_url']  = __( 'Twitter Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['linkedin_url'] = __( 'LinkedIn Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['business_url'] = __( 'Business Web Address', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['Note']         = __( 'Note', 'rsvpmaker-for-toastmasters' );
-	$unsubscribed                   = get_option( 'rsvpmail_unsubscribed' );
-	if ( empty( $unsubscribed ) ) {
-		$unsubscribed = array();
-	}
-	$guest_list = $former_list = $email_list = '';
-
-	$results = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ORDER BY sort' );
-	foreach ( $results as $row ) {
-		$userdata = unpack_user_archive_data( $row->data );
-		if ( isset( $_REQUEST['debug'] ) ) {
-			echo '<pre>';
-			print_r( $userdata );
-			echo '</pre>';
-		}
-
-		if ( isset( $userdata['ID'] ) && $userdata['ID'] && ( $row->user_id == 0 ) ) {
-			$wpdb->query( $wpdb->prepare( 'UPDATE ' . $wpdb->prefix . 'users_archive SET user_id=%d WHERE sort=%s', $userdata['ID'], $row->sort ) );
-		}
-		if ( ! empty( $userdata['user_email'] ) && empty( $row->email ) ) {
-			$wpdb->query( $wpdb->prepare( 'UPDATE ' . $wpdb->prefix . 'users_archive SET email=%s WHERE sort=%s', $userdata['user_email'], $row->sort ) );
-		}
-
-		if ( isset( $userdata['user_email'] ) && ! in_array( $userdata['user_email'], $unsubscribed ) ) {
-			$email_list .= $userdata['user_email'] . ', ';
-		}
-		$status = '';
-		if ( isset( $userdata['ID'] ) && ! is_user_member_of_blog( $userdata['ID'] ) ) {
-			$account_exists = get_userdata( $userdata['ID'] );
-			if ( $account_exists ) {
-				$status = ' - ' . __( 'Former Member', 'rsvpmaker-for-toastmasters' ) . ' <a href="' . admin_url( 'users.php?page=wp4t_extended_list&make_user_member=' ) . $userdata['ID'] . '">(' . __( 'Reactivate', 'rsvpmaker-for-toastmasters' ) . ')</a><br />' . __( 'Updated', 'rsvpmaker-for-toastmasters' ) . ': ' . $row->updated;
-			} else {
-				$status = ' - ' . __( 'Former Member', 'rsvpmaker-for-toastmasters' ) . ' <a href="' . admin_url( 'users.php?page=wp4t_extended_list&activate=' ) . $row->sort . '">(' . __( 'Reactivate', 'rsvpmaker-for-toastmasters' ) . ')</a> <br />' . __( 'Updated', 'rsvpmaker-for-toastmasters' ) . ': ' . $row->updated;
-			}
-			if ( isset( $userdata['user_email'] ) && ! in_array( $userdata['user_email'], $unsubscribed ) ) {
-				$former_list .= $userdata['user_email'] . ', ';
-				$f_email[]    = $userdata['user_email'];
-			}
-			if ( isset( $_REQUEST['guests_only'] ) ) {
+	$archive_table = $wpdb->prefix . 'users_archive';
+	if(isset($_POST['former_action']) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		foreach($_POST['former_action'] as $action) {
+			if('action' == $action)
 				continue;
-			}
-		} else
-			continue;
-		?>
-		
-<div class="member-entry" style="margin-bottom: 50px; clear: both;">
-<p><strong><?php echo esc_html($userdata['first_name'] . ' ' . $userdata['last_name']) . $status; ?></strong></p>
-		<?php
-		foreach ( $contactmethods as $name => $value ) {
-			if ( strpos( $name, 'phone' ) ) {
-				if ( ( ! $public_context ) && isset( $userdata[ $name ] ) ) {
-					printf( '<div>%s: %s</div>', esc_html($value), esc_html($userdata[ $name ]) );
+			if('reactivate' == $action && !empty($_POST['former'])) {
+				foreach($_POST['former'] as $archive_id) {
+					$archive_id = intval($archive_id);
+					//printf('<p>Reactivate %d</p>',$archive_id);
+					$archive = $wpdb->get_row("SELECT * FROM $archive_table WHERE id=$archive_id");
+					printf('<p>Reactivate %s</p>',var_export($archive,true));
+					$user_id = $archive->user_id;
+					$exists = get_userdata($user_id);
+					if($exists && is_multisite()) {
+						printf('<p>Make Blog Member: User ID %d</p>',$user_id);
+						make_blog_member( $user_id );
+					}
+					else {
+						$newuser = unpack_user_archive_data( $archive->data );
+						printf('<p>Recreate %s</p>',var_export($newuser,true));
+						$old_id = $newuser['ID'];
+						unset( $newuser['ID'] );
+						$newuser['user_pass'] = wp_generate_password();
+						$member_factory       = new Toastmasters_Member();
+				
+						// $result = wp_insert_user($newuser);
+						$result = $member_factory->add( $newuser );
+						$member_factory->show_confirmations();
+				
+						foreach ( $newuser as $key => $value ) {
+							if ( is_serialized( $value ) ) {
+								add_user_meta( $result, $key, unserialize( $value ) );
+							} elseif ( strpos( $key, 'user' ) === false ) {
+								add_user_meta( $result, $key, $value );
+							}
+						}				
+					}
 				}
 			}
-			if ( strpos( $name, 'url' ) ) {
-				if ( isset( $userdata[ $name ] ) && strpos( $userdata[ $name ], '://' ) ) {
-					printf( '<div><a target="_blank" href="%s">%s</a></div>', esc_attr($userdata[ $name ]), esc_html($value) );
+			if('delete' == $action && !empty($_POST['former'])) {
+				foreach($_POST['former'] as $archive_id) {
+					printf('<p>Delete %d</p>',$archive_id);
+					$wpdb->query("DELETE FROM $archive_table WHERE id=".intval($archive_id));
 				}
 			}
 		}
-		if ( isset( $userdata['user_email'] ) ) {
-			printf( '<div>' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . ': <a href="mailto:%s">%s</a> ', $userdata['user_email'], $userdata['user_email'] );
-			if ( in_array( $userdata['user_email'], $unsubscribed ) ) {
-				printf( '(%s <a href="%s">%s</a>)</div>', __( 'Unsubscribed from email', 'rsvpmaker-for-toastmasters' ), admin_url( 'users.php?page=wp4t_extended_list&resubscribe=' ) . $userdata['user_email'], __( 'Restore', 'rsvpmaker-for-toastmasters' ) );
-			} else {
-				printf( '(<a href="%s">%s</a>)</div>', admin_url( 'users.php?page=wp4t_extended_list&unsubscribe=' ) . $userdata['user_email'], __( 'Unsubscribe', 'rsvpmaker-for-toastmasters' ) );
-			}
-		}
-		if ( ! empty( $userdata['user_description'] ) ) {
-			echo wpautop( '<strong>' . __( 'About Me', 'rsvpmaker-for-toastmasters' ) . ':</strong> ' . $userdata['user_description'] );
-		}
-
-		if ( isset( $userdata['note'] ) ) {
-			echo wpautop( '<strong>' . __( 'Note', 'rsvpmaker-for-toastmasters' ) . ':</strong> ' . $userdata['note'] );
-		}
-		?>
-</div>
-		<?php
-
 	}
-	printf( '<p>%s <a target="_blank" href="mailto:%s">%s</a></p>', __( 'Former member emails', 'rsvpmaker-for-toastmasters' ), $former_list, $former_list );
-
-	?>
-
-<p><a href="<?php echo admin_url( 'users.php?page=wp4t_extended_list&reset=1' ); ?>"><?php _e( 'Reset', 'rsvpmaker-for-toastmasters' ); ?></a></p>
-	<?php
+	
+$results = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ORDER BY sort' );
+printf('<form method="post" action="%s">
+<div class="alignleft actions bulkactions">
+			<label for="bulk-action-selector-top" class="screen-reader-text">Select bulk action</label><select name="former_action[]" id="bulk-action-selector-top">
+<option value="-1">Bulk actions</option>
+	<option value="reactivate">Reactivate</option>
+	<option value="delete">Delete</option>
+</select>
+<input type="submit" id="doaction" class="button action" value="Apply">
+</div>',admin_url('users.php?page=wp4t_extended_list'));
+printf('<table class="wp-list-table widefat fixed members" cellspacing="0"><thead><tr><th id="cb" class="manage-column column-cb check-column"><input id="cb-select-all-1" type="checkbox"></th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>',  __( 'Name', 'rsvpmaker-for_toastmasters' ), __( 'Email', 'rsvpmaker-for_toastmasters' ), __( 'Phone', 'rsvpmaker-for_toastmasters' ) );
+foreach($results as $row) {
+	if(is_user_member_of_blog($row->user_id) )
+		continue;
+	$user = unpack_user_archive_data( $row->data );
+	$name = (empty($user["display_name"])) ? $user["first_name"].' '.$user["last_name"] : $user["display_name"];
+	$phones = array();
+	if(!empty($user["mobile_phone"]))
+		$phones[] = 'Mobile: '.$user["mobile_phone"];
+	if(!empty($user["home_phone"]))
+		$phones[] = 'Home: '.$user["home_phone"];
+	if(!empty($user["work_phone"]))
+		$phones[] = 'Work: '.$user["work_phone"];
+	printf('<tr><td class="check-column">&nbsp;<input name="former[]" type="checkbox" class="subscriber" value="%d"></td><td>%s <span class="reactivate"><a href="%s">%s</a></td><td>%s</td><td>%s</td></tr>',$row->id, $name, admin_url('users.php?page=wp4t_extended_list&make_user_member='.$row->id), __('Reactivate','rsvpmaker-for_toastmasters'), $row->email, implode('<br>',$phones));
+}
+echo '</tbody></table>';
+rsvpmaker_nonce();
+echo '<div class="alignleft actions bulkactions">
+<label for="bulk-action-selector-top" class="screen-reader-text">Select bulk action</label><select name="former_action[]" id="bulk-action-selector-top">
+<option value="-1">Bulk actions</option>
+<option value="reactivate">Reactivate</option>
+<option value="delete">Delete</option>
+</select>
+<input type="submit" id="doaction" class="button action" value="Apply">
+</div></form>';
 
 }
 
@@ -2426,7 +2307,7 @@ function edit_members() {
 		$user['home_phone']       = sanitize_text_field( $_POST['home_phone'] );
 		$user['work_phone']       = sanitize_text_field( $_POST['work_phone'] );
 		$user['mobile_phone']     = sanitize_text_field( $_POST['mobile_phone'] );
-		$user['toastmasters_id']  = (int) $_POST['toastmasters_id'];
+		$user['toastmasters_id']  = (int) preg_replace('/[^0-9]/','',$_POST['toastmasters_id']);
 		$user['education_awards'] = sanitize_text_field( $_POST['education_awards'] );
 		if ( current_user_can( 'manage_options' ) && isset( $_POST['user_role'] ) && in_array( $_POST['user_role'], $security_roles ) && ! user_can( $user['ID'], 'administrator' ) ) {
 			$user['role'] = sanitize_text_field( $_POST['user_role'] );
@@ -5670,7 +5551,7 @@ function wpt_member_upload_to_array() {
 			if ( $linenumber == 0 ) {
 				foreach ( $cells as $index => $cell ) {
 					if(strpos(strtoupper($cell),' ID'))
-						$label['toastmasters_id'] = $index;
+						$label['toastmasters_id'] = preg_replace('/[^0-9]/','',$index);
 					else
 						$label[ trim( $cell ) ] = $index;
 				}
@@ -5767,6 +5648,7 @@ function add_awesome_member() {
 
 	if ( isset( $_POST['addtid'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		foreach ( $_POST['addtid'] as $user_id => $member_id ) {
+			$member_id = preg_replace('/[^0-9]/','',$member_id);
 			$member_id = (int) $member_id;
 			if ( $member_id ) {
 				update_user_meta( (int) $user_id, 'toastmasters_id', $member_id );
@@ -5788,7 +5670,7 @@ function add_awesome_member() {
 				make_blog_member( $user_id );
 				$tid = (int) $p[1];
 				if ( $tid ) {
-					update_user_meta( $user_id, 'toastmasters_id', $tid );
+					update_user_meta( $user_id, 'toastmasters_id', preg_replace('/[^0-9]/','',$tid) );
 				}
 				$userdata = get_userdata( $user_id );
 				$msg      = $userdata->first_name . ' ' . $userdata->last_name . ' ' . __( 'added to website', 'rsvpmaker-for-toastmasters' );
@@ -5859,7 +5741,7 @@ function add_awesome_member() {
 		$user['home_phone']      = sanitize_text_field($_POST['home_phone']);
 		$user['work_phone']      = sanitize_text_field($_POST['work_phone']);
 		$user['mobile_phone']    = sanitize_text_field($_POST['mobile_phone']);
-		$user['toastmasters_id'] = (int) $_POST['toastmasters_id'];
+		$user['toastmasters_id'] = (int) preg_replace('/[^0-9]/','',$_POST['toastmasters_id']);
 
 		$member_factory = new Toastmasters_Member();
 		$user           = $member_factory->check( $user );
@@ -5971,11 +5853,11 @@ function add_awesome_member() {
 <form method="post" enctype="multipart/form-data" action="<?php echo admin_url( 'users.php?page=add_awesome_member' ); ?>">
 <p><?php _e( 'Select file to upload', 'rsvpmaker-for-toastmasters' ); ?>: <input type="file" name="upload_file" /></p>
 <p><?php _e( 'Alternative: you can open the CSV export file in Excel, then copy-and-paste records (including the header row of column labels) into the field below (use CTRL-C to copy, CTRL-V to paste on Windows).', 'rsvpmaker-for-toastmasters' ); ?></p>
-<p><textarea cols="80" rows="10" name="spreadsheet"></textarea></p>
+<p><textarea cols="80" rows="3" name="spreadsheet"></textarea></p>
 	<div><input type="checkbox" name="check_missing" value="1" /> <?php _e( 'Check for missing members (if you post a complete list of current members, this checkbox triggers a check of which website users are NOT currently on the toastmasters.org list and gives you an option to delete them).', 'rsvpmaker-for-toastmasters' ); ?></div>
 	<div>
 	<?php
-
+	clean_toastmasters_id();
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 	$addids    = '';
 	// Array of WP_User objects.
@@ -6165,7 +6047,7 @@ class Toastmasters_Member {
 			}
 			if ( ! empty( $user['toastmasters_id'] ) && ! get_user_meta( $member_id, 'toastmasters_id', true ) ) {
 				$this->confirmation[] = $name . ' ' . __( 'adding Toastmasters ID', 'rsvpmaker-for-toastmasters' );
-				update_user_meta( $member_id, 'toastmasters_id', $user['toastmasters_id'] );
+				update_user_meta( $member_id, 'toastmasters_id', preg_replace('/[^0-9]/','',$user['toastmasters_id']) );
 			}
 			if ( ! empty( $user['education_awards'] ) ) {
 				$this->confirmation[] = $name . ' ' . __( 'educational awards updated', 'rsvpmaker-for-toastmasters' );
@@ -6474,7 +6356,7 @@ function add_member_user( $user, $override_check = false ) {
 }
 
 function awesome_contactmethod( $contactmethods ) {
-
+	clean_toastmasters_id();
 	$contactmethods['home_phone']       = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['work_phone']       = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['mobile_phone']     = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
@@ -6484,10 +6366,6 @@ function awesome_contactmethod( $contactmethods ) {
 	$contactmethods['business_url']     = __( 'Business Web Address', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['toastmasters_id']  = 'Toastmasters ID';
 	$contactmethods['education_awards'] = 'Toastmasters Awards (DTM etc)';
-	// $contactmethods['club_member_since'] = "Joined Club";
-	// $contactmethods['original_join_date'] = "Joined Toastmasters";
-
-	// Remove Yahoo IM
 	unset( $contactmethods['yim'] );
 	unset( $contactmethods['aim'] );
 	unset( $contactmethods['jabber'] );
@@ -12796,7 +12674,9 @@ function toastmasters_role_signup() {
 				update_post_meta( $post_id, '_manual' . $role, sanitize_text_field(strip_tags( $_POST['_manual'][ $role ] ) ));
 				update_post_meta( $post_id, '_project' . $role, sanitize_text_field( strip_tags( $_POST['_project'][ $role ] ) ) );
 				update_post_meta( $post_id, '_title' . $role, sanitize_text_field( strip_tags( stripslashes( $_POST['_title'][ $role ] ) ) ) );
-				update_post_meta( $post_id, '_intro' . $role, sanitize_text_field( stripslashes( $_POST['_intro'][ $role ] ), '<p><br><strong><em><a>' ) );
+				$intro = $_POST['_intro'][ $role ];
+				$intro=strip_tags($intro,'<p><br><strong><em><a>');
+				update_post_meta( $post_id, '_intro' . $role, wp_kses_post( stripslashes( $intro ) ) );
 			}
 			$o = 'Assigned to: ' . get_member_name( $user_id );
 			if(isset($_REQUEST['action']))
