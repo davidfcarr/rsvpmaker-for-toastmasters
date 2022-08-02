@@ -217,9 +217,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
         if($slug == 'members') {
             $on = (int) (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list', true) : get_option('member_distribution_list', true);
-            //$output .= sprintf('<p>members list for %s on = %s</p>',$blog_id,$on);
-            //$output .= sprintf('<p>members %s</p>',$forwarder);
-            //$output .= sprintf('<p>%s</p>',$on);
             if(!$on)
                 continue;
             $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
@@ -348,41 +345,11 @@ function wpt_email_handler_qemail_blocked ($qpost, $from, $forwarder) {
 }
 
 function wpt_email_handler_qemail ($qpost, $recipients, $from, $fromname = '', $blog_id = 0) {
-        if(is_multisite())
-            switch_to_blog(1);
-        $post_id = 0;
-        if(!empty($qpost['forwarded_from']))
-            $qpost['post_content'] .= sprintf("\n<p>Forwarded from %s <a href=\"mailto:%s?subject=Re: %s\">reply to list</a></p>",$qpost['forwarded_from'],$qpost['forwarded_from'],$qpost['post_title']);
-        if(!empty($qpost['post_content']) && !empty($from))  
-            $post_id = wp_insert_post($qpost);
-        update_post_meta($post_id,'sending website',$blog_id);
-        $html .= var_export($qpost,true);
-
-        if($post_id) {
-            //add_post_meta($post_id,'imap_message_id',$headerinfo->message_id);
-            add_post_meta($post_id,'rsvprelay_from',$from);
-            add_post_meta($post_id,'all_recipients',$recipients);
-            //for debugging
-            //add_post_meta($post_id,'imap_body',imap_body($mail,$n));
-            if(empty($fromname))
-                $fromname = $from;
-            add_post_meta($post_id,'rsvprelay_fromname',$fromname);
-
-            if(!empty($recipients))
-    
-            foreach($recipients as $to) {   
-                $rsvpmailer_rule = apply_filters('rsvpmailer_rule','permit',$to, 'email_rule_group_email');
-                if('deny' == $rsvpmailer_rule) {
-                    add_post_meta($post_id,'rsvprelay_blocked',$to);        
-                    rsvpmaker_debug_log($to,'group email blocked');
-                }
-                else
-                    add_post_meta($post_id,'rsvprelay_to',$to);
-            }
-        }
-        rsvpmaker_relay_queue(); // send the first few
-        if(is_multisite())
-        restore_current_blog();
+$mail['from'] = $from;
+$mail['fromname'] = $fromname;
+$mail['subject'] = $qpost['post_title'];
+$mail['html'] = $qpost['post_content'];
+return rsvpmaker_qemail ($mail, $recipients);
 }
 
 function wpt_email_handler_bcc ($qpost, $recipients, $from, $fromname = '', $blog_id = 0, $forwarder_label = '', $noreply = '') {
@@ -675,7 +642,7 @@ function wpt_email_handler_mailing_lists_wizard_next_steps() {
 
 add_action('group_email_admin_notice','wpt_email_handler_group_email_notice');
 function wpt_email_handler_group_email_notice() {
-    printf('<div style="padding: 10px; border: thin solid red;"><p>Toastmost.org users use the <a href="%s">Toastmost Club Email</a> screen instead.</p></div>',admin_url('admin.php?page=wpt_email_handler_club_email_list'));
+    printf('<div style="padding: 10px; border: thin solid red;"><p>Toastmasters use the <a href="%s">Club Email</a> screen instead.</p></div>',admin_url('admin.php?page=wpt_email_handler_club_email_list'));
 }
 
 function get_wpt_email_handler_email_listvars($email) {
@@ -1180,12 +1147,17 @@ function rsvpmaker_relay_bot_check( ) {
 		return;
 	}
 
-	$output .= '<p>'.rsvpmaker_relay_get_pop( 'bot', true ).'</p>';
-    ob_get_clean();
-    $sql = "SELECT count(*) FROM $wpdb->postmeta WHERE meta_key='rsvprelay_to' ";
-    $in_q = $wpdb->get_var($sql);
-    if($in_q)
-        $output .= "<p>$in_q messages queued for delivery</p>";
+    if(rsvpmaker_postmark_is_live()) {
+        $output .= 'Postmark email delivery is active';
+    }
+    else {
+        $output .= '<p>'.rsvpmaker_relay_get_pop( 'bot', true ).'</p>';
+        ob_get_clean();
+        $sql = "SELECT count(*) FROM $wpdb->postmeta WHERE meta_key='rsvprelay_to' ";
+        $in_q = $wpdb->get_var($sql);
+        if($in_q)   
+            $output .= "<p>$in_q messages queued for delivery</p>";    
+    }
 
     if(is_multisite())
         restore_current_blog();
@@ -1289,7 +1261,7 @@ if('officers' == $slug) {
     if($officers && is_array($officers)) {
         foreach($officers as $id) {
             $member = get_userdata($id);
-            if($member) {
+            if($member && !empty($member->user_email)) {
                 $email = strtolower($member->user_email);
                 if(!in_array($email,$unsubscribed))
                     $recipients[] = $email;
@@ -1340,3 +1312,206 @@ function wpt_mail_forwarders($mail) {
         return $mail;
     }
 }
+
+add_filter('rsvpmail_recipients_from_forwarders','wpt_slugs_to_recipients',10,3);
+function wpt_slugs_to_recipients($recipients,$slug_and_id,$emailobj) {
+    $slug = $slug_and_id['slug'];
+    $blog_id = $slug_and_id['blog_id'];
+    $from = $emailobj->From;
+    $forwarder = $emailobj->ToFull[0]->Email;
+
+    rsvpmaker_debug_log("$slug, blog_id $blog_id $from",'rsvpmail_recipients_from_forwarders');
+
+    if($slug == 'members') {
+        $on = (int) (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list', true) : get_option('member_distribution_list', true);
+        if(!$on)
+            return;
+        $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
+        $recipients = get_club_member_emails($blog_id);
+        $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
+        if(!empty($listvars['additional']))
+        foreach($listvars['additional'] as $email) {
+            $recipients[] = $email;
+        }
+        if((!in_array($from,$recipients) && !in_array($from,$listvars['whitelist'])) || in_array($from,$listvars['blocked']) ) {
+            return 'BLOCKED'; //NOT FROM A RECOGNIZED MEMBER ADDRESS
+        }
+    }
+
+    if('officers' == $slug) {
+        //$output .= sprintf('<p>officers %s</p>',$forwarder);
+        $on = (int) (is_multisite()) ? get_blog_option($blog_id,'officer_distribution_list') : get_option('officer_distribution_list');
+        if(!$on)
+            return;
+        $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'officer_distribution_list_vars') : get_option('officer_distribution_list_vars');
+        $officers = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'wp4toastmasters_officer_ids') : get_option('wp4toastmasters_officer_ids');
+        if($officers && is_array($officers)) {
+            foreach($officers as $id) {
+                $member = get_userdata($id);
+                if($member) {
+                    $email = strtolower($member->user_email);
+                    $recipients[] = $email;
+                }
+            }
+        if(!empty($listvars['additional']))
+        foreach($listvars['additional'] as $email) {
+            $recipients[] = $email;
+        }
+        rsvpmaker_debug_log("officers recipients ".var_export($recipients,true),'rsvpmail_recipients_from_forwarders');
+
+        if((!in_array($from,$recipients) && !in_array($from,$listvars['whitelist'])) || in_array($from,$listvars['blocked']) ) {
+            return 'BLOCKED'; //NOT FROM A RECOGNIZED MEMBER ADDRESS
+        }
+        }
+    }
+    if(('info' == $slug)) {
+        if((strcasecmp($from,'clubleads@toastmasters.org') == 0) ) {
+            $to = $emailobj->ToFull[0]->Email;
+            preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$emailobj->HtmlBody,$fcmatches);
+                foreach($fcmatches[0] as $email) {
+                    if(strpos($email,'toastmasters') || strpos($email,'toastmost'))
+                        continue;
+                    $contact = $email;
+            }
+            wpt_email_handler_autoresponder ($contact, $from, $blog_id);
+        }
+        if((strcasecmp($from,'BaseCamp@toastmasters.org') == 0) ) {
+            $basecamp = ($blog_id == 1) ? get_option('wpt_forward_basecamp') : get_blog_option($blog_id,'wpt_forward_basecamp');    
+        }
+        if(is_array($basecamp))
+            return $basecamp;//send just to basecamp managers 
+        $forward_by_id = ($blog_id == 1)  ? get_option('wpt_forward_general') : get_blog_option($blog_id,'wpt_forward_general');
+    
+        if(is_array($forward_by_id))
+            $recipients = $forward_by_id;
+    }
+    $slug_ids = get_officer_slug_ids($blog_id);
+    if(!empty(	$slug_ids [$slug]))
+    {
+        foreach($slug_ids[$slug] as $user_id) {
+            if($user_id) {
+                $officer = get_userdata($user_id);
+                $recipients[] = $officer->user_email;
+            }
+        }
+    rsvpmaker_debug_log($recipients,'');
+    }
+
+    $custom_forwarders = (is_multisite()) ? get_blog_option($blog_id,'custom_forwarders') : get_option('custom_forwarders');
+    if(!empty($custom_forwarders[$forwarder]))
+    {
+        //hack
+        if('admins@toastmost.org'==$forwarder && 'david@carrcommunications.com' != $emailobj->From)
+            return array();
+        $recipients = array_merge($recipients,$custom_forwarders[$forwarder]);
+        rsvpmaker_debug_log($recipients,'custom forwarder recipients');
+    }
+    if(!empty($recipients)) {
+        $recipients = array_unique($recipients);
+    }
+    return $recipients;
+}
+
+function wpt_autoresponder_from_object($emailobj,$blog_id) {
+
+}
+
+//apply_filters('rsvpmail_slug_and_id',array('slug' => '','blog_id'=>0),$email);
+add_filter('rsvpmail_slug_and_id','wpt_find_club_emails',10,2);
+function wpt_find_club_emails($slug_and_id, $forwarder) {
+    global $ffemails, $message_blog_id;
+    $blog_id = 0;
+    if(empty($ffemails))
+    $ffemails = (is_multisite()) ? get_blog_option(1,'findclub_emails') : get_option('findclub_emails');
+    if($ffemails && is_array($ffemails))
+        $blog_id = array_search(trim($forwarder),$ffemails);
+    if($blog_id) {
+        $message_blog_id = $blog_id; // used for logging
+        $slug_and_id = array('slug' => 'info','blog_id' => $blog_id);
+    }
+    return $slug_and_id;
+}
+
+//do_action('rsvpmail_relay_slug_and_id',$slug_and_id['slug'],$slug_and_id['blog_id'],$emailobj);
+add_action('rsvpmail_relay_slug_and_id','wpt_handle_autoresponder',10,3);
+function wpt_handle_autoresponder($slug_and_id,$forwarder,$emailobj) {
+    global $ffemails;
+    rsvpmaker_debug_log($slug_and_id,'wpt_handle_autoresponder slug and id');
+    rsvpmaker_debug_log($forwarder,'wpt_handle_autoresponder forwarder');
+    $slug = is_array($slug_and_id) ? $slug_and_id['slug'] : '';
+    $finda_id = $blog_id = is_array($slug_and_id) ? $slug_and_id['blog_id'] : 0;
+    rsvpmaker_debug_log("$slug,$blog_id",'wpt_handle_autoresponder');
+    $output = '';
+    if($slug != 'info') {
+        //check for a different registered address
+        if(empty($ffemails))
+            $ffemails = (is_multisite()) ? get_blog_option(1,'findclub_emails') : get_option('findclub_emails');
+        if($ffemails && is_array($ffemails))
+            $finda_id = array_search($forwarder,$ffemails);
+        else
+            $finda_id = 0;
+        if($finda_id)
+            $blog_id = $finda_id;
+
+        rsvpmaker_debug_log($ffemail,'handle autoresponder');
+        rsvpmaker_debug_log($emailobj->To,'autoresponder to address');
+        if(!is_array($ffemails) || !in_array(strtolower($forwarder),$ffemails))
+            return;
+    }
+    $from = $emailobj->From;
+    $to = $emailobj->ToFull[0]->Email;
+    preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$emailobj->HtmlBody,$fcmatches);
+    if(strpos($from,'google.com') && strpos($emailobj->Subject,'Forward'))
+    {
+        foreach($fcmatches[0] as $email) {
+            if(strpos($email,'google') || strpos($email,'findaclub'))
+                continue;
+            $contact = $email;
+        }
+        $hosts = wpt_get_hosts();
+        $mail['fromname'] = (is_multisite()) ? get_option('blogname',true) : get_blog_option($blog_id,'blogname',true);
+        $mail['html'] = '<p>Your website\'s Find-a-Club bot is forwarding this Google confirmation message back to you, allowing you to approve it yourself.</p>'."\n".$emailobj->HtmlBody.'<p>forwarder:'.$forwarder.' blog id '.$blog_id.'</p>';
+        $mail['to'] = $contact;
+        $mail['subject'] = 'Verify gmail forwarding for '.$to;
+        rsvpmailer($mail);
+        $output .= "<p>Forward $forwarder gmail forwarding confirmation</p>";
+        return $output;
+    }
+    if($from == 'clubleads@toastmasters.org')
+    {
+        $blog_id = $finda_id;
+        foreach($fcmatches[0] as $email) {
+            if(strpos($email,'toastmasters.org') || strpos($email,'@toastmost.org') || (strcasecmp($email, $forwarder) == 0))
+                continue;
+            $contact = $email;
+        }
+        wpt_email_handler_autoresponder ($contact, $from, $blog_id);
+        $output .= sprintf('<p>autoresponder %s for %s, contact %s</p>',$finda_id,$forwarder, $contact);
+    }
+    
+    $forward_by_id = ($blog_id == 1)  ? get_option('wpt_forward_general') : get_blog_option($blog_id,'wpt_forward_general');
+    $basecamp = ($blog_id == 1) ? get_option('wpt_forward_basecamp') : get_blog_option($blog_id,'wpt_forward_basecamp');
+    if(empty($basecamp))
+        $basecamp = $forward_by_id;
+    rsvpmaker_debug_log($basecamp,'basecamp forwarder');
+    rsvpmaker_debug_log($from,'basecamp from address');
+
+    if(is_array($basecamp) && (strcasecmp($from,'BaseCamp@toastmasters.org') == 0) ) {
+        $mail['html'] = $emailobj->HtmlBody; //$parts[0];
+        $mail['subject'] = $emailobj->Subject;
+        $mail['from'] = $emailobj->From;
+        $mail['fromname'] = (empty($emailobj->FromName)) ? $emailobj->From : $emailobj->FromName;
+        foreach($basecamp as $fto) {
+            $mail['to'] = $fto;
+            rsvpmailer($mail);
+        }
+    $output .= sprintf('<p>forarded %s basecamp message to %s</p>',$forwarder, var_export($fto,true));
+    }
+    
+    if(is_array($forward_by_id)) {
+        $output .= sprintf('<p><strong>forward by id %s %s</strong></p>',$forwarder, var_export($forward_by_id,true));
+        wpt_email_handler_qemail($qpost, $forward_by_id, $from, $fromname, $blog_id);
+    }
+    return $output;   
+}
+

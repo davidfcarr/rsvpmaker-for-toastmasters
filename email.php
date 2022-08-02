@@ -18,8 +18,8 @@ function wp4t_role($role) {
 }
 
 add_shortcode('email_with_without_role_test_shortcode','email_with_without_role_test_shortcode');
-function email_with_without_role_test_shortcode () {
-	return email_with_without_role_test('6864:24');
+function email_with_without_role_test_shortcode ($args) {
+	return email_with_without_role('',true);// email_with_without_role_test($args['post_id'].':'.$args['hours']);
 }
 
 function wpt_notification_from($post_id) {
@@ -283,12 +283,8 @@ function rsvptoast_email( $postdata, $rsvp_html, $rsvp_text ) {
 
 add_action( 'rsvpmaker_email_send_ui_submit', 'rsvptoast_email', 10, 3 );
 
-function rsvptoast_email_ui() {
-	?>
-<div><input type="checkbox" name="guests" value="1"> <?php _e( 'Guests', 'rsvpmaker' ); ?> </div>
-<div><input type="checkbox" name="ex" value="1"> <?php _e( 'Former Members', 'rsvpmaker' ); ?> </div>
-	<?php
-}
+function rsvptoast_email_ui() { ?><div><input type="checkbox" name="guests" value="1"> <?php _e( 'Guests', 'rsvpmaker' ); ?> </div>
+<div><input type="checkbox" name="ex" value="1"> <?php _e( 'Former Members', 'rsvpmaker' ); ?> </div><?php }
 
 add_action( 'rsvpmaker_email_send_ui_options', 'rsvptoast_email_ui' );
 
@@ -600,7 +596,7 @@ $header .= '</head>
 		$mail['subject']  = sanitize_text_field( stripslashes( $_POST['subject'] ) );
 
 if ( isset( $emails ) && is_array( $emails ) ) {
-			rsvpmaker_qemail ($mail, $emails);		
+			rsvpmaker_qemail ($mail, $emails);
 		} else {
 			echo awemailer( $mail );
 		}

@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.3.9
+Version: 5.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -874,7 +874,7 @@ function agenda_note( $atts, $content = '' ) {
 		} else {
 			$content .= $timeblock . '<h3 id="' . $slug . '">' . $atts['editable'] . '</h3><div class="editable_content">' . $editable . '</div>' . $edit_editable;
 		}
-		return $content;
+		return force_balance_tags($content);
 	}
 
 	$maxtime = ( ! empty( $atts['time_allowed'] ) ) ? $atts['time_allowed'] : '';
@@ -6680,14 +6680,23 @@ function signup_sheet_editor() {
 	if ( empty( $limit ) ) {
 		$limit = 3;
 	}
-	$dates     = future_toastmaster_meetings( $limit, 0 );
+	if(isset($_GET['focus']))
+	{
+		$date = get_rsvpmaker_event(intval($_GET['focus']));
+		$post = get_post(intval($_GET['focus']));
+		$post->ts_start = $date->ts_start;
+		$dates[] = $post;
+	}
+	else {
+		$dates     = future_toastmaster_meetings( $limit, 0 );
+	}
 	$head      = $cells = '';
 	$datecount = 0;
 	foreach ( $dates as $index => $date ) {
 		$guestopt          = '';
 		$post              = get_post( $date->ID );
 		$t                 = (int) $date->ts_start;
-		$head             .= '<th>' . $post->post_title . '<br />' . rsvpmaker_date( 'F j', $t ) . '</th>';
+		$head             .= '<th>' . $post->post_title . '<br /><a href="'.site_url('?signup_sheet_editor=1&focus='.$post->ID).'">' . rsvpmaker_date( 'F j', $t ) . '</a></th>';
 		$cell[ $date->ID ] = '';
 		$data              = wpt_blocks_to_data( $date->post_content );
 		foreach ( $data as $row => $item ) {
@@ -6710,6 +6719,8 @@ function signup_sheet_editor() {
 				}
 				$cell[ $date->ID ] .= '<div><div class="role">' . $role . ':</div><div>' . $show . '</div><div id="status' . $field . $post->ID . '" class="status"></div></div>';
 			}
+			if(isset($_GET['focus']) && ($count % 3 == 0))
+				$cell[ $date->ID ] .= '</td><td>';
 		}
 		if ( ! empty( $guestopt ) ) {
 			$addguest           = sprintf( '<div>Assign role to guest<br /><select id="addguest_role%d">%s</select><br />Name:<br /><input type="text" id="addguest_name%d" /><br /><button class="assign_to_guest" post_id="%d">Assign</button></div><div id="addguest%d"></div>', $post->ID, $guestopt, $post->ID, $post->ID, $post->ID );
@@ -6726,7 +6737,9 @@ function signup_sheet_editor() {
 			break;
 		}
 	}
-
+		if(isset($_GET['focus']))
+		$cells = '<tr><td>' . implode( ' ', $cell ) . '</td></tr>';
+		else
 		$cells = '<tr><td>' . implode( '</td><td>', $cell ) . '</td></tr>';
 
 	$colwidth = floor( 100 / $limit );

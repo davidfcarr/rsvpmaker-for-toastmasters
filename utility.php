@@ -16,7 +16,7 @@ function wp4t_haverole($post_id) {
 function wp4t_last_held_role($user_id, $role) {
 	global $wpdb, $rsvp_options;
 	$history_table = $wpdb->base_prefix.'tm_history';
-	$sql = "SELECT datetime FROM $history_table WHERE role='$role' AND user_id=$user_id AND datetime < NOW() ORDER BY datetime DESC";
+	$sql = $wpdb->prepare("SELECT datetime FROM $history_table WHERE role=%s AND user_id=%d AND datetime < NOW() ORDER BY datetime DESC",$role,$user_id);
 	$d = $wpdb->get_var($sql);
 	if(empty($d))
 		return;
@@ -1735,4 +1735,78 @@ function clean_toastmasters_id() {
 		$sql = "update $wpdb->usermeta set meta_value = $row->meta_value WHERE umeta_id=$row->umeta_id";
 		$wpdb->query($sql);
 	}
+}
+
+function is_toastmost_site() {
+	return (defined('DOMAIN_CURRENT_SITE') &&  'toastmost.org' == DOMAIN_CURRENT_SITE);
+}
+
+function include_toastmost_calendar() {
+$domain = $_SERVER['SERVER_NAME'];
+$thumbnail = '';
+$page_on_front = get_option('page_on_front');
+if($page_on_front) {
+	if(empty($thumbnail)) {
+		$front = get_post($page_on_front);
+		preg_match('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $front->post_content, $match);
+		if(!empty($match[1]))
+			$thumbnail = $match[1];
+	}
+	if(empty($thumbnail))
+		$thumbnail = get_the_post_thumbnail_url($page_on_front);
+	$preview = (empty($thumbnail)) ? '' : sprintf('<br>Suggestion <img src="%s" style="max-width: 200px;" />',$thumbnail);
+
+}
+$preview = (empty($thumbnail)) ? '' : sprintf('<br>Suggestion <img src="%s" style="max-width: 200px;" />',$thumbnail);
+
+?>
+<p>Although your website is not hosted on the Toastmost service, you have the option of having your meetings listed on this consolidated calendar of events published at <a href="https://toastmost.org/calendar/">toastmost.org/calendar/</a>.</p>
+<h3>Add <?php echo $domain; ?></h3>
+<form id="external" method="post" target="_blank" action="https://toastmost.org/calendar/"><input type="hidden" name="extcal" value="https://toastmost.org/calendar/"><input type="hidden" name="domain" value="<?php echo $domain; ?>">
+<?php rsvpmaker_nonce(); ?>
+<p>Club Name<br><input type="text" name="name" style="width: 80%" value="<?php echo get_bloginfo('name'); ?>"></p>
+<p>Featured image (optional, include complete url)<br><input  style="width: 80%" type="text" name="image" value="<?php echo $thumbnail; ?>"><?php echo $preview; ?></p><p><button>Add</button></p></form>	
+<h3>Remove <?php echo $domain; ?></h3>
+<form id="remove_external" method="get" target="_blank" action="https://toastmost.org/calendar/"><input type="hidden" name="extcal" value="https://toastmost.org/calendar/"><input type="hidden" name="remove_ext" value="<?php echo $domain; ?>">
+<?php rsvpmaker_nonce(); ?>
+<p><button>Remove</button></p></form>
+<iframe src="https://toastmost.org/calendar/?print=1" width="100%" height="1000"></iframe>
+<?php
+
+}
+
+
+add_filter('option_rsvpmaker_email_custom_styles','agenda_rsvpmaker_email_custom_styles');
+function agenda_rsvpmaker_email_custom_styles ($option) {
+	if(!is_array($option))
+		$option = array();
+		
+	$css = '
+	.stoplight_block {
+		display: inline-block; margin-bottom: 3px;
+		}
+		.role {
+		font-weight: bold;
+		}
+		.role_agenda_note {
+		font-style: italic;
+		}
+		.speechtime {
+			text-align: center;
+		}
+		.officers_label {font-weight: bold;}
+		.officer_entity {margin-top: 10px;}
+		.timeblock {display: inline-block; width: 6em; margin: 0px; font-weight: bold; text-indent: 0}
+		.notime {display: inline-block; width: 6em; margin: 0px; font-weight: bold; text-indent: 0}
+		.speaker-details {
+			margin-left: 6em;
+		}'."\n".get_option( 'wp4toastmasters_agenda_css' );
+	rsvpmaker_debug_log($css,'tmagenda css');	
+	$tmarray = rsvpmaker_css_to_array($css);
+	rsvpmaker_debug_log($tmarray,'tmarray');	
+	foreach($tmarray as $index => $value)
+	if(empty($option[$index]))
+		$option[$index] = $value;
+	rsvpmaker_debug_log($option,'modified option');	
+return $option;
 }

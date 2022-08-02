@@ -643,8 +643,8 @@ function wpt_update_speech_history_by_id($history_id,$manual,$project_key,$title
 }
 
 function wpt_minutes_from_history($history_post_id = '') {
-    if(!isset($_GET['minutes_from_history']) && empty($history_post_id))
-        return;
+    if(!isset($_GET['minutes_from_history']) && !is_numeric($history_post_id))
+        return $history_post_id;//default content in filter context
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
