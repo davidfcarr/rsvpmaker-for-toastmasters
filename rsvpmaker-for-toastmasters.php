@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.4
+Version: 5.4.1
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1571,8 +1571,7 @@ function wp4t_set_member_status( $member_id, $status, $status_expires ) {
 
 function awesome_wall( $comment_content, $post_id, $member_id = 0 ) {
 
-	global $current_user;
-	global $wpdb;
+	global $current_user, $wpdb, $didthis;
 	if ( $member_id ) {
 		$userdata        = get_userdata( $member_id );
 		$comment_content = '<strong>' . $userdata->display_name . ':</strong> ' . $comment_content;
@@ -1582,10 +1581,14 @@ function awesome_wall( $comment_content, $post_id, $member_id = 0 ) {
 	$stamp            = '<small><em>(Posted: ' . rsvpmaker_date( 'm/d/y H:i' ) . ')</em></small>';
 	$ts               = get_rsvpmaker_timestamp( $post_id );
 	$comment_content .= ' for ' . rsvpmaker_date( 'F jS, Y', $ts ) . ' ' . $stamp;
+	$soon = ($ts < time() + 2 * DAY_IN_SECONDS);
 
 	add_post_meta( $post_id, '_activity', $comment_content, false );
-	if(!wp_next_scheduled( 'wp4t_log_notify', array( $post_id ) ))
+	if($soon && !$didthis) {
+		wp_unschedule_hook( 'wp4t_log_notify'); //clear any that might be waiting
 		wp_schedule_single_event( time() + 1800, 'wp4t_log_notify', array($post_id));
+		$didthis = true;
+	}
 }
 
 function role_post() {
@@ -12715,7 +12718,7 @@ function toastmasters_role_signup() {
 			}
 			$actiontext = __( 'signed up for', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $role );
 			do_action( 'toastmasters_agenda_notification', $post_id, $actiontext, $user_id );
-			awesome_wall( $actiontext, $post_id );
+			awesome_wall( $actiontext, $post_id, $user_id );
 			$date = get_rsvp_date( $post_id );
 
 			$startfrom = " '$date' ";
@@ -13142,10 +13145,6 @@ function wp4t_agenda_display_context($atts, $content) {
 	return $content;
 }
 
-function wp4t_log_notify_test() {
-	return wp4t_log_notify(0,true);
-}
-add_shortcode('wp4t_log_notify_test','wp4t_log_notify_test');
 add_action('wp4t_log_notify','wp4t_log_notify');
 function wp4t_log_notify($post_id, $test = false) {
 	global $post;
@@ -13194,7 +13193,13 @@ function wp4t_log_notify($post_id, $test = false) {
 	$results = $wpdb->get_results($sql);
 	foreach($results as $row)
 		$mail['html'] .= '<div>'.$row->meta_value.'</div>'."\n";
-
+	$hash = hash('crc32c',$mail['html']);
+	$check_sent = get_post_meta($post_id,'wp4t_log_notify_sent',true);
+	if($check_sent == $hash) {
+		mail(postmark_admin_email(),'duplicate notification blocked','blog: '.get_currnt_blog_id().' post: '.$post_id);
+		return;
+	}
+	update_post_meta($post_id,'wp4t_log_notify_sent',$hash);
 	foreach($send as $to) {
 		$to = trim($to);
 		$mail['to'] = $to;

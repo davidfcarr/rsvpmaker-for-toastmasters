@@ -971,8 +971,6 @@ add_action(
 		$manual->register_routes();
 		$assign = new Editor_Assign();
 		$assign->register_routes();
-		$rsvpexp = new RSVP_Export();
-		$rsvpexp->register_routes();
 		$repo = new WPTM_Reports();
 		$repo->register_routes();
 		$dues = new WPTM_Dues();
