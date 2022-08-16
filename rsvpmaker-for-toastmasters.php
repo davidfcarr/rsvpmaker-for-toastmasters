@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.4.1
+Version: 5.4.3
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -2461,6 +2461,21 @@ function wp4toastmasters_settings() {
 	<section class="toastmasters-admin" id="basic">
 <form method="post" action="options.php">
 	<?php
+	if(isset($_GET['district'])) {
+		$titles = array('District Director','Program Quality Director','Club Growth Director','Public Relations Manager','Administration Manager','Finance Manager','Logistics Manager','Immediate Past District Director');
+		$slugs = array('dd','pqd','cgd','prm','administration','finance','logistics','ipdd');
+		$divisions = array('A','B','C','D','E','F','G');
+		foreach($divisions as $d) 
+		{
+			$titles[] = "Division $d Director";
+			$slugs[] = "div".strtolower($d);
+		}
+		update_option ('wp4toastmasters_officer_titles',$titles);
+		update_option( 'wp4toastmasters_officer_slugs',$slugs );
+		update_option( 'wp4toastmasters_officer_ids',array() );
+		update_option('toastmasters_district',true);
+	}
+
 	settings_fields( 'wp4toastmasters-settings-group' );
 	$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
 	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
@@ -2540,7 +2555,7 @@ See also:
 	if ( ! $wp4toastmasters_enable_sync ) {
 		echo ' checked="checked" ';}
 	?>
-		 /> <?php _e( 'No, do not share data outside of this club website', 'rsvpmaker-for-toastmasters' ); ?></p>
+		 /> <?php _e( 'No, do not share data outside of this website', 'rsvpmaker-for-toastmasters' ); ?></p>
 	<p><a href="<?php echo admin_url( 'options-general.php?page=wp4toastmasters_settings&reset_sync_count=1' ); ?>"><?php _e( 'Reset sync count', 'rsvpmaker-for-toastmasters' ); ?></a></p>
 	<?php
 	$tzstring = get_option( 'timezone_string' );
@@ -4749,7 +4764,10 @@ function awesome_event_content( $content ) {
 
 	if(isset($_POST['oneclickrole']))
 		return wpt_oneclick_signup_post();
-
+	if ( isset( $_GET['clipboard'] ) ) {
+		return wpt_clipboard();
+	}
+	
 	global $post, $rsvp_options, $current_user;
 
 	$link = $output = '';
@@ -4769,7 +4787,8 @@ function awesome_event_content( $content ) {
 	$permalink = rsvpmaker_permalink_query( $post->ID );
 
 	if ( isset( $_REQUEST['print_agenda'] ) || is_email_context() ) {
-	} elseif ( ! is_club_member() ) {
+	} 
+	elseif ( ! is_club_member() ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
 		$link .= agenda_menu( $post->ID );
@@ -4939,7 +4958,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 	}
 
 	if ( current_user_can( 'edit_signups' ) ) {
-		$link .= '<li class="has-sub"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a><ul><li class="last"><a target="_blank" href="' . site_url( '?signup_sheet_editor=1' ) . '">' . __( 'Edit Signups (multiple weeks)', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
+		$link .= '<li class="has-sub"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a><ul><li><a target="_blank" href="' . site_url( '?signup_sheet_editor=1' ) . '">' . __( 'Edit Signups (multiple weeks)', 'rsvpmaker-for-toastmasters' ) . '</a></li>'.wpt_clipboard_links().'</ul></li>';
 	} else {
 		$link .= '<li class="last"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	}
@@ -9901,7 +9920,8 @@ function rsvptoast_admin_notice() {
 
 		$email = get_option( 'wp4toastmasters_disable_email' );
 		if ( $email ) {
-			$missing .= '<li>' . __( 'Toastmasters-specific functions for sending email (such as sending a welcome message and password to a new member) are currently disabled.', 'rsvpmaker-for-toastmasters' ) . ' <a href="' . admin_url( 'options-general.php?page=wp4toastmasters_settings' ) . '">' . __( 'Enable email?', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+			$missing .= '<li>' . __('Toastmasters-specific functions for sending email (such as sending a welcome message and password to a new member) are currently disabled.', 'rsvpmaker-for-toastmasters' );
+			$missing .= ' <a href="' . admin_url( 'options-general.php?page=wp4toastmasters_settings' ) . '">' . __( 'Enable email?', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 		}
 
 		$tz = get_option( 'timezone_string' );
@@ -10217,8 +10237,7 @@ function get_manuals_by_type() {
 			'Persuasive Influence Level 4 Building Skills' => __( 'Persuasive Influence Level 4 Building Skills', 'rsvpmaker-for-toastmasters' ),
 			'Persuasive Influence Level 5 Demonstrating Expertise' => __( 'Persuasive Influence Level 5 Demonstrating Expertise', 'rsvpmaker-for-toastmasters' ),
 		),
-		'Presentation Mastery'    => array(
-			'Presentation Mastery Level 1 Mastering Fundamentals' => __( 'Presentation Mastery Level 1 Mastering Fundamentals', 'rsvpmaker-for-toastmasters' ),
+		'Presentation Mastery'    => array('Presentation Mastery Level 1 Mastering Fundamentals' => __( 'Presentation Mastery Level 1 Mastering Fundamentals', 'rsvpmaker-for-toastmasters' ),
 			'Presentation Mastery Level 2 Learning Your Style' => __( 'Presentation Mastery Level 2 Learning Your Style', 'rsvpmaker-for-toastmasters' ),
 			'Presentation Mastery Level 3 Increasing Knowledge' => __( 'Presentation Mastery Level 3 Increasing Knowledge', 'rsvpmaker-for-toastmasters' ),
 			'Presentation Mastery Level 4 Building Skills' => __( 'Presentation Mastery Level 4 Building Skills', 'rsvpmaker-for-toastmasters' ),
@@ -11125,6 +11144,8 @@ function tm_youtube_tool() {
 	echo '<h1>Toastmasters YouTube Video Tool</h1>';
 	echo '<p>';
 	_e( 'This tool was designed to capture a listing of videos you have uploaded to YouTube and use them as the basis of a blog post (categorized as members-only by default) and / or an email to distribute to your members.', 'rsvpmaker-for-toastmasters' );
+	echo ' ';
+	_e( 'YouTube video links can be associated with either a single speaker or the meeting date (for example, a Zoom recording of the whole meeting).', 'rsvpmaker-for-toastmasters' );
 	printf( ' <a href="https://wp4toastmasters.com/knowledge-base/youtube/">%s</a>.', __( 'Documentation', 'rsvpmaker-for-toastmasters' ) );
 	echo '</p>';
 
@@ -11132,13 +11153,39 @@ function tm_youtube_tool() {
 	global $wpdb;
 	$wpdb->show_errors();
 
-	if ( ! empty( $_POST['speakers'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+	if(!empty($_POST['message'])  && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		//print_r($_POST);
 		$blog   = sanitize_text_field($_POST['blog']);
 		$email  = sanitize_text_field($_POST['email']);
-		$policy = sanitize_text_field(stripslashes( $_POST['policy'] ));
+		$policy = wp_kses_post(stripslashes( $_POST['policy'] ));
+		$message = wp_kses_post(stripslashes($_POST['message']))."\n".$policy;
+		$subject = sanitize_text_field($_POST['youtube_subject']);
+		$lines = explode("\n",$message);
+		$content = '';
+		foreach($lines as $line) {
+			$line = trim($line);
+			if(empty($line))
+				continue;
+			if(strpos($line,'://')) {
+				$line = trim($line);
+			$content .= sprintf(
+					'<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
+<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
+%s
+</div></figure>
+<!-- /wp:core-embed/youtube -->' . "\n\n",
+					$line,
+					$line
+				);
+			}
+			else {
+				$content .= "<!-- wp:paragraph -->\n<p>".$line."</p>\n<!-- /wp:paragraph -->\n\n";
+			}
+		}
 		update_option( 'tm_video_blog', $blog );
 		update_option( 'tm_video_email', $email );
 		update_option( 'tm_video_policy', $policy );
+		$speakers = (!empty($_POST['speakers'])) ? explode(',',$_POST['speakers']) : array();
 
 		$video_cat = wp_create_category( __( 'Video', 'rsvpmaker-for-toastmasters' ) );
 
@@ -11152,125 +11199,15 @@ function tm_youtube_tool() {
 		$status = ( ( $blog == 'publish' ) || ( $blog == 'publish_public' ) ) ? 'publish' : 'draft';
 		// Create post object
 		$email_post = $my_post = array(
-			'post_title'    => __( 'Videos', 'rsvpmaker-for-toastmasters' ),
-			'post_content'  => '',
+			'post_title'    => $subject,
 			'post_status'   => $status,
 			'post_author'   => $current_user->ID,
 			'post_category' => $categories,
+			'post_content' => $content,
 		);
-
-		if(!empty($_POST['message'])) {
-			$addmessage = "<!-- wp:paragraph -->\n<p>".stripslashes(sanitize_textarea_field($_POST['message']))."</p>\n<!-- /wp:paragraph -->\n\n";
-			$for = sanitize_text_field($_POST['messagefor']);
-			if(($for == 'email') || ($for == 'both'))
-				$email_post['post_content'] .= $addmessage;
-			if(($for == 'blog') || ($for == 'both'))
-				$my_post['post_content'] = $addmessage;		
-		}
-
-		$speakers = array();
-		foreach ( $_POST['speakers'] as $index => $speaker ) {
-			if ( ! empty( $speaker ) ) {
-				$speakers[] = sanitize_text_field($speaker);
-				if ( ! empty( $_POST['speech'][ $index ] ) ) {
-					$speaker .= ': ' . sanitize_text_field(stripslashes( $_POST['speech'][ $index ] ));
-				}
-				if ( empty( $_POST['link'][ $index ] ) ) {
-					$speakerline                 = sprintf( "<!-- wp:paragraph -->\n<p>%s</p>\n<!-- /wp:paragraph -->\n\n", $speaker );
-					$email_post['post_content'] .= $speakerline;
-					$my_post['post_content']    .= $speakerline;
-				} else {
-					$link                        = sanitize_text_field($_POST['link'][ $index ]);
-					$speakerline                 = sprintf( "<!-- wp:paragraph -->\n<p>" . '<a href="%s">%s</a>%s', $link, $speaker, "</p>\n<!-- /wp:paragraph -->\n\n" );
-					$my_post['post_content']    .= $speakerline;
-					$email_post['post_content'] .= $speakerline;
-					$my_post['post_content']    .= sprintf(
-						'<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
-<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
-%s
-</div></figure>
-<!-- /wp:core-embed/youtube -->' . "\n\n",
-						$link,
-						$link
-					);
-					if ( strpos( $link, '?v=' ) ) {
-						$parts    = explode( '?v=', $link );
-						$video_id = $parts[1];
-					} else {
-						$parts    = explode( '/', $link ); // https://youtu.be/ONGUlUB0ho4
-						$video_id = array_pop( $parts );
-					}
-					$email_post['post_content'] .= sprintf(
-						'<!-- wp:paragraph -->
-<p><a rel="noreferrer noopener" href="%s" target="_blank">Watch on YouTube</a></p>
-<!-- /wp:paragraph -->
-
-<!-- wp:image -->
-<figure class="wp-block-image"><a href="%s" target="_blank"><img src="https://img.youtube.com/vi/%s/hqdefault.jpg" alt=""/></a></figure>
-<!-- /wp:image -->
-',
-						$link,
-						$link,
-						$video_id
-					);
-				}
-			}
-		}
 
 		if ( ! empty( $speakers ) ) {
 			$my_post['tags_input']     = $speakers;
-			$my_post['post_title']    .= ': ' . stripslashes( implode( ', ', $speakers ) );
-			$email_post['post_title'] .= ': ' . stripslashes( implode( ', ', $speakers ) );
-		}
-
-		foreach ( $_POST['wrapuplink'] as $index => $link ) {
-			if ( ! empty( $link ) ) {
-				$text                        = sanitize_text_field($_POST['wrapuptext'][ $index ]);
-				$separator                   = empty( $speakers ) ? ' ' : ' - ';
-				$my_post['post_title']      .= $separator . $text;
-				$email_post['post_title']   .= $separator . $text;
-				$speakerline                 = sprintf( "<!-- wp:paragraph -->\n<p>" . '<a href="%s">%s</a>' . "</p>\n<!-- /wp:paragraph -->\n\n", $link, $text );
-				$my_post['post_content']    .= $speakerline;
-				$email_post['post_content'] .= $speakerline;
-				$my_post['post_content']    .= sprintf(
-					'<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
-		<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
-		%s
-		</div></figure>
-		<!-- /wp:core-embed/youtube -->' . "\n\n",
-					$link,
-					$link
-				);
-				if ( strpos( $link, '?v=' ) ) {
-					$parts    = explode( '?v=', $link );
-					$video_id = $parts[1];
-				} else {
-					$parts    = explode( '/', $link ); // https://youtu.be/ONGUlUB0ho4
-					$video_id = array_pop( $parts );
-				}
-
-				$email_post['post_content'] .= sprintf(
-					'<!-- wp:paragraph -->
-<p><a rel="noreferrer noopener" href="%s" target="_blank">Watch on YouTube</a></p>
-<!-- /wp:paragraph -->
-
-<!-- wp:image -->
-<figure class="wp-block-image"><a href="%s" target="_blank"><img src="https://img.youtube.com/vi/%s/hqdefault.jpg" alt=""/></a></figure>
-<!-- /wp:image -->
-',
-					$link,
-					$link,
-					$video_id
-				);
-			}
-		}
-
-		$policy                      = rsvpautog( $policy );
-		$my_post['post_content']    .= $policy;
-		$email_post['post_content'] .= $policy;
-
-		if ( ! empty( $_POST['youtube_subject'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-			$my_post['post_title'] = $email_post['post_title'] = stripslashes( $_POST['youtube_subject'] );
 		}
 
 		// Insert the post into the database
@@ -11292,16 +11229,14 @@ function tm_youtube_tool() {
 			printf( '<p><a href="%s?post=%d&action=edit">%s</a></p>', admin_url( 'post.php' ), $id, __( 'Edit email', 'rsvpmaker-for-toastmasters' ) );
 			printf( '<p><a href="%s?list=members">%s</a></p>', get_permalink( $id ), __( 'Preview/send email', 'rsvpmaker-for-toastmasters' ) );
 		}
-		echo wpautop( $my_post['post_content'] );
-	}
+		echo do_blocks($my_post['post_content']);
+	}//end post to server
+
 	$blog = get_option( 'tm_video_blog' );
 	if ( empty( $blog ) ) {
 		$blog = 'draft';
 	}
 	$email = (int) get_option( 'tm_video_email' );
-	?>
-<form method="post" action="<?php echo admin_url( 'upload.php?page=tm_youtube_tool' ); ?>">
-	<?php
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 	$options   = '<option value="">Select Member</option>';
 	foreach ( $blogusers as $user ) {
@@ -11330,10 +11265,12 @@ function tm_youtube_tool() {
 
 	$ptext = '';
 	$count = 1;
-	$past  = past_toastmaster_meetings(5);
+	$show = (isset($_GET['show'])) ? intval($_GET['show']) : 5;
+	$past  = past_toastmaster_meetings($show);
 	if ( $past ) {
-		foreach ( $past as $pst ) {
+		foreach ( $past as $pindex => $pst ) {
 			$speakerdate = rsvpmaker_date($rsvp_options['long_date'], (int) $pst->ts_start);
+			$j[] = '{"date":"'.$speakerdate.'","previewtext":""}';
 			$wrapup[]       = $speakerdate;
 			$alldetails[]   = '<strong>' . $speakerdate . '</strong>';
 			$ptext .= (empty($ptext)) ? '<div>' : '<div class="ptextmore">';
@@ -11347,7 +11284,7 @@ function tm_youtube_tool() {
 					if ( ! empty( $row->user_id ) && is_numeric( $row->user_id ) ) {
 						$user    = get_userdata( $row->user_id );
 						$name    = ( empty( $user->first_name ) ) ? 'User ' . $row->user_id : $user->first_name . ' ' . $user->last_name;
-						$ptext  .= sprintf( '<div class="checkbox_section"><input class="youtube_speaker_check" type="checkbox" name="speakers[%d]" id="speaker%d" value="%s" /> ', $count, $count, $name );
+						$ptext  .= sprintf( '<div class="checkbox_section"><input class="youtube_speaker_check youtube_speaker_check'.$pindex.'" type="checkbox" name="speakers['.$pst->ts_start.'][%d]" id="speaker%d" value="%s" /> ', $count, $count, $name );
 						$title   = get_post_meta( $pst->ID, '_title' . $row->meta_key, true );
 						$details = '';
 						if ( ! empty( $title ) ) {
@@ -11362,49 +11299,25 @@ function tm_youtube_tool() {
 							$details .= __( 'Project:', 'rsvpmaker-for-toastmasters' ) . ' ' . $project;
 						}
 						// $alldetails[] = '<strong>'.$user->first_name.' '.$user->last_name.'</strong> '.$details;
-						$ptext .= sprintf( '%s: %s<br />Details: <input type="text" name="speech[%d]" id="speech%d" value="%s" class="speech"> YouTube Link: <input type="text" name="link[%d]" id="%d" class="checkboxlink" i="%d" class="link">', $name, $details, $count, $count, htmlentities( $details . ' ' . $speakerdate ), $count, $count, $count );
+						$ptext .= sprintf( '%s: %s<br />Details: <input type="text" name="speech['.$pst->ts_start.'][%d]" id="speech%d" value="%s" class="speech"> YouTube Link: <input type="text" name="link['.$pst->ts_start.'][%d]" id="linkspeaker%d" class="checkboxlink" i="%d" class="link">', $name, $details, $count, $count, htmlentities( $details), $count, $count, $count );
 						$ptext .= "</div>\n\n";
 						$count++;
 					}
 					$nameanddetails .= '<p>' . $name . ': ' . $details . '</p>';
 				}
+				$count++;
 				$ptext .= '</div>';
 			}
-			$summaries[] = $nameanddetails;
-		}
+			$ptext .= sprintf( '<p><select name="speakers['.$pst->ts_start.'][%d]" id="youtube_speaker_select%d" class="youtube_speaker_select" >%s</select> Details: <input type="text" class="speech" name="speech['.$pst->ts_start.'][%d]" id="selectspeech%d"> YouTube Link: <input type="text" class="link" name="link['.$pst->ts_start.'][%d]" id="link%d"></p>', $pindex, $pindex, $options, $pindex, $pindex, $pindex, $pindex );
+			$ptext .= sprintf( '<p>Wrapup YouTube Link <input class="wrapuplink" id="wrapuplink%d" wrapindex="%d" name="wrapuplink['.$pst->ts_start.']" /></p>', $pindex, $pindex);
 	}
-
-	$ptext .= '<p class="morecheckboxes-wrapper"><input type="checkbox" class="morecheckboxes"> Show more dates</p>';
-
-	$stop = $count + 3;
-
-	while ( $count < $stop ) {
-		$ptext .= sprintf( '<p><select name="speakers[%d]" id="speaker%d" class="youtube_speaker_select" >%s</select> Details: <input type="text" class="speech" name="speech[%d]" id="speech%d"> YouTube Link: <input type="text" class="link" name="link[%d]" id="link%d"></p>', $count, $count, $options, $count, $count, $count, $count );
-		$count++;
 	}
-
-	$stop = $count + 2;
-
-	while ( $count < $stop ) {
-		$ptext .= sprintf( '<p>Name: <input type="text" name="speakers[%d]" class="youtube_speaker_blank" id="speaker%d"> Details: <input type="text" name="speech[%d]" id="speech%d" class="speech"> YouTube Link: <input type="text" name="link[%d]" id="link%d" class="link"></p>', $count, $count, $count, $count, $count, $count );
-		$count++;
-	}
-
-	$ptext .= '<p>Wrapup video, for example Zoom recording of a whole meeting</p>';
-	foreach ( $wrapup as $index => $wrap ) {
-		$ptext .= ($index) ? '<div class="ptextmore">' : '<div>';
-		$ptext .= sprintf( '<p><input type="text" name="wrapuptext[]" id="wrapuptext%d" class="wrapuptext" value="%s" /> YouTube link <input class="wrapuplink" id="wrapuplink%d" wrapindex="%d" name="wrapuplink[]" /></p>', $index, $wrap, $index, $index );
-		$ptext .= '</div>';
-		//$ptext .= '<div class="speech-summaries">' . $summaries[ $index ] . '</div>';
-	}
-	$ptext .= '<p class="morecheckboxes-wrapper"><input type="checkbox" class="morecheckboxes"> Show more dates</p>';
-
 	echo $ptext; 
 ?>	
-<p id="youtube_subject_wrapper">Subject <input type="text" id="youtube_subject" name="youtube_subject" style="width: 80%;" /> </p>
-<p id="customize_subject_wrapper"><button id="customize_subject">Customize Subject</button></p>
-<p>Message for top (optional)<br /><textarea name="message" cols="80" rows="2"></textarea></p>
-<p>Add message to <input type="radio" name="messagefor" value="email" checked="checked" /> Email <input type="radio" name="messagefor" value="blog" /> Blog <input type="radio" name="messagefor" value="both" /> Both </p>
+<form method="post" action="<?php echo admin_url( 'upload.php?page=tm_youtube_tool' ); ?>">
+<p>Subject <input type="text" id="youtube_subject" name="youtube_subject" style="width: 80%;" /> </p>
+<p><em>You can add to the message shown below. YouTube links must be on a separate line for the video to display properly. The &lt;strong&gt; tags are for bold text.</em><br>
+<textarea name="message" id="newpreview" rows="5" style="width: 90%;"></textarea></p>
 <div id="youtube_preview"></div>
 <?php
 	$policy = get_option( 'tm_video_policy' );
@@ -11463,6 +11376,7 @@ function tm_youtube_tool() {
 </p>
 <h3><?php _e( 'Policy to include in email', 'rsvpmaker-for-toastmasters' ); ?></h3>
 <p><textarea name="policy" rows="3" style="width: 90%"><?php echo wp_kses_post($policy); ?></textarea></p>
+<input type="hidden" name="speakers" id="speakers">
 	<?php submit_button(); ?>
 	<?php rsvpmaker_nonce(); ?>
 </form>
@@ -11473,136 +11387,76 @@ function tm_youtube_tool() {
 
 jQuery(document).ready(function($) {
 
-//$('.ptextmore').hide();
-$('.morecheckboxes').click( function() {
-	$('.ptextmore').show();
-	$('.morecheckboxes-wrapper').hide();
-});
+var previewobj = [<?php echo implode(',',$j); ?>];
+var speakers = [];
+var dates = [];
+var checkid;
+var count;
+var link;
+var speaker;
+var speakerdetails;
 
 function make_youtube_preview() {
-	let preview = '';
-	let checkid;
-	let count;
-	$('.youtube_speaker_check').each( function() {
-		checkid = $(this).attr('id');
-		count = checkid.replace('speaker','');
-		if($('#'+checkid).is(':checked')) {
-			preview = preview + '<p>'+$('#'+checkid).val();
-			preview = preview + ' '+$('#speech'+count).val() + '</p>';
-		}
-	});
-	let selectname;	
-	$('.youtube_speaker_select').each( function() {
-		checkid = $(this).attr('id');
-		count = checkid.replace('speaker','');
-		count = count.replace('link','');
-		count = count.replace('speech','');
-		checkid = $(this).attr('id');
-		selectname = $(this).val();
+	console.log(previewobj);
+
+	previewobj.forEach(
+		function(dateobj, dateindex) {
+			dateobj.previewtext = '';//reset
+			$('.youtube_speaker_check'+dateindex).each( function() {
+			checkid = $(this).attr('id');
+			count = checkid.replace('speaker','');
+			link = $('#link'+checkid).val();
+			speaker = $('#'+checkid).val();
+			if($('#'+checkid).is(':checked')) {
+				if(!speakers.includes(speaker))
+					speakers.push(speaker);
+				if(!dates.includes(dateobj.date))
+					dates.push(dateobj.date);
+				dateobj.previewtext = dateobj.previewtext + speaker;
+				dateobj.previewtext = dateobj.previewtext + ' '+$('#speech'+count).val() + "\n\n";
+				if('' != link) {
+					dateobj.previewtext = dateobj.previewtext + link+"\n\n";
+				}
+			}
+		});
+		var selectname = $('#youtube_speaker_select'+dateindex).val();
+		var link = $('#link'+dateindex).val();
+		var selectdetails = $('#selectspeech'+dateindex).val()
 		if(selectname != '') {
-			preview = preview + '<p>' +selectname;
-			preview = preview + ' '+$('#speech'+count).val() + '</p>';
+			speakers.push(selectname);
+			dateobj.previewtext = dateobj.previewtext + selectname+' '+selectdetails + "\n\n";
+			if('' != link) {
+					dateobj.previewtext = dateobj.previewtext + link+"\n\n";
+			}
 		}
-	});
+		link = $('#wrapuplink'+dateindex).val();
+		if(link != '')
+			dateobj.previewtext = dateobj.previewtext + link+"\n\n";
 
-	$('.youtube_speaker_blank').each( function() {
-		checkid = $(this).attr('id');
-		count = checkid.replace('speaker','');
-		count = count.replace('link','');
-		count = count.replace('speech','');
-		selectname = $(this).val();
-		if(selectname != '') {
-			preview = preview + '<p>' +selectname;
-			preview = preview + ' '+$('#speech'+count).val() + '</p>';
 		}
-	});
+	);
 
-	let link;
-
-	$('.wrapuplink').each( function() {
-		checkid = $(this).attr('id');
-		count = checkid.replace('wrapuplink','');
-		link = $(this).val();
-		if(link != '') {
-			preview = preview + '<p>' +$('#wrapuptext'+count).val();
-			preview = preview + ' '+ link + '</p>';
+	var newpreviewtext = '';
+	previewobj.forEach(
+		function(dateobj) {
+			if(dateobj.previewtext != '') {
+				newpreviewtext = newpreviewtext + '<strong>'+dateobj.date+'</strong>'+ "\n\n"+dateobj.previewtext;
+			}
 		}
-	});
-
-	$('#youtube_preview').html(preview);
+	);
+	$('#newpreview').val(newpreviewtext);
+	console.log(previewobj);
+	console.log(speakers);
+	console.log(dates);
+	$('#youtube_subject').val('Video: '+speakers.join(', ')+', '+dates.join(', '));
+	$('#speakers').val(speakers.join(','));
 }
 
 $('.youtube_speaker_check').click( function() { make_youtube_preview() } );
 $('.youtube_speaker_select').change( function() { make_youtube_preview() } );
 $('.speech').change( function() { make_youtube_preview() } );
 $('.link').change( function() { make_youtube_preview() } );
-$('.youtube_speaker_blank').change( function() { make_youtube_preview() } );
 $('.wrapuplink').change( function() { make_youtube_preview() } );
-
-$('#youtube_subject_wrapper').hide();
-
-$('#customize_subject').click( function (e) {
-e.preventDefault();
-$('#youtube_subject_wrapper').show();
-var subject = 'Videos: ';
-var speakers = [];
-var dates = [];
-
-$('.youtube_speaker_check').each(
-	function (index, field) {
-		if(field.checked)
-			speakers.push(field.value);
-	}
-);
-$('.youtube_speaker_text').each(
-	function (index, field) {
-		if(field.value != '')
-			speakers.push(field.value);
-	}
-);
-
-$('.youtube_speaker_select').each(
-	function (index, field) {
-		if(field.value != '')
-			speakers.push(field.value);
-	}
-);
-$('.youtube_speaker_text').each(
-	function (index, field) {
-		if(field.value != '')
-			speakers.push(field.value);
-	}
-);
-$('.wrapuplink').each(
-	function (index, field) {
-		if(field.value)
-			dates.push($('.wrapuptext')[index].value);
-	}
-);
-
-console.log(dates);
-console.log(speakers);
-
-subject += speakers.join(', ');
-if(dates.length) {
-	if(speakers.length)
-		subject += ' - ';
-	subject += dates.join(' - ');
-}
-$('#youtube_subject').val(subject);
-});
-
-$( ".checkboxlink" ).change(function() {
-	var count = $(this).attr('i');
-	$('#speaker'+count).prop('checked', true);
-});
-
-$('.speech-summaries').hide();
-
-$( "#show-summaries" ).click(function() {
-	$('.speech-summaries').show();
-	$( "#show-summaries-wrapper").hide();
-});
 
 });
 </script>
@@ -12070,7 +11924,7 @@ function wpt_notifications_doc() {
 <p>[wptagendalink] link to the meeting agenda</p>
 <p>[wpt_tod] name and contact info for Toastmasters of the Day</p>
 <p>[wp4t_assigned_open] agenda with contact info for participants, plus a listing of members with no assignment</p>
-<p>[wpt_open_roles] open roles listing, with link to sign up</p>
+<p>[wpt_open_roles] open roles listing, with sign up</p>
 <p>[tmlayout_main] same as info on printable agenda</p>
 <p>[tmlayout_intros] speech introductions for speakers</p>
 <p>[speaker_evaluator] listing of the speakers and evaluators</p>
@@ -13427,3 +13281,197 @@ return '<p>'.$output.'</p>';
 
 add_shortcode('rsvp_attend_in_person','rsvp_attend_in_person');
 
+function wpt_clipboard_links() {
+	$meetings = future_toastmaster_meetings(3);
+	$meeting = array_shift($meetings);
+	$link = get_permalink($meeting->ID).'?clipboard=1#clipboard';
+	$output = sprintf('<li><a href="%s">%s: %s</a></li>',$link, __( 'Easy Online Meeting Signup', 'rsvpmaker-for-toastmasters' ),rsvpmaker_date('M j',intval($meeting->ts_start)));
+	$meeting = array_shift($meetings);
+	$link = get_permalink($meeting->ID).'?clipboard=1#clipboard';
+	$output .= sprintf('<li><a href="%s">%s: %s</a></li>',$link, __( 'Easy Online Meeting Signup', 'rsvpmaker-for-toastmasters' ),rsvpmaker_date('M j',intval($meeting->ts_start)));
+	$meeting = array_shift($meetings);
+	$link = get_permalink($meeting->ID).'?clipboard=1#clipboard';
+	$output .= sprintf('<li class="last"><a href="%s">%s: %s</a></li>',$link, __( 'Easy Online Meeting Signup', 'rsvpmaker-for-toastmasters' ),rsvpmaker_date('M j',intval($meeting->ts_start)));
+	return $output;
+}
+
+function wpt_clipboard() {
+	ob_start();
+	global $current_user, $rsvp_options, $post;
+	$post_id = $post->ID;
+	$event = get_rsvpmaker_event($post_id);
+	$t = intval($event->ts_start);
+	$clipboard = get_post_meta($post_id,'wpt_clipboard_enabled',true);
+	if(empty($clipboard))
+		$clipboard = array('code' => '', 'expiration' => 0);
+	$code = isset($_REQUEST['clipboard']) ? sanitize_text_field($_REQUEST['clipboard']) : '';
+	$member = isset($_GET['member']) ? intval($_GET['member']) : 0;
+	$d = rsvpmaker_date($rsvp_options['long_date'],$t);
+	echo '<div id="clipboard" style="border: thin solid gray; border-radius: 25px; padding:25px;padding-top: 100px;padding-bottom: 100px;">';
+	printf('<h3>Role Signup for %s</h3>',$d);
+	$action = get_permalink()."?clipboard=".$clipboard['code'].'#clipboard';
+
+	if(!empty($_POST['member']) && rsvpmaker_verify_nonce()) {
+		$member = intval($_POST['member']);
+		$role = sanitize_text_field($_POST['role']);
+		if($role == 'tm_absence') {
+			add_post_meta($post_id,'tm_absence',$member);
+			echo '<h1>Planned absence recorded</h1><p>We will miss you!</p>';
+			return ob_get_clean();
+		}
+		$meeting = get_post($post_id);
+		$data = wpt_blocks_to_data( $meeting->post_content );
+		$success = false;
+		foreach ( $data as $row => $item ) {
+			if ( $role == $item['role'] ) {
+				$count = (int) $item['count'];
+				$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
+				for ( $i = 1; $i <= $count; $i++ ) {
+					$field    = $field_base . '_' . $i;
+					$assigned = get_post_meta( $post_id, $field, true );
+					if ( empty( $assigned ) || ($assigned == $member) ) {
+						
+						update_post_meta($post_id, $field, $member);
+						if($role == 'Speaker') {
+							update_post_meta($post_id,'_manual'.$field,sanitize_text_field($_POST['_manual']));
+							update_post_meta($post_id,'_project'.$field,sanitize_text_field($_POST['_project']));
+							update_post_meta($post_id,'_title'.$field,sanitize_text_field($_POST['_title']));
+							update_post_meta($post_id,'_intro'.$field,sanitize_text_field($_POST['_intro']));
+							update_post_meta($post_id,'_display_time'.$field,sanitize_text_field($_POST['_display_time']));
+							update_post_meta($post_id,'_maxtime'.$field,wp_kses_post($_POST['_maxtime']));
+						}
+						$success = true;
+						break;
+				}
+			}
+
+	}
+	}
+if($success)
+	printf('<p>Confirmed! You are signed up as %s</p>',$role);
+else
+	printf('<p>Looks like someone beat you to that role. Can we ask you to <a href="%s">pick another another</a>?</p>',$action);
+}
+	elseif(($clipboard['code'] == $code) && $clipboard['expiration'] > time())
+	{
+		if(isset($_POST['member']))
+			echo 'Oops, looks like you forgot to enter your name';
+		printf('<form id="signup" method="post" action="%s">',$action);
+		printf('<p>Please select your name from the list ... %s</p><p>... and choose an open role.</p>',awe_user_dropdown( 'member', $member, true ));
+		echo '<p id="status"></p>';
+		$sofar = '';
+		$data = wpt_blocks_to_data( $post->post_content );
+			foreach ( $data as $row => $item ) {
+				if ( empty( $item['role'] ) ) {
+					continue;
+				}
+				$role       = sanitize_text_field($item['role']);
+				$count      = (int) $item['count'];
+				$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
+				for ( $i = 1; $i <= $count; $i++ ) {
+					$field    = $field_base . '_' . $i;
+					$assigned = get_post_meta( $post_id, $field, true );
+					if ( empty( $assigned ) ) {
+						if(empty($openroles[$role]))
+							$openroles[$role] = 1;
+						else
+							$openroles[$role]++;
+					}
+					else {
+						$name = get_member_name($assigned);
+						$sofar .= sprintf('<p>%s: %s</p>'."\n",$role,$name);
+					}
+				}
+			}
+		foreach($openroles as $role => $count) {
+			$counter = ($count > 1) ? "($count openings)" : '';
+			if('Speaker' == $role)
+				printf('<p><input type="radio" name="role" value="%s" id="speech"> %s %s</p><div id="speechfields">%s</div>',$role,$role,$counter,str_replace('[0]','',speaker_details(0,array())));
+			else
+				printf('<p><input type="radio" name="role" value="%s"> %s %s</p>',$role,$role,$counter);
+		}
+		echo '<p><input type="radio" name="role" value="tm_absence"> Planned absence</p>';
+		rsvpmaker_nonce();
+		echo '<input type="hidden" name="post_id" value="'.$post_id.'">';
+		echo '<p><button>Sign Up</button></p></form>';
+
+		if(!empty($sofar))
+			echo '<h3>Signed Up So Far</h3>'.$sofar;
+		}
+	elseif(is_user_logged_in()) {
+		if($clipboard['expiration'] < time()) {
+			$clipboard = array('code' => wp_create_nonce(), 'expiration' => strtotime("+3 hours"));
+			update_post_meta($post_id,'wpt_clipboard_enabled',$clipboard);	
+		}
+		else {
+			$clipboard['expiration'] = strtotime("+3 hours");
+			update_post_meta($post_id,'wpt_clipboard_enabled',$clipboard);	
+		}
+		$action = get_permalink()."?clipboard=".$clipboard['code'].'#clipboard';
+		echo '<p>In an online meeting, share this link in the chat to allow members to sign up for roles without the need to log in:</p>';
+		printf('<p><textarea class="signuplink" rows="3" cols="80">Please take a role for our next meeting. No password required with this link %s</textarea></p><div id="status"></div>',$action);
+		printf('<p>These coded links are good until %s</p>',rsvpmaker_date($rsvp_options['time_format'],$clipboard['expiration']));
+		echo '<h3>Personalized Links</h3><p>You may want to message members without a role for this meeting one at a time using these links rather than the generic one above.</p>';
+		$norole = wpt_norole($post_id, true);
+		printf('<p>%d members without a role for this meeting.</p>',sizeof($norole));
+		foreach($norole as $name => $member_id)
+			printf('<p><textarea class="signuplink" rows="3" cols="80">Please take a role for our next meeting. Personalized link for %s, no password required with this link %s</textarea></p>',$name,str_replace('#clipboard','&member='.$member_id.'#clipboard',$action));
+	}
+	else {
+		printf('<p>If you have a password, please <a href="%s">login now</a> to unlock the clipboard. Other members you share the coded link with will then be able to sign up for roles without the need to log in.</p>',login_url('?clipboard=1'));
+	}
+
+	echo "<script type='text/javascript' src='" . admin_url( 'load-scripts.php?c=1&amp;load%5B%5D=jquery-core,jquery-migrate,utils&amp;ver=4.9.8' ) . "'></script>
+	<link rel='stylesheet' id='style-toastmasters-select2-css' href='" . plugins_url( 'rsvpmaker-for-toastmasters/select2/dist/css/select2.min.css?ver=3.74' ) . "' type='text/css' media='all' />
+	<script type='text/javascript' src='" . plugins_url( 'rsvpmaker-for-toastmasters/select2/dist/js/select2.min.js?ver=3.74' ) . "' id='script-toastmasters-select2-js'></script>
+	<script>
+	jQuery(document).ready(function($) {
+	
+	$.ajaxSetup({
+		headers: {
+			'X-WP-Nonce': '" . wp_create_nonce( 'wp_rest' ) . "',
+		}
+	});
+	
+	var ajaxurl = '".get_rest_url()."rsvptm/v1/clipboard/';
+	console.log(ajaxurl);
+	var timelord = '".rsvpmaker_nonce('value')."';
+	$('#speechfields').hide();
+	$('#speech').click( function() {
+		$('#speechfields').show();
+		/* lookup path maybe?	
+		var member = $('#member_select').val();
+		console.log(ajaxurl);
+		$.getJSON( ajaxurl + member, function( data ) {
+			$('#speechfields').html(data);
+		});
+		*/
+	} ); 
+	$('#member_select').select2();
+
+	$('#signup').submit(
+		function (e) {
+			if($('#member_select').val() == '0')
+			{
+				e.preventDefault();
+				alert('Please pick your name from the list');
+			}
+		}
+	);
+    $('.signuplink').click(
+        function() {
+        this.select();
+        this.setSelectionRange(0, 99999); /* For mobile devices */
+        /* Copy the text inside the text field */
+        navigator.clipboard.writeText(this.value);
+        /* Alert the copied text */
+		this.style = 'border: thick solid green;';
+		$(this).after('<p style=\"color:green\">Copied!</p>');
+        }
+    );
+	
+});
+</script>
+</div>";
+return ob_get_clean();	
+}

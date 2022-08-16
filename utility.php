@@ -214,7 +214,8 @@ function clean_role( $role ) {
 function future_toastmaster_meetings( $limit = 10 ) {
 	global $wpdb;
 	$event_table = $wpdb->prefix.'rsvpmaker_event';
-	$sql = "SELECT *, date as datetime, ID as postID from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND ts_end > ".time()." AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
+	$t = time();
+	$sql = "SELECT *, date as datetime, ID as postID from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND (ts_start > $t OR ts_end > $t) AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
 	return $wpdb->get_results($sql);
 }
 
@@ -1569,7 +1570,7 @@ function time_planner_2020( $atts ) {
 }
 
 function wp4t_is_district() {
-    return (int) get_option('toastmasters_district');
+    return get_option('toastmasters_district');
 }
 
 function wp4t_editor_style_override() {
@@ -1718,7 +1719,7 @@ function wpt_rsvpmaker_admin_heading($headline, $function, $tag = '', $sidebar =
 		echo '<h1>'.$headline.'</h1>';
 }
 
-add_filter('rsvpmaker-admin-heading-help','wpt_rsvpmaker_admin_heading_help',12,3);
+//remove? add_filter('rsvpmaker-admin-heading-help','wpt_rsvpmaker_admin_heading_help',12,3);
 function wpt_rsvpmaker_admin_heading_help($content,$function='',$tag='') {
 	if($function == 'rsvpmaker_template_list') {
 		$content .= '<p><a href="https://www.wp4toastmasters.com/knowledge-base/create-update-events-based-on-template/">Templates for Toastmasters Meetings</a></p>';
@@ -1809,4 +1810,33 @@ function agenda_rsvpmaker_email_custom_styles ($option) {
 		$option[$index] = $value;
 	rsvpmaker_debug_log($option,'modified option');	
 return $option;
+}
+
+function wpt_norole($post_id, $return_ids = false) {
+global $wpdb;
+$hasrole  = array();
+$norole   = array();
+$date     = get_rsvp_date( $post_id );
+$absences = get_absences_array( $post_id );
+$sql      = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . " AND meta_value REGEXP '^[0-9]+$' AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
+$results  = $wpdb->get_results( $sql );
+foreach ( $results as $row ) {
+	$hasrole[] = $row->meta_value;
+}
+$users = get_users( 'blog_id=' . get_current_blog_id() );
+foreach ( $users as $user ) {
+	if ( ! in_array( $user->ID, $hasrole ) && ! in_array( $user->ID, $absences ) ) {
+		$userdata = get_userdata( $user->ID );
+		if($return_ids) {
+			$norole[$userdata->first_name . ' ' . $userdata->last_name] = $user->ID;
+		}
+		else
+			$norole[] = $userdata->first_name . ' ' . $userdata->last_name;
+	}
+}
+if($return_ids)
+	ksort($norole);
+else
+	sort( $norole );
+return $norole;
 }

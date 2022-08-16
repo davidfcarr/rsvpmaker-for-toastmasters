@@ -1142,17 +1142,11 @@ function rsvpmaker_relay_bot_check( ) {
 
     $output .= $qresult;
 
-	if ( ! $active ) {
-
-		return;
-	}
-
     if(rsvpmaker_postmark_is_live()) {
         $output .= 'Postmark email delivery is active';
     }
-    else {
+    elseif($active) {
         $output .= '<p>'.rsvpmaker_relay_get_pop( 'bot', true ).'</p>';
-        ob_get_clean();
         $sql = "SELECT count(*) FROM $wpdb->postmeta WHERE meta_key='rsvprelay_to' ";
         $in_q = $wpdb->get_var($sql);
         if($in_q)   
