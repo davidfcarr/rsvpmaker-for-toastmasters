@@ -4823,7 +4823,7 @@ Other Comments';
 		echo $evaluation;
 		if($demo)
 			$evaluation = apply_filters('wp4t_evaluation_demo_content',$evaluation);
-		if ( ! empty( $_POST['speaker_email'] ) && is_email( $_POST['speaker_email'] ) ) {
+		if ( ! empty( $_POST['speaker_email'] ) && rsvpmail_contains_email( $_POST['speaker_email'] ) ) {
 			$mail['subject']  = sanitize_text_field($subject);
 			$mail['replyto']  = $evaluator->user_email;
 			$mail['html']     = "<html>\n<body>\n" . $evaluation . "\n</body></html>";

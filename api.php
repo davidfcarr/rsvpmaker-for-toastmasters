@@ -935,6 +935,76 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 	}
 }
 
+class WPTM_Reorder extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'reorder';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		$post_id = (int) $_POST['post_id'];
+		if ( ! $post_id ) {
+			die( 'Post ID not set' );
+		}
+		$test = '';
+		foreach ( $_POST as $name => $value ) {
+			if ( is_array( $value ) ) {
+				if ( $name == '_Speaker' ) {
+					// print_r($value);
+					$neworder = array();
+					foreach ( $value as $assigned ) {
+							$neworder[] = get_speaker_array( sanitize_text_field($assigned), $post_id );
+					}
+					foreach ( $neworder as $index => $speaker ) {
+						save_speaker_array( $speaker, $index + 1, $post_id );
+						$assigned = $speaker['ID'];
+						if ( empty( $assigned ) ) {
+							$assigned = '?';
+						} elseif ( is_numeric( $assigned ) ) {
+							$assigned_member = get_userdata( $assigned );
+							$assignee        = $assigned_member->first_name . ' ' . $assigned_member->last_name;
+						} else {
+							$assignee = $assigned;
+						}
+						$test .= ', ' . ( $index + 1 ) . ': ' . $assignee;
+					}
+				} else {
+					foreach ( $value as $index => $assigned ) {
+						if ( empty( $assigned ) ) {
+							$assigned = '?';
+						} elseif ( is_numeric( $assigned ) ) {
+							$assigned_member = get_userdata( $assigned );
+							$assignee        = $assigned_member->first_name . ' ' . $assigned_member->last_name;
+						} else {
+							$assignee = $assigned;
+						}
+						update_post_meta( $post_id, $name . '_' . ( $index + 1 ), $assigned );
+						$test .= ', ' . ( $index + 1 ) . ': ' . $assignee;
+					}
+				}
+			}
+		}
+		$output = 'Saved. <a href="' . get_permalink( $post_id ) . '">Verify updated order</a>' . $test;
+		return new WP_REST_Response( $output, 200 );
+	}
+}
+
 add_action(
 	'rest_api_init',
 	function () {
@@ -970,5 +1040,7 @@ add_action(
 		$tweak->register_routes();
 		$reg = new WPTM_Regular_Voting();
 		$reg->register_routes();
+		$reorder = new WPTM_Reorder();
+		$reorder->register_routes();
 	}
 );

@@ -356,7 +356,7 @@ function mailster_toastmasters() {
 		$emails = preg_split( '/[,\n]/', sanitize_textarea_field($_POST['email']) );
 		foreach ( $emails as $email ) {
 			$email = strtolower( trim( $email ) );
-			if ( is_email( $email ) ) {
+			if ( rsvpmail_contains_email( $email ) ) {
 				$whitelist[] = $email;
 			}
 		}
@@ -373,7 +373,7 @@ function mailster_toastmasters() {
 		$emails = preg_split( '/[,\n]/', array_map('sanitize_text_field',$_POST['extra']) );
 		foreach ( $emails as $email ) {
 			$email = strtolower( trim( $email ) );
-			if ( is_email( $email ) ) {
+			if ( rsvpmail_contains_email( $email ) ) {
 				$extra[] = $email;
 			}
 		}

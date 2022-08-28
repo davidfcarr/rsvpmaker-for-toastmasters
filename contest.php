@@ -614,7 +614,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 				if ( ! empty( $judge_name ) ) {
 					$judge[ $index ] = sanitize_text_field($judge_name);
 					$email = ( empty( $_POST['judge_email'][ $index ] ) ) ? '' : sanitize_text_field($_POST['judge_email'][ $index ]);
-					if ( ! empty( $email ) && is_email( $email ) ) {
+					if ( ! empty( $email ) && rsvpmail_contains_email( $email ) ) {
 						echo "<p>judge email $email</p>";
 						foreach($edits as $edit)
 						update_post_meta( $edit, 'judge_email' . $index, $email );

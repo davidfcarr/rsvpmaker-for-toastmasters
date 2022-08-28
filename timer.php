@@ -55,7 +55,7 @@ if ( is_user_logged_in() ) {
 	$name     = $role . ' ' . $current_user->display_name;
 	$email    = $current_user->user_email;
 	$is_timer = ( ( $role == 'Timer' ) && ! isset( $_GET['exit_timer'] ) );
-} elseif ( isset( $_GET['email'] ) && is_email( $_GET['email'] ) ) {
+} elseif ( isset( $_GET['email'] ) && rsvpmail_contains_email( $_GET['email'] ) ) {
 		$email = sanitize_text_field($_GET['email']);
 		$sql   = $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'rsvpmaker WHERE email LIKE %s AND event=%d', $email, $post->ID );
 		$row   = $wpdb->get_row( $sql );

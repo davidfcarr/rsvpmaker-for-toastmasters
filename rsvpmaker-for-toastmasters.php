@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.4.3
+Version: 5.4.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1169,7 +1169,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 	$permalink   = rsvpmaker_permalink_query( $post->ID );
 
 	if ( isset( $_REQUEST['reorder'] ) ) {
-		if ( $count == 1 ) {
+		if ( empty($atts['count']) || 1 == $atts['count'] ) {
 			return;
 		}
 		$output .= '<input type="hidden" id="_' . $field_base . 'post_id" value="' . $post->ID . '">';
@@ -6246,7 +6246,7 @@ class Toastmasters_Member {
 					return;
 				}
 			}
-			if ( ! is_email( $user['user_email'] ) && ! strpos( $user['user_email'], 'example.com' ) ) {
+			if ( ! rsvpmail_contains_email( $user['user_email'] ) && ! strpos( $user['user_email'], 'example.com' ) ) {
 				$this->prompts[] = '<span style="color: red;">' . __( 'Error: invalid email address', 'rsvpmaker-for-toastmasters' ) . ' ' . $user['user_email'] . '</span><br />' . $this->prompt_fields( $user );
 				 return;
 			}
@@ -7629,54 +7629,6 @@ function awesome_rating() {
 		printf( '<p>%s : %s %s</p>', esc_html($score), esc_html($userdata->first_name), esc_html($userdata->last_name) );
 		echo esc_html($tags[ $id ]) . '<br />';
 	}
-}
-
-add_action( 'wp_ajax_wpt_reorder', 'ajax_reorder' );
-
-function ajax_reorder() {
-	$post_id = (int) $_POST['post_id'];
-	if ( ! $post_id ) {
-		die( 'Post ID not set' );
-	}
-	$test = '';
-	foreach ( $_POST as $name => $value ) {
-		if ( is_array( $value ) ) {
-			if ( $name == '_Speaker' ) {
-				// print_r($value);
-				$neworder = array();
-				foreach ( $value as $assigned ) {
-						$neworder[] = get_speaker_array( sanitize_text_field($assigned), $post_id );
-				}
-				foreach ( $neworder as $index => $speaker ) {
-					save_speaker_array( $speaker, $index + 1, $post_id );
-					$assigned = $speaker['ID'];
-					if ( empty( $assigned ) ) {
-						$assigned = '?';
-					} elseif ( is_numeric( $assigned ) ) {
-						$assigned_member = get_userdata( $assigned );
-						$assignee        = $assigned_member->first_name . ' ' . $assigned_member->last_name;
-					} else {
-						$assignee = $assigned;
-					}
-					$test .= ', ' . ( $index + 1 ) . ': ' . $assignee;
-				}
-			} else {
-				foreach ( $value as $index => $assigned ) {
-					if ( empty( $assigned ) ) {
-						$assigned = '?';
-					} elseif ( is_numeric( $assigned ) ) {
-						$assigned_member = get_userdata( $assigned );
-						$assignee        = $assigned_member->first_name . ' ' . $assigned_member->last_name;
-					} else {
-						$assignee = $assigned;
-					}
-					update_post_meta( $post_id, $name . '_' . ( $index + 1 ), $assigned );
-					$test .= ', ' . ( $index + 1 ) . ': ' . $assignee;
-				}
-			}
-		}
-	}
-	die( 'Saved. <a href="' . get_permalink( $post_id ) . '">Verify updated order</a>' . $test );
 }
 
 function get_speaker_array( $assigned, $post_id = 0, $backup = false ) {
@@ -12824,7 +12776,7 @@ function wpt_contributor_notification( $new_status, $old_status, $post ) {
 			$emails = explode( ',', $contributor_notification );
 		foreach ( $emails as $email ) {
 			$email = trim( $email );
-			if ( is_email( $email ) ) {
+			if ( rsvpmail_contains_email( $email ) ) {
 					mail( $email, 'Contributor Post: ' . $post->post_title, admin_url( 'post.php?action=edit&post=' . $post->ID ), 'From: ' . $current_user->user_email );
 			}
 		}

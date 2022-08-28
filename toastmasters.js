@@ -159,11 +159,14 @@ jQuery( document ).ready(
 					}
 					var id = $( this ).prop( "id" );
 					$( '#' + id + '_sortresult' ).text( 'Working ...' );
-
+					var ajaxurl = wpt_rest.url + 'rsvptm/v1/reorder';
+					console.log(ajaxurl);
+					console.log(datastr);
 					jQuery.post(
 						ajaxurl,
 						datastr,
 						function(response) {
+							console.log(response);
 							$( '#' + id + '_sortresult' ).html( response );
 							$( '#' + id + '_sortresult' ).fadeIn( 200 );
 						}
