@@ -304,3 +304,5 @@ function wp4t_todolist($blog_id, $send = false) {
     restore_current_blog();
     return $output;
 }
+
+add_action('wp4t_todolist_cron','wp4t_todolist',10,2);

@@ -28,14 +28,15 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_screen', __( 'My Data', 'rsvpmaker-for-toastmasters' ), __( 'My Data', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_my_data', 'wpt_my_data' );
 	add_submenu_page( 'toastmasters_screen', __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_support', 'toastmasters_support' );
 
-	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_reconcile', 'toastmasters_reconcile' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'add_member_speech', 'add_member_speech' );
+	//was $security['edit_member_stats']
+	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_reconcile', 'toastmasters_reconcile' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'add_member_speech', 'add_member_speech' );
 
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Mentors', 'rsvpmaker-for-toastmasters' ), __( 'Mentors', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_mentors', 'toastmasters_mentors' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'wpt_dues_report', 'wpt_dues_report' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_activity_log', 'toastmasters_activity_log' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Mentors', 'rsvpmaker-for-toastmasters' ), __( 'Mentors', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_mentors', 'toastmasters_mentors' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wpt_dues_report', 'wpt_dues_report' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_activity_log', 'toastmasters_activity_log' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'import_export', 'toastmasters_import_export' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'member_application_approval', 'member_application_approval' );
@@ -43,7 +44,7 @@ function toastmasters_reports_menu() {
 	if(!is_toastmost_site())
 		add_submenu_page( 'toastmasters_admin_screen', __( 'Include on Toastmost Calendar?', 'rsvpmaker-for-toastmasters' ), __( 'Include on Toastmost Calendar?', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'include_toastmost_calendar', 'include_toastmost_calendar' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
-	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ), $security['edit_member_stats'], 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
+	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ),'manage_options', 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
@@ -3303,13 +3304,13 @@ function toastmasters_welcome() {
 	global $wpdb;
 	?>
 
-	<h2 class="nav-tab-wrapper">
+	<h2 class="rsvpmaker-nav-tab-wrapper nav-tab-wrapper">
 	  <a class="nav-tab nav-tab-active" href="#main">Quick Guide</a>
 	  <a class="nav-tab" href="#TODO">To Do First</a>
 	  <a class="nav-tab" href="#credits">Credits</a>
 	</h2>
 
-	<div id="sections" class="toastmasters" >
+	<div id="sections" class="toastmasters rsvpmaker" >
 	<section  id="main">
 	<p>This website takes advantage of software from the <a href="http://wp4toastmasters.com">WordPress for Toastmasters</a> project, which adds Toastmasters-specific features such as meeting and membership management to WordPress, a popular web publishing and online marketing platform. Here is a quick orientation.</p>
 	<p>You are viewing the website's administrative back end, or "Dashboard." This is where you come to <a href="<?php echo admin_url( 'profile.php' ); ?>">update your member profile</a> (please verify your contact information!) and <a href="<?php echo admin_url( 'profile.php#password' ); ?>">change your password</a>. Site administrators can also edit the content of the website and tweak settings from here. To sign up for meeting roles, you will want to return to the public website, as shown below.</p>
@@ -3826,11 +3827,11 @@ return;//disabled for now
 
 <?php
 	?>
-	<h2 class="nav-tab-wrapper">
+	<h2 class="rsvpmaker-nav-tab-wrapper nav-tab-wrapper">
 	  <a class="nav-tab nav-tab-active" href="#main">WP4Toastmasters Data</a>
 	  <a class="nav-tab" href="#fth">Import from Free Toast Host</a>
 	</h2>
-	<div id="sections" class="toastmasters" >
+	<div id="sections" class="toastmasters rsvpmaker" >
 	<section id="main">
 	<?php
 	$nonce       = wp_create_nonce( 'tm_export' );
@@ -4684,13 +4685,13 @@ function wp4t_evaluations( $demo = false ) {
 	if ( ! $demo ) {
 		$hook = tm_admin_page_top( __( 'Evaluations', 'rsvpmaker-for-toastmasters' ) );
 		?>
-			<h2 class="nav-tab-wrapper">
+			<h2 class="rsvpmaker-nav-tab-wrapper nav-tab-wrapper">
 	  <a class="nav-tab nav-tab-active" href="#main">Give Evaluations</a>
 	  <a class="nav-tab" href="#evalreq">Request Evaluation</a>
 	  <a class="nav-tab" href="#myevaluations">Evaluations Received</a>
 	  <a class="nav-tab" href="#others">Evaluations Given</a>
 	</h2>
-	<div id="sections" class="toastmasters" >
+	<div id="sections" class="toastmasters rsvpmaker" >
 	<section id="main">
 		<?php
 	}
@@ -5614,7 +5615,6 @@ function wpt_json_send( $json_data, $upload_only = false ) {
 		'data_format' => 'body',
 	);
 	$response = wp_remote_request( $url, $args );
-	rsvpmaker_debug_log($response['body'],'response to data upload');
 	$json_response = json_decode( $response['body'], true );
 
 	if ( ! isset( $json_response['log'] ) ) {
@@ -6223,7 +6223,7 @@ function pathways_project_map( $slug ) {
 		'Dynamic Leadership Level 4 Building Skills 173'   => 'Pathways:Write a Compelling Blog',
 		'Dynamic Leadership Level 5 Demonstrating Expertise 182' => 'Pathways:Lead in Any Situation',
 		'Dynamic Leadership Level 5 Demonstrating Expertise 187' => 'Pathways:Reflect on Your Path',
-		'Dynamic Leadership Level 5 Demonstrating Expertise 193' => 'Pathways:Ethical Leadership',
+		'Dynamic Leadership Level 5 Demonstrating Expertise 193'=>'Pathways:Ethical Leadership',
 		'Dynamic Leadership Level 5 Demonstrating Expertise 199' => 'Pathways:High Performance Leadership - First Speech',
 		'Dynamic Leadership Level 5 Demonstrating Expertise 200' => 'Pathways:High Performance Leadership - Second Speech',
 		'Dynamic Leadership Level 5 Demonstrating Expertise 205' => 'Pathways:Leading in Your Volunteer Organization',

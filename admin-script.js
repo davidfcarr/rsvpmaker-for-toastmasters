@@ -69,9 +69,6 @@
 
 	$( '.speech_update' ).hide();
 
-	$( '.toastmasters section' ).hide();
-	$('section#main').show();
-
 	$('a.nav-tab-active').click( function() {
 		var activetab = $( 'a.nav-tab-active' ).attr( 'href' );
 		if (activetab) {

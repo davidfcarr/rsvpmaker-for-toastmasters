@@ -500,6 +500,7 @@ function wp4t_delete_history($role, $timestamp, $post_id) {
 }
 
 function refresh_tm_history() {
+    wp_suspend_cache_addition(true);
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
@@ -514,6 +515,7 @@ function refresh_tm_history() {
             update_user_role_archive( $row->ID, $row->date );
         }
     }
+    wp_suspend_cache_addition(false);
 }
 add_action( 'refresh_tm_history', 'refresh_tm_history' );
 
@@ -790,15 +792,12 @@ function wp4t_add_history_to_table_log($user_id, $role, $timestamp, $post_id, $f
     $short_message = "<strong>$name</strong>: $role $role_count";
     if('toastmasters_reconcile' == $function)
         echo '<div class="notice notice-success"><p>'.$short_message.'</p></div>';
-    //rsvpmaker_debug_log($message,'add history to table');
 }
 
-//update details for previously recorded speech
 function wpt_update_speech_history_by_id_log($manual,$project_key,$project,$title,$post_id,$user_id) {
     $name = get_member_name($user_id);
     $message = '<strong>Updated speech for '.$name."</strong>: $manual, $project, $title";
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
-    rsvpmaker_debug_log($message,'update speech');
 }
 
 //changed from assigned to Open
@@ -806,7 +805,6 @@ function wpt_remove_history_by_id_log($was, $role, $post_id) {
     $name = get_member_name($was);
     $message = '<strong>Removed '.$name."</strong>: $role";
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
-    rsvpmaker_debug_log($message,'remove from history');
 }
 
 //changed from one member to another
@@ -815,5 +813,4 @@ function wpt_update_history_by_id_log($user_id, $role, $post_id, $was) {
     $wasname = get_member_name($was);
     $message = "Changed <strong>$wasname to $name</strong>: $role";
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
-    rsvpmaker_debug_log($message,'update history');
 }

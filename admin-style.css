@@ -6,57 +6,9 @@
 	margin: 5px;
 }
 
-h2.nav-tab-wrapper {
-	margin:22px 0 0 0;
-}
-
-#sections {
-	padding:22px;
-	background: #fff;
-	border:1px solid #ccc;
-	border-top:0px;
-}
-
-section.nav-tab {
-	display:none;
-}
-
-section.toastmasters-admin {
-	display:none;
-}
-
-section.toastmasters-admin:first-child {
-	display:block;
-}
-
 .member_dues_update p.submit {
 	width: 150px;
 	float: right;
-}
-
-section.nav-tab-active {
-	display:block;
-}
-
-.no-js h2.nav-tab-wrapper {
-	display:none;
-}
-
-.no-js #sections {
-	border-top:1px solid #ccc;
-	margin-top:22px;
-}
-
-.no-js section {
-	border-top: 1px dashed #aaa;
-	margin-top:22px;
-	padding-top:22px;
-}
-
-.no-js section:first-child {
-	margin:0px;
-	padding:0px;
-	border:0px;
 }
 
 .toastmasters ul, #toastmasters_admin_widget ul {

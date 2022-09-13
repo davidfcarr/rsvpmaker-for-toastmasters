@@ -598,6 +598,32 @@ jQuery( document ).ready(
 			}
 		);
 
+		$( '.agenda_note_editable_editone' ).submit(
+			function (e) {
+				e.preventDefault();
+				var data = $(this).serializeArray();
+				$(this).html(data[0].value);
+				var form = this;
+				console.log(data);
+				var postdata = {
+					agenda_note : data[0].value,
+					agenda_note_label : data[1].value,
+					post_id : data[2].value,
+					timelord: data[3].value,
+				};
+				$.post(
+					wpt_rest.url + 'rsvptm/v1/editable_note_update',
+					data,
+					function(response) {
+						console.log('posting');
+						console.log(data);
+						$(form).html(data[0].value + response);
+						console.log(response);
+					}
+				);
+			}
+		);
+
 		$( document ).on(
 			'submit',
 			'form.edit_one_form',

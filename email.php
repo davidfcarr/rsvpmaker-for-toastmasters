@@ -6,7 +6,9 @@ Email routines
 add_action( 'wp4toast_reminders_cron', 'wp4toast_reminders_cron', 10, 1 );
 
 function wp4toast_reminders_cron( $meeting_hours ) {
+	wp_suspend_cache_addition(true);
 	email_with_without_role( $meeting_hours );
+	wp_suspend_cache_addition(false);
 	return;
 }
 
@@ -32,6 +34,7 @@ function wpt_notification_from($post_id) {
 	if(!empty($tmdata))
 		$mail['from'] = $tmdata->user_email;
 	else {
+		$blog_id = get_current_blog_id();
 		$officer_ids    = get_blog_option( $blog_id, 'wp4toastmasters_officer_ids' );
         $officer_titles = get_blog_option( $blog_id, 'wp4toastmasters_officer_titles' );
         if(is_array($officer_ids))

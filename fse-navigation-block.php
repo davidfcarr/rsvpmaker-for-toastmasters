@@ -40,11 +40,10 @@ function wp4t_sidebar_template_part($menu_id) {
 	$post_type = 'wp_template_part';
 	$template_part = get_block_template( get_stylesheet() . '//sidebar', $post_type );
     if ( ! $template_part || empty( $template_part->content ) ) {
-		rsvpmaker_debug_log('template part not found');
+		//rsvpmaker_debug_log('template part not found');
         return;
     }
 	if(!empty($template_part->wp_id)) {
-		rsvpmaker_debug_log($template_part->wp_id,'dynamic sidebar exists');
 		return;
 	}
 	$content = $template_part->content;
@@ -71,7 +70,6 @@ function wp4t_block_theme_menu() {
 	$menu_id = $wpdb->get_var("SELECT ID from $wpdb->posts WHERE post_type='wp_navigation' and post_status='publish' AND post_title='Toastmasters Navigation' ORDER BY ID DESC");
 	if(!$menu_id)
 	{
-	//rsvpmaker_debug_log($menu_id,'existing menu');
 	$link_format = '<!-- wp:navigation-link {"label":"%s","type":"page","id":%d,"url":"%s","kind":"post-type","isTopLevelLink":true} /-->'."\n\n";
 	$sql = "SELECT ID FROM $wpdb->posts WHERE post_status='publish' and post_name='calendar' ";
 	$calendar_id = $wpdb->get_var($sql);
@@ -124,7 +122,6 @@ function wp4t_block_theme_menu() {
 	$menu['post_type'] = 'wp_navigation';
 	$menu['post_author'] = $current_user->ID;
 	$menu_id = wp_insert_post($menu);
-	//rsvpmaker_debug_log($menu_id,'new menu');
 	}
 return $menu_id;
 }
@@ -145,16 +142,13 @@ function wp4t_header_template_part() {
 	global $wpdb, $current_user;
 	$post_type = 'wp_template_part';
 	$template_part = get_block_template( get_stylesheet() . '//header', $post_type );
-	//rsvpmaker_debug_log($template_part->content,'block header');
     if ( ! $template_part || empty( $template_part->content ) ) {
         return;
     }
 	if(!empty($template_part->wp_id)) {
-		rsvpmaker_debug_log($template_part->wp_id,'header db record');
 		return;
 	}
 	$menu_id = wp4t_block_theme_menu();
-	//rsvpmaker_debug_log($template_part->content,'static header exists');
 	$content = $template_part->content;
 	if(!strpos($content,'wp:navigation'))
 		return; //might be using a pattern in header.html

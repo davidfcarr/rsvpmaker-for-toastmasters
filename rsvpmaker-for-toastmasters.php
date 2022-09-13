@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.4.4
+Version: 5.4.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -54,7 +54,6 @@ add_filter( 'jetpack_seo_meta_tags', 'members_only_jetpack' );
 add_filter( 'excerpt_more', 'toast_excerpt_more' );
 add_filter( 'lectern_default_header', 'wp4t_header' );
 add_filter( 'user_contactmethods', 'awesome_contactmethod', 10, 1 );
-add_filter( 'user_row_actions', 'wp4t_user_row_edit_member', 9, 2 );
 add_action( 'init', 'signup_sheet' );
 add_action( 'init', 'print_contacts' );
 add_action( 'init', 'awesome_open_roles' );
@@ -63,7 +62,8 @@ add_action('init','minutes_post_type');
 add_action( 'widgets_init', 'wptoast_widgets' );
 add_action( 'wp_enqueue_scripts', 'toastmasters_css_js' );
 add_action( 'pre_get_posts', 'toast_modify_query_exclude_category' );
-add_action( 'wp_login', 'tm_security_setup' );
+//was wp_login
+add_action( 'admin_menu', 'tm_security_setup', 1 );
 add_action( 'admin_bar_menu', 'toolbar_add_member', 999 );
 add_action( 'admin_bar_menu', 'toolbar_link_to_agenda', 999 );
 add_action( 'admin_init', 'check_first_login' );
@@ -2278,21 +2278,6 @@ echo '<div class="alignleft actions bulkactions">
 
 }
 
-function wp4t_user_row_edit_member( $actions, $user ) {
-	global $current_user;
-
-	if ( $user->ID == $current_user->ID ) {
-		return $actions;
-	}
-
-	if ( current_user_can( 'edit_members' ) ) {
-
-		$actions['edit_member'] = '<a href="' . admin_url( 'users.php?page=edit_members&user_id=' ) . $user->ID . '">' . esc_html__( 'Edit Member', 'rsvpmaker-for-toastmasters' ) . '</a>';
-	}
-
-	return $actions;
-}
-
 function edit_members() {
 
 	$hook = tm_admin_page_top( __( 'Edit Member', 'rsvpmaker-for-toastmasters' ) );
@@ -2450,30 +2435,58 @@ function wp4toastmasters_settings() {
 	?>
 <div class="wrap">
 <?php rsvpmaker_admin_heading('Toastmasters '.__( 'Settings', 'rsvpmaker-for-toastmasters' ),__FUNCTION__);?>
-	<h2 class="nav-tab-wrapper">
-	  <a class="nav-tab nav-tab-active" href="#basic">Basic Settings</a>
-	  <a class="nav-tab" href="#security">Security</a>
-	  <a class="nav-tab" href="#rules">Rules</a>
-	  <a class="nav-tab" href="#notifications">Notifications</a>
+	<h2 class="nav-tab-wrapper rsvpmaker-nav-tab-wrapper">
+	  <a class="nav-tab <?php if(empty($_REQUEST['tab'])) echo 'nav-tab-active'; ?>" href="#basic">Basic Settings</a>
+	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'security' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#security">Security</a>
+	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'rules' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#rules">Rules</a>
+	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'notifications' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#notifications">Notifications</a>
 	</h2>
 
-	<div id="sections" class="toastmasters-admin" >
+	<div id="sections" class="toastmasters-admin rsvpmaker" >
 	<section class="toastmasters-admin" id="basic">
+
+	<div class="toastmasters-see-also">
+See also:
+<ul>
+<li><a href="<?php echo admin_url('options-general.php?page=rsvpmaker-admin.php'); ?>">RSVPMaker Settings</a> - events and guest registration</li>
+<li><a href="<?php echo admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list'); ?>">Event Templates</a> - meeting templates</li>
+<ul>
+<?php
+if($district = wp4t_is_district())
+{
+echo '<h3>District: '.$district.'</h3>';
+}
+else {
+?>
+<p>This website is set up for a club. Reconfigure as a district website?</p>
+<form method="get" action="<?php echo admin_url('options-general.php'); ?>">
+<input type="hidden" name="page" value="wp4toastmasters_settings">
+District <input name="district"> (number or designation, i.e. Founders)
+<?php
+rsvpmaker_nonce();
+submit_button();
+?>
+</form>
+<?php	
+}
+?>
+</div>
+
 <form method="post" action="options.php">
 	<?php
-	if(isset($_GET['district'])) {
+	if(isset($_GET['district']) && rsvpmaker_verify_nonce()) {
 		$titles = array('District Director','Program Quality Director','Club Growth Director','Public Relations Manager','Administration Manager','Finance Manager','Logistics Manager','Immediate Past District Director');
 		$slugs = array('dd','pqd','cgd','prm','administration','finance','logistics','ipdd');
 		$divisions = array('A','B','C','D','E','F','G');
 		foreach($divisions as $d) 
 		{
 			$titles[] = "Division $d Director";
-			$slugs[] = "div".strtolower($d);
+			$slugs[] = "div_".strtolower($d);
 		}
 		update_option ('wp4toastmasters_officer_titles',$titles);
 		update_option( 'wp4toastmasters_officer_slugs',$slugs );
 		update_option( 'wp4toastmasters_officer_ids',array() );
-		update_option('toastmasters_district',true);
+		update_option('toastmasters_district',sanitize_text_field($_GET['district']));
 	}
 
 	settings_fields( 'wp4toastmasters-settings-group' );
@@ -2506,14 +2519,6 @@ function wp4toastmasters_settings() {
 	$public = get_option( 'blog_public' );
 
 	?>
-
-<div class="toastmasters-see-also">
-See also:
-<ul>
-<li><a href="<?php echo admin_url('options-general.php?page=rsvpmaker-admin.php'); ?>">RSVPMaker Settings</a> - events and guest registration</li>
-<li><a href="<?php echo admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list'); ?>">Event Templates</a> - meeting templates</li>
-<ul>
-</div>
 
 <h3><?php _e( 'Make the Website Public', 'rsvpmaker-for-toastmasters' ); ?></h3>
 <p><input type="radio" name="blog_public" value="1" 
@@ -3104,6 +3109,7 @@ if(isset($_POST['wpt_notification_emails'])) {
 
 $titles = get_option('wpt_notification_titles');
 printf('<form method="post" action="%s">',admin_url('options-general.php?page=wp4toastmasters_settings'));
+echo '<input type="hidden" name="tab" value="notifications">';
 $wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
 echo '<p>'.__('Who gets email notifications of role signups?','rsvpmaker-for-toastmasters').'</p>';
 $checked = !empty(get_option("wpt_notification_leader")) ? ' checked="checked" ': '';
@@ -3214,6 +3220,7 @@ function toastmasters_rule_setting() {
 	}
 
 	printf( '<form method="post" action="%s">', admin_url( 'options-general.php?page=wp4toastmasters_settings' ) );
+	echo '<input type="hidden" name="tab" value="rules">';
 	?>
 <h3>Access to Edit Signups</h3>
 <p>Security roles, in addition to administrator who can edit other members' role signups:</p>
@@ -3552,8 +3559,7 @@ function wp4toast_reminders_dst_fix( $args = array() ) {
 
 			$fudge = $hours + 1;
 		if ( ! empty( $next ) ) {
-				rsvpmaker_fix_timezone();
-				wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
+				wp_schedule_event( rsvpmaker_strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 		}
 	}
 }
@@ -4759,6 +4765,8 @@ function awesome_event_content( $content ) {
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'rsvpmaker' ) || is_admin() ) {
 		return $content;
 	}
+	//don't want to clog memory with speech lookups
+	wp_suspend_cache_addition(true);
 	if(isset($_GET['oneclick']))
 		return wpt_oneclick_signup();
 
@@ -5371,7 +5379,7 @@ function awesome_members( $atts ) {
 	if ( isset( $_GET['action'] ) ) {
 		return; // don't let gutenberg try to display in editor
 	}
-
+	wp_suspend_cache_addition(true);
 	ob_start();
 	global $wpdb, $current_user;
 
@@ -5401,17 +5409,6 @@ function awesome_members( $atts ) {
 			$clubemails[]      = $userdata->user_email;
 		}
 	}
-/*
-	if ( ( isset( $_REQUEST['print_contacts'] ) || is_admin() ) && is_array( $members ) ) {
-		ksort( $members );
-		foreach ( $members as $userdata ) {
-			if ( $userdata->user_login != '0_NOT_AVAILABLE' ) {
-				print_display_member( $userdata );
-			}
-		}
-		return;
-	}
-*/
 	if ( is_club_member() ) {
 		echo '<p><em>' . __( 'Contact details such as phone numbers and email are only displayed when you are logged into the website (and should only be used for Toastmasters business)', 'rsvpmaker-for-toastmasters' ) . '.</em></p>';
 		if ( current_user_can( 'view_contact_info' ) ) {
@@ -5452,7 +5449,7 @@ function awesome_members( $atts ) {
 		}
 		printf( '<p><strong><em>%s</em></strong></p>', __( 'Email addresses and other contact information provided for Toastmasters business only.', 'rsvpmaker-for-toastmasters' ) );
 	}
-
+	wp_suspend_cache_addition(false);
 	return ob_get_clean();
 }
 
@@ -10123,7 +10120,6 @@ function rsvptoast_pages( $user_id ) {
 	$locations['primary']      = $menu->term_id;
 	$locations['menu-1']       = $menu->term_id;
 	set_theme_mod( 'nav_menu_locations', $locations );
-
 }
 
 function get_manuals_by_type_options( $type ) {
@@ -10428,10 +10424,6 @@ function get_project_key( $project ) {
 
 function get_projects_array( $choice = 'projects' ) {
 	include 'projects_array.php';
-	if ( isset( $_GET['debug'] ) ) {
-		rsvpmaker_debug_log( $projects, 'projects' );
-		rsvpmaker_debug_log( $project_options, 'options' );
-	}
 
 	if ( $choice == 'projects' ) {
 		return $projects;
@@ -10658,8 +10650,6 @@ function tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['subscriber']['email_list']        = 1;
 	$tm_security['subscriber']['upload_files']      = 0;
 
-	// fix for changing display label for this role
-
 	if ( is_multisite() ) {
 		$tm_role = get_role( 'administrator' );
 		$tm_role->add_cap( 'edit_members' ); // site admins need to be able to edit member records
@@ -10790,6 +10780,7 @@ function tm_security_caps() {
 	}
 
 	printf( '<form method="post" action="%s">', $action );
+	echo '<input type="hidden" name="tab" value="security">';
 
 	foreach ( $security_roles as $role ) {
 		if ( $role == 'administrator' ) {
@@ -10816,11 +10807,6 @@ function tm_security_caps() {
 	}
 
 	echo '<div style="clear: both;">';
-	if ( isset( $_REQUEST['tab'] ) && $_REQUEST['tab'] == 'security' ) {
-		?>
-<input type="hidden" id="activetab" value="security" />
-		<?php
-	}
 	?>
 <input type="hidden" name="tab" value="security">
 	<?php
@@ -10834,12 +10820,7 @@ function tm_security_caps() {
 	echo awe_user_dropdown( 'user_id', 0, true );
 	rsvpmaker_nonce();
 	submit_button( 'Show Form' );
-	if ( isset( $_REQUEST['tab'] ) && $_REQUEST['tab'] == 'security' ) {
-		?>
-<input type="hidden" id="activetab" value="security" />
-		<?php
-	}
-	?>
+?>
 <input type="hidden" name="tab" value="security">
 <?php rsvpmaker_nonce(); ?>
 </form>
@@ -12791,6 +12772,7 @@ function wp4t_cron_nudge_setup() {
 }
 add_action( 'wp4t_reminders_nudge', 'wp4t_reminders_nudge' );
 function wp4t_reminders_nudge() {
+	wp_suspend_cache_addition(true);
 	$future = future_toastmaster_meetings( 2 );
 
 	$temp = get_option( 'wp4toast_reminder' );
@@ -12817,6 +12799,7 @@ function wp4t_reminders_nudge() {
 	}
 
 	if ( empty( $reminders ) ) {
+		wp_suspend_cache_addition(false);
 		return;
 	}
 
@@ -12829,7 +12812,6 @@ function wp4t_reminders_nudge() {
 			$hours = trim( str_replace( 'hours', '', $hours ) );
 			if ( $timestamp > time() ) {
 				$result = wp_schedule_single_event( $timestamp, 'wp4toast_reminders_cron', array( $meeting->ID . ':' . $hours ) );
-				rsvpmaker_debug_log( $result, "wp_schedule_single_event( $timestamp, 'wp4toast_reminders_cron', array( $meeting->ID.':'.$hours ) )" );
 			}
 		}
 	}
@@ -12837,6 +12819,7 @@ function wp4t_reminders_nudge() {
 		$timestamp = rsvpmaker_strtotime( $time . ' +4 hours' );
 		wp_schedule_single_event( $timestamp, 'wpt_evaluation_reminder');	
 	}
+	wp_suspend_cache_addition(false);
 }
 
 if ( ! wp_is_json_request() ) {
@@ -12956,8 +12939,6 @@ function wp4t_log_notify($post_id, $test = false) {
 	global $post;
 	if(!$post_id)
 		$post_id = $post->ID;
-	else
-		rsvpmaker_debug_log($post_id,'wp4t_notify post id');
 	global $wpdb, $rsvp_options;
 	$emails = get_option('wpt_notification_emails');
 	$leader_notify = get_option('wpt_notification_leader'); // 1 or 0 if set;
@@ -13011,8 +12992,6 @@ function wp4t_log_notify($post_id, $test = false) {
 		$mail['to'] = $to;
 		rsvpmailer( $mail );	
 	}
-	rsvpmaker_debug_log($mail,'wpt_log_notify');
-	rsvpmaker_debug_log($send,'wpt_log_notify');
 	}
 }
 

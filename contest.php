@@ -967,7 +967,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		$genericdrop = str_replace( '</select>', '</optgroup></select>', $genericdrop );
 		?>
 	<h2>Setup</h2>
-	<h3 class="nav-tab-wrapper">
+	<h3 class="rsvpmaker-nav-tab-wrapper nav-tab-wrapper">
 	<a class="nav-tab nav-tab-active" href="#contestants">Contestants</a>
 	<a class="nav-tab" href="#judges">Judges and Timer</a>
 	<a class="nav-tab" href="#email_links">Email Links</a>

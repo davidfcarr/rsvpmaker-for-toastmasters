@@ -340,7 +340,6 @@ class Editor_Assign extends WP_REST_Controller {
 		$projects = '';
 		$options  = '';
 		if ( strpos( $role, 'peaker' ) ) {
-			//rsvpmaker_debug_log($user_id,'user id - get speaking track called from api');
 			$track  = get_speaking_track( $user_id );
 			$type   = $track['type'];
 			$manual = $track['manual'];
@@ -1005,6 +1004,39 @@ class WPTM_Reorder extends WP_REST_Controller {
 	}
 }
 
+class Editable_Note extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'editable_note_update';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return ( wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) && is_user_logged_in() && current_user_can( 'edit_signups' ) );
+	}
+
+	public function handle( $request ) {
+		global $wpdb, $current_user;
+		$post_id   = (int) $_POST['post_id'];
+		$note      = wp_kses_post( stripslashes($_POST['agenda_note'][0]) );
+		$label      = sanitize_text_field( $_POST['agenda_note_label'][0] );
+		$result = update_post_meta($post_id,$label,$note);
+		$message = '<p style="border: medium solid green; padding: 5px;">Updated. <a href="'.get_permalink($post_id).'">Reload the page</a> if you need to make further revisions.</p>';
+		return new WP_REST_Response($message,200);
+	}
+}
+
 add_action(
 	'rest_api_init',
 	function () {
@@ -1042,5 +1074,7 @@ add_action(
 		$reg->register_routes();
 		$reorder = new WPTM_Reorder();
 		$reorder->register_routes();
+		$editable = new Editable_Note();
+		$editable->register_routes();
 	}
 );

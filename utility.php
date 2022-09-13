@@ -1409,17 +1409,13 @@ if ( strpos( $menu_html, '#rolesignup' ) || strpos( $menu_html, '#tmlogin' ) ) {
 		$toplink = ( is_user_logged_in() ) ? admin_url( '/' ) : wpt_login_permalink();
 
 		$menu = '<li id="menu-item-wpt-login" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-wpt-login"><a href="' . $toplink . '">' . $label . '</a>'.$button.'<ul class="sub-menu">
-
-		' . $evlist . '<li id="menu-item-profile" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2862"><a href="' . admin_url( 'profile.php' ) . '">Profile</a></li>
-
-			<li id="menu-item-profilephoto" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2865"><a href="' . admin_url( 'profile.php#profilephoto' ) . '">Profile Photo</a></li>
-
-			<li id="menu-item-password" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2863"><a href="' . admin_url( 'profile.php#password' ) . '">Password</a></li>
-
+		' . $evlist . '<li id="menu-item-profile" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2862"><a href="' . admin_url( 'profile.php' ) . '">Profile</a></li>';
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		if(is_plugin_active('simple-local-avatars/simple-local-avatars.php'))
+			$menu .= '<li id="menu-item-profilephoto" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2865"><a href="' . admin_url( 'profile.php#simple-local-avatar-section' ) . '">Profile Photo</a></li>';
+		$menu .= '<li id="menu-item-password" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-2863"><a href="' . admin_url( 'profile.php#password' ) . '">Password</a></li>
 		</ul>
-
 		</li>';
-
 		$menu_html = preg_replace( '/<li [^>]+><a[^"]+"#tmlogin[^<]+<\/a><\/li>/', $menu, $menu_html );
 
 	}
@@ -1802,13 +1798,10 @@ function agenda_rsvpmaker_email_custom_styles ($option) {
 		.speaker-details {
 			margin-left: 6em;
 		}'."\n".get_option( 'wp4toastmasters_agenda_css' );
-	rsvpmaker_debug_log($css,'tmagenda css');	
 	$tmarray = rsvpmaker_css_to_array($css);
-	rsvpmaker_debug_log($tmarray,'tmarray');	
 	foreach($tmarray as $index => $value)
 	if(empty($option[$index]))
 		$option[$index] = $value;
-	rsvpmaker_debug_log($option,'modified option');	
 return $option;
 }
 
