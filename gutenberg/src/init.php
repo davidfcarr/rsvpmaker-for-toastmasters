@@ -94,7 +94,6 @@ function wpt_server_block_render(){
 	register_block_type('wp4toastmasters/hybrid', ['render_callback' => 'tm_attend_in_person']);	
 	register_block_type('wp4toastmasters/duesrenewal', ['render_callback' => 'wp4t_dues_renewal']);
 	register_block_type('wp4toastmasters/context', ['render_callback' => 'wp4t_agenda_display_context' ]);
-	register_block_type('wp4toastmasters/navigation', ['render_callback' => 'wp4t_navigation_submenu', 'attributes' => array('count',5) ] );
 }
 
 function agendanoterich2($atts, $content) {

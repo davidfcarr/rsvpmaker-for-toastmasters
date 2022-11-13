@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.4.6
+Version: 5.4.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -35,7 +35,6 @@ require 'todo-list.php';
 require 'fse-navigation-block.php';
 require 'email-forwarders-and-groups.php';
 
-//require 'block-patterns.php';
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
 if ( isset( $_GET['email_agenda'] ) || isset( $_GET['send_by_email'] ) ) {
@@ -870,9 +869,9 @@ function agenda_note( $atts, $content = '' ) {
 			$editable = wpautop( $editable );
 		}
 		if ( ! empty( $atts['inline'] ) ) {
-			$content .= '<div id="' . $slug . '" class="editable_content">' . $timeblock . '<strong>' . $atts['editable'] . '</strong> ' . $editable . '</div>' . $edit_editable;
+			$content .= '<p id="' . $slug . '" class="editable_content">' . $timeblock . '<strong>' . $atts['editable'] . '</strong> ' . $editable . '</p>' . $edit_editable;
 		} else {
-			$content .= $timeblock . '<h3 id="' . $slug . '">' . $atts['editable'] . '</h3><div class="editable_content">' . $editable . '</div>' . $edit_editable;
+			$content .= $timeblock . '<h3 id="' . $slug . '">' . $atts['editable'] . '</h3><p class="editable_content">' . $editable . '</p>' . $edit_editable;
 		}
 		return force_balance_tags($content);
 	}
@@ -6556,6 +6555,104 @@ class AwesomeWidget extends WP_Widget {
 
 } // class AwesomeWidget
 
+function wpt_member_access($args) {
+	global $wpdb;
+	ob_start();
+	$title      = ( isset( $args['title'] ) ) ? $args['title'] : 'Member Access';
+	$limit      = ( isset( $args['limit'] ) ) ? $args['limit'] : 10;
+	$showmore   = ( isset( $args['showmore'] ) ) ? $args['showmore'] : 4;
+	$showlog    = ( isset( $args['showlog'] ) ) ? $args['showlog'] : 1;
+	$dateformat = ( isset( $args['dateformat'] ) ) ? $args['dateformat'] : 'M j';
+		if ( $showlog ) {
+		$activity_sql = "SELECT meta_value, post_id from $wpdb->postmeta JOIN $wpdb->posts ON $wpdb->postmeta.post_id = $wpdb->posts.ID WHERE meta_key='_activity' ORDER BY meta_id DESC LIMIT 0,5";
+		$log          = $wpdb->get_results( $activity_sql );
+	} else {
+		$log = false;
+	}
+
+	global $rsvp_options;
+	?>
+			  <?php
+				if ( $title ) {
+					echo '<h5 class="member-access-title">'.$title .'</h5>';}
+				?>
+		  <?php
+			$dates = future_toastmaster_meetings( $limit );
+			echo "\n<ul class=\"member-access-prompts\">\n";
+			if ( $dates ) {
+				foreach ( $dates as $row ) {
+					if(isset($_GET['debug']))
+						printf('<li>%s %s</li>',$row->post_title, $row->date);
+					if ( isset( $ev[ $row->ID ] ) ) {
+						$ev[ $row->ID ] .= ', ' . rsvpmaker_date( $dateformat, (int) $row->ts_start );
+					} else {
+						$t         = (int) $row->ts_start;
+						$title     = $row->post_title . ' ' . rsvpmaker_date( $dateformat, $t );
+						$permalink = get_permalink( $row->ID );
+						if ( is_user_logged_in() ) {
+							$ev[ $row->ID ] = sprintf( '<a class="meeting" href="%s">%s</a>', $permalink, $title );
+						} else {
+							$ev[ $row->ID ]  = sprintf( '<a class="meeting" href="%s">%s</a>', $permalink, $title );
+							$ev[ $row->ID ] .= sprintf( '<div class="login_signup">&nbsp;&#8594; <a href="%s">%s</a>', login_redirect( $permalink ), __( 'Login/Sign Up', 'rsvpmaker-for-toastmasters' ) );
+						}
+						$ev[ $row->ID ] = '<div class="meetinglinks">' . $ev[ $row->ID ] . '</div>';
+					}
+				}
+			}// end if dates
+			// pluggable function widgetlink can be overridden from custom.php
+			if ( isset( $ev ) && ! empty( $ev ) ) {
+
+				// echo '<li class="widgetrsvpview"><a href="'.get_post_type_archive_link( 'rsvpmaker' ).'">'.__('View Upcoming Events','rsvpmaker-for-toastmasters').'</a></li>';
+
+				echo '<li class="widgetsignup">' . __( 'Member sign up for roles', 'rsvpmaker-for-toastmasters' ) . ':';
+				$class = '';
+				$count = 1;
+				foreach ( $ev as $id => $e ) {
+					printf( '<div %s>%s</div>', $class, $e );
+					if ( $count == $showmore ) {
+						  $class = ' class="moremeetings" ';
+					}
+					$count++;
+				}
+				if ( sizeof( $ev ) > $showmore ) {
+					echo '<div id="showmorediv"><a href="#" id="showmore">' . __( 'Show More', 'rsvpmaker-for-toastmasters' ) . '</a></div>';
+				}
+				echo '</li>';
+			}
+
+			echo '<li>' . __( 'Your membership', 'rsvpmaker-for-toastmasters' ) . ':';
+			if ( is_club_member() ) {
+				printf( '<div><a href="%s">' . __( 'Edit Member Profile', 'rsvpmaker-for-toastmasters' ) . '</a></div>', login_redirect( admin_url( 'profile.php#user_login' ) ) );
+
+				printf( '<div><a href="%s">' . __( 'Member Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></div>', login_redirect( admin_url( 'index.php' ) ) );
+				if ( function_exists( 'get_simple_local_avatar' ) ) {
+					printf( '<div><a href="%s">' . __( 'Change Profile Photo', 'rsvpmaker-for-toastmasters' ) . '</a></div>', admin_url( 'profile.php#simple-local-avatar-section' ) );
+				}
+				if ( function_exists( 'bp_core_get_userlink' ) ) {
+					  global $current_user;
+					  printf( '<div><a href="%s#whats-new-form">' . __( 'Post to Social Profile', 'rsvpmaker-for-toastmasters' ) . '</a></div>', bp_core_get_userlink( $current_user->ID, false, true ) );
+					  printf( '<div><a href="%sprofile/change-avatar/#avatar-upload-form">' . __( 'Change Profile Photo', 'rsvpmaker-for-toastmasters' ) . '</a></div>', bp_core_get_userlink( $current_user->ID, false, true ) );
+				}
+			} else {
+				printf( '<div><a href="%s">' . __( 'Login', 'rsvpmaker-for-toastmasters' ) . '</a></div>', login_redirect( site_url() ) );
+			}
+			echo '</li>';
+
+			if ( isset( $log ) && ! empty( $log ) ) {
+				$most_recent = get_rsvp_date( $log[0]->post_id );
+				if ( strtotime( $most_recent ) > strtotime( '-1 month' ) ) {
+					echo '<li><strong>' . __( 'Activity', 'rsvpmaker-for-toastmasters' ) . '</strong><br />';
+					foreach ( $log as $row ) {
+						echo '<div>' . $row->meta_value . '</div>';
+					}
+					echo '</li>';
+				}
+			}
+			echo "\n</ul>\n";
+return ob_get_clean();
+}
+
+
 function awesome_roles() {
 	global $wp_roles;
 	$wp_roles->add_cap( 'contributor', 'upload_files' );
@@ -9022,6 +9119,99 @@ class WP_Widget_Members_Posts extends WP_Widget {
 	}
 }
 
+function wpt_blog_posts($atts) {
+	$type = isset($atts['type']) ? $atts['type'] : 'private';
+	$title = isset($atts['title']) ? $atts['title'] : 'Members Only';
+	$number = isset($atts['number']) ? intval($atts['number']) : 10;
+	if('public' == $type)
+		return wpt_club_news_posts($title, $number);
+	else
+		return wpt_members_only_posts($title, $number);
+}
+
+function wpt_members_only_posts($title, $number) {
+	ob_start();
+	$r = new WP_Query(
+		apply_filters(
+			'widget_posts_args',
+			array(
+				'posts_per_page'      => $number,
+				'category_name'       => 'members-only',
+				'no_found_rows'       => true,
+				'post_status'         => 'publish',
+				'ignore_sticky_posts' => true,
+			)
+		)
+	);
+
+	if ( $r->have_posts() ) :
+		if ( $title ) {
+			echo '<h5 class="members-only-posts">' . $title . '</h5>';
+		}
+		?>
+	<ul>
+		<?php
+		while ( $r->have_posts() ) :
+			$r->the_post();
+			?>
+		<li>
+			<a href="<?php the_permalink(); ?>"><?php get_the_title() ? the_title() : the_ID(); ?></a>
+			<span class="post-date"><?php echo get_the_date(); ?></span>
+		</li>
+	<?php endwhile; ?>
+	</ul>
+		<?php
+		// Reset the global $the_post as this query will have stomped on it
+		wp_reset_postdata();
+			endif;
+	return ob_get_clean();
+}
+
+function wpt_club_news_posts($title, $number) {
+	ob_start();
+	$category = get_category_by_slug( 'members-only' );
+	if ( $category ) {
+		$qargs = array(
+			'posts_per_page'      => $number,
+			'cat'                 => '-' . $category->term_id,
+			'no_found_rows'       => true,
+			'post_status'         => 'publish',
+			'ignore_sticky_posts' => true,
+		);
+	} else {
+		$qargs = array(
+			'posts_per_page'      => $number,
+			'no_found_rows'       => true,
+			'post_status'         => 'publish',
+			'ignore_sticky_posts' => true,
+		);
+	}
+
+	$r = new WP_Query( apply_filters( 'widget_posts_args', $qargs ) );
+
+	if ( $r->have_posts() ) :
+		if ( $title ) {
+			echo '<h5 class="club-news-posts">' . $title . '</h5>';
+		}
+		?>
+	<ul>
+		<?php
+		while ( $r->have_posts() ) :
+			$r->the_post();
+			?>
+		<li>
+			<a href="<?php the_permalink(); ?>"><?php get_the_title() ? the_title() : the_ID(); ?></a>
+			<span class="post-date"><?php echo get_the_date(); ?></span>
+		</li>
+	<?php endwhile; ?>
+	</ul>
+		<?php
+		// Reset the global $the_post as this query will have stomped on it
+		wp_reset_postdata();
+			endif;
+	return ob_get_clean();
+}
+
 // widget for posts excluding members only
 class WP_Widget_Club_News_Posts extends WP_Widget {
 
@@ -9305,6 +9495,47 @@ class NewestMembersWidget extends WP_Widget {
 		<?php
 	}
 }
+
+function wpt_newest_members_block ($atts) {
+	ob_start();
+	$number = isset($atts['number']) ? intval($atts['number']) : 5;
+	$title = isset($atts['title']) ? $atts['title'] : 'Newest Members';
+	$joinedslug = 'joined' . get_current_blog_id();
+	$q          = 'blog_id=' . get_current_blog_id();
+	$blogusers  = get_users( $q );
+	foreach ( $blogusers as $user ) {
+		$userdata = get_userdata( $user->ID );
+		if ( ! empty( $userdata->$joinedslug ) ) {
+			$index = rsvpmaker_date( 'Y-m-d', rsvpmaker_strtotime( $userdata->$joinedslug ) );
+		} elseif ( ! empty( $userdata->club_member_since ) ) {
+			$index = rsvpmaker_date( 'Y-m-d', rsvpmaker_strtotime( $userdata->club_member_since ) );
+		} else {
+			continue; // don't include if no join date
+		}
+		$month             = rsvpmaker_date( 'F Y', rsvpmaker_strtotime( $index ) );
+		$index            .= $userdata->user_registered;
+		$members[ $index ] = $userdata->first_name . ' ' . $userdata->last_name . ' (' . $month . ')';
+	}
+
+	if ( $title ) {
+		echo '<h5 class="newest-members">' . $title . '</h5>';
+		$count = 1;
+		if ( ! empty( $members ) ) {
+			krsort( $members );
+			echo '<ul>';
+			foreach ( $members as $index => $member ) {
+					printf( '<li>%s</li>', esc_html($member) );
+					$count++;
+				if ( $count > $number ) {
+					break;
+				}
+			}
+			echo '</ul>';
+		}
+	}
+	return ob_get_clean();
+}
+
 
 function wptoast_widgets() {
 	register_widget( 'AwesomeWidget' );
@@ -11316,6 +11547,10 @@ function tm_youtube_tool() {
 
 <p>To display a listing of videos and blog posts indexed by member name on your website, include the code [blogs_by_member_tag] on the page where you want it to appear.</p>
 
+<p>To show more than 5 past events, enter the number here.</p>
+<form method="get" action="<?php echo admin_url('upload.php') ?>"><input type="hidden" name="page" value="tm_youtube_tool">
+<input type="text" name="show" value="10"> <button>Show</button>
+</form>
 <script>
 
 jQuery(document).ready(function($) {
@@ -13405,4 +13640,11 @@ else
 </script>
 </div>";
 return ob_get_clean();	
+}
+
+add_action('init','wp4t_server_block_render');
+function wp4t_server_block_render() {
+	register_block_type( 'wp4toastmasters/memberaccess', array( 'render_callback' => 'wpt_member_access' ) );
+	register_block_type( 'wp4toastmasters/blog', array( 'render_callback' => 'wpt_blog_posts' ) );
+	register_block_type( 'wp4toastmasters/newestmembers', array( 'render_callback' => 'wpt_newest_members_block' ) );
 }

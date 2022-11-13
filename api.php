@@ -999,7 +999,7 @@ class WPTM_Reorder extends WP_REST_Controller {
 				}
 			}
 		}
-		$output = 'Saved. <a href="' . get_permalink( $post_id ) . '">Verify updated order</a>' . $test;
+		$output = 'Saved. <a href="' . get_permalink( $post_id ) . '">Verify updated order</a>';
 		return new WP_REST_Response( $output, 200 );
 	}
 }
@@ -1030,7 +1030,8 @@ class Editable_Note extends WP_REST_Controller {
 		global $wpdb, $current_user;
 		$post_id   = (int) $_POST['post_id'];
 		$note      = wp_kses_post( stripslashes($_POST['agenda_note'][0]) );
-		$label      = sanitize_text_field( $_POST['agenda_note_label'][0] );
+		$note = preg_replace("/<([a-z][a-z0-9]*)[^>]*?(\/?)>/si",'<$1$2>', $note); //strip style and other attributes
+		$label = sanitize_text_field( $_POST['agenda_note_label'][0] );
 		$result = update_post_meta($post_id,$label,$note);
 		$message = '<p style="border: medium solid green; padding: 5px;">Updated. <a href="'.get_permalink($post_id).'">Reload the page</a> if you need to make further revisions.</p>';
 		return new WP_REST_Response($message,200);

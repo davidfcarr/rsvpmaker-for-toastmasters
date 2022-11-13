@@ -1,70 +1,5 @@
 <?php
 
-function wp4t_navigation_submenu( $attributes ) {
-global $rsvp_options;
-
-$logo = empty($attributes['hidelogo']) ? '<li class=" wp-block-navigation-item"><a href="'.site_url().'"><img src="https://toastmost.org/tmbranding/toastmasters-50.png" width="50" height="41"></a></li>' : '';
-
-$count = (!empty($attributes['count'])) ? intval($attributes['count']) : 5;
-$dashboard_label = (is_user_logged_in()) ? __('Dashboard','rsvpmaker-for-toastmasters') : __('Member Login','rsvpmaker-for-toastmasters'); 
-$html = '<nav class="wp-container-620833bf95386 items-justified-right wp-block-navigation">
-<ul class="wp-block-navigation__container" style="padding-top: 5px; margin-bottom: -55px;">'.$logo.'
-<li class=" wp-block-navigation-item has-child open-on-hover-click wp-block-navigation-submenu">
-
-<a class="wp-block-navigation-item__content" href="'.admin_url().'">'.$dashboard_label.'</a>
-
-<button aria-label="Dashboard submenu" class="wp-block-navigation__submenu-icon wp-block-navigation-submenu__toggle" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" role="img" aria-hidden="true" focusable="false"><path d="M1.50002 4L6.00002 8L10.5 4" stroke-width="1.5"></path></svg></button>
-
-<ul class="wp-block-navigation__submenu-container">
-
-<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content"  href="'.admin_url('profile.php').'"><span class="wp-block-navigation-item__label">Profile</span></a></li>
-<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content"  href="'.admin_url('profile.php#profilephoto').'"><span class="wp-block-navigation-item__label">Profile Photo</span></a></li>
-<li class="wp-block-navigation-item wp-block-navigation-link"><a class="wp-block-navigation-item__content"  href="'.admin_url('profile.php#password').'"><span class="wp-block-navigation-item__label">New Password</span></a></li>';
-
-$label = __('Sign Up','rsvpmaker-for-toastmasters');
-$meetings = future_toastmaster_meetings($count);
-if($meetings)
-	foreach($meetings as $meeting) {
-		$permalink = (is_user_logged_in()) ? get_permalink($meeting->ID) : wp_login_url(get_permalink($meeting->ID));
-		$html .= sprintf('<li class="wp-block-navigation-item wp-block-navigation-link meeting-link"><a class="wp-block-navigation-item__content"  href="%s"><span class="wp-block-navigation-item__label">%s</span></a></li>',$permalink,esc_html($label.' '.rsvpmaker_date($rsvp_options['short_date'],intval($meeting->ts_start))));
-	}
-
-$html .= "\n".'</ul></li></ul></nav>';
-return $html;
-}
-
-//invoked if navigation not found in the header
-function wp4t_sidebar_template_part($menu_id) {
-	global $wpdb, $current_user;
-
-	$post_type = 'wp_template_part';
-	$template_part = get_block_template( get_stylesheet() . '//sidebar', $post_type );
-    if ( ! $template_part || empty( $template_part->content ) ) {
-		//rsvpmaker_debug_log('template part not found');
-        return;
-    }
-	if(!empty($template_part->wp_id)) {
-		return;
-	}
-	$content = $template_part->content;
-	preg_match('/<!-- wp:navigation (\{){0,1}/',$content,$match);
-	
-	if(empty($match[0]))
-		return;
-	elseif(empty($match[1]))
-		$content = str_replace('wp:navigation', 'wp:navigation {"ref":'.$menu_id.'}',$content);
-	else
-		$content = str_replace('wp:navigation {', 'wp:navigation {"ref":'.$menu_id.',',$content);
-
-	$part['post_type'] = $post_type;
-	$part['post_title'] = 'Sidebar';
-	$part['post_content'] = $content;
-	$part['post_status'] = 'publish';
-	$part['post_author'] = $current_user->ID;
-	$part_id = wp_insert_post($part);
-	wp_add_object_terms($part_id,$template_part->theme,'wp_theme');
-}
-
 function wp4t_block_theme_menu() {
 	global $wpdb, $current_user;
 	$menu_id = $wpdb->get_var("SELECT ID from $wpdb->posts WHERE post_type='wp_navigation' and post_status='publish' AND post_title='Toastmasters Navigation' ORDER BY ID DESC");
@@ -117,6 +52,9 @@ function wp4t_block_theme_menu() {
 		$members_id = wp_insert_post( $post );
 		$menu['post_content'] .= sprintf($link_format,__('Members','rsvpmaker-for-toastmasters'),$members_id,get_permalink($members_id));
 	}
+
+	$menu['post_content'] .= '<!-- wp:navigation-link {"label":"Dashboard","url":"'.admin_url().'","kind":"custom","isTopLevelLink":true} /-->';
+
 	$menu['post_title'] = 'Toastmasters Navigation';
 	$menu['post_status'] = 'publish';
 	$menu['post_type'] = 'wp_navigation';
@@ -138,31 +76,18 @@ else
 return $content;
 }
 
-function wp4t_header_template_part() {
-	global $wpdb, $current_user;
-	$post_type = 'wp_template_part';
-	$template_part = get_block_template( get_stylesheet() . '//header', $post_type );
-    if ( ! $template_part || empty( $template_part->content ) ) {
-        return;
-    }
-	if(!empty($template_part->wp_id)) {
-		return;
-	}
-	$menu_id = wp4t_block_theme_menu();
-	$content = $template_part->content;
-	if(!strpos($content,'wp:navigation'))
-		return; //might be using a pattern in header.html
-
-	$content = wpt_add_menu_to_nav($content, $menu_id);
-
-	$header['post_type'] = $post_type;
-	$header['post_title'] = 'Header';
-	$header['post_content'] = $content;
-	$header['post_status'] = 'publish';
-	$header['post_author'] = $current_user->ID;
-	$header_id = wp_insert_post($header);
-	wp_add_object_terms($header_id,$template_part->theme,'wp_theme');
-	return $header_id;
+function check_toastmasters_logo_header() {
+global $wpdb;
+$logo_id = get_option('site_logo');
+if(!$logo_id) {
+	$new = array('post_status' => 'inherit','post_title' => 'toastmasters_logo', 'post_content' => '', 'post_type' => 'attachment', 'post_mime_type' => 'image/png', 'guid' => 'https://toastmost.org/tmbranding/toastmasters-75.png');
+	$logo_id = wp_insert_post($new);
+	update_option('site_logo',$logo_id);
 }
 
-add_action('after_setup_theme','wp4t_header_template_part');
+$nav_menu_id = $wpdb->get_var("select ID from $wpdb->posts WHERE post_type='wp_navigation' AND post_status='publish' ");
+if(!$nav_menu_id)
+	$nav_menu_id = wp4t_block_theme_menu();
+}
+
+add_action('admin_init','check_toastmasters_logo_header');

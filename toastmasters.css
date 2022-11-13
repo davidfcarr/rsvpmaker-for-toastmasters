@@ -1,10 +1,11 @@
 @charset "utf-8";
 /* CSS Document */
 .tmsortable li {
+	color: #004165;
 	list-style: none;
 	padding: 10px;
 	background-color: #eee;
-	border: thin dotted blue;
+	border: thin dotted #004165;
 	margin: 5px;
 }
 .tmsortable li.prompt {
@@ -36,10 +37,12 @@ div.role-block {
 margin-bottom: 2px;
 background-color: #fff;
 color: #000;
+--wp--preset--color--contrast: #000;
 }
+
 div.role-block button {
 border: thin solid gray;
-}	
+}
 div.role-title {
 font-weight: bold;
 }
@@ -1610,4 +1613,17 @@ input[type="number"].time_allowed, input[type="number"].padding_time, input[type
 
 .remove_absences, .remove_in_person {
 	display: none;
+}
+
+.editone_wrapper {
+	background-color: #fff;
+	margin: 10px;
+}
+.role-block a, .editone_wrapper a
+{
+	color: #004165;
+}
+.select2-container {
+	color: #000;
+	--wp--preset--color--contrast: #000;
 }

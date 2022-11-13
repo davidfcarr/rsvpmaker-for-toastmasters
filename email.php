@@ -583,6 +583,10 @@ $header .= '</head>
 				$emails[] = $user->user_email;
 			}
 		}
+		elseif('members_without' == $send) {
+			$emails = wpt_get_norole_email($post->ID);
+			printf('<p>Sending to %s members <em>without a role</em></p>',sizeof($emails));
+		}
 		elseif('officers' == $send) {
 			$emails = wpt_get_officer_emails();
 			printf('<p>Sending to %s officers</p>',sizeof($emails));
@@ -641,11 +645,10 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 	<form method="post" action="' . $permalink . 'email_agenda=1">
 Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><br />
 <textarea name="note" rows="5" cols="80"></textarea><br />
-Send to <input type="radio" name="send" value="members" checked="checked" > ' . __( 'all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="officers"  > ' . __( 'officers', 'rsvpmaker-for-toastmasters' ) . '  <input id="sendtest" type="radio" name="send" value="test" > ' . __( 'this address', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" id+"testto" onkeypress="checkTest()" name="testto" /><br />
+Send to <input type="radio" name="send" value="members" checked="checked" > ' . __( 'all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="members_without" > ' . __( 'members without a role', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="officers"  > ' . __( 'officers', 'rsvpmaker-for-toastmasters' ) . '  <input id="sendtest" type="radio" name="send" value="test" > ' . __( 'this address', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" id+"testto" onkeypress="checkTest()" name="testto" /><br />
 <input type="submit" value="Send" />
 ' . rsvpmaker_nonce('return'). '
 </form>';
-
 
 		$output = $header . $mailform . $output.'</body></html>';
 	}
@@ -852,4 +855,24 @@ function club_member_mailto($subject = '', $body = '') {
 	if(!empty($body))
 		$querystring .= '&body='.$body;
 	return sprintf('<a target="_blank" href="mailto:%s?%s">Email All Members</a>',$current_user->user_email, $querystring);
+}
+
+function wpt_get_norole_email($post_id) {
+	global $wpdb;
+	$emails    = array();
+	$absences  = get_absences_array( $post_id );
+	$members   = get_club_members();
+	foreach ( $members as $member ) {
+		if(in_array( $member->ID, $absences ))
+			continue;
+		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . '  AND meta_value=' . $member->ID . " AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
+		$role_results                    = $wpdb->get_results( $sql );
+		if ( $role_results ) {
+			continue;
+		}
+		 else {
+			$emails[] = $member->user_email;
+		}
+	}
+	return $emails;
 }

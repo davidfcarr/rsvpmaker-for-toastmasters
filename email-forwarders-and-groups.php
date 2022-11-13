@@ -811,6 +811,8 @@ function wpt_email_handler_forwarders() {
     if(sizeof($parts) > 2) {
         $prefix = array_shift($parts).'-';
         $domain = implode('.',$parts);
+        if('www-' == $prefix)
+            $prefix = '';
     }
     else {
         $prefix = '';
@@ -1187,6 +1189,9 @@ function wpt_member_email_check() {
 function wpt_email_forwarder_recipients($forwarder) {
     $address = explode('@',$forwarder);
     $recipients = array();
+    $hosts_and_subdomains = rsvpmaker_get_hosts_and_subdomains();
+    if(!in_array($address[1],$hosts_and_subdomains) && ($address[1]!=$hosts_and_subdomains['basedomain']))
+        return;
     $hosts = wpt_get_hosts();
     $subdomains = wpt_get_subdomains();
     $ffemails = (is_multisite()) ? get_blog_option(1,'findclub_emails') : get_option('findclub_emails');
@@ -1228,19 +1233,23 @@ if(!empty($finda_id)) {
 }
 
 if($slug == 'members') {
-    $recipients = array_merge($recipients,get_club_member_emails($blog_id));
-    $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
-    if(!empty($listvars['additional']))
-    foreach($listvars['additional'] as $email) {
-        if(!in_array($email,$unsubscribed))
-            $recipients[] = $email;
+    $on = is_multisite() ? get_blog_option($blog_id,'member_distribution_list') : get_option('member_distribution_list');
+    if($on) {
+        $recipients = array_merge($recipients,get_club_member_emails($blog_id));
+        $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
+        if(!empty($listvars['additional']))
+        foreach($listvars['additional'] as $email) {
+            if(!in_array($email,$unsubscribed))
+                $recipients[] = $email;
+        }    
     }
 }
 
 if('officers' == $slug) {
     $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'officer_distribution_list_vars') : get_option('officer_distribution_list_vars');
     $officers = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'wp4toastmasters_officer_ids') : get_option('wp4toastmasters_officer_ids');
-    if($officers && is_array($officers)) {
+    $on = is_multisite() ? get_blog_option($blog_id,'officer_distribution_list') : get_option('officer_distribution_list');
+    if($on && $officers && is_array($officers)) {
         foreach($officers as $id) {
             $member = get_userdata($id);
             if($member && !empty($member->user_email)) {

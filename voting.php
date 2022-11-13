@@ -216,7 +216,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
         printf('<div id="moreprompt%d"><a href="#" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more);
         $more++;
-        for($i=0; $i < 5; $i++)
+        for($i=0; $i < 10; $i++)
             echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
         echo '</div>';
         echo '<input type="hidden" name="openvotes" value="Speaker">';
@@ -245,7 +245,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
     echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     printf('<div id="moreprompt%d"><a href="#moreprompt%d" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
     $more++;
-    for($i=0; $i < 5; $i++)
+    for($i=0; $i < 10; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     echo '</div>';
     echo '<input type="hidden" name="openvotes" value="Evaluator">';
@@ -261,7 +261,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     printf('<div id="moreprompt%d"><a href="#moreprompt%d" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
     $more++;
-    for($i=0; $i < 5; $i++)
+    for($i=0; $i < 10; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     echo '</div>';
     echo '<input type="hidden" name="openvotes" value="Table Topics Speaker">';
@@ -277,11 +277,11 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
             printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));
             echo '<input type="hidden" name="openvotes" value="'.$contest.'">';
             echo '<h2>Set up vote for '.$contest.'</h2>';
-            for($i=0; $i < 5; $i++)
+            for($i=0; $i < 10; $i++)
                 echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
             printf('<div id="moreprompt%d"><a href="#moreprompt%d" class="moreprompt" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
             $more++;
-            for($i=0; $i < 5; $i++)
+            for($i=0; $i < 10; $i++)
                 echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
             echo '</div>';
             rsvpmaker_nonce();
@@ -291,11 +291,11 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
 
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));
     echo '<h2>Custom</h2><p>Label: <input type="text" name="openvotes" value="Other Vote for Member"></p><p>Choices</p>';
-    for($i=0; $i < 5; $i++)
+    for($i=0; $i < 10; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     printf('<div id="moreprompt%d"><a href="#moreprompt%d" class="moreprompt" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
     $more++;
-    for($i=0; $i < 5; $i++)
+    for($i=0; $i < 10; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     echo '</div>';
     rsvpmaker_nonce();
@@ -307,7 +307,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
     echo '<div><input class="candidates" type="text" name="candidates[]" value="No"></div>';
     printf('<div id="moreprompt%d"><a href="#moreprompt%d" more="%d" class="showmore">Show More Blanks</a></div><div id="more%d" class="more">',$more,$more,$more,$more);
     $more++;
-    for($i=0; $i < 5; $i++)
+    for($i=0; $i < 10; $i++)
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
     echo '</div>';
     rsvpmaker_nonce();

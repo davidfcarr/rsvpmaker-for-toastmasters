@@ -1833,3 +1833,11 @@ else
 	sort( $norole );
 return $norole;
 }
+
+add_action('pre_get_users','fix_cache_users_bug');
+
+function fix_cache_users_bug($query) {
+	if ( ! function_exists( 'cache_users' ) ) {
+		require_once ABSPATH . WPINC . '/pluggable.php';
+	}	
+}
