@@ -57,6 +57,7 @@ if(isset($_POST['switch_vote_counter']) && rsvpmaker_verify_nonce()) {
     .more, .editblock {display: none}
     .editblock {border: thick solid yellow; padding: 10px;}
     button {color: red;}
+    body {color: black;}
 </style>
 </style>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>

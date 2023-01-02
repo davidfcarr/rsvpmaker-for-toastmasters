@@ -38,6 +38,7 @@ function wp4t_todolist($blog_id, $send = false) {
         "twentytwentyone-tm" => "2021.toastmost.org",
         "twentytwentyone-true-maroon" => "maroon.toastmost.org",
         "twentytwentytwo-tm" => "2022.toastmost.org",
+        "twentytwentythree-tm" => "2023.toastmost.org",
         "wuqi-tm" => "wuqi.toastmost.org");
     
     if(isset($demo_sites[$theme->stylesheet]))

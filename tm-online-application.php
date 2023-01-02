@@ -102,14 +102,14 @@ label {
 
 		$duesmessage = get_option('tm_application_dues_message');
 
-		echo sprintf('<p>%s: %s</p>',__('Dues amount','rsvpmaker-for-toastmasters'),number_format($vars['amount'],2));
-		echo wp_kses_post($duesmessage);
+		$payprompt .= sprintf('<p>%s: %s</p>',__('Dues amount','rsvpmaker-for-toastmasters'),number_format($vars['amount'],2));
+		$payprompt .= wp_kses_post($duesmessage);
 
 		$n = explode( ',', $notifications );
 		foreach ( $n as $to ) {
 			$mail['to'] = $to;
 			rsvpmailer( $mail );
-			printf( '<p>Pending application emailed to %s</p>', $to );
+			$payprompt .= sprintf( '<p>Pending application emailed to %s</p>', $to );
 		}
 	}
 
@@ -163,12 +163,14 @@ function tm_application_fee() {
 		if ( empty( $club_dues ) ) {
 			$club_dues = array( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
 		}
-		$monthindex     = rsvpmaker_date( 'n' ) - 1;
+		$monthindex     = (isset($_POST['monthindex'])) ? $_POST['monthindex'] : rsvpmaker_date( 'n' ) - 1;
+		$t = mktime(12,0,0,$monthindex + 1);
+		
 		$club_new       = (int) get_option( 'club_new_member_fee' );
 		$ti_dues_calc   = ( $_POST['membership_type'] == 'Transfer' ) ? 0 : $ti_dues[ $monthindex ];
 		$club_dues_calc = $club_dues[ $monthindex ];
 		$fee            = $ti_dues_calc + $club_dues_calc + $new + $club_new;
-		$feetext        = sprintf( '<p>Membership Starting: %s</p>', rsvpmaker_date( 'F' ) );
+		$feetext        = sprintf( '<p>Membership Starting: %s</p>', rsvpmaker_date( 'F 1, Y',$t ));
 		$feetext       .= sprintf(
 			'<p>Toastmasters International Dues: <strong>%s</strong><br>
     <em>Paid twice a year by all members, membership dues are pro-rated from the member’s start month.</em></p>',
@@ -190,6 +192,7 @@ function tm_application_fee() {
 		$feetext .= sprintf( '<p>Total Payment to Club: <strong>%s</strong></p>', number_format( $club_dues_calc + $club_new, 2 ) );
 		$feetext .= sprintf( '<p>Total: <strong>%s</strong></p>', number_format( $fee, 2 ) );
 		echo wp_kses_post($feetext);
+		echo '<input type="hidden" name="monthindex" value="'.$monthindex.'">';
 		update_post_meta( $post->ID, 'tm_application_fee', $fee );
 		update_post_meta( $post->ID, 'tm_application_feetext', $feetext );
 	} else {
@@ -220,6 +223,16 @@ label {
 
 <p>Application Type <?php tm_application_form_choice( 'membership_type', array( 'New', 'Dual', 'Transfer', 'Reinstated (break in membership)', 'Renewing (no break in membership)' ) ); ?></p>
 
+<?php
+$monthindex = date('n') - 1;
+$monthtext = date('F');
+$o = '<option value="'.$monthindex.'">'.$monthtext.' 1</option>';
+$t = strtotime('Next month');
+$monthindex = date('n',$t) - 1;
+$monthtext = date('F',$t);
+$o .= '<option value="'.$monthindex.'">'.$monthtext.' 1</option>';
+?>
+<p>Start membership: <select name="monthindex"><?php echo $o ?></select></p>
 <p><em>&quot;New&quot; means the member is new to Toastmasters (not just new to this club).</em></p>
 
 <p><em>"Transfer" means you are currently enrolled as a paying member of another club, which you wish to withdraw from and apply credit for your dues to our club.</em></p>

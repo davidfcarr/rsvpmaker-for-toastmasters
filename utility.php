@@ -196,7 +196,68 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 }
 
+function awe_rest_user_options( $role, $post_id ) {
+	global $wpdb, $sortmember, $fnamesort, $histories, $post, $haverole;
+	if(empty($haverole) && !empty($post_id))
+		$haverole = wp4t_haverole($post_id);
+	if(!empty($post_id))
+		$absences = get_post_meta( $post_id, 'tm_absence' );
+	if(empty($absences))
+		$absences = array();
+	if ( ! wp_next_scheduled( 'refresh_tm_history' ) ) {
+		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'refresh_tm_history' );
+	}
 
+	$options[] = array('label' => 'Open', 'value' => 0);
+	$options[] = array('label' => 'Not Available', 'value' => -1);
+	$options[] = array('label' => 'To Be Announced', 'value' => -2);
+	$reserved_role_label = get_option( 'wpt_reserved_role_label' );
+	if ( empty( $reserved_role_label ) ) {
+		$reserved_role_label = 'Ask VPE';
+	}
+	$options[] = array('label' => $reserved_role_label, 'value' => -3);
+
+	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+
+	foreach ( $blogusers as $user ) {
+
+		$member = get_userdata( $user->ID );
+
+		$findex = preg_replace( '/[^a-zA-Z]/', '', $member->first_name . $member->last_name . $member->user_login );
+
+		$fnamesort[ $findex ] = $member;
+
+	}
+
+	ksort( $fnamesort );
+
+	foreach ( $fnamesort as $fnindex => $member ) {
+
+		$status = '';
+		if(isset($haverole[$member->ID]))
+			$status = $haverole[$member->ID];
+		elseif(in_array($member->ID,$absences))
+			$status = __('Planned Absence','rsvpmaker-for-toastmasters');
+		elseif ( $member->ID > 0 ) {
+			$held = wp4t_last_held_role($member->ID, clean_role($role));
+			if ( ! empty( $held ) ) {
+				$status = __( 'Last did', 'rsvpmaker-for_toastmasters' ) . ': ' . $held;
+			}
+		}
+
+		if ( ! empty( $status ) ) {
+			$status = ' (' . $status . ')';
+		}
+
+		if ( empty( $member->first_name ) ) {
+
+			$member->first_name = $member->display_name;
+		}
+
+		$options[] = array('value' => $member->ID, 'label' => $member->first_name . ' ' . $member->last_name.$status);
+		}
+return $options;	
+}
 
 function awe_assign_dropdown( $role, $random_assigned ) {
 
@@ -854,10 +915,11 @@ function wp4t_emails() {
 
 
 
-function is_club_member() {
-
-	return apply_filters( 'is_club_member', is_user_member_of_blog() );
-
+function is_club_member($user_id = 0) {
+	global $current_user;
+	if(!$user_id)
+		$user_id = $current_user->ID;
+	return apply_filters( 'is_club_member', is_user_member_of_blog($user_id) );
 }
 
 
@@ -1835,6 +1897,7 @@ return $norole;
 }
 
 add_action('pre_get_users','fix_cache_users_bug');
+add_action('init','fix_cache_users_bug');
 
 function fix_cache_users_bug($query) {
 	if ( ! function_exists( 'cache_users' ) ) {

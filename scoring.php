@@ -113,6 +113,9 @@ input[type=checkbox],input[type=radio]{
 	padding-bottom: 5px;
 	border-bottom: thin dotted #000;
 }
+body {
+	color: #000;
+}
 </style>
 </head>
 <body>

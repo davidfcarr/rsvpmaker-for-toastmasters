@@ -353,6 +353,7 @@ class Editor_Assign extends WP_REST_Controller {
 		return new WP_REST_Response(
 			array(
 				'status'   => $status,
+				'name'   => $name,
 				'type'     => $type,
 				'list'     => $options,
 				'projects' => $projects,
@@ -1038,6 +1039,214 @@ class Editable_Note extends WP_REST_Controller {
 	}
 }
 
+class WP4TBlocksData extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'blocks_data/(?P<post_id>[0-9]+)';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		global $current_user;
+		$agendadata = [];
+		$post = false;
+		$meetings = future_toastmaster_meetings( 10 );
+		$agendadata['upcoming'] = [];
+		if($request['post_id'])
+			$post = get_post($request['post_id']);
+		else {
+			if(sizeof($meetings))
+				$post = $meetings[0];	
+		}
+		if($post) {
+			$agendadata['post_id'] = $post->ID;
+			$agendadata['current_user_id'] = ($current_user->ID && is_club_member($current_user->ID)) ? $current_user->ID : false;
+			$agendadata['editor'] = ($agendadata['current_user_id']) ? user_can( $agendadata['current_user_id'], 'edit_post', $post->ID ) : false;
+			if($meetings) {
+				foreach($meetings as $meeting)
+				$agendadata['upcoming'][]= array('value' => $meeting->ID, 'label' => preg_replace('/ [0-9]{2}:[0-9]{2}:[0-9]{2}/','',$meeting->datetime) .' '.$meeting->post_title);
+			}
+			$agendadata['blocksdata'] = parse_blocks($post->post_content);
+			foreach($agendadata['blocksdata'] as $index => $block) {
+				if($block['attrs']['custom_role'])
+					$agendadata['blocksdata'][$index]['attrs']['role'] = $block['attrs']['custom_role'];
+				if(isset($block['attrs']) && isset($block['attrs']['role']))
+					{
+						$agendadata['blocksdata'][$index]['assignments'] = [];
+						$role = $block['attrs']['role'];
+						$count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
+						for($i=1; $i <= $count; $i++)
+						{
+							$key = '_'.str_replace(' ','_',$role).'_'.$i;
+							$assignment = array();
+							$assignment['ID'] = intval( get_post_meta($post->ID,$key, true) );
+							$assignment['name'] = ($assignment['ID']) ? get_member_name($assignment['ID']) : '';
+							if($assignment['ID'] && ('Speaker' == $role)) {
+								$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
+								$assignment = array_merge($assignment,$speakerdata);
+							}
+							$members = get_club_members();
+							$agendadata['memberlist'] = array();
+							foreach($members as $member) {
+								$agendadata['memberlist'][] = array('value'=>$member->ID,'label'=>$member->display_name);
+							}
+							$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
+						}
+					}
+			}
+		}
+		
+		return new WP_REST_Response($agendadata,
+			200
+		);
+	}
+}
+
+//get_manuals_by_type()
+
+class WP4TUpdateRole extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'update_role';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		$json = file_get_contents('php://input');
+		$data = json_decode($json);
+		$post_id = $data->post_id;
+		$role = $data->role;
+		$keybase = '_'.preg_replace('/[^a-zA-Z0-9]/','_',$role).'_';
+		$updated['status'] = 'updated';
+		foreach($data->assignments as $index => $item) {
+			//foreach($assignment as $item) {
+				$item = (array) $item;
+				foreach($item as $type => $value) {
+					$updated['status'] .= ' type '.var_export($type,true);
+					$updated['status'] .= ' value '.var_export($value,true);
+					if(empty($type) || ('name' == $type))
+						continue;
+					elseif('ID' == $type)
+						$key = $keybase.($index+1);
+					else
+						$key = '_'.$type.$keybase.($index+1);
+					update_post_meta($post_id,$key,$value);
+					$updated['status'] .= ' '.$key.' = '.$value;	
+			}
+			//}
+		}
+		return new WP_REST_Response($updated,
+			200
+		);
+	}
+}
+
+class WP4T_Paths_and_Projects extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'paths_and_projects';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		$manuals_by_type = get_manuals_by_type();
+		$projects = get_projects_array();
+		$program['maxtime'] = get_projects_array('times');
+		$program['display_time'] = get_projects_array('display_times');
+		foreach($manuals_by_type as $pathkey => $marray) {
+			$program['paths'][] = array('label' => $pathkey,'value' => $pathkey);
+			foreach($marray as $mkey => $manual) {
+				$program['manuals'][$pathkey][] = array('label' => $mkey, 'value' => $manual);
+				$program['projects'][$manual][] = array('label' => 'Choose a Project', 'value' => '');
+				$manuals[] = $manual;
+			}
+		}
+		$program['manuals']['Other'][] = array('label' => 'Other','value' => 'Other');
+		foreach($projects as $key => $project) {
+			$manual = preg_replace('/([\s0-9]+)$/','',$key);
+			if(in_array($manual,$manuals))
+				$program['projects'][$manual][] = array('label' => $project, 'value' => $key);
+			else
+				$program['projects']['Other'][] = array('label' => $project, 'value' => $key);
+		}
+
+		return new WP_REST_Response($program,200);
+	}
+}
+
+class WP4T_Members_for_Role extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'members_for_role/(?P<role>[a-zA-Z_]+)/(?P<post_id>[0-9]+)';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		$options = awe_rest_user_options( clean_role($request['role']), $request['post_id'] );
+		return new WP_REST_Response($options,200);
+	}
+}
+
 add_action(
 	'rest_api_init',
 	function () {
@@ -1077,5 +1286,13 @@ add_action(
 		$reorder->register_routes();
 		$editable = new Editable_Note();
 		$editable->register_routes();
+		$wptb = new WP4TBlocksData();
+		$wptb->register_routes();
+		$wpup = new WP4TUpdateRole();
+		$wpup->register_routes();
+		$tpp = new WP4T_Paths_and_Projects();
+		$tpp->register_routes();
+		$m4r = new WP4T_Members_for_Role();
+		$m4r->register_routes();
 	}
 );

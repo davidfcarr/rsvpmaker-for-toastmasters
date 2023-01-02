@@ -138,11 +138,11 @@ jQuery( document ).ready(
 
 				var max;
 				var this_score;
+				var indexmatch;
 
 				$( '.score' ).on(
 					'change',
 					function(){
-
 						var contestant = $( this ).attr( 'contestant' );
 						var score      = 0;
 						$( '.score' + contestant ).each(
@@ -157,15 +157,43 @@ jQuery( document ).ready(
 							}
 						);
 						$( '#sum' + contestant ).html( score );
-
-						scoreArr[contestant] = {
-							'index' : contestant,
-							'score' : score
+						
+						indexmatch = scoreArr.findIndex( (element) => {
+							console.log('contestant' + contestant);
+							console.log(element);
+							return element.index == contestant
+						} );
+						console.log('indexmatch '+indexmatch);
+						if(indexmatch >= 0)
+							scoreArr[indexmatch].score = score;
+						else if (score) {
+							scoreArr.push({
+								'index' : contestant,
+								'score' : score
+							});	
 						}
-
-						scoreArr[contestant].score = score;
+						console.log('initial');
+						console.log(scoreArr);
+						sortTally(scoreArr);
 					}
 				);
+
+function sortTally(scoreArr) {
+	scoreArr.sort((a, b) => (a.score < b.score) ? 1 : -1);
+	let done = true;
+	var autorank = '';
+
+	var arrayLength = scoreArr.length;
+	for (var i = 0; i < arrayLength; i++) {
+		var name = $( '#contestant' + scoreArr[i].index ).val();
+		autorank = autorank + '<br />' + name + ' ' + scoreArr[i].score;
+		if(0 == scoreArr[i].score)
+			done = false;
+	}
+	if(done)
+		autorank = autorank + '<br /><strong>When you are done, vote</strong>';
+	$( '#autorank' ).html( '<div style="width: 300px; margin-bottom: 10px; padding: 5px; border: thin solid #555;"><h3>Best Scores</h3>' + autorank + '</div>' );
+}
 
 				let findDuplicates = arr => arr.filter( (item, index) => arr.indexOf( item ) != index );
 

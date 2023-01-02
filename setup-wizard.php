@@ -766,7 +766,19 @@ function wpt_setup_wizard_3() {
 
 	<li><strong>Meeting online?</strong> <a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $rsvp_options['rsvp_confirm'] . '&action=edit' ); ?>">Edit the confirmation message for guest registrations</a> to include the details about how to access your online meetings.</li>
 
-	<li>Check out the design options available in the <a target="_blank" href="<?php echo admin_url( 'customize.php?return=%2Fwp-admin%2F' ); ?>">Customize</a> tool. <a target="_blank" href="https://www.wp4toastmasters.com/2020/11/09/video-change-the-look-of-your-club-website/">Learn How</a></li>
+	<?php
+	if(wp_is_block_theme())	{
+		?>
+		<li>Tweak the menu, layout, colors and other design elements with the <a target="_blank" href="<?php echo admin_url( 'site-editor.php' ); ?>">Site Editor</a>. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/block-theme/">Learn How</a></li>
+		<?php
+	}
+	else {
+		?>
+		<li>Check out the design options available in the <a target="_blank" href="<?php echo admin_url( 'customize.php?return=%2Fwp-admin%2F' ); ?>">Customize</a> tool. <a target="_blank" href="https://www.wp4toastmasters.com/2020/11/09/video-change-the-look-of-your-club-website/">Learn How</a></li>
+		<?php
+	}
+	?>
+
 
 	<li>Set up the <a target="_blank" href="<?php echo admin_url( 'options-general.php?page=member_application_settings' ); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/">Learn How</a></li>
 

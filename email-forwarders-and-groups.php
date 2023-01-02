@@ -1439,6 +1439,9 @@ function wpt_handle_autoresponder($slug_and_id,$forwarder,$emailobj) {
     $from = $emailobj->From;
     $to = $emailobj->ToFull[0]->Email;
     preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$emailobj->HtmlBody,$fcmatches);
+    preg_match('/Email address:\s*([a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3})/',$emailobj->TextBody,$email_match);
+    $findacontact = (empty($email_match[1])) ? '' : $email_match[1];
+
     if(strpos($from,'google.com') && strpos($emailobj->Subject,'Forward'))
     {
         foreach($fcmatches[0] as $email) {
@@ -1455,15 +1458,10 @@ function wpt_handle_autoresponder($slug_and_id,$forwarder,$emailobj) {
         $output .= "<p>Forward $forwarder gmail forwarding confirmation</p>";
         return $output;
     }
-    if($from == 'clubleads@toastmasters.org')
+    if($findacontact && ($from == 'clubleads@toastmasters.org'))
     {
         $blog_id = $finda_id;
-        foreach($fcmatches[0] as $email) {
-            if(strpos($email,'toastmasters.org') || strpos($email,'@toastmost.org') || (strcasecmp($email, $forwarder) == 0))
-                continue;
-            $contact = $email;
-        }
-        wpt_email_handler_autoresponder ($contact, $from, $blog_id);
+        wpt_email_handler_autoresponder ($findacontact, $from, $blog_id);
         $output .= sprintf('<p>autoresponder %s for %s, contact %s</p>',$finda_id,$forwarder, $contact);
     }
     

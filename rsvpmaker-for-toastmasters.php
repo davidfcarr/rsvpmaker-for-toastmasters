@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.4.7
+Version: 5.4.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1210,6 +1210,9 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 	if ( ! is_edit_roles() && ( ( isset( $_REQUEST['print_agenda'] ) || is_email_context() || is_agenda_locked() ) ) ) {
 		return toastmasters_agenda_display( $atts, $assignments );
 	}
+
+	if(strpos($post->post_content,'wp:wp4toastmasters/toastmasters-dynamic-agenda'))
+		return;
 
 	global $random_available;
 	global $last_attended;
@@ -7780,7 +7783,7 @@ function get_speaker_array_by_field( $field, $assigned, $post_id = 0 ) {
 	$speaker['intro']        = get_post_meta( $post_id, '_intro' . $field, true );
 
 	if ( empty( $speaker['manual'] ) ) {
-		$speaker['manual'] = 'COMPETENT COMMUNICATION';
+		$speaker['manual'] = 'Path Not Set Level 1 Mastering Fundamentals';
 	}
 	if ( empty( $speaker['maxtime'] ) ) {
 		$speaker['maxtime'] = 7;
@@ -13098,9 +13101,6 @@ add_action( 'wp_head', 'wpt_richtext' );
 function wpt_richtext() {
 	global $post;
 	if ( empty( $post->post_content ) ) {
-		return;
-	}
-	if ( empty( $post->post_type ) || $post->post_type != 'rsvpmaker' ) {
 		return;
 	}
 	if ( ! strpos( $post->post_content, 'wp:wp4toastmasters' ) && ! strpos( $post->post_content, 'agenda_role' ) ) {

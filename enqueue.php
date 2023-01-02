@@ -47,7 +47,7 @@ function toastmasters_css_js() {
 	if(is_network_admin())
 		return;
 	global $post, $current_user;
-	$version = '5.3.8';
+	$version = '5.4';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
 		return; // don't load all this in editor or post listings wp4toastmasters_history_edit
 	}
