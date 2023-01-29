@@ -4982,6 +4982,13 @@ function agenda_menu( $post_id, $frontend = true ) {
 	} elseif ( ! empty( $post_lock ) && strpos( $post_lock, 'admin' ) ) {
 		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator/manager/editor).</p>';
 	}
+	if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
+		if(isset($_GET['newsignup']))
+		$link .= sprintf('<div id="react-agenda" post_id="%d">new signup goes here.</div><div style="height: 1000px;"><p><em>End of new signup form.</em></p></div>',$post_id);
+	else
+		$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form (beta)</a></p>',get_permalink($post->ID));
+	}
+
 	return $link;
 }
 
@@ -10816,6 +10823,7 @@ function tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['administrator']['view_reports']      = 1;
 	$tm_security['administrator']['view_contact_info'] = 1;
 	$tm_security['administrator']['edit_signups']      = 1;
+	$tm_security['administrator']['organize_agenda']      = 1;
 	$tm_security['administrator']['edit_member_stats'] = 1;
 	$tm_security['administrator']['edit_own_stats']    = 1;
 	$tm_security['administrator']['agenda_setup']      = 1;
@@ -10826,6 +10834,7 @@ function tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['manager']['view_reports']      = 1;
 	$tm_security['manager']['view_contact_info'] = 1;
 	$tm_security['manager']['edit_signups']      = 1;
+	$tm_security['manager']['organize_agenda']      = 1;
 	$tm_security['manager']['edit_member_stats'] = 1;
 	$tm_security['manager']['edit_own_stats']    = 1;
 	$tm_security['manager']['agenda_setup']      = 1;
@@ -10842,6 +10851,7 @@ function tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['editor']['view_reports']      = 1;
 	$tm_security['editor']['view_contact_info'] = 1;
 	$tm_security['editor']['edit_signups']      = 1;
+	$tm_security['editor']['organize_agenda']      = 1;
 	$tm_security['editor']['edit_member_stats'] = 1;
 	$tm_security['editor']['edit_own_stats']    = 1;
 	$tm_security['editor']['agenda_setup']      = 1;
@@ -10858,6 +10868,7 @@ function tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['author']['view_reports']      = 1;
 	$tm_security['author']['view_contact_info'] = 1;
 	$tm_security['author']['edit_signups']      = 1;
+	$tm_security['author']['organize_agenda']      = 1;
 	$tm_security['author']['edit_member_stats'] = 0;
 	$tm_security['author']['edit_own_stats']    = 0;
 	$tm_security['author']['agenda_setup']      = 0;
@@ -10868,6 +10879,7 @@ function tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['contributor']['view_reports']      = 1;
 	$tm_security['contributor']['view_contact_info'] = 1;
 	$tm_security['contributor']['edit_signups']      = 1;
+	$tm_security['contributor']['organize_agenda']      = 1;
 	$tm_security['contributor']['edit_member_stats'] = 0;
 	$tm_security['contributor']['edit_own_stats']    = 0;
 	$tm_security['contributor']['agenda_setup']      = 0;
@@ -10878,6 +10890,7 @@ function tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['subscriber']['view_reports']      = 1;
 	$tm_security['subscriber']['view_contact_info'] = 1;
 	$tm_security['subscriber']['edit_signups']      = 1;
+	$tm_security['subscriber']['organize_agenda']      = 1;
 	$tm_security['subscriber']['edit_member_stats'] = 0;
 	$tm_security['subscriber']['edit_own_stats']    = 0;
 	$tm_security['subscriber']['agenda_setup']      = 0;

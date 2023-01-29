@@ -23,16 +23,16 @@ function wpt_is_evaluation_demo() {
 
 function wpt_rest_array() {
 	global $post;
-	$post_id = (empty($post->ID)) ? 0 : $post->ID;
-	$post_type = (empty($post->post_type)) ? '' : $post->post_type;
-	$is_agenda = (isset($post->post_content) && strpos($post->post_content,'wp4toastmasters/role'));
+	$post_id = (empty($post) || empty($post->ID)) ? 0 : $post->ID;
+	$post_type = (empty($post) || empty($post->post_type)) ? '' : $post->post_type;
+	$is_agenda = ($post && isset($post->post_content) && strpos($post->post_content,'wp4toastmasters/role'));
 	return array(
 		'nonce'   => wp_create_nonce( 'wp_rest' ),
 		'url'     => get_rest_url(),
 		'post_id' => $post_id,
 		'post_type' => $post_type,
 		'is_agenda' => $is_agenda,
-	);	
+	);
 }
 
 //use rsvpmaker script for tabbed ui

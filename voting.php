@@ -58,11 +58,14 @@ if(isset($_POST['switch_vote_counter']) && rsvpmaker_verify_nonce()) {
     .editblock {border: thick solid yellow; padding: 10px;}
     button {color: red;}
     body {color: black;}
+    #votingtool {color: #000;background-color:#fff;}
+    a {color: blue}
 </style>
 </style>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 <body>
+<div id="votingtoool">
 <h2>Voting for <?php echo rsvpmaker_date($rsvp_options['short_date'],get_rsvpmaker_timestamp( $post_id )) ?></h2>
 <?php
 $actionlink = add_query_arg('voting',1,get_permalink());
@@ -502,5 +505,6 @@ if(!$claimed || (($vote_counter != $current_user->ID) && current_user_can('manag
 }
 ?>
 <?php //wp_footer(); ?>
+</div>
 </body>
 </html>

@@ -208,14 +208,14 @@ function awe_rest_user_options( $role, $post_id ) {
 		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'refresh_tm_history' );
 	}
 
-	$options[] = array('label' => 'Open', 'value' => 0);
-	$options[] = array('label' => 'Not Available', 'value' => -1);
-	$options[] = array('label' => 'To Be Announced', 'value' => -2);
+	$options[] = array('label' => 'Open', 'name' => 'Open', 'value' => 0);
+	$options[] = array('label' => 'Not Available', 'name' => 'Not Available', 'value' => -1);
+	$options[] = array('label' => 'To Be Announced', 'name' => 'To Be Announced', 'value' => -2);
 	$reserved_role_label = get_option( 'wpt_reserved_role_label' );
 	if ( empty( $reserved_role_label ) ) {
 		$reserved_role_label = 'Ask VPE';
 	}
-	$options[] = array('label' => $reserved_role_label, 'value' => -3);
+	$options[] = array('label' => $reserved_role_label, 'name' => $reserved_role_label, 'value' => -3);
 
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 
@@ -254,7 +254,7 @@ function awe_rest_user_options( $role, $post_id ) {
 			$member->first_name = $member->display_name;
 		}
 
-		$options[] = array('value' => $member->ID, 'label' => $member->first_name . ' ' . $member->last_name.$status);
+		$options[] = array('value' => $member->ID, 'label' => $member->first_name . ' ' . $member->last_name.$status,'name' => $member->first_name . ' ' . $member->last_name);
 		}
 return $options;	
 }
@@ -912,8 +912,6 @@ function wp4t_emails() {
 	return $list;
 
 }
-
-
 
 function is_club_member($user_id = 0) {
 	global $current_user;
@@ -1903,4 +1901,27 @@ function fix_cache_users_bug($query) {
 	if ( ! function_exists( 'cache_users' ) ) {
 		require_once ABSPATH . WPINC . '/pluggable.php';
 	}	
+}
+
+function jsonBlockDataOutput($block, $post_id) {
+    if(empty($block))
+        return;
+    $attrs = ($block->attrs) ? json_encode($block->attrs) : '';
+    if($block->edithtml && $block->attrs->uid) {
+		rsvpmaker_debug_log($post_id.' agenda_note_'.$block->attrs->uid.' = '.$block->edithtml.' sanitized: '.wp_kses_post($block->edithtml),'update editable html');
+		$result = update_post_meta($post_id,'agenda_note_'.$block->attrs->uid,wp_kses_post($block->edithtml));
+	}
+	if($block->innerHTML || sizeof($block->innerContent)) {
+        $output = sprintf('<!-- wp:%s %s -->',$block->blockName,$attrs)."\n";
+        $output .= $block->innerHTML."\n";
+        if(is_array($block->innerBlocks) && sizeof($block->innerBlocks)) {
+            foreach($block->innerBlocks as $innerblock) {
+                $output .= jsonBlockDataOutput($innerblock);
+            }
+        }
+        $output .= sprintf('<!-- /wp:%s -->',$block->blockName)."\n\n";    
+    }
+    else 
+        $output = sprintf('<!-- wp:%s %s /-->',$block->blockName,$attrs)."\n\n";
+    return $output;
 }
