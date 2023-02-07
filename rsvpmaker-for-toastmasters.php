@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.4.8
+Version: 5.5.1
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -34,6 +34,7 @@ require 'history.php';
 require 'todo-list.php';
 require 'fse-navigation-block.php';
 require 'email-forwarders-and-groups.php';
+require 'toastmasters-dynamic-agenda/toastmasters-dynamic-agenda.php';
 
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
@@ -4802,6 +4803,14 @@ function awesome_event_content( $content ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
 		$link .= agenda_menu( $post->ID );
+		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
+			if(is_club_member() && (get_option('wp4t_newSignupDefault') || isset($_GET['newsignup']))) {
+				$link .= '<div id="react-agenda">new signup goes here.</div>';
+				$content = '';
+			}
+		else
+			$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form (beta)</a></p>',get_permalink($post->ID));
+		}	
 		$link .= sprintf( '<input type="hidden" id="editor_id" value="%s" />', $current_user->ID );
 
 		if ( isset( $_REQUEST['assigned_open'] ) && current_user_can( 'edit_signups' ) ) {
@@ -4981,12 +4990,6 @@ function agenda_menu( $post_id, $frontend = true ) {
 		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked against changes and can only be unlocked by an administratoradministrator/manager/editor.</p>';
 	} elseif ( ! empty( $post_lock ) && strpos( $post_lock, 'admin' ) ) {
 		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator/manager/editor).</p>';
-	}
-	if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
-		if(isset($_GET['newsignup']))
-		$link .= sprintf('<div id="react-agenda" post_id="%d">new signup goes here.</div><div style="height: 1000px;"><p><em>End of new signup form.</em></p></div>',$post_id);
-	else
-		$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form (beta)</a></p>',get_permalink($post->ID));
 	}
 
 	return $link;

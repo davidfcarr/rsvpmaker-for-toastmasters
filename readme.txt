@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 6.1.1
-Stable tag: 5.4.8
+Stable tag: 5.5.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,14 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 5.5.1 =
+
+* React UI improvements
+
+= 5.4.9 =
+
+* Incorporates new React frontend signup form and template editor.
 
 = 5.4.8 =
 

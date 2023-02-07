@@ -457,7 +457,7 @@ function wpt_suggest_role() {
 		rsvpmailer($mail);
 	}
 	add_post_meta($post_id,'_suggest'.$roletag,$member_id);
-	return '<p>Message sent:'.$msg.'</p>';
+	return '<p>From: '.$current_user->display_name.'<br>To: '.$member->display_name.'</p>'.$msg;
 }
 
 class WPTM_Reports extends WP_REST_Controller {
@@ -1129,6 +1129,7 @@ function wpt_get_agendadata($post_id) {
 	$meetings = future_toastmaster_meetings( 10 );
 	$agendadata['current_user_id'] = ($current_user->ID && is_club_member($current_user->ID)) ? $current_user->ID : false;
 	$agendadata['current_user_name'] = ($current_user->ID) ? get_member_name($current_user->ID) : '';
+	$agendadata['newSignupDefault'] = (bool) get_option('wp4t_newSignupDefault');
 	$agendadata['upcoming'] = [];
 	if($post_id)
 		$post = get_post($post_id);
@@ -1177,6 +1178,7 @@ function wpt_get_agendadata($post_id) {
 				$agendadata['blocksdata'][$index]['edithtml'] = get_post_meta($post->ID,'agenda_note_'.$block['attrs']['uid'],true);
 			if(!empty($block['attrs']['custom_role']))
 				$agendadata['blocksdata'][$index]['attrs']['role'] = $block['attrs']['custom_role'];
+			$agendadata['blocksdata'][$index]['DnDid'] = 'dnd'.$index;
 			if(isset($block['attrs']) && isset($block['attrs']['role']))
 				{
 					$agendadata['blocksdata'][$index]['assignments'] = [];
@@ -1321,7 +1323,7 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		return current_user_can('edit_rsvpmakers'); //or allowed to reorganize
+		return (current_user_can('edit_rsvpmakers') || current_user_can('organize_agenda')); //or allowed to reorganize
 	}
 
 	public function handle( $request ) {
@@ -1333,12 +1335,8 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 		if(('rsvpmaker' != $post_type) && ('rsvpmaker-template' != $post_type))
 			return new WP_REST_Response(['status'=>'This function only works with event content'],401);
 		if('rsvpmaker-template' != $post_type) {
-			if(!current_user_can('edit_post',$post_id))
+			if(!current_user_can('edit_post',$post_id) && !current_user_can('organize_agenda'))
 				return new WP_REST_Response(['status'=>'user is not allowed to update this document'],401);
-		}
-		elseif('rsvpmaker' != $post_type) {
-			//if(!current_user_can('reorganize',$post_id))
-				//return new WP_REST_Response(['status'=>'user is not allowed to update this document'],401);
 		}
 
 		foreach($data->blocksdata as $index => $block) {
@@ -1636,6 +1634,14 @@ class WP4T_Permissions extends WP_REST_Controller {
 	public function handle( $request ) {
 		$json = file_get_contents('php://input');
 		$data = json_decode($json);
+		if('newSignupDefault' == $data->key) {
+		update_option('wp4t_newSignupDefault',$data->value);
+		$response['status'] = "$data->key ".(($data->value) ? 'true' : 'false');
+		return new WP_REST_Response($response,
+			200
+		);
+		}
+
 		$change = ['subscriber','contributor','author'];
 		foreach($change as $label) {
 			$r = get_role( $label );
