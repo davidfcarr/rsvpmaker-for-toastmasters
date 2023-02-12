@@ -1137,6 +1137,16 @@ function wpt_get_agendadata($post_id) {
 		if(sizeof($meetings))
 			$post = $meetings[0];	
 	}
+	$absences = get_post_meta( $post->ID, 'tm_absence' );
+	if ( is_array( $absences ) ) {
+		$absences = array_unique( $absences );
+	}
+	else 
+		$absences = [];
+	$agendadata['absences'] = [];
+	foreach($absences as $ab) {
+		$agendadata['absences'][] = array('ID' => $ab, 'name' => get_member_name($ab));
+	}
 	if($post) {
 		$r       = get_role( 'subscriber' );
 		$agendadata['subscribers_can_edit_signups'] = $r->has_cap( 'edit_signups' );
@@ -1147,7 +1157,7 @@ function wpt_get_agendadata($post_id) {
 		$agendadata['is_template'] = rsvpmaker_is_template($post->ID);
 		if($agendadata['is_template'])
 		{
-			$agendadata['datetime'] = get_rsvp_date($meetings[0]->ID);
+			$agendadata['datetime'] = '1924-10-22 '.$agendadata['is_template']['hour'].':'.$agendadata['is_template']['minutes'].':00';
 		}
 		else {
 			$agendadata['datetime'] = get_rsvp_date($post->ID);
@@ -1192,8 +1202,13 @@ function wpt_get_agendadata($post_id) {
 					{
 						$key = '_'.preg_replace('/[^a-zA-Z]/','_',$role).'_'.$i;
 						$assignment = array();
-						$assignment['ID'] = intval( get_post_meta($post->ID,$key, true) );
-						$assignment['name'] = ($assignment['ID']) ? get_member_name($assignment['ID']) : '';
+						$assignment['ID'] = get_post_meta($post->ID,$key, true);
+						if(empty($assignment['ID']))
+							$assignment['name'] = '';
+						if(is_numeric($assignment['ID']))
+							$assignment['name'] = get_member_name($assignment['ID']);
+						else
+							$assignment['name'] = $assignment['ID'].' (guest)';
 						if($assignment['ID'] && ('Speaker' == $role)) {
 							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
 							$assignment = array_merge($assignment,$speakerdata);
@@ -1658,6 +1673,46 @@ class WP4T_Permissions extends WP_REST_Controller {
 	}
 }
 
+class WP4T_Absences extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'absences';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return is_club_member();
+	}
+
+	public function handle( $request ) {
+		global $rsvp_options;
+		$response['absences'] = tm_absences_json();
+		$future = future_toastmaster_meetings();
+		$response['upcoming'][] = array('value'=>'','label'=>'Just this meeting');
+		foreach($future as $f)
+			$response['upcoming'][] = array('value'=>$f->datetime,'label'=>'until '.rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($f->datetime)));
+		$response['memberlist'][] = array('value'=>'0','label'=>'Choose Member');
+		$members = get_club_members();
+		foreach($members as $m) {
+			$response['memberlist'][] = array('value'=>$m->ID,'label'=>$m->display_name);
+		}
+		return new WP_REST_Response($response,
+			200
+		);
+	}
+}
+
 /*
 skeleton
 class WP4T_XX extends WP_REST_Controller {
@@ -1692,6 +1747,8 @@ class WP4T_XX extends WP_REST_Controller {
 }
 
 */
+
+
 
 add_action(
 	'rest_api_init',
@@ -1754,5 +1811,7 @@ add_action(
 		$wptcopy->register_routes();
 		$wptpermissions = new WP4T_Permissions();
 		$wptpermissions->register_routes();
+		$abs = new WP4T_Absences();
+		$abs->register_routes();
 	}
 );

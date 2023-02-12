@@ -67,6 +67,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
+= 5.5.2 =
+
+* React UI added Planned Absences, edit and suggest buttons in signup mode
+
 = 5.5.1 =
 
 * React UI improvements

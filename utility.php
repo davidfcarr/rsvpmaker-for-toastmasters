@@ -256,6 +256,13 @@ function awe_rest_user_options( $role, $post_id ) {
 
 		$options[] = array('value' => $member->ID, 'label' => $member->first_name . ' ' . $member->last_name.$status,'name' => $member->first_name . ' ' . $member->last_name);
 		}
+
+		$sql = "select meta_value from $wpdb->postmeta where meta_key RLIKE BINARY '^_[A-Z].+_[0-9]{1,2}' AND meta_value RLIKE '[A-z]+'";
+		rsvpmaker_debug_log($sql,'guest role sql');
+		$guests = $wpdb->get_results($sql);
+		if($guests)
+			foreach($guests as $guest)
+				$options[] = array('value' => $guest->meta_value, 'label' => $member->first_name . ' ' . $member->last_name.$status,'name' => $guest->meta_value.' (guest)','label'=>$guest->meta_value.' (guest)');
 return $options;	
 }
 
@@ -315,8 +322,6 @@ function get_club_members( $blog_id = 0 ) {
 	);
 
 }
-
-
 
 function get_club_member_emails( $blog_id = 0 ) {
 

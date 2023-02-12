@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.5.1
+Version: 5.5.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1576,8 +1576,13 @@ function awesome_wall( $comment_content, $post_id, $member_id = 0 ) {
 
 	global $current_user, $wpdb, $didthis;
 	if ( $member_id ) {
-		$userdata        = get_userdata( $member_id );
-		$comment_content = '<strong>' . $userdata->display_name . ':</strong> ' . $comment_content;
+		if(is_numeric($member_id)) {
+			$userdata        = get_userdata( $member_id );
+			$comment_content = '<strong>' . $userdata->display_name . ':</strong> ' . $comment_content;	
+		}
+		else { //guest
+			$comment_content = '<strong>' . $member_id . ':</strong> ' . $comment_content;	
+		}
 	} else {
 		$comment_content = '<strong>' . $current_user->display_name . ':</strong> ' . $comment_content;
 	}
@@ -12709,6 +12714,59 @@ function tm_absence( $atts ) {
 	$output .= '<p>'. __( 'Use this to mark yourself or another member unavailable for one more meetings.', 'rsvpmaker-for-toastmasters' ).'</p>';
 
 	return $output;
+}
+
+function tm_absences_json() {
+global $wpdb;
+$event_table = get_rsvpmaker_event_table();
+$operation = '';
+$data = array();
+$json = file_get_contents('php://input');
+if($json) {
+	$data = json_decode($json);
+	$operation = $data->operation;
+}
+
+if(isset($_GET['post_id']))
+	$post_id = intval($_GET['post_id']);
+$status = '';
+
+if ( 'add' == $operation ) {
+	$away_user_id = intval($data->ID);
+	add_post_meta( $post_id, 'tm_absence', $away_user_id );
+	if(!empty($data->until)) {
+		$until = sanitize_text_field($data->until);
+		add_user_meta($away_user_id,'tm_absence_until',$until);
+		$thisdate = get_rsvp_date($post_id);
+		$results = $wpdb->get_results("SELECT event from $event_table WHERE date > '$thisdate' AND date <= '$until' ");
+		foreach($results as $row) {
+			add_post_meta( $row->event, 'tm_absence', $away_user_id );
+			$status .= 'add '.$row->event.' ';
+		}
+	}
+}
+
+if ( 'remove' == $operation ) {
+	$away_user_id = intval($data->ID);
+	$status .= 'attempt to remove '.$away_user_id.' post_id '.$post_id;
+	delete_post_meta( $post_id, 'tm_absence', $away_user_id );
+	if(!empty($data->until)) {
+		$until = sanitize_text_field($data->until);
+		$results = $wpdb->get_results("SELECT event from $event_table WHERE  date > '$thisdate' AND date <= '$until' ");
+		foreach($results as $row)
+			delete_post_meta( $row->event, 'tm_absence', $away_user_id );
+	}
+}
+
+$absences = get_post_meta( $post_id, 'tm_absence' );
+if ( is_array( $absences ) ) {
+	$absences = array_unique( $absences );
+}
+$result = [];
+foreach($absences as $ab) {
+	$result[] = array('ID'=>$ab,'name' => get_member_name($ab),'until'=> get_user_meta($ab,'tm_absence_until',true),'operation' => $operation, 'status' => $status, 'request' => $data);
+}
+return $result;
 }
 
 function toastmasters_role_signup() {
