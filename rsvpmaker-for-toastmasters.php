@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.5.2
+Version: 5.5.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1427,7 +1427,10 @@ function decode_timeblock( $matches ) {
 
 function agendanoterich2_timeblock( $matches ) {
 	$props = ( empty( $matches[1] ) ) ? null : json_decode( $matches[1] );
+	rsvpmaker_debug_log($props,'note timeblock props');
 	$time  = empty( $props->time_allowed ) ? 0 : $props->time_allowed;
+	rsvpmaker_debug_log($time,'note timeblock time');
+	rsvpmaker_debug_log($timed,'note timeblock timed');
 	$timed = str_replace( '<p class="wp-block-wp4toastmasters-agendanoterich2"', '<p class="wp-block-wp4toastmasters-agendanoterich2" maxtime="' . $time . '"', $matches[0] );
 	if ( $time ) {
 		return $timed;
@@ -4808,13 +4811,19 @@ function awesome_event_content( $content ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
 		$link .= agenda_menu( $post->ID );
-		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
+		if(is_rsvpmaker_future($post->ID) && function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
 			if(is_club_member() && (get_option('wp4t_newSignupDefault') || isset($_GET['newsignup']))) {
 				$link .= '<div id="react-agenda">new signup goes here.</div>';
 				$content = '';
+				if(isset($_GET['makedefault']) && current_user_can('manage_options'))
+					update_option('wp4t_newSignupDefault',true);
 			}
-		else
-			$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form (beta)</a></p>',get_permalink($post->ID));
+		else {
+			if(current_user_can('manage_options'))
+				$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form</a> | <a href="%s?newsignup&makedefault=1">Turn on by default</a></p>',get_permalink($post->ID),get_permalink($post->ID));
+			else
+				$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form (beta)</a></p>',get_permalink($post->ID));
+		}
 		}	
 		$link .= sprintf( '<input type="hidden" id="editor_id" value="%s" />', $current_user->ID );
 
@@ -7821,27 +7830,29 @@ function save_speaker_array( $speaker, $count, $post_id = 0 ) {
 	}
 }
 
-function pack_speakers( $count ) {
+function pack_speakers( $count, $post_id = null ) {
 	global $post;
+	if(!$post_id)
+		$post_id = $post->ID;
 
 	for ( $i = 1; $i <= $count; $i++ ) {
 
 		$field    = '_Speaker_' . $i;
-		$assigned = get_post_meta( $post->ID, $field, true );
+		$assigned = get_post_meta( $post_id, $field, true );
 		if ( empty( $assigned ) ) {
 			// fill the first open speaker slot with backup speaker, if any
 			$backup = (int) get_post_meta( $post->ID, '_Backup_Speaker_1', true );
 			if ( $backup > 0 ) {
-				$speaker = get_speaker_array( $backup, $post->ID, true );
-				save_speaker_array( $speaker, $i, $post->ID );
-				delete_post_meta( $post->ID, '_Backup_Speaker_1' );
-				delete_post_meta( $post->ID, '_manual_Backup_Speaker_1' );
-				delete_post_meta( $post->ID, '_project_Backup_Speaker_1' );
-				delete_post_meta( $post->ID, '_maxtime_Backup_Speaker_1' );
-				delete_post_meta( $post->ID, '_display_time_Backup_Speaker_1' );
-				delete_post_meta( $post->ID, '_title_Backup_Speaker_1' );
-				delete_post_meta( $post->ID, '_intro_Backup_Speaker_1' );
-				backup_speaker_notify( $backup );
+				$speaker = get_speaker_array( $backup, $post_id, true );
+				save_speaker_array( $speaker, $i, $post_id );
+				delete_post_meta( $post_id, '_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_manual_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_project_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_maxtime_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_display_time_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_title_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_intro_Backup_Speaker_1' );
+				backup_speaker_notify( $backup, $post_id );
 			}
 			return;
 		}
@@ -13460,6 +13471,45 @@ if(!empty($attendee_list))
 	else
 		$output .= sprintf('<form method="post" action="%s"><p>%s (%d)</p>%s<p class="remove_in_person"><button>%s</button></p></form><p class="remove_names_line"><input type="checkbox" class="remove_names"> Remove names</p>',get_permalink($post->ID),__('In-person attendees','rsvpmaker-for-toastmasters'),$attendees,$attendee_list,__('Remove Checked','rsvpmaker-for-toastmasters'));
 return $output;
+}
+
+function tm_attend_in_person_json($data) {
+	global $current_user,$post, $wpdb;
+	$output = '';
+	$operation = (isset($data->operation)) ? $data->operation : '';
+	$post_id = $_GET['post_id'];
+	$in_person = get_post_meta($post_id,'tm_attend_in_person'); // returns array
+	if(empty($in_person))
+		$in_person = array();
+	if('remove' == $operation) {
+			delete_post_meta($post_id,'tm_attend_in_person',$data->ID);
+			if (($key = array_search($person, $in_person)) !== false) {
+				unset($in_person[$key]);
+			}
+	}
+	elseif('add' == $operation) {
+		add_post_meta($post_id,'tm_attend_in_person',$data->ID);
+		$in_person[] = $data->ID;
+	}
+
+	//$in_person = tm_in_person_update($post_id, $in_person);
+	
+	$attendee_list = [];
+	if(sizeof($in_person)) {
+		foreach($in_person as $person) {
+			if(is_numeric($person))
+				$attendee_list[] = array('ID'=>$person,'name'=>get_member_name($person));
+			else
+				$attendee_list[] = array('ID'=>$person,'name'=>$person);
+		}
+	}
+	$response = array('hybrid'=>$attendee_list,'memberlist'=> []);
+	$response['memberlist'][] = array('value'=>'0','label'=>'Choose Member');
+	$members = get_club_members();
+	foreach($members as $m)
+		$response['memberlist'][] = array('value'=>$m->ID,'label'=>$m->display_name);
+
+	return $response;
 }
 
 add_shortcode('tm_attend_in_person','tm_attend_in_person');

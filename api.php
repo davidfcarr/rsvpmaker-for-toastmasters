@@ -1194,10 +1194,13 @@ function wpt_get_agendadata($post_id) {
 					$agendadata['blocksdata'][$index]['assignments'] = [];
 					$role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
 					$count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
+					if('Speaker' == $role)
+						pack_speakers($count,$agendadata['post_id']);
 					$start = (isset($lastcount[$role])) ? $lastcount[$role] + 1 : 1;
 					$agendadata['blocksdata'][$index]['attrs']['start'] = $start;
 					$lastcount[$role] = (empty($lastcount[$role])) ? $count : + $count + $lastcount[$role];
 					$backup = !empty($block['attrs']['backup']) ? 1 : 0;
+					$blanks = array();
 					for($i=$start; $i < ($count + $start); $i++)
 					{
 						$key = '_'.preg_replace('/[^a-zA-Z]/','_',$role).'_'.$i;
@@ -1205,7 +1208,7 @@ function wpt_get_agendadata($post_id) {
 						$assignment['ID'] = get_post_meta($post->ID,$key, true);
 						if(empty($assignment['ID']))
 							$assignment['name'] = '';
-						if(is_numeric($assignment['ID']))
+						elseif(is_numeric($assignment['ID']))
 							$assignment['name'] = get_member_name($assignment['ID']);
 						else
 							$assignment['name'] = $assignment['ID'].' (guest)';
@@ -1213,19 +1216,20 @@ function wpt_get_agendadata($post_id) {
 							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
 							$assignment = array_merge($assignment,$speakerdata);
 						}
+						if(empty($assignment['ID']))
+							$blanks[] = $i - 1;
 						$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
 					}
-					//backward compatibility
 					if($backup) {
 						$key = '_Backup_'.preg_replace('/[^a-zA-Z]/','_',$role).'_'.$start;
 						$assignment = array();
-						$assignment['ID'] = intval( get_post_meta($post->ID,$key, true) );
+						$assignment['ID'] = intval( get_post_meta($agendadata['post_id'],$key, true) );
 						$assignment['name'] = ($assignment['ID']) ? get_member_name($assignment['ID']) : '';
 						if($assignment['ID'] && ('Speaker' == $role)) {
 							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
 							$assignment = array_merge($assignment,$speakerdata);
 						}
-						$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
+					$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
 					}
 				}
 		}
@@ -1692,7 +1696,7 @@ class WP4T_Absences extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		return is_club_member();
+		return true;//return is_club_member();
 	}
 
 	public function handle( $request ) {
@@ -1707,6 +1711,38 @@ class WP4T_Absences extends WP_REST_Controller {
 		foreach($members as $m) {
 			$response['memberlist'][] = array('value'=>$m->ID,'label'=>$m->display_name);
 		}
+		return new WP_REST_Response($response,
+			200
+		);
+	}
+}
+
+class WP4T_Hybrid extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'hybrid';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		$json = file_get_contents('php://input');
+		$data = ($json) ? json_decode($json) : array();
+		$response = tm_attend_in_person_json($data);
 		return new WP_REST_Response($response,
 			200
 		);
@@ -1813,5 +1849,7 @@ add_action(
 		$wptpermissions->register_routes();
 		$abs = new WP4T_Absences();
 		$abs->register_routes();
+		$hybrid = new WP4T_Hybrid();
+		$hybrid->register_routes();
 	}
 );

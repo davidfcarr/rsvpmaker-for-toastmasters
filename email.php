@@ -658,22 +658,25 @@ Send to <input type="radio" name="send" value="members" checked="checked" > ' . 
 	exit();
 }
 
-function backup_speaker_notify( $assigned ) {
+function backup_speaker_notify( $assigned, $post_id = null ) {
 	global $post;
 	global $wpdb;
 	global $rsvp_options;
 
-	if ( ! is_rsvpmaker_future( $post->ID ) ) {
+	if(!$post_id)
+		$post_id = $post->ID;
+
+	if ( ! is_rsvpmaker_future( $post_id ) ) {
 		return;
 	}
 
-		$meetingdate = rsvpmaker_date( $rsvp_options['short_date'], get_rsvpmaker_timestamp( $post->ID ) );
+		$meetingdate = rsvpmaker_date( $rsvp_options['short_date'], get_rsvpmaker_timestamp( $post_id ) );
 
-		$meeting_leader = get_post_meta( $post->ID, 'meeting_leader', true );
+		$meeting_leader = get_post_meta( $post_id, 'meeting_leader', true );
 	if ( empty( $meeting_leader ) ) {
 		$meeting_leader = '_Toastmaster_of_the_Day_1';
 	}
-		$toastmaster = (int) get_post_meta( $post->ID, $meeting_leader, true );
+		$toastmaster = (int) get_post_meta( $post_id, $meeting_leader, true );
 
 	if ( $toastmaster ) {
 		$tmdata       = get_userdata( $toastmaster );
@@ -684,7 +687,7 @@ function backup_speaker_notify( $assigned ) {
 
 			$speakerdata     = get_userdata( $assigned );
 			$subject         = $message = sprintf( '%s %s ', $speakerdata->first_name, $speakerdata->last_name ) . __( 'now scheduled to speak on', 'rsvpmaker-for-toastmasters' ) . ' ' . $meetingdate;
-			$url             = rsvpmaker_permalink_query( $post->ID );
+			$url             = rsvpmaker_permalink_query( $post_id );
 			$mail['subject'] = substr( strip_tags( $subject ), 0, 100 );
 			$message        .= "\n\n" . __( 'Backup speaker promoted to speaker following a cancellation.', 'rsvpmaker-for-toastmasters' );
 
@@ -692,7 +695,7 @@ function backup_speaker_notify( $assigned ) {
 	if ( $toastmaster ) {
 		$footer .= ' Toastmaster of the Day ' . $tmdata->display_name;
 	}
-			$p                = get_permalink( $post->ID );
+			$p                = get_permalink( $post_id );
 			$footer          .= "\n\nTo remove yourself from the agenda, visit " . sprintf( '<a href="%s">%s</a>', $p, $p );
 			$mail['html']     = "<html>\n<body>\n" . wpautop( $message . $footer ) . "\n</body></html>";
 			$mail['replyto']  = $leader_email;
