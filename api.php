@@ -1074,6 +1074,7 @@ class Editable_Note_Json extends WP_REST_Controller {
 			$json = file_get_contents('php://input');
 			$data = json_decode($json);
 			$post_id = $data->post_id;
+			$editable = $data->editable;
 			if(current_user_can('edit_signups')) {
 				$uid = $data->uid;
 				$note = wp_kses_post($data->note);
@@ -1087,10 +1088,6 @@ class Editable_Note_Json extends WP_REST_Controller {
 		}
 	}
 }
-
-
-
-
 
 class WP4TBlocksData extends WP_REST_Controller {
 	public function register_routes() {
@@ -1115,14 +1112,14 @@ class WP4TBlocksData extends WP_REST_Controller {
 	}
 
 	public function handle( $request ) {
-		$agendadata = wpt_get_agendadata($request["post_id"]);		
+		$agendadata = wpt_get_agendadata($request["post_id"]);
 		return new WP_REST_Response($agendadata,
 			200
 		);
 	}
 }
 
-function wpt_get_agendadata($post_id) {
+function wpt_get_agendadata($post_id = 0) {
 	global $current_user,$post;
 	$agendadata = [];
 	$post = false;
@@ -1134,10 +1131,12 @@ function wpt_get_agendadata($post_id) {
 	if($post_id)
 		$post = get_post($post_id);
 	else {
-		if(sizeof($meetings))
-			$post = $meetings[0];	
+		if(sizeof($meetings)) {
+			$post = $meetings[0];
+			$post_id = $post->ID;
+		}
 	}
-	$absences = get_post_meta( $post->ID, 'tm_absence' );
+	$absences = get_post_meta( $post_id, 'tm_absence' );
 	if ( is_array( $absences ) ) {
 		$absences = array_unique( $absences );
 	}
@@ -1153,18 +1152,20 @@ function wpt_get_agendadata($post_id) {
 		$agendadata['subscribers_can_organize_agenda'] = $r->has_cap( 'organize_agenda' );
 
 		$agendadata['permissionsurl'] = admin_url('options-general.php?page=wp4toastmasters_settings&rules=1#rules');
-		$agendadata['has_template'] = rsvpmaker_has_template($post->ID);
-		$agendadata['is_template'] = rsvpmaker_is_template($post->ID);
+		$agendadata['has_template'] = rsvpmaker_has_template($post_id);
+		$agendadata['is_template'] = rsvpmaker_is_template($post_id);
+		
 		if($agendadata['is_template'])
 		{
 			$agendadata['datetime'] = '1924-10-22 '.$agendadata['is_template']['hour'].':'.$agendadata['is_template']['minutes'].':00';
 		}
 		else {
-			$agendadata['datetime'] = get_rsvp_date($post->ID);
+			$agendadata['datetime'] = get_rsvp_date($post_id);
 		}
-		$agendadata['permissions'] = array('member' => is_club_member(), 'edit_post' => current_user_can('edit_post',$post->ID),'edit_signups' => current_user_can('edit_signups'),'organize_agenda'=>current_user_can('organize_agenda'),'manage_options' => current_user_can('manage_options'));
+		$agendadata['permissions'] = array('member' => is_club_member(), 'edit_post' => current_user_can('edit_post',$post_id),'edit_signups' => current_user_can('edit_signups'),'organize_agenda'=>current_user_can('organize_agenda'),'manage_options' => current_user_can('manage_options'));
 		$agendadata['wpt_rest'] = wpt_rest_array();
-		$agendadata['post_id'] = $post->ID;
+		$agendadata['post_id'] = $post_id;
+		$agendadata['request_evaluation'] = admin_url('admin.php?page=wp4t_evaluations&speaker='.$current_user->ID);
 		if($meetings) {
 			foreach($meetings as $meeting)
 			$agendadata['upcoming'][]= array('value' => $meeting->ID, 'permalink' => get_permalink($meeting->ID),'edit_link' => admin_url('wp-admin/post.php?post='.$meeting->ID.'&action=edit'),'label' => preg_replace('/ [0-9]{2}:[0-9]{2}:[0-9]{2}/','',$meeting->datetime) .' '.$meeting->post_title);
@@ -1175,8 +1176,14 @@ function wpt_get_agendadata($post_id) {
 			foreach($templates as $template) {
 				$agendadata['upcoming'][]= array('value' => $template->ID, 'permalink' => get_permalink($template->ID),'edit_link' => admin_url('wp-admin/post.php?post='.$template->ID.'&action=edit'),'label' => 'Template: '.$template->post_title);
 			}
-		}	
-		$blocksdata = parse_blocks($post->post_content);
+		}
+		if(isset($_GET['mode']) && ('evaluation_demo' == $_GET['mode'] ))
+			{
+				$agendadata['post_id'] = 0;
+				$blocksdata = parse_blocks('<!-- wp:wp4toastmasters/role {"role":"Speaker"} /-->');
+			}
+		else
+			$blocksdata = parse_blocks($post->post_content);
 		//filter empty blocks
 		foreach($blocksdata as $block)
 		{
@@ -1185,12 +1192,13 @@ function wpt_get_agendadata($post_id) {
 		}
 		foreach($agendadata['blocksdata'] as $index => $block) {
 			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid']))
-				$agendadata['blocksdata'][$index]['edithtml'] = get_post_meta($post->ID,'agenda_note_'.$block['attrs']['uid'],true);
+				$agendadata['blocksdata'][$index]['edithtml'] = get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
 			if(!empty($block['attrs']['custom_role']))
 				$agendadata['blocksdata'][$index]['attrs']['role'] = $block['attrs']['custom_role'];
 			$agendadata['blocksdata'][$index]['DnDid'] = 'dnd'.$index;
 			if(isset($block['attrs']) && isset($block['attrs']['role']))
 				{
+					$agendadata['blocksdata'][$index]['memberoptions'] = awe_rest_user_options($block['attrs']['role'],$post_id);
 					$agendadata['blocksdata'][$index]['assignments'] = [];
 					$role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
 					$count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
@@ -1204,8 +1212,8 @@ function wpt_get_agendadata($post_id) {
 					for($i=$start; $i < ($count + $start); $i++)
 					{
 						$key = '_'.preg_replace('/[^a-zA-Z]/','_',$role).'_'.$i;
-						$assignment = array();
-						$assignment['ID'] = get_post_meta($post->ID,$key, true);
+						$assignment = array('post_id'=>$post_id);
+						$assignment['ID'] = get_post_meta($post_id,$key, true);
 						if(empty($assignment['ID']))
 							$assignment['name'] = '';
 						elseif(is_numeric($assignment['ID']))
@@ -1214,6 +1222,8 @@ function wpt_get_agendadata($post_id) {
 							$assignment['name'] = $assignment['ID'].' (guest)';
 						if($assignment['ID'] && ('Speaker' == $role)) {
 							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
+							$project_key = ($speakerdata['project']) ? $speakerdata['project'] : '';
+							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id, $project_key );
 							$assignment = array_merge($assignment,$speakerdata);
 						}
 						if(empty($assignment['ID']))
@@ -1261,7 +1271,7 @@ class WP4TRolesList extends WP_REST_Controller {
 
 	public function handle( $request ) {
 		global $toast_roles;
-		$toast[] = array('value' =>'', 'label' => __('Select Role (not set)','rsvpmaker-for-toastmasters'));
+		$toast[] = array('value' =>'', 'label' => __('Select Role','rsvpmaker-for-toastmasters'));
 		$toast[] = array('value' =>'custom', 'label' => __('Custom Role','rsvpmaker-for-toastmasters'));
 		foreach($toast_roles as $key => $value)
 			$toast[] = array('value' => $key, 'label' => $value);		
@@ -1357,7 +1367,6 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 			if(!current_user_can('edit_post',$post_id) && !current_user_can('organize_agenda'))
 				return new WP_REST_Response(['status'=>'user is not allowed to update this document'],401);
 		}
-
 		foreach($data->blocksdata as $index => $block) {
 			if($block->blockName)
 				$output .= jsonBlockDataOutput($block, $post_id);
@@ -1749,6 +1758,165 @@ class WP4T_Hybrid extends WP_REST_Controller {
 	}
 }
 
+class WP4T_Evaluation extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'evaluation';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		global $wpdb, $rsvp_options;
+		$json = file_get_contents('php://input');
+		if(!empty($json))
+		$data = json_decode($json);
+		if(!empty($data)) {
+			global $current_user, $rsvp_options;
+			$output = '';
+			$speaker_id = $data->evaluate->ID;
+			if(is_numeric($speaker_id))
+				$speaker = get_userdata($speaker_id);
+			if($speaker) {
+				$mail['to'] = $speaker->user_email;
+			}
+			$name = $data->evaluate->name;
+			$manual = $data->evaluate->manual;
+			$project_text = ($data->evaluate->project) ? get_project_text($data->evaluate->project) : '';
+			$title = $data->evaluate->title;
+			$mail['subject'] = "Evaluation for ".$name.' '.$title;
+			$output = sprintf("<h1>Evaluation for %s %s</h1>\n",$name,($title) ? "<em>$title</em>" : '');
+			$output .= sprintf("<h2>Path: %s</h2>\n",$manual);
+			$output .= sprintf("<h2>Project: %s</h2>\n",$project_text);
+			$output .= sprintf("<p>Evaluator: %s</p>\n",$current_user->display_name);
+			$output .= sprintf("<p>Date: %s</p>\n",rsvpmaker_date($rsvp_options['long_date'],time()));
+			foreach($data->form->prompts as $index => $p) {
+				$output .= '<p><strong>'.$p->prompt."</strong></p>\n";
+				$choice = empty($data->responses[$index]) ? '' : $data->responses[$index];
+				if($p->choices) {
+					$output .= '<div style="display:flex;font-family: Arial, Helvetica, sans-serif;line-height:1em;">';
+					foreach($p->choices as $option) {
+						$output .= format_eval_opt($option->value,($choice == $option->value));// ? '<div style="width: 100px; height: 100px; border: thick solid #000; border-radius: 50%; background-color: #000; color: #fff">'.format_eval_opt($option->value).'</div>' : '<div style="width: 100px; height: 100px; border: thick solid #000; border-radius: 50%;text-align: center;"><div style="margin-top:20px;">'.str_replace(' (','<br>(',$option->value).'</div></div>';
+					}
+					$output .= "</div>\n";
+				}
+				$note = empty($data->notes[$index]) ? '' : $data->notes[$index];
+				$output .= '<p>'.$note."</p>\n";
+			}
+			$response = array('message' => $output);
+			$mail['html'] = $output;
+			$mail['from'] = $current_user->user_email;
+			$mail['fromname'] = $current_user->display_name;
+			if(!empty($mail['to'])) {
+				rsvpmailer($mail);
+				$project = (!empty($data->project)) ? $data->project : '';
+				$key = 'evaluation|' . date( 'Y-m-d' ) . ' 00:00:00|' . $project . '|' . sanitize_text_field($_SERVER['SERVER_NAME']) . '|' . $current_user->user_login;
+				update_user_meta( $speaker_id, $key, $output );
+				update_post_meta($data->post_id,'evaluation_given',$current_user->ID);
+				update_post_meta($data->post_id,'evaluation_received',$speaker_id);
+				$response['status'] = 'Sent by email. Copy saved to dashboard.';
+			}
+			else
+				$response['status'] = 'Copy and paste to print or email';
+			
+			$response['message'] = '<div>'.$response['status']."</div>\n".$response['message'];
+
+			//process evaluation
+			return new WP_REST_Response($response,
+			200
+		);
+		}
+
+		//get form
+		$updated = (int) get_option( 'evaluation_forms_updated' );
+		if ( empty( $updated ) || ( $updated < strtotime( 'February 25, 2023' ) ) ) {
+			$json = file_get_contents( plugin_dir_path( __FILE__ ) . 'evaluation_forms.json' );
+			if ( $json ) {
+				$eval_data = json_decode( $json );
+				foreach ( $eval_data as $eval_row ) {
+					if ( isset( $eval_row->timestamp ) ) {
+						update_option( 'evaluation_forms_updated', $eval_row->timestamp );
+						$updated = $eval_row->timestamp;
+					} elseif ( $eval_row->option_value ) {
+						update_option( $eval_row->option_name, $eval_row->option_value );
+					}
+				}
+			}
+		}
+	
+		$project = 'Visionary Communication Level 5 Demonstrating Expertise 2278';
+		$project = sanitize_text_field($_GET['project']);
+		$form = null;
+		if(!empty(trim($project)))
+			$form    = fetch_evaluation_form( $project );
+		if(empty($form) || empty($form->intro) ) {
+			$response['project'] = 'Dynamic Leadership Level 1 Mastering Fundamentals 5';
+			$form = fetch_evaluation_form( 'Dynamic Leadership Level 1 Mastering Fundamentals 5' );
+			$response['intro'] = '<p>Showing a generic form because project not specified or not recognized.</p>';
+		}
+		else {
+			$response['intro'] = (!empty($form->intro)) ? wpautop($form->intro) : '<p>Intro variables missing';
+			$response['project'] = $project;
+		}
+
+		$response['timestamp'] = time();
+		$prompts = explode("\n",$form->prompts);
+		foreach($prompts as $index => $prompt) {
+			$prompt = trim($prompt);
+			$cells = explode('|',$prompt);
+			$response['form'][$index]['prompt'] = array_shift($cells);
+			// = $cells;
+			$response['form'][$index]['choice'] = '';
+			$response['form'][$index]['note'] = '';
+			foreach($cells as $cell)
+				$response['form'][$index]['choices'][] = array('label'=>$cell,'value'=>$cell);
+		}
+
+		$response['previous_speeches'] = [];
+		$history_table = $wpdb->base_prefix.'tm_history';
+		$speech_history_table = $wpdb->base_prefix.'tm_speech_history';	
+		$userwhere = (isset($_GET['speaker'])) ? 'AND user_id='.intval($_GET['speaker']) : '';
+		$sql = "SELECT user_id as ID, datetime, project_key as project, project as project_text, title, post_id FROM `$history_table` join $speech_history_table ON id=history_id WHERE `role` LIKE 'Speaker' AND `datetime` < NOW() AND `domain` LIKE '".sanitize_text_field($_SERVER['SERVER_NAME'])."' $userwhere order by datetime DESC LIMIT 0,15";
+		$p = $wpdb->get_results($sql);
+		foreach($p as $speech) {
+			$speech->name = $label = get_member_name($speech->ID);
+			if($speech->project_text)
+				$label .= ' '.$speech->project_text;
+			if($speech->title)
+				$label .= ' '.$speech->title;
+			$label .= ' '.rsvpmaker_date($rsvp_options['short_date'],rsvpmaker_strtotime($speech->datetime));
+			$response['previous_speeches'][] = array('label' => $label,'value' => $speech);
+		}
+
+		return new WP_REST_Response($response,
+			200
+		);
+		
+	}
+}
+
+function format_eval_opt($opt,$is_true) {
+	$parts = preg_split('/[\(\)]/',$opt);
+	$opt = '<span style="font-size:20px;"><strong>'.$parts[0].'</strong></span><br><span style="font-size:10px;">'.$parts[1].'</span>';
+	$outer_style = 'width: 75px; height: 75px; margin-right: 10px; border: thick solid #000; border-radius: 50%;';
+	$outer_style .= ($is_true) ? 'color: #fff; background-color: #000' : '';
+	return sprintf('<div style="%s"><div style="margin-top:15px;text-align:center;">%s</div></div>',$outer_style,$opt);
+}
+
 /*
 skeleton
 class WP4T_XX extends WP_REST_Controller {
@@ -1782,6 +1950,7 @@ class WP4T_XX extends WP_REST_Controller {
 	}
 }
 
+{'prompt':'You excelled at','choices':[],'choice':'','note':''},{'prompt':'You may want to work on','choices':[],'choice':'','note':''},{'prompt':'To challenge yourself','choices':[],'choice':'','note':''},{'prompt':'Clarity: Spoken language is clear and is easily understood','choices':[{'label':'5 (Exemplary)','value':'5 (Exemplary)'},{'label':'4 (Excels)','value':'4 (Excels)'},{'label':'3 (Accomplished)','value':'3 (Accomplished)'},{'label':'2 (Emerging)','value':'2 (Emerging)'},{'label':'1 (Developing)','value':'1 (Developing)'}],'choice':'','note':''}
 */
 
 
@@ -1851,5 +2020,7 @@ add_action(
 		$abs->register_routes();
 		$hybrid = new WP4T_Hybrid();
 		$hybrid->register_routes();
+		$eval = new WP4T_Evaluation();
+		$eval->register_routes();
 	}
 );

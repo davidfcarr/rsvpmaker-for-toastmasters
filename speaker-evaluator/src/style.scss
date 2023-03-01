@@ -1,0 +1,23 @@
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+table.speaker-evaluator-table, .speaker-evaluator-table td {
+	border: thin solid #999;
+	border-collapse: collapse;
+}
+.speakernumber {
+	width: 20px;
+	text-align: center;
+}
+.speaker-column, .evaluator-column {
+	width: 250px;
+	font-weight: bold;
+}
+table.speaker-evaluator-table td {
+	padding: 3px;
+	padding-left: 8px;
+}

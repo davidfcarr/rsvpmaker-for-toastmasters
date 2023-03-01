@@ -819,7 +819,7 @@ function wp4t_unassigned_ids( $post_id = 0 ) {
 
 
 
-function wp4_format_contact( $userdata ) {
+function wp4_format_contact( $userdata, $name = true ) {
 
 	$output = '';
 
@@ -828,6 +828,7 @@ function wp4_format_contact( $userdata ) {
 		return '';
 	}
 
+	if($name)	
 		$output .= "\n\n" . $userdata->first_name . ' ' . $userdata->last_name . "\n";
 
 		$status = wp4t_get_member_status( $userdata->ID );
@@ -1912,16 +1913,18 @@ function jsonBlockDataOutput($block, $post_id) {
     if(empty($block))
         return;
     $attrs = ($block->attrs) ? json_encode($block->attrs) : '';
-    if($block->edithtml && $block->attrs->uid) {
+    /*
+	if(isset($block->edithtml) && $block->edithtml && $block->attrs->uid) {
 		rsvpmaker_debug_log($post_id.' agenda_note_'.$block->attrs->uid.' = '.$block->edithtml.' sanitized: '.wp_kses_post($block->edithtml),'update editable html');
 		$result = update_post_meta($post_id,'agenda_note_'.$block->attrs->uid,wp_kses_post($block->edithtml));
 	}
+	*/
 	if($block->innerHTML || sizeof($block->innerContent)) {
         $output = sprintf('<!-- wp:%s %s -->',$block->blockName,$attrs)."\n";
         $output .= $block->innerHTML."\n";
         if(is_array($block->innerBlocks) && sizeof($block->innerBlocks)) {
             foreach($block->innerBlocks as $innerblock) {
-                $output .= jsonBlockDataOutput($innerblock);
+                $output .= jsonBlockDataOutput($innerblock,$post_id);
             }
         }
         $output .= sprintf('<!-- /wp:%s -->',$block->blockName)."\n\n";    

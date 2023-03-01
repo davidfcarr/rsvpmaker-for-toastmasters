@@ -565,7 +565,7 @@ jQuery( document ).ready(
 				e.preventDefault();
 				var field = $( this ).attr( 'editone' );
 				$( '#editone' + field ).show();
-				$( '#editonewrapper' + field ).hide();
+				$( '#edito newrapper' + field ).hide();
 				$( '#' + field + '_form' ).hide();
 				$( '#remove' + field + '_form' ).hide();
 			}
@@ -578,7 +578,7 @@ jQuery( document ).ready(
 				e.preventDefault();
 				var field = $( this ).attr( 'editone' );
 				$( '#editone' + field ).show();
-				$( '#editonewrapper' + field ).hide();
+				$( '#edito newrapper' + field ).hide();
 				$( '#' + field + '_form' ).hide();
 				$( '#remove' + field + '_form' ).hide();
 				$( '.speaker_details_form' ).hide();

@@ -42,11 +42,8 @@ if ( isset( $_GET['word_agenda'] ) ) {
 <title><?php wp_title( '|', true, 'right' ); ?></title>
 <style>
 <?php 
-if(empty($_GET['simple']))
-{
 	echo wpt_default_agenda_css(); 
 	echo get_option( 'wp4toastmasters_agenda_css' );
-}
 ?>
 </style>
 </head>
