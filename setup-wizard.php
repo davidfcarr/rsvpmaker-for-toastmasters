@@ -734,7 +734,7 @@ function wpt_setup_wizard_3() {
 
 	$upcoming = future_rsvpmakers_by_template( $template_id );
 
-	$next = $upcoming[0];
+	$next = ($upcoming) ? $upcoming[0] : null;
 
 	$frontpage_id = get_option( 'page_on_front' );
 
@@ -762,7 +762,7 @@ function wpt_setup_wizard_3() {
 
 <ul>
 
-	<li>Open your primary <a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $template_id . '&action=edit' ); ?>">agenda template in the WordPress editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/">Learn How</a></li>
+	<li>Open your primary <a href="<?php echo admin_url( 'admin.php?page=agenda_template_editor' ); ?>">agenda template in the new template editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/organize-agenda-tool/">Learn How</a></li>
 
 	<li><strong>Meeting online?</strong> <a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $rsvp_options['rsvp_confirm'] . '&action=edit' ); ?>">Edit the confirmation message for guest registrations</a> to include the details about how to access your online meetings.</li>
 

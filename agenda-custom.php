@@ -31,7 +31,7 @@ if ( empty( $layout_css ) ) {
 	update_post_meta( $layout, '_rsvptoast_agenda_css_2018-07', $layout_css );
 }
 if ( isset( $_GET['word_agenda'] ) ) {
-	echo '.dateblock {margin-bottom: -1em;}';
+	$layout_css .= '.dateblock {margin-bottom: -1em;}';
 }
 
 ?>
@@ -42,7 +42,15 @@ if ( isset( $_GET['word_agenda'] ) ) {
 <title><?php wp_title( '|', true, 'right' ); ?></title>
 <style>
 <?php 
-	echo wpt_default_agenda_css(); 
+	echo wpt_default_agenda_css();
+	$main = get_option( 'wp4toastmasters_agenda_font_main' );
+	if($main) {
+		printf('#agenda, #agenda p, #agenda div, #agenda li {font-size: %dpx;} ',$main);
+		printf('#agenda h3 {font-size: %dpx;} #agenda h2 {font-size: %dpx;} #agenda h1 {font-size: %dpx;} ',$main+2,$main+4,$main+6 );
+	}
+	$side = get_option( 'wp4toastmasters_agenda_font_sidebar' );
+	if($side)
+		printf('#agenda-sidebar, #agenda-sidebar p, #agenda-sidebar div, #agenda-sidebar li {font-size: %dpx;} ',$side);
 	echo get_option( 'wp4toastmasters_agenda_css' );
 ?>
 </style>

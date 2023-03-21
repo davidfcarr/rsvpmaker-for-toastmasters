@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.6.2
+Version: 5.6.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1455,7 +1455,12 @@ function tm_agenda_content($post_id = 0) {
 	$time_format = str_replace('T','',$rsvp_options['time_format']);
 	$nonce = get_post_meta($post_id,'oneclicknonce',true);
 	foreach($blocksdata as $blockindex => $block) {
-		$attrs = (isset($block['attrs'])) ? $block['attrs'] : array();
+		if(isset($_GET['debug'])) {
+			$content .= '<pre>';
+			$content .=  $blockindex.': '.htmlentities(var_export($block,true));
+			$content .=  '</pre>';
+		}
+			$attrs = (isset($block['attrs'])) ? $block['attrs'] : array();
 		if(in_array($block["blockName"],['wp4toastmasters/signupnote','wp4toastmasters/help']) )
 			continue;
 		if(isset($attrs['time_allowed']) || ('wp4toastmasters/milestone' == $block["blockName"]))
@@ -1477,11 +1482,12 @@ function tm_agenda_content($post_id = 0) {
 		if('wp4toastmasters/role' == $block["blockName"]) {
 			$role = $attrs['role'];
 			$count = $attrs['count'];
+			$start = !empty($attrs['start']) ? intval($attrs['start']) : 1;
 			$totaltime = 0;
 			$time_allowed = (empty($attrs['time_allowed'])) ? 0 : $attrs['time_allowed'];
 			foreach($block['assignments'] as $roleindex => $assignment)
 			{
-				$number = $roleindex + 1;
+				$number = $roleindex + $start;
 				if($roleindex == $count) {
 					$role = 'Backup '.$role;
 					$number = '';
@@ -2549,10 +2555,21 @@ See also:
 if($district = wp4t_is_district())
 {
 echo '<h3>District: '.$district.'</h3>';
+?>
+<form method="get" action="<?php echo admin_url('options-general.php'); ?>">
+<input type="hidden" name="page" value="wp4toastmasters_settings">
+<input type="hidden" name="clubreset" value="1">
+<?php
+rsvpmaker_nonce();
+submit_button('Reset to Club');
+?>
+</form>
+<?php	
 }
 else {
 ?>
-<p>This website is set up for a club. Reconfigure as a district website?</p>
+<h3>Reconfigure as a district website?</h3>
+<p>This website is set up for a club. Changing it to a district website will, among other things, change the default officer titles and email forwarding.</p>
 <form method="get" action="<?php echo admin_url('options-general.php'); ?>">
 <input type="hidden" name="page" value="wp4toastmasters_settings">
 District <input name="district"> (number or designation, i.e. Founders)
@@ -2568,7 +2585,13 @@ submit_button();
 
 <form method="post" action="options.php">
 	<?php
+	if(isset($_GET['clubreset'])) {
+		delete_option ('wp4toastmasters_officer_titles' );
+		delete_option( 'wp4toastmasters_officer_slugs' );
+		delete_option('toastmasters_district');
+	}
 	if(isset($_GET['district']) && rsvpmaker_verify_nonce()) {
+		update_option('toastmasters_district',sanitize_text_field($_GET['district']));
 		$titles = array('District Director','Program Quality Director','Club Growth Director','Public Relations Manager','Administration Manager','Finance Manager','Logistics Manager','Immediate Past District Director');
 		$slugs = array('dd','pqd','cgd','prm','administration','finance','logistics','ipdd');
 		$divisions = array('A','B','C','D','E','F','G');
@@ -2998,13 +3021,22 @@ $eval_reminder = (int) get_option('wpt_evaluation_reminder');
 	wp4toastmasters_agenda_layout_check(); // add layout post if doesn't already exist
 	$layout_id = get_option( 'rsvptoast_agenda_layout' );
 	if ( $layout_id ) {
-		printf( '<br />&nbsp;<a href="%s">%s</a> | <a href="%s">%s</a>  | <a href="%s">%s</a> ', admin_url( 'post.php?action=edit&post=' . $layout_id ), __( 'Edit Custom Agenda Layout', 'rsvpmaker-for-toastmasters' ), admin_url('?reset_agenda_layout=1'),__('Reset to Default','rsvpmaker-for-toastmasters').' (August 2021)', admin_url('?reset_agenda_layout=no_sidebar'),__('Get No-Sidebar Version') );
+		printf( '<br />&nbsp;<a href="%s">%s</a> | <a href="%s">%s</a>', admin_url( 'post.php?action=edit&post=' . $layout_id ), __( 'Edit Custom Agenda Layout', 'rsvpmaker-for-toastmasters' ), admin_url('?reset_agenda_layout=1'),__('Reset to Default','rsvpmaker-for-toastmasters') );
 	}
 	$layout_mod = get_the_modified_date( 'Y-m-d', $layout_id );
 		echo '<p><em>Last updated ' . $layout_mod . '</em></p>';
 	echo '<pre id="default_css">' . wpt_default_agenda_css() . '</pre><br /><a id="default_css_show" href="#default_css">Show default CSS styles</a>';
 	?>
 </p>
+
+<div id="layoutcontrols">
+<div>
+Agenda Items Font <input class="fontcontrol" type="number" name="wp4toastmasters_agenda_font_main" value="<?php echo get_option( 'wp4toastmasters_agenda_font_main' ); ?>" />
+</div>
+<div>
+Sidebar Items Font <input class="fontcontrol" type="number" name="wp4toastmasters_agenda_font_sidebar" value="<?php echo get_option( 'wp4toastmasters_agenda_font_sidebar' ); ?>" />
+</div>
+</div>
 
 <p><?php _e( 'Agenda CSS Customization', 'rsvpmaker-for-toastmasters' ); ?> <br />
 	<?php agenda_css_customization_form(); ?>
@@ -3378,20 +3410,16 @@ function toastmasters_rule_setting() {
 
 function agenda_css_customization_form() {
 	?>
-<textarea rows="3" cols="80" name="wp4toastmasters_agenda_css"><?php echo get_option( 'wp4toastmasters_agenda_css' ); ?></textarea>
-<br /><?php _e( 'Examples', 'rsvpmaker-for-toastmasters' ); ?>:<br /><code>p, div, li {font-size: 14px;}</code> - <?php _e( 'increase the default font size for all text', 'rsvpmaker-for-toastmasters' ); ?>
-<br /><code>#agenda, #agenda p, #agenda div, #agenda li  {font-size: 14px;}</code> - <?php _e( 'change the font size of the actual agenda but not the sidebar content', 'rsvpmaker-for-toastmasters' ); ?>
+<p><textarea rows="3" cols="80" name="wp4toastmasters_agenda_css"><?php echo get_option( 'wp4toastmasters_agenda_css' ); ?></textarea>
+<br /><?php _e( 'Examples', 'rsvpmaker-for-toastmasters' ); ?>:<br /><code>p, div, li {font-family: Georgia, serif;}</code> - <?php _e( 'change the font for all text', 'rsvpmaker-for-toastmasters' ); ?>
+<br /><code>#agenda, #agenda p, #agenda div, #agenda li  {font-family: Georgia, serif;font-style:italic}</code> - <?php _e( 'change the font of the actual agenda but not the sidebar content', 'rsvpmaker-for-toastmasters' ); ?>
 <br /><code>#agenda-sidebar, #agenda-sidebar p, #agenda-sidebar div, #agenda-sidebar li  {font-size: 12px; font-family: Georgia, serif; }</code> - <?php _e( 'change the font for the agenda sidebar only', 'rsvpmaker-for-toastmasters' ); ?>
 <br /><code>#agenda {border-left: thick dotted #000;}</code> - <?php _e( 'add a dotted black line to the left of sidebar', 'rsvpmaker-for-toastmasters' ); ?>
+<br /><code>.titleblock {color:blue}</code> - change the font color of the header text
 </p>
 <p>When the agenda is displayed in "Show" rather than print mode, id="show" is added to the body tag. To increase the font for online viewing but not for print, you could do
 <br /><code>#show p, #show div, #show li {font-size: 14px;}</code> or 
 <br /><code>#show #agenda p, #show #agenda div, #show #agenda li {font-size: 14px;}</code>
-<p>Similarly, you can target the version of the agenda sent by email with <br>
-<code>
-#agenda-email p, #agenda-email div, #agenda-email li {font-size: 16px;}
-</code>
-</p>
 	<?php
 }
 
@@ -3436,6 +3464,8 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'blog_public' );
 	register_setting( 'wp4toastmasters-settings-group', 'tm_security' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_beta' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_agenda_font_main' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_agenda_font_sidebar' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_stoplight' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_intros_on_agenda' );
 	register_setting( 'wp4toastmasters-settings-group', 'tm_signup_count' );
@@ -3753,10 +3783,6 @@ p.speechtime {
 }
 .officers_label {font-weight: bold;}
 .officer_entity {margin-top: 10px;}
-p.agenda_note, div.role-agenda-item, div.role-agenda-note {margin-top: 0; margin-bottom: 0; padding-bottom: 3px;
-	margin-left: 6em;
-	text-indent: -6em;	
-}
 p.agenda_note {padding-left: 0;}
 span.timeblock, span.notime {display: inline-block; width: 6em; margin: 0px; font-weight: bold; text-indent: 0}
 #agenda>div.indent {padding-left: 20px;}
@@ -3789,11 +3815,6 @@ table.speaker-evaluator-table td {
 /*
 alignment tweaks
 */
-p.wp-block-wp4toastmasters-agendanoterich2 span.timeblock, .editable_content span.timeblock {text-indent: 0;}
-p.wp-block-wp4toastmasters-agendanoterich2, .editable_content {
-margin-left: 6em;
-text-indent: -6em;
-}
 .speaker-details {
     margin-left: 6em;
 }
@@ -4913,23 +4934,15 @@ function awesome_event_content( $content ) {
 
 	if ( isset( $_REQUEST['print_agenda'] ) || is_email_context() ) {
 	} 
-	elseif ( ! is_club_member() ) {
+	elseif ( ! is_club_member() && ! current_user_can('manage_network') ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
 		$link .= agenda_menu( $post->ID );
 		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
-			if(is_club_member() && !isset($_GET['revert'])) {
-				$link .= '<div style="width: 200px;float:right;"><a href="?revert=1">Old signup form</a></div><div mode="'.(isset($_GET['mode']) ? sanitize_text_field($_GET['mode']) : '' ).'" id="react-agenda">Loading ...</div>';
+			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert'])) {
+				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div mode="'.(isset($_GET['mode']) ? sanitize_text_field($_GET['mode']) : '' ).'" id="react-agenda">Loading ...</div>';
 				$content = '';
-				if(isset($_GET['makedefault']) && current_user_can('manage_options'))
-					update_option('wp4t_newSignupDefault',true);
 			}
-		else {
-			if(current_user_can('manage_options'))
-				$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form</a> | <a href="%s?newsignup&makedefault=1">Turn on by default</a></p>',get_permalink($post->ID),get_permalink($post->ID));
-			else
-				$link .= sprintf('<p><a href="%s?newsignup">Try the new signup form (beta)</a></p>',get_permalink($post->ID));
-		}
 		}	
 		$link .= sprintf( '<input type="hidden" id="editor_id" value="%s" />', $current_user->ID );
 
@@ -5057,22 +5070,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 			$agenda_menu[ __( 'Switch Template', 'rsvpmaker-for-toastmasters' ) ] = admin_url( 'edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&apply_target=' . $post->ID . '&apply_current=' . $template_id . '#applytemplate' );
 		}
 		if ( current_user_can( 'edit_others_rsvpmakers' ) ) {
-			$template_id = rsvpmaker_has_template($post->ID);
-			if($layout = get_post_meta($post->ID,'rsvptoast_agenda_layout',true)) {
-				if($layout && get_post($layout))
-					$label = 'Custom';	
-			}
-			elseif($template_id) {
-				$layout = get_post_meta($template_id,'rsvptoast_agenda_layout',true);
-				if($layout && get_post($layout))
-					$label = 'Template'.$layout;
-			}
-			if(empty($label)){
-				$layout = wp4toastmasters_agenda_layout_check( );
-				$label = 'Default';
-			} // default		
-
-			$agenda_menu[ __( 'Edit Agenda Layout ('.$label.')', 'rsvpmaker-for-toastmasters' ) ] = admin_url( 'post.php?action=edit&post=' . $layout );
+			$agenda_menu[ __( 'Agenda Layout', 'rsvpmaker-for-toastmasters' ) ] = $permalink . 'agenda_layout=1';
 		}
 	}
 	if ( ! empty( $agenda_menu ) ) {
@@ -5130,8 +5128,8 @@ function dash_agenda_menu( $post_id ) {
 	$link .= '<div id="cssmenu"><ul>';
 	$link .= '<li><a href="' . $permalink . '" ' . $blank . '>' . __( 'Signup', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	if ( current_user_can( 'edit_signups' ) || edit_signups_role() ) {
-		$link .= '<li><a href="' . $permalink . 'edit_roles_new=1" ' . $blank . '>' . __( 'Edit Signups', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-		$link .= '<li ><a href="' . $permalink . 'tweak_times=1" ' . $blank . '>' . __( 'Agenda Time Planner', 'rsvpmaker-for-toastmasters' ) . '</a><li>';
+		$link .= '<li><a href="' . $permalink . 'mode=edit" ' . $blank . '>' . __( 'Edit Signups', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+		$link .= '<li><a href="' . $permalink . 'mode=reorganize" ' . $blank . '>' . __( 'Organize', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	}
 	$link .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Agenda Print', 'rsvpmaker-for-toastmasters' ) . '</a></li> ';
 	if ( current_user_can( $security['email_list'] ) ) {
@@ -6508,6 +6506,7 @@ function add_member_user( $user, $override_check = false ) {
 
 function awesome_contactmethod( $contactmethods ) {
 	clean_toastmasters_id();
+	$contactmethods['other_email']       = __( 'Other Email', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['home_phone']       = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['work_phone']       = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['mobile_phone']     = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
@@ -8037,6 +8036,11 @@ function wp4t_redirect() {
 			include $agendapath;
 			die();
 		}
+		elseif ( isset( $_REQUEST['agenda_layout'] ) ) {
+			$agendapath = WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/agenda_layout.php';
+			include $agendapath;
+			die();
+		}
 		elseif ( isset( $_REQUEST['print'] ) ) {
 			$agendapath = WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/print.php';
 			include $agendapath;
@@ -9000,67 +9004,17 @@ function toolbar_link_to_agenda( $wp_admin_bar ) {
 		return;
 	}
 
-	$security = get_tm_security();
-	if ( ! current_user_can( 'edit_others_posts' ) ) {
+	if ( ! current_user_can( 'edit_others_rsvpmakers' ) ) {
 		return;
 	}
-	$template_id = rsvpmaker_has_template($post->ID);
-	if($layout = get_post_meta($post->ID,'rsvptoast_agenda_layout',true)) {
-		if($layout && get_post($layout))
-			$label = 'Custom';	
-	}
-	elseif($template_id) {
-		$layout = get_post_meta($template_id,'rsvptoast_agenda_layout',true);
-		if($layout && get_post($layout))
-			$label = 'Template';
-	}
-	if(empty($label)){
-		$layout = wp4toastmasters_agenda_layout_check( );
-		$label = 'Default';
-	} // default
 
-	$link = admin_url('post.php?post='.$layout.'&action=edit');
 	$args  = array(
 		'id'    => 'agenda_layout',
-		'title' => 'Edit Agenda Layout ('.$label.')',
-		'href'  => $link,
+		'title' => 'Agenda Layout',
+		'href'  => add_query_arg('agenda_layout','1',get_permalink($post->ID)),
 		'meta'  => array( 'class' => 'edit-agenda-layout' ),
 	);
 	$wp_admin_bar->add_node( $args );
-	if($label != 'Custom') {
-		$link = admin_url("?agenda=change&parent=$post->ID&source=$layout&back=$post->ID");
-		$args  = array(
-			'parent'    => 'agenda_layout',
-			'id'    => 'agenda_layout_customize',
-			'title' => 'Customize',
-			'href'  => $link,
-			'meta'  => array( 'class' => 'edit-agenda-layout' ),
-		);
-		$wp_admin_bar->add_node( $args );
-		
-		if(($label != 'Template') && $template_id)  {
-			$link = admin_url("?agenda=change&parent=$template_id&source=$layout&back=$post->ID");
-			$args  = array(
-				'parent'    => 'agenda_layout',
-				'id'    => 'agenda_layout_customize_template',
-				'title' => 'Customize for Template',
-				'href'  => $link,
-				'meta'  => array( 'class' => 'edit-agenda-layout' ),
-			);
-			$wp_admin_bar->add_node( $args );			
-		}
-	}
-	if($label == 'Custom') {
-		$link = admin_url("?agenda=change&parent=$post->ID&default=1");
-		$args  = array(
-			'parent'    => 'agenda_layout',
-			'id'    => 'agenda_layout_default',
-			'title' => 'Use Default',
-			'href'  => $link,
-			'meta'  => array( 'class' => 'edit-agenda-layout' ),
-		);
-		$wp_admin_bar->add_node( $args );	
-	}
 }
 
 

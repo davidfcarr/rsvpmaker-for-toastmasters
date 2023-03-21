@@ -1,5 +1,7 @@
 <?php
-
+/*
+Fixed 500
+*/
 function wp4t_haverole($post_id) {
 	global $wpdb;
 	$haverole[999999] = 'placeholder';
@@ -1632,6 +1634,10 @@ function time_planner_2020( $atts ) {
 }
 
 function wp4t_is_district() {
+	if(isset($_GET['clubreset']))
+		return;
+	if(isset($_GET['district']))
+		return sanitize_text_field($_GET['district']);
     return get_option('toastmasters_district');
 }
 
@@ -1913,13 +1919,7 @@ function jsonBlockDataOutput($block, $post_id) {
     if(empty($block))
         return;
     $attrs = ($block->attrs) ? json_encode($block->attrs) : '';
-    /*
-	if(isset($block->edithtml) && $block->edithtml && $block->attrs->uid) {
-		rsvpmaker_debug_log($post_id.' agenda_note_'.$block->attrs->uid.' = '.$block->edithtml.' sanitized: '.wp_kses_post($block->edithtml),'update editable html');
-		$result = update_post_meta($post_id,'agenda_note_'.$block->attrs->uid,wp_kses_post($block->edithtml));
-	}
-	*/
-	if($block->innerHTML || sizeof($block->innerContent)) {
+	if($block->innerHTML || (!empty($block->innerContent) && sizeof($block->innerContent))) {
         $output = sprintf('<!-- wp:%s %s -->',$block->blockName,$attrs)."\n";
         $output .= $block->innerHTML."\n";
         if(is_array($block->innerBlocks) && sizeof($block->innerBlocks)) {

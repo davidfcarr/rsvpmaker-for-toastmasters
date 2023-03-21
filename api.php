@@ -1124,18 +1124,26 @@ function wpt_get_agendadata($post_id = 0) {
 	$agendadata = [];
 	$post = false;
 	$meetings = future_toastmaster_meetings( 10 );
+	$templates = rsvpmaker_get_templates();
+	if($meetings)
+		$meetings = [];
 	$agendadata['current_user_id'] = ($current_user->ID && is_club_member($current_user->ID)) ? $current_user->ID : false;
 	$agendadata['current_user_name'] = ($current_user->ID) ? get_member_name($current_user->ID) : '';
 	$agendadata['newSignupDefault'] = (bool) get_option('wp4t_newSignupDefault');
 	$agendadata['upcoming'] = [];
-	if($post_id)
+	if($post_id) {
 		$post = get_post($post_id);
-	else {
-		if(sizeof($meetings)) {
+	}
+	elseif(sizeof($meetings)) {
 			$post = $meetings[0];
 			$post_id = $post->ID;
 		}
+	else {
+		$post = array_shift($templates);
+		$post_id = $post->ID;
 	}
+
+	$agendadata['postdata'] = var_export($post,true);
 	$absences = get_post_meta( $post_id, 'tm_absence' );
 	if ( is_array( $absences ) ) {
 		$absences = array_unique( $absences );
@@ -1146,23 +1154,11 @@ function wpt_get_agendadata($post_id = 0) {
 	foreach($absences as $ab) {
 		$agendadata['absences'][] = array('ID' => $ab, 'name' => get_member_name($ab));
 	}
-	if($post) {
 		$r       = get_role( 'subscriber' );
 		$agendadata['subscribers_can_edit_signups'] = $r->has_cap( 'edit_signups' );
 		$agendadata['subscribers_can_organize_agenda'] = $r->has_cap( 'organize_agenda' );
 
 		$agendadata['permissionsurl'] = admin_url('options-general.php?page=wp4toastmasters_settings&rules=1#rules');
-		$agendadata['has_template'] = rsvpmaker_has_template($post_id);
-		$agendadata['is_template'] = rsvpmaker_is_template($post_id);
-		
-		if($agendadata['is_template'])
-		{
-			$agendadata['datetime'] = '1924-10-22 '.$agendadata['is_template']['hour'].':'.$agendadata['is_template']['minutes'].':00';
-		}
-		else {
-			$agendadata['datetime'] = get_rsvp_date($post_id);
-		}
-		$agendadata['permissions'] = array('member' => is_club_member(), 'edit_post' => current_user_can('edit_post',$post_id),'edit_signups' => current_user_can('edit_signups'),'organize_agenda'=>current_user_can('organize_agenda'),'manage_options' => current_user_can('manage_options'));
 		$agendadata['wpt_rest'] = wpt_rest_array();
 		$agendadata['post_id'] = $post_id;
 		$agendadata['request_evaluation'] = admin_url('admin.php?page=wp4t_evaluations&speaker='.$current_user->ID);
@@ -1172,9 +1168,9 @@ function wpt_get_agendadata($post_id = 0) {
 		}
 		if(current_user_can('edit_rsvpmakers'))
 		{
-			$templates = rsvpmaker_get_templates();
 			foreach($templates as $template) {
 				$agendadata['upcoming'][]= array('value' => $template->ID, 'permalink' => get_permalink($template->ID),'edit_link' => admin_url('wp-admin/post.php?post='.$template->ID.'&action=edit'),'label' => 'Template: '.$template->post_title);
+				$tids[] = $template->ID;
 			}
 		}
 		if(isset($_GET['mode']) && ('evaluation_demo' == $_GET['mode'] ))
@@ -1182,8 +1178,34 @@ function wpt_get_agendadata($post_id = 0) {
 				$agendadata['post_id'] = 0;
 				$blocksdata = parse_blocks('<!-- wp:wp4toastmasters/role {"role":"Speaker"} /-->');
 			}
+		elseif(isset($_GET['admin']) && (true == $_GET['admin'] ))
+			{
+				$default_template_id = get_option( 'default_toastmasters_template' );
+				$index = array_search($default_template_id,$tids);
+				if($index !== false)
+					$template = $templates[$index];
+				else {
+					$template = $templates[0];
+				}
+				$agendadata['post_id'] = $post_id = $template->ID;
+				$blocksdata = parse_blocks($template->post_content);
+			}
 		else
 			$blocksdata = parse_blocks($post->post_content);
+	
+		$agendadata['has_template'] = rsvpmaker_has_template($post_id);
+		$agendadata['is_template'] = rsvpmaker_is_template($post_id);
+			
+		if($agendadata['is_template'])
+		{
+			$agendadata['datetime'] = '1924-10-22 '.$agendadata['is_template']['hour'].':'.$agendadata['is_template']['minutes'].':00';
+			$agendadata['agenda_preview'] = get_permalink($post_id).'?print_agenda=1&no_print=1&mode=reorg_admin';
+		}
+		else {
+			$agendadata['datetime'] = get_rsvp_date($post_id);
+		}
+		$agendadata['permissions'] = array('member' => is_club_member(), 'edit_post' => current_user_can('edit_post',$post_id),'edit_signups' => current_user_can('edit_signups'),'organize_agenda'=>current_user_can('organize_agenda'),'manage_options' => current_user_can('manage_options'));
+	
 		//filter empty blocks
 		foreach($blocksdata as $block)
 		{
@@ -1214,8 +1236,9 @@ function wpt_get_agendadata($post_id = 0) {
 						$key = '_'.preg_replace('/[^a-zA-Z]/','_',$role).'_'.$i;
 						$assignment = array('post_id'=>$post_id);
 						$assignment['ID'] = get_post_meta($post_id,$key, true);
-						if(empty($assignment['ID']))
+						if(empty($assignment['ID'])) {
 							$assignment['name'] = '';
+						}
 						elseif(is_numeric($assignment['ID']))
 							$assignment['name'] = get_member_name($assignment['ID']);
 						else
@@ -1226,6 +1249,23 @@ function wpt_get_agendadata($post_id = 0) {
 							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id, $project_key );
 							$assignment = array_merge($assignment,$speakerdata);
 						}
+						if(isset($_GET['mode']) && 'reorg_admin' == $_GET['mode']) {
+							if(!isset($democharacters)) {
+								$democharacters = array('George Washington','John Adams','Thomas Jefferson','James Madison','James Monroe','John Quincy Adams','Andrew Jackson','Martin Van Buren','William Henry Harrison','John Tyler','James K. Polk','Zachary Taylor','Millard Fillmore','Franklin Pierce','James Buchanan','Abraham Lincoln');
+								$demotitles = array('Immigration history in America','Society and life in the Dark Ages','The mystery of Leonardo DaVinci\'s Mona Lisa painting','Burial practices in ancient cultures and societies','Sculpture in the Renaissance','Fashion in Victorian Britain','The assassination of John FKennedy','Colonization and its impact on the European powers in the Age of Exploration and beyond','The Olympics in Ancient Greece','Explore the history of tattoos and body art','The  Spanish Flu','Innovations that came out of the great wars','Japanese Kamikaze fighters during World War II','Rum running during Prohibition','Mahatma Gandhi and Indian apartheid');
+							}
+							$assignment['ID'] = 999999999999 + sizeof($democharacters);
+							$assignment['name'] = array_pop($democharacters);
+							if('Speaker' == $role) {
+								$assignment['manual'] = 'Dynamic Demos';
+								$assignment['project'] = 'Dynamic Demos 123';
+								$assignment['project_text'] = 'Dynamic Demos to Fill the Agenda';
+								$assignment['title'] = array_pop($demotitles);
+								$assignment['maxtime'] = 7;
+							}
+
+						}
+
 						if(empty($assignment['ID']))
 							$blanks[] = $i - 1;
 						$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
@@ -1243,7 +1283,7 @@ function wpt_get_agendadata($post_id = 0) {
 					}
 				}
 		}
-	}
+	
 	return $agendadata;
 }
 
@@ -1794,27 +1834,29 @@ class WP4T_Evaluation extends WP_REST_Controller {
 			if($speaker) {
 				$mail['to'] = $speaker->user_email;
 			}
-			$name = $data->evaluate->name;
-			$manual = $data->evaluate->manual;
+			$name = sanitize_text_field($data->evaluate->name);
+			$manual = sanitize_text_field($data->evaluate->manual);
 			$project_text = ($data->evaluate->project) ? get_project_text($data->evaluate->project) : '';
-			$title = $data->evaluate->title;
+			$title = sanitize_text_field($data->evaluate->title);
+			$evaluator_name = (isset($current_user->display_name)) ? $current_user->display_name : sanitize_text_field($data->evaluator_name);
 			$mail['subject'] = "Evaluation for ".$name.' '.$title;
 			$output = sprintf("<h1>Evaluation for %s %s</h1>\n",$name,($title) ? "<em>$title</em>" : '');
+			$output .= sprintf("<h2>Evaluator: %s</h2>\n",$evaluator_name);
 			$output .= sprintf("<h2>Path: %s</h2>\n",$manual);
 			$output .= sprintf("<h2>Project: %s</h2>\n",$project_text);
 			$output .= sprintf("<p>Evaluator: %s</p>\n",$current_user->display_name);
 			$output .= sprintf("<p>Date: %s</p>\n",rsvpmaker_date($rsvp_options['long_date'],time()));
 			foreach($data->form->prompts as $index => $p) {
-				$output .= '<p><strong>'.$p->prompt."</strong></p>\n";
-				$choice = empty($data->responses[$index]) ? '' : $data->responses[$index];
+				$choice = empty($data->responses[$index]) ? '' : sanitize_text_field($data->responses[$index]);
+				$output .= '<p><strong>'.sanitize_text_field($p->prompt).': '.$choice."</strong></p>\n";
 				if($p->choices) {
 					$output .= '<div style="display:flex;font-family: Arial, Helvetica, sans-serif;line-height:1em;">';
 					foreach($p->choices as $option) {
-						$output .= format_eval_opt($option->value,($choice == $option->value));// ? '<div style="width: 100px; height: 100px; border: thick solid #000; border-radius: 50%; background-color: #000; color: #fff">'.format_eval_opt($option->value).'</div>' : '<div style="width: 100px; height: 100px; border: thick solid #000; border-radius: 50%;text-align: center;"><div style="margin-top:20px;">'.str_replace(' (','<br>(',$option->value).'</div></div>';
+						$output .= format_eval_opt($option->value,($choice == $option->value));
 					}
 					$output .= "</div>\n";
 				}
-				$note = empty($data->notes[$index]) ? '' : $data->notes[$index];
+				$note = empty($data->notes[$index]) ? '' : wpautop(sanitize_textarea_field($data->notes[$index]));
 				$output .= '<p>'.$note."</p>\n";
 			}
 			$response = array('message' => $output);

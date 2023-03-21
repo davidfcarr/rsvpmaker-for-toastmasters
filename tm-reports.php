@@ -30,6 +30,7 @@ function toastmasters_reports_menu() {
 
 	//was $security['edit_member_stats']
 	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), 'edit_rsvpmakers', 'agenda_template_editor', 'agenda_template_editor' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_reconcile', 'toastmasters_reconcile' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'add_member_speech', 'add_member_speech' );
@@ -7083,4 +7084,10 @@ function wpt_evaluation_check($speaker_id,$date) {
 	global $wpdb;
 	$sql = "SELECT umeta_id FROM $wpdb->usermeta WHERE user_id=$speaker_id AND meta_key LIKE 'evaluation|".$date."%'";
 	return $wpdb->get_var($sql);
+}
+
+function agenda_template_editor () {
+	echo '<h1>Agenda Template Editor</h1>';
+	echo '<div id="react-agenda" mode="settings_admin">Loading ... </div>
+	<p id="loading-icon"><img width="256" height="256" src="'.plugins_url('images/load-32_256.gif', __FILE__).'" /></p>';
 }
