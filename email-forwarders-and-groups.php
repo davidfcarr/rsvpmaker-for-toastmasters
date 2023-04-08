@@ -393,7 +393,7 @@ function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1) {
         //send for real
         $mail['to'] = $email;
         rsvpmailer($mail);
-        rsvpmaker_debug_log($mail,'autoresponder email');
+        //rsvpmaker_debug_log($mail,'autoresponder email');
    }
     $autoreplyto[] = $email;
     //else {

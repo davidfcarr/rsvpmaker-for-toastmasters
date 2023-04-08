@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.6.8
+Version: 5.6.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1428,10 +1428,7 @@ function decode_timeblock( $matches ) {
 
 function agendanoterich2_timeblock( $matches ) {
 	$props = ( empty( $matches[1] ) ) ? null : json_decode( $matches[1] );
-	rsvpmaker_debug_log($props,'note timeblock props');
 	$time  = empty( $props->time_allowed ) ? 0 : $props->time_allowed;
-	rsvpmaker_debug_log($time,'note timeblock time');
-	rsvpmaker_debug_log($timed,'note timeblock timed');
 	$timed = str_replace( '<p class="wp-block-wp4toastmasters-agendanoterich2"', '<p class="wp-block-wp4toastmasters-agendanoterich2" maxtime="' . $time . '"', $matches[0] );
 	if ( $time ) {
 		return $timed;
@@ -4939,9 +4936,21 @@ function awesome_event_content( $content ) {
 	} else {
 		$link .= agenda_menu( $post->ID );
 		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
-			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert'])) {
+			if(isset($_GET['revert_by_default']) && current_user_can('manage_options')) {
+				$revert_default = ('on' == $_GET['revert_by_default']);
+				update_option('toast_revert_default',$revert_default);
+			}
+			else
+				$revert_default = get_option('toast_revert_default');
+			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
 				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div mode="'.(isset($_GET['mode']) ? sanitize_text_field($_GET['mode']) : '' ).'" id="react-agenda">Loading ...</div>';
 				$content = '';
+			}
+			elseif(current_user_can('manage_options')) {
+				if($revert_default)
+					$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert_by_default=off">Switch to new form</a></div>';
+				else
+					$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1&revert_by_default=on">Default to old form</a></div>';
 			}
 		}	
 		$link .= sprintf( '<input type="hidden" id="editor_id" value="%s" />', $current_user->ID );

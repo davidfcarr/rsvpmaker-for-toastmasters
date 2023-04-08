@@ -1555,12 +1555,12 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 			//$updated[$type] = $value;
 			update_post_meta($post_id,$key,$value);
 			$status .= ' '.$key.' = '.$value;
-			$updated['status'] .= ' '.$key.' = '.$value;	
+			$updated['status'] .= ' '.$key.' = '.$value;
 	}
 		$agendadata = wpt_get_agendadata($post_id);
 		$agendadata['status'] = $status;
 		$agendadata['prompt'] = ($user_id == $current_user->ID);
-
+		$agendadata['role'] = $role;
 		return new WP_REST_Response($agendadata,
 			200
 		);

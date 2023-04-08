@@ -260,7 +260,6 @@ function awe_rest_user_options( $role, $post_id ) {
 		}
 
 		$sql = "select meta_value from $wpdb->postmeta where meta_key RLIKE BINARY '^_[A-Z].+_[0-9]{1,2}' AND meta_value RLIKE '[A-z]+'";
-		rsvpmaker_debug_log($sql,'guest role sql');
 		$guests = $wpdb->get_results($sql);
 		if($guests)
 			foreach($guests as $guest)
@@ -1919,10 +1918,11 @@ function jsonBlockDataOutput($block, $post_id) {
     if(empty($block))
         return;
     $attrs = ($block->attrs) ? json_encode($block->attrs) : '';
-	if($block->innerHTML || (!empty($block->innerContent) && sizeof($block->innerContent))) {
+	if(!empty($block->innerHTML) || (!empty($block->innerBlocks) && sizeof($block->innerBlocks)) ) {
         $output = sprintf('<!-- wp:%s %s -->',$block->blockName,$attrs)."\n";
-        $output .= $block->innerHTML."\n";
-        if(is_array($block->innerBlocks) && sizeof($block->innerBlocks)) {
+        if(!empty($block->innerHTML))
+			$output .= $block->innerHTML."\n";
+        if(!empty($block->innerBlocks) && is_array($block->innerBlocks) && sizeof($block->innerBlocks)) {
             foreach($block->innerBlocks as $innerblock) {
                 $output .= jsonBlockDataOutput($innerblock,$post_id);
             }
