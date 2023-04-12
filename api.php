@@ -1127,7 +1127,7 @@ function wpt_get_agendadata($post_id = 0) {
 	$templates = rsvpmaker_get_templates();
 	if($meetings)
 		$meetings = [];
-	$agendadata['current_user_id'] = ($current_user->ID && is_club_member($current_user->ID)) ? $current_user->ID : false;
+	$agendadata['current_user_id'] = ($current_user->ID && (is_club_member($current_user->ID)) || current_user_can('manage_network')) ? $current_user->ID : false;
 	$agendadata['current_user_name'] = ($current_user->ID) ? get_member_name($current_user->ID) : '';
 	$agendadata['newSignupDefault'] = (bool) get_option('wp4t_newSignupDefault');
 	$agendadata['upcoming'] = [];
@@ -1178,7 +1178,7 @@ function wpt_get_agendadata($post_id = 0) {
 				$agendadata['post_id'] = 0;
 				$blocksdata = parse_blocks('<!-- wp:wp4toastmasters/role {"role":"Speaker"} /-->');
 			}
-		elseif(isset($_GET['admin']) && (true == $_GET['admin'] ))
+		elseif(isset($_GET['admin']) && ('true' == $_GET['admin'] ))
 			{
 				$default_template_id = get_option( 'default_toastmasters_template' );
 				$index = array_search($default_template_id,$tids);
@@ -1205,6 +1205,7 @@ function wpt_get_agendadata($post_id = 0) {
 			$agendadata['datetime'] = get_rsvp_date($post_id);
 		}
 		$agendadata['permissions'] = array('member' => is_club_member(), 'edit_post' => current_user_can('edit_post',$post_id),'edit_signups' => current_user_can('edit_signups'),'organize_agenda'=>current_user_can('organize_agenda'),'manage_options' => current_user_can('manage_options'));
+		$agendadata['allmembers'] = awe_rest_user_options('',$post_id);
 	
 		//filter empty blocks
 		foreach($blocksdata as $block)
@@ -1848,7 +1849,7 @@ class WP4T_Evaluation extends WP_REST_Controller {
 			$output .= sprintf("<p>Date: %s</p>\n",rsvpmaker_date($rsvp_options['long_date'],time()));
 			foreach($data->form->prompts as $index => $p) {
 				$choice = empty($data->responses[$index]) ? '' : sanitize_text_field($data->responses[$index]);
-				$output .= '<p><strong>'.sanitize_text_field($p->prompt).': '.$choice."</strong></p>\n";
+				$output .= '<p><strong>'.sanitize_text_field($p->prompt).(($choice) ? ': <em>'.$choice.'</em>' : '')."</strong></p>\n";
 				if($p->choices) {
 					$output .= '<div style="display:flex;font-family: Arial, Helvetica, sans-serif;line-height:1em;">';
 					foreach($p->choices as $option) {
@@ -1857,7 +1858,7 @@ class WP4T_Evaluation extends WP_REST_Controller {
 					$output .= "</div>\n";
 				}
 				$note = empty($data->notes[$index]) ? '' : wpautop(sanitize_textarea_field($data->notes[$index]));
-				$output .= '<p>'.$note."</p>\n";
+				$output .= '<div style="padding-left: 20px;">'.$note."</div>\n";
 			}
 			$response = array('message' => $output);
 			$mail['html'] = $output;
@@ -1953,10 +1954,11 @@ class WP4T_Evaluation extends WP_REST_Controller {
 
 function format_eval_opt($opt,$is_true) {
 	$parts = preg_split('/[\(\)]/',$opt);
-	$opt = '<span style="font-size:20px;"><strong>'.$parts[0].'</strong></span><br><span style="font-size:10px;">'.$parts[1].'</span>';
-	$outer_style = 'width: 75px; height: 75px; margin-right: 10px; border: thick solid #000; border-radius: 50%;';
-	$outer_style .= ($is_true) ? 'color: #fff; background-color: #000' : '';
-	return sprintf('<div style="%s"><div style="margin-top:15px;text-align:center;">%s</div></div>',$outer_style,$opt);
+	//width: 30px; height: 30px; 
+	//$opt = '<span style="font-size:20px;"><strong>'.$parts[0].'</strong></span><br><span style="font-size:10px;">'.$parts[1].'</span>';
+	$outer_style = 'display: inline; margin-right: 10px; border: thick solid #000; border-radius: 50%; text-align: center; padding: 10px; font-size: 30px;';
+	$outer_style .= ($is_true) ? 'font-weight: bold; color: #fff; background-color: #000' : 'opacity: 0.5';
+	return sprintf('<div class="%s" style="%s">%s</div>',($is_true) ? 'evalchoice' : '', $outer_style,$parts[0]);
 }
 
 /*
