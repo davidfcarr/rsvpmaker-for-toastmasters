@@ -204,7 +204,7 @@ function wpt_mycontests() {
 		if ( strpos( $link, $permalink ) === false ) {
 			$p    = explode( '?', $link );
 			$link = $permalink . '?' . $p[1];
-			update_post_meta( $row->post_id, $row->meta_key, $link );
+			update_post_meta( $row->post_id, 'contest_link_' . $current_user->ID, $link );
 		}
 			$label = '';
 		if ( strpos( $link, 'dashboard' ) ) {
