@@ -15,10 +15,13 @@ import { useBlockProps } from '@wordpress/block-editor';
  *
  * @return {WPElement} Element to render.
  */
-export default function save() {
+export default function save({attributes,className}) {
+
+	const { src } = attributes;
+	//const props = useBlockProps();
 	return (
-		<p { ...useBlockProps.save() }>
-			{ 'Admin – hello from the saved content!' }
-		</p>
+		<div className={ className }>
+		<a href="/"><img src={src} /></a>
+		</div>
 	);
 }

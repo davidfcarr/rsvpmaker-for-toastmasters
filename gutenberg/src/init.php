@@ -24,9 +24,9 @@ function wpt_cgb_block_assets() {
 	// Styles.
 	wp_enqueue_style(
 		'wpt-cgb-style-css', // Handle.
-		plugins_url( 'dist/blocks.style.build.css', dirname( __FILE__ ) ), // Block style CSS.
+		plugins_url( 'rsvpmaker-for-toastmasters/toastmasters-dynamic-agenda/build/gblocks/index.css' ), // Block style CSS.
 		array( 'wp-editor' ), // Dependency to include the CSS after it.
-		filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.style.build.css' ) // Version: filemtime — Gets file modification time.
+		filemtime( str_replace('gutenberg','toastmasters-dynamic-agenda',plugin_dir_path( __DIR__ )) . '/build/gblocks/index.css' ) // Version: filemtime — Gets file modification time.
 	);
 } // End function wpt_cgb_block_assets().
 
@@ -46,11 +46,12 @@ add_action( 'enqueue_block_assets', 'wpt_cgb_block_assets' );
 function wpt_cgb_editor_assets() {
 	global $post, $toast_roles;
 	// Scripts.
+	$path = str_replace('gutenberg','toastmasters-dynamic-agenda',plugin_dir_path( __DIR__ ));
 	wp_enqueue_script(
 		'wpt-cgb-block-js', // Handle.
-		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ), // Block.build.js: We register the block here. Built with Webpack.
+		plugins_url( 'rsvpmaker-for-toastmasters/toastmasters-dynamic-agenda/build/gblocks/index.js' ), // Block.build.js: We register the block here. Built with Webpack.
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-block-editor' ), // Dependencies, defined above.
-		filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: filemtime — Gets file modification time.
+		filemtime(  $path.'build/gblocks/index.js' ),
 		true // Enqueue the script in the footer.
 	);
 
@@ -71,9 +72,9 @@ function wpt_cgb_editor_assets() {
 	// Styles.
 	wp_enqueue_style(
 		'wpt-cgb-block-editor-css', // Handle.
-		plugins_url( 'dist/blocks.editor.build.css', dirname( __FILE__ ) ), // Block editor CSS.
+		plugins_url( 'rsvpmaker-for-toastmasters/toastmasters-dynamic-agenda/build/gblocks/index.css' ), // Block editor CSS.
 		array( 'wp-edit-blocks' ), 
-		filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.editor.build.css' )
+		filemtime( $path.'build/gblocks/index.css' )
 	);
 } // End function wpt_cgb_editor_assets().
 

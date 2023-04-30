@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 6.2
-Stable tag: 5.7.2
+Stable tag: 5.7.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,12 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 5.7.3 =
+
+* If React version of agenda doesn't load properly, shows an error message and links to the old version
+* Potential security issues with create-react-block addressed
+* Fixed evaluation form link on edit agenda screen
 
 = 5.7.1 =
 
