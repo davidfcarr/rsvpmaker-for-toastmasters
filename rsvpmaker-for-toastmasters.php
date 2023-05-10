@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.7.3
+Version: 5.7.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -2337,16 +2337,18 @@ function wp4t_extended_list() {
 		}
 	}
 	
+if(isset($_GET['make_user_member']))
+	echo '<p><strong>Confirm by clicking the Apply button</strong></p>';
 $results = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ORDER BY sort' );
 printf('<form method="post" action="%s">
 <div class="alignleft actions bulkactions">
 			<label for="bulk-action-selector-top" class="screen-reader-text">Select bulk action</label><select name="former_action[]" id="bulk-action-selector-top">
 <option value="-1">Bulk actions</option>
-	<option value="reactivate">Reactivate</option>
+	<option value="reactivate" %s>Reactivate</option>
 	<option value="delete">Delete</option>
 </select>
 <input type="submit" id="doaction" class="button action" value="Apply">
-</div>',admin_url('users.php?page=wp4t_extended_list'));
+</div>',admin_url('users.php?page=wp4t_extended_list'), (isset($_GET['make_user_member']) ? ' selected="selecte" ': '') );
 printf('<table class="wp-list-table widefat fixed members" cellspacing="0"><thead><tr><th id="cb" class="manage-column column-cb check-column"><input id="cb-select-all-1" type="checkbox"></th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>',  __( 'Name', 'rsvpmaker-for_toastmasters' ), __( 'Email', 'rsvpmaker-for_toastmasters' ), __( 'Phone', 'rsvpmaker-for_toastmasters' ) );
 foreach($results as $row) {
 	if(is_user_member_of_blog($row->user_id) )
@@ -2360,7 +2362,8 @@ foreach($results as $row) {
 		$phones[] = 'Home: '.$user["home_phone"];
 	if(!empty($user["work_phone"]))
 		$phones[] = 'Work: '.$user["work_phone"];
-	printf('<tr><td class="check-column">&nbsp;<input name="former[]" type="checkbox" class="subscriber" value="%d"></td><td>%s <span class="reactivate"><a href="%s">%s</a></td><td>%s</td><td>%s</td></tr>',$row->id, $name, admin_url('users.php?page=wp4t_extended_list&make_user_member='.$row->id), __('Reactivate','rsvpmaker-for_toastmasters'), $row->email, implode('<br>',$phones));
+	$checked = (isset($_GET['make_user_member']) && ($row->id == $_GET['make_user_member']) ) ? ' checked="checked" ' : '';
+	printf('<tr><td class="check-column">&nbsp;<input name="former[]" type="checkbox" %s class="subscriber" value="%d"></td><td>%s <span class="reactivate"><a href="%s">%s</a></td><td>%s</td><td>%s</td></tr>', $checked ,$row->id, $name, admin_url('users.php?page=wp4t_extended_list&make_user_member='.$row->id), __('Reactivate','rsvpmaker-for_toastmasters'), $row->email, implode('<br>',$phones));
 }
 echo '</tbody></table>';
 rsvpmaker_nonce();
@@ -4931,6 +4934,13 @@ function awesome_event_content( $content ) {
 
 	if ( isset( $_REQUEST['print_agenda'] ) || is_email_context() ) {
 	} 
+	elseif(isset($_GET['evalme']) && (!is_user_logged_in() || !is_club_member())) {
+		if(!is_user_logged_in()) {
+			$link = sprintf('<p>If you have a password, please <a href="%s">log in</a></p>',wp_login_url(get_permalink().'?evalme='.$_GET['evalme']));
+		}
+		$link .= '<div  id="react-agenda" '.get_get_to_attributes('evaluation_guest').' >Loading ...</div>';
+		return $link;
+	}
 	elseif ( ! is_club_member() && ! current_user_can('manage_network') ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
@@ -4943,7 +4953,7 @@ function awesome_event_content( $content ) {
 			else
 				$revert_default = get_option('toast_revert_default');
 			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
-				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div mode="'.(isset($_GET['mode']) ? sanitize_text_field($_GET['mode']) : '' ).'" id="react-agenda">Loading ...</div>';
+				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div  id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
 				$content = '';
 			}
 			elseif(current_user_can('manage_options')) {

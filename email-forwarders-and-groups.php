@@ -382,13 +382,14 @@ function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1) {
     $ffpage = ($blog_id == 1) ? get_option('findafriend_page') : get_blog_option($blog_id,'findafriend_page');
     if($ffpage)
         $messagepost = ($blog_id == 1) ? get_post($ffpage) : get_blog_post($blog_id, $ffpage);
+    
     if(empty($messagepost))
         return;
     $mail['subject'] = $messagepost->post_title;
     $mail['html'] = $messagepost->post_content;
     $mail['from'] = ($blog_id == 1) ? get_option('findafriend_email') : get_blog_option($blog_id,'findafriend_email');
-    if(rsvpmaker_cronmail_check_duplicate($email.$mail['from'].$mail['subject']))//added subject June 2021
-        return true;//already sent
+    //if(rsvpmaker_cronmail_check_duplicate($email.$mail['from'].$mail['subject']))//added subject June 2021
+        //return true;//already sent
     if($from == 'clubleads@toastmasters.org') {
         //send for real
         $mail['to'] = $email;
@@ -405,6 +406,7 @@ function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1) {
     rsvpmailer($mail2);
     //}
     //$wpdb->query("delete from $wpdb->posts WHERE post_type='rsvpemail' AND post_title LIKE '%sNew prospective member for your club' ");
+    add_post_meta($messagepost->ID,'club_leads',$email.' '.date('r'));
     return $mail;
 }
 
@@ -522,8 +524,17 @@ if(isset($post->post_title)) {
     if(empty($post->post_title))
         echo '<p>Error with welcome message setup</p>';
     else {
+        echo '<div style="background-color:#fff; padding: 10px;">';
         printf('<h2>%s</h2>',$post->post_title);
         echo (empty($post->post_content)) ? '<p>(no content)</p>' : $post->post_content;    
+        echo '</div>';
+        $leads = get_post_meta($post->ID,'club_leads');
+        if($leads) {
+          echo '<h3>Leads processed</h3>';
+        foreach($leads as $lead)
+            printf('<div>%s</div>',$lead);
+        }
+
     }
 }
 ?>
@@ -1353,16 +1364,6 @@ function wpt_slugs_to_recipients($recipients,$slug_and_id,$from,$addresses) {
             }
         }
         if(('info' == $slug)) {
-            if((strcasecmp($from,'clubleads@toastmasters.org') == 0) ) {
-                $to = $forwarder;
-                preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$emailobj->HtmlBody,$fcmatches);
-                    foreach($fcmatches[0] as $email) {
-                        if(strpos($email,'toastmasters') || strpos($email,'toastmost'))
-                            continue;
-                        $contact = $email;
-                }
-                wpt_email_handler_autoresponder ($contact, $from, $blog_id);
-            }
             if((strcasecmp($from,'BaseCamp@toastmasters.org') == 0) ) {
                 $basecamp = ($blog_id == 1) ? get_option('wpt_forward_basecamp') : get_blog_option($blog_id,'wpt_forward_basecamp');    
             }

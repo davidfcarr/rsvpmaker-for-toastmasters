@@ -1128,6 +1128,7 @@ function wpt_get_agendadata($post_id = 0) {
 	if($meetings)
 		$meetings = [];
 	$agendadata['current_user_id'] = ($current_user->ID && (is_club_member($current_user->ID)) || current_user_can('manage_network')) ? $current_user->ID : false;
+	$agendadata['is_user_logged_in'] = is_user_logged_in(); // true for logged in users who are not members
 	$agendadata['current_user_name'] = ($current_user->ID) ? get_member_name($current_user->ID) : '';
 	$agendadata['newSignupDefault'] = (bool) get_option('wp4t_newSignupDefault');
 	$agendadata['upcoming'] = [];
@@ -1161,7 +1162,7 @@ function wpt_get_agendadata($post_id = 0) {
 		$agendadata['permissionsurl'] = admin_url('options-general.php?page=wp4toastmasters_settings&rules=1#rules');
 		$agendadata['wpt_rest'] = wpt_rest_array();
 		$agendadata['post_id'] = $post_id;
-		$agendadata['request_evaluation'] = admin_url('admin.php?page=wp4t_evaluations&speaker='.$current_user->ID);
+		$agendadata['request_evaluation'] = ($current_user->ID && wpt_user_is_speaker($current_user->ID,$post_id) ) ? add_query_arg('evalme',$current_user->ID,get_permalink()) : admin_url('admin.php?page=wp4t_evaluations&speaker='.$current_user->ID);
 		if($meetings) {
 			foreach($meetings as $meeting)
 			$agendadata['upcoming'][]= array('value' => $meeting->ID, 'permalink' => get_permalink($meeting->ID),'edit_link' => admin_url('wp-admin/post.php?post='.$meeting->ID.'&action=edit'),'label' => preg_replace('/ [0-9]{2}:[0-9]{2}:[0-9]{2}/','',$meeting->datetime) .' '.$meeting->post_title);
@@ -1861,13 +1862,17 @@ class WP4T_Evaluation extends WP_REST_Controller {
 				$output .= '<div style="padding-left: 20px;">'.$note."</div>\n";
 			}
 			$response = array('message' => $output);
+			if(empty($current_user->user_email))
+				$mail['from'] = (empty($data->evaluator_email) || !is_email($data->evaluator_email)) ? get_option('admin_email') : $data->evaluator_email;	
+			else
+				$mail['from'] = $current_user->user_email;
 			$mail['html'] = $output;
-			$mail['from'] = $current_user->user_email;
 			$mail['fromname'] = $current_user->display_name;
 			if(!empty($mail['to'])) {
 				rsvpmailer($mail);
 				$project = (!empty($data->project)) ? $data->project : '';
-				$key = 'evaluation|' . date( 'Y-m-d' ) . ' 00:00:00|' . $project . '|' . sanitize_text_field($_SERVER['SERVER_NAME']) . '|' . $current_user->user_login;
+				$eval_identify = empty($current_user->user_login) ? 'guest' : $current_user->user_login;
+				$key = 'evaluation|' . date( 'Y-m-d' ) . ' 00:00:00|' . $project . '|' . sanitize_text_field($_SERVER['SERVER_NAME']) . '|' . $eval_identify;
 				update_user_meta( $speaker_id, $key, $output );
 				update_post_meta($data->post_id,'evaluation_given',$current_user->ID);
 				update_post_meta($data->post_id,'evaluation_received',$speaker_id);
@@ -1960,6 +1965,43 @@ function format_eval_opt($opt,$is_true) {
 	$outer_style .= ($is_true) ? 'font-weight: bold; color: #fff; background-color: #000' : 'opacity: 0.5';
 	return sprintf('<div class="%s" style="%s">%s</div>',($is_true) ? 'evalchoice' : '', $outer_style,$parts[0]);
 }
+
+class WP4T_Member_Evaluation extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'member_evaluation';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		global $wpdb, $rsvp_options;
+		$member = intval($_GET['member']);
+		$project = sanitize_text_field($_GET['project']);
+
+		$response = array('member'=>$member,'project'=>$project);
+			//process evaluation
+			return new WP_REST_Response($response,
+			200
+		);
+		
+	}
+}
+
 
 /*
 skeleton
@@ -2066,5 +2108,7 @@ add_action(
 		$hybrid->register_routes();
 		$eval = new WP4T_Evaluation();
 		$eval->register_routes();
+		$meval = new WP4T_Member_Evaluation();
+		$meval->register_routes();
 	}
 );

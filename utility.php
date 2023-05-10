@@ -1933,3 +1933,36 @@ function jsonBlockDataOutput($block, $post_id) {
         $output = sprintf('<!-- wp:%s %s /-->',$block->blockName,$attrs)."\n\n";
     return $output;
 }
+
+function get_get_to_attributes ($evalme_mode = 'evaluation') {
+	global $post, $wpdb;
+	if(empty($_GET))
+		return ' mode="" ';
+	$output = '';
+	foreach($_GET as $key => $value) {
+		$output .= ' '.sanitize_text_field($key).'="';
+		$output .= esc_attr(sanitize_text_field($value)).'" ';
+	}
+
+	if(isset($_GET['evalme'])) {
+		$output .= ' mode="'.$evalme_mode.'" ';
+		$member = intval($_GET['evalme']);
+		$key = $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key LIKE '_Speaker%' and meta_value=".$member." AND post_id=$post->ID ");
+		if($key) {
+			$speakerdata = get_speaker_array_by_field($key,$member,$post->ID);
+			$speakerdata['name'] = get_member_name($member);
+			foreach($speakerdata as $key => $value) {
+				$output .= ' '.sanitize_text_field($key).'="';
+				$output .= esc_attr(sanitize_text_field($value)).'" ';
+			}	
+		}
+	}
+
+
+	return $output;
+}
+
+function wpt_user_is_speaker($user_id, $post_id) {
+global $wpdb;
+return $wpdb->get_var("SELECT meta_value FROM $wpdb->postmeta WHERE post_id=$post_id and meta_value=$user_id AND meta_key LIKE '_Speaker%' ");
+}
