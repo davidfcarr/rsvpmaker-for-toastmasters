@@ -1131,6 +1131,7 @@ function wpt_get_agendadata($post_id = 0) {
 	$agendadata['is_user_logged_in'] = is_user_logged_in(); // true for logged in users who are not members
 	$agendadata['current_user_name'] = ($current_user->ID) ? get_member_name($current_user->ID) : '';
 	$agendadata['newSignupDefault'] = (bool) get_option('wp4t_newSignupDefault');
+	$agendadata['second_language_feedback'] = boolval(get_user_meta($current_user->ID,'second_language_feedback',true));
 	$agendadata['upcoming'] = [];
 	if($post_id) {
 		$post = get_post($post_id);
@@ -1162,6 +1163,7 @@ function wpt_get_agendadata($post_id = 0) {
 		$agendadata['permissionsurl'] = admin_url('options-general.php?page=wp4toastmasters_settings&rules=1#rules');
 		$agendadata['wpt_rest'] = wpt_rest_array();
 		$agendadata['post_id'] = $post_id;
+		$agendadata['editor'] = admin_url('post.php?action=edit&post='.$post_id);
 		$agendadata['request_evaluation'] = ($current_user->ID && wpt_user_is_speaker($current_user->ID,$post_id) ) ? add_query_arg('evalme',$current_user->ID,get_permalink()) : admin_url('admin.php?page=wp4t_evaluations&speaker='.$current_user->ID);
 		if($meetings) {
 			foreach($meetings as $meeting)
@@ -1827,6 +1829,7 @@ class WP4T_Evaluation extends WP_REST_Controller {
 		$json = file_get_contents('php://input');
 		if(!empty($json))
 		$data = json_decode($json);
+		$speaker_id = (isset($_GET['speaker'])) ? intval($_GET['speaker']) : 0;
 		if(!empty($data)) {
 			global $current_user, $rsvp_options;
 			$output = '';
@@ -1848,7 +1851,13 @@ class WP4T_Evaluation extends WP_REST_Controller {
 			$output .= sprintf("<h2>Project: %s</h2>\n",$project_text);
 			$output .= sprintf("<p>Evaluator: %s</p>\n",$current_user->display_name);
 			$output .= sprintf("<p>Date: %s</p>\n",rsvpmaker_date($rsvp_options['long_date'],time()));
-			foreach($data->form->prompts as $index => $p) {
+			$sizeofprompts = sizeof($data->form->prompts);
+			$sizeofresponses = sizeof($data->responses);
+			$sizeofnotes = sizeof($data->notes);
+
+			$prompts = ($sizeofprompts < $sizeofresponses || $sizeofprompts < $sizeofnotes) ? array_merge($data->form->prompts,$data->form->second_language) : $data->form->prompts;
+
+			foreach($prompts as $index => $p) {
 				$choice = empty($data->responses[$index]) ? '' : sanitize_text_field($data->responses[$index]);
 				$output .= '<p><strong>'.sanitize_text_field($p->prompt).(($choice) ? ': <em>'.$choice.'</em>' : '')."</strong></p>\n";
 				if($p->choices) {
@@ -1861,7 +1870,7 @@ class WP4T_Evaluation extends WP_REST_Controller {
 				$note = empty($data->notes[$index]) ? '' : wpautop(sanitize_textarea_field($data->notes[$index]));
 				$output .= '<div style="padding-left: 20px;">'.$note."</div>\n";
 			}
-			$response = array('message' => $output);
+			$response['message'] = $output;
 			if(empty($current_user->user_email))
 				$mail['from'] = (empty($data->evaluator_email) || !is_email($data->evaluator_email)) ? get_option('admin_email') : $data->evaluator_email;	
 			else
@@ -1934,6 +1943,24 @@ class WP4T_Evaluation extends WP_REST_Controller {
 				$response['form'][$index]['choices'][] = array('label'=>$cell,'value'=>$cell);
 		}
 
+		$response['second_language_requested'] = ($speaker_id) ? get_user_meta($speaker_id,'second_language_feedback',true) : false;
+		$response['second_language'][0]['prompt'] = 'Pace: not too fast or too slow';
+		$response['second_language'][0]['choices'] = array(array('label' => '5 (Exemplary)','value' => '5 (Exemplary)'),array('label'=>'4 (Excels)','value'=>'4 (Excels)'),array('label'=>'3 (Accomplished)','value'=>'3 (Accomplished)'),array('label'=>'4 (Emerging)','value'=>'4 (Emerging)'),array('label'=>'5 (Developing)','value'=>'5 (Developing)')); 
+		$response['second_language'][0]['note'] = ''; 
+		$response['second_language'][0]['choice'] = ''; 
+		$response['second_language'][1]['prompt'] = 'Grammar and word usage';
+		$response['second_language'][1]['choices'] = array(array('label' => '5 (Exemplary)','value' => '5 (Exemplary)'),array('label'=>'4 (Excels)','value'=>'4 (Excels)'),array('label'=>'3 (Accomplished)','value'=>'3 (Accomplished)'),array('label'=>'4 (Emerging)','value'=>'4 (Emerging)'),array('label'=>'5 (Developing)','value'=>'5 (Developing)')); 
+		$response['second_language'][1]['note'] = ''; 
+		$response['second_language'][1]['choice'] = ''; 
+		$response['second_language'][2]['prompt'] = 'Word tense, gender, and pronouns';
+		$response['second_language'][2]['choices'] = array(array('label' => '5 (Exemplary)','value' => '5 (Exemplary)'),array('label'=>'4 (Excels)','value'=>'4 (Excels)'),array('label'=>'3 (Accomplished)','value'=>'3 (Accomplished)'),array('label'=>'4 (Emerging)','value'=>'4 (Emerging)'),array('label'=>'5 (Developing)','value'=>'5 (Developing)')); 
+		$response['second_language'][2]['note'] = ''; 
+		$response['second_language'][2]['choice'] = '';
+		$response['second_language'][3]['prompt'] = 'Clear pronunciation';
+		$response['second_language'][3]['choices'] = array(array('label' => '5 (Exemplary)','value' => '5 (Exemplary)'),array('label'=>'4 (Excels)','value'=>'4 (Excels)'),array('label'=>'3 (Accomplished)','value'=>'3 (Accomplished)'),array('label'=>'4 (Emerging)','value'=>'4 (Emerging)'),array('label'=>'5 (Developing)','value'=>'5 (Developing)')); 
+		$response['second_language'][3]['note'] = ''; 
+		$response['second_language'][3]['choice'] = ''; 
+
 		$response['previous_speeches'] = [];
 		$history_table = $wpdb->base_prefix.'tm_history';
 		$speech_history_table = $wpdb->base_prefix.'tm_speech_history';	
@@ -2002,6 +2029,44 @@ class WP4T_Member_Evaluation extends WP_REST_Controller {
 	}
 }
 
+class WP4T_User_Meta extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'user_meta';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		global $current_user;
+		$json = file_get_contents('php://input');
+		$data = json_decode($json);
+		$response['status'] = '';
+		if(isset($data->key) && isset($data->value) && isset($current_user->ID))
+			{
+				update_user_meta($current_user->ID,sanitize_text_field($data->key),sanitize_text_field($data->value));
+				$response['status'] = $data->key.' updated';
+			}
+
+		return new WP_REST_Response($response,
+			200
+		);
+	}
+}
 
 /*
 skeleton
@@ -2110,5 +2175,7 @@ add_action(
 		$eval->register_routes();
 		$meval = new WP4T_Member_Evaluation();
 		$meval->register_routes();
+		$umeta = new WP4T_User_Meta();
+		$umeta->register_routes();
 	}
 );

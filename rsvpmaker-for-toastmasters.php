@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.7.6
+Version: 5.7.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4899,6 +4899,9 @@ return sprintf('<p>%s signed up for %s. <a href="%s">View agenda</s></p>',$user-
 }
 
 function awesome_event_content( $content ) {
+	global $post;
+	if('rsvpmaker_template' == $post->post_type)
+		return '<div  id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
 
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'rsvpmaker' ) || is_admin() ) {
 		return $content;
@@ -4953,7 +4956,7 @@ function awesome_event_content( $content ) {
 			else
 				$revert_default = get_option('toast_revert_default');
 			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
-				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div  id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
+				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
 				$content = '';
 			}
 			elseif(current_user_can('manage_options')) {
