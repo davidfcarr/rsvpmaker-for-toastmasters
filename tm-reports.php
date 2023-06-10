@@ -7055,7 +7055,7 @@ function wpt_evaluation_reminder() {
 					}
 					$speaker_name = get_member_name($speaker_id);
 					$project_index = get_post_meta($post_id,'_project'.$row->meta_key,true);
-					$project_eval_url = admin_url( sprintf( 'admin.php?page=wp4t_evaluations&speaker=%d&meeting_id=%d&project=%s', $speaker_id, $post_id, $project_index ) );
+					$project_eval_url = add_query_arg('evalme',$speaker_id,get_permalink($post_id));
 					$project_eval_output = "<p><a href=\"$project_eval_url\">Evaluation Link</a></p>\n";
 					$mail['html'] .= sprintf('<p>%s may not yet have received a written evaluation for a speech on %s (at least not through the online system). If you were this speaker\'s evaluator, you can provide that feedback now.</p>'."\n",$speaker_name,$date).$project_eval_output;
 					$output .= $project_eval_output;

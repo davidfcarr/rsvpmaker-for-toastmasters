@@ -1241,7 +1241,8 @@ function toast_scoring_update_get( $post_id ) {
 
 	$output            = '';
 	$novote            = 0;
-	$missing_votes     = '';
+	$missing_votes     = [];
+	$did_vote     = [];
 	$tiebreaker_status = '<h3>Tiebreaker Ranking</h3>';
 	foreach ( $judges as $index => $judge ) {
 		$votes = get_post_meta( $post_id, 'tm_scoring_vote' . $index, true );
@@ -1265,8 +1266,9 @@ function toast_scoring_update_get( $post_id ) {
 		} elseif ( empty( $votes ) ) {
 			$output .= '<h3>' . $judge . '</h3><p>no votes recorded</p>';
 			$novote++;
-			$missing_votes .= $judge . ' ';
+			$missing_votes[] = $judge;
 		} else {
+			$did_vote[] = $judge;
 			$output        .= '<h3>' . $judge . '</h3>';
 			$signature      = get_post_meta( $post_id, 'tm_scoring_signature' . $index, true );
 			$output        .= sprintf( '<div>Signed: %s</div>', $signature );
@@ -1332,7 +1334,9 @@ function toast_scoring_update_get( $post_id ) {
 		}
 
 		if ( $novote ) {
-			$top .= sprintf( '<div style="color: red;">%s judges have not yet voted: %s</div>', $novote, $missing_votes );
+			$top .= sprintf( '<div style="color: red;">%s judges have not yet voted: %s</div>', $novote, implode(', ',$missing_votes) );
+			if(!empty($did_vote))
+				$top .= '<div>Did vote: '.implode(', ',$did_vote).'</div>';
 		} else {
 			$top .= '<div style="background-color: red; color: white; font-weight: bold; padding: 5px;">All judges have now voted</div>';
 			$alljudgesvoted = true;

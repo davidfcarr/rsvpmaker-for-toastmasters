@@ -11,8 +11,8 @@ import { __ } from '@wordpress/i18n';
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
  */
-import { useBlockProps } from '@wordpress/block-editor';
-
+import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import { RadioControl } from '@wordpress/components';
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
  * Those files can contain any CSS code that gets applied to the editor.
@@ -29,9 +29,12 @@ import './editor.scss';
  *
  * @return {WPElement} Element to render.
  */
-export default function Edit() {
+export default function Edit({ attributes, setAttributes }) {
 	return (
 		<p { ...useBlockProps() }>
+			<InspectorControls key="speaker-evaluator-settings">
+				<RadioControl label="Columns" selected={attributes.columns} options={[{'label': '2 columns','value': '2'},{'label': 'Separate columns for Speaker, Path, Project, Title','value': '5'}]} onChange={(value) => setAttributes({columns: value})} />
+			</InspectorControls>
 			{ __(
 				'Speaker-Evaluator table for the agenda',
 				'speaker-evaluator'

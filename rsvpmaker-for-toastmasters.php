@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.7.7
+Version: 5.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -446,21 +446,22 @@ function toastmasters_admin_widget() {
 		}
 	}
 	printf( '<p>Your access level: Publish blog posts <strong>%s</strong>, Edit posts and pages <strong>%s</strong>, Publish events <strong>%s</strong>, Edit events <strong>%s</strong>, Create/edit user accounts <strong>%s</strong>.</p><p>Administrators: %s <a href="https://www.wp4toastmasters.com/knowledge-base/administrators/" target="_blank">Security roles explained</a></p>', $publish_posts, $edit_others_posts, $publish_rsvpmaker, $edit_others_rsvpmakers, $edit_users, implode( ', ', $administrators ) );
-	?>
-<p><strong><a class="wp-first-item" href="edit.php">Posts</a></strong> - listing of blog posts</p>
-<ul>
-	 <li><a href="post-new.php">Add New</a> - new blog post (club news or article)</li>
-</ul>
-	<?php
 	if ( current_user_can( 'edit_others_pages' ) ) {
+	$front_page_id = get_option('page_on_front');
+	if($front_page_id && current_user_can('edit_post',$front_page_id))
+		printf('<p><strong><a href="%s">Edit Home Page</a></strong></p>',admin_url('post.php?action=edit&post='.$front_page_id));
 		?>
-<p><strong><a href="edit.php?post_type=page">Pages</a></strong> - pages of your site</p>
+<p><strong><a href="edit.php?post_type=page">List Pages</a></strong> - pages of your site</p>
 <ul>
 	 <li><a href="post-new.php?post_type=page">Add New</a> - new page</li>
 </ul>
 		<?php
 	}
 	?>
+<p><strong><a class="wp-first-item" href="edit.php">Posts</a></strong> - listing of blog posts</p>
+<ul>
+	 <li><a href="post-new.php">Add New</a> - new blog post (club news or article)</li>
+</ul>
 <p><strong><a href="edit.php?post_type=rsvpmaker">RSVP Events</a></strong> - list of event posts</p>
 <ul>
 	 <li><a href="post-new.php?post_type=rsvpmaker">Add New</a> - new event (not from template)</li>
@@ -474,10 +475,16 @@ function toastmasters_admin_widget() {
 	if ( current_user_can( 'manage_options' ) ) {
 		?>
 <p><strong>Appearance</strong></p>
-<ul>
-	 <li id="menu-posts-rsvpmaker"><a class="hide-if-no-customize" href="customize.php">Customize</a> - tweak website design, including menu at top of the page, page header/banner, background color or image</li>
-	 <li><a href="widgets.php">Widgets</a> - add/update sidebar widgets</li>
-	 <li><a href="nav-menus.php">Menus</a> - update menu of pages, other links</li>
+<ul> <?php
+if(wp_is_block_theme()) {
+	printf('<li><a href="%s">Site Editor</a> - change menus, colors, and layouts of page and post templates. You are using one of the new, highly customizabble "block theme" designs.</li>',admin_url('site-editor.php'));
+}
+else {
+	echo '<li id="menu-posts-rsvpmaker"><a class="hide-if-no-customize" href="customize.php">Customize</a> - tweak website design, including menu at top of the page, page header/banner, background color or image</li>
+	<li><a href="widgets.php">Widgets</a> - add/update sidebar widgets</li>
+	<li><a href="nav-menus.php">Menus</a> - update menu of pages, other links</li>';
+}
+?>	 
 		<?php
 		$layout_id = get_option( 'rsvptoast_agenda_layout' );
 		if ( $layout_id ) {
@@ -586,7 +593,10 @@ function awesome_add_dashboard_widgets() {
 
 	$wp_meta_boxes['dashboard']['normal']['core'] = $sorted_dashboard;
 
-	if ( current_user_can( 'edit_others_rsvpmakers' ) || current_user_can( 'add_members' ) ) {
+	if (current_user_can('edit_others_rsvpmakers'))  /*( current_user_can( 'edit_others_rsvpmakers' ) ) || current_user_can( 'add_members' ) )*/ {
+		$wp_meta_boxes['dashboard']['side']['core'] = array();//remove default widgets
+		wp_add_dashboard_widget( 'toastmasters_admin_widget', 'Club Website Administration', 'toastmasters_admin_widget', null, null, 'side','core' );
+		/*
 		wp_add_dashboard_widget( 'toastmasters_admin_widget', 'Club Website Administration', 'toastmasters_admin_widget' );
 		$side_dashboard        = $wp_meta_boxes['dashboard']['side']['core'];
 		$normal_dashboard      = $wp_meta_boxes['dashboard']['normal']['core'];
@@ -596,7 +606,10 @@ function awesome_add_dashboard_widgets() {
 		);
 		unset( $wp_meta_boxes['dashboard']['normal']['core']['toastmasters_admin_widget'] );
 		$wp_meta_boxes['dashboard']['side']['core'] = array_merge( $sidebar_widget_backup, $side_dashboard );
+		*/
 	}
+
+	//mail('david@carrcommunications.com','dashboard meta_boxes',var_export($wp_meta_boxes['dashboard'],true));
 }
 
 function wpt_timecheck() {
@@ -1439,6 +1452,7 @@ function agendanoterich2_timeblock( $matches ) {
 
 function tm_agenda_content($post_id = 0) {
 	global $post, $rsvp_options;
+	$notime = (bool) get_option('wp4t_disable_timeblock');
 	if(is_admin())
 		return;
 	if(!$post_id)
@@ -1473,8 +1487,9 @@ function tm_agenda_content($post_id = 0) {
 		else
 			$time = '';
 
-		$content .= is_email_context() ? '<div style="margin-top: 10px;">' : '<div class="agendaflex" style="display:flex">';
-		$content .= '<div class="timetoleft" style="width: max-content; min-width: 125px; font-size: 12px;">'.$time.'</div>';
+		$content .= (is_email_context() || $notime) ? '<div style="margin-top: 10px;">' : '<div class="agendaflex" style="display:flex">';
+		if(!$notime)
+			$content .= '<div class="timetoleft" style="width: max-content; min-width: 125px; font-size: 12px;">'.$time.'</div>';
 		$content .= '<div class="blockcontent" >';
 		if('wp4toastmasters/role' == $block["blockName"]) {
 			$role = $attrs['role'];
@@ -1482,6 +1497,17 @@ function tm_agenda_content($post_id = 0) {
 			$start = !empty($attrs['start']) ? intval($attrs['start']) : 1;
 			$totaltime = 0;
 			$time_allowed = (empty($attrs['time_allowed'])) ? 0 : $attrs['time_allowed'];
+			if(strpos($post->post_content,'speaker-evaluator') && (('Speaker' == $role) || ('Evaluator' == $role)))
+			{
+				$content .= sprintf('<div><strong>%ss</strong> (%s)</div>',$role,$count);
+				if('Speaker' == $role) {
+					foreach($block['assignments'] as $roleindex => $assignment) {
+						if(!empty($assignment['maxtime']))
+							$totaltime += $assignment['maxtime'];
+					}
+				}
+			}
+			else //normal output
 			foreach($block['assignments'] as $roleindex => $assignment)
 			{
 				$number = $roleindex + $start;
@@ -1498,7 +1524,7 @@ function tm_agenda_content($post_id = 0) {
 					$link = sprintf('Open - <a href="%s#oneclick">One-Click Signup</a>',$link);
 					$assignment['name'] = $link;
 				}
-				$content .= sprintf('<div><strong>%s %s</strong> %s</div>',$role,$number,$assignment['name']);
+				$content .= sprintf('<div><strong>%s %s</strong> %s</div>',$role,($number > 1) ? $number : '',$assignment['name']);
 				if(isset($_GET['contacts']) && is_numeric($assignment["ID"]) && ($assignment["ID"] > 0) && is_club_member())
 				{
 					$content .= wp4_format_contact(get_userdata($assignment["ID"]),false);
@@ -4957,7 +4983,11 @@ function awesome_event_content( $content ) {
 				$revert_default = get_option('toast_revert_default');
 			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
 				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
-				$content = '';
+				$parts = explode('<div id="rsvpsection">',$content);
+				if($parts[1])
+					$content = '<div id="rsvpsection">'.$parts[1];
+				else
+					$content = '';
 			}
 			elseif(current_user_can('manage_options')) {
 				if($revert_default)
@@ -8010,7 +8040,7 @@ function pack_roles( $count, $fieldbase ) {
 add_action( 'template_redirect', 'wp4t_redirect' );
 function wp4t_redirect() {
 		global $post;
-
+		
 		if ( isset( $_REQUEST['tm_reports'] ) ) {
 			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/reports-fullscreen.php';
 			die();
@@ -8068,13 +8098,15 @@ function wp4t_redirect() {
 			include $agendapath;
 			die();
 		}
-		 elseif ( is_email_context() ) {
+		
+		elseif ( isset($_GET['email_agenda']) || is_email_context() ) {
 			if ( get_option( 'wp4toastmasters_stoplight' ) ) {
 				add_filter( 'agenda_time_display', 'display_time_stoplight' );
 			}
 			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/email_agenda.php';
 			die();
 		}
+		
 		elseif ( isset( $_REQUEST['voting'] ) ) {
 			include WP_PLUGIN_DIR . '/rsvpmaker-for-toastmasters/voting.php';
 			die();

@@ -110,15 +110,20 @@ function agenda_layout_options() {
     if(isset($_POST['wp4toastmasters_agenda_css'])) {
         update_option( 'wp4toastmasters_agenda_css',sanitize_textarea_field(stripslashes($_POST['wp4toastmasters_agenda_css'])));
     }
-
+    if(isset($_POST['wp4t_disable_timeblock'])) {
+        $notime = (bool) $_POST['wp4t_disable_timeblock'];
+        update_option('wp4t_disable_timeblock', $notime);
+    }
+    else
+        $notime = (bool) get_option('wp4t_disable_timeblock');
 ?>
 <div id="layoutcontrols">
 <form method="post" action="<?php echo $layoutlink; ?>">
-Agenda Items Font <input class="fontcontrol" type="number" name="main" value="<?php echo $mainfont; ?>" />
+Agenda Items Font <input class="fontcontrol" type="number" name="main" value="<?php if($mainfont) echo $mainfont; ?>" />
 <button>Update</button>
 </form>
 <form method="post" action="<?php echo $layoutlink; ?>">
-Sidebar Items Font <input class="fontcontrol" type="number" name="side" value="<?php echo $sidebarfont; ?>" />
+Sidebar Items Font <input class="fontcontrol" type="number" name="side" value="<?php if($sidebarfont) echo $sidebarfont; ?>" />
 <button>Update</button>
 </form>
 <form method="post" action="<?php echo $layoutlink; ?>">
@@ -127,6 +132,14 @@ Layout Template <input type="radio" name="change_layout" value="default" checked
 <div><a href="<?php echo $layout_edit; ?>">Advanced: open layout document in the WordPress editor</a></div>
 </form>
 </div>
+<form method="post" action="<?php echo $layoutlink; ?>">
+<?php
+if($notime)
+echo '<input type="hidden" name="wp4t_disable_timeblock" value="0"><button>Show Times on the Agenda</button>';
+else
+echo '<input type="hidden" name="wp4t_disable_timeblock" value="1"><button>Remove Times from Agenda</button>';
+?>
+</form>
 
 <div id="customon"><input type="checkbox" onclick="csstoggle()" /> Custom CSS code <?php
 if(!empty($custom))

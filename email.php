@@ -478,13 +478,14 @@ return $header.$content.'<body></html>';
 
 function awesome_open_roles( $post_id = null, $scheduled = false ) {
 
-	if ( ! is_club_member() ) {
-		return;
-	}
-
 	if ( ! isset( $_REQUEST['open_roles'] ) && ! $post_id ) {
 		return;
 	}
+	if ( ! is_club_member() ) {
+		echo 'This function is only available to club members';
+		return;
+	}
+
 	if ( function_exists( 'email_content_minfilters' ) ) {
 		email_content_minfilters();
 	} else {
