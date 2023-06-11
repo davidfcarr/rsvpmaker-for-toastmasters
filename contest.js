@@ -92,8 +92,8 @@ jQuery( document ).ready(
 		emailLinksToggle();
 		$( "input#show_email_links" ).on( "click", emailLinksToggle );
 
-		function refreshScores() {
-			if (countdown == 0) {
+		function refreshScores(now = false) {
+			if (now || (countdown == 0)) {
 				$( '#score_status' ).html( 'Checking for new scores ...' );
 				console.log( 'checking for scores' );
 				$.get(
@@ -249,6 +249,7 @@ function sortTally(scoreArr) {
 				var label = $( '#votecheck' ).text();
 				console.log( label + ' checking for scores' );
 				if (label == 'Start') {
+					refreshScores(true);
 					checkvoteinterval = setInterval(
 						function(){
 							refreshScores();

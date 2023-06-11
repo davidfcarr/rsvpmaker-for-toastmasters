@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.8
+Version: 5.8.1
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -3688,7 +3688,7 @@ function wp4toast_reminders_dst_fix( $args = array() ) {
 		if ( sizeof( $future ) ) {
 				$next = $future[0];
 				rsvpmaker_fix_timezone();
-				wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next . ':' . $hours ) );
+				wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 		}
 	}
 			$previous = get_option( 'wp4toast_reminder2' );
@@ -11477,13 +11477,14 @@ function tm_youtube_tool() {
 		$message = wp_kses_post(stripslashes($_POST['message']))."\n".$policy;
 		$subject = sanitize_text_field($_POST['youtube_subject']);
 		$lines = explode("\n",$message);
-		$content = '';
+		$email_content = $content = '';
 		foreach($lines as $line) {
 			$line = trim($line);
 			if(empty($line))
 				continue;
-			if(strpos($line,'://')) {
+			if(strpos($line,'://www.youtube.com') || strpos($line,'://youtu.be')) {
 				$line = trim($line);
+			$email_content .= YouTubeEmailFormat($line);
 			$content .= sprintf(
 					'<!-- wp:core-embed/youtube {"url":"%s","type":"video","providerNameSlug":"youtube","className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
 <figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
@@ -11495,6 +11496,7 @@ function tm_youtube_tool() {
 				);
 			}
 			else {
+				$email_content .= "<!-- wp:paragraph -->\n<p>".$line."</p>\n<!-- /wp:paragraph -->\n\n";
 				$content .= "<!-- wp:paragraph -->\n<p>".$line."</p>\n<!-- /wp:paragraph -->\n\n";
 			}
 		}
@@ -11514,12 +11516,20 @@ function tm_youtube_tool() {
 
 		$status = ( ( $blog == 'publish' ) || ( $blog == 'publish_public' ) ) ? 'publish' : 'draft';
 		// Create post object
-		$email_post = $my_post = array(
+		$my_post = array(
 			'post_title'    => $subject,
+			'post_type'    => 'post',
 			'post_status'   => $status,
 			'post_author'   => $current_user->ID,
 			'post_category' => $categories,
 			'post_content' => $content,
+		);
+		$email_post = array(
+			'post_title'    => $subject,
+			'post_type'    => 'rsvpemail',
+			'post_status'   => 'publish',
+			'post_author'   => $current_user->ID,
+			'post_content' => $email_content,
 		);
 
 		if ( ! empty( $speakers ) ) {
@@ -11538,14 +11548,12 @@ function tm_youtube_tool() {
 		}
 
 		if ( $email ) {
-			$email_post['post_type']   = 'rsvpemail';
-			$email_post['post_status'] = 'publish';
 			$email_post['post_content'] = rsvpmailer_default_block_template_wrapper($email_post['post_content']);
 			$id                        = wp_insert_post( $email_post );
 			printf( '<p><a href="%s?post=%d&action=edit">%s</a></p>', admin_url( 'post.php' ), $id, __( 'Edit email', 'rsvpmaker-for-toastmasters' ) );
 			printf( '<p><a href="%s?list=members">%s</a></p>', get_permalink( $id ), __( 'Preview/send email', 'rsvpmaker-for-toastmasters' ) );
 		}
-		echo do_blocks($my_post['post_content']);
+		echo do_blocks($email_content);
 	}//end post to server
 
 	$blog = get_option( 'tm_video_blog' );
@@ -11743,7 +11751,8 @@ function make_youtube_preview() {
 		var link = $('#link'+dateindex).val();
 		var selectdetails = $('#selectspeech'+dateindex).val()
 		if(selectname != '') {
-			speakers.push(selectname);
+			if(!speakers.includes(selectname))
+				speakers.push(selectname);
 			dateobj.previewtext = dateobj.previewtext + selectname+' '+selectdetails + "\n\n";
 			if('' != link) {
 					dateobj.previewtext = dateobj.previewtext + link+"\n\n";
@@ -11752,7 +11761,6 @@ function make_youtube_preview() {
 		link = $('#wrapuplink'+dateindex).val();
 		if(link != '')
 			dateobj.previewtext = dateobj.previewtext + link+"\n\n";
-
 		}
 	);
 
@@ -11768,7 +11776,7 @@ function make_youtube_preview() {
 	console.log(previewobj);
 	console.log(speakers);
 	console.log(dates);
-	$('#youtube_subject').val('Video: '+speakers.join(', ')+', '+dates.join(', '));
+	$('#youtube_subject').val('Replay: '+speakers.join(', ')+', '+dates.join(', '));
 	$('#speakers').val(speakers.join(','));
 }
 
