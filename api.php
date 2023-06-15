@@ -1405,9 +1405,9 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 		$output = '';
 		$post_id = $data->post_id;
 		$post_type = get_post_type($post_id);
-		if(('rsvpmaker' != $post_type) && ('rsvpmaker-template' != $post_type))
+		if(('rsvpmaker' != $post_type) && ('rsvpmaker_template' != $post_type))
 			return new WP_REST_Response(['status'=>'This function only works with event content'],401);
-		if('rsvpmaker-template' != $post_type) {
+		if('rsvpmaker_template' != $post_type) {
 			if(!current_user_can('edit_post',$post_id) && !current_user_can('organize_agenda'))
 				return new WP_REST_Response(['status'=>'user is not allowed to update this document'],401);
 		}

@@ -157,9 +157,9 @@ p {
 					continue;
 				}
 				if(in_array($role, $standard_roles))
-					$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"' . $role . '",count":"1","time_allowed":"0","padding_time":"0"} /-->' . "\n\n";
+					$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"' . $role . '"} /-->' . "\n\n";
 				else
-					$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"custom","custom_role":"' . $role . '",count":"1","time_allowed":"0","padding_time":"0"} /-->' . "\n\n";
+					$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"custom","custom_role":"' . $role . '"} /-->' . "\n\n";
 			}
 
 			if ( $_POST['tabletopics'] == 'before' ) {

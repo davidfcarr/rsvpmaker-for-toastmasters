@@ -1296,7 +1296,7 @@ function toast_scoring_update_get( $post_id ) {
 			}
 		}
 		if ( ! empty( $disqualified ) ) {
-			print_r($disqualified);
+			$top .= sprintf('<p>%d contestant%s disqualificatied for time</p>',sizeof($disqualified),(sizeof($disqualified) > 1) ? 's':'');
 			$order = get_post_meta( $post_id, 'tm_scoring_order', true );
 			if ( ! empty( $order ) ) {
 				foreach ( $disqualified as $id ) {

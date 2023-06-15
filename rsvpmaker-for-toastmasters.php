@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.8.1
+Version: 5.8.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -11456,7 +11456,7 @@ function blogs_by_member_tag( $atts ) {
 }
 
 function tm_youtube_tool() {
-
+	echo '<div style="padding-bottom: 500px; margin-bottom: 300px; padding: 10px; ">';
 	echo '<h1>Toastmasters YouTube Video Tool</h1>';
 	echo '<p>';
 	_e( 'This tool was designed to capture a listing of videos you have uploaded to YouTube and use them as the basis of a blog post (categorized as members-only by default) and / or an email to distribute to your members.', 'rsvpmaker-for-toastmasters' );
@@ -11529,7 +11529,7 @@ function tm_youtube_tool() {
 			'post_type'    => 'rsvpemail',
 			'post_status'   => 'publish',
 			'post_author'   => $current_user->ID,
-			'post_content' => $email_content,
+			'post_content' => $content,
 		);
 
 		if ( ! empty( $speakers ) ) {
@@ -11555,6 +11555,10 @@ function tm_youtube_tool() {
 		}
 		echo do_blocks($email_content);
 	}//end post to server
+	$policy = get_option( 'tm_video_policy' );
+	if ( empty( $policy ) ) {
+		$policy = "<strong>Video policy</strong>: speech videos are intended as a tool for speakers to see their own performances and think about how they can improve. Even though these are on YouTube, they are published as \"unlisted\" by default, meaning they won't show up in search results. Don't forward these links or post them on Facebook or in any other forum without the speaker's permission. From time to time, we may ask a speaker for permission to use a video as part of our marketing of the club. Volunteers are also welcome - if you're proud of a particular speech, let us know.";
+	}
 
 	$blog = get_option( 'tm_video_blog' );
 	if ( empty( $blog ) ) {
@@ -11637,56 +11641,62 @@ function tm_youtube_tool() {
 	}
 	}
 	echo $ptext; 
-?>	
+?>
+<p>To show more than 5 past events, enter the number here.</p>
+<form method="get" action="<?php echo admin_url('upload.php') ?>"><input type="hidden" name="page" value="tm_youtube_tool">
+<input type="text" name="show" value="10"> <button>Show</button>
+</form>
+
 <form method="post" action="<?php echo admin_url( 'upload.php?page=tm_youtube_tool' ); ?>">
-<p>Subject <input type="text" id="youtube_subject" name="youtube_subject" style="width: 80%;" /> </p>
-<p><em>You can add to the message shown below. YouTube links must be on a separate line for the video to display properly. The &lt;strong&gt; tags are for bold text.</em><br>
-<textarea name="message" id="newpreview" rows="5" style="width: 90%;"></textarea></p>
+<h3><?php _e( 'Policy to include in email', 'rsvpmaker-for-toastmasters' ); ?></h3>
+<p><textarea name="policy" rows="3" style="width: 90%"><?php echo wp_kses_post($policy); ?></textarea></p>
+<input type="hidden" name="speakers" id="speakers">
 <div id="youtube_preview"></div>
-<?php
-	$policy = get_option( 'tm_video_policy' );
-	if ( empty( $policy ) ) {
-		$policy = "<strong>Video policy</strong>: speech videos are intended as a tool for speakers to see their own performances and think about how they can improve. Even though these are on YouTube, they are published as \"unlisted\" by default, meaning they won't show up in search results. Don't forward these links or post them on Facebook or in any other forum without the speaker's permission. From time to time, we may ask a speaker for permission to use a video as part of our marketing of the club. Volunteers are also welcome - if you're proud of a particular speech, let us know.";
-	}
-	?>
-<p>
+<p>To display a listing of videos and blog posts indexed by member name on your website, include the code [blogs_by_member_tag] on the page where you want it to appear.</p>
+</div>
+<div style="display: flex; background-color: #fff; position: fixed; bottom: 15px; width: 100%; border-top: thick solid #2271B1; padding: 10px;">
+<div style="min-width:300px;max-width:600px;">
+<input type="text" placeholder="Subject" id="youtube_subject" name="youtube_subject" style="width:100%; font-size:small" />
+<br /><textarea name="message" id="newpreview" rows="4" style="width:100%; font-size: small;"></textarea>
+<br><em>YouTube links must be on a separate line for the video to display properly. The &lt;strong&gt; tags are for bold text.</em>
+</div>
+<div style="width: 180px;padding-left:10px;font-size:small;">
 <input type="radio" name="blog" value="draft_public" 
 	<?php
 	if ( $blog == 'draft_public' ) {
 		echo ' checked="checked" ';}
 	?>
- ><?php _e( 'Create draft blog post (public)', 'rsvpmaker-for-toastmasters' ); ?>
+ ><?php _e( 'Draft blog post', 'rsvpmaker-for-toastmasters' ); ?>
 <br />
 <input type="radio" name="blog" value="publish_public" 
 	<?php
 	if ( $blog == 'publish_public' ) {
 		echo ' checked="checked" ';}
 	?>
- ><?php _e( 'Create and publish blog post (public)', 'rsvpmaker-for-toastmasters' ); ?>
+ ><?php _e( 'Publish blog post', 'rsvpmaker-for-toastmasters' ); ?>
 <br />
 <input type="radio" name="blog" value="draft" 
 	<?php
 	if ( $blog == 'draft' ) {
 		echo ' checked="checked" ';}
 	?>
- ><?php _e( 'Create draft blog post (members only)', 'rsvpmaker-for-toastmasters' ); ?>
+ ><?php _e( 'Draft post (members only)', 'rsvpmaker-for-toastmasters' ); ?>
 <br />
 <input type="radio" name="blog" value="publish" 
 	<?php
 	if ( $blog == 'publish' ) {
 		echo ' checked="checked" ';}
 	?>
- ><?php _e( 'Create and publish blog post (members only)', 'rsvpmaker-for-toastmasters' ); ?>
+ ><?php _e( 'Publish post (members only)', 'rsvpmaker-for-toastmasters' ); ?>
 <br />
 <input type="radio" name="blog" value="none" 
 	<?php
 	if ( $blog == 'none' ) {
 		echo ' checked="checked" ';}
 	?>
- ><?php _e( 'Do not create blog post', 'rsvpmaker-for-toastmasters' ); ?>
-</p>
-<p>
-	<?php _e( 'Create email message', 'rsvpmaker-for-toastmasters' ); ?> <input type="radio" name="email" value="1" 
+ ><?php _e( 'No blog post', 'rsvpmaker-for-toastmasters' ); ?>
+<br />
+	<?php _e( 'Email message', 'rsvpmaker-for-toastmasters' ); ?> <input type="radio" name="email" value="1" 
 			  <?php
 				if ( $email ) {
 					echo ' checked="checked" ';}
@@ -11697,20 +11707,14 @@ function tm_youtube_tool() {
 						echo ' checked="checked" ';}
 				?>
  ><?php _e( 'No', 'rsvpmaker-for-toastmasters' ); ?>
-</p>
-<h3><?php _e( 'Policy to include in email', 'rsvpmaker-for-toastmasters' ); ?></h3>
-<p><textarea name="policy" rows="3" style="width: 90%"><?php echo wp_kses_post($policy); ?></textarea></p>
-<input type="hidden" name="speakers" id="speakers">
-	<?php submit_button(); ?>
-	<?php rsvpmaker_nonce(); ?>
+<?php submit_button(); ?>
+</div>
+
+</div>
+
+<?php rsvpmaker_nonce(); ?>
 </form>
 
-<p>To display a listing of videos and blog posts indexed by member name on your website, include the code [blogs_by_member_tag] on the page where you want it to appear.</p>
-
-<p>To show more than 5 past events, enter the number here.</p>
-<form method="get" action="<?php echo admin_url('upload.php') ?>"><input type="hidden" name="page" value="tm_youtube_tool">
-<input type="text" name="show" value="10"> <button>Show</button>
-</form>
 <script>
 
 jQuery(document).ready(function($) {
@@ -11741,7 +11745,7 @@ function make_youtube_preview() {
 				if(!dates.includes(dateobj.date))
 					dates.push(dateobj.date);
 				dateobj.previewtext = dateobj.previewtext + speaker;
-				dateobj.previewtext = dateobj.previewtext + ' '+$('#speech'+count).val() + "\n\n";
+				dateobj.previewtext = dateobj.previewtext + ': '+$('#speech'+count).val() + "\n\n";
 				if('' != link) {
 					dateobj.previewtext = dateobj.previewtext + link+"\n\n";
 				}
@@ -11753,7 +11757,10 @@ function make_youtube_preview() {
 		if(selectname != '') {
 			if(!speakers.includes(selectname))
 				speakers.push(selectname);
-			dateobj.previewtext = dateobj.previewtext + selectname+' '+selectdetails + "\n\n";
+			dateobj.previewtext = dateobj.previewtext + selectname;
+			if(selectdetails)
+				dateobj.previewtext = dateobj.previewtext +': '+selectdetails;
+			dateobj.previewtext = dateobj.previewtext  + "\n\n";
 			if('' != link) {
 					dateobj.previewtext = dateobj.previewtext + link+"\n\n";
 			}
@@ -11768,7 +11775,7 @@ function make_youtube_preview() {
 	previewobj.forEach(
 		function(dateobj) {
 			if(dateobj.previewtext != '') {
-				newpreviewtext = newpreviewtext + '<strong>'+dateobj.date+'</strong>'+ "\n\n"+dateobj.previewtext;
+				newpreviewtext = newpreviewtext + dateobj.date+"\n"+dateobj.previewtext;
 			}
 		}
 	);
