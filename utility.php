@@ -48,6 +48,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 	}
 
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+	$blogusers = apply_filters('wpt_filter_members_for_dropdown',$blogusers);
 
 	foreach ( $blogusers as $user ) {
 

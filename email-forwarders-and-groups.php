@@ -3098,3 +3098,24 @@ function wpt_delete_forwarding_transient() {
     if(is_multisite())
         restore_current_blog();
 }
+
+//rsvpmaker $post = apply_filters('rsvpmail_post_for_email',$post);
+add_filter('rsvpmail_post_for_email','wpt_post_for_email');
+function wpt_post_for_email($epost) {
+    global $email_context,$post;
+    $backup = $post;
+    $email_context = true;
+    if(strpos($epost->post_content,'wp:wp4toastmasters/role'))
+    {
+        $post = $epost;
+        $epost->post_content = "\n\n".do_blocks($epost->post_content)."\n\n";
+        $epost->post_content = preg_replace('/ - <a href="[^"]+">One-Click Signup<\/a>/','',$epost->post_content);
+        $epost->post_content = str_replace('<div','<p',str_replace('</div>','</p>',$epost->post_content));
+        $epost->post_content = preg_replace('/<p[^>]*>/',"<!-- wp:paragraph -->\n<p>",str_replace('</p>',"</p>\n<!-- /wp:paragraph -->\n\n",$epost->post_content));
+        $epost->post_content = preg_replace('/<h3[^>]*>/',"<!-- wp:heading {\"level\":3} -->\n<h3>",str_replace('</h3>',"</h3>\n<!-- /wp:heading -->\n\n",$epost->post_content));
+        $epost->post_content = preg_replace('/<span[^>]*>/','',str_replace('</span>','',$epost->post_content));
+        $epost->post_content = preg_replace('/\n{3,}>/',"\n\n",$epost->post_content);
+    }
+    $post = $backup;
+    return $epost;
+}
