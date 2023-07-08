@@ -316,13 +316,14 @@ function get_club_members( $blog_id = 0 ) {
 		$blog_id = get_current_blog_id();
 	}
 
-	return get_users(
+	$blogusers = get_users(
 		array(
 			'blog_id' => $blog_id,
 			'orderby' => 'display_name',
 		)
 	);
-
+	$blogusers = apply_filters('wpt_get_club_members',$blogusers);
+	return $blogusers;
 }
 
 function get_club_member_emails( $blog_id = 0 ) {

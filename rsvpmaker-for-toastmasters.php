@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.8.3
+Version: 5.8.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -26,7 +26,6 @@ require 'utility.php';
 require 'toastmasters-privacy.php';
 require 'tm-online-application.php';
 require 'api.php';
-require 'mailster.php';
 require 'enqueue.php';
 require 'setup-wizard.php';
 require 'email.php';
@@ -45,7 +44,7 @@ if ( isset( $_GET['email_agenda'] ) || isset( $_GET['send_by_email'] ) ) {
 }
 
 add_filter( 'login_message', 'wp4toast_login_message' );
-add_filter( 'the_content', 'awesome_event_content' );
+add_filter( 'the_content', 'awesome_event_content', 2 );
 add_filter( 'the_content', 'edit_toast_roles', 1 );
 add_filter( 'the_content', 'assign_toast_roles', 1 );
 add_filter( 'the_content', 'member_only_content' );
@@ -4984,7 +4983,7 @@ function awesome_event_content( $content ) {
 			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
 				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
 				$parts = explode('<div id="rsvpsection">',$content);
-				if($parts[1])
+				if(!empty($parts[1]))
 					$content = '<div id="rsvpsection">'.$parts[1];
 				else
 					$content = '';
