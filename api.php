@@ -1121,6 +1121,7 @@ class WP4TBlocksData extends WP_REST_Controller {
 
 function wpt_get_agendadata($post_id = 0) {
 	global $current_user,$post;
+	wpt_mobile_user_check();
 	$agendadata = [];
 	$post = false;
 	$meetings = future_toastmaster_meetings( 10 );
@@ -1523,7 +1524,7 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		return true;
+		return (is_user_logged_in() || wpt_mobile_user_check());
 	}
 
 	public function handle( $request ) {

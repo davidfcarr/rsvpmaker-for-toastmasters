@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.8.6
+Version: 5.8.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -35,6 +35,7 @@ require 'fse-navigation-block.php';
 require 'email-forwarders-and-groups.php';
 require 'toastmasters-dynamic-agenda/toastmasters-dynamic-agenda.php';
 require 'speaker-evaluator/speaker-evaluator.php';
+require 'mobile.php';
 
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
@@ -2540,6 +2541,7 @@ function awesome_menu() {
 
 	add_submenu_page( 'profile.php', __( 'RSVP List to Members', 'rsvpmaker-for-toastmasters' ), __( 'RSVP List to Members', 'rsvpmaker-for-toastmasters' ), 'edit_members', 'rsvp_to_member', 'rsvp_to_member' );
 	add_submenu_page('profile.php', __("Former Members",'rsvpmaker-for-toastmasters'), __("Former Members",'rsvpmaker-for-toastmasters'), 'edit_members', "wp4t_extended_list", "wp4t_extended_list" );
+	add_submenu_page('profile.php', __("Enable Mobile App (experimental)",'rsvpmaker-for-toastmasters'), __("Enable Mobile App (experimental)",'rsvpmaker-for-toastmasters'), 'read', "wp4t_enable_mobile", "wp4t_enable_mobile" );
 
 	$page_title = 'Toastmasters';
 	$menu_title = $page_title;
