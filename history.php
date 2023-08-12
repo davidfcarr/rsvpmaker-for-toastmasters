@@ -654,11 +654,22 @@ function wpt_minutes_from_history($history_post_id = '') {
         $history_post_id = intval($_GET['minutes_from_history']);
     $history_post = get_post($history_post_id);
     $agenda_data = wpt_blocks_to_data($history_post->post_content);
+    $notes = '';
     foreach($agenda_data as $index => $item) {
         if(!empty($item['role'])) {
             for($i=1; $i <= intval($item['count']); $i++)
             $allroles['_'.str_replace(' ','_',$item['role']).'_'.$i] = '';
             $agenda_order[$item['role']] = '';
+        }
+        elseif(isset($item['editable'])) {
+            $temp = get_post_meta($history_post_id,'agenda_note_'.$item['uid'],true);
+            if($temp) {
+                $temp = str_replace('<p>',"<!-- wp:paragraph -->\n<p>",$temp);
+                $temp = str_replace('</p>',"</p>\n<!-- /wp:paragraph -->\n\n",$temp);
+                $notes .= sprintf('<!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">%s</h3>
+<!-- /wp:heading -->'."\n\n",$item['editable']).$temp."\n";                
+            }
         }
     }
     $additions = '';
@@ -747,7 +758,9 @@ function wpt_minutes_from_history($history_post_id = '') {
         $label = __('Absent','rsvpmaker-for-toastmasters');
         $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", $label,implode(', ',$absent));
     }
-    
+
+    $content = $notes . $content;
+
 return $content;
 }
 

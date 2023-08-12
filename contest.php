@@ -366,7 +366,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 				update_post_meta( $id, '_rsvpmaker_special', 'Contest document' );
 				update_post_meta( $id, '_contest_tracking_post', $post->ID );
 				add_post_meta( $id, '_contest_related', $post->ID );
-				update_post_meta( $id, '_rsvp_dates', get_rsvp_date( $post->ID ) );
+				add_rsvpmaker_event( $id, get_rsvp_date( $post->ID ) );
 				add_post_meta( $post->ID, '_contest_related', $id );
 				update_post_meta( $id, 'tm_contest_dashboard_users', $default_dashboard_users );
 				$track_role = sanitize_text_field($_POST['track_role_more'][$index]);
@@ -1819,7 +1819,7 @@ function get_practice_contest_links() {
 		update_post_meta( $practice_contest, 'toast_contest_scoring', $contest_scoring );
 		update_post_meta( $practice_contest, 'toast_timing', $timing );
 		update_post_meta( $practice_contest, '_rsvpmaker_special', 'Contest document' );
-		update_post_meta( $practice_contest, '_rsvp_dates', '2000-01-01 07:00:00' );
+		add_rsvpmaker_event( $practice_contest, '2000-01-01 07:00:00' );
 		$contestants = array( 'Aaron Beverly', 'Mike Carr', 'Ramona J. Smith', 'Darren LaCroix', 'Mark Brown' );
 		update_post_meta( $practice_contest, 'tm_scoring_contestants', $contestants );
 		update_post_meta( $practice_contest, 'tm_scoring_order', $contestants );

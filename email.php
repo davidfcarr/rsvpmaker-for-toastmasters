@@ -599,7 +599,7 @@ $header .= '</head>
 			$output = '<div id="message">' . wp_kses_post(stripslashes( $_POST['note'] )) . "</div>\n<p>Sent by: " . $current_user->display_name . ' <a href="mailto:' . $current_user->user_email . '">' . $current_user->user_email . "</a>\n" . $output;
 		}
 		$mail['html']     = $header . $output . '</body></html>';
-		$mail['from']     = $current_user->user_email;
+		$mail['replyto'] = $mail['from']     = $current_user->user_email;
 		$mail['fromname'] = get_bloginfo( 'name' ) . ' / ' . $current_user->display_name;
 		$mail['subject']  = sanitize_text_field( stripslashes( $_POST['subject'] ) );
 
@@ -620,6 +620,7 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 		}
 		else
 			$subject = $post->post_title;
+		$role_only = (isset($_REQUEST['role_only'])) ? '<input type="hidden" name="role_only" value="1" />' : '';
 		$mailform = '<script>
 	tinymce.init({
 		selector:"textarea",plugins: "link",
@@ -648,7 +649,7 @@ Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><b
 <textarea name="note" rows="5" cols="80"></textarea><br />
 Send to <input type="radio" name="send" value="members" checked="checked" > ' . __( 'all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="members_without" > ' . __( 'members without a role', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="officers"  > ' . __( 'officers', 'rsvpmaker-for-toastmasters' ) . '  <input id="sendtest" type="radio" name="send" value="test" > ' . __( 'this address', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" id+"testto" onkeypress="checkTest()" name="testto" /><br />
 <input type="submit" value="Send" />
-' . rsvpmaker_nonce('return'). '
+' . rsvpmaker_nonce('return'). $role_only. '
 </form>';
 
 		$output = $header . $mailform . $output.'</body></html>';
@@ -880,3 +881,11 @@ function wpt_get_norole_email($post_id) {
 	}
 	return $emails;
 }
+
+function show_role_blocks_only($block_content, $block) {
+	if(isset($_REQUEST['role_only']) && ('wp4toastmasters/role' != $block['blockName']))
+		return '';
+	return $block_content;
+}
+
+add_filter('render_block', 'show_role_blocks_only', 10, 2);

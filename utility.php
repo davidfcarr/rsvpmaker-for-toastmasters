@@ -570,9 +570,8 @@ function get_member_name( $user_id, $credentials = true ) {
 			$name = $member->first_name . ' ' . $member->last_name;
 		}
 
-		if ( $credentials && ! empty( $member->education_awards ) ) {
-
-			$name .= ', ' . $member->education_awards;
+		if ( $credentials && ( false !== strpos($member->education_awards,'DTM') ) ) {
+			$name .= ', DTM';
 		}
 	} else {
 		$name = $user_id . ' (' . __( 'guest', 'rsvpmaker-for-toastmasters' ) . ')';

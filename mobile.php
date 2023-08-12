@@ -20,7 +20,7 @@ function wp4t_enable_mobile() {
             $enabled = false; 
     }
 if(!$enabled)
-    $code = wp_generate_password();
+    $code = wp_generate_password(20,false);
 $enabled_checked = ($enabled) ? ' checked="checked" ' : '';
 $disabled_checked = ($enabled) ? '' : ' checked="checked" ';
 ?>

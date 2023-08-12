@@ -148,13 +148,9 @@ function wpt_email_handler_page () {
 
 }
 
-
-
 function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname, $toarray, $ccarray) {
-
+    update_blog_option(1,'wpt_email_handler', $to);
     echo '<h1>wpt_email_handler_automation triggered</h1>';
-
-
 
     $toline = 'Forwarded message, originally <strong>To:</strong> ';
 
@@ -259,17 +255,12 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
                     $blog_id = 1;//root domain, no subdomain
 
                 //$output .= sprintf('<p>multisite blog id %s</p>',$blog_id);
-
             }
-
         }
 
         else {
-
             $blog_id = 1;
-
             $slug = $address->mailbox;
-
         }
 
         if(!$blog_id)
@@ -280,8 +271,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
         $output .= sprintf('<p>%s@%s blog_id %d router %s </p>',$address->mailbox, $address->host, $blog_id, $slug);
 
-        
-
         if($ffemails && is_array($ffemails))
 
             $finda_id = array_search($forwarder,$ffemails);
@@ -290,15 +279,9 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
             $finda_id = 0;
 
-
-
         if(!empty($finda_id)) {
 
-
-
             //$output .= sprintf('<p>Checking finda_id %s / %s</p>',$finda_id,$forwarder);
-
-
 
             if($finda_id && strpos($from,'google.com') && strpos($qpost['post_title'],'Forward'))
 
@@ -394,8 +377,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
             }
 
-
-
             if(is_array($forward_by_id)) {
 
                 $output .= sprintf('<p><strong>forward by id %s %s</strong></p>',$forwarder, var_export($forward_by_id,true));
@@ -409,9 +390,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             continue;
 
         }
-
-
-
         $unsubscribed = get_option('rsvpmail_unsubscribed');
 
         if(empty($unsubscribed))
@@ -431,8 +409,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
 
         }
-
-
 
         if($slug == 'members') {
 
@@ -479,8 +455,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $sent = true;
 
         }
-
-
 
         if('officers' == $slug) {
 
@@ -555,9 +529,14 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             continue;
 
         }
-
-
-
+        /*
+        set_transient('before_admin_slug_test',$slug);
+        if('admin' == $slug) {
+            $recipients = array(get_blog_option($blog_id,'admin_email'));
+            set_transient('admin_slug_recipients',$recipients);
+            wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
+        }
+        */
         $slug_ids = get_officer_slug_ids($blog_id);
 
         //$output .= sprintf("<p>Officer slug ids %s</p>",var_export($slug_ids, true));
@@ -599,8 +578,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             $sent = true;
 
         }
-
-
 
         $custom_forwarders = (is_multisite()) ? get_blog_option($blog_id,'custom_forwarders') : get_option('custom_forwarders');
 
@@ -1642,27 +1619,24 @@ function wpt_email_handler_forwarders() {
         $domain = $_SERVER['SERVER_NAME'];
 
     }
-
-
-
+    /*
     $wpt_email_handler_custom_forwarders = get_option('toastmost_custom_forwarders');
 
     if(empty($wpt_email_handler_custom_forwarders))
 
         $wpt_email_handler_custom_forwarders = array();
+    */
 
     if(!empty($_POST['slug']) && !wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) )
 
         die('security error');
-
-        $wpt_email_handler_custom_forwarders = get_option('custom_forwarders');
+    $wpt_email_handler_custom_forwarders = get_option('custom_forwarders');
 
     if(empty($wpt_email_handler_custom_forwarders))
 
-            $wpt_email_handler_custom_forwarders = array();
+      $wpt_email_handler_custom_forwarders = array();
 
     if(isset($_POST['forward_update']))
-
     {
 
         foreach($_POST['forward_update'] as $forward_from => $forward_to_text) {
@@ -1737,8 +1711,6 @@ function wpt_email_handler_forwarders() {
 
     }
 
-
-
     $info_address = wpt_format_email_forwarder('info');
 
     $prefix = (strpos($info_address,'-')) ? preg_replace('/-.+/','-',$info_address) : '';
@@ -1766,8 +1738,13 @@ function wpt_email_handler_forwarders() {
     }
 
 if(!empty($alias))
-
-    printf('<p>Currently configured: %s</p>', implode(', ',$alias)); ?>
+    printf('<p>Currently configured: %s</p>', implode(', ',$alias));
+printf('<p><strong>%s</strong> forwards to the current website administrator email registered in WordPress.<p>',wpt_format_email_forwarder('admin'));
+if(function_exists('toastmost_billing_email')) {
+    $billing = toastmost_billing_email();
+    printf('<p><strong>%s</strong> is used for Toastmost subscription status emails.</p>',$billing);
+}
+?>
 
 <p>Custom forwarding addresses can be added in the format <?php echo wpt_format_email_forwarder('mycustomlabel'); ?> (example: <?php echo wpt_format_email_forwarder('mentors'); ?>).</p><p>For a default address that should be used if no other is a match, use <strong><?php echo wpt_format_email_forwarder('default'); ?></strong>.</p> <p>Recipient email addresses may be entered on separate lines or separated by commas.</p>
 
@@ -2380,6 +2357,7 @@ function wpt_member_email_check() {
 
 
 function wpt_email_forwarder_recipients($forwarder) {
+    set_transient('wpt_email_forwarder_recipients',$forwarder);
 
     $address = explode('@',$forwarder);
 
@@ -2536,8 +2514,14 @@ if('officers' == $slug) {
     }
 
 }
-
-
+/*
+set_transient('admin_slug_test',$forwarder);
+if('admin' == $slug) {
+    set_transient('admin_id_detected',$forwarder);
+    $recipients[] = get_blog_option($blog_id,'admin_email');
+    set_transient('admin_recipients',$recipients);
+}
+*/
 
 $slug_ids = get_officer_slug_ids($blog_id);
 

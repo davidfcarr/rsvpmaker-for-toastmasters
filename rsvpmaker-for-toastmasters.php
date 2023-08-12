@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.8.7
+Version: 5.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -130,12 +130,59 @@ function minutes_post_type() {
         'hierarchical'       => false,
         'menu_position'      => 3,
         'supports'           => array( 'title', 'editor', 'author', 'thumbnail' ),
-        'taxonomies'         => array( 'category', 'post_tag' ),
+        'taxonomies'         => array( 'minutes-type' ),
 		'menu_icon' => 'dashicons-text',
         'show_in_rest'       => true
     );
       
     register_post_type( 'TM Minutes', $args );
+
+		// Add new taxonomy, make it hierarchical (like categories)
+
+		$labels = array(
+
+			'name'              => _x( 'Minutes Types', 'taxonomy general name', 'rsvpmaker' ),
+	
+			'singular_name'     => _x( 'Minutes Type', 'taxonomy singular name', 'rsvpmaker' ),
+	
+			'search_items'      => __( 'Search Minutes Types', 'rsvpmaker' ),
+	
+			'all_items'         => __( 'All Minutes Types', 'rsvpmaker' ),
+	
+			'parent_item'       => __( 'Parent Minutes Type', 'rsvpmaker' ),
+	
+			'parent_item_colon' => __( 'Parent Minutes Type:', 'rsvpmaker' ),
+	
+			'edit_item'         => __( 'Edit Minutes Type', 'rsvpmaker' ),
+	
+			'update_item'       => __( 'Update Minutes Type', 'rsvpmaker' ),
+	
+			'add_new_item'      => __( 'Add New Minutes Type', 'rsvpmaker' ),
+	
+			'new_item_name'     => __( 'New Minutes Type', 'rsvpmaker' ),
+	
+			'menu_name'         => __( 'Minutes Type', 'rsvpmaker' ),
+	
+		);
+	
+		register_taxonomy(
+			'minutes-type',
+			array( 'tmminutes' ),
+			array(
+	
+				'hierarchical' => true,
+	
+				'labels'       => $labels,
+	
+				'show_ui'      => true,
+	
+				'show_in_rest' => true,
+	
+				'query_var'    => true,
+	
+			)
+		);
+	
 }
 
 function profile_richtext() {
@@ -1488,7 +1535,7 @@ function tm_agenda_content($post_id = 0) {
 			$time = '';
 
 		$content .= (is_email_context() || $notime) ? '<div style="margin-top: 10px;">' : '<div class="agendaflex" style="display:flex">';
-		if(!$notime)
+		if(!$notime && (!isset($_REQUEST['role_only'])))
 			$content .= '<div class="timetoleft" style="width: max-content; min-width: 125px; font-size: 12px;">'.$time.'</div>';
 		$content .= '<div class="blockcontent" >';
 		if('wp4toastmasters/role' == $block["blockName"]) {
@@ -1562,9 +1609,11 @@ function tm_agenda_content($post_id = 0) {
 			}
 		}
 		elseif('wp4toastmasters/agendaedit' == $block["blockName"]) {
-			$content .= sprintf('<h3>%s</h3>',$attrs['editable']);
-			if(!empty($block['edithtml']))
-				$content .= wp_kses_post($block['edithtml']);
+			if(!isset($_REQUEST['role_only'])) {
+				$content .= sprintf('<h3>%s</h3>',$attrs['editable']);
+				if(!empty($block['edithtml']))
+					$content .= wp_kses_post($block['edithtml']);	
+			}
 		}
 		else 
 			$content .= render_block($block);
@@ -2221,13 +2270,12 @@ function speech_progress() {
 	echo '<p><form method="get" action="' . admin_url( 'edit.php' ) . '"><input type="hidden" name="post_type" value="rsvpmaker"><input type="hidden" name="page" value="speech_progress">' . awe_user_dropdown( 'select_user', 0, true ) . '<input type="submit" value="' . __( 'Get', 'rsvpmaker-for-toastmasters' ) . '" />'.rsvpmaker_nonce('return').'</form></p>' . "\n";
 
 	echo '<h2>' . __( 'Speeches', 'rsvpmaker-for-toastmasters' ) . '</h2>';
-
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_value as template
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.date as datetime, a2.meta_value as template
 	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '_Speaker%' AND a2.meta_value=" . $user_id . ' 
-	 WHERE a1.meta_value < CURDATE()
-	 ORDER BY a1.meta_value DESC';
+	 WHERE date < CURDATE()
+	 ORDER BY date DESC';
 
 	$results = $wpdb->get_results( $sql );
 	foreach ( $results as $row ) {
@@ -2245,12 +2293,12 @@ function speech_progress() {
 
 	echo '<h2>' . __( 'Other Roles', 'rsvpmaker-for-toastmasters' ) . "</h2>\n";
 
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_value as template
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.date as datetime, a2.meta_value as template
 	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key NOT LIKE '%Speaker%' AND meta_key NOT LIKE '_edit_last' AND a2.meta_value=" . $user_id . ' 
-	 WHERE a1.meta_value < CURDATE()
-	 ORDER BY a1.meta_value DESC';
+	 WHERE a1.date < CURDATE()
+	 ORDER BY a1.date DESC';
 
 	$results = $wpdb->get_results( $sql );
 	foreach ( $results as $row ) {
@@ -2262,12 +2310,12 @@ function speech_progress() {
 
 	$wpdb->show_errors();
 	$now = rsvpmaker_date( 'Y-m-d H:i:s' );
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_value as template
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.date as datetime, a2.meta_value as template
 	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event 
 	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '_Speaker%' AND a2.meta_value=" . $user_id . "  AND concat('',a2.meta_value * 1) = a2.meta_value
-	 WHERE a1.meta_value < '" . $now . "'
-	 ORDER BY a1.meta_value DESC";
+	 WHERE a1.date < '" . $now . "'
+	 ORDER BY a1.date DESC";
 
 	$results = $wpdb->get_results( $sql );
 	foreach ( $results as $row ) {
@@ -2583,12 +2631,13 @@ if($district = wp4t_is_district())
 {
 echo '<h3>District: '.$district.'</h3>';
 ?>
+<p>This website is set up as a district website.</p>
 <form method="get" action="<?php echo admin_url('options-general.php'); ?>">
 <input type="hidden" name="page" value="wp4toastmasters_settings">
 <input type="hidden" name="clubreset" value="1">
 <?php
 rsvpmaker_nonce();
-submit_button('Reset to Club');
+submit_button('Switch to Club');
 ?>
 </form>
 <?php	
@@ -2602,7 +2651,7 @@ else {
 District <input name="district"> (number or designation, i.e. Founders)
 <?php
 rsvpmaker_nonce();
-submit_button();
+submit_button('Switch to District');
 ?>
 </form>
 <?php	
@@ -3232,11 +3281,9 @@ Sidebar Items Font <input class="fontcontrol" type="number" name="wp4toastmaster
 	?>
 	 /> <?php _e( 'No, do not turn on beta features', 'rsvpmaker-for-toastmasters' ); ?>.</p>
 	<?php
-	do_action( 'toastmasters_settings_extra' );
-	?>
-
-<input type="submit" value="<?php _e( 'Submit', 'rsvpmaker-for-toastmasters' ); ?>" />
-<?php rsvpmaker_nonce(); ?>
+do_action( 'toastmasters_settings_extra' );
+submit_button();
+rsvpmaker_nonce(); ?>
 </form>
 
 </section>
@@ -5073,6 +5120,7 @@ function agenda_menu( $post_id, $frontend = true ) {
 		$link .= '<li><a  target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Print', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	}
 		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1">' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1&role_only=1">' . __( 'Email (roles only)', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	if ( ! get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
 		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
@@ -5665,11 +5713,7 @@ function display_member( $userdata, $title = '' ) {
 		printf( '<h3 style="clear: none;">%s</h3>', esc_attr($title) );
 	}
 	?>
-<p id="member_<?php echo esc_attr($userdata->ID); ?>"><strong><?php echo esc_html($userdata->first_name . ' ' . $userdata->last_name); ?></strong> 
-						 <?php
-							if ( ! empty( $userdata->education_awards ) ) {
-								echo '(' . esc_html($userdata->education_awards) . ')';}
-							?>
+<p id="member_<?php echo esc_attr($userdata->ID); ?>"><strong><?php echo esc_html(get_member_name($userdata->ID)); ?></strong> 
 	</p>
 	<?php
 	if(	$userdata->tm_directory_blocked	)
@@ -7264,10 +7308,10 @@ function signup_sheet( $atts = array() ) {
 		if ( empty( $limit ) ) {
 			$limit = 3;
 		}
-		$sql  = 'SELECT a1.meta_value as datetime
+		$sql  = 'SELECT date as datetime
 	 FROM ' . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value > CURDATE() AND (post_status='publish' OR post_status='draft') AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ORDER BY a1.meta_value";
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
+	 WHERE a1.date > CURDATE() AND (post_status='publish' OR post_status='draft') AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ORDER BY a1.date";
 		$next = "'" . $wpdb->get_var( $sql ) . "'";
 		if ( isset( $atts['limit'] ) ) {// shortcode version
 			$limit              = $atts['limit'];
@@ -7275,7 +7319,7 @@ function signup_sheet( $atts = array() ) {
 			$next               = 'CURDATE()';
 			ob_start();
 		}
-		$dates     = get_future_events( "a1.meta_value > $next AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ", $limit );
+		$dates     = get_future_events( " date > $next AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ", $limit );
 		$head      = $cells = '';
 		$datecount = 0;
 		foreach ( $dates as $date ) {
@@ -9090,9 +9134,19 @@ function member_only_content( $content ) {
 	if ( ! in_category( 'members-only' ) && ! has_term( 'members-only', 'rsvpmaker-type' ) && (empty($post->post_type) || $post->post_type != 'tmminutes') ) {
 		return $content;
 	}
-
+	if('tmminutes' == $post->post_type) {
+		//termids
+		$terms = wp_get_post_terms( $post->ID, array( 'minutes-type' ) );
+		if($terms) {
+			$content .= '<p>Minutes type: ';
+			foreach ( $terms as $term ) :
+				$term_links[] = sprintf('<a href="%s">%s</a>',get_term_link($term->term_id),$term->name);
+			endforeach;
+			$content .= implode(', ',$term_links).'</p>';
+		}
+	}
 	if ( ! is_club_member() ) {
-		return '<div style="width: 100%; background-color: #ddd;">' . __( 'You must be logged in and a member of this blog to view this content', 'rsvpmaker-for-toastmasters' ) . '</div>' . sprintf( '<div id="member_only_login"><a href="%s">' . __( 'Login to View', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url( '/wp-login.php?redirect_to=' . urlencode( get_permalink() ) ) );
+		return '<div style="width: 100%; background-color: #ddd;">' . __( 'To view this content, you must be logged with a member account.', 'rsvpmaker-for-toastmasters' ) . '</div>' . sprintf( '<div id="member_only_login"><a href="%s">' . __( 'Login to View', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url( '/wp-login.php?redirect_to=' . urlencode( get_permalink() ) ) );		
 	}  
 	elseif(isset($_GET['print']))
 		return $content;
@@ -9101,7 +9155,6 @@ function member_only_content( $content ) {
 	}
 
 }
-
 
 function members_only_jetpack( $tag_array ) {
 	if ( ! in_category( 'members-only' ) && ! has_term( 'members-only', 'rsvpmaker-type' ) ) {
@@ -9117,7 +9170,7 @@ function member_only_excerpt( $excerpt ) {
 	}
 
 	if ( ! is_club_member() ) {
-		return __( 'You must be logged in and a member of this blog to view this content', 'rsvpmaker-for-toastmasters' );
+		return __( 'To view this content, you must be logged in with a member account.', 'rsvpmaker-for-toastmasters' );
 	} else {
 		return $excerpt;
 	}
@@ -12572,12 +12625,12 @@ class role_history {
 			}
 		}
 
-		$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.post_title, a1.meta_value as datetime, date_format(a1.meta_value,'%Y-%m-%d') as ymddate, a2.meta_key as role
+		$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.post_title, a1.date as datetime, date_format(a1.date,'%Y-%m-%d') as ymddate, a2.meta_key as role
 	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . '.ID =a1.post_id
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . '.ID =a1.event
 	 JOIN ' . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id 
-	 WHERE  a1.meta_key='_rsvp_dates' AND a1.meta_value < " . $start_date . " AND post_status='publish' AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$'  AND a2.meta_value=" . $user_id . ' 
-	 ORDER BY a1.meta_value DESC';
+	 WHERE  a1.date < " . $start_date . " AND post_status='publish' AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$'  AND a2.meta_value=" . $user_id . ' 
+	 ORDER BY a1.date DESC';
 
 		$this->full_history = $wpdb->get_results( $sql );
 		if ( $this->full_history ) {
@@ -12880,7 +12933,7 @@ if ( 'add' == $operation ) {
 	add_post_meta( $post_id, 'tm_absence', $away_user_id );
 	if(!empty($data->until)) {
 		$until = sanitize_text_field($data->until);
-		add_user_meta($away_user_id,'tm_absence_until',$until);
+		update_user_meta($away_user_id,'tm_absence_until',$until);
 		$thisdate = get_rsvp_date($post_id);
 		$results = $wpdb->get_results("SELECT event from $event_table WHERE date > '$thisdate' AND date <= '$until' ");
 		foreach($results as $row) {
@@ -12894,6 +12947,7 @@ if ( 'remove' == $operation ) {
 	$away_user_id = intval($data->ID);
 	$status .= 'attempt to remove '.$away_user_id.' post_id '.$post_id;
 	delete_post_meta( $post_id, 'tm_absence', $away_user_id );
+	delete_user_meta($away_user_id,'tm_absence_until');
 	if(!empty($data->until)) {
 		$until = sanitize_text_field($data->until);
 		$results = $wpdb->get_results("SELECT event from $event_table WHERE  date > '$thisdate' AND date <= '$until' ");
@@ -12966,10 +13020,10 @@ function toastmasters_role_signup() {
 
 			$startfrom = " '$date' ";
 
-			$sql  = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.meta_value as datetime, a1.meta_value as datetime, date_format(a1.meta_value,'%M %e, %Y') as date
+			$sql  = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.date as datetime, a1.date as datetime, date_format(a1.date,'%M %e, %Y') as date
 		 FROM " . $wpdb->posts . '
-		 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-		 WHERE a1.meta_value > " . $startfrom . " AND post_status='publish' AND (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ORDER BY a1.meta_value ";
+		 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
+		 WHERE a1.date > " . $startfrom . " AND post_status='publish' AND (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ORDER BY a1.date ";
 			$next = $wpdb->get_row( $sql );
 			if ( $next && ! isset( $_REQUEST['editor_assign'] ) ) {
 				$o .= sprintf( '<p>Would you also like to sign up for <a href="%s">%s</a>?</p>', get_permalink( $next->ID ), $next->date );

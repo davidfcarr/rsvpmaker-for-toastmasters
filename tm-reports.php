@@ -49,6 +49,7 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
 }
 
@@ -580,12 +581,12 @@ function get_latest_speeches( $user_id, $myroles = array() ) {
 	global $current_user;
 
 	$wpdb->show_errors();
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_key as speech
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, a1.date as datetime, a2.meta_key as speech
 	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=" . $user_id . " 
-	 WHERE a1.meta_value < CURDATE() AND post_status='publish'
-	 ORDER BY a1.meta_value DESC";
+	 WHERE a1.date < CURDATE() AND post_status='publish'
+	 ORDER BY a1.date DESC";
 
 	$speeches = $wpdb->get_results( $sql );
 
@@ -737,10 +738,10 @@ function toastmasters_reconcile() {
 		echo '<select></p>';
 
 	} else {
-		$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.meta_value,'%M %e, %Y') as date
+		$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.date,'%M %e, %Y') as date
 	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-	 WHERE a1.meta_value < DATE_ADD('" . get_sql_now() . "',INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.meta_value DESC";
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
+	 WHERE a1.date < DATE_ADD('" . get_sql_now() . "',INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.date DESC";
 
 		$results = $wpdb->get_results( $sql );
 		if ( empty( $results ) ) {
@@ -980,6 +981,250 @@ function toastmasters_minutes_exist($post_id) {
 	return $wpdb->get_var($sql);
 }
 
+function toastmasters_minutes_templates() {
+global $current_user, $rsvp_options;
+?>
+<h1>Minutes Templates</h1>
+<?php
+if(isset($_POST['tid'])) {
+	$new['post_content'] = get_the_content(null, false, intval($_POST['tid']));
+	$new['post_title'] = sanitize_text_field(stripslashes($_POST['title']));
+	$new['post_author'] = $current_user->ID;
+	$new['post_type'] = 'tmminutes';
+	$new['post_status'] = 'draft';
+	if(isset($_POST['termids']))
+		$new['tax_input'] = array('minutes-type' => explode(',',$_POST['termids']));
+	$post_id = wp_insert_post($new);
+	printf('<div class="notice notice-success"><p><strong>%s</strong> draft created: <a href="%s">Edit</a></p></div>',$new['post_title'],admin_url('post.php?action=edit&post='.$post_id));
+}
+?>
+<p>You can designate one or more minutes documents to serve as templates for a board meeting or other meeting type. A template is simply an outline of the elements you expect to be included in meeting minutes.  An "Executive Board Minutes Template" (loosely based on one from Toastmasters International) is created by default as a starting point.</p>
+<p>To prevent the template from appearing publicly, save it as a draft but do not publish it.</p>
+<?php
+$templates = get_option('toastmasters_minutes_templates');
+if(empty($templates) || isset($_GET['reset'])) {
+$new['post_title'] = 'Executive Board Minutes Template';
+$new['post_content'] = '
+<!-- wp:paragraph -->
+<p>The Club Executive Committee convened on *Month Day, Year*, with *presiding officer* presiding. Officers present were: President, Vice President Education, Vice President Membership, Vice President Public Relations, Secretary, Treasurer, Sergeant at Arms. Officers absent were: *Officer Names*.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Minutes of the previous Executive Committee meeting were reviewed and approved.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Vice President Education provides report from Education Committee:<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Business Item 1</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Business Item 2</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Vice President Membership provides report from Membership Committee:<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Business Item 1</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Business Item 2</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Vice President Public Relations provides report from Public Relations Committee:<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Business Item 1</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Business Item 2</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Sergeant at Arms provides report from Social and Reception Committee:<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Business Item 1</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Business Item 2</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Additional committee reports provided by committee chair:<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Business Item 1</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Business Item 2</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Motions proposed to the committee requiring a vote:</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>*Officer Name* moved that “exact words after ‘I move that.’” The motion was adopted.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>*Officer Name* moved that “exact words after ‘I move that.’” The motion was lost.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>President/presiding officer discusses any unfinished and new items of Club Executive Committee:<!-- wp:list -->
+<ul><!-- wp:list-item -->
+<li>Business Item 1</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Business Item 2</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+<!-- wp:paragraph -->
+<p>Meeting adjourned at *Time*.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:columns -->
+<div class="wp-block-columns"><!-- wp:column -->
+<div class="wp-block-column"><!-- wp:spacer -->
+<div style="height:100px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:separator -->
+<hr class="wp-block-separator has-alpha-channel-opacity"/>
+<!-- /wp:separator -->
+
+<!-- wp:paragraph -->
+<p>President</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:spacer -->
+<div style="height:100px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:separator -->
+<hr class="wp-block-separator has-alpha-channel-opacity"/>
+<!-- /wp:separator -->
+
+<!-- wp:paragraph -->
+<p>Date</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns -->
+
+<!-- wp:columns -->
+<div class="wp-block-columns"><!-- wp:column -->
+<div class="wp-block-column"><!-- wp:spacer -->
+<div style="height:100px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:separator -->
+<hr class="wp-block-separator has-alpha-channel-opacity"/>
+<!-- /wp:separator -->
+
+<!-- wp:paragraph -->
+<p>Secretary</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column -->
+
+<!-- wp:column -->
+<div class="wp-block-column"><!-- wp:spacer -->
+<div style="height:100px" aria-hidden="true" class="wp-block-spacer"></div>
+<!-- /wp:spacer -->
+
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:separator -->
+<hr class="wp-block-separator has-alpha-channel-opacity"/>
+<!-- /wp:separator -->
+
+<!-- wp:paragraph -->
+<p>Date</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns -->
+';
+$new['post_author'] = $current_user->ID;
+$new['post_type'] = 'tmminutes';
+$new['post_status'] = 'draft';
+$post_id = wp_insert_post($new);
+$templates = array($post_id);
+update_option('toastmasters_minutes_templates',$templates);
+}
+elseif(isset($_POST['new_template_title'])) {
+	$new['post_title'] = sanitize_text_field(stripslashes($_POST['new_template_title']));
+	$new['post_content'] = '';
+	$new['post_author'] = $current_user->ID;
+	$new['post_type'] = 'tmminutes';
+	$new['post_status'] = 'draft';
+	$post_id = wp_insert_post($new);
+	$templates[] = $post_id;
+	update_option('toastmasters_minutes_templates',$templates);	
+}
+foreach($templates as $tid) {
+	$title = get_the_title($tid);
+	printf('<h2>%s</h2>',$title);
+	printf('<p><a href="%s">Edit</a></p>',admin_url('post.php?action=edit&post='.$tid));
+	$terms = wp_get_post_terms( $tid, array( 'minutes-type' ) );
+foreach ( $terms as $term ) :
+$termIds[] = $term->term_id;
+echo $term->taxonomy .' '. $term->name.'<br />';
+endforeach;
+printf('<p>Create a minutes document based on <strong>%s</strong></p>
+<form method="post" action="%s"><input type="hidden" name="tid" value="%d">',$title,admin_url('edit.php?post_type=tmminutes&page=toastmasters_minutes_templates'),$tid);
+echo '<p>New Document Title:<br /><input type="text" name="title"></p>';
+printf('<p>Example: <em>%s Executive Board Minutes for %s</em>',get_option('blogname'),rsvpmaker_date($rsvp_options['long_date']));
+if(isset($termIds))
+	printf('<input  type="hidden" name="termids" value="%s">',implode(',',$termIds));
+submit_button('Create Draft');
+echo '</form>';
+}
+
+printf('<h2>Create a New Minutes Template</h2>
+<form method="post" action="%s">
+Title <input type="text" name="new_template_title"></p>',admin_url('edit.php?post_type=tmminutes&page=toastmasters_minutes_templates'));
+submit_button('Create New Template');
+echo '</form>';
+
+}
+
 function toastmasters_minutes_help() {
 	$minutes_archive = get_post_type_archive_link( 'tmminutes' );
 ?>
@@ -1025,10 +1270,10 @@ function toastmasters_meeting_minutes() {
 		echo '<select></p>';
 
 	} else {
-		$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.meta_value,'%M %e, %Y') as date
+		$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, date_format(a1.date,'%M %e, %Y') as date
 		 FROM " . $wpdb->posts . '
-		 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
-		 WHERE a1.meta_value < DATE_ADD('" . get_sql_now() . "',INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.meta_value DESC";
+		 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
+		 WHERE a1.date < DATE_ADD('" . get_sql_now() . "',INTERVAL 5 HOUR) AND (post_status='publish' OR post_status='draft')  AND (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ORDER BY a1.date DESC";
 
 		$results = $wpdb->get_results( $sql );
 		if ( empty( $results ) ) {
@@ -1319,12 +1564,12 @@ function get_speech_role_count( $user_id, $check_history = true ) {
 	$count               = 0;
 	$role_count_projects = array();
 
-	$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, a1.meta_value as datetime, a2.meta_key as manual
+	$sql = "SELECT DISTINCT $wpdb->posts.ID as post_id, $wpdb->posts.*, a1.date as datetime, a2.meta_key as manual
 	 FROM " . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=" . $user_id . " 
-	 WHERE a1.meta_value < '" . get_sql_now() . "' AND post_status='publish'
-	 ORDER BY a1.meta_value DESC ";
+	 WHERE a1.date < '" . get_sql_now() . "' AND post_status='publish'
+	 ORDER BY a1.date DESC ";
 
 	if ( isset( $_REQUEST['debug'] ) ) {
 		echo esc_html($sql);
@@ -2382,12 +2627,12 @@ function get_latest_visit( $user_id ) {
 	global $wpdb;
 	$wpdb->show_errors();
 
-	$sql  = 'SELECT DISTINCT a1.meta_value as datetime
+	$sql  = 'SELECT DISTINCT a1.date as datetime
 	 FROM ' . $wpdb->posts . '
-	 JOIN ' . $wpdb->postmeta . ' a1 ON ' . $wpdb->posts . ".ID =a1.post_id AND a1.meta_key='_rsvp_dates'
+	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . '.ID =a2.post_id AND a2.meta_value=' . $user_id . " AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$'  
-	 WHERE a1.meta_value < '" . get_sql_now() . "' 
-	 ORDER BY a1.meta_value DESC";
+	 WHERE a1.date < '" . get_sql_now() . "' 
+	 ORDER BY a1.date DESC";
 	$date = $wpdb->get_var( $sql );
 	if ( $date ) {
 		return date( 'Y-m-d', strtotime( $date ) );
