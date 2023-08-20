@@ -513,7 +513,7 @@ function awesome_open_roles( $post_id = null, $scheduled = false ) {
 		$post_id = (int) $_REQUEST['open_roles'];
 	}
 	$permalink = rsvpmaker_permalink_query( $post_id );
-	$row       = get_rsvp_event( " ID = $post_id " );
+	$event       = get_rsvpmaker_event( $post_id );
 	// year not necessary in this context
 	$dateformat = str_replace( ', ', '', str_replace( 'Y', '', $rsvp_options['long_date'] ) );
 
@@ -522,7 +522,7 @@ function awesome_open_roles( $post_id = null, $scheduled = false ) {
 	} else {
 		$time_format = $dateformat;
 	}
-	$date = rsvpmaker_date( $time_format, rsvpmaker_strtotime( $row->datetime ) );
+	$date = rsvpmaker_date( $time_format, $event->ts_start );
 
 	$header   = '<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

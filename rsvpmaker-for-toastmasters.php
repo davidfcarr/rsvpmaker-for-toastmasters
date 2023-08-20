@@ -4969,7 +4969,9 @@ if(strpos($role,'Speaker'))
 }
 
 $user = get_userdata($user_id);
-return sprintf('<p>%s signed up for %s. <a href="%s">View agenda</s></p>',$user->display_name,clean_role($role),add_query_arg(array('print_agenda' =>1, 'no_print' =>1),get_permalink()) );
+$clean = clean_role($role);
+awesome_wall('signed up for '.$clean,$post->ID,$user_id);
+return sprintf('<p>%s signed up for %s. <a href="%s">View agenda</s></p>',$user->display_name,$clean,add_query_arg(array('print_agenda' =>1, 'no_print' =>1),get_permalink()) );
 }
 
 function awesome_event_content( $content ) {
@@ -11530,6 +11532,12 @@ function tm_youtube_tool() {
 		$policy = wp_kses_post(stripslashes( $_POST['policy'] ));
 		$message = wp_kses_post(stripslashes($_POST['message']))."\n".$policy;
 		$subject = sanitize_text_field($_POST['youtube_subject']);
+		if(isset($_POST['event_ids'])) {
+			$ids = explode(',',$_POST['event_ids']);
+			foreach($ids as $id) {
+				update_post_meta(intval($id),'youtube_shared',true);
+			}
+		}
 		$lines = explode("\n",$message);
 		$email_content = $content = '';
 		foreach($lines as $line) {
@@ -11650,9 +11658,13 @@ function tm_youtube_tool() {
 	$show = (isset($_GET['show'])) ? intval($_GET['show']) : 5;
 	$past  = past_toastmaster_meetings($show);
 	if ( $past ) {
-		foreach ( $past as $pindex => $pst ) {
+		foreach ( $past as $pindex => $pst ) {			
 			$speakerdate = rsvpmaker_date($rsvp_options['long_date'], (int) $pst->ts_start);
 			$j[] = '{"date":"'.$speakerdate.'","previewtext":""}';
+			if(get_post_meta($pst->ID,'youtube_shared',true))
+			{
+				$speakerdate .= ' (shared)';
+			}
 			$wrapup[]       = $speakerdate;
 			$alldetails[]   = '<strong>' . $speakerdate . '</strong>';
 			$ptext .= (empty($ptext)) ? '<div>' : '<div class="ptextmore">';
@@ -11683,6 +11695,7 @@ function tm_youtube_tool() {
 						// $alldetails[] = '<strong>'.$user->first_name.' '.$user->last_name.'</strong> '.$details;
 						$ptext .= sprintf( '%s: %s<br />Details: <input type="text" name="speech['.$pst->ts_start.'][%d]" id="speech%d" value="%s" class="speech"> YouTube Link: <input type="text" name="link['.$pst->ts_start.'][%d]" id="linkspeaker%d" class="checkboxlink" i="%d" class="link">', $name, $details, $count, $count, htmlentities( $details), $count, $count, $count );
 						$ptext .= "</div>\n\n";
+						$ptext .= sprintf('<input type="hidden" id="event_id_%d" value="%d">',$count,$pst->ID);
 						$count++;
 					}
 					$nameanddetails .= '<p>' . $name . ': ' . $details . '</p>';
@@ -11705,6 +11718,7 @@ function tm_youtube_tool() {
 <h3><?php _e( 'Policy to include in email', 'rsvpmaker-for-toastmasters' ); ?></h3>
 <p><textarea name="policy" rows="3" style="width: 90%"><?php echo wp_kses_post($policy); ?></textarea></p>
 <input type="hidden" name="speakers" id="speakers">
+<input type="hidden" name="event_ids" id="event_ids">
 <div id="youtube_preview"></div>
 <p>To display a listing of videos and blog posts indexed by member name on your website, include the code [blogs_by_member_tag] on the page where you want it to appear.</p>
 </div>
@@ -11779,6 +11793,8 @@ var dates = [];
 var checkid;
 var count;
 var link;
+var event_id;
+var event_ids = [];
 var speaker;
 var speakerdetails;
 
@@ -11792,12 +11808,17 @@ function make_youtube_preview() {
 			checkid = $(this).attr('id');
 			count = checkid.replace('speaker','');
 			link = $('#link'+checkid).val();
+			event_id = $('#event_id_'+count).val();
+			console.log('check for #event_id_'+count);
+			console.log(event_id);
 			speaker = $('#'+checkid).val();
 			if($('#'+checkid).is(':checked')) {
 				if(!speakers.includes(speaker))
 					speakers.push(speaker);
 				if(!dates.includes(dateobj.date))
 					dates.push(dateobj.date);
+				if(!event_ids.includes(event_id))
+					event_ids.push(event_id);
 				dateobj.previewtext = dateobj.previewtext + speaker;
 				dateobj.previewtext = dateobj.previewtext + ': '+$('#speech'+count).val() + "\n\n";
 				if('' != link) {
@@ -11839,6 +11860,7 @@ function make_youtube_preview() {
 	console.log(dates);
 	$('#youtube_subject').val('Replay: '+speakers.join(', ')+', '+dates.join(', '));
 	$('#speakers').val(speakers.join(','));
+	$('#event_ids').val(event_ids.join(','));
 }
 
 $('.youtube_speaker_check').click( function() { make_youtube_preview() } );

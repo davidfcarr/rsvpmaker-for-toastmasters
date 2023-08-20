@@ -393,6 +393,10 @@ class TM_Role extends WP_REST_Controller {
 			$response['content'] = wpt_api_add_absence();
 		else
 			$response['content'] = toastmasters_role_signup();
+		do_action('rsvpmaker_log_array',
+		array('meta_key' => 'agenda_activity',
+		'meta_value' => $response['content'],
+		));		
 		return new WP_REST_Response( $response, 200 );
 	}
 }
@@ -931,6 +935,11 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 
 	public function handle( $request ) {
 		$output = wptm_count_votes($request['post_id']);
+		do_action('rsvpmaker_log_array',
+	array('meta_key' => 'voting',
+	'meta_value' => $output,
+    ));
+
 		return new WP_REST_Response( $output, 200 );
 	}
 }
@@ -1370,7 +1379,10 @@ class WP4TUpdateRole extends WP_REST_Controller {
 					update_post_meta($post_id,$key,$value);
 					$updated['status'] .= ' '.$key.' = '.$value;	
 			}
-			//}
+			do_action('rsvpmaker_log_array',
+			array('meta_key' => 'update_role',
+			'meta_value' => $updated,
+			));					//}
 		}
 		return new WP_REST_Response($updated,
 			200
@@ -1421,6 +1433,11 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 		$upid = wp_update_post($updated);
 		$agendadata = wpt_get_agendadata($post_id);
 		$agendadata['status'] = "update agenda ".$upid;
+
+	do_action('rsvpmaker_log_array',
+	array('meta_key' => 'update_agenda',
+	'meta_value' => $agendadata,
+    ));
 
 		return new WP_REST_Response($agendadata,
 			200
@@ -1543,6 +1560,8 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 			$roleindex = 0;
 		}
 		$name = get_member_name($user_id);
+		if($user_id == $current_user->ID)
+			awesome_wall('signed up for '.$role,$post_id);
 		$keybase = '_'.preg_replace('/[^a-zA-Z0-9]/','_',$role).'_';
 		$updated = $item = (array) $data;
 		$status = 'updated post id '.$post_id.' count: '.$count;
@@ -1562,6 +1581,14 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 			$status .= ' '.$key.' = '.$value;
 			$updated['status'] .= ' '.$key.' = '.$value;
 	}
+
+	$key = (isset($item["ID"]) && ($item["ID"] == $current_user->ID)) ? 'role sign up' : 'role assignment';
+	do_action('rsvpmaker_log_array',
+	array('meta_key' => $key,
+	'meta_value' => $updated['status'],
+	'user_id' => $current_user->ID,
+    ));
+
 		$agendadata = wpt_get_agendadata($post_id);
 		$agendadata['status'] = $status;
 		$agendadata['prompt'] = ($user_id == $current_user->ID);
@@ -1893,6 +1920,11 @@ class WP4T_Evaluation extends WP_REST_Controller {
 			
 			$response['message'] = '<div>'.$response['status']."</div>\n".$response['message'];
 
+			do_action('rsvpmaker_log_array',
+	array('meta_key' => 'evaluation',
+	'meta_value' => $response,
+    ));
+
 			//process evaluation
 			return new WP_REST_Response($response,
 			200
@@ -2104,8 +2136,6 @@ class WP4T_XX extends WP_REST_Controller {
 
 {'prompt':'You excelled at','choices':[],'choice':'','note':''},{'prompt':'You may want to work on','choices':[],'choice':'','note':''},{'prompt':'To challenge yourself','choices':[],'choice':'','note':''},{'prompt':'Clarity: Spoken language is clear and is easily understood','choices':[{'label':'5 (Exemplary)','value':'5 (Exemplary)'},{'label':'4 (Excels)','value':'4 (Excels)'},{'label':'3 (Accomplished)','value':'3 (Accomplished)'},{'label':'2 (Emerging)','value':'2 (Emerging)'},{'label':'1 (Developing)','value':'1 (Developing)'}],'choice':'','note':''}
 */
-
-
 
 add_action(
 	'rest_api_init',
