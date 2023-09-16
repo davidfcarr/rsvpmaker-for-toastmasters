@@ -45,27 +45,29 @@ function agenda_layout_options() {
         $sidebarfont = 12;
     $custom = get_option( 'wp4toastmasters_agenda_css' );
 
+    $agenda_header = '<!-- wp:columns {"className":"titleblock"} -->
+    <div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
+    <div class="wp-block-column" style="flex-basis:10%"><!-- wp:image {"width":40,"sizeSlug":"large"} -->
+    <figure class="wp-block-image size-large is-resized"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="" style="width:40px" width="40"/></figure>
+    <!-- /wp:image --></div>
+    <!-- /wp:column -->
+    
+    <!-- wp:column {"width":"90%"} -->
+    <div class="wp-block-column" style="flex-basis:90%"><!-- wp:heading {"style":{"typography":{"fontSize":22}}} -->
+    <!-- wp:paragraph {"style":{"typography":{"fontSize":22}},"className":"agenda-title"} -->
+    <p class="agenda-title" style="font-size:22px">'.esc_html(get_option('blogname')).' [tmlayout_post_title]</p>
+    <!-- /wp:paragraph -->
+    
+    <!-- wp:wp4toastmasters/meetingdate /--></div>
+    <!-- /wp:column --></div>
+    <!-- /wp:columns -->';
+
     if(isset($_POST['change_layout'])) {
         $l = $_POST['change_layout'];
         if('default'==$l) {
             $up['ID'] = $layout;
-            $up['post_content'] = '<!-- wp:columns {"className":"titleblock"} -->
-            <div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
-            <div class="wp-block-column" style="flex-basis:10%"><!-- wp:wp4toastmasters/logo -->
-            <div class="tm-logo" class="wp-block-wp4toastmasters-logo"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" width="50" height="50"/></div>
-            <!-- /wp:wp4toastmasters/logo --></div>
-            <!-- /wp:column -->
-            
-            <!-- wp:column {"width":"90%"} -->
-            <div class="wp-block-column" style="flex-basis:90%"><!-- wp:paragraph {"style":{"typography":{"fontSize":22}}} -->
-            <p id="block-25ecbefc-681f-4f15-aee4-936431ed20f3" style="font-size:22px">Delta Force [tmlayout_post_title]</p>
-            <!-- /wp:paragraph -->
-            
-            <!-- wp:paragraph {"fontSize":"medium"} -->
-            <p class="has-medium-font-size" id="block-25ecbefc-681f-4f15-aee4-936431ed20f3">[tmlayout_meeting_date] </p>
-            <!-- /wp:paragraph --></div>
-            <!-- /wp:column --></div>
-            <!-- /wp:columns -->
+
+            $up['post_content'] = $agenda_header . '
             
             <!-- wp:columns -->
             <div class="wp-block-columns"><!-- wp:column {"width":"33.33%"} -->
@@ -83,23 +85,7 @@ function agenda_layout_options() {
         }
         elseif('nosidebar' == $l) {
             $up['ID'] = $layout;
-            $up['post_content'] = '<!-- wp:columns {"className":"titleblock"} -->
-            <div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
-            <div class="wp-block-column" style="flex-basis:10%"><!-- wp:wp4toastmasters/logo -->
-            <div class="tm-logo" class="wp-block-wp4toastmasters-logo"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="Toastmasters logo" width="50" height="50"/></div>
-            <!-- /wp:wp4toastmasters/logo --></div>
-            <!-- /wp:column -->
-            
-            <!-- wp:column {"width":"90%"} -->
-            <div class="wp-block-column" style="flex-basis:90%"><!-- wp:paragraph {"style":{"typography":{"fontSize":22}}} -->
-            <p id="block-25ecbefc-681f-4f15-aee4-936431ed20f3" style="font-size:22px">Delta Force [tmlayout_post_title]</p>
-            <!-- /wp:paragraph -->
-            
-            <!-- wp:paragraph {"fontSize":"medium"} -->
-            <p class="has-medium-font-size" id="block-25ecbefc-681f-4f15-aee4-936431ed20f3">[tmlayout_meeting_date] </p>
-            <!-- /wp:paragraph --></div>
-            <!-- /wp:column --></div>
-            <!-- /wp:columns -->
+            $up['post_content'] = $agenda_header . '
             
             <!-- wp:wp4toastmasters/agendamain /-->';
         }
@@ -129,7 +115,8 @@ Sidebar Items Font <input class="fontcontrol" type="number" name="side" value="<
 <form method="post" action="<?php echo $layoutlink; ?>">
 Layout Template <input type="radio" name="change_layout" value="default" checked="checked" /> Default (reset) <input type="radio" name="change_layout" value="nosidebar" /> No Sidebar 
 <button>Update</button>
-<div><a href="<?php echo $layout_edit; ?>">Advanced: open layout document in the WordPress editor</a></div>
+<?php if(current_user_can('manage_options')) { printf('<p><a href="%s">Update Officers List</a></p>',admin_url('options-general.php?page=wp4toastmasters_settings#officers')); } else echo '<p>Update officers list on the Settings -> Toastmasters screen (requires website administrator access)</p>'; ?>
+<p><a href="<?php echo $layout_edit; ?>">Advanced: open layout document in the WordPress editor</a></p>
 </form>
 </div>
 <form method="post" action="<?php echo $layoutlink; ?>">

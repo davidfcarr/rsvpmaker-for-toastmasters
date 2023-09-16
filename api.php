@@ -424,8 +424,10 @@ function wpt_suggest_role() {
 		$nonce = wp_create_nonce('oneclick');
 		update_post_meta($post_id,'oneclicknonce',$nonce);
 	}
-	$url = add_query_arg(array('oneclick' => $nonce,'role' => rawurlencode($role),'member' => $member_id),get_permalink($post_id)).'#oneclick';
-	$link = sprintf('<a href="%s" style="display:block; width: 150px; text-align: center; text-decoration: none; background-color: black; color: white; border: thin solid gray; font-weight:bold; font-size:large; padding: 5px;">%s</a> <br>%s <a href="%s">%s</a>', $url, __('Take Role','rsvpmaker-for-toastmasters'), __('or click','rsvpmaker-for-toastmasters'), $url, $url );
+	$url = add_query_arg(array('oneclick' => $nonce,'role' => rawurlencode($role),'member' => $member_id,'by'=>$current_user->ID),get_permalink($post_id)).'#oneclick';
+	$link = sprintf('<a href="%s" style="display:block; width: 150px; text-align: center; text-decoration: none; background-color: black; color: white; border: thin solid gray; font-weight:bold; font-size:large; padding: 5px; margin: 15px;">%s</a>', $url, __('Take Role','rsvpmaker-for-toastmasters') );
+	$absence = add_query_arg(array('oneclick' => $nonce,'role' => 'absent','e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
+	$link .= '<p>Or let us know if you will not be able to attend.</p>'.sprintf('<a style="width: 150px; text-align: center; text-decoration: none; font-weight: bold; display: block; background-color: red; color: #FFFFFF; padding: 10px; margin: 15px;" href="%s#oneclick">Will Not Attend</a>',$absence);
 	$templates = get_rsvpmaker_notification_templates();
 	$template = $templates['suggest'];
 	$note = '';
@@ -1141,6 +1143,7 @@ function wpt_get_agendadata($post_id = 0) {
 	$agendadata['is_user_logged_in'] = is_user_logged_in(); // true for logged in users who are not members
 	$agendadata['current_user_name'] = ($current_user->ID) ? get_member_name($current_user->ID) : '';
 	$agendadata['newSignupDefault'] = (bool) get_option('wp4t_newSignupDefault');
+	$agendadata['admin_url'] = admin_url();
 	$agendadata['second_language_feedback'] = boolval(get_user_meta($current_user->ID,'second_language_feedback',true));
 	$agendadata['upcoming'] = [];
 	if($post_id) {
