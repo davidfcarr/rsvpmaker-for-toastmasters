@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.9.2
+Version: 5.9.3
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4908,6 +4908,7 @@ elseif('absent' == $role) {
 		$mail['html'] = '<p>'.$user->display_name.' response to role suggestion: ABSENT</p>';
 		rsvpmailer($mail);
 	}
+	$output .= sprintf('<p>Want first pick of roles for future meetings? <a href="%s">Sign up for multiple meetings</a> in advance.</p>',admin_url('admin.php?page=toastmasters_planner'));
 	$output .= sprintf('<p><a href="%s">Exit one-click signup mode</a> to see the regular agenda signup sheet.</p><div style="height: 1000px; "></div>',get_permalink());
 	
 	return $output;
@@ -5021,11 +5022,12 @@ if(isset($_POST['by'])) {
 	$mail['to'] = $by->user_email;
 	$mail['from'] = $user->user_email;
 	$mail['subject'] = $user->display_name.' confirmed for '.$clean.' on '.$date;
-	$mail['html'] = '<p>'.$user->display_name.' response to role suggestion: ABSENT</p>';
+	$mail['html'] = '<p>'.$user->display_name.' responded YES to role suggestion: '.$clean.'</p>';
 	rsvpmailer($mail);	
 }
 awesome_wall('signed up for '.$clean,$post->ID,$user_id);
 $output = sprintf('<p>%s signed up for %s. <a href="%s">View agenda</a></p>',$user->display_name,$clean,add_query_arg(array('print_agenda' =>1, 'no_print' =>1),get_permalink()) );
+$output .= sprintf('<p>Want first pick of roles for future meetings? <a href="%s">Sign up for multiple meetings</a> in advance.</p>',admin_url('admin.php?page=toastmasters_planner'));
 $output .= sprintf('<p><a href="%s">Exit one-click signup mode</a> to see the regular agenda signup sheet.</p><div style="height: 1000px; "></div>',get_permalink());
 
 return $output;

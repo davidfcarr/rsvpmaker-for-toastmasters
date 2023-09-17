@@ -1,7 +1,5 @@
 <?php
 
-
-
 add_action( 'admin_menu', 'toastmasters_reports_menu' );
 
 add_action( 'admin_menu', 'tm_welcome_screen_pages' );
@@ -11,8 +9,6 @@ add_action( 'admin_enqueue_scripts', 'tm_welcome_screen_assets' );
 add_action( 'admin_init', 'tm_member_welcome_redirect' );
 
 add_action( 'admin_head', 'tm_welcome_screen_remove_menus' );
-
-
 
 function toastmasters_reports_menu() {
 
@@ -14676,13 +14672,19 @@ function agenda_template_editor () {
 }
 
 function tm_oneclick_message($post_id,$role,$nonce,$shortdate,$suggest_all_message) {
-	global $current_user;
+	global $current_user, $login_signup;
+	if(empty($login_signup))
+		{
+			$url = wp_login_url(get_permalink($meeting_id));
+			$login_signup = sprintf('<a href="%s">%s</a>',$url,__('login','rsvpmaker-for-toastmasters'));
+		}
 	$oneclick = add_query_arg(array('oneclick' => $nonce,'role' => $role,'e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
 	$oneclick = sprintf('<a style="width: 150px; text-align: center; text-decoration: none; font-weight: bold; display: block; background-color: #004165; color: #FFFFFF; padding: 10px;" href="%s#oneclick">Accept Role</a>',$oneclick);
 	$absence = add_query_arg(array('oneclick' => $nonce,'role' => 'absent','e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
 	$absence = sprintf('<a style="width: 150px; text-align: center; text-decoration: none; font-weight: bold; display: block; background-color: red; color: #FFFFFF; padding: 10px;" href="%s#oneclick">Will Not Attend</a>',$absence);
 	$message = str_replace('[yesbutton]',$oneclick,str_replace('[role]',$role,str_replace('[shortdate]',$shortdate,$suggest_all_message)));
 	$message = str_replace('[absencebutton]',$absence,$message);
+	$message = str_replace('[login]',$login_signup,$message);
 	return $message;
 }
 
@@ -14698,6 +14700,13 @@ function wpt_suggest_all_roles() {
 		update_option('tm_suggest_all_message',$suggest_all_message);
 		update_option('tm_suggest_all_weeks',$suggest_all_weeks);
 		update_option('tm_suggest_all_active',$suggest_all_active);
+	}
+	if(isset($_POST['reset_defaults'])) {
+		delete_option('tm_suggest_all_weeks');
+		delete_option('tm_suggest_all_active');
+		delete_option('tm_suggest_all_subject');
+		delete_option('tm_suggest_all_message');
+		$suggest_all_weeks = $suggest_all_active = $suggest_all_subject = $suggest_all_message = false;
 	}
 	else {
 		$suggest_all_weeks = get_option('tm_suggest_all_weeks');
@@ -14719,6 +14728,8 @@ function wpt_suggest_all_roles() {
 <p>Clicking the button above will allow you to accept the role without needing to enter your password. If you cannnot attend, letting us know that will also help us plan.</p>
 
 <p>[absencebutton]</p>
+
+<p>This email is meant to make it easy for you to accept a suggested role, but you can also [login] to take any other role.</p>
 
 <p>Thank you!</p>';
 	
@@ -14779,6 +14790,7 @@ function wpt_suggest_all_roles() {
 			$suggested = intval($_POST['suggested'][$index]);
 			$subject = stripslashes($_POST['subject'][$index]);
 			$email = $member_email[$suggested];
+			$role = stripslashes($_POST['role'][$index]);
 			$message = str_replace('*|EMAIL|*',$email,stripslashes($_POST['message'][$index]));
 			$message_log .= sprintf('<h3>To %s %s</h3>',$email,$subject)."\n".$message;
 			$mail['to'] = $email;
@@ -14787,6 +14799,7 @@ function wpt_suggest_all_roles() {
 			$mail['from'] = $current_user->user_email;
 			$mail['fromname'] = $current_user->display_name.', '.$blogname;
 			rsvpmailer($mail);
+			$suggestions[$role][] = $suggested;
 		}
 		$mail['subject'] = 'Suggest All Roles for '.rsvpmaker_date($rsvp_options['short_date'],$meeting->ts_start);
 		$mail['html'] = $message_log;
@@ -14794,16 +14807,22 @@ function wpt_suggest_all_roles() {
 		rsvpmailer($mail);
 
 		$message_log = sprintf('<p>Sent %s by %s</p>',date('r'),$current_user->display_name).$message_log;
+		update_post_meta($meeting->ID,'suggestions',$suggestions);
 		update_post_meta($meeting->ID,'suggest_all_roles_log',$message_log);
 	}
 	elseif(isset($_GET['clearlog'])) {
 		delete_post_meta($meeting->ID,'suggest_all_roles_log');
 		$message_log = '';
+		delete_post_meta($meeting->ID,'suggestions');
 	}
-	else
+	else {
 		$message_log = get_post_meta($meeting->ID,'suggest_all_roles_log',true);
+		$suggestions = get_post_meta($meeting->ID,'suggestions',true);
+		if(!$suggestions)
+			$suggestions = array();
+	}
 	if($message_log) 
-		printf('<div style="float: right; width: 300px; background-color: #fff; padding: 10px;"><h3>Messages sent previously for %s</h3>%s</div>',$shortdate,$message_log);
+		printf('<div style="float: right; width: 300px; background-color: #fff; padding: 10px;"><h3>Messages sent previously for %s</h3>%s</p></div>',$shortdate,$message_log);
 	$nonce = get_post_meta($meeting->ID,'oneclicknonce',true);
 	if(!$nonce) {
 		$nonce = wp_create_nonce('oneclick');
@@ -14867,7 +14886,6 @@ function wpt_suggest_all_roles() {
 		$candidates = $other_candidates = [];
 			if(!empty($openroles[$role])) {
 			$recently_held = empty($recent[$role]) ? [] : $recent[$role];
-			
 			foreach($member_list as $user_id => $name) {
 				if(!in_array($user_id,$exclude)) {
 					if(!in_array($user_id,$recently_held))
@@ -14883,6 +14901,18 @@ function wpt_suggest_all_roles() {
 			foreach($openroles[$role] as $item) {
 				$count++;
 				//printf('<p>Opening for %s</p>',$role);
+				$previous_suggestion = '';
+				if($suggestions[$role])
+				{
+					while($suggested = array_shift($suggestions[$role]))
+					{
+						if(empty($hasrole[$suggested])) {
+							$previous_suggestion = sprintf('<option value="%d">%s (previously suggested)</option>',$suggested,$member_list[$suggested]);
+							break;
+						}
+					}
+				}			
+	
 				$nominee = array_shift($keys);
 				if(!$nominee)
 					{
@@ -14907,9 +14937,10 @@ function wpt_suggest_all_roles() {
 						$held = '<em>Last held role: '.$held.'</em>';
 					$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
 				}
-				$nominee_dropdown .= $inactive_list.$hasrole_options;
-				printf('<p><input type="checkbox" checked="checked" name="send[]" value="%d"> #%d %s<br><select name="suggested[%d]">%s</select></p>',$count,$count,$role,$count,$nominee_dropdown);
+				$dropdown = $previous_suggestion.$nominee_dropdown.$inactive_list.$hasrole_options;
+				printf('<p><input type="checkbox" checked="checked" name="send[]" value="%d"> #%d %s<br><select name="suggested[%d]">%s</select></p>',$count,$count,$role,$count,$dropdown);
 				$subject = str_replace('[role]',$role,str_replace('[shortdate]',$shortdate,$suggest_all_subject));
+				printf('<input type="hidden" name="role[%d]" value="%s">',$count,$role);
 				printf('<div><input type="text" name="subject[%d]" value="%s" style="width: 450px"></div>',$count,$subject);
 				$message = tm_oneclick_message($meeting->ID,$role,$nonce,$shortdate,$suggest_all_message);
 				printf('<div><textarea name="message[%d]" class="mce" style="width: 450px" rows="10">%s</textarea></div>',$count,$message);
@@ -14929,6 +14960,17 @@ function wpt_suggest_all_roles() {
 					$other_candidates[$user_id] = $name;
 			}
 		}
+		$previous_suggestion = '';
+		if($suggestions[$role])
+		{
+			while($suggested = array_shift($suggestions[$role]))
+			{
+				if(empty($hasrole[$suggested])) {
+					$previous_suggestion = sprintf('<option value="%d">%s (previously suggested)</option>',$suggested,$member_list[$suggested]);
+					break;
+				}
+			}
+		}			
 		//print_r($candidates);
 		$keys = array_keys($candidates);
 		shuffle($keys);
@@ -14962,8 +15004,9 @@ function wpt_suggest_all_roles() {
 						$held = '<em>Last held role: '.$held.'</em>';
 					$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
 				}
-				$nominee_dropdown .= $inactive_list.$hasrole_options;
-				printf('<p><input type="checkbox" name="send[]"  checked="checked" value="%d"> #%d %s<br><select name="suggested[%d]">%s</select></p>',$count,$count,$role,$count,$nominee_dropdown);
+				$dropdown = $previous_suggestion.$nominee_dropdown.$inactive_list.$hasrole_options;
+				printf('<p><input type="checkbox" name="send[]"  checked="checked" value="%d"> #%d %s<br><select name="suggested[%d]">%s</select></p>',$count,$count,$role,$count,$dropdown);
+				printf('<input type="hidden" name="role[%d]" value="%s">',$count,$role);
 				$subject = str_replace('[role]',$role,str_replace('[shortdate]',$shortdate,$suggest_all_subject));
 				printf('<div><input type="text" name="subject[%d]" value="%s" style="width: 450px"></div>',$count,$subject);
 				$message = tm_oneclick_message($meeting->ID,$role,$nonce,$shortdate,$suggest_all_message);
@@ -14992,4 +15035,9 @@ function wpt_suggest_all_roles() {
 	printf('<div>Consider members active if they have attended / held a role within <input type="number" name="suggest_all_active" value="%s"> weeks</div>',$suggest_all_active);
 	submit_button();
 	echo '<p>To make the suggestion function more useful, be sure to reconcile the records for roles held after each meeting using the Update Roles and Attendance screen under TM Administration.</p></form>';
+
+	printf('<form method="post" action="%s">',admin_url('admin.php?page=wpt_suggest_all_roles'));
+	submit_button('Reset to Defaults');
+	echo '<input type="hidden" name="reset_defaults" value="1"></form>';
+
 }
