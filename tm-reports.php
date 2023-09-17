@@ -14729,7 +14729,7 @@ function wpt_suggest_all_roles() {
 
 <p>[absencebutton]</p>
 
-<p>This email is meant to make it easy for you to accept a suggested role, but you can also [login] to take any other role.</p>
+<p>The buttons are meant to make it easy for you to respond, but you can also [login] to take any other role.</p>
 
 <p>Thank you!</p>';
 	
@@ -14882,76 +14882,24 @@ function wpt_suggest_all_roles() {
 	printf('<form method="post" action="%s"><input type="hidden" name="post_id" value="%d">',admin_url('admin.php?page=wpt_suggest_all_roles&meeting='.$meeting_id),$meeting->ID);
 	$count = 0;
 	$priority_roles = ['Toastmaster of the Day','Speaker','Evaluator'];
+	$allopen = [];
 	foreach($priority_roles as $role) {
-		$candidates = $other_candidates = [];
-			if(!empty($openroles[$role])) {
-			$recently_held = empty($recent[$role]) ? [] : $recent[$role];
-			foreach($member_list as $user_id => $name) {
-				if(!in_array($user_id,$exclude)) {
-					if(!in_array($user_id,$recently_held))
-						$candidates[$user_id] = $name;
-					else
-						$other_candidates[$user_id] = $name;
-				}
-			}
-			$keys = array_keys($candidates);
-			shuffle($keys);
-			$other_keys = array_keys($other_candidates);
-			shuffle($other_keys);
-			foreach($openroles[$role] as $item) {
-				$count++;
-				//printf('<p>Opening for %s</p>',$role);
-				$previous_suggestion = '';
-				if($suggestions[$role])
-				{
-					while($suggested = array_shift($suggestions[$role]))
-					{
-						if(empty($hasrole[$suggested])) {
-							$previous_suggestion = sprintf('<option value="%d">%s (previously suggested)</option>',$suggested,$member_list[$suggested]);
-							break;
-						}
-					}
-				}			
-	
-				$nominee = array_shift($keys);
-				if(!$nominee)
-					{
-						$nominee = array_shift($other_keys);
-					}
-					if(!$nominee)
-					{
-						break;
-					}
-				$exclude[] = $nominee;
-				//printf('<p>Nominee: %s %d</p>',$member_list[$nominee],$nominee);
-				$nominee_dropdown = sprintf('<option value="%d">%s %s</option>',$nominee,$member_list[$nominee],$held);
-				foreach($keys as $key) {
-					$held = wp4t_last_held_role($key, $role);
-					if($held)
-						$held = '<em>Last held role: '.$held.'</em>';
-					$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
-				}
-				foreach($other_keys as $key) {
-					$held = wp4t_last_held_role($key, $role);
-					if($held)
-						$held = '<em>Last held role: '.$held.'</em>';
-					$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
-				}
-				$dropdown = $previous_suggestion.$nominee_dropdown.$inactive_list.$hasrole_options;
-				printf('<p><input type="checkbox" checked="checked" name="send[]" value="%d"> #%d %s<br><select name="suggested[%d]">%s</select></p>',$count,$count,$role,$count,$dropdown);
-				$subject = str_replace('[role]',$role,str_replace('[shortdate]',$shortdate,$suggest_all_subject));
-				printf('<input type="hidden" name="role[%d]" value="%s">',$count,$role);
-				printf('<div><input type="text" name="subject[%d]" value="%s" style="width: 450px"></div>',$count,$subject);
-				$message = tm_oneclick_message($meeting->ID,$role,$nonce,$shortdate,$suggest_all_message);
-				printf('<div><textarea name="message[%d]" class="mce" style="width: 450px" rows="10">%s</textarea></div>',$count,$message);
-			}
-		}	
+		if(!empty($openroles[$role])) {
+		foreach($openroles[$role] as $item)
+			$allroles[] = $role;
+		}
 	}
+
 	foreach($openroles as $role => $items) {
 		if(in_array($role,$priority_roles) || 'Backup Speaker' == $role)
 			continue;
-		$recently_held = empty($recent[$role]) ? [] : $recent[$role];
+		foreach($items as $item)
+			$allroles[] = $role;
+	}
+
+	foreach($allroles as $role) {
 		$candidates = $other_candidates = [];
+		$recently_held = empty($recent[$role]) ? [] : $recent[$role];
 		foreach($member_list as $user_id => $name) {
 			if(!in_array($user_id,$exclude)) {
 				if(!in_array($user_id,$recently_held))
@@ -14960,6 +14908,11 @@ function wpt_suggest_all_roles() {
 					$other_candidates[$user_id] = $name;
 			}
 		}
+		$keys = array_keys($candidates);
+		shuffle($keys);
+		$other_keys = array_keys($other_candidates);
+		shuffle($other_keys);
+		$count++;
 		$previous_suggestion = '';
 		if($suggestions[$role])
 		{
@@ -14970,48 +14923,38 @@ function wpt_suggest_all_roles() {
 					break;
 				}
 			}
-		}			
-		//print_r($candidates);
-		$keys = array_keys($candidates);
-		shuffle($keys);
-		$other_keys = array_keys($other_candidates);
-		shuffle($other_keys);
-
-		foreach($items as $item) {
-			$count++;
-			//printf('<p>Opening for %s %s</p>',$role,$item);
-				$nominee = array_shift($keys);
-				if(!$nominee)
-					{
-						$nominee = array_shift($other_keys);
-					}
-					if(!$nominee)
-					{
-						break;
-					}
-				$exclude[] = $nominee;
-				//printf('<p>Nominee: %s %s</p>',$member_list[$nominee],$held);
-				$nominee_dropdown = sprintf('<option value="%d">%s %s</option>',$nominee,$member_list[$nominee],$held);
-				foreach($keys as $key) {
-					$held = wp4t_last_held_role($key, $role);
-					if($held)
-						$held = '<em>Last held role: '.$held.'</em>';
-					$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
-				}
-				foreach($other_keys as $key) {
-					$held = wp4t_last_held_role($key, $role);
-					if($held)
-						$held = '<em>Last held role: '.$held.'</em>';
-					$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
-				}
-				$dropdown = $previous_suggestion.$nominee_dropdown.$inactive_list.$hasrole_options;
-				printf('<p><input type="checkbox" name="send[]"  checked="checked" value="%d"> #%d %s<br><select name="suggested[%d]">%s</select></p>',$count,$count,$role,$count,$dropdown);
-				printf('<input type="hidden" name="role[%d]" value="%s">',$count,$role);
-				$subject = str_replace('[role]',$role,str_replace('[shortdate]',$shortdate,$suggest_all_subject));
-				printf('<div><input type="text" name="subject[%d]" value="%s" style="width: 450px"></div>',$count,$subject);
-				$message = tm_oneclick_message($meeting->ID,$role,$nonce,$shortdate,$suggest_all_message);
-				printf('<div><textarea name="message[%d]" class="mce" style="width: 450px" rows="10">%s</textarea></div>',$count,$message);
 		}
+		$nominee = array_shift($keys);
+		if(!$nominee)
+			{
+				$nominee = array_shift($other_keys);
+			}
+			if(!$nominee)
+			{
+				break;
+			}
+		$exclude[] = $nominee;
+		//printf('<p>Nominee: %s %d</p>',$member_list[$nominee],$nominee);
+		$nominee_dropdown = sprintf('<option value="%d">%s %s</option>',$nominee,$member_list[$nominee],$held);
+		foreach($keys as $key) {
+			$held = wp4t_last_held_role($key, $role);
+			if($held)
+				$held = '<em>Last held role: '.$held.'</em>';
+			$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
+		}
+		foreach($other_keys as $key) {
+			$held = wp4t_last_held_role($key, $role);
+			if($held)
+				$held = '<em>Last held role: '.$held.'</em>';
+			$nominee_dropdown .= sprintf('<option value="%d">%s %s</option>',$key,$member_list[$key],$held);
+		}
+		$dropdown = $previous_suggestion.$nominee_dropdown.$inactive_list.$hasrole_options;
+		printf('<p><input type="checkbox" checked="checked" name="send[]" value="%d"> #%d %s<br><select name="suggested[%d]">%s</select></p>',$count,$count,$role,$count,$dropdown);
+		$subject = str_replace('[role]',$role,str_replace('[shortdate]',$shortdate,$suggest_all_subject));
+		printf('<input type="hidden" name="role[%d]" value="%s">',$count,$role);
+		printf('<div><input type="text" name="subject[%d]" value="%s" style="width: 450px"></div>',$count,$subject);
+		$message = tm_oneclick_message($meeting->ID,$role,$nonce,$shortdate,$suggest_all_message);
+		printf('<div><textarea name="message[%d]" class="mce" style="width: 450px" rows="10">%s</textarea></div>',$count,$message);
 	}
 	submit_button('Send Suggestions');
 	echo '</form></div>';
