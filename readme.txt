@@ -12,7 +12,7 @@ Requires at least: 5.0
 
 Tested up to: 6.3.1
 
-Stable tag: 5.9.4
+Stable tag: 5.9.5
 
 License: GPLv2
 
@@ -133,6 +133,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 == Changelog ==
+
+= 5.9.5 =
+
+* Validation for application form
 
 = 5.9.2 =
 

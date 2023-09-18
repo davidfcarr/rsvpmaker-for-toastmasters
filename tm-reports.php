@@ -13021,7 +13021,7 @@ class DuesExtractor {
 
 	function __construct() {
 
-		$expected_renewal = 45.00;
+		$expected_renewal = 60.00;
 
 		$plus6            = array();
 
