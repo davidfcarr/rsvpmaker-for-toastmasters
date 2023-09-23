@@ -14675,7 +14675,7 @@ function tm_oneclick_message($post_id,$role,$nonce,$shortdate,$suggest_all_messa
 	global $current_user, $login_signup;
 	if(empty($login_signup))
 		{
-			$url = wp_login_url(get_permalink($meeting_id));
+			$url = wp_login_url(get_permalink($post_id));
 			$login_signup = sprintf('<a href="%s">%s</a>',$url,__('login','rsvpmaker-for-toastmasters'));
 		}
 	$oneclick = add_query_arg(array('oneclick' => $nonce,'role' => $role,'e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));

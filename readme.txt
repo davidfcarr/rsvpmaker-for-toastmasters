@@ -12,7 +12,7 @@ Requires at least: 5.0
 
 Tested up to: 6.3.1
 
-Stable tag: 5.9.5
+Stable tag: 5.9.7
 
 License: GPLv2
 
@@ -129,8 +129,6 @@ The toastmost.org service is supported by subscriptions from member clubs.
 1. Role signup on the online agenda.
 
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
-
-
 
 == Changelog ==
 

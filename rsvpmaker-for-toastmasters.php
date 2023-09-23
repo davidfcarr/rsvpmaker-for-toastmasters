@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.9.5
+Version: 5.9.7
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4917,8 +4917,9 @@ $mode = (isset($_GET['mode'])) ? ' '.sanitize_text_field($_GET['mode']) : '';
 add_post_meta($post->ID,'oneclick_used',$email.$mode);
 
 $toolate = true;
+$already = false;
 $data = wpt_blocks_to_data($post->post_content);
-$formtop = sprintf('<form method="post" action="%s"><input type="hidden" name="oneclicknonce" value="%s">',get_permalink(),$code);
+$formtop = sprintf('<form method="post" action="%s"><input type="hidden" name="oneclick" value="%s">',get_permalink(),$code);
 $formtop .= sprintf('<input type="hidden" name="by" value="%d" />',(isset($_GET['by'])) ? intval($_GET['by']) : 0 );
 $formbottom = (strpos($post->post_content,'tm_attend_in_person') || strpos($post->post_content,'wp4toastmasters/hybrid')) ? tm_in_person_checkbox($user_id) : '';
 $formbottom .= '<p><button style="background-color: #004165; color: #FFFFFF; border-radius: 3px; font-size: 16px; padding: 5px; font-weight: bold;">Take Role!</button></p></form>';
@@ -4936,7 +4937,7 @@ foreach($data as $item){
 			$assigned = get_post_meta($post->ID,$field,true);
 			//echo 'check'.$field.' '.$assigned.'<br />';
 			if(!$assigned) {
-				$output .= $formtop.sprintf('<input type="hidden" name="oneclickrole" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
+				$output .= $formtop.sprintf('<input type="hidden" name="role" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
 				$output .= sprintf("<p>Let's sign you up for %s !</p>",$role);
 				if($role == 'Speaker')
 					$output .= speaker_details( $field, array(), $user );
@@ -4946,17 +4947,21 @@ foreach($data as $item){
 			}
 			elseif($assigned == $user->ID)
 			{
-				$output .= $formtop.sprintf('<input type="hidden" name="oneclickrole" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
+				$output .= $formtop.sprintf('<input type="hidden" name="role" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
 				$output .= sprintf("<p>We already have you signed up for %s! Thank you!</p>",$role);
 				if($role == 'Speaker')
 					$output .= speaker_details( $field, array(), $user );
 				$output .= $formbottom;
 				$toolate = false;
+				$already = true;
 				break;
 			}
 		}
 	}
 }
+
+if(!$toolate && !$already && 'Speaker' != $role)
+	return wpt_oneclick_signup_post();//don't make them click again unnecessarily
 
 if($toolate) {
 	$output .= "<p>That role is no longer available, but let's sign you up for one of these:</p>";
@@ -4971,7 +4976,7 @@ if($toolate) {
 				$assigned = get_post_meta($post->ID,$field,true);
 				if(!$assigned) {
 					$output .= "<p>".clean_role($field)."</p>";
-					$output .= $formtop.sprintf('<input type="hidden" name="oneclickrole" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
+					$output .= $formtop.sprintf('<input type="hidden" name="role" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
 					if($altrole == 'Speaker')
 						$output .= speaker_details( $field, array(), $user );
 					$output .= $formbottom;
@@ -4989,12 +4994,18 @@ return $output;
 
 function wpt_oneclick_signup_post() {
 global $post;
-$role = $_POST['oneclickrole'];
+$role = $_REQUEST['role'];
 $nonce = get_post_meta($post->ID,'oneclicknonce',true);
-$code = sanitize_text_field($_POST['oneclicknonce']);
+$code = sanitize_text_field($_REQUEST['oneclick']);
 if($nonce != $code)
 	return '<p>Security error.</p>';
-$user_id = $_POST['user_id'];
+if(isset($_REQUEST['user_id']))
+	$user_id = intval($_REQUEST['user_id']);
+elseif($_REQUEST['e']) {
+	$user = get_user_by('email',sanitize_text_field($_REQUEST['e']));
+	if($user)
+		$user_id = $user->ID;
+}
 update_post_meta($post->ID,$role,$user_id);
 if(strpos($role,'Speaker'))
 {
@@ -5014,11 +5025,11 @@ if(strpos($role,'Speaker'))
 
 $user = get_userdata($user_id);
 $clean = clean_role($role);
-if(isset($_POST['by'])) {
+if(isset($_REQUEST['by'])) {
 	$event = get_rsvpmaker_event($post->ID);
 	$date = rsvpmaker_date($rsvp_options['short_date'],$event->ts_start);
 	$user = get_userdata($user_id);
-	$by = get_userdata(intval($_POST['by']));
+	$by = get_userdata(intval($_REQUEST['by']));
 	$mail['to'] = $by->user_email;
 	$mail['from'] = $user->user_email;
 	$mail['subject'] = $user->display_name.' confirmed for '.$clean.' on '.$date;

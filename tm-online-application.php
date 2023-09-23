@@ -116,7 +116,7 @@ label {
 
 	$payprompt = '';
 
-	if(empty( $_POST['applicant_signature'] ))
+	if(isset( $_POST['applicant_signature'] ) && empty( $_POST['applicant_signature'] ))
 		{
 			echo '<h2>Missing signature error</h2>';
 			return;//should have been caught with client side validation
