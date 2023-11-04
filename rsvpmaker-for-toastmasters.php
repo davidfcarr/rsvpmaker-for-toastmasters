@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.9.7
+Version: 5.9.8
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4960,8 +4960,11 @@ foreach($data as $item){
 	}
 }
 
-if(!$toolate && !$already && 'Speaker' != $role)
-	return wpt_oneclick_signup_post();//don't make them click again unnecessarily
+add_post_meta($post->ID,'oneclick_debug',"Toolate $toolate already $already role $role");
+if(!$toolate && !$already && 'Speaker' != $role) {
+	add_post_meta($post->ID,'oneclick_debug',"Oneclick without further checks allowed - Toolate $toolate already $already role $role");
+	return wpt_oneclick_signup_post($user_id, $field);//don't make them click again unnecessarily
+}
 
 if($toolate) {
 	$output .= "<p>That role is no longer available, but let's sign you up for one of these:</p>";
@@ -4992,21 +4995,26 @@ $output .= sprintf('<p><a href="%s">Exit one-click signup mode</a> to see the re
 return $output;
 }
 
-function wpt_oneclick_signup_post() {
+function wpt_oneclick_signup_post($user_id = 0, $role= '') {
 global $post;
-$role = $_REQUEST['role'];
-$nonce = get_post_meta($post->ID,'oneclicknonce',true);
-$code = sanitize_text_field($_REQUEST['oneclick']);
-if($nonce != $code)
-	return '<p>Security error.</p>';
-if(isset($_REQUEST['user_id']))
-	$user_id = intval($_REQUEST['user_id']);
-elseif($_REQUEST['e']) {
-	$user = get_user_by('email',sanitize_text_field($_REQUEST['e']));
-	if($user)
-		$user_id = $user->ID;
+if($user_id && $role) {
+	update_post_meta($post->ID,$role,$user_id);
 }
-update_post_meta($post->ID,$role,$user_id);
+else {
+	$role = $_REQUEST['role'];
+	$nonce = get_post_meta($post->ID,'oneclicknonce',true);
+	$code = sanitize_text_field($_REQUEST['oneclick']);
+	if($nonce != $code)
+		return '<p>Security error.</p>';
+	if(isset($_REQUEST['user_id']))
+		$user_id = intval($_REQUEST['user_id']);
+	elseif($_REQUEST['e']) {
+		$user = get_user_by('email',sanitize_text_field($_REQUEST['e']));
+		if($user)
+			$user_id = $user->ID;
+	}
+	update_post_meta($post->ID,$role,$user_id);	
+}
 if(strpos($role,'Speaker'))
 {
 	$manual = $_POST['_manual'][$role];
@@ -6175,6 +6183,7 @@ function add_awesome_member() {
 <form method="post" enctype="multipart/form-data" action="<?php echo admin_url( 'users.php?page=add_awesome_member' ); ?>">
 <p><?php _e( 'Select file to upload', 'rsvpmaker-for-toastmasters' ); ?>: <input type="file" name="upload_file" /></p>
 <p><?php _e( 'Alternative: you can open the CSV export file in Excel, then copy-and-paste records (including the header row of column labels) into the field below (use CTRL-C to copy, CTRL-V to paste on Windows).', 'rsvpmaker-for-toastmasters' ); ?></p>
+<p><?php _e( 'If you do not have access to Club Central, you can use the same copy-and-paste method after putting member names and email addresses in this spreadsheet: ', 'rsvpmaker-for-toastmasters' ); ?><a href="https://www.wp4toastmasters.com/wp-content/uploads/2023/07/Club-Member-Import.xlsx">Excel</a> or <a href="https://docs.google.com/spreadsheets/d/16ZqaQXKcxpMsUEYPOyx9tHVrDkL7Zdd4/edit?usp=sharing&ouid=113166369746212246457&rtpof=true&sd=true">Google Sheets</a> (make a copy).</p>
 <p><textarea cols="80" rows="3" name="spreadsheet"></textarea></p>
 	<div><input type="checkbox" name="check_missing" value="1" /> <?php _e( 'Check for missing members (if you post a complete list of current members, this checkbox triggers a check of which website users are NOT currently on the toastmasters.org list and gives you an option to delete them).', 'rsvpmaker-for-toastmasters' ); ?></div>
 	<div>
@@ -6431,7 +6440,8 @@ class Toastmasters_Member {
 		global $wpdb;
 		$wpdb->update( $wpdb->users, array( 'user_activation_key' => $hashed ), array( 'user_login' => $user['user_login'] ) );
 		$set_password_msg = __( 'To set your password, visit the following address:' );
-		$set_password     = site_url( "wp-login.php?action=rp&key=$key&login=" . rawurlencode( $user['user_login'] ), 'login' );
+		$site_url = apply_filters('wpt_welcome_site_url',site_url());
+		$set_password = $site_url. "/wp-login.php?action=rp&key=$key&login=" . rawurlencode( $user['user_login']);
 
 		$set_password = apply_filters( 'welcome_message_set_password', $set_password, $key, $user['user_login'] );
 
@@ -6439,8 +6449,11 @@ class Toastmasters_Member {
 		$message     = '<p>' . __( 'You have been registered at' ) . ': ' . site_url() . '</p>';
 		$message    .= '<p>' . __( 'Username' ) . ': ' . $user['user_login'] . '</p>';
 		$message    .= '<p>' . $set_password_msg . '<br /><a href="' . $set_password . '">' . $set_password . '</a></p>';
+		$message    .= '<p>After setting your password, you will use <a href="' . wp_login_url() . '">' . wp_login_url() . '</a> when logging in to sign up for roles or do other club business.</p>';
+		
 		$message    .= '<p>' . __( 'For a basic orientation to the website setup we are using, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>', 'rsvpmaker-for-toastmasters' ) . '</p>';
 		$message    .= '<p>' . __( 'Note that your club website user name and password are <em>not</em> the same as the credentials you will use on toastmasters.org (the website of Toastmasters International) to access Pathways educational materials.', 'rsvpmaker-for-toastmasters' ) . '</p>';
+		$message    .= apply_filters('wpt_set_password_host_note','');
 
 		$welcome_id = get_option( 'wp4toastmasters_welcome_message' );
 		if ( $welcome_id ) {

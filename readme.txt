@@ -12,7 +12,7 @@ Requires at least: 5.0
 
 Tested up to: 6.3.1
 
-Stable tag: 5.9.7
+Stable tag: 5.9.8
 
 License: GPLv2
 
@@ -131,6 +131,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 5.9.8 =
+
+* Updated How to Edit the Agenda block
 
 = 5.9.5 =
 
