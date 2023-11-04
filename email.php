@@ -19,11 +19,6 @@ function wp4t_role($role) {
 	return (isset($toast_roles[$role])) ? $toast_roles[$role] : $role;
 }
 
-add_shortcode('email_with_without_role_test_shortcode','email_with_without_role_test_shortcode');
-function email_with_without_role_test_shortcode ($args) {
-	return email_with_without_role('',true);// email_with_without_role_test($args['post_id'].':'.$args['hours']);
-}
-
 function wpt_notification_from($post_id) {
 /* have replies go to tod or vpe */
 	$mail['fromname'] = get_bloginfo( 'name' );	
@@ -124,7 +119,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	$absent    = array();
 	$norole    = array();
 	foreach ( $members as $member ) {
-		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $next->ID . '  AND meta_value=' . $member->ID . " AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
+		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $next->ID . '  AND meta_value=' . $member->ID . " AND meta_key LIKE '_role%' ";
 		$role_results                    = $wpdb->get_results( $sql );
 		$roles                           = array();
 		$reminder_details[ $member->ID ] = '';
@@ -207,7 +202,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 		}
 	}
 	if(!$test)
-		update_post_meta( $post->ID, '_role_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $norole ).rsvpmaker_date('r') );
+		update_post_meta( $post->ID, '_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $norole ).rsvpmaker_date('r') );
 	$post = $waspost;
 	return $output;
 }
@@ -870,7 +865,7 @@ function wpt_get_norole_email($post_id) {
 	foreach ( $members as $member ) {
 		if(in_array( $member->ID, $absences ))
 			continue;
-		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . '  AND meta_value=' . $member->ID . " AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
+		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . '  AND meta_value=' . $member->ID . " AND LIKE '_role%' ";
 		$role_results                    = $wpdb->get_results( $sql );
 		if ( $role_results ) {
 			continue;

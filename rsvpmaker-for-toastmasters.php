@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.9.8
+Version: 5.9.9
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -291,7 +291,7 @@ echo '<p>'.club_member_mailto().'</p>';
 				$t            = rsvpmaker_strtotime( $row->datetime );
 				$title        = $row->post_title . ' ' . rsvpmaker_date( 'F jS', $t );
 				$permalink    = rsvpmaker_permalink_query( $row->postID );
-				$sql          = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $row->postID . '  AND meta_value=' . $current_user->ID . " AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
+				$sql          = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $row->postID . '  AND meta_value=' . $current_user->ID . " AND meta_key LIKE '_role%' ";
 				$role_results = $wpdb->get_results( $sql );
 				$roles        = array();
 				$absences     = get_absences_array( $row->postID );
@@ -746,7 +746,7 @@ function wpt_open_roles( $atts = array() ) {
 			$role  = $item['role'];
 			$count = (int) $item['count'];
 			for ( $i = 1; $i <= $count; $i++ ) {
-				$field = '_' . preg_replace( '/[^A-Za-z]/', '_', $role ) . '_' . $i;
+				$field = wp4t_fieldbase($role,$i);
 				if ( ! empty( $signup[ $field ][0] ) && ! is_numeric( $signup[ $field ][0] ) ) {
 					continue; // might be a guest signup
 				}
@@ -1004,7 +1004,7 @@ agenda_time_tally();
 
 
 function get_role_signups( $post_id, $role, $count ) {
-	$field_base = preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
+	$field_base = 'role_'.preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
 	$volunteers = array();
 	for ( $i = 1; $i <= $count; $i++ ) {
 		$field    = '_' . $field_base . '_' . $i;
@@ -1100,8 +1100,8 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 			$output .= ' <span class="role_number">' . $i . '</span>';
 		}
 		if ( ! empty( $atts['evaluates'] ) ) {
-			if ( ( ( strpos( $field, 'Evaluator' ) ) ) && ( $field != '_General_Evaluator_1' ) ) {
-				$speechfield               = '_Speaker_' . $i;
+			if ( ( ( strpos( $field, 'Evaluator' ) ) ) && ( $field != '_role_General_Evaluator_1' ) ) {
+				$speechfield               = '_role_Speaker_' . $i;
 				$speakerID_to_be_evaluated = get_post_meta( $post->ID, $speechfield, true );
 				$user_info                 = get_userdata( $speakerID_to_be_evaluated );
 				$speaker_to_be_evaluated   = $user_info->first_name . ' ' . $user_info->last_name;
@@ -1123,7 +1123,7 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 			$output .= speaker_details_agenda( $field, $assigned );
 		}
 		if ( isset( $atts['agenda_note'] ) && ! empty( $atts['agenda_note'] ) && strpos( $atts['agenda_note'], 'Speaker}' ) ) {
-			$speakerID_to_be_evaluated = get_post_meta( $post->ID, '_Speaker_' . $i, true );
+			$speakerID_to_be_evaluated = get_post_meta( $post->ID, '_role_Speaker_' . $i, true );
 			if ( $speakerID_to_be_evaluated > 0 ) {
 				$note = str_replace( '{Speaker}', get_member_name( $speaker_to_be_evaluated ), $atts['agenda_note'] );
 			} else {
@@ -1173,7 +1173,7 @@ function wp4t_reconcile_roleblock( $atts ) {
 	$role = $atts['role'];
 
 	$start = ( empty( $atts['start'] ) ) ? 1 : $atts['start'];
-	$field_base = preg_replace( '/[^a-zA-Z0-9]/', '_', $atts['role'] );
+	$field_base = 'role_'.preg_replace( '/[^a-zA-Z0-9]/', '_', $atts['role'] );
 	$count = (int) ( isset( $atts['count'] ) ) ? $atts['count'] : 1;
 	for ( $i = $start; $i < ( $count + $start ); $i++ ) {
 		$sql = "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id WHERE post_id=$post->ID AND role='$role' AND rolecount=$i ";
@@ -1226,7 +1226,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 	}
 
 	$backup     = $output = '';
-	$field_base = preg_replace( '/[^a-zA-Z0-9]/', '_', $atts['role'] );
+	$field_base = 'role_'.preg_replace( '/[^a-zA-Z0-9]/', '_', $atts['role'] );
 
 	$assignments = get_role_assignments( $post->ID, $atts );
 	$permalink   = rsvpmaker_permalink_query( $post->ID );
@@ -1400,7 +1400,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 		if ( isset( $atts['agenda_note'] ) && ! empty( $atts['agenda_note'] ) ) {
 			$note = $atts['agenda_note'];
 			if ( strpos( $note, '{Speaker}' ) ) {
-				$speaker_id = get_post_meta( $post->ID, '_Speaker_' . $i, true );
+				$speaker_id = get_post_meta( $post->ID, '_role_Speaker_' . $i, true );
 				if ( empty( $speaker_id ) ) {
 					$speaker_name = '?';
 				}
@@ -1733,33 +1733,6 @@ function wp4t_set_member_status( $member_id, $status, $status_expires ) {
 	update_user_meta( $member_id, 'status', stripslashes( $status ) );
 }
 
-function awesome_wall( $comment_content, $post_id, $member_id = 0 ) {
-
-	global $current_user, $wpdb, $didthis;
-	if ( $member_id ) {
-		if(is_numeric($member_id)) {
-			$userdata        = get_userdata( $member_id );
-			$comment_content = '<strong>' . $userdata->display_name . ':</strong> ' . $comment_content;	
-		}
-		else { //guest
-			$comment_content = '<strong>' . $member_id . ':</strong> ' . $comment_content;	
-		}
-	} else {
-		$comment_content = '<strong>' . $current_user->display_name . ':</strong> ' . $comment_content;
-	}
-	$stamp            = '<small><em>(Posted: ' . rsvpmaker_date( 'm/d/y H:i' ) . ')</em></small>';
-	$ts               = get_rsvpmaker_timestamp( $post_id );
-	$comment_content .= ' for ' . rsvpmaker_date( 'F jS, Y', $ts ) . ' ' . $stamp;
-	$soon = ($ts < time() + 2 * DAY_IN_SECONDS);
-
-	add_post_meta( $post_id, '_activity', $comment_content, false );
-	if($soon && !$didthis) {
-		wp_unschedule_hook( 'wp4t_log_notify'); //clear any that might be waiting
-		wp_schedule_single_event( time() + 1800, 'wp4t_log_notify', array($post_id));
-		$didthis = true;
-	}
-}
-
 function role_post() {
 	if ( ! is_club_member() || empty( $_POST['post_id'] ) || !wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		return;
@@ -1784,7 +1757,6 @@ function role_post() {
 		update_post_meta( $post_id, $role, $current_user->ID );
 		$actiontext = __( 'signed up for', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $role );
 		do_action( 'toastmasters_agenda_notification', $post_id, $actiontext, $current_user->ID );
-		awesome_wall( $actiontext, $post_id );
 		if ( strpos( $role, 'peaker' ) ) {
 			// clean any previous speech data
 			// echo '_manual'.$role;
@@ -1886,7 +1858,6 @@ function role_post() {
 			add_post_meta( $post_id, '_activity_editor', implode( '<br />', $edit_log ) );
 			update_option( '_tm_updates_logged', strtotime( '+ 2 minutes' ) );
 		}
-		awesome_wall( 'edited role signups ', $post_id );
 	}
 
 	if ( isset( $_POST['_manual'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -1939,7 +1910,7 @@ function role_post() {
 			$was = get_post_meta( $post_id, $field, true );
 			do_action('toastmasters_agenda_change',$post_id,$role,0,$was,$current_user->ID);
 			$field = sanitize_text_field($field);
-			delete_post_meta( $post_id, $field );
+			update_post_meta( $post_id, $field, 0 );
 			delete_post_meta( $post_id, '_manual' . $field );
 			delete_post_meta( $post_id, '_title' . $field );
 			delete_post_meta( $post_id, '_intro' . $field );
@@ -1947,13 +1918,12 @@ function role_post() {
 				wp4t_delete_history($field, $timestamp, $post_id);
 			}
 		}
-		awesome_wall( 'Deleted a speaker', $post_id );
 	}
 
 	if ( isset( $_POST['remove_role'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$role = sanitize_text_field($_POST['remove_role']);
 		do_action('toastmasters_agenda_change',$post_id,$role,0,$current_user->ID,0);
-		delete_post_meta( $post_id, $role );
+		update_post_meta( $post_id, $role, 0 );
 		if ( strpos( $role, 'peaker' ) ) {
 			delete_post_meta( $post_id, '_manual' . $role );
 			delete_post_meta( $post_id, '_project' . $role );
@@ -1962,7 +1932,6 @@ function role_post() {
 		}
 		$actiontext = __( 'withdrawn: ', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $role );
 		do_action( 'toastmasters_agenda_notification', $post_id, $actiontext, $current_user->ID );
-		awesome_wall( 'withdrawn: ' . clean_role( $role ), $post_id );
 	}
 
 	if ( isset( $_POST['tweaktime'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -2042,13 +2011,6 @@ function type_from_manual( $manual ) {
 		}
 	}
 }
-
-/*
-			$row = (object)['user_id' => 0, 'manual'=>'','project_key'=>'','project'=>'','title' => ''];
-		$field = $field_base.'_'.$i;
-		$detailsform = ($role == 'Speaker') ? speaker_details( $field, $atts, $row ) : '';
-
-*/
 
 function speaker_details_history($post_id, $field, $row ) {
 
@@ -2275,7 +2237,7 @@ function speech_progress() {
 	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.date as datetime, a2.meta_value as template
 	 FROM " . $wpdb->posts . '
 	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
-	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '_Speaker%' AND a2.meta_value=" . $user_id . ' 
+	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '_role_Speaker%' AND a2.meta_value=" . $user_id . ' 
 	 WHERE date < CURDATE()
 	 ORDER BY date DESC';
 
@@ -2315,13 +2277,13 @@ function speech_progress() {
 	$sql = "SELECT DISTINCT $wpdb->posts.ID as postID, $wpdb->posts.*, a1.date as datetime, a2.meta_value as template
 	 FROM " . $wpdb->posts . '
 	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event 
-	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '_Speaker%' AND a2.meta_value=" . $user_id . "  AND concat('',a2.meta_value * 1) = a2.meta_value
+	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '_role_Speaker%' AND a2.meta_value=" . $user_id . "  AND concat('',a2.meta_value * 1) = a2.meta_value
 	 WHERE a1.date < '" . $now . "'
 	 ORDER BY a1.date DESC";
 
 	$results = $wpdb->get_results( $sql );
 	foreach ( $results as $row ) {
-		$role = str_replace( '_', ' ', $row->meta_key );
+		$role = str_replace( '_', ' ', str_replace('_role_','',$row->meta_key) );
 		$role = preg_replace( '/ [1-9]/', '', $role );
 		$done[ $row->meta_value ][ $role ]++;
 		// printf('<p>%s - %s</p>',$role,$date);
@@ -3441,7 +3403,7 @@ function toastmasters_rule_setting() {
 	$edit_signups_meeting_roles = get_option( 'edit_signups_meeting_roles' );
 	foreach ( $meeting_roles as $role ) {
 		{
-		$key = '_' . str_replace( ' ', '_', $role ) . '_1';
+		$key = wp4t_fieldbase($role,1);
 		$cap = ( ! empty( $edit_signups_meeting_roles[ $role ] ) );
 		$ck  = ( $cap ) ? '<input type="checkbox" name="edit_signups_meeting_roles[' . $role . ']" value="' . $key . '" checked="checked"/> ' : '<input type="checkbox"  name="edit_signups_meeting_roles[' . $role . ']" value="' . $key . '"/> ';
 		printf( '<p>%s %s</p>', $ck, ucfirst( $role ) );
@@ -3648,7 +3610,7 @@ if($row)
 	{
 		$date = rsvpmaker_date($rsvp_options['long_date'], (int) $row->ts_start);
 		$msg = '';
-		echo $sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_Speaker%' AND meta_value > 0";
+		echo $sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_role_Speaker%' AND meta_value > 0";
 		$results = $wpdb->get_results($sql);
 		foreach($results as $row) {
 			if($row->meta_value > 0)
@@ -4856,28 +4818,83 @@ function rsvpmaker_agenda_notifications( $permalink ) {
 	return $output;
 }
 
+function oneclick_future ($user_id = 0) {
+	global $post, $current_user,$wpdb, $rsvp_options;
+	if(!$user_id && !empty($current_user->ID))
+		$user_id = $current_user->ID;
+	if(!$user_id)
+		return;
+	$output = '';
+	$meetings = future_toastmaster_meetings(4);
+	foreach($meetings as $meeting) {
+		if(!empty($post->ID) && $meeting->ID == $post->ID)
+			continue;
+		$exists = $wpdb->get_results("select * from $wpdb->postmeta where meta_key LIKE '_role_%' and post_id=$meeting->ID and meta_value=$user_id ");
+		if($exists)
+			{
+				continue; // skip if the user already has a role
+			}
+		$nonce = get_post_meta($meeting->ID,'oneclicknonce',true);
+		if(empty($nonce)) {
+			$nonce = wp_create_nonce('oneclick');
+			update_post_meta($meeting->ID,'oneclicknonce',$nonce);
+		}
+		$openroles = [];
+		$data              = wpt_blocks_to_data( $meeting->post_content );
+		foreach ( $data as $row => $item ) {
+			if ( empty( $item['role'] ) ) {
+				continue;
+			}
+			$role       = sanitize_text_field($item['role']);
+			$count      = (empty($item['count'])) ? 1: (int) $item['count'];
+			for ( $i = 1; $i <= $count; $i++ ) {
+				$field    = wp4t_fieldbase($role,$i);
+				$assigned = get_post_meta( $meeting->ID, $field, true );
+				if ( empty( $assigned ) ) {
+					if(!in_array($role,$openroles))
+						$openroles[] = $role;
+				}
+			}
+		}
+		if(!empty($openroles))
+		{
+			$output .= sprintf('<h4>%s %s</h4>', $meeting->post_title, rsvpmaker_date($rsvp_options['long_date'],$meeting->ts_start));
+			foreach($openroles as $role) {
+				$output .= sprintf('<p><a href="%s?member=%d&oneclick=%s&role=%s">%s</a></p>',get_permalink($meeting->ID),$user_id,$nonce,$role,$role);
+			}
+		}
+	}
+	if(!empty($output))
+		$output = '<h3>Openings for Upcoming Meetings</h3>'.$output;
+	return $output;
+}
+
 function wpt_oneclick_signup() {
 global $post, $rsvp_options;
 $output = '';
 $nonce = get_post_meta($post->ID,'oneclicknonce',true);
-$code = sanitize_text_field($_GET['oneclick']);
+$code = sanitize_text_field($_REQUEST['oneclick']);
 if($nonce != $code)
 	return '<p>Security error.</p>';
-$role = sanitize_text_field($_GET['role']);
-if(isset($_GET['e'])) {
-	$email = sanitize_text_field($_GET['e']);
-	$user = get_user_by('email',$email);	
+$role = sanitize_text_field($_REQUEST['role']);
+if(isset($_REQUEST['e'])) {
+	$email = sanitize_text_field($_REQUEST['e']);
+	$user = get_user_by('email',$email);
+	$user_id = $user->ID;	
 }
-elseif(isset($_GET['member'])) {
-	$user_id = intval($_GET['member']);
+elseif(isset($_REQUEST['member'])) {
+	$user_id = intval($_REQUEST['member']);
 	$user = get_userdata($user_id);
 }
 if(!empty($user->display_name))
 	$output .= sprintf('<h2 id="oneclick">One Click Signup</h2><p>Recognized member: %s</p>',$user->display_name);
 else
 	return 'Sorry, member account not recognized.';
-if(isset($_POST['abs'])) {
-	foreach($_POST['abs'] as $abs) {
+if(strpos($role,'role_'))
+	return wpt_oneclick_signup_post($user_id, $role); // signup for different role or speaker
+
+if(isset($_REQUEST['abs'])) {
+	foreach($_REQUEST['abs'] as $abs) {
 		add_post_meta( $abs, 'tm_absence', $user_id );
 		$event = get_rsvpmaker_event($abs);
 		$output .= '<p>Added absence for  '.rsvpmaker_date($rsvp_options['short_date'],$event->ts_start).'</p>';
@@ -4908,18 +4925,20 @@ elseif('absent' == $role) {
 		$mail['html'] = '<p>'.$user->display_name.' response to role suggestion: ABSENT</p>';
 		rsvpmailer($mail);
 	}
+	$output .= oneclick_future($user_id);
 	$output .= sprintf('<p>Want first pick of roles for future meetings? <a href="%s">Sign up for multiple meetings</a> in advance.</p>',admin_url('admin.php?page=toastmasters_planner'));
 	$output .= sprintf('<p><a href="%s">Exit one-click signup mode</a> to see the regular agenda signup sheet.</p><div style="height: 1000px; "></div>',get_permalink());
 	
 	return $output;
 }
 $mode = (isset($_GET['mode'])) ? ' '.sanitize_text_field($_GET['mode']) : '';
-add_post_meta($post->ID,'oneclick_used',$email.$mode);
+add_post_meta($post->ID,'oneclick_used',$user_id.$mode);
 
 $toolate = true;
 $already = false;
 $data = wpt_blocks_to_data($post->post_content);
-$formtop = sprintf('<form method="post" action="%s"><input type="hidden" name="oneclick" value="%s">',get_permalink(),$code);
+$formtop = sprintf('<form method="post" action="%s"><input type="hidden" name="oneclick" value="%s">',add_query_arg(array('oneclick'=>$code),get_permalink()),$code);
+$formtop .= '<input type="hidden" name="member" value="'.$user_id.'">';
 $formtop .= sprintf('<input type="hidden" name="by" value="%d" />',(isset($_GET['by'])) ? intval($_GET['by']) : 0 );
 $formbottom = (strpos($post->post_content,'tm_attend_in_person') || strpos($post->post_content,'wp4toastmasters/hybrid')) ? tm_in_person_checkbox($user_id) : '';
 $formbottom .= '<p><button style="background-color: #004165; color: #FFFFFF; border-radius: 3px; font-size: 16px; padding: 5px; font-weight: bold;">Take Role!</button></p></form>';
@@ -4932,10 +4951,8 @@ foreach($data as $item){
 		$end = $start + $count;
 		for($i = $start; $i < $end; $i++)
 		{
-			$field = '_'.str_replace(' ','_',$role).'_'.$i;
-			//echo 'check'.$field.'<br />';
+			$field = wp4t_fieldbase($role,$i);
 			$assigned = get_post_meta($post->ID,$field,true);
-			//echo 'check'.$field.' '.$assigned.'<br />';
 			if(!$assigned) {
 				$output .= $formtop.sprintf('<input type="hidden" name="role" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
 				$output .= sprintf("<p>Let's sign you up for %s !</p>",$role);
@@ -4947,13 +4964,14 @@ foreach($data as $item){
 			}
 			elseif($assigned == $user->ID)
 			{
-				$output .= $formtop.sprintf('<input type="hidden" name="role" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
 				$output .= sprintf("<p>We already have you signed up for %s! Thank you!</p>",$role);
-				if($role == 'Speaker')
+				$output .= $formtop.sprintf('<input type="hidden" name="role" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
+				if($role == 'Speaker') {
 					$output .= speaker_details( $field, array(), $user );
-				$output .= $formbottom;
-				$toolate = false;
-				$already = true;
+					$output .= $formbottom;
+					$toolate = false;
+					$already = true;	
+				}
 				break;
 			}
 		}
@@ -4975,7 +4993,7 @@ if($toolate) {
 			$count = (isset($item['count'])) ? $item['count'] : 1;
 			for($i = 1; $i <= $count; $i++)
 			{
-				$field = '_'.str_replace(' ','_',$altrole).'_'.$i;
+				$field = '_role_'.str_replace(' ','_',$altrole).'_'.$i;
 				$assigned = get_post_meta($post->ID,$field,true);
 				if(!$assigned) {
 					$output .= "<p>".clean_role($field)."</p>";
@@ -4996,7 +5014,8 @@ return $output;
 }
 
 function wpt_oneclick_signup_post($user_id = 0, $role= '') {
-global $post;
+global $post, $rsvp_options;
+$output = '';
 if($user_id && $role) {
 	update_post_meta($post->ID,$role,$user_id);
 }
@@ -5033,19 +5052,21 @@ if(strpos($role,'Speaker'))
 
 $user = get_userdata($user_id);
 $clean = clean_role($role);
-if(isset($_REQUEST['by'])) {
+if(!empty($_REQUEST['by'])) {
 	$event = get_rsvpmaker_event($post->ID);
 	$date = rsvpmaker_date($rsvp_options['short_date'],$event->ts_start);
 	$user = get_userdata($user_id);
 	$by = get_userdata(intval($_REQUEST['by']));
-	$mail['to'] = $by->user_email;
-	$mail['from'] = $user->user_email;
-	$mail['subject'] = $user->display_name.' confirmed for '.$clean.' on '.$date;
-	$mail['html'] = '<p>'.$user->display_name.' responded YES to role suggestion: '.$clean.'</p>';
-	rsvpmailer($mail);	
+	if($by) {
+		$mail['to'] = $by->user_email;
+		$mail['from'] = $user->user_email;
+		$mail['subject'] = $user->display_name.' confirmed for '.$clean.' on '.$date;
+		$mail['html'] = '<p>'.$user->display_name.' responded YES to role suggestion: '.$clean.'</p>';
+		rsvpmailer($mail);	
+	}
 }
-awesome_wall('signed up for '.$clean,$post->ID,$user_id);
-$output = sprintf('<p>%s signed up for %s. <a href="%s">View agenda</a></p>',$user->display_name,$clean,add_query_arg(array('print_agenda' =>1, 'no_print' =>1),get_permalink()) );
+$output .= sprintf('<p>%s signed up for %s. <a href="%s">View agenda</a></p>',$user->display_name,$clean,add_query_arg(array('print_agenda' =>1, 'no_print' =>1),get_permalink()) );
+$output .= oneclick_future($user_id);
 $output .= sprintf('<p>Want first pick of roles for future meetings? <a href="%s">Sign up for multiple meetings</a> in advance.</p>',admin_url('admin.php?page=toastmasters_planner'));
 $output .= sprintf('<p><a href="%s">Exit one-click signup mode</a> to see the regular agenda signup sheet.</p><div style="height: 1000px; "></div>',get_permalink());
 
@@ -5062,7 +5083,7 @@ function awesome_event_content( $content ) {
 	}
 	//don't want to clog memory with speech lookups
 	wp_suspend_cache_addition(true);
-	if(isset($_GET['oneclick']))
+	if(isset($_REQUEST['oneclick']))
 		return wpt_oneclick_signup();
 
 	if(isset($_POST['oneclickrole'])) {
@@ -5430,7 +5451,7 @@ function tweak_agenda_times( $post ) {
 		if ( ! empty( $d['role'] ) ) {
 				$class = 'agenda_planner_role';
 				$start = ( empty( $d['start'] ) ) ? 1 : $d['start'];
-				$index = str_replace( ' ', '_', $d['role'] ) . '-' . $start;
+				$index = 'role_'.str_replace( ' ', '_', $d['role'] ) . '-' . $start;
 				$label = (($d['role'] == 'custom')) ? $d['custom_role'] : $d['role'];
 				//$label = $d['role'];
 			if ( $d['role'] == 'Speaker' ) {
@@ -5540,7 +5561,7 @@ function summarize_agenda_times( $editor_atts ) {
 			}
 			else
 				$bold = false;
-				$index = str_replace( ' ', '_', $d['role'] ) . '-' . $start;
+				$index = 'role_'.str_replace( ' ', '_', $d['role'] ) . '-' . $start;
 				$label = (($d['role'] == 'custom')) ? $d['custom_role'] : wp4t_role_display($d['role']);
 		} elseif ( ! empty( $d['uid'] ) ) {
 			if(isset($editor_atts['uid']) && ($editor_atts['uid'] == $d['uid']) ) {
@@ -5592,7 +5613,7 @@ function random_available_check() {
 			update_user_meta( $current_user->ID, 'assign_okay', $sure );
 		}
 
-		$sql     = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key RLIKE '^_[A-Z].+[0-9]$' AND post_id=$post->ID";
+		$sql     = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key LIKE '_role_%' AND post_id=$post->ID";
 		$results = $wpdb->get_results( $sql );
 
 		$preassigned = array();
@@ -7055,7 +7076,6 @@ function accept_recommended_role() {
 			} else {
 				update_post_meta( $post->ID, $name, $you );
 				$actiontext = __( 'accepted the role', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $name );
-				awesome_wall( $comment_content, $post - ID, $you );
 				$success = true;
 				break;
 			}
@@ -7139,9 +7159,8 @@ function signup_sheet_editor() {
 			}
 			$role       = sanitize_text_field($item['role']);
 			$count      = (int) $item['count'];
-			$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
 			for ( $i = 1; $i <= $count; $i++ ) {
-				$field    = $field_base . '_' . $i;
+				$field = wp4t_fieldbase($role,$i);
 				$assigned = get_post_meta( $post->ID, $field, true );
 				if ( empty( $assigned ) ) {
 					$guestopt .= sprintf( '<option value="%s">%s</option>', $field, $field );
@@ -7502,7 +7521,7 @@ function upcoming_open_roles( $limit = 10 ) {
 		preg_match_all( '/\[.+role="([^"]+).+\]/', $date->post_content, $matches );
 		// echo '<h3>'.$datestr.'</h3>';
 		foreach ( $matches[1] as $index => $role ) {
-			$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
+			$field_base = '_role_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
 			if ( strpos( $field_base, 'Backup' ) ) {
 				continue;
 			}
@@ -7535,7 +7554,6 @@ function openings_for_date( $datepost, $user_id = 0 ) {
 			continue;
 		}
 		$role       = $row['role'];
-		$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
 		if ( strpos( $field_base, 'Backup' ) ) {
 			continue;
 		}
@@ -7544,7 +7562,7 @@ function openings_for_date( $datepost, $user_id = 0 ) {
 			$count = 1;
 		}
 		for ( $i = 1; $i <= $count; $i++ ) {
-			$field    = $field_base . '_' . $i;
+			$field    = wp4t_fieldbase($role,$i);
 			$assigned = (int) get_post_meta( $datepost->ID, $field, true );
 			$open     = ( ( $assigned == '' ) || ( $assigned == 0 ) );
 			// printf('<p>%d %s %d</p>',$datepost->ID,$field,$assigned);
@@ -7585,13 +7603,11 @@ function wp_ajax_wptoast_role_planner_update() {
 				update_post_meta( $post_id, '_intro' . $role, wp_kses_post($_POST['intro']) );
 			}
 		}
-
-		awesome_wall( $actiontext, $post_id, $user_id );
 	}
 	if ( ! empty( $_POST['was'] ) && ( $_POST['was'] != $_POST['takerole'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$was = sanitize_text_field($_POST['was']);
 		do_action('toastmasters_agenda_change',$post_id,$was,0,get_post_meta($post_id,$was,true),0);
-		delete_post_meta( $post_id, $was );
+		update_post_meta( $post_id, $was, 0 );
 		if ( strpos( $was, 'Speaker' ) ) {
 				delete_post_meta( $post_id, '_manual' . $was );
 				delete_post_meta( $post_id, '_project' . $was );
@@ -7601,7 +7617,6 @@ function wp_ajax_wptoast_role_planner_update() {
 		printf( '<p>Dropped %s</p>', clean_role( $was ) );
 		$actiontext = __( 'withdrawn:', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $was );
 		do_action( 'toastmasters_agenda_notification', $post_id, $actiontext, $user_id );
-		awesome_wall( $actiontext, $post_id, $user_id );
 	}
 	die();
 }
@@ -7631,7 +7646,7 @@ function toastmasters_planner() {
 					continue; // no change
 				}
 				$was = sanitize_text_field($_POST['wasrole'][ $post_id ]);
-				delete_post_meta( $post_id,  $was);
+				update_post_meta( $post_id, $was, 0 );
 				printf( '<p>Dropped %s for %s</p>', clean_role( $_POST['wasrole'][ $post_id ] ), $d );
 				add_post_meta( $post_id, '_activity_editor', $userdata->display_name . ' dropped ' . clean_role( $_POST['wasrole'][ $post_id ] ) . ' for ' . $d );
 				$actiontext = __( 'withdrawn', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $_POST['wasrole'][ $post_id ] );
@@ -7716,7 +7731,7 @@ function toastmasters_planner() {
 			}
 			if ( ! empty( $suggest ) || ! empty( $olow ) || $picked ) {
 				printf( '<p>%s <select class="takerole" id="takerole%d" name="takerole[%d]" post_id="%d">%s</select></p>', __( 'Choices', 'rsvpmaker-for_toastmasters' ), $date->ID, $date->ID, $date->ID, $suggest . $o . $olow );
-				printf( '<div class="takerole_speaker" id="takerolespeaker%d">%s</div>', $date->ID, speaker_details( '_Speaker_' . $date->ID ) );
+				printf( '<div class="takerole_speaker" id="takerolespeaker%d">%s</div>', $date->ID, speaker_details( '_role_Speaker_' . $date->ID ) );
 				printf( '<p><button class="roleplanupdate button button-primary" datepost="%d">%s</button></p>', $date->ID, __( 'Update', 'rsvpmaker-for_toastmasters' ) );
 				// submit_button('Update');
 			}
@@ -7946,7 +7961,7 @@ p
 
 	global $wpdb;
 
-	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = $event and meta_key LIKE '_Speaker_%' ");
+	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = $event and meta_key LIKE '_role_Speaker_%' ");
 
 	foreach ( $results as $row ) {
 			echo '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $event, $row->meta_key ) ) . '</div>';
@@ -8067,7 +8082,7 @@ function get_speaker_array( $assigned, $post_id = 0, $backup = false ) {
 		$post_id = $post->ID;
 	}
 	if ( $backup ) {
-		$field = '_Backup_Speaker_1';
+		$field = '_role_Backup_Speaker_1';
 	} elseif ( ! is_numeric( $assigned ) ) { // guest speaker
 		return array(
 			'ID'           => '',
@@ -8110,7 +8125,7 @@ function get_speaker_array_by_field( $field, $assigned, $post_id = 0 ) {
 }
 
 function save_speaker_array( $speaker, $count, $post_id = 0 ) {
-	$field = '_Speaker_' . $count;
+	$field = wp4t_fieldbase('Speaker',$count);
 	if ( ! $post_id ) {
 		global $post;
 		$post_id = $post->ID;
@@ -8120,7 +8135,7 @@ function save_speaker_array( $speaker, $count, $post_id = 0 ) {
 		if ( $name == 'ID' ) {
 			continue;
 		}
-		update_post_meta( $post_id, '_' . $name . $field, strip_tags( $value, '<p><br><strong><em><a>' ) );
+		update_post_meta( $post_id, $name . $field, strip_tags( $value, '<p><br><strong><em><a>' ) );
 	}
 }
 
@@ -8131,21 +8146,21 @@ function pack_speakers( $count, $post_id = null ) {
 
 	for ( $i = 1; $i <= $count; $i++ ) {
 
-		$field    = '_Speaker_' . $i;
+		$field    = wp4t_fieldbase('Speaker',$i);
 		$assigned = get_post_meta( $post_id, $field, true );
 		if ( empty( $assigned ) ) {
 			// fill the first open speaker slot with backup speaker, if any
-			$backup = (int) get_post_meta( $post->ID, '_Backup_Speaker_1', true );
+			$backup = (int) get_post_meta( $post->ID, '_role_Backup_Speaker_1', true );
 			if ( $backup > 0 ) {
 				$speaker = get_speaker_array( $backup, $post_id, true );
 				save_speaker_array( $speaker, $i, $post_id );
-				delete_post_meta( $post_id, '_Backup_Speaker_1' );
-				delete_post_meta( $post_id, '_manual_Backup_Speaker_1' );
-				delete_post_meta( $post_id, '_project_Backup_Speaker_1' );
-				delete_post_meta( $post_id, '_maxtime_Backup_Speaker_1' );
-				delete_post_meta( $post_id, '_display_time_Backup_Speaker_1' );
-				delete_post_meta( $post_id, '_title_Backup_Speaker_1' );
-				delete_post_meta( $post_id, '_intro_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_role_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_manual_role_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_project_role_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_maxtime_role_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_display_time_role_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_title_role_Backup_Speaker_1' );
+				delete_post_meta( $post_id, '_intro_role_Backup_Speaker_1' );
 				backup_speaker_notify( $backup, $post_id );
 			}
 			return;
@@ -8597,7 +8612,7 @@ function wp4t_assigned_open() {
 			$role  = $d['role'];
 			$count = ( empty( $d['count'] ) ) ? 1 : (int) $d['count'];
 			for ( $i = 1; $i <= $count; $i++ ) {
-				$field           = '_' . str_replace( ' ', '_', $role ) . '_' . $i;
+				$field           = wp4t_fieldbase($role,$i);
 				$roles[ $field ] = wp4t_role($role);
 			}
 		}
@@ -11016,8 +11031,8 @@ function timeplanner( $atts, $content ) {
 			$padding_time_block = sprintf( '<br /><strong>Extra Time</strong><br /><select class="time_count" name="padding_time[%d]" id="padding_time%d">%s</select>', $time_counter, $time_counter, timeplanner_option( $atts['padding_time'] ) );
 				$speak_count    = 0;
 			for ( $i = 1; $i <= $count; $i++ ) {
-				if ( get_post_meta( $post->ID, '_Speaker_' . $i, true ) ) { // if speaker assigned
-					$speak_count += (int) get_post_meta( $post->ID, '_maxtime_Speaker_' . $i, true );
+				if ( get_post_meta( $post->ID, '_role_Speaker_' . $i, true ) ) { // if speaker assigned
+					$speak_count += (int) get_post_meta( $post->ID, '_maxtime_role_Speaker_' . $i, true );
 				}
 			}
 			if ( $speak_count ) {
@@ -11758,7 +11773,7 @@ function tm_youtube_tool() {
 			$ptext .= (empty($ptext)) ? '<div>' : '<div class="ptextmore">';
 			$ptext         .= '<strong>' . $speakerdate . "</strong>\n";
 			$nameanddetails = '';
-			$sql            = "SELECT *, meta_value as user_id FROM $wpdb->postmeta WHERE post_id=$pst->ID AND meta_key LIKE '_Speaker%' ORDER BY meta_key";
+			$sql            = "SELECT *, meta_value as user_id FROM $wpdb->postmeta WHERE post_id=$pst->ID AND meta_key LIKE '_role_Speaker%' ORDER BY meta_key";
 			$speakers       = $wpdb->get_results( $sql );
 			if ( $speakers ) {
 				foreach ( $speakers as $row ) {
@@ -12483,18 +12498,18 @@ function speaker_evaluator() {
 	}
 	$tmagendadata['speaker_evaluator'] = '';
 	$high                              = 0;
-	$sql                               = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND (meta_key LIKE '_Speaker%' OR meta_key LIKE '_Evaluator%') ";
+	$sql                               = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND (meta_key LIKE '_role_Speaker%' OR meta_key LIKE '_role_Evaluator%') ";
 	$results                           = $wpdb->get_results( $sql );
 	foreach ( $results as $row ) {
 		$assigned = $row->meta_value;
 		$slug     = $row->meta_key;
 		$p        = (int) preg_replace( '/[^0-9]/', '', $slug );
-		if ( strpos( $slug, '_Speaker' ) !== false ) {
+		if ( strpos( $slug, '_role_Speaker' ) !== false ) {
 			$userdata      = get_userdata( $assigned );
 			$speaker[ $p ] = $userdata->first_name . ' ' . $userdata->last_name;
 			$high          = ( $p > $high ) ? $p : $high;
 		}
-		if ( strpos( $slug, '_Evaluator' ) !== false ) {
+		if ( strpos( $slug, '_role_Evaluator' ) !== false ) {
 			$userdata = get_userdata( $assigned );
 			if ( empty( $userdata ) ) {
 				$evaluator[ $p ] = $assigned;
@@ -12537,7 +12552,7 @@ function evaluation_links() {
 	$future                           = get_future_events( '', 1 );
 	if ( $future ) {
 		foreach ( $future as $meet ) {
-			$sql     = "SELECT * FROM $wpdb->postmeta WHERE post_id=" . $post->ID . " AND meta_key LIKE '_Speak%' ORDER BY meta_key";
+			$sql     = "SELECT * FROM $wpdb->postmeta WHERE post_id=" . $post->ID . " AND meta_key LIKE '_role_Speak%' ORDER BY meta_key";
 			$results = $wpdb->get_results( $sql );
 			if ( $results ) {
 				foreach ( $results as $row ) {
@@ -12574,7 +12589,7 @@ function wpt_speakers() {
 		return $tmagendadata['wpt_speakers'];
 	}
 	$tmagendadata['wpt_speakers'] = '';
-	$sql                          = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE '_Speaker%' ";
+	$sql                          = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE '_role_Speaker%' ";
 	$results                      = $wpdb->get_results( $sql );
 	foreach ( $results as $row ) {
 		$assigned                       = $row->meta_value;
@@ -12604,7 +12619,7 @@ function wpt_evaluators() {
 		return $tmagendadata['wpt_evaluators'];
 	}
 	$tmagendadata['wpt_evaluators'] = '';
-	$sql                            = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE '_Evaluator%' ";
+	$sql                            = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE '_role_Evaluator%' ";
 	$results                        = $wpdb->get_results( $sql );
 	foreach ( $results as $row ) {
 		$assigned = $row->meta_value;
@@ -12637,7 +12652,7 @@ function wpt_general_evaluator() {
 	if ( isset( $tmagendadata['wpt_general_evaluator'] ) ) {
 		return $tmagendadata['wpt_general_evaluator'];
 	}
-	$ge_id = get_post_meta( $post->ID, '_General_Evaluator_1', true );
+	$ge_id = get_post_meta( $post->ID, '_role_General_Evaluator_1', true );
 
 	if ( empty( $ge_id ) ) {
 		return __( 'General Evaluator not yet assigned', 'rsvpmaker-for-toastmasters' );
@@ -12739,7 +12754,7 @@ class role_history {
 	 FROM " . $wpdb->posts . '
 	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . '.ID =a1.event
 	 JOIN ' . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id 
-	 WHERE  a1.date < " . $start_date . " AND post_status='publish' AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$'  AND a2.meta_value=" . $user_id . ' 
+	 WHERE  a1.date < " . $start_date . " AND post_status='publish' AND a2.meta_key LIKE '_role_%' AND a2.meta_value=" . $user_id . ' 
 	 ORDER BY a1.date DESC';
 
 		$this->full_history = $wpdb->get_results( $sql );
@@ -12757,6 +12772,7 @@ class role_history {
 	}
 
 	function clean_role( $role ) {
+		$role = str_replace('_role_','',$role);
 		$role = preg_replace( '/[0-9]/', '', $role );
 		$role = str_replace( '_', ' ', $role );
 		return trim( $role );
@@ -13125,7 +13141,6 @@ function toastmasters_role_signup() {
 			}
 			$actiontext = __( 'signed up for', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $role );
 			do_action( 'toastmasters_agenda_notification', $post_id, $actiontext, $user_id );
-			awesome_wall( $actiontext, $post_id, $user_id );
 			$date = get_rsvp_date( $post_id );
 
 			$startfrom = " '$date' ";
@@ -13144,7 +13159,7 @@ function toastmasters_role_signup() {
 			$user_id = sanitize_text_field($_POST['user_id']);
 			$post_id = (int) $_POST['post_id'];
 			do_action('toastmasters_agenda_change',$post_id,$role,0,get_post_meta($post_id,$role,true),0);
-			delete_post_meta( $post_id, $role );
+			update_post_meta( $post_id, $role, 0 );
 			if ( strpos( $role, 'peaker' ) ) {
 				delete_post_meta( $post_id, '_manual' . $role );
 				delete_post_meta( $post_id, '_project' . $role );
@@ -13153,7 +13168,6 @@ function toastmasters_role_signup() {
 			}
 			$actiontext = __( 'withdrawn: ', 'rsvpmaker-for-toastmasters' ) . ' ' . clean_role( $role );
 			do_action( 'toastmasters_agenda_notification', $post_id, $actiontext, $user_id );
-			awesome_wall( 'withdrawn: ' . clean_role( $role ), $post_id );
 			return $actiontext;
 		}
 	}
@@ -13632,20 +13646,20 @@ $role_count = $role_data[$role.'1']['count'];
 $output = '';
 for($i = 1; $i <= $role_count; $i++){
 	$row = $content;
-	$key = '_'.str_replace(' ','_',$role).'_'.$i;
+	$key = wp4t_fieldbase($role,$i);
 	$id = get_post_meta($post->ID,$key,true);
 	$name = get_member_name($id);
 	$row = str_replace("{".$role."}",$name,$row);
 	$row = str_replace("{Role}",$name,$row);
 	$title = $intro = $path = $project = '';
 	if('Speaker' == $role) {
-		$key = '_title_Speaker_'.$i;
+		$key = '_title_role_Speaker_'.$i;
 		$title = get_post_meta($post->ID,$key,true);
-		$key = '_intro_Speaker_'.$i;
+		$key = '_intro_role_Speaker_'.$i;
 		$intro = get_post_meta($post->ID,$key,true);	
-		$key = '_manual_Speaker_'.$i;
+		$key = '_manual_role_Speaker_'.$i;
 		$path = get_post_meta($post->ID,$key,true);
-		$key = '_project_Speaker_'.$i;
+		$key = '_project_role_Speaker_'.$i;
 		$project_key = get_post_meta($post->ID,$key,true);
 		if(!empty($project_key))
 			$project = get_project_text($project_key);
@@ -13658,7 +13672,7 @@ for($i = 1; $i <= $role_count; $i++){
 	if(isset($match[1]))
 	{
 		$role2 = $match[1];
-		$key = '_'.str_replace(' ','_',$role2).'_'.$i;
+		$key = wp4t_fieldbase($role2,$i);
 		$id = get_post_meta($post->ID,$key,true);
 		$name = get_member_name($id);
 		$row = str_replace($match[0],$name,$row);
@@ -13671,7 +13685,7 @@ return $output;//'<pre>'.var_export($role_data,true).'</pre>';
 
 function tm_role_member($atts) {
 	global $post, $role_data, $role_count;
-	$key = '_'.str_replace($atts['role']).'_'.$role_count;
+	$key = wp4t_fieldbase($role,$role_count);
 	$assigned = get_post_meta($post->ID,$key,true);
 	return get_member_name($assigned);
 }
@@ -13912,9 +13926,8 @@ function wpt_clipboard() {
 		foreach ( $data as $row => $item ) {
 			if ( $role == $item['role'] ) {
 				$count = (int) $item['count'];
-				$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
 				for ( $i = 1; $i <= $count; $i++ ) {
-					$field    = $field_base . '_' . $i;
+					$field    = wp4t_fieldbase($role,$i);
 					$assigned = get_post_meta( $post_id, $field, true );
 					if ( empty( $assigned ) || ($assigned == $member) ) {
 						
@@ -13954,9 +13967,8 @@ else
 				}
 				$role       = sanitize_text_field($item['role']);
 				$count      = (int) $item['count'];
-				$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
 				for ( $i = 1; $i <= $count; $i++ ) {
-					$field    = $field_base . '_' . $i;
+					$field    = wp4t_fieldbase($role,$i);
 					$assigned = get_post_meta( $post_id, $field, true );
 					if ( empty( $assigned ) ) {
 						if(empty($openroles[$role]))

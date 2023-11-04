@@ -1167,7 +1167,7 @@ function get_latest_speeches( $user_id, $myroles = array() ) {
 
 	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 
-	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=" . $user_id . " 
+	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '_role_Speaker_%' AND a2.meta_value=" . $user_id . " 
 
 	 WHERE a1.date < CURDATE() AND post_status='publish'
 
@@ -1667,7 +1667,7 @@ function toastmasters_reconcile() {
 
 				for($i=1; $i <= intval($item['count']); $i++)
 
-				$allroles['_'.str_replace(' ','_',$item['role']).'_'.$i] = '';
+				$allroles[wp4t_fieldbase($item['role'],$i)] = '';
 
 				$agenda_order[$item['role']] = '';
 
@@ -1707,7 +1707,7 @@ function toastmasters_reconcile() {
 
 			}
 
-			$meta_index = '_'.str_replace(' ','_',$record->role).'_'.$record->rolecount;
+			$meta_index = '_role_'.str_replace(' ','_',$record->role).'_'.$record->rolecount;
 
 			$dropdown = awe_user_dropdown( 'history_role_update['.$record->id.']', $record->user_id, true );
 
@@ -3133,7 +3133,7 @@ function get_speech_role_count( $user_id, $check_history = true ) {
 
 	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 
-	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE '\_Speaker\_%' AND a2.meta_value=" . $user_id . " 
+	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . ".ID =a2.post_id AND a2.meta_key LIKE 'role_Speaker_%' AND a2.meta_value=" . $user_id . " 
 
 	 WHERE a1.date < '" . get_sql_now() . "' AND post_status='publish'
 
@@ -5259,7 +5259,7 @@ function get_latest_visit( $user_id ) {
 
 	 JOIN ' . get_rsvpmaker_event_table() . ' a1 ON ' . $wpdb->posts . ".ID =a1.event
 
-	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . '.ID =a2.post_id AND a2.meta_value=' . $user_id . " AND BINARY a2.meta_key RLIKE '^_[A-Z].+[0-9]$'  
+	 JOIN " . $wpdb->postmeta . ' a2 ON ' . $wpdb->posts . '.ID =a2.post_id AND a2.meta_value=' . $user_id . " AND a2.meta_key LIKE '_role_%'  
 
 	 WHERE a1.date < '" . get_sql_now() . "' 
 
@@ -6157,7 +6157,7 @@ function import_fth() {
 
 						$user_id  = sanitize_text_field($users[ $nameindex ]);
 
-						$meta_key = '_Speaker_' . $count;
+						$meta_key = '_role_Speaker_' . $count;
 
 						update_post_meta( $post_id, $meta_key, $user_id );
 
@@ -6205,7 +6205,7 @@ function import_fth() {
 
 						$user = $users[ $nameindex ];
 
-						update_post_meta( $post_id, '_' . $role . '_1', $user_id );
+						update_post_meta( $post_id,wp4t_fieldbase($role,1), $user_id );
 
 					}
 
@@ -8643,7 +8643,7 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 
 
 
-	$sql     = "SELECT *, meta_key as role FROM `$wpdb->postmeta` where post_id=" . $post_id . " AND BINARY meta_key RLIKE '^_[A-Z].+[0-9]$' ";
+	$sql     = "SELECT *, meta_key as role FROM `$wpdb->postmeta` where post_id=" . $post_id . " AND meta_key LIKE '_role_%' ";
 
 	$results = $wpdb->get_results( $sql );
 
@@ -8793,13 +8793,13 @@ function wp_ajax_tm_edit_detail() {
 
 		if ( $p ) {
 
-			update_post_meta( $post_id, '_manual_Speaker_' . $rolecount, sanitize_text_field( $_POST['manual'] ) );
+			update_post_meta( $post_id, '_manual_role_Speaker_' . $rolecount, sanitize_text_field( $_POST['manual'] ) );
 
-			update_post_meta( $post_id, '_project_Speaker_' . $rolecount, sanitize_text_field( $_POST['project'] ) );
+			update_post_meta( $post_id, '_project_role_Speaker_' . $rolecount, sanitize_text_field( $_POST['project'] ) );
 
-			update_post_meta( $post_id, '_title_Speaker_' . $rolecount, sanitize_text_field( stripslashes( $_POST['title'] ) ) );
+			update_post_meta( $post_id, '_title_role_Speaker_' . $rolecount, sanitize_text_field( stripslashes( $_POST['title'] ) ) );
 
-			update_post_meta( $post_id, '_intro_Speaker_' . $rolecount, sanitize_text_field( stripslashes( $_POST['intro'] ), '<p><br><em><strong><a>' ) );
+			update_post_meta( $post_id, '_intro_role_Speaker_' . $rolecount, sanitize_text_field( stripslashes( $_POST['intro'] ), '<p><br><em><strong><a>' ) );
 
 		}
 
@@ -8863,17 +8863,17 @@ function wp_ajax_delete_tm_detail() {
 
 		if ( $p ) {
 
-			delete_post_meta( $post_id, '_' . $role . '_' . $rolecount );
+			update_post_meta( $post_id, wp4t_fieldbase($role,$rolecount), 0 );
 
 			if ( $role == 'Speaker' ) {
 
-				delete_post_meta( $post_id, '_manual_Speaker_' . $rolecount );
+				delete_post_meta( $post_id, '_manual_role_Speaker_' . $rolecount );
 
-				delete_post_meta( $post_id, '_project_Speaker_' . $rolecount );
+				delete_post_meta( $post_id, '_project_role_Speaker_' . $rolecount );
 
-				delete_post_meta( $post_id, '_title_Speaker_' . $rolecount );
+				delete_post_meta( $post_id, '_title_role_Speaker_' . $rolecount );
 
-				delete_post_meta( $post_id, '_intro_Speaker_' . $rolecount );
+				delete_post_meta( $post_id, '_intro_role_Speaker_' . $rolecount );
 
 			}
 
@@ -9437,7 +9437,7 @@ function show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false
 
 		// lookup role field, title
 
-		$sql   = "SELECT meta_key from $wpdb->postmeta WHERE post_id=" . $meeting_id . " AND meta_key LIKE '_Speaker%' AND meta_value=" . $speaker_id;
+		$sql   = "SELECT meta_key from $wpdb->postmeta WHERE post_id=" . $meeting_id . " AND meta_key LIKE '_role_Speaker%' AND meta_value=" . $speaker_id;
 
 		$field = $wpdb->get_var( $sql );
 
@@ -14553,7 +14553,7 @@ function wpt_evaluation_reminder() {
 
 		$post_id = $past[0]->ID;
 
-		$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_Speaker%' ORDER BY meta_key";
+		$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_role_Speaker%' ORDER BY meta_key";
 
 		$results = $wpdb->get_results($sql);
 
@@ -14837,9 +14837,8 @@ function wpt_suggest_all_roles() {
 		}
 		$role       = sanitize_text_field($item['role']);
 		$count      = (empty($item['count'])) ? 1: (int) $item['count'];
-		$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $role );
 		for ( $i = 1; $i <= $count; $i++ ) {
-			$field    = $field_base . '_' . $i;
+			$field    = wp4t_fieldbase($role,$i);
 			$assigned = get_post_meta( $meeting->ID, $field, true );
 			if ( empty( $assigned ) ) {
 				$openroles[$role][] = $field;
@@ -14861,6 +14860,7 @@ function wpt_suggest_all_roles() {
 	}
 
 	$hasrole_options = '<optgroup label="Has a Role">';
+	if(!empty($hasrole))
 	foreach($hasrole as $assigned => $roles)
 	{
 		if(empty($member_list[$assigned]))

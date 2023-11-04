@@ -976,7 +976,7 @@ class WPTM_Reorder extends WP_REST_Controller {
 		$test = '';
 		foreach ( $_POST as $name => $value ) {
 			if ( is_array( $value ) ) {
-				if ( $name == '_Speaker' ) {
+				if ( $name == '_role_Speaker' ) {
 					// print_r($value);
 					$neworder = array();
 					foreach ( $value as $assigned ) {
@@ -1250,7 +1250,7 @@ function wpt_get_agendadata($post_id = 0) {
 					$blanks = array();
 					for($i=$start; $i < ($count + $start); $i++)
 					{
-						$key = '_'.preg_replace('/[^a-zA-Z]/','_',$role).'_'.$i;
+						$key = wp4t_fieldbase($role,$i);
 						$assignment = array('post_id'=>$post_id);
 						$assignment['ID'] = get_post_meta($post_id,$key, true);
 						if(empty($assignment['ID'])) {
@@ -1288,7 +1288,7 @@ function wpt_get_agendadata($post_id = 0) {
 						$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
 					}
 					if($backup) {
-						$key = '_Backup_'.preg_replace('/[^a-zA-Z]/','_',$role).'_'.$start;
+						$key = wp4t_fieldbase('Backup '.$role,$start);
 						$assignment = array();
 						$assignment['ID'] = intval( get_post_meta($agendadata['post_id'],$key, true) );
 						$assignment['name'] = ($assignment['ID']) ? get_member_name($assignment['ID']) : '';
@@ -1367,7 +1367,7 @@ class WP4TUpdateRole extends WP_REST_Controller {
 		$data = json_decode($json);
 		$post_id = $data->post_id;
 		$role = $data->role;
-		$keybase = '_'.preg_replace('/[^a-zA-Z0-9]/','_',$role).'_';
+		$keybase = wp4t_fieldbase($role).'_';
 		$updated['status'] = 'updated';
 		foreach($data->assignments as $index => $item) {
 			//foreach($assignment as $item) {
@@ -1378,7 +1378,7 @@ class WP4TUpdateRole extends WP_REST_Controller {
 					elseif('ID' == $type)
 						$key = $keybase.($index+1);
 					else
-						$key = '_'.$type.$keybase.($index+1);
+						$key = '_role_'.$type.$keybase.($index+1);
 					update_post_meta($post_id,$key,$value);
 					$updated['status'] .= ' '.$key.' = '.$value;	
 			}
@@ -1563,9 +1563,7 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 			$roleindex = 0;
 		}
 		$name = get_member_name($user_id);
-		if($user_id == $current_user->ID)
-			awesome_wall('signed up for '.$role,$post_id);
-		$keybase = '_'.preg_replace('/[^a-zA-Z0-9]/','_',$role).'_';
+		$keybase = wp4t_fieldbase($role).'_';
 		$updated = $item = (array) $data;
 		$status = 'updated post id '.$post_id.' count: '.$count;
 		$updated['name'] = $name;
@@ -1642,7 +1640,7 @@ class WptJsonMultiAssignmentPost extends WP_REST_Controller {
 				$roleindex = 0;
 			}
 			$name = get_member_name($user_id);
-			$keybase = '_'.preg_replace('/[^a-zA-Z0-9]/','_',$role).'_';
+			$keybase = wp4t_fieldbase($role).'_';
 			$item = (array) $data;
 			$item['name'] = $name;
 			array_push($updated['assignments'],$item);
