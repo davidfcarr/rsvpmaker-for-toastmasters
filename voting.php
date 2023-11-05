@@ -200,7 +200,7 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
 
         $metakey = 'myvote_'.$key.'_'.$identifier;
 
-        update_post_meta($post->ID,$metakey,$vote);'_role_Speaker
+        update_post_meta($post->ID,$metakey,$vote);
 
         echo '<div style="border: thin solid red; padding: 10px; background-color:#ffe">Vote recorded: '.$key.'</div>';
 

@@ -33,7 +33,7 @@ function wp4t_haverole($post_id) {
 
 
 
-function wp4t_last_held_role($user_id, $role) {
+function wp4t_last_held_role($user_id, $role, $include_ts = false) {
 
 	global $wpdb, $rsvp_options;
 
@@ -45,11 +45,11 @@ function wp4t_last_held_role($user_id, $role) {
 
 	if(empty($d))
 
-		return;
+		return ($include_ts) ? ['?',0] : null;
 
 	$t = rsvpmaker_strtotime($d);
 
-	return rsvpmaker_date($rsvp_options['long_date'],$t);
+	return ($include_ts) ? [rsvpmaker_date($rsvp_options['long_date'],$t), $t] : rsvpmaker_date($rsvp_options['long_date'],$t);
 
 }
 

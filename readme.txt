@@ -12,7 +12,7 @@ Requires at least: 5.0
 
 Tested up to: 6.3.1
 
-Stable tag: 5.9.9
+Stable tag: 6.0.4
 
 License: GPLv2
 
@@ -132,6 +132,20 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 == Changelog ==
 
+= 6.0.1 =
+
+* Sort option for Member Signups and Suggestions screen
+
+= 6.0 =
+
+* Member signups and suggestions screen shows upcoming roles the member has signed up for, suggested roles if the member has not taken a role, plus contact info. Includes one-click signup links for the open roles. 
+
+= 5.9.9 =
+
+* Refinements to one-click signup method
+* Improved data model for roles
+* Improved logging of assignments, signups, and withdrawls
+
 = 5.9.8 =
 
 * Updated How to Edit the Agenda block
@@ -151,23 +165,13 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 = 5.9 =
 
-
-
 * Enhancements to the meeting minutes tools
-
-
 
 = 5.8.9 =
 
-
-
 * Fix to date lookups on update role history and minutes screens
 
-
-
 = 5.8.7 =
-
-
 
 * Backend for mobile app
 

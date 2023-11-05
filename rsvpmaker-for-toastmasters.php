@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 5.9.9
+Version: 6.0.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -4818,6 +4818,99 @@ function rsvpmaker_agenda_notifications( $permalink ) {
 	return $output;
 }
 
+function wpt_member_signups_suggestions_screen() {
+	global $current_user;
+?>
+<h1>Member Signups and Suggestions</h1>
+<p>Help your members plan future meeting roles and speeches. Use this tool to organize your outreach to them.</p>
+<p>You can copy and paste the one-click signup links on each open role into a personal email, or share through a social messenger tool.</p>
+<?	
+	if(isset($_GET['member']))
+		$user_id = intval($_GET['member']);
+	else {
+		echo '<p>Showing your own data by default.</p>';
+		$user_id = $current_user->ID;
+	}
+	printf('<form method="get" action="%s">',admin_url('admin.php'));
+	foreach($_GET as $name => $value) {
+		if('sort' != $name)
+		printf('<input type="hidden" name="%s" value="%s">',$name,$value);
+	}
+	echo awe_user_dropdown( 'member', $user_id, true, $openlabel = '' );
+	printf('&nbsp; <input type="checkbox" name="sort" value="1" %s /> Sort seldom done roles to the top &nbsp; ',(isset($_GET['sort']) || empty($_GET['submit']) ) ? 'checked="checked"' : '');
+	submit_button('Lookup','primary','submit',false);
+	echo '</form>';
+	
+	printf('<h2>%s</h2>',get_member_name($user_id));
+	echo wpt_get_member_profile($user_id,'?subject='.urlencode('Help fill the agenda for '.get_bloginfo('name')).'&body='.urlencode('Help fill the agenda for our upcoming meetings. The links on the roles included below will let you sign up with one click.'."\n\n"));
+	echo '<div style="background-color: #fff; padding: 5px; margin-top: 5px;">'.wpt_member_signups_suggestions($user_id, empty($_GET['sort']) ).'</div>';
+}
+
+function wpt_member_signups_suggestions ($user_id = 0, $sortalpha = false) {
+	global $post, $current_user,$wpdb, $rsvp_options;
+	$output = '';
+	$meetings = future_toastmaster_meetings(8);
+	foreach($meetings as $meeting) {
+		$output .= sprintf('<h4><a href="%s?mode=edit">%s %s</a></h4>', get_permalink($meeting->ID), $meeting->post_title, rsvpmaker_date($rsvp_options['long_date'],$meeting->ts_start));
+		$ab = get_absences_array( $meeting->ID );
+		if(in_array($user_id,$ab))
+			{
+				$output .= '<p><strong>Planned absence</strong></p>';
+				continue;
+			}
+		$exists = $wpdb->get_var("select meta_key from $wpdb->postmeta where meta_key LIKE '_role_%' and post_id=$meeting->ID and meta_value=$user_id ");
+		if($exists)
+			{
+				$output .= sprintf('<p><strong>Signed up for %s</strong></p>',clean_role($exists));
+				continue; // skip if the user already has a role
+			}
+		$nonce = get_post_meta($meeting->ID,'oneclicknonce',true);
+		if(empty($nonce)) {
+			$nonce = wp_create_nonce('oneclick');
+			update_post_meta($meeting->ID,'oneclicknonce',$nonce);
+		}
+		$openroles = [];
+		$data              = wpt_blocks_to_data( $meeting->post_content );
+		foreach ( $data as $row => $item ) {
+			if ( empty( $item['role'] ) ) {
+				continue;
+			}
+			$role       = sanitize_text_field($item['role']);
+			$count      = (empty($item['count'])) ? 1: (int) $item['count'];
+			for ( $i = 1; $i <= $count; $i++ ) {
+				$field    = wp4t_fieldbase($role,$i);
+				$assigned = get_post_meta( $meeting->ID, $field, true );
+				if ( empty( $assigned ) ) {
+					if(!in_array($role,$openroles))
+						$openroles[] = $role;
+				}
+			}
+		}
+		if(!empty($openroles))
+		{
+			$output .= '<p>Suggested:</p>';
+			$outputarr = [];
+			foreach($openroles as $index => $role) {
+				if(strpos($role, 'Backup') !== false)
+					continue;
+				$last_did = wp4t_last_held_role($user_id, $role, true);
+				if(empty($outputarr[$last_did[1]]))
+					$outputarr[$last_did[1]] = sprintf('<p><a href="%s?member=%d&oneclick=%s&member=%d&role=%s">%s</a>, last did %s</p>',get_permalink($meeting->ID),$user_id,$user_id,$nonce,$role,$role,$last_did[0]);
+				else
+					$outputarr[$last_did[1]] .= sprintf('<p><a href="%s?member=%d&oneclick=%s&member=%d&role=%s">%s</a>, last did %s</p>',get_permalink($meeting->ID),$user_id,$user_id,$nonce,$role,$role,$last_did[0]);
+			}
+			if($sortalpha)
+				sort($outputarr);
+			else
+				ksort($outputarr);
+			$output .= implode("\n",$outputarr);
+		}
+		else 
+			$output .= '<p>No open roles</p>';
+	}
+	return $output;
+}
+
 function oneclick_future ($user_id = 0) {
 	global $post, $current_user,$wpdb, $rsvp_options;
 	if(!$user_id && !empty($current_user->ID))
@@ -4860,7 +4953,10 @@ function oneclick_future ($user_id = 0) {
 		{
 			$output .= sprintf('<h4>%s %s</h4>', $meeting->post_title, rsvpmaker_date($rsvp_options['long_date'],$meeting->ts_start));
 			foreach($openroles as $role) {
-				$output .= sprintf('<p><a href="%s?member=%d&oneclick=%s&role=%s">%s</a></p>',get_permalink($meeting->ID),$user_id,$nonce,$role,$role);
+				$last_did = wp4t_last_held_role($user_id, $role);
+				if($last_did)
+					$last_did = '?';
+				$output .= sprintf('<p><a href="%s?member=%d&oneclick=%s&role=%s">%s</a>, last did %s</p>',get_permalink($meeting->ID),$user_id,$nonce,$role,$role,$last_did);
 			}
 		}
 	}
@@ -11407,6 +11503,31 @@ function bp_toastmasters( $post_id, $actiontext, $user_id ) {
 	);
 	$row_id = bp_activity_add( $args );
 	// bp_update_user_last_activity( $user_id, time() );
+}
+
+function wpt_get_member_profile($user_id,$email_query = '') {
+	$userdata = get_userdata( $user_id );
+	$output = '';
+	$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['facebook_url'] = __( 'Facebook Profile', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['twitter_url']  = __( 'Twitter Profile', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['linkedin_url'] = __( 'LinkedIn Profile', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['business_url'] = __( 'Business Web Address', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
+	foreach ( $contactmethods as $name => $value ) {
+		if ( strpos( $name, 'phone' ) && $userdata->$name ) {
+			$output .= sprintf( '<div>%s: %s</div>', $value, $userdata->$name );
+		}
+		elseif ( strpos( $name, 'url' && $userdata->$name ) ) {
+			$output .= sprintf( '<div><a target="_blank" href="%s">%s</a></div>', $userdata->$name, $userdata->name );
+		}
+		elseif ( strpos( $name, 'email' ) && $userdata->$name) {
+			$output .= sprintf( '<div><a target="_blank" href="mailto:%s%s">%s</a></div>', $userdata->$name, $email_query, $userdata->$name );
+		}
+	}
+	return $output;
 }
 
 function display_toastmasters_profile() {

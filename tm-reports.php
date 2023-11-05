@@ -26,61 +26,30 @@ function toastmasters_reports_menu() {
 
 	add_menu_page( __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_screen', 'toastmasters_screen', 'dashicons-microphone', '2.01' );
 
-
-
 	add_submenu_page( 'toastmasters_screen', __( 'My Progress', 'rsvpmaker-for-toastmasters' ), __( 'My Progress', 'rsvpmaker-for-toastmasters' ), 'read', 'my_progress_report', 'wp4toastmasters_history' );
-
-	add_submenu_page( 'toastmasters_screen', __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), __( 'Progress Reports', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports', 'wp4toastmasters_history' );
-
-	add_submenu_page( 'toastmasters_screen', __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'pathways_report', 'pathways_report' );
-
-	add_submenu_page( 'toastmasters_screen', __( 'Pathways/BaseCamp checklist', 'rsvpmaker-for-toastmasters' ), __( 'Base Camp Checklist', 'rsvpmaker-for-toastmasters' ), 'read', 'pathways_checklist', 'pathways_checklist' );
-
-	add_submenu_page( 'toastmasters_screen', __( 'Multi-Meeting Role Planner', 'rsvpmaker-for-toastmasters' ), __( 'Role Planner', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_planner', 'toastmasters_planner' );
-	add_submenu_page( 'toastmasters_screen', __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_suggest_all_roles', 'wpt_suggest_all_roles' );
-
-	add_submenu_page( 'toastmasters_screen', __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports_dashboard', 'toastmasters_reports_dashboard' );
-
-
-
 	add_submenu_page( 'toastmasters_screen', __( 'Evaluations', 'rsvpmaker-for-toastmasters' ), __( 'Evaluations', 'rsvpmaker-for-toastmasters' ), 'read', 'wp4t_evaluations', 'wp4t_evaluations' );
-
-
-
+	add_submenu_page( 'toastmasters_screen', __( 'Multi-Meeting Role Planner', 'rsvpmaker-for-toastmasters' ), __( 'Role Planner', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_planner', 'toastmasters_planner' );
+	add_submenu_page( 'toastmasters_screen', __( 'NEW: Member Signups and Suggestions', 'rsvpmaker-for-toastmasters' ), __( 'NEW: Member Signups and Suggestions', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_member_signups_suggestions_screen', 'wpt_member_signups_suggestions_screen' );
+	add_submenu_page( 'toastmasters_screen', __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_suggest_all_roles', 'wpt_suggest_all_roles' );
+	add_submenu_page( 'toastmasters_screen', __( 'Progress Reports (All Members)', 'rsvpmaker-for-toastmasters' ), __( 'Progress Reports (All Members)', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports', 'wp4toastmasters_history' );
+	add_submenu_page( 'toastmasters_screen', __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'pathways_report', 'pathways_report' );
+	add_submenu_page( 'toastmasters_screen', __( 'Pathways/BaseCamp checklist', 'rsvpmaker-for-toastmasters' ), __( 'Base Camp Checklist', 'rsvpmaker-for-toastmasters' ), 'read', 'pathways_checklist', 'pathways_checklist' );
+	add_submenu_page( 'toastmasters_screen', __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports_dashboard', 'toastmasters_reports_dashboard' );
 	add_submenu_page( 'toastmasters_screen', __( 'Member List', 'rsvpmaker-for-toastmasters' ), __( 'Member List', 'rsvpmaker-for-toastmasters' ), 'view_contact_info', 'contacts_list', 'member_list' );
-
 	add_submenu_page( 'toastmasters_screen', __( 'My Data', 'rsvpmaker-for-toastmasters' ), __( 'My Data', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_my_data', 'wpt_my_data' );
-
 	add_submenu_page( 'toastmasters_screen', __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_support', 'toastmasters_support' );
 
-
-
-	//was $security['edit_member_stats']
-
-	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
-	
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), 'edit_rsvpmakers', 'agenda_template_editor', 'agenda_template_editor' );
-
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_reconcile', 'toastmasters_reconcile' );
-
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
-
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'add_member_speech', 'add_member_speech' );
-
-
-
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Mentors', 'rsvpmaker-for-toastmasters' ), __( 'Mentors', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_mentors', 'toastmasters_mentors' );
-
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wpt_dues_report', 'wpt_dues_report' );
-
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'toastmasters_activity_log', 'toastmasters_activity_log' );
-
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'import_export', 'toastmasters_import_export' );
-
+	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'agenda_template_editor', 'agenda_template_editor' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_reconcile', 'toastmasters_reconcile' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'add_member_speech', 'add_member_speech' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Mentors', 'rsvpmaker-for-toastmasters' ), __( 'Mentors', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_mentors', 'toastmasters_mentors' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wpt_dues_report', 'wpt_dues_report' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_activity_log', 'toastmasters_activity_log' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'import_export', 'toastmasters_import_export' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
-
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'member_application_approval', 'member_application_approval' );
-
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'member_application_settings', 'member_application_settings' );
 
 	if(!is_toastmost_site())
@@ -89,7 +58,7 @@ function toastmasters_reports_menu() {
 
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
 
-	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ),'manage_options', 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
+	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ),'edit_users', 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 
@@ -1045,7 +1014,7 @@ function update_user_role_archive_all() {
 
 	foreach ( $events as $event ) {
 
-		update_user_role_archive( $event->ID, $event->datetime );
+		update_user_role_archive( $event->ID, $event->date );
 
 		update_post_meta($event->ID,'role_data_archived',true);
 
@@ -8625,23 +8594,17 @@ function increment_stat_button( $user_id, $key ) {
 
 function update_user_role_archive( $post_id, $timestamp = '' ) {
 
-
-
 	global $wpdb;
 
 	global $current_user;
 
 	$wpdb->show_errors();
 
-
-
 	if ( empty( $timestamp ) ) {
 
 		$timestamp = get_rsvp_date( $post_id );
 
 	}
-
-
 
 	$sql     = "SELECT *, meta_key as role FROM `$wpdb->postmeta` where post_id=" . $post_id . " AND meta_key LIKE '_role_%' ";
 
