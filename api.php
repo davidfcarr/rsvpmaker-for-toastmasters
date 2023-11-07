@@ -1263,7 +1263,7 @@ function wpt_get_agendadata($post_id = 0) {
 						if($assignment['ID'] && ('Speaker' == $role)) {
 							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
 							$project_key = ($speakerdata['project']) ? $speakerdata['project'] : '';
-							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id, $project_key );
+							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id );//add_query_arg('evalme',$current_user->ID,get_permalink())
 							$assignment = array_merge($assignment,$speakerdata);
 						}
 						if(isset($_GET['mode']) && 'reorg_admin' == $_GET['mode']) {
