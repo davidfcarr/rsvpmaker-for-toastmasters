@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 6.0.5
+Version: 6.0.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -595,16 +595,16 @@ else {
 	global $submenu;
 	foreach ($submenu['wpt_email_handler_page'] as $index => $item) {
 		if($index) 
-			printf('<li><a href="%s">%s</a></li>',admin_url($item[2]),$item[3]);
+			printf('<li><a href="%s">%s</a></li>',admin_url('admin.php?page='.$item[2]),$item[3]);
 		else
-			printf('<p><strong><a href="%s">%s</a></strong></p><ul>',admin_url($item[2]),$item[3]);
+			printf('<p><strong><a href="%s">%s</a></strong></p><ul>',admin_url('admin.php?page='.$item[2]),$item[3]);
 	}
 	echo '</ul>';
 	foreach ($submenu['toastmasters_admin_help'] as $index => $item) {
 		if($index) 
-			printf('<li><a href="%s">%s</a></li>',admin_url($item[2]),$item[3]);
+			printf('<li><a href="%s">%s</a></li>',admin_url('admin.php?page='.$item[2]),$item[3]);
 		else
-			printf('<p><strong><a href="%s">%s</a></strong></p><ul>',admin_url($item[2]),$item[3]);
+			printf('<p><strong><a href="%s">%s</a></strong></p><ul>',admin_url('admin.php?page='.$item[2]),$item[3]);
 	}
 	echo '</ul>';
 
