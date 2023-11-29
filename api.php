@@ -2102,6 +2102,66 @@ class WP4T_User_Meta extends WP_REST_Controller {
 	}
 }
 
+class WP4T_Timer_Image extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'timerimage';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true; //is_user_logged_in();
+	}
+
+	public function handle( $request ) {
+		$upload_dir = wp_upload_dir();
+		//print_r($_POST);
+			$check = getimagesize($_FILES["colorimage"]["tmp_name"]);
+			if($check !== false) {
+			$color = sanitize_text_field($_POST['color']);
+			$response['color'] = $color;
+			$ext = pathinfo($_FILES["colorimage"]["name"],PATHINFO_EXTENSION);
+			$filename = preg_replace('/[^A-Za-z0-9\.]+/','_',$_POST['slug']).'_'.$color.'_'.time().'.'.$ext;
+			$response['file'] = $filename;
+			$target_file = trailingslashit($upload_dir['path']) . $filename;
+			$target_url = trailingslashit($upload_dir['url']) . $filename;
+			$response['url'] = $target_url;
+			move_uploaded_file($_FILES["colorimage"]["tmp_name"], $target_file);
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+			$filetype = wp_check_filetype( basename( $target_file ), null );
+			$attachment = array(
+				'guid'           => $target_url,
+				'post_mime_type' => $filetype['type'],
+				'post_title'     => preg_replace( '/\.[^.]+$/', '', $filename ),
+				'post_content'   => '',
+				'post_status'    => 'inherit',
+			);
+			$attach_id = wp_insert_attachment( $attachment, $target_file, 0 );
+
+			// Generate the metadata for the attachment, and update the database record.
+			$attach_data = wp_generate_attachment_metadata( $attach_id, $target_file );
+			wp_update_attachment_metadata( $attach_id, $attach_data );
+		
+			} else {
+			  $response['error'] = "File is not an image.";
+			}
+		return new WP_REST_Response($response,
+			200
+		);
+	}
+}
+
 /*
 skeleton
 class WP4T_XX extends WP_REST_Controller {
@@ -2209,5 +2269,7 @@ add_action(
 		$meval->register_routes();
 		$umeta = new WP4T_User_Meta();
 		$umeta->register_routes();
+		$timerimage = new WP4T_Timer_Image();
+		$timerimage->register_routes();
 	}
 );

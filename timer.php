@@ -256,27 +256,16 @@ display: none;
 
 ?>
 
-
-
-@media only screen a'_role_Speakeridth: 400px) {
-'_role_Speaker
+@media only screen and (max-width: 400px) {
   #viewcontrol {
-
 	display: none;
-
   }
 
   #jitsi {
-
 	  display: none;
-
 	  width: 5px;
-
   }
-
 }
-
-
 
 </style>
 
@@ -520,7 +509,7 @@ $('#manual_contestants').hide();
 
 		// echo 'Lookup '.'_Speaker_'.$i;
 
-		$member_id = get_post_meta( $post->ID, '_Speaker_' . $i, true );
+		$member_id = get_post_meta( $post->ID, '_role_Speaker_' . $i, true );
 
 		// echo ' id '.$member_id;
 
@@ -540,7 +529,7 @@ $('#manual_contestants').hide();
 
 			// print_r($member);
 
-			$dt = get_post_meta( $post->ID, '_display_time_Speaker_' . $i, true );
+			$dt = get_post_meta( $post->ID, '_display_time_role_Speaker_' . $i, true );
 
 			if ( empty( $dt ) ) {
 
@@ -988,9 +977,21 @@ printf(
 
 </select></p>
 
-<p><a href="https://www.wp4toastmasters.com/knowledge-base/online-timer-tool/">Instructions</a></p>
+<blockquote><a href="https://www.wp4toastmasters.com/knowledge-base/online-timer-tool/" target="_blank">Instructions</a></blockquote>
+<form action="<?php echo rest_url('rsvptm/v1/timerimage'); ?>" method="post" enctype="multipart/form-data" class="newcolor">
+<p><strong>Upload color image</strong></p>
+<label for="file">File</label>
+  <input id="file" name="colorimage" type="file" /><br>
+  Slug / Keyword<br>
+  <input name="slug" size="10"><br>
+  <input type="radio" name="color" value="green" checked="checked"> Green<br>
+  <input type="radio" name="color" value="yellow"> Yellow<br>
+  <input type="radio" name="color" value="red"> Red<br>
+  <button>Upload</button>
+</form>
 
 </div><!-- end timer controls -->
+
 
 		</div>
 

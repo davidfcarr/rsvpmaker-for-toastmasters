@@ -56,40 +56,15 @@ function wpt_email_menu () {
 
 function wpt_email_handler_page () {
 
-
-
-
-
-
-
     echo '<h1>Toastmasters Email Forwarders, Groups &amp; Tools</h1>';
-
-
 
     $status = rsvpmaker_relay_bot_check();
 
-
-
     printf('<div style="float: right; width: 250px; margin-left: 25px; margin-right: 25px; padding: 5px; border: thin solid gray"><h3>Service Status</h3>%s</div>',$status);
 
-
-
-
-
-
-
     $slug_ids = get_officer_slug_ids();
-
-
-
     if(!empty($slug_ids)) {
-
-
-
         $forwarder_info = '<p>Configured officer forwarding addresses include:';
-
-
-
         foreach($slug_ids as $slug => $id) {
 
 
@@ -3099,27 +3074,16 @@ return $emails;
 
 }
 
-
-
-
-
-
-
 function wpt_email_handler_forwarders() {
-
-
 
     rsvpmaker_admin_heading('Email Forwarders',__FUNCTION__,'','<img style="max-width: 300px;" src="https://www.wp4toastmasters.com/wp-content/uploads/2022/05/forwarders.jpg" /><br><em>Example</em>');
 
-
+    if(!empty($_POST))
+        rsvpmail_clear_allforwarders(get_current_blog_id());
 
     $parts = explode('.',$_SERVER['SERVER_NAME']);
 
-
-
     $prefix = '';
-
-
 
     if(sizeof($parts) > 2) {
 
@@ -3341,11 +3305,18 @@ function wpt_email_handler_forwarders() {
 
     }
 
-
-
+    if(isset($_POST['rsvpmail_blacklist'])) {
+        if(empty($_POST['rsvpmail_blacklist']))
+            delete_option('rsvpmail_blacklist');
+        else {
+            $blacklist = wpt_email_list_to_array($_POST['rsvpmail_blacklist']);
+            update_option('rsvpmail_blacklist',$blacklist);
+        }
+    }
+    else
+        $blacklist = get_option('rsvpmail_blacklist');
+    
     $info_address = wpt_format_email_forwarder('info');
-
-
 
     $prefix = (strpos($info_address,'-')) ? preg_replace('/-.+/','-',$info_address) : '';
 
@@ -3471,313 +3442,92 @@ for($i = 0; $i < 3; $i++)
 
 
 {
-
-
-
     printf('<p><strong>Forwarder</strong>: %s<input type="text" name="slug[%d]" />@%s</p>',$prefix,$i,$domain);
-
-
-
     printf('<p><strong>Forwards to</strong>: <br /><textarea name="forwardto[%d]" cols="120"></textarea></p>',$i);
-
-
-
 }
 
-
+if(rsvpmaker_postmark_is_active()) {
+$blacklist_text = (is_array($blacklist)) ? implode(',',$blacklist) : '';
+printf('<h3>Blacklist (blocked senders)</h3><p>You can prevent messages from being delivered from spammers or other unwanted senders by adding them to this list.<br><textarea name="rsvpmail_blacklist" cols="120">%s</textarea></p>',$blacklist_text);
+}
 
 rsvpmaker_nonce();
-
-
-
 submit_button();
-
-
-
 echo '</form>';
 
-
-
-
-
-
-
 if(current_user_can('manage_network')) {
-
-
-
 $clubemails = get_blog_option(1,'toastmost_club_email_list');
-
-
-
 if(!$clubemails)
-
-
-
     $clubemails = array();
-
-
-
 $officeremails = get_blog_option(1,'toastmost_officer_email_list');
-
-
-
 if(!$officeremails)
-
-
-
     $officeremails = array();
-
-
-
 $custom_forwarders = get_blog_option(1,'toastmost_custom_forwarders_service');
-
-
 
 global $wpdb;
 
-
-
 $forwarders = array_merge($clubemails,$officeremails);
-
-
-
-
-
-
 
 foreach($forwarders as $forwarder) {
 
-
-
     $fparts = preg_split('/[@-]/',$forwarder);
-
-
-
     $domain = array_pop($fparts);
-
-
-
     if($domain == 'toastmost.org')
-
-
-
     {
-
-
-
         $site_lookup = $fparts[0].'.toastmost.org';
-
-
-
         if('digitalcommunicators' == $parts[0])
-
-
-
             $site_lookup = 'digitalcommunicators.org';
-
-
-
         $list_lookup = (isset($fparts[1])) ? $fparts[1] : 'members'; //example: op@toastmost.org
-
-
-
     }
-
-
-
     else {
-
-
-
         $site_lookup = $domain;
-
-
-
         $list_lookup = $fparts[0];
-
-
-
     }
-
-
 
     $lsql = "SELECT blog_id FROM wpt_blogs WHERE domain='$site_lookup' ";
-
-
-
     $list_blog_id = $wpdb->get_var($lsql);
-
-
-
-
-
-
-
     echo '<p>forwarder to blog id',"$forwarder lookup: $site_lookup list: $list_lookup id: $list_blog_id </p>\n";
-
-
-
     if($list_blog_id) {
-
-
-
         if('members' == $list_lookup) {
-
-
-
             echo '<p>Members list</p>';
-
-
-
             if(get_blog_option($list_blog_id,'member_distribution_list'))
-
-
-
                 echo '<p>list active</p>';
-
-
-
         } 
-
-
-
         elseif('officers' == $list_lookup) {
-
-
-
             echo '<p>Officers list</p>';
-
-
-
             if(get_blog_option($list_blog_id,'officer_distribution_list'))
-
-
-
                 echo '<p>list active</p>';
-
-
-
         }
-
-
-
         else 
-
-
-
             printf('<p>Check for forwarder %s</p>',$list_lookup); 
-
-
-
     }
-
-
+}
 
 }
 
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
-}
-
-
-
-
-
-
 
 function wpt_format_email_forwarder($lookup = '', $blog_id = 0) {
-
-
-
     if(!$blog_id)
-
-
-
         $blog_id = get_current_blog_id();
-
-
-
     $lookup = strtolower($lookup);
-
-
-
     $root_domain = wpt_get_site_domain(1);
-
-
-
     $domain = wpt_get_site_domain($blog_id);
-
-
-
     $username = '';
-
-
-
     if(strpos($domain,$root_domain))
-
-
-
         {
-
-
-
         $username = str_replace('.'.$root_domain,'',$domain);
-
-
-
         $domain = $root_domain;
-
-
-
         }
 
-
-
     if(($lookup == 'members') && !empty($username))
-
-
-
         $lookup = '';//username@ is members list
-
-
-
     elseif(!empty($username)  && !empty($lookup))
-
-
-
         $username .= '-';
-
-
-
     elseif((empty($lookup)) && empty($username))
-
-
-
         $username = 'members';
-
-
-
     $username .= $lookup;
-
-
-
     return $username .'@' .$domain;
-
-
-
 }
 
 
