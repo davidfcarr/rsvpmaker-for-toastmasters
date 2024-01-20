@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 6.0.7
+Version: 6.1.2
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -37,6 +37,7 @@ require 'toastmasters-dynamic-agenda/toastmasters-dynamic-agenda.php';
 require 'speaker-evaluator/speaker-evaluator.php';
 require 'mobile.php';
 require 'agenda-layout/agenda-layout.php';
+require 'memberoptions/memberoptions.php';
 
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 
@@ -2570,8 +2571,7 @@ function awesome_menu() {
 function wp4toastmasters_settings() {
 	global $wpdb, $current_user;
 	add_awesome_roles();
-    if(!empty($_POST))
-        rsvpmail_clear_allforwarders(get_current_blog_id());
+    rsvpmail_clear_allforwarders(get_current_blog_id());
 	?>
 <div class="wrap">
 <?php rsvpmaker_admin_heading('Toastmasters '.__( 'Settings', 'rsvpmaker-for-toastmasters' ),__FUNCTION__);?>
@@ -5039,8 +5039,9 @@ $formtop .= '<input type="hidden" name="member" value="'.$user_id.'">';
 $formtop .= sprintf('<input type="hidden" name="by" value="%d" />',(isset($_GET['by'])) ? intval($_GET['by']) : 0 );
 $formbottom = (strpos($post->post_content,'tm_attend_in_person') || strpos($post->post_content,'wp4toastmasters/hybrid')) ? tm_in_person_checkbox($user_id) : '';
 $formbottom .= '<p><button style="background-color: #004165; color: #FFFFFF; border-radius: 3px; font-size: 16px; padding: 5px; font-weight: bold;">Take Role!</button></p></form>';
+$debug = '';
 foreach($data as $item){
-	if(isset($item['role']) && ($item['role'] == $role))
+	if(isset($item['role']) && (wp4t_fieldbase($item['role']) == wp4t_fieldbase($role)))
 	{
 		//print_r($item);
 		$count = (isset($item['count'])) ? $item['count'] : 1;
@@ -5049,6 +5050,7 @@ foreach($data as $item){
 		for($i = $start; $i < $end; $i++)
 		{
 			$field = wp4t_fieldbase($role,$i);
+			$debug .= "<p>field $field</p>";
 			$assigned = get_post_meta($post->ID,$field,true);
 			if(!$assigned) {
 				$output .= $formtop.sprintf('<input type="hidden" name="role" value="%s"><input type="hidden" name="user_id" value="%s">',$field,$user->ID);
@@ -5082,7 +5084,7 @@ if(!$toolate && !$already && 'Speaker' != $role) {
 }
 
 if($toolate) {
-	$output .= "<p>That role is no longer available, but let's sign you up for one of these:</p>";
+	$output .= "<p>That role is no longer available, but let's sign you up for one of these:</p>";//.$debug;
 	foreach($data as $item){
 		if(isset($item['role']) && ($item['role'] != $role))
 		{
@@ -6879,6 +6881,10 @@ class AwesomeWidget extends WP_Widget {
 							$ev[ $row->ID ] .= ', ' . rsvpmaker_date( $dateformat, (int) $row->ts_start );
 						} else {
 							$t         = (int) $row->ts_start;
+							if(!$row->post_title) {
+								$row->post_title = get_the_title($row->ID);
+								$wpdb->update($wpdb->prefix.'event',array('post_title'=>$row->post_title),array('event'=>$row->ID));
+							}
 							$title     = $row->post_title . ' ' . rsvpmaker_date( $dateformat, $t );
 							$permalink = get_permalink( $row->ID );
 							if ( is_user_logged_in() ) {
@@ -11207,7 +11213,8 @@ function admin_link_menu() {
 
 function tm_security_setup( $check = true, $cookie = true ) {
 	if ( $cookie ) {
-		setcookie( 'tm_member', sanitize_text_field($_SERVER['REMOTE_ADDR']), time() + 15552000 );// 180 days
+		if(isset($_SERVER['REMOTE_ADDR']))
+			setcookie( 'tm_member', sanitize_text_field($_SERVER['REMOTE_ADDR']), time() + 15552000 );// 180 days
 	}
 	global $tm_security;
 	$security_roles = array( 'administrator', 'manager', 'editor', 'author', 'contributor', 'subscriber' );
@@ -14006,15 +14013,11 @@ add_shortcode('rsvp_attend_in_person','rsvp_attend_in_person');
 
 function wpt_clipboard_links() {
 	$meetings = future_toastmaster_meetings(3);
-	$meeting = array_shift($meetings);
-	$link = get_permalink($meeting->ID).'?clipboard=1#clipboard';
-	$output = sprintf('<li><a href="%s">%s: %s</a></li>',$link, __( 'Easy Online Meeting Signup', 'rsvpmaker-for-toastmasters' ),rsvpmaker_date('M j',intval($meeting->ts_start)));
-	$meeting = array_shift($meetings);
-	$link = get_permalink($meeting->ID).'?clipboard=1#clipboard';
-	$output .= sprintf('<li><a href="%s">%s: %s</a></li>',$link, __( 'Easy Online Meeting Signup', 'rsvpmaker-for-toastmasters' ),rsvpmaker_date('M j',intval($meeting->ts_start)));
-	$meeting = array_shift($meetings);
-	$link = get_permalink($meeting->ID).'?clipboard=1#clipboard';
-	$output .= sprintf('<li class="last"><a href="%s">%s: %s</a></li>',$link, __( 'Easy Online Meeting Signup', 'rsvpmaker-for-toastmasters' ),rsvpmaker_date('M j',intval($meeting->ts_start)));
+	$output = '';
+	foreach($meetings as $meeting) {
+		$link = get_permalink($meeting->ID).'?clipboard=1#clipboard';
+		$output .= sprintf('<li><a href="%s">%s: %s</a></li>',$link, __( 'Easy Online Meeting Signup', 'rsvpmaker-for-toastmasters' ),rsvpmaker_date('M j',intval($meeting->ts_start)));	
+	}
 	return $output;
 }
 

@@ -2121,7 +2121,7 @@ class WP4T_Timer_Image extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		return true; //is_user_logged_in();
+		return $_POST['timer_upload'] == get_post_meta(intval($_POST['post_id']),'timer_nonce',true);
 	}
 
 	public function handle( $request ) {
@@ -2130,6 +2130,8 @@ class WP4T_Timer_Image extends WP_REST_Controller {
 			$check = getimagesize($_FILES["colorimage"]["tmp_name"]);
 			if($check !== false) {
 			$color = sanitize_text_field($_POST['color']);
+			//$response['nonce_result'] = wp_verify_nonce($_POST['_wpnonce'],'timer_upload');
+			//$response['nonce'] = $_POST['_wpnonce'];
 			$response['color'] = $color;
 			$ext = pathinfo($_FILES["colorimage"]["name"],PATHINFO_EXTENSION);
 			$filename = preg_replace('/[^A-Za-z0-9\.]+/','_',$_POST['slug']).'_'.$color.'_'.time().'.'.$ext;

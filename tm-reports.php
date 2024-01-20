@@ -11167,13 +11167,10 @@ function get_speech_points( $user_id ) {
 	$rules = get_option( 'toastmasters_rules' );
 
 	if ( empty( $rules ) ) {
-
+		$rules = array();
 		$rules['cost']       = 2;
-
 		$rules['start']      = 4;
-
 		$rules['start_date'] = date( 'Y' ) . '-01-01';
-
 	}
 
 	$start_date = $rules['start_date'] . ' 00:00:00';

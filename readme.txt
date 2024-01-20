@@ -10,59 +10,35 @@ Requires PHP: 5.6
 
 Requires at least: 5.0
 
-Tested up to: 6.4.1
+Tested up to: 6.4.2
 
-Stable tag: 6.0.7
+Stable tag: 6.1.2
 
 License: GPLv2
 
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-
-
 This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking.
-
-
 
 == Description ==
 
-
-
 This plugin adds Toastmasters-specific functions to your WordPress website. Once you activate RSVPMaker for Toastmasters, a series of prompts guide you through the process of installing and activating the other required and recommended software and setting up your home page and meetings schedule. See this video for a preview.
-
-
 
 This demo of the hosted version at [Toastmost.org](https://toastmost.org) covers the key features. 
 
-
-
 https://www.youtube.com/watch?v=11DlRIs_b3Y
-
-
 
 As an alternative to other club web software options that include a custom content management system, this WordPress-based solution allows website operators to take advantage of the same technology that powers major publishing websites (newyorker.com and time.com, for example) and countless blogs, small business websites, and online marketing campaigns. That makes it a more powerful tool for recruiting new members and showcasing what makes your club special.
 
-
-
 Part of a broader WordPress for Toastmasters solution, this plugin lets members sign up for roles on the website. Meeting organizers can also assign members to roles. In addition, club leaders can track member participation and performance through the administrator's dashboard.
-
-
 
 Dues collection and dues tracking are enabled through integration with the Stripe and PayPal online payment services.
 
-
-
 The related [Lectern WordPress theme](https://wordpress.org/themes/lectern/) makes it easy to meet Toastmasters International branding guidelines with your WordPress website, adding the logo and the required legal disclaimers.
-
-
 
 For documentation and tips on more effective Toastmasters web and social media marketing, see [WP4Toastmasters.com](https://wp4toastmasters.com/ "WordPress for Toastmasters"). Managed hosting for the WordPress for Toastmasters solution is available at [Toastmost.org](https://toastmost.org). Join the [Toastmost and WordPress for Toastmasters Users group on Facebook](https://www.facebook.com/groups/wp4toastmasters/).
 
-
-
 RSVPMaker for Toastmasters is an extension of [RSVPMaker](https://wordpress.org/plugins/rsvpmaker/), a general purpose event scheduling and RSVP tracking plugin. This means you can also use your website to manage other types of events, beyond club meetings, such as open house or training events. RSVPMaker can be configured to allow you to accept online payments via PayPal. [Documentation at RSVPMaker.com](https://rsvpmaker.com)
-
-
 
 Developers who would like to contribute to this project can find the code on GitHub
 
@@ -70,13 +46,9 @@ Developers who would like to contribute to this project can find the code on Git
 
 [RSVPMaker for WordPress](https://github.com/davidfcarr/rsvpmaker-for-toastmasters)
 
-[Lectern](https://github.com/davidfcarr/lectern)
-
-
+[Toastmost branded themes](https://www.wp4toastmasters.com/2023/12/10/new-more-flexible-wordpress-for-toastmasters-design-tools-for-2024/) - customized versions of the latest full site editing block themes
 
 == Installation ==
-
-
 
 1. Upload the RSVPMaker for Toastmasters plugin folder to the `/wp-content/plugins/` directory
 
@@ -84,104 +56,153 @@ Developers who would like to contribute to this project can find the code on Git
 
 1. Follow the on-screen prompts to also add the [RSVPMaker](https://wordpress.org/plugins/rsvpmaker/) plugin (required) and other recommended software, such as the [Lectern theme](https://wordpress.org/themes/lectern/) for Toastmasters branding. You will also be prompted to set up your meeting schedule and create event posts for your website's calendar.
 
-
-
 == Frequently Asked Questions ==
-
-
 
 = Why is RSVPMaker required? =
 
-
-
 RSVPMaker provides the basic functionality for creating, editing, and displaying event posts. By default, it collects a yes/no response to an event (and, optionally, a PayPal payment). This Toastmasters extension allows the software to collect signups for specific roles.
-
-
 
 RSVPMaker includes many features you will not use in the course of a regular Toastmasters meeting, but you may have open house events or seminars you might want to advertise as events on your website. 
 
-
-
 = How is the version hosted at toastmost.org different? =
-
-
 
 Toastmasters clubs can get websites hosted as subdomains of [toastmost.org](https://toastmost.org/), a service of project project sponsor [Carr Communications Inc.](https://www.carrcommunications.com/toastmasters-club-website-hosting/) based on the free, open source software from the [WordPress for Toastmasters](https://wp4toastmasters.com) project. Toastmost.org uses the WordPress Multisite version of WordPress, meaning that all sites hosted in this fashion run on the same instance of the software, with the network administrator controlling what plugins and themes are available. This is similar to the way WordPress.com, the service provided by the company behind WordPress, functions.
 
-
-
 The software will run on any WordPress web hosting service.
-
- 
 
 When you install this software on your own website, you have greater freedom to install other plugins or themes, including those of your own design. However, you must also take more responsibility for providing your own technical support and solving problems such as spam filters blocking email notifications.
 
-
-
 The toastmost.org service is supported by subscriptions from member clubs.
-
-
 
 == Screenshots ==
 
 
 
+
+
+
+
 1. Role signup on the online agenda.
+
+
 
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
+
+
 == Changelog ==
+
+= 6.1.2 =
+
+* Updates to contest tool, including option for judge to submit vote by email as a backup.
+
+= 6.1.1 =
+
+* Fixes to suggestions function and payment for member application
 
 = 6.0.6 =
 
+
+
 * Misc bugfixes, including one with officer forwarding addresses not being updated
+
+
 
 = 6.0.5 =
 
+
+
 * Copy-paste evaluation form URLs on signup page
+
+
 
 = 6.0.1 =
 
+
+
 * Sort option for Member Signups and Suggestions screen
+
+
 
 = 6.0 =
 
+
+
 * Member signups and suggestions screen shows upcoming roles the member has signed up for, suggested roles if the member has not taken a role, plus contact info. Includes one-click signup links for the open roles. 
+
+
 
 = 5.9.9 =
 
+
+
 * Refinements to one-click signup method
+
 * Improved data model for roles
+
 * Improved logging of assignments, signups, and withdrawls
+
+
 
 = 5.9.8 =
 
+
+
 * Updated How to Edit the Agenda block
+
+
 
 = 5.9.5 =
 
+
+
 * Validation for application form
+
+
 
 = 5.9.2 =
 
+
+
 * Suggestion mode improvements
+
+
 
 = 5.9.1 =
 
+
+
 * Suggest all 
+
 * Fix missing directory in svn
+
+
 
 = 5.9 =
 
+
+
 * Enhancements to the meeting minutes tools
+
+
 
 = 5.8.9 =
 
+
+
 * Fix to date lookups on update role history and minutes screens
+
+
 
 = 5.8.7 =
 
+
+
 * Backend for mobile app
+
+
+
+
 
 
 
@@ -189,7 +210,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Removed an integration with the Mailster plugin
+
+
+
+
 
 
 
@@ -197,7 +226,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Added filter 'wpt_filter_members_for_dropdown'
+
+
+
+
 
 
 
@@ -205,7 +242,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Fix glitch with Organize screen changes to an event template
+
+
+
+
 
 
 
@@ -213,7 +258,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Improved YouTube video sharing tool
+
+
+
+
 
 
 
@@ -221,9 +274,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Fixed digital evaluation URL in evaluation reminder message
 
+
+
 * RSVP form now displayed for logged in members, even when digital agenda is active.
+
+
+
+
 
 
 
@@ -231,9 +294,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Restored prompts for speaking in a second language
 
+
+
 * Simplified switching from event to template on Organize screen
+
+
+
+
 
 
 
@@ -241,9 +314,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Re-enabled autoresponder for Find-a-Club email notifications
 
+
+
 * Fixed alignment issue on Assign screen of dynamic agenda
+
+
+
+
 
 
 
@@ -251,7 +334,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Option to request an evaluation by sharing a link -- can be shared with nonmembers as well as members
+
+
+
+
 
 
 
@@ -259,11 +350,23 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * If React version of agenda doesn't load properly, shows an error message and links to the old version
+
+
 
 * Potential security issues with create-react-block addressed
 
+
+
 * Fixed evaluation form link on edit agenda screen
+
+
+
+
 
 
 
@@ -271,7 +374,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Fix glitch with loading of dynamic agenda
+
+
+
+
 
 
 
@@ -279,7 +390,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Improvements to evaluation tool
+
+
+
+
 
 
 
@@ -287,9 +406,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Simplified Agenda Layout controls
 
+
+
 * End time shown at bottom of Organize screen
+
+
+
+
 
 
 
@@ -297,9 +426,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Agenda Template Editor added to dashboard
 
+
+
 * Tweaks to React and API functions
+
+
+
+
 
 
 
@@ -307,9 +446,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Improved error handling
 
+
+
 * React UI now active by default
+
+
+
+
 
 
 
@@ -317,9 +466,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Simplification of Organize screen (React front end)
 
+
+
 * More choices for the level of detail to view on the agenda UI
+
+
+
+
 
 
 
@@ -327,7 +486,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Evaluation screen added to React front end
+
+
+
+
 
 
 
@@ -335,7 +502,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Option to keep number of speakers and evaluators in sync (React/REST UI)
+
+
+
+
 
 
 
@@ -343,9 +518,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * React/REST UI incorporates backup speaker promoted to open role
 
+
+
 * Speech details reset when speaker removed or changed
+
+
+
+
 
 
 
@@ -353,7 +538,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * React UI added Planned Absences, edit and suggest buttons in signup mode
+
+
+
+
 
 
 
@@ -361,7 +554,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * React UI improvements
+
+
+
+
 
 
 
@@ -369,7 +570,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Incorporates new React frontend signup form and template editor.
+
+
+
+
 
 
 
@@ -377,7 +586,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Additional APIs to support new signup form (beta)
+
+
+
+
 
 
 
@@ -385,7 +602,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Updates for compatibility with WordPress 6.1, block themes, and dark background themes
+
+
+
+
 
 
 
@@ -393,7 +618,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Update editable note by REST, no page reload
+
+
+
+
 
 
 
@@ -401,7 +634,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Tweaks to save memory
+
+
+
+
 
 
 
@@ -409,7 +650,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Easy Online Meeting Signup screen
+
+
+
+
 
 
 
@@ -417,7 +666,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Improved YouTube email and blog creation tool
+
+
+
+
 
 
 
@@ -425,7 +682,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Fixed issue with speech intro field
+
+
+
+
 
 
 
@@ -433,9 +698,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Overhaul of Former Members screen
 
+
+
 * Fix for toastmasters_id usermeta
+
+
+
+
 
 
 
@@ -443,9 +718,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Optional evaluation questions for those speaking a second language
 
+
+
 * Option to send a reminder to evaluation team after meetings if a speaker's evaluation has not been completed online
+
+
+
+
 
 
 
@@ -453,7 +738,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Cleanup of functions for updating role and speech history table
+
+
+
+
 
 
 
@@ -461,7 +754,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Better creation of minutes documents based on meeting records.
+
+
+
+
 
 
 
@@ -469,9 +770,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Improved Update History function
 
+
+
 * Dropped separate Record Attendance screen
+
+
+
+
 
 
 
@@ -479,9 +790,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Option to assign additional security privledges to all officers
 
+
+
 * Option in setup wizard to create test user accounts
+
+
+
+
 
 
 
@@ -489,7 +810,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Updating system of displaying help articles, consistent with RSVPMaker.
+
+
+
+
 
 
 
@@ -497,7 +826,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Option to send minutes by email to members or officers, similar to how meeting leaders can send out the agenda.
+
+
+
+
 
 
 
@@ -505,7 +842,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Tweaks and documentation for the email functions.
+
+
+
+
 
 
 
@@ -513,9 +858,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Adding email forwarding functions previously only available on Toastmost
 
+
+
 * Custom post type for meeting minutes
+
+
+
+
 
 
 
@@ -523,7 +878,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Base Camp tracker utility / report.
+
+
+
+
 
 
 
@@ -531,7 +894,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Utility functions for full site editing
+
+
+
+
 
 
 
@@ -539,7 +910,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Updated for WP 5.9
+
+
+
+
 
 
 
@@ -547,9 +926,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Added TM Help menu item. Put Todo List there.
 
+
+
 * Block for tracking hybrid attendance
+
+
+
+
 
 
 
@@ -557,7 +946,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Correct date lookup and format functions
+
+
+
+
 
 
 
@@ -565,7 +962,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Form spam defense for member application form
+
+
+
+
 
 
 
@@ -573,11 +978,23 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Privacy prompt questions added to online member application
+
+
 
 * Members who have not previously set privacy preferences will be prompted to do so
 
+
+
 * Separate permissions for sending email and sharing contact info in the member directory
+
+
+
+
 
 
 
@@ -585,11 +1002,23 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * New functionality for compliance with privacy regulations such as the EU's GDPR.
+
+
 
 * New member accounts now default to 'permission pending' status meaning broadcast email messages and role reminders are blocked until the member give permission. Password resets and prompts to set privacy permissions can still be sent.
 
+
+
 * Website administrators can see who has and has not given permission on the new Privacy Preferences screen (a submenu under Users). If members were addded before this requirement was in place, you can send them an email prompt to set their preference, and other routine website emails will be blocked until they grant permission.
+
+
+
+
 
 
 
@@ -597,9 +1026,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * YouTube Replay tool enhancements
 
+
+
 * UI changes to Add Members screen for clarity
+
+
+
+
 
 
 
@@ -607,7 +1046,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Added evaluation forms for new Level 1 Pathways projects, Level 3 version of Researching and Presenting
+
+
+
+
 
 
 
@@ -615,7 +1062,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Update for new Level 1 Pathways projects
+
+
+
+
 
 
 
@@ -623,11 +1078,23 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Improved support for translations
+
+
 
 * Updates to notification templates for role reminders. Added Vote Counter template with link to Vote Counter's tool
 
+
+
 * Admin can now view Vote Counter's Tool as if they were the vote counter without taking over the role.
+
+
+
+
 
 
 
@@ -635,7 +1102,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Fix for custom meeting roles. Tweak to the Gutenberg block.
+
+
+
+
 
 
 
@@ -643,9 +1118,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Contest tool tweaks
 
+
+
 * Allow members to undo "unsubscribed" status. Alert to blocked email.
+
+
+
+
 
 
 
@@ -653,7 +1138,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Contest tools updated to handle more than 2 contests.
+
+
+
+
 
 
 
@@ -661,9 +1154,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Vote counter's tool tweaks. Automated polling for new volunteers
 
+
+
 * Editing controls and evaluation links remain active on meeting events an hour after neeting ends.
+
+
+
+
 
 
 
@@ -671,9 +1174,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Better agenda export to Word
 
+
+
 * Update to default agenda layout document
+
+
+
+
 
 
 
@@ -681,7 +1194,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Refinements to vote counter's tool
+
+
+
+
 
 
 
@@ -689,7 +1210,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Vote counter's tool for online and hybrid meetings
+
+
+
+
 
 
 
@@ -697,9 +1226,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Option to turn off display of times on agenda
 
+
+
 * Notifications settings for role updates
+
+
+
+
 
 
 
@@ -707,7 +1246,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * New contest templates
+
+
+
+
 
 
 
@@ -715,9 +1262,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Filter function for get_member_name
 
+
+
 * Agenda Context wrapper block can exclude arbitrary content from print view, email view, agenda view, etc.
+
+
+
+
 
 
 
@@ -725,7 +1282,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Updated dues collection / online payment functions
+
+
+
+
 
 
 
@@ -733,9 +1298,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * French translation - early stage
 
+
+
 * Date routine fixes
+
+
+
+
 
 
 
@@ -743,7 +1318,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Translation files
+
+
+
+
 
 
 
@@ -751,7 +1334,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Made admin notices less intrusive.
+
+
+
+
 
 
 
@@ -759,7 +1350,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Retooling historical records and reporting system.
+
+
+
+
 
 
 
@@ -767,7 +1366,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Fix to issue with role block
+
+
+
+
 
 
 
@@ -775,7 +1382,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Refinements to suggest a role, one click signup
+
+
+
+
 
 
 
@@ -783,7 +1398,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * More enhancements to the role suggestion feature.
+
+
+
+
 
 
 
@@ -791,7 +1414,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Send me a copy option for suggesting roles. Copy to sender includes member mobile # if available
+
+
+
+
 
 
 
@@ -799,7 +1430,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Better display of agenda timing inside editor
+
+
+
+
 
 
 
@@ -807,9 +1446,19 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 * Logging of one click signup suggestions
 
+
+
 * Moved role setting to sidebar/inspector in Gutenberg
+
+
+
+
 
 
 
@@ -817,7 +1466,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 
+
+
+
+
 Suggest with One-Click Signup
+
+
+
+
 
 
 
@@ -825,7 +1482,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Agenda Layout options. One click signup option.
+
+
+
+
 
 
 
@@ -833,7 +1498,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Fix to add members screen
+
+
+
+
 
 
 
@@ -841,7 +1514,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Removed support for MailMan mailing lists
+
+
+
+
 
 
 
@@ -849,9 +1530,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Security improvements
 
+
+
 * New default agenda layout. Sidebar managed through Gutenberg editor as a column.
+
+
+
+
 
 
 
@@ -859,7 +1550,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Tweaks to agenda time planner
+
+
+
+
 
 
 
@@ -867,9 +1566,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Editable agenda notes can now be edited from the Agenda Time Planner screen
 
+
+
 * Contest ballot input switched from drop down to input type="number"
+
+
+
+
 
 
 
@@ -877,7 +1586,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * New default Toastmasters meeting agenda, takes advantage of time allowed attribute on editable notes.
+
+
+
+
 
 
 
@@ -885,7 +1602,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Avoid redundand API calls for agenda timing
+
+
+
+
 
 
 
@@ -893,7 +1618,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Better timing summary in Gutenberg sidebar
+
+
+
+
 
 
 
@@ -901,7 +1634,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Improvements to functions for setting time allowed per role or agenda note.
+
+
+
+
 
 
 
@@ -909,11 +1650,23 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Adjust Agenda Timing screen on front end. Allows meeting organizers to make basic schedule adjustments, even if they don't have editing rights
+
+
 
 * Removed most inline JavaScript
 
+
+
 * Tweaks to contest scripts
+
+
+
+
 
 
 
@@ -921,11 +1674,23 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Better method for adding "start" attribute to meeting role blocks when the same block is included multiple times within the same event (for example, to make the count start at 4 if you add a second block of 3 speakers)
+
+
 
 * Improved utility for emailing digital ballot links and timer's report link to contest functionaries.
 
+
+
 * Email links utility and backup forms (for voting if judge is unable to cast their own vote) moved to separate tabs of the contest daashboard.
+
+
+
+
 
 
 
@@ -933,7 +1698,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Bug fix (last held role)
+
+
+
+
 
 
 
@@ -941,7 +1714,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Fix for issue with editing roles
+
+
+
+
 
 
 
@@ -949,7 +1730,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * More efficient lookup for member role history (last filled role)
+
+
+
+
 
 
 
@@ -957,9 +1746,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Updated instructions
 
+
+
 * Links to key documents like welcome message, RSVP Confirmation message in the admin dashboard widget
+
+
+
+
 
 
 
@@ -967,7 +1766,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Rewrite of the module for sending reminder emails.
+
+
+
+
 
 
 
@@ -975,7 +1782,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Fix for redundant reminder emails (excess looping)
+
+
+
+
 
 
 
@@ -983,9 +1798,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Select 2 javascript library for better member dropdown list. See https://github.com/select2/select2
 
+
+
 * Nonce checks added for a role signup / edit and dues payment
+
+
+
+
 
 
 
@@ -993,7 +1818,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Support for event sync between websites and across timezones. Used by the calendar.toastmost.org service if you give permission
+
+
+
+
 
 
 
@@ -1001,7 +1834,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Dues tracker enhancements. Now a more complete solution for tracking online payments, sending reminders.
+
+
+
+
 
 
 
@@ -1009,7 +1850,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Support for custom timer background images
+
+
+
+
 
 
 
@@ -1017,9 +1866,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * A few more tweaks to timer. Words Green, Yellow, Red appear in main screen, not just popup.
 
+
+
 * Checking that Jitsi integration still works.
+
+
+
+
 
 
 
@@ -1027,7 +1886,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Tweaks for timer javascript and layout
+
+
+
+
 
 
 
@@ -1035,7 +1902,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Updates to the contest and timer tools.
+
+
+
+
 
 
 
@@ -1043,9 +1918,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Multiple contest tool enhancements. Feature for emailing contest links to judges and timer.
 
+
+
 * More glitch free implementation of automatic count for multiple role blocks for the same role. On post updated, rather than on post view.
+
+
+
+
 
 
 
@@ -1053,9 +1938,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Synchronization of judges between related contests
 
+
+
 * Practice contest links for judges and timer
+
+
+
+
 
 
 
@@ -1063,9 +1958,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Enhancements to contest functions. Clearer display of when a tie exists / tiebreaker vote is required.
 
+
+
 * Better handling of multiple blocks representing the same role (no longer necessary to manually set the Start From field). Example: Speakers 1-3, then a break or another activity, followed by Speakers 4-6.
+
+
+
+
 
 
 
@@ -1073,7 +1978,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Enhancements to contest functions. Help links. Sample ballot link.
+
+
+
+
 
 
 
@@ -1081,7 +1994,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Contest functions: create a second contest associated with a meeting; judges type name to "sign" ballot
+
+
+
+
 
 
 
@@ -1089,7 +2010,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Enhancements to setup wizard, including option for password reset with strength meter.
+
+
+
+
 
 
 
@@ -1097,7 +2026,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Setup wizard added to simplify configuration, particularly for those who are new to WordPress.
+
+
+
+
 
 
 
@@ -1105,9 +2042,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Agenda layout change
 
+
+
 * Fix project timing for Deliver Social Speeches
+
+
+
+
 
 
 
@@ -1115,7 +2062,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Improvements to contest functions
+
+
+
+
 
 
 
@@ -1123,9 +2078,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Evaluation forms correction: Introduction to Toastmasters Mentoring
 
+
+
 * Updated welcome screen for new members
+
+
+
+
 
 
 
@@ -1133,9 +2098,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Added evaluation forms for speeches from the Toastmasters Mentor program
 
+
+
 * Option to upload member roster CSV file from toastmasters.org rather than using copy-and-paste import from Excel
+
+
+
+
 
 
 
@@ -1143,7 +2118,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Filter on output for WordPress menus adds member login / role signup / edit profile options to menu, replacing any custom menu item with #tmlogin as the URL field.
+
+
+
+
 
 
 
@@ -1151,7 +2134,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Remote download of evaluation forms now only used if no local copy or if administrator requests an update.
+
+
+
+
 
 
 
@@ -1159,9 +2150,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Simplification of contest dashboard UI
 
+
+
 * Fix to multi-week signup function
+
+
+
+
 
 
 
@@ -1169,9 +2170,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * A few more timer options
 
+
+
 * Small change in widget code.
+
+
+
+
 
 
 
@@ -1179,7 +2190,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Timer fix
+
+
+
+
 
 
 
@@ -1187,9 +2206,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Ajax loading of reports
 
+
+
 * Fixed issue with edit history screen
+
+
+
+
 
 
 
@@ -1197,9 +2226,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Role planner tool now allows you to specify speech planner details.
 
+
+
 * Inline editing of roles on the signup form (without clicking Edit Signups on the menu) now allows you to specify a guest speaker.
+
+
+
+
 
 
 
@@ -1207,9 +2246,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Fix to formatting on the YouTube Toastmasters screen.
 
+
+
 * Added "Other" category to list of Path / Manual types
+
+
+
+
 
 
 
@@ -1217,13 +2266,27 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Speaker selection defaults show Pathways options more prominently
+
+
 
 * JavaScript for picking manuals list by path or list of old manuals
 
+
+
 * When an editor changes assignments, path and level (or manual) are set based on what member did last
 
+
+
 * Better security for JavaScript actions
+
+
+
+
 
 
 
@@ -1231,7 +2294,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * More updates to YouTube tool.
+
+
+
+
 
 
 
@@ -1239,7 +2310,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Update to YouTube tool - simplifies creating blog posts and emails with embedded speech (or online meeting replay) videos.
+
+
+
+
 
 
 
@@ -1247,7 +2326,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Another timing bug fix.
+
+
+
+
 
 
 
@@ -1255,7 +2342,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Fix agenda timing UI bug
+
+
+
+
 
 
 
@@ -1263,7 +2358,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Timing for segments of the meeting now displayed in the inspector sidebar for roles and agenda notes. Timing summary updates as "time allowed" and "padding time" are changed.
+
+
+
+
 
 
 
@@ -1271,7 +2374,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Adding Start to the options available in editor for role blocks. Corrects a potential issue with role enumeration.
+
+
+
+
 
 
 
@@ -1279,7 +2390,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Redisigned online timer displays synchronized timing lights without putting as much strain on the web server or network bandwith. In the view used by a speaker, it checks the server for updates every 15 seconds. If it detects that the Timer has started timing, it calculates the difference between the timestamp shared by the server and the speaker's own computer clock. Green, yellow, and red are then displayed on a syncrhonized schedule.
+
+
+
+
 
 
 
@@ -1287,9 +2406,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * It is now possible to have multiple blocks of roles with the same name -- for example, 2 Speaker blocks separated by Table Topics or a break in the agenda -- without messing up the Speaker counts and data. So the first block might be Speaker 1, 2, and 3 while the second is 4, 5, and 6 (assuming both have the count parameter set to 3).
 
+
+
 * Items from the agenda menu now mirrored on the dashboard (more complete access to agenda functions)
+
+
+
+
 
 
 
@@ -1297,7 +2426,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Disabled speaker monitoring of timer because of security issues.
+
+
+
+
 
 
 
@@ -1305,7 +2442,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Correcting issues with timer JavaScript polling server.
+
+
+
+
 
 
 
@@ -1313,7 +2458,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Timer tweaks
+
+
+
+
 
 
 
@@ -1321,7 +2474,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Making Timer implementation consistent across versions with embedded Jitsi and Zoom
+
+
+
+
 
 
 
@@ -1329,11 +2490,23 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Integration with Jitsi online meetings and preliminary support for Zoom.
+
+
 
 * Cleanup of WP Cron jobs on plugin deactivate.
 
+
+
 * Addressed a potential XSS issue.
+
+
+
+
 
 
 
@@ -1341,7 +2514,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Updates to the contest voting / vote counting tools.
+
+
+
+
 
 
 
@@ -1349,9 +2530,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Fixes to project list. Adding speeches for HPL (Advanced Leadership Silver version) and fixing glitch with display of Engaging Humor projects.
 
+
+
 * Minor tweaks to contest tool
+
+
+
+
 
 
 
@@ -1359,7 +2550,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Updates to reflect the addition of Group Email functions in RSVPMaker as an alternative to Mailman or WP Mailster.
+
+
+
+
 
 
 
@@ -1367,9 +2566,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Updates to contest tools, based on experience of what can go wrong.
 
+
+
 * Contest setup can import settings from another event.
+
+
+
+
 
 
 
@@ -1377,7 +2586,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Improvements to contest scoring dashboard.
+
+
+
+
 
 
 
@@ -1385,9 +2602,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Multiple updates to the scoring dashboard for contests (particularly contests conducted online)
 
+
+
 * Added the ability to open a separate browser window displaying only the green/yellow/red colors. Can be used in combination with a virtual webcam to show timing colors in a Zoom meeting without sharing other information.
+
+
+
+
 
 
 
@@ -1395,9 +2622,19 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 * Added "To Be Announced" as a placeholder for role assignments, in addition to "Open" and "Not available"
 
+
+
 * Editable text blocks no longer display "No set" when no content has been set for them.
+
+
+
+
 
 
 
@@ -1405,7 +2642,15 @@ Suggest with One-Click Signup
 
 
 
+
+
+
+
 Avoid issues with document save JSON confirmation by checking that wp_is_json_request is false before init of shortcodes / dynamic blocks 
+
+
+
+
 
 
 
@@ -1413,9 +2658,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Option to have speech introductions appear on the agenda by default. If not set to default, a Show with Introductions item appears on the agenda menu.
 
+
+
 * Updated Agenda Layout document to use Gutenberg blocks for layout with or without sidebar.
+
+
+
+
 
 
 
@@ -1423,9 +2678,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Documentation tips for editing the agenda
 
+
+
 * Fix to scheduling functions
+
+
+
+
 
 
 
@@ -1433,9 +2698,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Tweaks to some timing functions.
 
+
+
 * Improvement to Online Timer speech timer tool. Now also tracks Evaluators.
+
+
+
+
 
 
 
@@ -1443,11 +2718,23 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Fix to member application form (prevent user editing of club name / number)
+
+
 
 * Edit signups for individual roles
 
+
+
 * Edit editable fields without switching to edit signups mode
+
+
+
+
 
 
 
@@ -1455,9 +2742,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Adding a missing project that wasn't showing up on all paths (Deliver Social Speeches - Second Speech)
 
+
+
 * Optimizations
+
+
+
+
 
 
 
@@ -1465,7 +2762,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Added integration with the WP Mailster for email discussion lists (alternative to integration with Mailman)
+
+
+
+
 
 
 
@@ -1473,9 +2778,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Multi-meeting signup editor now shows list of members without a role
 
+
+
 * New API endpoint for determining which members do not have a meeting role - /wp-json/rsvptm/v1/norole/331 where 331 is the post ID
+
+
+
+
 
 
 
@@ -1483,9 +2798,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Dashboard shows current assignment (or planned absence) for next several dates.
 
+
+
 * Bug fixes related to away messages, contest tool
+
+
+
+
 
 
 
@@ -1493,7 +2818,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Overhaul of the performance reports screen, with less emphasis on the traditional program vs. Pathways, more on measuring active participation (6-month snapshot report)
+
+
+
+
 
 
 
@@ -1501,7 +2834,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Added a setting for an editor or administrator to be notified when a Contributor submits a blog post for review.
+
+
+
+
 
 
 
@@ -1509,13 +2850,27 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Split the Toastmasters menu on the dashboard in two, with basic functions and reports in the Toastmasters and administrative functions on a separate TM Administration menu.
+
+
 
 * Cleaned up the Toastmasters-specific widgets on the main Dashboard screen.
 
+
+
 * Refined the functions for adding a default home page (rather than a blog listing on front) and/or adding default pages for calendar, member listing etc.
 
+
+
 * Improved the Member Access widget, making it easier to view any of the upcoming events listed with the option of logging in on your way to that page. Previously, the link was always to a login page, which some users found confusing when they were trying to view the event listing without necessarily signing up for a role.
+
+
+
+
 
 
 
@@ -1523,7 +2878,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Added a web form version of the Toastmasters International application, with workflow for digital signature by applicant and officer, online payment, and creation of website account for new member.
+
+
+
+
 
 
 
@@ -1531,9 +2894,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Updates to the online evaluation form screen.
 
+
+
 * Member listing on dashboard can be sorted to show newest members first.
+
+
+
+
 
 
 
@@ -1541,7 +2914,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Optional rules for managing the agenda, including a points system for tracking members who sign up to speak but don't regularly fill other supporting roles.
+
+
+
+
 
 
 
@@ -1549,7 +2930,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Rules tab under Settings allows for setting optional rules. First optional rule makes it possible to set meeting roles that confer the ability to edit agenda signups, in addition to security roles. For example, if you limit the edit signups capability to the Administrator and Manager roles, you can specify that a regular member serving as Toastmaster of the Day should still be able to edit the agenda.
+
+
+
+
 
 
 
@@ -1557,9 +2946,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Evaluation forms updated to include additional Pathways  project, incliuding Engaging Humor path
 
+
+
 * Better system for fetching evaluation forms from a centralized repository.
+
+
+
+
 
 
 
@@ -1567,7 +2966,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Downloading for branded Toastmasters images such as agenda banners.
+
+
+
+
 
 
 
@@ -1575,9 +2982,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Most reports consolidated under a Reports Dashboard screen.
 
+
+
 * New reports: Pathways Progress, Members without an Assignment
+
+
+
+
 
 
 
@@ -1585,7 +3002,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Tweaks to automated role reminders. More time options on dropdown, addition of [[officers]] shortcode.
+
+
+
+
 
 
 
@@ -1593,7 +3018,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Fix to automated reminders
+
+
+
+
 
 
 
@@ -1601,7 +3034,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Fix for random assignments feature
+
+
+
+
 
 
 
@@ -1609,9 +3050,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Added Role Report on admin dashboard
 
+
+
 * Tested with WordPress 5.0 beta
+
+
+
+
 
 
 
@@ -1619,9 +3070,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Import / export tweaks
 
+
+
 * Planned absences displayed on signup sheet
+
+
+
+
 
 
 
@@ -1629,7 +3090,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Import / export tab now includes a utility for transferring data between websites.
+
+
+
+
 
 
 
@@ -1637,9 +3106,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Making Agenda with Contacts screen work with Gutenberg
 
+
+
 * Limiting output of JavaScript on admin screens to avoid conflicts with other plugins
+
+
+
+
 
 
 
@@ -1647,7 +3126,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Tweak Timing feature added to edit signups mode -- allows you to tweak the time allowed for each role  or agenda note without going into the editor.
+
+
+
+
 
 
 
@@ -1655,11 +3142,23 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Added Look Ahead Editor as a submenu under Signup Sheet - an editable form arranged in a table, with 3-6 weeks worth of assignments showing
+
+
 
 * Agenda editor refinements
 
+
+
 * Fixed Planning screen so it works with new agenda format
+
+
+
+
 
 
 
@@ -1667,7 +3166,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * [[wpt_embed_agenda]] shortcode can be used to embed the print view of the agenda in any blog post or page. Optional attributes are id and style. By default, the agenda for the next upcoming meeting is displayed in an iframe with a height of 1000px and width of 100%.
+
+
+
+
 
 
 
@@ -1675,9 +3182,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Agenda Note and Signup Note blocks support rich text
 
+
+
 * Fix for spacing on agenda
+
+
+
+
 
 
 
@@ -1685,7 +3202,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Updated the YouTube video publishing / email distribution tool, which you find under Media -> YouTube Toastmasters
+
+
+
+
 
 
 
@@ -1693,7 +3218,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * More work on the agenda editor and simplifying the conversion of existing agenda templates.
+
+
+
+
 
 
 
@@ -1701,7 +3234,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Updates to allow the agenda editor to work with the new Gutenberg editor.
+
+
+
+
 
 
 
@@ -1709,7 +3250,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Fixed / improved functions for reactivating former members.
+
+
+
+
 
 
 
@@ -1717,7 +3266,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Export Personal Data includes the user archive for members with no active user account.
+
+
+
+
 
 
 
@@ -1725,7 +3282,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Integration with the new Export Personal Data and Erase Personal Data tools WordPress 4.9.6 added to simplify compliance with privacy regulations such as the EU's General Data Protection Regulation (GDPR)
+
+
+
+
 
 
 
@@ -1733,7 +3298,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Tweaks to Agenda Timing tool.
+
+
+
+
 
 
 
@@ -1741,9 +3314,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * New JavaScript animation for Take Role 
 
+
+
 * As members sign up for roles, they are prompted to also sign up for future meetings.
+
+
+
+
 
 
 
@@ -1751,13 +3334,27 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Ajax data post for Take Role function - saves agenda data without reloading page when individual member is signing up for a role.
+
+
 
 * Tweaked import / sync process for updating member records based on the spreadsheet downloaded from toastmasters.org. Tried to make the process clearer. Should work better on a multisite instance like toastmost.org.
 
+
+
 * Fixed bug in the process for adding speeches or roles on the administrative dashboard (added roles weren't showing up with the specified date)
 
+
+
 * In addition to background colors, added green/yellow/red color labels for the online timer tool.
+
+
+
+
 
 
 
@@ -1765,7 +3362,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Improvements to the online Toastmasters contest voting / vote counting setup, now integrated with Timer tool.
+
+
+
+
 
 
 
@@ -1773,7 +3378,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Contest scoring tool
+
+
+
+
 
 
 
@@ -1781,11 +3394,23 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Planned absences shortcode, [tm_absence], that can be added to an agenda. Allows members to record when they expect to miss a specific meeting
+
+
 
 * Attendance report now allows display of dates attended for a specific member (based on roles served or member recorded as attending)
 
+
+
 * RSVP to Guest screen now allows you to record Toastmasters ID#.
+
+
+
+
 
 
 
@@ -1793,7 +3418,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Suggest Assignments is the new menu label for the agenda editing mode that semi-randomly selects members to fill open roles.
+
+
+
+
 
 
 
@@ -1801,11 +3434,23 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Assign mode for - editing the agenda with semi-random suggestions for members to fill open roles - now disabled by default. Must be specifically enabled on the settings screen.
+
+
 
 * When enabled, Assign mode now requires and "Are you sure?" confirmation from the member before random assignments will be inserted on the form.
 
+
+
 * The link from the agenda to the member role planner tool can now be shown or hidden, depending on your choice on the Toastmasters settings screen. By default, it is displayed.
+
+
+
+
 
 
 
@@ -1813,9 +3458,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Clearer notification when email-sending functions are disabled.
 
+
+
 * Updates for compatibility with new sponsorship program.
+
+
+
+
 
 
 
@@ -1823,9 +3478,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Clearer notifications / instructions for editing modes and randomly suggested assignments.
 
+
+
 * Added Switch Template as an option on the Agenda Setup menu.
+
+
+
+
 
 
 
@@ -1833,7 +3498,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Fixing check that RSVPMaker is installed before calling any RSVPMaker functions (better error message for plugin install)
+
+
+
+
 
 
 
@@ -1841,7 +3514,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Updates to Multi-Meeting Role Planner tool.
+
+
+
+
 
 
 
@@ -1849,7 +3530,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Added autocomplete on member name to the timing tool.
+
+
+
+
 
 
 
@@ -1857,7 +3546,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Tweaks to timing tool.
+
+
+
+
 
 
 
@@ -1865,9 +3562,19 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * New Role Planner for signing up for roles several weeks in advance, with suggestions based on past history.
 
+
+
 * Online Timing tool on Agenda menu for displaying timing lights on a computer screen. Pulls time requirements for projects from the agenda. In addition to showing green/yellow/red, it can sound a chime as each milestone is passed. Particularly intended for use by online clubs, in combination with webcam software. See [blog post](https://wp4toastmasters.com/2017/11/29/new-online-timing-lights-tool/)
+
+
+
+
 
 
 
@@ -1875,7 +3582,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Improvements to email reminders function, including the ability to preview messages and an option to send a meeting reminder to members without a role (in addition to reminders for members who have taken a role).
+
+
+
+
 
 
 
@@ -1883,7 +3598,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Added Request Evaluation tab to the Evaluations page.
+
+
+
+
 
 
 
@@ -1891,7 +3614,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 * Redesign of online evaluations screen with Evaluations Received and Evaluations Given tabs. Tracking of evaluations given added.
+
+
+
+
 
 
 
@@ -1899,7 +3630,15 @@ Avoid issues with document save JSON confirmation by checking that wp_is_json_re
 
 
 
+
+
+
+
 Changed how assignments and recommendations are logged and displayed to the person editing the agenda.
+
+
+
+
 
 
 
@@ -1907,7 +3646,15 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 * Fixes for data sync function, stoplight timing html/css
+
+
+
+
 
 
 
@@ -1915,7 +3662,15 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 * Dates now displayed on Competent Leader report.
+
+
+
+
 
 
 
@@ -1923,7 +3678,15 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 * More tweaks for recommended roles
+
+
+
+
 
 
 
@@ -1931,7 +3694,15 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 * Fixes for recommended role feature, online evaluation forms
+
+
+
+
 
 
 
@@ -1939,11 +3710,23 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 * Improved the random member selection tool, particularly for use by clubs that tend to assign members to roles more than asking for volunteers. This is enabled when you choose Assign or Recommend from the menu. In the Recommend mode, members must confirm before they are added to the agenda. The software attempts to filter out 1) members who have filled the same role at one of the last few meetings, 2) members who have been absent recently, and 3) junior members who have completed less than 3 speeches in the case of senior roles like evaluator and Toastmaster of the Day.
+
+
 
 * Changed the coding for red-yellow-green stoplight indicators. Now works better with download to Word and should print more clearly in black and white.
 
+
+
 * A shortcode in the format [signup_sheet limit="3"] is now available for displaying a multi-week view of upcoming roles on your website. This is essentially the same as the paper signup sheet. The limit value must be specified and determines the number of columns for the table.
+
+
+
+
 
 
 
@@ -1951,9 +3734,19 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 * fix to admin css / js
 
+
+
 * tweak to recommend role function
+
+
+
+
 
 
 
@@ -1961,7 +3754,15 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 * Factored out a dependency on the intdiv function introduced in PHP 7
+
+
+
+
 
 
 
@@ -1969,7 +3770,15 @@ Changed how assignments and recommendations are logged and displayed to the pers
 
 
 
+
+
+
+
 Fixing a couple of agenda and agenda timing bugs
+
+
+
+
 
 
 
@@ -1977,9 +3786,19 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Overhaul of the agenda HTML and the custom agenda layout option
 
+
+
 * Option to display green/yellow/red timing indicators on the agenda
+
+
+
+
 
 
 
@@ -1987,7 +3806,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Fixes to user/member import and sync routine
+
+
+
+
 
 
 
@@ -1995,9 +3822,19 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Improvements to Agenda Timing tool
 
+
+
 * Ability to edit the display text for project time
+
+
+
+
 
 
 
@@ -2005,7 +3842,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Improved agenda time planning tool
+
+
+
+
 
 
 
@@ -2013,11 +3858,23 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Added tracking for a guests Mailman email list, in addition to members and officers lists. Activate on the Toastmasters settings screen.
+
+
 
 * New admin screen for Mailman makes it possible to add addresses to the list and remove them. You can also manage pending messages that have been held for moderation from this screen, rather than logging into Mailman directly. Located in the submenu under Users, along with the Guests/Former Members screen.
 
+
+
 * Guests/Former Members screen also allows you to add addresses to the Mailman guest email list.
+
+
+
+
 
 
 
@@ -2025,9 +3882,19 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Fix to the reorder function
 
+
+
 * YouTube tool now handles playlists as well as individual video links (can be used to share unlisted playlists in a members-only blog post)
+
+
+
+
 
 
 
@@ -2035,9 +3902,19 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Reorder function allows you to change the order in which speakers and evaluators are displayed on the agenda.
 
+
+
 * To display the matching of speakers to evaluators on the agenda, you can add text like "Evaluates {Speaker}" in the agenda note field. That shortcode will be replaced with the speaker name (Speaker 1 for Evaluator 1, Speaker 2 for Evaluator 2, etc)
+
+
+
+
 
 
 
@@ -2045,7 +3922,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Refinements to menus, reports on member data
+
+
+
+
 
 
 
@@ -2053,13 +3938,27 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Renamed Reconcile screen with Update History. Now allows you to add backdated records for arbitrary dates (for example, meetings prior your start using the software), in addition to correcting records from past meetings.
+
+
 
 * Added Pathways tab on the Progress Reports screen to track Pathways projects completed.
 
+
+
 * Re-enabled background save in edit signups mode. Got rid of "you have not saved this form" warning.
 
+
+
 * Added option to sync member progress report data between websites hosted on separate domains that use this software.
+
+
+
+
 
 
 
@@ -2067,7 +3966,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Updating Pathways projects list
+
+
+
+
 
 
 
@@ -2075,7 +3982,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Adding online evaluation forms, particularly intended for online clubs.
+
+
+
+
 
 
 
@@ -2083,7 +3998,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Preliminary support for Pathways speech projects
+
+
+
+
 
 
 
@@ -2091,13 +4014,27 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Option to set a second email reminder to meeting participants
+
+
 
 * Fix to prevent unwanted text from showing up on the signup sheet
 
+
+
 * Hide member profile option to prevent display of user accounts on member listing
 
+
+
 * Dues tracker page for tracking dues payment history
+
+
+
+
 
 
 
@@ -2105,11 +4042,23 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Updated "Set Away Message" function (formerly called "Status") to clarify intent that this should be used to set a temporary message with an expiration date, like "I will be out of town for the next 2 weeks." The idea is to prevent members who are unavailable from being asked to take roles (and save meeting organizers from wasting time trying to contact members who are unavailable). Now appears on the sidebar widget and member listing.
+
+
 
 * Added rich text editor to the function for emailing out agendas.
 
+
+
 * Agenda note attribute on roles, often used to offer an explanation of the role, now also appears on the signup form.
+
+
+
+
 
 
 
@@ -2117,7 +4066,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * More formatting options for agenda notes, plus the ability to include a link (useful for online clubs that need to post a meeting url)
+
+
+
+
 
 
 
@@ -2125,7 +4082,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Fixes an error with enqueueing of javascript and style specific to the signup form
+
+
+
+
 
 
 
@@ -2133,7 +4098,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Updating date string formatting for consistency with RSVPMaker (better translation)
+
+
+
+
 
 
 
@@ -2141,9 +4114,19 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Background save for the signup form disabled, for now, because it was causing problems. Replaced with a prompt that reminds the user to save the form before navigating away.
 
+
+
 * Submenu under users allows you to convert people who registered for an event using the RSVP function (perhaps as guests at an open house) into members (website users).
+
+
+
+
 
 
 
@@ -2151,9 +4134,19 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Added field on form for members to add a speech introduction. Intro will be sent to the Toastmaster of the Day by email and can be viewed from Agenda -> Speech Introductions on the meeting menu.
 
+
+
 * The tmlayout_intros shortcode, meant to be used in custom agenda layouts, will display the speaker's introduction on the menu.
+
+
+
+
 
 
 
@@ -2161,9 +4154,19 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 * Added "Manager" security role, replacing "Officer." Equivalent to editor but with the ability to add and edit users / members
 
+
+
 * Added section on Settings screen for promoting members to Administrator or Manager. A Toastmasters club website needs more than one person who can update the site if the main administrator is not available.
+
+
+
+
 
 
 
@@ -2171,7 +4174,15 @@ Fixing a couple of agenda and agenda timing bugs
 
 
 
+
+
+
+
 Fixing background update of role assignment changes (AJAX bug)
+
+
+
+
 
 
 
@@ -2179,7 +4190,15 @@ Fixing background update of role assignment changes (AJAX bug)
 
 
 
+
+
+
+
 Tweaking code for translation / localization
+
+
+
+
 
 
 
@@ -2187,7 +4206,15 @@ Tweaking code for translation / localization
 
 
 
+
+
+
+
 Added support for a customizable agenda layout.
+
+
+
+
 
 
 
@@ -2195,7 +4222,15 @@ Added support for a customizable agenda layout.
 
 
 
+
+
+
+
 Fix to export function
+
+
+
+
 
 
 
@@ -2203,7 +4238,15 @@ Fix to export function
 
 
 
+
+
+
+
 Bug fixes and WordPress 4.7 compatibility
+
+
+
+
 
 
 
@@ -2211,9 +4254,19 @@ Bug fixes and WordPress 4.7 compatibility
 
 
 
+
+
+
+
 * You can now fill meeting roles by randomly assigning members who do not have a role. Person editing the agenda has the opportunity to reality check the assignments before confirming them. Also works with the "Recommend" function.
 
+
+
 * Added an option setting for the number of future meetings to be displayed on the signup sheet.
+
+
+
+
 
 
 
@@ -2221,7 +4274,15 @@ Bug fixes and WordPress 4.7 compatibility
 
 
 
+
+
+
+
 * Bug fix - correcting situation where members were unable to remove themselves from a role.
+
+
+
+
 
 
 
@@ -2229,9 +4290,19 @@ Bug fixes and WordPress 4.7 compatibility
 
 
 
+
+
+
+
 * Improved tracking of former members and guests
 
+
+
 * Display of educational awards after member's name on agenda
+
+
+
+
 
 
 
@@ -2239,7 +4310,15 @@ Bug fixes and WordPress 4.7 compatibility
 
 
 
+
+
+
+
 Added listing of documents shared through the site to the main Dashboard (also shows up under the top level Toastmasters menu item)
+
+
+
+
 
 
 
@@ -2247,7 +4326,15 @@ Added listing of documents shared through the site to the main Dashboard (also s
 
 
 
+
+
+
+
 Tweaked email notifications for better compatibility with Sendgrid plugin, SMTP plugins
+
+
+
+
 
 
 
@@ -2255,11 +4342,23 @@ Tweaked email notifications for better compatibility with Sendgrid plugin, SMTP 
 
 
 
+
+
+
+
 * Added Toastmasters YouTube tool, which appears under the Media menu. Can be used to share speech videos uploaded to YouTube as "unlisted" with club members.
+
+
 
 * Updated code to be translation-ready.
 
+
+
 * Removed code related to compatibility with older versions of RSVPMaker. Make sure you have the current version.
+
+
+
+
 
 
 
@@ -2267,7 +4366,15 @@ Tweaked email notifications for better compatibility with Sendgrid plugin, SMTP 
 
 
 
+
+
+
+
 Refinements to reporting and editing functions.
+
+
+
+
 
 
 
@@ -2275,9 +4382,19 @@ Refinements to reporting and editing functions.
 
 
 
+
+
+
+
 * New tabbed interface for member reporting and editing functions.
 
+
+
 * Added data export / import screen
+
+
+
+
 
 
 
@@ -2285,9 +4402,19 @@ Refinements to reporting and editing functions.
 
 
 
+
+
+
+
 * Bug fix: security roles setup on first activation
 
+
+
 * Tweaks to prepare for new RSVPMaker release
+
+
+
+
 
 
 
@@ -2295,9 +4422,19 @@ Refinements to reporting and editing functions.
 
 
 
+
+
+
+
 * Code cleanup
 
+
+
 * Fixed JavaScript function for editing role assignments (loading of ajaxurl parameter on front end).
+
+
+
+
 
 
 
@@ -2305,7 +4442,15 @@ Refinements to reporting and editing functions.
 
 
 
+
+
+
+
 When a club leader is editing roles for a meetings, assignments and manuals now get "background saved" (as soon as you change a role assignment or project choice, that information is relayed to the server via AJAX). This prevents information from being lost if the leader navigates away from the form without clicking the save button at the bottom.
+
+
+
+
 
 
 
@@ -2313,7 +4458,15 @@ When a club leader is editing roles for a meetings, assignments and manuals now 
 
 
 
+
+
+
+
 * More improvements / fixes to reporting system
+
+
+
+
 
 
 
@@ -2321,7 +4474,15 @@ When a club leader is editing roles for a meetings, assignments and manuals now 
 
 
 
+
+
+
+
 Improvements / fixes to reporting system
+
+
+
+
 
 
 
@@ -2329,7 +4490,15 @@ Improvements / fixes to reporting system
 
 
 
+
+
+
+
 BuddyPress integration. If BuddyPress is turned on, activities like signing up for a meeting are reflected on the user's activity feed. BuddyPress profiles also include information from the member's Toastmasters profile, including officer status.
+
+
+
+
 
 
 
@@ -2337,7 +4506,15 @@ BuddyPress integration. If BuddyPress is turned on, activities like signing up f
 
 
 
+
+
+
+
 Bug fix: time display on agenda
+
+
+
+
 
 
 
@@ -2345,11 +4522,23 @@ Bug fix: time display on agenda
 
 
 
+
+
+
+
 * New welcome screen, displayed on members's first login to the administrative dashboard
+
+
 
 * Reorganized Toastmasters menu
 
+
+
 * Starting work on a progress report for advanced manuals
+
+
+
+
 
 
 
@@ -2357,11 +4546,23 @@ Bug fix: time display on agenda
 
 
 
+
+
+
+
 * Improved member import / synch from toastmasters.org spreadsheet. Better handling of situation where a member does not have an email address, or two members (for example, husband and wife) share an email address.
+
+
 
 * Email notification to members when they are signed up for a role by the administrator. If information such as speech project is missing, the member will be prompted to provide it.
 
+
+
 * When no speech project is specified, 7 minutes on the agenda assigned by default.
+
+
+
+
 
 
 
@@ -2369,7 +4570,15 @@ Bug fix: time display on agenda
 
 
 
+
+
+
+
 Redesigned security options based on WordPress roles and capabilities. See [blog post](http://wp4toastmasters.com/2016/01/23/restricting-access-to-reports-agenda-editing/)
+
+
+
+
 
 
 
@@ -2377,11 +4586,23 @@ Redesigned security options based on WordPress roles and capabilities. See [blog
 
 
 
+
+
+
+
 * Control of time allowed for roles or other items on the agenda. Ability to output calculated times on the agenda.
+
+
 
 * Option to add a custom message on the login page.
 
+
+
 * Drop-down menu for agenda editing based on http://cssmenumaker.com/menu/cherry-responsive-menu
+
+
+
+
 
 
 
@@ -2389,7 +4610,15 @@ Redesigned security options based on WordPress roles and capabilities. See [blog
 
 
 
+
+
+
+
 The administrator can now restrict options such as viewing the CC and CL reports or editing the signups list for a coming event. Functions can be specified as accessible to any member, only to an officer or site editor, or only to the administrator.
+
+
+
+
 
 
 
@@ -2397,7 +4626,15 @@ The administrator can now restrict options such as viewing the CC and CL reports
 
 
 
+
+
+
+
 Important bugfix. Correcting a glitch that was preventing posts, pages, and events from being displayed properly in the editor under some circumstances.
+
+
+
+
 
 
 
@@ -2405,11 +4642,23 @@ Important bugfix. Correcting a glitch that was preventing posts, pages, and even
 
 
 
+
+
+
+
 * Visual represetnation of shortcodes in editor, with popup dialog box for setting roles or content and parameters of agenda notes.
+
+
 
 * More consistency between behavior of Agenda Setup screen and using the native WordPress editor.
 
+
+
 * Sidebar content can now be updated as part of the edit roles function on the front end, similar to how updating the Theme of the Day/Words of the Day is handled.
+
+
+
+
 
 
 
@@ -2417,7 +4666,15 @@ Important bugfix. Correcting a glitch that was preventing posts, pages, and even
 
 
 
+
+
+
+
 Improving prompts for site setup, meeting agenda setup, and scheduling of first meetings.
+
+
+
+
 
 
 
@@ -2425,7 +4682,15 @@ Improving prompts for site setup, meeting agenda setup, and scheduling of first 
 
 
 
+
+
+
+
 When used in conjunction with the mailman mailing list manager, members removed from the club (deleted as users in WordPress) will automatically be deleted from the mailing list. I don't yet have this working with multisite installations (where a user removed from a site is not deleted from the user database).
+
+
+
+
 
 
 
@@ -2433,9 +4698,19 @@ When used in conjunction with the mailman mailing list manager, members removed 
 
 
 
+
+
+
+
 * Changed Member Access widget HTML to display better in combination with a wider variety of themes.
 
+
+
 * Updated widget code to use the newer style of PHP object constructor, replacing code deprecated under WordPress 4.3.
+
+
+
+
 
 
 
@@ -2443,7 +4718,15 @@ When used in conjunction with the mailman mailing list manager, members removed 
 
 
 
+
+
+
+
 Bug fix: was interfering with update of user email addresses on admin screen.
+
+
+
+
 
 
 
@@ -2451,9 +4734,19 @@ Bug fix: was interfering with update of user email addresses on admin screen.
 
 
 
+
+
+
+
 * Simplification of the Agenda Setup screen
 
+
+
 * Bug fix (plugin was interfering with WordPress standard password reset function. Sorry!)
+
+
+
+
 
 
 
@@ -2461,7 +4754,15 @@ Bug fix: was interfering with update of user email addresses on admin screen.
 
 
 
+
+
+
+
 Bug fixes and tweaks for compatibility with the latest version of RSVPMaker.
+
+
+
+
 
 
 
@@ -2469,7 +4770,15 @@ Bug fixes and tweaks for compatibility with the latest version of RSVPMaker.
 
 
 
+
+
+
+
 RSVPMaker for Toastmasters is now translation-ready. See the readme file in the translations folder for instructions on how to use the POEdit tool to define equivalent labels for user interface elements in other languages.
+
+
+
+
 
 
 
@@ -2477,7 +4786,15 @@ RSVPMaker for Toastmasters is now translation-ready. See the readme file in the 
 
 
 
+
+
+
+
 Adds option of new agenda layout with sidebar.
+
+
+
+
 
 
 
@@ -2485,7 +4802,15 @@ Adds option of new agenda layout with sidebar.
 
 
 
+
+
+
+
 Tested with WordPress 4.1
+
+
+
+
 
 
 
@@ -2493,7 +4818,15 @@ Tested with WordPress 4.1
 
 
 
+
+
+
+
 Role data and speech details recorded on a Free Toast Host can now be imported so that it will be reflected in reports run on the website.
+
+
+
+
 
 
 
@@ -2501,9 +4834,19 @@ Role data and speech details recorded on a Free Toast Host can now be imported s
 
 
 
+
+
+
+
 * Added ability to assign a role to a guest of the club who is not on the member list.
 
+
+
 * Toastmasters settings screen includes key options such as setting the timezone (important for scheduling) and making the site public (turning off the "discourage search engines from indexing this site" option).
+
+
+
+
 
 
 
@@ -2511,9 +4854,19 @@ Role data and speech details recorded on a Free Toast Host can now be imported s
 
 
 
+
+
+
+
 * Added support for members-only posts. Posts tagged to the Members Only category will only be displayed to logged in members. (Display name of category can vary, but slug must be 'members-only')
 
+
+
 * Bug fixes and a removal of a hard-coded mention of a carrcommunications.com email address.
+
+
+
+
 
 
 
@@ -2521,7 +4874,15 @@ Role data and speech details recorded on a Free Toast Host can now be imported s
 
 
 
+
+
+
+
 Simplified editor for Agenda Setup.
+
+
+
+
 
 
 
@@ -2529,7 +4890,15 @@ Simplified editor for Agenda Setup.
 
 
 
+
+
+
+
 Correcting initial setup of database and meeting templates. If you installed an earlier version, please deactivate and reactivate the plugin for the correct setup.
+
+
+
+
 
 
 
@@ -2537,7 +4906,15 @@ Correcting initial setup of database and meeting templates. If you installed an 
 
 
 
+
+
+
+
 Bug fix: member stats editing
+
+
+
+
 
 
 
@@ -2545,6 +4922,12 @@ Bug fix: member stats editing
 
 
 
+
+
+
+
 * Fixed recommend function bug
+
+
 
 * Default event template created on plugin activation

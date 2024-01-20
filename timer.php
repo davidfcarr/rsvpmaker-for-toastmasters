@@ -192,8 +192,6 @@ if ( isset( $_GET['nosync'] ) ) {
 
 }
 
-
-
 $widthadj      = ( $is_timer ) ? 100 : 50;
 
 $is_jitsi      = ( isset( $_GET['embed'] ) && ( $_GET['embed'] == 'jitsi' ) );
@@ -988,6 +986,12 @@ printf(
   <input type="radio" name="color" value="yellow"> Yellow<br>
   <input type="radio" name="color" value="red"> Red<br>
   <button>Upload</button>
+  <?php 
+global $post;
+$nonce = wp_create_nonce('timer_upload');
+update_post_meta($post->ID,'timer_nonce',$nonce);
+printf('<input type="hidden" name="timer_upload" value="%s" /><input type="hidden" name="post_id" value="%d" />',$nonce,$post->ID);
+?>
 </form>
 
 </div><!-- end timer controls -->

@@ -3078,8 +3078,7 @@ function wpt_email_handler_forwarders() {
 
     rsvpmaker_admin_heading('Email Forwarders',__FUNCTION__,'','<img style="max-width: 300px;" src="https://www.wp4toastmasters.com/wp-content/uploads/2022/05/forwarders.jpg" /><br><em>Example</em>');
 
-    if(!empty($_POST))
-        rsvpmail_clear_allforwarders(get_current_blog_id());
+    rsvpmail_clear_allforwarders(get_current_blog_id());
 
     $parts = explode('.',$_SERVER['SERVER_NAME']);
 
@@ -3527,6 +3526,7 @@ function wpt_format_email_forwarder($lookup = '', $blog_id = 0) {
     elseif((empty($lookup)) && empty($username))
         $username = 'members';
     $username .= $lookup;
+    set_transient('wpt_format_email_forwarder',$lookup.' site id '.$blog_id.' = '.$username .'@' .$domain);
     return $username .'@' .$domain;
 }
 
@@ -4311,64 +4311,28 @@ function wpt_get_officer_emails() {
 
 
 function wpt_member_email_check() {
-
-
-
     rsvpmaker_admin_heading('Member Email Check',__FUNCTION__);
-
-
-
     echo '<p>This screen allows you to see whether any members have unsubscribed from email notifications, indicated a preference against receiving group email messages and event notifications, or have bad email addresses associated with their member profiles.</p>';
-
-
-
     $members = get_club_members();
 
-
+    $output = '';
 
     foreach($members as $member) {
-
-
-
         $problem = rsvpmail_is_problem($member->user_email);
-
-
-
-        $rsvpmailer_rule = apply_filters('rsvpmailer_rule','permit',$member->user_email, 'group_email');
-
-
-
-        if($rsvpmailer_rule == 'deny') {
-
-
-
-            $problem .= ' blocks group email and forwarding';
-
-
-
+        if(strpos($problem,'ManualSuppression')) {
+            $suppressions[] = strtolower($member->user_email);
         }
-
-
-
+        $rsvpmailer_rule = apply_filters('rsvpmailer_rule','permit',$member->user_email, 'group_email');
+        if($rsvpmailer_rule == 'deny') {
+            $problem .= ' blocks group email and forwarding';
+        }
         $status = (empty($problem)) ? '<span style="color:green; font-weight: bold;">OK</span>' : '<span style="color:red; font-weight: bold;">'.$problem.'</span>';
-
-
-
-        echo '<p>'.$member->display_name.' '.$member->user_email.' '.$status.'</p>';
-
-
-
+        $output .= '<p>'.$member->display_name.' '.$member->user_email.' '.$status.'</p>';
     }
-
-
-
+    if(!empty($suppressions))
+        do_action('rsvpmaker_postmark_suppressions',$suppressions);
+    echo $output;
 }
-
-
-
-
-
-
 
 function wpt_email_forwarder_recipients($forwarder) {
 

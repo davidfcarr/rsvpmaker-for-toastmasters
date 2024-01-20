@@ -793,8 +793,8 @@ $("#checkAll").click(function(){
 add_action('admin_notices', 'tm_grant_privacy_permission_ui',1);
 
 function tm_grant_privacy_permission_ui ($return = false, $profile_form = false, $userdata = NULL) {
-if(!$return && (!empty($_GET['action']) || strpos($_SERVER['REQUEST_URI'],'post-new.php') ))
 	return;
+if(!$return && (!empty($_GET['action']) || strpos($_SERVER['REQUEST_URI'],'post-new.php') ))
 global $current_user;
 if(!$userdata)
 	$userdata = $current_user;

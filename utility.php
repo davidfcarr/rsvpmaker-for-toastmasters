@@ -2420,43 +2420,14 @@ function cache_assignments( $post_id, $refresh = false ) {
 
 	if ( empty( $assign_cache[ $post_id ] ) ) {
 
-
-
-		$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_value REGEXP '^[0-9]+$'";
-
-
-
+		$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_role%' AMD meta_value > 0";
 		$results = $wpdb->get_results( $sql );
-
-
-
 		foreach ( $results as $row ) {
-
-
-
 			$assign_cache[ $post_id ][ $row->meta_key ] = $row->meta_value;
-
-
-
 		}
-
-
-
 		set_transient( 'assign_cache', $assign_cache, DAY_IN_SECONDS );
-
-
-
 	}
-
-
-
 }
-
-
-
-
-
-
 
 function get_wpt_assignment( $post_id, $key ) {
 
@@ -3752,7 +3723,7 @@ $date     = get_rsvp_date( $post_id );
 
 $absences = get_absences_array( $post_id );
 
-$sql      = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . " AND meta_value REGEXP '^[0-9]+$' AND meta_key LIKE '_role_%' ";
+$sql      = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . " AND meta_value > 0 AND meta_key LIKE '_role_%' ";
 
 $results  = $wpdb->get_results( $sql );
 
@@ -4015,7 +3986,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 	$soon = ($ts < time() + 2 * DAY_IN_SECONDS);
 
 	add_post_meta( $post_id, '_activity', $comment_content, false );
-	if($soon && !$didthis) {
+	if($soon && empty($didthis)) {
 		wp_unschedule_hook( 'wp4t_log_notify'); //clear any that might be waiting
 		wp_schedule_single_event( time() + 1800, 'wp4t_log_notify', array($post_id));
 		$didthis = true;

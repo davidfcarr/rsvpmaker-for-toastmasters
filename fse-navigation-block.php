@@ -1,7 +1,5 @@
 <?php
 
-
-
 function wp4t_block_theme_menu() {
 
 	global $wpdb, $current_user;
@@ -128,13 +126,9 @@ return $menu_id;
 
 }
 
-
-
 function wpt_add_menu_to_nav($content, $menu_id) {
 
 preg_match('/<!-- wp:navigation (\{){0,1}/',$content,$match);
-
-
 
 if(empty($match[0]))
 
@@ -152,15 +146,18 @@ return $content;
 
 }
 
-
-
 function check_toastmasters_logo_header() {
 
 global $wpdb;
 
 $logo_id = get_option('site_logo');
 
-if(!$logo_id) {
+if($logo_id) {
+	$tag = get_custom_logo();
+}
+
+//if not defined or not installed locally
+if(!$logo_id || !strpos($tag,$_SERVER['SERVER_NAME'])) {
 	$logo_id = media_sideload_image('https://toastmost.org/tmbranding/toastmasters-75.png', 0, 'copy of Toastmasters logo','id' );
 	update_option('site_logo',$logo_id);
 }
@@ -168,9 +165,7 @@ if(!$logo_id) {
 $nav_menu_id = $wpdb->get_var("select ID from $wpdb->posts WHERE post_type='wp_navigation' AND post_status='publish' ");
 
 if(!$nav_menu_id)
-
 	$nav_menu_id = wp4t_block_theme_menu();
-
 }
 
 add_action('admin_init','check_toastmasters_logo_header');

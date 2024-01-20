@@ -2,8 +2,6 @@ $( document ).ready(
 
 	function () {
 
-
-
 		var greenchime  = true;
 
 		var yellowchime = true;
@@ -1432,7 +1430,7 @@ $( document ).ready(
 			}
 			else if('red' == data.color)
 			 {
-				redung = data.url;
+				redimg = data.url;
 				x = y[2];
 			}
 			var option = document.createElement("option");
@@ -1441,6 +1439,7 @@ $( document ).ready(
 			x.add(option);
 			x.value = data.url;
 			colorChange(data.color);
+			document.getElementById('file').value = '';
 		  })
 		  .catch(console.error);;
 		

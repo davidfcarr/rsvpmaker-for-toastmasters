@@ -14,8 +14,6 @@ function wp4t_paypal_application_payment($response,$get) {
 
 }
 
-
-
 function tm_member_application( $atts ) {
 
 	global $rsvp_options;
@@ -45,8 +43,6 @@ function tm_member_application( $atts ) {
 		return tm_application_form_start( $atts );
 
 	}
-
-
 
 	$notifications = get_option( 'tm_application_notifications' );
 
@@ -147,8 +143,13 @@ label {
 		}
 
 		$chosen_gateway = get_rsvpmaker_payment_gateway ();
+		$payprompt = '';
 
 		$vars['amount'] = get_post_meta( $post->ID, 'tm_application_fee', true );// fetch from page for form
+		if(empty($vars['amount']) && !empty($_POST['tm_application_fee']))
+			$vars['amount'] = sanitize_text_input($_POST['tm_application_fee']);
+		if(empty($vars['amount']))
+			$payprompt .= '<p style="color:red">Error recording dues amount.</p>';		
 
 		update_post_meta( $post_id, 'tm_application_fee', $vars['amount'] );// record to app document
 
@@ -162,8 +163,6 @@ label {
 
 		$vars['tracking']    = 'tmapplication' . $post_id;
 
-		$payprompt = '';
-
 		$vars['description'] = 'Toastmasters Application '.$post_id.' '.$vars['name'];
 
 		$vars['name']        = sanitize_text_field($_POST['first_name'] . ' ' . $_POST['last_name']);
@@ -174,7 +173,7 @@ label {
 
 		if ( ('Stripe' == $chosen_gateway ) || strpos($chosen_gateway,'Stripe') ) {
 
-			$payprompt           = rsvpmaker_stripe_form( $vars );
+			$payprompt           .= rsvpmaker_stripe_form( $vars );
 
 		}
 
@@ -389,6 +388,7 @@ function tm_application_fee() {
 		echo wp_kses_post($feetext);
 
 		echo '<input type="hidden" name="monthindex" value="'.$monthindex.'">';
+		echo '<input type="hidden" name="tm_application_fee" value="'.$fee.'">';
 
 		update_post_meta( $post->ID, 'tm_application_fee', $fee );
 

@@ -1,7 +1,5 @@
 <?php
 
-
-
 function add_contest_userlink( $user_id, $link, $post_id = 0 ) {
 
 	global $post;
@@ -219,6 +217,7 @@ function toast_contest( $mode ) {
 	$practice       = get_practice_contest_links();
 
 	$output        .= wpt_mycontests_links( $practice );
+	$related = 0;
 
 	if ( $mode == 'dashboard' ) {
 
@@ -344,7 +343,7 @@ function wpt_mycontests() {
 
 	$action = get_permalink();
 
-	if($_POST['trash_event']) {
+	if(isset($_POST['trash_event'])) {
 
 		foreach($_POST['trash_event'] as $id) {
 
@@ -580,8 +579,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 	$contest_name = get_post_meta( $post->ID, 'toast_contest_name', true );
 
-
-
 	if ( isset( $_POST['break_connection'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 
 		delete_post_meta(intval($_POST['break_connection']),'contest_sync_to',$post->ID);
@@ -589,8 +586,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		delete_post_meta($post->ID,'contest_sync_from');
 
 	}
-
-
 
 	if ( isset( $_POST['dashboardvote'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 
@@ -620,13 +615,9 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 	}
 
-
-
 	do_action( 'wpt_scoring_dashboard_top' );
 
 	$link = sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $actionlink ) );
-
-
 
 	$contest_selection = wpt_get_contest_array();
 
@@ -647,8 +638,6 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		$dashboard_users[] = $post->post_author;
 
 	}
-
-
 
 	$is_setup =	get_post_meta( $post->ID, 'toast_contest_scoring' );
 
@@ -684,14 +673,10 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 	}
 
-
-
 	$default_dashboard_users = array( $current_user->ID );
 
-
-
 	if ( ! empty( $_POST['contest_scoring_more'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-
+		$backup = $post;
 		update_post_meta($post->ID,'contest_data_model',1);
 
 		foreach($_POST['contest_scoring_more'] as $index => $scoring_index) {
@@ -732,11 +717,11 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 				update_post_meta( $id, '_contest_tracking_post', $post->ID );
 
-				add_post_meta( $id, '_contest_related', $post->ID );
+				add_post_meta( $id, '_contest_related', $backup->ID );
 
-				add_rsvpmaker_event( $id, get_rsvp_date( $post->ID ) );
+				add_rsvpmaker_event( $id, get_rsvp_date( $backup->ID ) );
 
-				add_post_meta( $post->ID, '_contest_related', $id );
+				add_post_meta( $backup->ID, '_contest_related', $id );
 
 				update_post_meta( $id, 'tm_contest_dashboard_users', $default_dashboard_users );
 
@@ -767,16 +752,25 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			}	
 
 		}
-
+		$post = $backup;
 	}
 
 
+	if(isset($_GET['snycfrom'])) {
+		update_post_meta($post->ID,'contest_sync_from',intval($_GET['snycfrom']));
+		add_post_meta(intval($_GET['snycfrom']),'contest_sync_to',$post->ID);
+		$judges   = get_post_meta( intval($_GET['snycfrom']), 'tm_scoring_judges', true );
+		update_post_meta( $post->ID, 'tm_scoring_judges', $judges );
+		update_post_meta( $post->ID, 'tm_scoring_tiebreaker', get_post_meta( intval($_GET['snycfrom']), 'tm_scoring_tiebreaker', true ) );
+	}
 
 	if ( ! empty( $_POST['contest_scoring'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 
 		$scoring_index   = sanitize_text_field($_POST['contest_scoring']);
 
 		$contest_scoring = $contest_selection[ $scoring_index ];
+
+		printf('<p>New contest scoring %s</p>',var_export($contest_scoring,true));
 
 		$timing          = $contest_timing[ $scoring_index ];
 
@@ -785,6 +779,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			update_post_meta( $post->ID, 'toast_contest_name', $scoring_index );
 
 			update_post_meta( $post->ID, 'toast_contest_scoring', $contest_scoring );
+			printf('<p>Record New contest scoring %s, %d</p>',var_export($contest_scoring,true),$post->ID);
 
 			update_post_meta( $post->ID, 'toast_timing', $timing );
 
@@ -836,24 +831,14 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 
 		$options = '<option value="">Select Contest</option>';
 
-
-
 		foreach ( $contest_selection as $contest => $score_array ) {
-
 			$options .= sprintf( '<option value="%s">%s</option>', $contest, $contest );
-
 		}
 
-
-
 		if ( isset( $_GET['clear_custom_scoring'] ) ) {
-
 			delete_option( 'toast_custom_contest' );
-
 		} else {
-
 			$options .= get_option( 'toast_custom_contest' );
-
 		}
 
 		preg_match_all('/{"role":"([a-zA-Z ]+ Contest[^"]+)/',$post->post_content,$matches);
@@ -1102,7 +1087,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 
 			$miss       = 0;
 
-			$field_base = '_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $track_role );
+			$field_base = '_role_' . preg_replace( '/[^a-zA-Z0-9]/', '_', $track_role );
 
 			for ( $i = 1; $i < 20; $i++ ) {
 
@@ -2228,7 +2213,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 
 	 /> Hide judge ballot links (if they're not being used)</p>
 
-	<p><button>Submit</button></p>
+	<p><button>Update Judge Assignments/Options</button></p>
 
 	<?php rsvpmaker_nonce(); ?>
 
@@ -2836,7 +2821,7 @@ function toast_scoring_sheet() {
 
 				echo wpt_mycontests();
 
-				printf( '<p>You must <a href="%s">login</a> to access this judge\'s voting form.</p>', wp_login_url( sanitize_text_field($_SERVER['REQUEST_URI']) ) );
+				printf( '<p>You must <a href="%s">login</a> to access this judge\'s voting form. %d</p>', wp_login_url( sanitize_text_field($_SERVER['REQUEST_URI']) ), $post->ID);
 
 				return;
 
@@ -2926,11 +2911,23 @@ function toast_scoring_sheet() {
 
 		echo '<h2>Recorded</h2>';
 
-		echo '<div id="gotvote_result" style="font-style: italic; font-weight: bold; padding: 20px;"></div>';
+		$dashboard_users = get_post_meta( $post->ID, 'tm_contest_dashboard_users', true );
+		if(!$dashboard_users)
+			$dashboard_users = array();
+		if(!in_array($post->post_author,$dashboard_users)) {
+			$dashboard_users[] = $post->post_author;
+		}
+		$emails = [];
+		foreach($dashboard_users as $did) {
+			$userdata = get_userdata($did);
+			$emails[] = $userdata->user_email;
+		}
+		$message = 'My choices: ';
 
 		foreach ( $votes as $index => $vote ) {
 
 			printf( '<p>#%d %s</p>', $index + 1, $vote );
+			$message .= '#'.($index+1).' '.$vote.' ';
 
 			printf( '<input type="hidden" name="vote[]" value="%s">', $vote );
 
@@ -2944,7 +2941,14 @@ function toast_scoring_sheet() {
 
 		}
 
+		if(!empty($_POST['signature']))
+			$message .= ' -- Signed by '.sanitize_text_field(stripslashes($_POST['signature']));
+		else
+			$message .= ' -- votes from '.$judge_name;
+
 		if ( empty( $blanks ) ) {
+
+			printf('<p>Contest officials should see your votes within moments. As a backup, you can <a target="_blank" href="mailto:%s?subject=Toastmasters contest vote&body=%s">send your vote by email</a> if instructed to by the chief judge.</p>',implode(',',$emails),$message);
 
 			echo '<p>Keep this page open until you confirm your votes have been received properly. Some contest organizers may require an analog signature on a printout or a paper ballot as a formality.</p>';
 
