@@ -13281,7 +13281,7 @@ add_action('rsvpmaker_payments_setting_top','wpt_dues_navigation');
 
 function wpt_dues_navigation () {
 
-	echo '<p style="text-align: right; width: 100%;"><a href="'.admin_url('admin.php?page=wpt_dues_report').'">Dues Tracker</a> | <a href="'.admin_url('admin.php?page=wpt_dues_report&tx').'">Transaction List</a>  | <a href="'.admin_url('admin.php?page=wpt_dues_report&followup').'">Follow Up</a> | <a href="'.admin_url('options-general.php?page=member_application_settings').'">Dues & Application Setup</a>  | <a href="'.admin_url('options-general.php?page=rsvpmaker-admin.php&tab=payments').'">Online Payments Setup</a> </p>';
+	echo '<p style="text-align: right; width: 100%;"><a href="'.admin_url('admin.php?page=wpt_dues_report').'">Dues Tracker</a> | <a href="'.admin_url('admin.php?page=wpt_dues_report&tx').'">Transaction List</a>  | <a href="'.admin_url('admin.php?page=wpt_dues_report&followup').'">Follow Up</a> | <a href="'.admin_url('options-general.php?page=member_application_settings').'">Dues & Application Setup</a>  | <a href="'.admin_url('options-general.php?page=rsvpmaker_settings').'">Online Payments Setup</a> </p>';
 
 }
 

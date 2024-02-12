@@ -194,21 +194,10 @@ function wpt_email_handler_page () {
 
 
         if(!is_multisite() || 1 == get_current_blog_id())
-
-
-
         {
 
-
-
             printf('<h2>Configuration</h2><p>To make this work, you must create an email account on the web server that will act as the "bot" for these automated functions. Record the username, password, and other parameters in the bot section of the <a href="%s">Group Email tab of RSVPMaker Settings</a>.</p>',admin_url('options-general.php?page=rsvpmaker-admin.php'));
-
-
-
             echo "<p>Configure the default email forwarder on the server to send all messages that don't match another account or alias on the server to the bot email account. By default, many web hosts have the default set to discard any message that does not match a hard-coded email address or alias.</p>";
-
-
-
         }    
 
 

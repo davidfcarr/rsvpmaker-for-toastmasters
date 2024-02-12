@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 6.1.2
+Version: 6.1.4
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -577,7 +577,7 @@ else {
 <p><strong>Settings</strong></p>
 <ul>
 	 <li><a href="options-general.php?page=wp4toastmasters_settings">Toastmasters</a> - set Officers list, agenda options, security for functions such as Edit Signups</li>
-	 <li><a href="options-general.php?page=rsvpmaker-admin.php">RSVPMaker</a> - options for the calendar and event registration functions</li>
+	 <li><a href="options-general.php?page=rsvpmaker_settings">RSVPMaker</a> - options for the calendar and event registration functions</li>
 </ul>
 		<?php
 	}
@@ -2588,7 +2588,7 @@ function wp4toastmasters_settings() {
 	<div class="toastmasters-see-also">
 See also:
 <ul>
-<li><a href="<?php echo admin_url('options-general.php?page=rsvpmaker-admin.php'); ?>">RSVPMaker Settings</a> - events and guest registration</li>
+<li><a href="<?php echo admin_url('options-general.php?page=rsvpmaker_settings'); ?>">RSVPMaker Settings</a> - events and guest registration</li>
 <li><a href="<?php echo admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list'); ?>">Event Templates</a> - meeting templates</li>
 <ul>
 <?php
@@ -2888,24 +2888,6 @@ submit_button('Switch to District');
 	echo '<h3>Contributor Notifications</h3><p>' . __( 'Users assigned the Contributor role may submit blog posts for publication, but they must be approved by an author or editor. Who should be notified when contributor posts are submitted for review?', 'rsvpmaker-for-toastmasters' ) . '<p>';
 	printf( '<p><input type="text" name="wpt_contributor_notification" value="%s" size="150" /><br /><em>%s</em></p>', $contributor_notification, __( 'One or more email addresses, separated by commas. If you do not want these notifications, enter "none"', 'rsvpmaker-for-toastmasters' ) );
 
-	if ( ! function_exists( 'toastmost_club_email_list' ) ) {
-		echo '<h2>Communications Options</h2>';
-		do_action( 'wpt_mailing_list_message' );
-		if ( function_exists( 'rsvpmaker_relay_init' ) ) {
-			$vars         = get_option( 'rsvpmaker_discussion_member' );
-			$member_list  = ( ! empty( $vars['user'] ) && ! empty( $vars['password'] ) ) ? $vars['user'] : '(not set)';
-			$vars         = get_option( 'rsvpmaker_discussion_officer' );
-			$officer_list = ( ! empty( $vars['user'] ) && ! empty( $vars['password'] ) ) ? $vars['user'] : '(not set)';
-			$active       = get_option( 'rsvpmaker_discussion_active' );
-			printf( '<h3>Member and Officer Email Lists (RSVPMaker)</h3><p>The Group Email function in RSVPMaker allows you to create email discussion lists.</p><p><a href="%s">View Options</a></p><p>Status: %s</p><p>Member List: %s</p><p>Officer List: %s</p>', admin_url( 'options-general.php?page=rsvpmaker-admin.php&tab=groupemail' ), ( $active ) ? 'On' : 'Off', $member_list, $officer_list );
-			echo '<h3>Mailing Lists: Other Options</h3>';
-		}
-		do_action( 'wpt_mailing_list_message' );
-
-		if ( function_exists( 'mailster_install' ) ) {
-			printf( '<h3>Mailster Mailing List</h3><p><a href="%s">Manage Mailster Mailing List</a> - add addresses to whitelist, tweak settings</p>', admin_url( 'admin.php?page=mailster_toastmasters' ) );
-		}
-	}//end test for Toastmost email list options
 	?>
 <h3>Messages</h3>
 <p><?php _e( 'Message for Login Page', 'rsvpmaker-for-toastmasters' ); ?><br />

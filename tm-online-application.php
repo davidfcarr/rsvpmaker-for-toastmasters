@@ -919,7 +919,7 @@ else
 
 	printf('<p>%s %s</p>',__('Configured to use','rsvpmaker-for-toastmasters'),$chosen_gateway);
 
-printf('<p><a href="%s">%s</a></p>',admin_url('options-general.php?page=rsvpmaker-admin.php&tab=payments'),__('Configure online payment service (Stripe or PayPal)','rsvpmaker-for-toastmasters'));
+printf('<p><a href="%s">%s</a></p>',admin_url('options-general.php?page=rsvpmaker_settings'),__('Configure online payment service (Stripe or PayPal)','rsvpmaker-for-toastmasters'));
 
 
 
