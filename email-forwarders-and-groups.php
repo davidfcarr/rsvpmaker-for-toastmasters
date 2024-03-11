@@ -3063,15 +3063,35 @@ return $emails;
 
 }
 
+function wpt_consolidated_forwarders($recipients, $blog_id) {
+    $root_domain = wpt_get_site_domain(1);
+    foreach($recipients as $forwarder => $target) {
+        if(!strpos($forwarder,$root_domain)) {
+            $parts = explode('@',$forwarder);
+            $root_forwarder = wpt_format_email_forwarder($parts[0],$blog_id,'root');
+            if(strpos($forwarder,'_whitelist'))
+                $recipients[$root_forwarder.'_whitelist'] = $target;
+            elseif(strpos($forwarder,'_blacklist'))
+                $recipients[$root_forwarder.'_whitelist'] = $target;
+            else
+                $recipients[$root_forwarder] = $target;
+        }
+    }
+    return $recipients;
+}
+
+add_filter('rsvpmaker_consolidated_forwarders','wpt_consolidated_forwarders',10,2);
+
 function wpt_email_handler_forwarders() {
 
     rsvpmaker_admin_heading('Email Forwarders',__FUNCTION__,'','<img style="max-width: 300px;" src="https://www.wp4toastmasters.com/wp-content/uploads/2022/05/forwarders.jpg" /><br><em>Example</em>');
-
-    rsvpmail_clear_allforwarders(get_current_blog_id());
+    $blog_id = get_current_blog_id();
+    rsvpmail_clear_allforwarders($blog_id);
 
     $parts = explode('.',$_SERVER['SERVER_NAME']);
 
     $prefix = '';
+
 
     if(sizeof($parts) > 2) {
 
@@ -3111,21 +3131,8 @@ function wpt_email_handler_forwarders() {
 
     }
 
-    /*
-
-    $wpt_email_handler_custom_forwarders = get_option('toastmost_custom_forwarders');
-
-
-
-    if(empty($wpt_email_handler_custom_forwarders))
-
-
-
-        $wpt_email_handler_custom_forwarders = array();
-
-    */
-
-
+    $base_domain = wpt_get_site_domain(1);
+    $site_domain = wpt_get_site_domain($blog_id);
 
     if(!empty($_POST['slug']) && !wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) )
 
@@ -3136,14 +3143,22 @@ function wpt_email_handler_forwarders() {
     $wpt_email_handler_custom_forwarders = get_option('custom_forwarders');
 
 
-
+    $fix = false;
     if(empty($wpt_email_handler_custom_forwarders))
+        $wpt_email_handler_custom_forwarders = array();
+    else {
+        foreach($wpt_email_handler_custom_forwarders as $forwarder => $target) {
+            if(strpos($forwarder,'@toastmost.org@')) {
+                unset($wpt_email_handler_custom_forwarders[$forwarder]);                
+                $forwarder = str_replace('@toastmost.org@','@',$forwarder);
+                $fix = true;
+                $wpt_email_handler_custom_forwarders[$forwarder] = $target;                
+            }            
+        }
+    }
 
-
-
-      $wpt_email_handler_custom_forwarders = array();
-
-
+    if($fix)
+        update_option('custom_forwarders',$wpt_email_handler_custom_forwarders);
 
     if(isset($_POST['forward_update']))
 
@@ -3280,17 +3295,8 @@ function wpt_email_handler_forwarders() {
 
 
     if(!empty($_POST)) {
-
-
-
         echo '<div class="notice notice-success"><p>Updating wpt_email_handler_custom_forwarders</p></div>';  
-
-
-
         update_option('custom_forwarders',$wpt_email_handler_custom_forwarders);
-
-
-
     }
 
     if(isset($_POST['rsvpmail_blacklist'])) {
@@ -3320,11 +3326,11 @@ function wpt_email_handler_forwarders() {
 
 <p>By default, <strong><?php echo wpt_format_email_forwarder('members'); ?></strong> is used for a members email list and <strong><?php echo wpt_format_email_forwarder('officers'); ?></strong> is for an officers email lists. Forwarding addresses in the format <?php echo wpt_format_email_forwarder('vpe'); ?> are enabled based on the officers list from the <a href="<?php echo admin_url('options-general.php?page=wp4toastmasters_settings'); ?>">Toastmasters Settings</a> screen.</p>
 
-
-
 <?php 
 
-
+    if($site_domain != $base_domain) {
+        printf('<div style="margin: 20px;background-color:#000;color:#fff; padding: 10px;"><p>For a site with a custom domain (other than %s), email addresses in the format %s / %s or %s / %s will work the same.</p><p>However, the @%s version requires proper email formatting setup for the domain.</p></div>',$base_domain,wpt_format_email_forwarder('members'),wpt_format_email_forwarder('members',0,'root'),wpt_format_email_forwarder('mentors'),wpt_format_email_forwarder('mentors',0,'root'),$site_domain);
+    }
 
     $slug_ids = get_officer_slug_ids();
     if(isset($_GET['debug']))
@@ -3495,19 +3501,20 @@ foreach($forwarders as $forwarder) {
 
 }
 
-function wpt_format_email_forwarder($lookup = '', $blog_id = 0) {
+function wpt_format_email_forwarder($lookup = '', $blog_id = 0, $format = '') {
     if(!$blog_id)
         $blog_id = get_current_blog_id();
     $lookup = strtolower($lookup);
     $root_domain = wpt_get_site_domain(1);
     $domain = wpt_get_site_domain($blog_id);
     $username = '';
-    if(strpos($domain,$root_domain))
+    if(strpos($domain,$root_domain) || ('root' == $format))
         {
         $username = str_replace('.'.$root_domain,'',$domain);
+        if(strpos($username,'.'))
+            $username = preg_replace('/\..+/','',$username);
         $domain = $root_domain;
         }
-
     if(($lookup == 'members') && !empty($username))
         $lookup = '';//username@ is members list
     elseif(!empty($username)  && !empty($lookup))
