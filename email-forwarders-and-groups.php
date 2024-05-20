@@ -596,51 +596,27 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
             }
 
-
-
-            if($from == 'clubleads@toastmasters.org')
-
-
+            if(strpos($from,'toastmasters.org') && strpos($qpost['post_title'],'prospective member'))
 
             {
 
-
-
                 $blog_id = $finda_id;
-
-
 
                 foreach($fcmatches[0] as $email) {
 
-
-
                     if(strpos($email,'toastmasters.org') || strpos($email,'@toastmost.org') || (strcasecmp($email, $forwarder) == 0))
-
-
 
                         continue;
 
-
-
                     $contact = $email;
-
-
 
                 }
 
-
-
                 wpt_email_handler_autoresponder ($contact, $from, $blog_id);
-
-
 
                 $output .= sprintf('<p>autoresponder %s for %s, contact %s</p>',$finda_id,$forwarder, $contact);
 
-
-
                 $sent = true;
-
-
 
             }
 
@@ -3066,17 +3042,25 @@ return $emails;
 function wpt_consolidated_forwarders($recipients, $blog_id) {
     $root_domain = wpt_get_site_domain(1);
     foreach($recipients as $forwarder => $target) {
+        if(empty($forwarder))
+            {
+                unset($recipients[$forwarder]);
+                continue;
+            }
         if(!strpos($forwarder,$root_domain)) {
             $parts = explode('@',$forwarder);
             $root_forwarder = wpt_format_email_forwarder($parts[0],$blog_id,'root');
+            $recipients['problem'] = $forwarder;
+            $recipients['root_forwarder'] = $root_forwarder;
             if(strpos($forwarder,'_whitelist'))
                 $recipients[$root_forwarder.'_whitelist'] = $target;
             elseif(strpos($forwarder,'_blacklist'))
-                $recipients[$root_forwarder.'_whitelist'] = $target;
+                $recipients[$root_forwarder.'_blacklist'] = $target;
             else
                 $recipients[$root_forwarder] = $target;
         }
     }
+    $recipients['root_domain'] = $root_domain;
     return $recipients;
 }
 
@@ -5723,10 +5707,10 @@ function rsvpemail_match_findaclub($to,$from,$breakdown,$emailobj) {
     preg_match('/[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-]+?\.[a-zA-Z_\-]{2,4}/',$emailobj->HtmlBody,$fcmatch);
 
     rsvpmaker_testlog('findaclub_matches',$fcmatch);
-
-    rsvpmaker_testlog('findaclub_contact',$fcmatch[0]);
-
-    
+    rsvpmaker_testlog('findaclub_contact',$fcmatch[0]); 
+    rsvpmaker_testlog('findaclub_email',$emailobj); 
+    rsvpmaker_testlog('findaclub_subject',$emailobj->Subject); 
+    rsvpmaker_testlog('findaclub_from',$from); 
 
 //$basedomain = str_replace('www.','',parse_url( get_site_url(), PHP_URL_HOST ));
 
@@ -5742,7 +5726,7 @@ function rsvpemail_match_findaclub($to,$from,$breakdown,$emailobj) {
 
     }
 
-    if(($from == 'clubleads@toastmasters.org')) {
+    if(strpos($from,'toastmasters.org') && strpos($emailobj->Subject,'prospective-member')) {
 
         rsvpmaker_testlog('clubleads-message-to',$fcmatch[0]);
 
@@ -5823,3 +5807,4 @@ function wpt_post_for_email($epost) {
     return $epost;
 
 }
+

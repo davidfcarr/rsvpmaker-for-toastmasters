@@ -10,9 +10,9 @@ Requires PHP: 5.6
 
 Requires at least: 5.0
 
-Tested up to: 6.4.3
+Tested up to: 6.5.3
 
-Stable tag: 6.1.4
+Stable tag: 6.1.6
 
 License: GPLv2
 
@@ -91,6 +91,10 @@ The toastmost.org service is supported by subscriptions from member clubs.
 
 
 == Changelog ==
+
+= 6.1.5 =
+
+* Show / hide for agenda view controls (Signup vs Edit vs Suggest etc.)
 
 = 6.1.3 =
 

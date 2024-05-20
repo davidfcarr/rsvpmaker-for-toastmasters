@@ -8,7 +8,7 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 6.1.4
+Version: 6.1.6
 */
 
 function rsvptoast_load_plugin_textdomain() {
@@ -1543,7 +1543,7 @@ function tm_agenda_content($post_id = 0) {
 		$content .= '<div class="blockcontent" >';
 		if('wp4toastmasters/role' == $block["blockName"]) {
 			$role = $attrs['role'];
-			$count = $attrs['count'];
+			$count = isset($attrs['count']) ? intval($attrs['count']) : 1;
 			$start = !empty($attrs['start']) ? intval($attrs['start']) : 1;
 			$totaltime = 0;
 			$time_allowed = (empty($attrs['time_allowed'])) ? 0 : $attrs['time_allowed'];
@@ -1574,7 +1574,7 @@ function tm_agenda_content($post_id = 0) {
 					$link = sprintf('Open - <a href="%s#oneclick">One-Click Signup</a>',$link);
 					$assignment['name'] = $link;
 				}
-				$content .= sprintf('<div><strong>%s %s</strong> %s</div>',$role,($number > 1) ? $number : '',$assignment['name']);
+				$content .= sprintf('<div><strong>%s %s</strong> %s</div>',$role,($count > 1) ? $number : '',$assignment['name']);
 				if(isset($_GET['contacts']) && is_numeric($assignment["ID"]) && ($assignment["ID"] > 0) && is_club_member())
 				{
 					$content .= wp4_format_contact(get_userdata($assignment["ID"]),false);
@@ -5213,7 +5213,7 @@ function awesome_event_content( $content ) {
 			else
 				$revert_default = get_option('toast_revert_default');
 			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
-				$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div><div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
+				$link .= '<div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
 				$parts = explode('<div id="rsvpsection">',$content);
 				if(!empty($parts[1]))
 					$content = '<div style="margin-top: 500px;" id="rsvpsection">'.$parts[1];
@@ -5258,7 +5258,7 @@ function awesome_event_content( $content ) {
 		$link .= '<input type="hidden" id="edit_roles_new" value="1" >';
 	if(wp4t_hour_past($post->ID) && current_user_can( 'edit_member_stats' )) 
 		$link .= sprintf('<h3>%s - <a href="%s">%s</a></h3>',__('Role data archived','rsvpmaker-for-toastmasters'),admin_url('admin.php?page=toastmasters_reconcile&post_id='.$post->ID),__('Edit','rsvpmaker-for-toastmasters'));
-	return $output . $link . $content;
+	return $output . $link . $content.'<div><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div>';
 
 }
 
@@ -14188,3 +14188,15 @@ function wp4t_server_block_render() {
 	register_block_type( 'wp4toastmasters/blog', array( 'render_callback' => 'wpt_blog_posts' ) );
 	register_block_type( 'wp4toastmasters/newestmembers', array( 'render_callback' => 'wpt_newest_members_block' ) );
 }
+
+add_filter( 'nocache_headers', function() {
+    global $post;
+    if(empty($post) || empty($post->post_content) || !strpos($post->post_content,'wp:wp4toastmasters'))
+        return;
+    
+    return array(
+        'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0, some-custom-thing',
+        'Pragma'        => 'no-cache',
+        'Expires'       => gmdate( 'D, d M Y H:i:s \G\M\T', time() )
+    );
+} );

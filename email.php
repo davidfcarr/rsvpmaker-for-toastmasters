@@ -595,8 +595,9 @@ $header .= '</head>
 		}
 		$mail['html']     = $header . $output . '</body></html>';
 		$mail['replyto'] = $mail['from']     = $current_user->user_email;
-		$mail['fromname'] = get_bloginfo( 'name' ) . ' / ' . $current_user->display_name;
+		$mail['fromname'] = (!empty($_POST['fromname'])) ? $current_user->display_name. ' via ' .get_bloginfo( 'name' ) : get_bloginfo( 'name' ) . ' / ' . $current_user->display_name;
 		$mail['subject']  = sanitize_text_field( stripslashes( $_POST['subject'] ) );
+		update_user_meta($current_user->ID,'agenda_fromname',intval($_POST['fromname']));
 
 if ( isset( $emails ) && is_array( $emails ) ) {
 			rsvpmaker_qemail ($mail, $emails);
@@ -616,6 +617,10 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 		else
 			$subject = $post->post_title;
 		$role_only = (isset($_REQUEST['role_only'])) ? '<input type="hidden" name="role_only" value="1" />' : '';
+		$from_preference = get_user_meta($current_user->ID,'agenda_fromname',true);
+		if($from_preference == '')
+			$from_preference = 1;
+
 		$mailform = '<script>
 	tinymce.init({
 		selector:"textarea",plugins: "link",
@@ -640,7 +645,8 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 	<h3>' . __( 'Add a Note (optional)', 'rsvpmaker-for-toastmasters' ) . '</h3>
 	<p>' . __( 'Your note will be emailed along with the details shown below.','rsvpmaker-for-toastmasters').'</p><p>'.__('You can also change the subject line. For example, when emailing the agenda you may want to emphasize the roles you need filled or special plans for a meeting (such as a contest).', 'rsvpmaker-for-toastmasters' ) . '</p>
 	<form method="post" action="' . $permalink . 'email_agenda=1">
-Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><br />
+	From: <input type="radio" name="fromname" value="1" '.(($from_preference) ? 'checked="checked"' : '') .' /> '.$current_user->display_name. ' via ' .get_bloginfo( 'name' ) .'<input type="radio" name="fromname" value="0" '.(($from_preference) ? '': 'checked="checked"') .' /> '. get_bloginfo( 'name' ) . ' / ' . $current_user->display_name .'<br />
+	Subject: <input type="text" name="subject" value="' . $subject . '" size="60"><br />
 <textarea name="note" rows="5" cols="80"></textarea><br />
 Send to <input type="radio" name="send" value="members" checked="checked" > ' . __( 'all members', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="members_without" > ' . __( 'members without a role', 'rsvpmaker-for-toastmasters' ) . ' <input type="radio" name="send" value="officers"  > ' . __( 'officers', 'rsvpmaker-for-toastmasters' ) . '  <input id="sendtest" type="radio" name="send" value="test" > ' . __( 'this address', 'rsvpmaker-for-toastmasters' ) . ': <input type="text" id+"testto" onkeypress="checkTest()" name="testto" /><br />
 <input type="submit" value="Send" />
