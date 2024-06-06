@@ -1521,7 +1521,7 @@ function tm_agenda_content($post_id = 0) {
 			$content .=  $blockindex.': '.htmlentities(var_export($block,true));
 			$content .=  '</pre>';
 		}
-			$attrs = (isset($block['attrs'])) ? $block['attrs'] : array();
+		$attrs = (isset($block['attrs'])) ? $block['attrs'] : array();
 		if(in_array($block["blockName"],['wp4toastmasters/signupnote','wp4toastmasters/help']) )
 			continue;
 		if(isset($attrs['time_allowed']) || ('wp4toastmasters/milestone' == $block["blockName"]))
@@ -1541,7 +1541,7 @@ function tm_agenda_content($post_id = 0) {
 		if(!$notime && (!isset($_REQUEST['role_only'])))
 			$content .= '<div class="timetoleft" style="width: max-content; min-width: 125px; font-size: 12px;">'.$time.'</div>';
 		$content .= '<div class="blockcontent" >';
-		if('wp4toastmasters/role' == $block["blockName"]) {
+		if('wp4toastmasters/role' == $block["blockName"] && !empty($attrs['role'])) {
 			$role = $attrs['role'];
 			$count = isset($attrs['count']) ? intval($attrs['count']) : 1;
 			$start = !empty($attrs['start']) ? intval($attrs['start']) : 1;
@@ -1557,7 +1557,7 @@ function tm_agenda_content($post_id = 0) {
 					}
 				}
 			}
-			else //normal output
+			elseif(!empty($block['assignments'])) //normal output
 			foreach($block['assignments'] as $roleindex => $assignment)
 			{
 				$number = $roleindex + $start;
@@ -1658,9 +1658,9 @@ function toastmasters_officer_single( $atts ) {
 	return $contact;
 }
 
-function toastmasters_officer_email_by_title( $title ) {
-	$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
-	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+function toastmasters_officer_email_by_title( $title, $site_id = 0 ) {
+	$wp4toastmasters_officer_ids    = ($site_id) ? get_blog_option( $site_id, 'wp4toastmasters_officer_ids' ) : get_option( 'wp4toastmasters_officer_ids' );
+	$wp4toastmasters_officer_titles = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_titles' ) : get_option( 'wp4toastmasters_officer_titles' );
 	$index                          = array_search( $title, $wp4toastmasters_officer_titles );
 	if ( $index === false ) {
 		return;
@@ -2324,6 +2324,7 @@ function unpack_user_archive_data( $raw ) {
 function wp4t_extended_list() {
 	echo '<h2>' . __( 'Former Members', 'rsvpmaker-for-toastmasters' ) . '</h2>';
 	echo '<p><em>' . __( 'This list includes inactive members and gives you the option of reactivating their accounts', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
+	echo '<p><a href="'.admin_url('users.php?page=wp4t_extended_list&sort=newest').'">Sort Newest to Oldest Records</a> | <a href="'.admin_url('users.php?page=wp4t_extended_list&sort=oldest').'">Sort Oldest to Newest Records</a></p>';
 
 	global $wpdb;
 	$public_context = false;
@@ -2377,7 +2378,13 @@ function wp4t_extended_list() {
 	
 if(isset($_GET['make_user_member']))
 	echo '<p><strong>Confirm by clicking the Apply button</strong></p>';
-$results = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ORDER BY sort' );
+if(isset($_GET['sort'])) {
+	$sort = 'updated ';
+	$sort .= ($_GET['sort'] == 'newest') ? 'DESC' : 'ASC';
+}
+else
+	$sort = 'sort';
+$results = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ORDER BY '.$sort );
 printf('<form method="post" action="%s">
 <div class="alignleft actions bulkactions">
 			<label for="bulk-action-selector-top" class="screen-reader-text">Select bulk action</label><select name="former_action[]" id="bulk-action-selector-top">
