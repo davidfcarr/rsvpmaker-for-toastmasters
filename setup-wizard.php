@@ -495,9 +495,6 @@ p {
 
 
 			if ( ! empty( $_POST['theme'] ) ) {
-
-
-
 				$agenda_content .= '<!-- wp:wp4toastmasters/agendaedit {"editable":"' . sanitize_text_field(stripslashes( $_POST['theme_label'] ) ) . '","uid":"Theme"} /-->' . "\n\n";
 
 			}
@@ -505,31 +502,14 @@ p {
 
 
 			if ( ! empty( $_POST['absences'] ) ) {
-
-
-
 				$agenda_content .= '<!-- wp:wp4toastmasters/absences /-->' . "\n\n";
-
 			}
 
 			if(!empty($_POST['agenda_officers']))
-
 				wp4toastmasters_agenda_layout_check(true);
-
-	
-
 			$rsvp_options['rsvp_on'] = $rsvp = (int) $_POST['invite'];
-
-
-
 			$sync = (int) $_POST['sync'];
-
-
-
 			$rsvp_options['add_timezone'] = $rsvp_options['convert_timezone'] = $timezone = (int) $_POST['timezone'];
-
-
-
 			$update['post_content'] = $agenda_content;
 
 
@@ -596,15 +576,9 @@ p {
 
 			$toupdate = future_rsvpmakers_by_template( $template_id );
 
-
-
 			if ( empty( $toupdate ) ) {
 
-
-
-				auto_renew_project( $template_id );
-
-
+				auto_renew_project( $template_id, false );
 
 			} else {
 
@@ -690,39 +664,7 @@ p {
 
 					if ( ! strpos( $post->post_content, 'rsvpmaker/loop-blocks' ) ) {
 
-$invite = '<!-- wp:heading -->
-
-<h2 id="visit">Visit as a Guest</h2>
-
-<!-- /wp:heading -->
-
-<!-- wp:query {"queryId":0,"query":{"perPage":"1","pages":0,"offset":0,"postType":"rsvpmaker","order":"asc","author":"","search":"","exclude":[],"sticky":"","inherit":false,"eventOrder":"future","excludeType":0},"namespace":"rsvpmaker/rsvpmaker-loop"} -->
-<div class="wp-block-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":1}} -->
-<!-- wp:post-title {"level":3,"isLink":true} /-->
-
-<!-- wp:post-featured-image /-->
-
-<!-- wp:rsvpmaker/loop-blocks -->
-<div class="wp-block-rsvpmaker-loop-blocks"><!-- wp:rsvpmaker/rsvpdateblock /-->
-
-<!-- wp:rsvpmaker/button -->
-<!-- wp:buttons -->
-<div class="wp-block-buttons"><!-- wp:button {"style":{"color":{"background":"#f71b1b"},"className":"rsvplink","border":{"radius":"14px"}}} -->
-<div class="wp-block-button"><a class="wp-block-button__link has-background wp-element-button" href="#rsvpnow" style="border-radius:14px;background-color:#f71b1b">RSVP Now!</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons -->
-<!-- /wp:rsvpmaker/button --></div>
-<!-- /wp:rsvpmaker/loop-blocks -->
-<!-- /wp:post-template --></div>
-<!-- /wp:query -->
-
-<!-- wp:query {"queryId":0,"query":{"perPage":"5","pages":0,"offset":"1","postType":"rsvpmaker","order":"asc","author":"","search":"","exclude":[],"sticky":"","inherit":false,"eventOrder":"future","excludeType":0},"namespace":"rsvpmaker/rsvpmaker-loop"} -->
-<div class="wp-block-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":1}} -->
-<!-- wp:post-featured-image {"isLink":true,"width":"300px"} /-->
-
-<!-- wp:rsvpmaker/title-date {"style":{"spacing":{"padding":{"top":"0","bottom":"0","left":"0","right":"0"},"margin":{"top":"0","bottom":"0","left":"0","right":"0"}},"typography":{"lineHeight":"1"}}} /-->
-<!-- /wp:post-template --></div>
-<!-- /wp:query -->';
+					$invite = get_tm_guest_registration();
 
 						if ( strpos( $post->post_content, '<!-- invite widget -->' ) ) {
 
@@ -2014,8 +1956,7 @@ function wpt_wizard_check_member( $user ) {
 
 function wpt_wizard_prompt() {
 
-	if(wp4t_is_district())
-
+	if(wp4t_is_district() || (isset($_GET['page']) && 'fth_importer_docs' == $_GET['page']) )
 		return;
 
 

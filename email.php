@@ -258,12 +258,10 @@ function rsvptoast_email( $postdata, $rsvp_html, $rsvp_text ) {
 
 	if ( ! empty( $postdata['ex'] ) ) {
 		// former members
-		$sql  = 'SELECT email FROM `' . $wpdb->prefix . 'users_archive` LEFT JOIN `' . $wpdb->prefix . 'users` ON `' . $wpdb->prefix . 'users_archive`.user_id = ' . $wpdb->prefix . 'users.ID WHERE `' . $wpdb->prefix . 'users`.ID IS NULL AND user_id > 0 ORDER BY updated DESC'; // limit?
-		$exes = $wpdb->get_results( $sql );
+		$exes = wpt_get_former_member_emails();
 		if ( ! empty( $exes ) ) {
 			printf( '<p>Sending to %s former members</p>', sizeof( $exes ) );
 			foreach ( $exes as $ex ) {
-				// printf('<div>Ex member %s</div>',$ex->email);
 				if ( is_array( $unsub ) && in_array( strtolower( $ex->email ), $unsub ) ) {
 					$unsubscribed[] = $ex->email;
 					continue;
@@ -277,7 +275,8 @@ function rsvptoast_email( $postdata, $rsvp_html, $rsvp_text ) {
 				$result           = rsvpmailer( $mail );
 			}
 		} // end db lookup
-	}}
+	}
+}
 
 add_action( 'rsvpmaker_email_send_ui_submit', 'rsvptoast_email', 10, 3 );
 
@@ -871,7 +870,7 @@ function wpt_get_norole_email($post_id) {
 	foreach ( $members as $member ) {
 		if(in_array( $member->ID, $absences ))
 			continue;
-		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . '  AND meta_value=' . $member->ID . " AND LIKE '_role%' ";
+		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $post_id . '  AND meta_value=' . $member->ID . " AND meta_key LIKE '_role%' ";
 		$role_results                    = $wpdb->get_results( $sql );
 		if ( $role_results ) {
 			continue;

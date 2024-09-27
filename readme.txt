@@ -4830,7 +4830,7 @@ Tested with WordPress 4.1
 
 
 
-Role data and speech details recorded on a Free Toast Host can now be imported so that it will be reflected in reports run on the website.
+Role data and speech details recorded on a FreeToastHost can now be imported so that it will be reflected in reports run on the website.
 
 
 

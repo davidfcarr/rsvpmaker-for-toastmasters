@@ -171,13 +171,13 @@ label {
 
 		$vars['tracking']    = 'tmapplication' . $post_id;
 
-		if ( ('Stripe' == $chosen_gateway ) || strpos($chosen_gateway,'Stripe') ) {
+		if ( ('Stripe' == $chosen_gateway ) || strpos($chosen_gateway,'Stripe') !== false ) {
 
 			$payprompt           .= rsvpmaker_stripe_form( $vars );
 
 		}
 
-		if ( ('PayPal' == $chosen_gateway ) || strpos($chosen_gateway,'PayPal') ) {
+		if ( ('PayPal' == $chosen_gateway ) || strpos($chosen_gateway,'PayPal') !== false ) {
 
 			if(!empty($payprompt))
 
@@ -1065,7 +1065,7 @@ function check_application_payment( $app_id ) {
 
 	$money = $wpdb->prefix.'rsvpmaker_money';
 
-	$row = $wpdb->get_row("select * from $money WHERE description='Toastmasters Application $app_id' ");
+	$row = $wpdb->get_row("select * from $money WHERE description LIKE 'Toastmasters Application $app_id%' ");
 
 	if($row)
 
@@ -1081,8 +1081,10 @@ function check_application_payment( $app_id ) {
 
 		}
 
-		return sprintf('<span style="color: green; font-weight: bold;">Paid: %s Fee: %s (%s)</span>',$row->amount,$row->fee,$row->status);
-
+		if($row->fee)
+			return sprintf('<span style="color: green; font-weight: bold;">Paid: %s Fee: %s (%s)</span>',$row->amount,$row->fee,$row->status);
+		else
+			return sprintf('<span style="color: green; font-weight: bold;">Paid: %s (%s)</span>',$row->amount,$row->status);
 	}
 
 	$key      = 'tmapplication' . $app_id;

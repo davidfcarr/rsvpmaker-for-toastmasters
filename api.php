@@ -1436,7 +1436,22 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 		$upid = wp_update_post($updated);
 		$agendadata = wpt_get_agendadata($post_id);
 		$agendadata['status'] = "update agenda ".$upid;
-
+		if(!empty($data->copyToTemplate)) {
+			$updated['ID'] = $data->has_template;
+			$updated['post_content'] = $output;
+			wp_update_post($updated);
+			$related = get_events_by_template($data->has_template);
+			$agendadata['status'] .= " + template update";
+			$related = get_events_by_template($data->has_template);
+			foreach($related as $post_to_update) {
+				if($post_id == $post_to_update->ID)
+					continue;
+				$updated['ID'] = $post_to_update->ID;
+				$updated['post_content'] = $output;
+				wp_update_post($updated);	
+				$agendadata['status'] .= " + ".$post_to_update->ID;
+			}
+		}
 	do_action('rsvpmaker_log_array',
 	array('meta_key' => 'update_agenda',
 	'meta_value' => $agendadata,

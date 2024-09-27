@@ -28,6 +28,7 @@ require 'tm-online-application.php';
 require 'api.php';
 require 'enqueue.php';
 require 'setup-wizard.php';
+require 'fth-importer.php';
 require 'email.php';
 require 'history.php';
 require 'todo-list.php';
@@ -244,6 +245,23 @@ function speech_intro_data( $user_id, $post_id, $field ) {
 	return $message;
 }
 
+function toastmost_other_sites() {
+	global $current_user;
+	if(is_multisite()) {
+		$blog_id = get_current_blog_id();
+		$blogs    = get_blogs_of_user( $current_user->ID );
+		$bloglist = '';
+		if ( ! empty( $blogs ) ) {
+			foreach ( $blogs as $blog ) {
+				if($blog_id != $blog->blog_id)
+				$bloglist .= sprintf( '<li><a href="%s">%s</a></li>', $blog->siteurl, $blog->blogname );
+			}
+		}
+	if($bloglist)
+	echo "<p>In addition to this site, you are a member of:</p><ul>$bloglist</ul>";
+	}	
+}
+
 function awesome_dashboard_widget_function() {
 	global $rsvp_options;
 
@@ -267,8 +285,8 @@ function awesome_dashboard_widget_function() {
 	?>
 <p><?php echo sprintf( __( 'You are viewing the private members-only area of the website. For a basic orientation, see the <a href="%s">welcome page</a>.', 'rsvpmaker-for-toastmasters' ), admin_url( 'index.php?page=toastmasters_welcome' ) ); ?>
 <br /></p>
-
 	<?php
+	toastmost_other_sites();
 	//awesome_dashboard_widget_function();
 
 echo '<p>'.club_member_mailto().'</p>';
@@ -2326,6 +2344,12 @@ function wp4t_extended_list() {
 	echo '<p><em>' . __( 'This list includes inactive members and gives you the option of reactivating their accounts', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
 	echo '<p><a href="'.admin_url('users.php?page=wp4t_extended_list&sort=newest').'">Sort Newest to Oldest Records</a> | <a href="'.admin_url('users.php?page=wp4t_extended_list&sort=oldest').'">Sort Oldest to Newest Records</a></p>';
 
+	$member_emails = [];
+	$members = get_club_members();
+	foreach($members as $m) {
+		$member_emails[] = $m->user_email;
+	}
+
 	global $wpdb;
 	$public_context = false;
 	$archive_table = $wpdb->prefix . 'users_archive';
@@ -2398,6 +2422,8 @@ printf('<table class="wp-list-table widefat fixed members" cellspacing="0"><thea
 foreach($results as $row) {
 	if(is_user_member_of_blog($row->user_id) )
 		continue;
+	if(in_array($row->email,$row->email))
+		continue;	
 	$user = unpack_user_archive_data( $row->data );
 	$name = (empty($user["display_name"])) ? $user["first_name"].' '.$user["last_name"] : $user["display_name"];
 	$phones = array();
@@ -5067,10 +5093,6 @@ foreach($data as $item){
 }
 
 add_post_meta($post->ID,'oneclick_debug',"Toolate $toolate already $already role $role");
-if(!$toolate && !$already && 'Speaker' != $role) {
-	add_post_meta($post->ID,'oneclick_debug',"Oneclick without further checks allowed - Toolate $toolate already $already role $role");
-	return wpt_oneclick_signup_post($user_id, $field);//don't make them click again unnecessarily
-}
 
 if($toolate) {
 	$output .= "<p>That role is no longer available, but let's sign you up for one of these:</p>";//.$debug;
@@ -6398,14 +6420,17 @@ function get_user_by_tmid( $id ) {
 	}
 }
 
-function make_blog_member( $user_id ) {
+function make_blog_member( $user_id, $blog_id = 0, $role = 'subscriber' ) {
 	if ( ! is_multisite() ) {
 		return;
 	}
-	$blog_id = get_current_blog_id();
+	if($blog_id)
+		switch_to_blog($blog_id);
+	else
+		$blog_id = get_current_blog_id();
 
 	if ( ! is_user_member_of_blog( $user_id, $blog_id ) ) {
-		add_user_to_blog( $blog_id, $user_id, 'subscriber' );
+		add_user_to_blog( $blog_id, $user_id, $role );
 		$w = get_option( 'wp4toastmasters_welcome_message' );
 		if ( ! empty( $w ) ) {
 			$p = get_post( $w );
@@ -8866,9 +8891,9 @@ function toastmasters_datebox_message() {
 }
 
 
-function wp4toast_template( $user_id = 1 ) {
+function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
-	global $wpdb;
+	global $wpdb, $rsvp_options;
 	$sql = "SELECT ID FROM `$wpdb->posts` WHERE (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish' ORDER BY `ID` DESC ";
 	if ( $wpdb->get_var( $sql ) ) {
 		return;
@@ -8956,6 +8981,12 @@ function wp4toast_template( $user_id = 1 ) {
 	update_post_meta( $templateID, '_tm_sidebar', '<strong>Club Mission:</strong> We provide a supportive and positive learning experience in which members are empowered to develop communication and leadership skills, resulting in greater self-confidence and personal growth.' );
 	update_post_meta( $templateID, '_sidebar_officers', 1 );
 	update_option( 'default_toastmasters_template', $templateID );
+	if($autorenew) {
+		update_post_meta($templateID,'_rsvp_on',1);
+		auto_renew_project($templateID,false);
+		$rsvp_options['rsvp_on'] = 1;
+		update_option('RSVPMAKER_Options',$rsvp_options);
+	}
 	wp4t_contest_templates ();
 }
 
@@ -10210,6 +10241,8 @@ function rsvptoast_admin_notice() {
 	if ( isset( $_GET['post_type'] ) && ( $_GET['post_type'] == 'rsvpmaker' ) && ! isset( $_GET['page'] ) ) {
 		return; // don't clutter post listing page with admin notices
 	}
+	if(isset($_GET['page']) && in_array($_GET['page'],array('fth_importer_docs','wp4t_setup_wizard')))
+		return; 
 	if(wp4t_is_district())
 		return;
 	global $wpdb;
@@ -10666,6 +10699,19 @@ function rsvptoast_pages( $user_id ) {
 		$calendar = wp_insert_post( $post );
 	}
 
+	$post = array(
+		'post_content' => '<!-- wp:rsvpmaker/contact /-->',
+		'post_name'    => 'contact-us',
+		'post_title'   => 'Contact Us',
+		'post_status'  => 'publish',
+		'post_type'    => 'page',
+		'post_author'  => $user_id,
+		'ping_status'  => 'closed',
+	);
+	if ( ! in_array( 'Contact Us', $titles ) ) {
+		$contact = wp_insert_post( $post );
+	}
+
 	$name    = 'Primary Menu';
 	$menu_id = wp_create_nav_menu( $name );
 	$menu    = get_term_by( 'name', $name, 'nav_menu' );
@@ -10724,6 +10770,18 @@ function rsvptoast_pages( $user_id ) {
 			'menu-item-object-id' => $members,
 			'menu-item-title'     => __( 'Members' ),
 			'menu-item-classes'   => 'members',
+			'menu-item-object'    => 'page',
+			'menu-item-type'      => 'post_type',
+			'menu-item-status'    => 'publish',
+		)
+	);
+	wp_update_nav_menu_item(
+		$menu->term_id,
+		0,
+		array(
+			'menu-item-object-id' => $contact,
+			'menu-item-title'     => __( 'Contact Us' ),
+			'menu-item-classes'   => 'contact-us',
 			'menu-item-object'    => 'page',
 			'menu-item-type'      => 'post_type',
 			'menu-item-status'    => 'publish',
@@ -14131,7 +14189,7 @@ else
 			printf('<p><textarea class="signuplink" rows="3" cols="80">Please take a role for our next meeting. Personalized link for %s, no password required with this link %s</textarea></p>',$name,str_replace('#clipboard','&member='.$member_id.'#clipboard',$action));
 	}
 	else {
-		printf('<p>If you have a password, please <a href="%s">login now</a> to unlock the clipboard. Other members you share the coded link with will then be able to sign up for roles without the need to log in.</p>',login_url('?clipboard=1'));
+		printf('<p>If you have a password, please <a href="%s">login now</a> to unlock the clipboard. Other members you share the coded link with will then be able to sign up for roles without the need to log in.</p>',wp_login_url('?clipboard=1'));
 	}
 
 	echo "<script type='text/javascript' src='" . admin_url( 'load-scripts.php?c=1&amp;load%5B%5D=jquery-core,jquery-migrate,utils&amp;ver=4.9.8' ) . "'></script>

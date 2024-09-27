@@ -4042,7 +4042,7 @@ msgstr ""
 
 #: tm-reports.php:39
 #: tm-reports.php:2710
-msgid "Import Free Toast Host Data"
+msgid "Import FreeToastHost Data"
 msgstr ""
 
 #: tm-reports.php:40
@@ -4615,7 +4615,7 @@ msgid "Historical Data"
 msgstr ""
 
 #: tm-reports.php:2888
-msgid "used to track events imported from Free Toast Host. Do not delete."
+msgid "used to track events imported from FreeToastHost. Do not delete."
 msgstr ""
 
 #: tm-reports.php:2934

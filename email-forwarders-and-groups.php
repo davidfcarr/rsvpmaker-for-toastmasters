@@ -596,8 +596,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
             }
 
-            if(strpos($from,'toastmasters.org') && strpos($qpost['post_title'],'prospective member'))
-
+            if(strpos($qpost['post_title'],'prospective member'))
             {
 
                 $blog_id = $finda_id;
@@ -612,7 +611,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
 
                 }
 
-                wpt_email_handler_autoresponder ($contact, $from, $blog_id);
+                wpt_email_handler_autoresponder ($contact, $from, $blog_id,'line 616');
 
                 $output .= sprintf('<p>autoresponder %s for %s, contact %s</p>',$finda_id,$forwarder, $contact);
 
@@ -1382,146 +1381,42 @@ function wpt_email_handler_bcc ($qpost, $recipients, $from, $fromname = '', $blo
 
 
 
-function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1) {
-
-
-
+function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1,$function = '') {
     global $wpdb, $autoreplyto;
-
-
-
     if(empty($email))
-
-
-
         return;
-
-
 
     if(!empty($autoreplyto) && is_array($autoreplyto) && in_array($email,$autoreplyto))
-
-
-
         return; // don't do twice
 
-
-
     $ffpage = ($blog_id == 1) ? get_option('findafriend_page') : get_blog_option($blog_id,'findafriend_page');
-
-
-
     if($ffpage)
-
-
-
         $messagepost = ($blog_id == 1) ? get_post($ffpage) : get_blog_post($blog_id, $ffpage);
-
-
-
-    
-
-
-
     if(empty($messagepost))
-
-
-
         return;
-
-
-
     $mail['subject'] = $messagepost->post_title;
-
-
-
     $mail['html'] = $messagepost->post_content;
-
-
+    if($function)
+        $mail['html'] .= '<p>Function '.$function.'</p>';
 
     $mail['from'] = ($blog_id == 1) ? get_option('findafriend_email') : get_blog_option($blog_id,'findafriend_email');
 
-
-
-    //if(rsvpmaker_cronmail_check_duplicate($email.$mail['from'].$mail['subject']))//added subject June 2021
-
-
-
-        //return true;//already sent
-
-
-
-    if($from == 'clubleads@toastmasters.org') {
-
-
-
+    if(strpos($from,'toastmasters.org') || strpos($from,'carrcommunications.com')) {
         //send for real
-
-
-
         $mail['to'] = $email;
-
-
-
         rsvpmailer($mail);
-
-
-
-        //rsvpmaker_debug_log($mail,'autoresponder email');
-
-
-
    }
-
-
 
     $autoreplyto[] = $email;
 
-
-
-    //else {
-
-
-
-    //for testing
-
-
-
     $mail2 = $mail;
-
-
-
     $mail2['to'] = (is_multisite()) ? get_blog_option($blog_id,'admin_email') : get_option('admin_email');
-
-
-
     $mail2['subject'] = "autoreply sent to $email: ".$mail['subject'];
-
-
-
     $mail2['html'] .= "<p>Email: $email</p>";
-
-
-
     rsvpmailer($mail2);
 
-
-
-    //}
-
-
-
-    //$wpdb->query("delete from $wpdb->posts WHERE post_type='rsvpemail' AND post_title LIKE '%sNew prospective member for your club' ");
-
-
-
     add_post_meta($messagepost->ID,'club_leads',$email.' '.date('r'));
-
-
-
     return $mail;
-
-
-
 }
 
 
@@ -3125,7 +3020,6 @@ function wpt_email_handler_forwarders() {
         die('security error');
 
     $wpt_email_handler_custom_forwarders = get_option('custom_forwarders');
-
 
     $fix = false;
     if(empty($wpt_email_handler_custom_forwarders))
@@ -5370,7 +5264,7 @@ function wpt_handle_autoresponder($slug_and_id,$forwarder,$emailobj) {
 
 
 
-    if($findacontact && ($from == 'clubleads@toastmasters.org'))
+    if($findacontact)// && ($from == 'clubleads@toastmasters.org'))
 
 
 
@@ -5386,7 +5280,7 @@ function wpt_handle_autoresponder($slug_and_id,$forwarder,$emailobj) {
 
 
 
-        $output .= sprintf('<p>autoresponder %s for %s, contact %s</p>',$finda_id,$forwarder, $contact);
+        $output .= sprintf('<p>autoresponder %s for %s, contact %s</p>',$finda_id,$forwarder, $contact,'line 5373');
 
 
 
@@ -5704,15 +5598,14 @@ function rsvpemail_match_findaclub($to,$from,$breakdown,$emailobj) {
 
     rsvpmaker_testlog('findaclub_breakdown',$breakdown);
 
-    preg_match('/[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-]+?\.[a-zA-Z_\-]{2,4}/',$emailobj->HtmlBody,$fcmatch);
-
+    //preg_match('/[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-]+?\.[a-zA-Z_\-]{2,20}/',$emailobj->HtmlBody,$fcmatch);
+    //match non-traditional email, patterns like .co.uk
+    preg_match('/[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+/',$emailobj->HtmlBody,$fcmatch);
     rsvpmaker_testlog('findaclub_matches',$fcmatch);
     rsvpmaker_testlog('findaclub_contact',$fcmatch[0]); 
     rsvpmaker_testlog('findaclub_email',$emailobj); 
     rsvpmaker_testlog('findaclub_subject',$emailobj->Subject); 
     rsvpmaker_testlog('findaclub_from',$from); 
-
-//$basedomain = str_replace('www.','',parse_url( get_site_url(), PHP_URL_HOST ));
 
     $ffemail = (is_multisite()) ? get_blog_option($breakdown['blog_id'],'findafriend_email') : get_option('findafriend_email');
 
@@ -5726,18 +5619,15 @@ function rsvpemail_match_findaclub($to,$from,$breakdown,$emailobj) {
 
     }
 
-    if(strpos($from,'toastmasters.org') && strpos($emailobj->Subject,'prospective-member')) {
+    //if(strpos($from,'toastmasters.org') && strpos($emailobj->Subject,'prospective')) {
+    if(strpos($emailobj->Subject,'prospective member')) {
 
         rsvpmaker_testlog('clubleads-message-to',$fcmatch[0]);
 
         if(!empty($fcmatch[0])) {
-
             rsvpmaker_testlog('clubleads-message-triggered',$fcmatch[0]);
-
-            //mail('david@carrcommunications.com','findaclub for '.$contact,var_export($breakdown,true));
-
-            wpt_email_handler_autoresponder ($fcmatch[0], 'clubleads@toastmasters.org', $breakdown['blog_id']);
-
+            //active version as of June 2024
+            wpt_email_handler_autoresponder ($fcmatch[0], $from, $breakdown['blog_id']);
         }
 
     }

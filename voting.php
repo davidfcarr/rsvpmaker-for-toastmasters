@@ -294,7 +294,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
 
             update_post_meta($post->ID,'votelabel_'.$openvotes,$label);
 
-            if(!in_array($open,$openvotes)) // don't add duplicates
+            if(!in_array($openvotes,$open)) // don't add duplicates
 
                 add_post_meta($post->ID,'openvotes',$openvotes);
 

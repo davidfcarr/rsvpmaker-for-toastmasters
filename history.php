@@ -81,7 +81,7 @@ if($ver < $version)
         `project` varchar(255) NOT NULL,
 
         `title` varchar(255) NOT NULL,
-
+        `basecamp_record` varchar(255) NOT NULL,
         `intro` text NULL,
 
         PRIMARY KEY (`speech_id`),
@@ -92,22 +92,15 @@ if($ver < $version)
 
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
 
-      //CONSTRAINT `".$speech_history_table."_ibfk_1` FOREIGN KEY (`history_id`) REFERENCES `$history_table` (`id`) ON DELETE CASCADE
-
       dbDelta($sql);
-
-
-
 }
-
-
 
 } // end build tables
 
 
 
 function wp4toastmasters_history() {
-
+    wpt_history_check_for_missing_speeches();
     $nonce = wp_create_nonce( 'tm_export' );
 
 	$timelord = rsvpmaker_nonce('query');
@@ -905,6 +898,7 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
 	    $domain = sanitize_text_field($_SERVER['SERVER_NAME']); 
 
     $role = str_replace( 'Contest_Speaker', 'Speaker', $role );
+    $role = str_replace('_role','',$role);
 
     $role = trim( preg_replace( '/[^\sa-zA-Z]/', ' ', $role ) );
 
@@ -1640,10 +1634,6 @@ function wpt_remove_history_by_id_log($was, $role, $post_id) {
 
 }
 
-
-
-//changed from one member to another
-
 function wpt_update_history_by_id_log($user_id, $role, $post_id, $was) {
 
     $name = get_member_name($user_id);
@@ -1656,3 +1646,24 @@ function wpt_update_history_by_id_log($user_id, $role, $post_id, $was) {
 
 }
 
+function wpt_history_check_for_missing_speeches() {
+global $wpdb;
+$wpdb->show_errors();
+if('2024' != date('Y')) //temporary fix
+    return;
+    $history_table = $wpdb->base_prefix.'tm_history';
+    $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+    $parts = explode('/',get_option('siteurl'));
+    $domain = $parts[2];
+    $sql = "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id WHERE domain='$domain' and role='Speaker' AND project IS NULL ORDER BY timestamp DESC";
+    $results = $wpdb->get_results($sql);
+    foreach($results as $row) {
+        $meta = get_post_meta($row->post_id);
+        $title = get_post_meta($row->post_id,'_title_role_Speaker_'.$row->rolecount,true);
+        $project_key = get_post_meta($row->post_id,'_project_role_Speaker_'.$row->rolecount,true);
+        $project = ($project_key) ? get_project_text($project_key) : '';
+        $manual = get_post_meta($row->post_id,'_manual_role_Speaker_'.$row->rolecount,true);
+        $intro = get_post_meta($row->post_id,'_intro_role_Speaker_'.$row->rolecount,true);
+        $sql = $wpdb->prepare("INSERT INTO $speech_history_table SET manual=%s, project_key=%s, project=%s, title=%s, intro=%s, history_id=%d",$manual,$project_key,$project,$title,$intro,$row->id);
+    }
+}
