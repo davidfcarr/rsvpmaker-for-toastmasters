@@ -1005,12 +1005,13 @@ $competent_leader = array(
 
 );
 
+
+
 add_action( 'update_user_role_archive_all', 'update_user_role_archive_all' );
 
 function update_user_role_archive_all() {
 
-	$limit = isset($_GET['limit']) ? intval($_GET['limit']) : 5;
-	$events = get_past_events('',$limit);
+	$events = get_past_events('',5);
 
 	foreach ( $events as $event ) {
 
@@ -1019,6 +1020,7 @@ function update_user_role_archive_all() {
 		update_post_meta($event->ID,'role_data_archived',true);
 
 	}
+
 }
 
 
@@ -1322,8 +1324,6 @@ function get_latest_speeches( $user_id, $myroles = array() ) {
 function toastmasters_reconcile() {
 
 	rsvpmaker_admin_heading(__( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), 'toastmasters_reconcile');
-
-	wpt_history_check_for_missing_speeches();
 
 	global $wpdb, $post, $rsvp_options;
 
@@ -5743,7 +5743,7 @@ function import_fth() {
 
 
 
-	$hook = tm_admin_page_top( __( 'Import FreeToastHost Data', 'rsvpmaker-for-toastmasters' ) );
+	$hook = tm_admin_page_top( __( 'Import Free Toast Host Data', 'rsvpmaker-for-toastmasters' ) );
 
 
 
@@ -6099,7 +6099,7 @@ function import_fth() {
 
 				'post_type'    => 'historical-toastmsters-data',
 
-				'post_content' => __( 'used to track events imported from FreeToastHost. Do not delete.', 'rsvpmaker-for-toastmasters' ),
+				'post_content' => __( 'used to track events imported from Free Toast Host. Do not delete.', 'rsvpmaker-for-toastmasters' ),
 
 				'post_status'  => 'publish',
 
@@ -6213,13 +6213,13 @@ function import_fth() {
 
 <h1>Directions</h1>
 
-<p>This tool allows you to import some of the data collected through your use of FreeToastHost so that it will be reflected in the member performance reports for progress toward CC, CL, etc.</p>
+<p>This tool allows you to import some of the data collected through your use of Free Toast Host so that it will be reflected in the member performance reports for progress toward CC, CL, etc.</p>
 
-<p>When you are viewing an agenda on FreeToastHost, the reports button is displayed at the top of the screen. Click it.</p>
+<p>When you are viewing an agenda on Free Toast Host, the reports button is displayed at the top of the screen. Click it.</p>
 
 <p><img src="<?php echo plugins_url( '/rsvpmaker-for-toastmasters/fth_agenda_role_rpt.png' ); ?>" width="600" height="80" alt="FTH agenda button" /></p>
 
-<p>FreeToastHost displays a dialog box prompting you to choose the report you want to access. We are going to use the Member Speech Report and the Member Role Report (the html version, not the xls download). Under Select Start Date, make sure you select &quot;All.&quot; </p>
+<p>Free Toast Host displays a dialog box prompting you to choose the report you want to access. We are going to use the Member Speech Report and the Member Role Report (the html version, not the xls download). Under Select Start Date, make sure you select &quot;All.&quot; </p>
 
 <p><img src="<?php echo plugins_url( '/rsvpmaker-for-toastmasters/fth-dialog.png' ); ?>" width="600" height="392" alt="FTH Dialog box" /></p>
 
@@ -6239,7 +6239,7 @@ function import_fth() {
 
 <p>Some data may not match up perfectly. You may have former members on the historical report for whom there is no matching record in WordPress. You may have roles that don't match up with the standard roles. If you leave those items with no selection, they simply will not be recorded.</p>
 
-<p>If members speech projects were not recorded in FreeToastHost, you can add that information if you have it. Otherwise, leave it blank. The member will still be recorded as having given a speech, even though you haven't specified which one.</p>
+<p>If members speech projects were not recorded in Free Toast Host, you can add that information if you have it. Otherwise, leave it blank. The member will still be recorded as having given a speech, even though you haven't specified which one.</p>
 
 <p>Click <strong>Import Records (step 2)</strong> and the data will be recorded.</p>
 
@@ -7055,13 +7055,19 @@ function tm_welcome_screen_pages() {
 
 }
 
+
+
+
+
 function toastmasters_welcome() {
 
 	$hook = tm_admin_page_top( __( 'Welcome to WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ) );
 
-	global $wpdb, $current_user;
+	global $wpdb;
 
 	?>
+
+
 
 	<h2 class="rsvpmaker-nav-tab-wrapper nav-tab-wrapper">
 
@@ -7078,10 +7084,6 @@ function toastmasters_welcome() {
 	<div id="sections" class="toastmasters rsvpmaker" >
 
 	<section  id="main">
-
-<?php
-toastmost_other_sites();
-?>
 
 	<p>This website takes advantage of software from the <a href="http://wp4toastmasters.com">WordPress for Toastmasters</a> project, which adds Toastmasters-specific features such as meeting and membership management to WordPress, a popular web publishing and online marketing platform. Here is a quick orientation.</p>
 
@@ -7905,7 +7907,7 @@ function toastmasters_import_export() {
 
 ?>
 
-<h2>Importing Data from FreeToastHost or easySpeak</h2>
+<h2>Importing Data from Free Toast Host or easySpeak</h2>
 
 <p>If you want to importing data from one of the other club website platforms, contact <a href="mailto:david@wp4toastmasters.com">david@wp4toastmasters.com</a> to volunteer for a software beta test program.</p>
 
@@ -8117,7 +8119,7 @@ return;//disabled for now
 
 	  <a class="nav-tab nav-tab-active" href="#main">WP4Toastmasters Data</a>
 
-	  <a class="nav-tab" href="#fth">Import from FreeToastHost</a>
+	  <a class="nav-tab" href="#fth">Import from Free Toast Host</a>
 
 	</h2>
 
@@ -8585,6 +8587,12 @@ function increment_stat_button( $user_id, $key ) {
 
 }
 
+
+
+
+
+
+
 function update_user_role_archive( $post_id, $timestamp = '' ) {
 
 	global $wpdb;
@@ -8631,25 +8639,20 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 
 		}
 
-		if(isset($_GET['skip_check'])) {
+		if ( ! empty( $archive_code ) && ( $archive_code == $aggregated ) ) {
+
+			//echo '<p>Nothing new</p>';
+
+			return; // nothing new here
 
 		}
-		else {
-			if ( ! empty( $archive_code ) && ( $archive_code == $aggregated ) ) {
 
-				//echo '<p>Nothing new</p>';
-	
-				return; // nothing new here
-	
-			}
-	
-			if ( empty( $aggregated ) ) {
-	
-				//echo '<p>Nothing to record</p>';
-	
-				return; // nothing to record
-	
-			}	
+		if ( empty( $aggregated ) ) {
+
+			//echo '<p>Nothing to record</p>';
+
+			return; // nothing to record
+
 		}
 
 		if(!isset($_GET['tm_ajax']))
@@ -8681,7 +8684,7 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 				$title         = get_post_meta( $post_id, '_title' . $row->role, true );
 
 				$intro         = get_post_meta( $post_id, '_intro' . $row->role, true );
-				//echo "<p>".'_title' . $row->role."  $user_id, $row->role, $timestamp, $post_id, $function, $manual,$project_index,$title,$intro,'',$role_count</p>";
+
 				wp4t_record_history_to_table($user_id, $row->role, $timestamp, $post_id, $function, $manual,$project_index,$title,$intro,'',$role_count);
 
 			}
@@ -10018,6 +10021,8 @@ label {
 
 		$clubs = array();
 
+
+
 	if(isset($_POST['record'])) {
 
 		foreach($_POST['record'] as $record) {
@@ -10033,10 +10038,15 @@ label {
 	}
 
 	if(isset($_POST['reset']))
+
 		{
+
 			foreach($_POST['reset'] as $reset) {
+
 				$wpdb->query("UPDATE $speech_history set basecamp_record='' WHERE speech_id=".intval($reset));
+
 			}
+
 		}
 
 	if(isset($_POST['moreclubs']))
@@ -10130,10 +10140,6 @@ label {
 	$startclubs = $clubs;
 
 	$toastmasters_id = (isset($_REQUEST['toastmasters_id'])) ? intval($_REQUEST['toastmasters_id']) : $current_user->ID;
-
-	$testrow = $wpdb->get_row("SELECT * from `".$wpdb->base_prefix."tm_speech_history` LIMIT 0,1");
-	if(!isset($testrow->basecamp_record))
-		$wpdb->query("ALTER TABLE `".$wpdb->base_prefix."tm_speech_history` ADD COLUMN basecamp_record VARCHAR(255) AFTER intro;");
 
 	$done = '';
 
