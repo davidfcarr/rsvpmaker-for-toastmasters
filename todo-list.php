@@ -88,11 +88,20 @@ function wp4t_todolist($blog_id, $send = false) {
 
         $output .= sprintf('<h3><a target="_blank" href="https://%s">%s</a></h3><p>Consult this demo site for tips related to your chosentheme (design) choice, %s </p>',$demo_sites[$theme->stylesheet],$demo_sites[$theme->stylesheet], $theme->Name);
 
-        
+    if($fth = get_option('freetoasthost'))
+    {
+        $todo['freetoasthost'] = 'Your home page should include content imported from your old FreeToastHost website, and you can see what other content was imported by visiting the Free Toast Host Import screen. That tool also gives you the option of importing agendas from an FTH website.';
+        $label['freetoasthost'] = 'Free Toast Host Import Tool';
+        $link['freetoasthost'] = admin_url('admin.php?page=fth_importer_docs');
+        $help['freetoasthost'] = 'hhttps://www.wp4toastmasters.com/2024/09/10/new-freetoasthost-import-tool/';
+    }
+    else
+        $done['freetoasthost'] = 'You have the option of importing content from a FreeToastHost website. That tool also gives you the option of importing agendas from an FTH website.';
+
 
     $wizard_timestamp = (int) get_option('wp4t_setup_wizard_used');
 
-    if(!$wizard_timestamp)
+    if(!$wizard_timestamp && !$fth)
 
         $todo['wizard'] = 'If you are still at the beginning of setting up your website, the setup wizard can make that easier.';
 
@@ -548,7 +557,7 @@ function wp4t_todolist($blog_id, $send = false) {
 
     //$output .= var_export($done,true);
 
-    $output .= '<h2>Need More Help?</h2><p>See the <a href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a>. 
+    $output .= '<h2>Need More Help?</h2><p>See the <a href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a> and <a href="https://www.wp4toastmasters.com/video-course/">Video Course</a>.
 
     Or write to <a href="mailto:david@wp4toastmasters.com?subject=Todo page query">david@wp4toastmasters.com</a>.</p>
 

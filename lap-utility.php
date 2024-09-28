@@ -445,14 +445,31 @@ function awe_rest_user_options( $role, $post_id ) {
 
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 
+
+
 	foreach ( $blogusers as $user ) {
 
+
+
 		$member = get_userdata( $user->ID );
+
+
+
 		$findex = preg_replace( '/[^a-zA-Z]/', '', $member->first_name . $member->last_name . $member->user_login );
+
+
+
 		$fnamesort[ $findex ] = $member;
+
+
+
 	}
 
+
+
 	ksort( $fnamesort );
+
+
 
 	foreach ( $fnamesort as $fnindex => $member ) {
 
@@ -467,6 +484,7 @@ function awe_rest_user_options( $role, $post_id ) {
 		elseif(in_array($member->ID,$absences))
 
 			$status = __('Planned Absence','rsvpmaker-for-toastmasters');
+
 		elseif ( $member->ID > 0 ) {
 
 			$held = wp4t_last_held_role($member->ID, clean_role($role));
@@ -478,14 +496,23 @@ function awe_rest_user_options( $role, $post_id ) {
 			}
 
 		}
+
+
+
 		if ( ! empty( $status ) ) {
 
 			$status = ' (' . $status . ')';
 
 		}
 
+
+
 		if ( empty( $member->first_name ) ) {
+
+
+
 			$member->first_name = $member->display_name;
+
 		}
 
 
@@ -501,6 +528,7 @@ function awe_rest_user_options( $role, $post_id ) {
 		if($guests)
 
 			foreach($guests as $guest)
+
 				$options[] = array('value' => $guest->meta_value, 'label' => $member->first_name . ' ' . $member->last_name.$status,'name' => $guest->meta_value.' (guest)','label'=>$guest->meta_value.' (guest)');
 
 return $options;	
@@ -3961,55 +3989,4 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 		wp_schedule_single_event( time() + 1800, 'wp4t_log_notify', array($post_id));
 		$didthis = true;
 	}
-}
-
-function wpt_get_former_member_emails() {
-	$former_emails = [];
-	$member_emails = [];
-	$members = get_club_members();
-	foreach($members as $m) {
-		$member_emails[] = $m->user_email;
-	}
-$results = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ORDER BY '.$sort );
-
-foreach($results as $row) {
-	if(is_user_member_of_blog($row->user_id) )
-		continue;
-	if(in_array($row->email,$row->email))
-		continue;
-	$former_emails[] = $row->email;
-	}
-	return $former_emails;
-}
-
-function get_tm_guest_registration() {
-	return '<!-- wp:group {"metadata":{"name":"Guest Registration"},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group"><!-- wp:heading -->
-<h2 class="wp-block-heading" id="visit">Visit as a Guest</h2>
-<!-- /wp:heading -->
-
-<!-- wp:query {"queryId":0,"query":{"perPage":"1","pages":0,"offset":0,"postType":"rsvpmaker","order":"asc","author":"","search":"","exclude":[],"sticky":"","inherit":false,"eventOrder":"future","excludeType":0},"namespace":"rsvpmaker/rsvpmaker-loop"} -->
-<div class="wp-block-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":1}} -->
-<!-- wp:post-title {"level":3,"isLink":true} /-->
-
-<!-- wp:rsvpmaker/loop-blocks -->
-<div class="wp-block-rsvpmaker-loop-blocks"><!-- wp:rsvpmaker/rsvpdateblock /-->
-
-<!-- wp:rsvpmaker/button -->
-<!-- wp:buttons -->
-<div class="wp-block-buttons"><!-- wp:button {"style":{"color":{"background":"#f71b1b"},"className":"rsvplink","border":{"radius":"14px"}}} -->
-<div class="wp-block-button"><a class="wp-block-button__link has-background wp-element-button" href="#rsvpnow" style="border-radius:14px;background-color:#f71b1b">RSVP Now!</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons -->
-<!-- /wp:rsvpmaker/button --></div>
-<!-- /wp:rsvpmaker/loop-blocks -->
-<!-- /wp:post-template --></div>
-<!-- /wp:query -->
-
-<!-- wp:query {"queryId":0,"query":{"perPage":"5","pages":0,"offset":"1","postType":"rsvpmaker","order":"asc","author":"","search":"","exclude":[],"sticky":"","inherit":false,"eventOrder":"future","excludeType":0},"namespace":"rsvpmaker/rsvpmaker-loop"} -->
-<div class="wp-block-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":1}} -->
-<!-- wp:rsvpmaker/title-date {"style":{"spacing":{"padding":{"top":"0","bottom":"0","left":"0","right":"0"},"margin":{"top":"0","bottom":"0","left":"0","right":"0"}},"typography":{"lineHeight":"1"}}} /-->
-<!-- /wp:post-template --></div>
-<!-- /wp:query --></div>
-<!-- /wp:group -->';
 }
