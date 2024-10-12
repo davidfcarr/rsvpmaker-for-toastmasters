@@ -30,8 +30,8 @@ function wpt_notification_from($post_id) {
 		$mail['from'] = $tmdata->user_email;
 	else {
 		$blog_id = get_current_blog_id();
-		$officer_ids    = get_blog_option( $blog_id, 'wp4toastmasters_officer_ids' );
-        $officer_titles = get_blog_option( $blog_id, 'wp4toastmasters_officer_titles' );
+		$officer_ids    = (is_multisite()) ? get_blog_option( $blog_id, 'wp4toastmasters_officer_ids' ) : get_option( 'wp4toastmasters_officer_ids' );
+        $officer_titles = (is_multisite()) ? get_blog_option( $blog_id, 'wp4toastmasters_officer_titles' ) : get_option( 'wp4toastmasters_officer_titles' );
         if(is_array($officer_ids))
         {
             foreach($officer_titles as $index => $title) {

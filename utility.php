@@ -413,6 +413,7 @@ function awe_rest_user_options( $role, $post_id ) {
 
 		$absences = get_post_meta( $post_id, 'tm_absence' );
 
+		
 	if(empty($absences))
 
 		$absences = array();
@@ -4013,3 +4014,76 @@ function get_tm_guest_registration() {
 <!-- /wp:query --></div>
 <!-- /wp:group -->';
 }
+
+function tm_random_available_check() {
+	global $wpdb;
+	global $post;
+	global $current_user;
+	global $random_available;
+		if ( ! empty( $random_available ) ) {
+			return $random_available;
+		} else {
+			$random_available = array();
+		}
+		if ( isset( $_REQUEST['rm'] ) ) {
+	
+			if ( isset( $_REQUEST['sure'] ) ) {
+				$sure = intval($_REQUEST['sure']);
+				update_user_meta( $current_user->ID, 'assign_okay', $sure );
+			}
+	
+			$sql     = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key LIKE '_role_%' AND post_id=$post->ID";
+			$results = $wpdb->get_results( $sql );
+	
+			$preassigned = array();
+			global $histories;
+			if ( empty( $histories ) ) {
+				$histories = tm_get_histories();
+			}
+	
+			foreach ( $results as $row ) {
+				if ( is_numeric( $row->meta_value ) ) {
+					$preassigned[] = $row->meta_value;
+				}
+			}
+	
+			$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+			foreach ( $blogusers as $user ) {
+				if ( isset( $_GET['debug'] ) ) {
+					echo '<div style="background-color: #fff;">test user ' . $user->ID . ': <pre>';
+					echo "\npreassigned";
+					print_r( $preassigned );
+					echo "\naway";
+					print_r( $histories[ $user->ID ]->away_active );
+					echo '</pre></div>';
+				}
+	
+				if ( in_array( $user->ID, $preassigned ) ) {
+					continue;
+				}
+				if ( ! empty( $histories[ $user->ID ]->away_active ) ) {
+					continue;
+				}
+				$userdata = get_userdata( $user->ID );
+				// if($userdata->hidden_profile)
+				// continue;
+				if ( is_array( $random_available ) ) {
+					$random_available[] = $user->ID;
+				} elseif ( isset( $_GET['debug'] ) ) {
+					echo '<div>not an array"';
+					print_r( $random_array );
+					echo '"</div>';
+				}
+				if ( isset( $_GET['debug'] ) ) {
+					echo '<div style="background-color: #fff;">add to array ' . $user->ID;
+					print_r( $random_available );
+					echo '</div>';
+				}
+			}
+			if ( ! empty( $random_available ) && is_array( $random_available ) ) {
+				shuffle( $random_available );
+			}
+		}
+	return $random_available;
+}
+

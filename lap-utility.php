@@ -3527,8 +3527,6 @@ function wpt_rsvpmaker_admin_heading($headline, $function, $tag = '', $sidebar =
 
 }
 
-
-
 //remove? add_filter('rsvpmaker-admin-heading-help','wpt_rsvpmaker_admin_heading_help',12,3);
 
 function wpt_rsvpmaker_admin_heading_help($content,$function='',$tag='') {

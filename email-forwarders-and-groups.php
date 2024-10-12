@@ -4187,6 +4187,7 @@ function wpt_get_officer_emails() {
 function wpt_member_email_check() {
     rsvpmaker_admin_heading('Member Email Check',__FUNCTION__);
     echo '<p>This screen allows you to see whether any members have unsubscribed from email notifications, indicated a preference against receiving group email messages and event notifications, or have bad email addresses associated with their member profiles.</p>';
+    
     $members = get_club_members();
 
     $output = '';
@@ -4205,6 +4206,7 @@ function wpt_member_email_check() {
     }
     if(!empty($suppressions))
         do_action('rsvpmaker_postmark_suppressions',$suppressions);
+    if(empty($_POST))
     echo $output;
 }
 
