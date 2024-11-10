@@ -2981,17 +2981,8 @@ function wpt_email_handler_forwarders() {
 
 
         $domain = implode('.',$parts);
-
-
-
         if('www-' == $prefix)
-
-
-
             $prefix = '';
-
-
-
     }
 
 
@@ -3041,136 +3032,48 @@ function wpt_email_handler_forwarders() {
     if(isset($_POST['forward_update']))
 
     {
-
-
-
         foreach($_POST['forward_update'] as $forward_from => $forward_to_text) {
-
-
-
-            $femail = sanitize_text_field($forward_from);
-
-
-
+            $femail = strtolower(sanitize_text_field($forward_from));
             if(empty($femail))
-
-
-
                 continue;
-
-
-
             if(!strpos($femail,$domain)) {
-
-
-
                 unset($wpt_email_handler_custom_forwarders[$femail]);
-
-
-
                 $femail = $prefix.$femail.'@'.$domain;
-
-
-
                 $wpt_email_handler_custom_forwarders[$femail] = wpt_email_list_to_array($forward_to_text);
-
-
-
             }
-
-
-
             if(empty($forward_to_text))
-
-
-
                 unset($wpt_email_handler_custom_forwarders[$femail]);
-
-
-
             else {
-
-
-
                 $wpt_email_handler_custom_forwarders[$femail] = wpt_email_list_to_array($forward_to_text);
-
-
-
             }
-
-
-
         }
-
-
-
     }
-
-
-
-
-
-
 
     if(isset($_POST['slug'])) {
-
-
-
         foreach($_POST['slug'] as $index => $slug) {
-
-
-
             if(!empty($slug)){
-
-
-
                 $slug = strtolower(preg_replace('/[^a-z0-9]/','',sanitize_text_field($slug)));
-
-
-
-                //echo $slug;
-
-
-
                 if(($slug == 'info') || ($slug == 'officer') || ($slug == 'officers')  || ($slug == 'member')   || ($slug == 'members'))
-
-
-
                 {
-
-
-
                     printf('<p>%s not allowed</p>',$slug);
-
-
-
                     continue;
-
-
-
                 }
-
-
-
-                $ffemail = $prefix.$_POST['slug'][$index].'@'.$domain;
-
-
-
+                $ffemail = $prefix.$slug.'@'.$domain;
                 $wpt_email_handler_custom_forwarders[$ffemail] = wpt_email_list_to_array($_POST['forwardto'][$index]);                
-
-
-
             }
-
-
-
         }
-
-
-
     }
 
-
+    if(!empty($wpt_email_handler_custom_forwarders)) {
+        $clean = [];
+        $delete = (empty($_POST['delete_forwarder'])) ? [] : $_POST['delete_forwarder'];
+        foreach($wpt_email_handler_custom_forwarders as $ffemail => $targets) {
+            $ffemail = strtolower($ffemail);
+            if(!in_array($ffemail,$delete))
+                $clean[$ffemail] = $targets;
+        }
+        $wpt_email_handler_custom_forwarders = $clean;
+    }
 
     if(!empty($_POST)) {
         echo '<div class="notice notice-success"><p>Updating wpt_email_handler_custom_forwarders</p></div>';  
@@ -3192,8 +3095,28 @@ function wpt_email_handler_forwarders() {
 
     $prefix = (strpos($info_address,'-')) ? preg_replace('/-.+/','-',$info_address) : '';
 
-
-
+    if(isset($_GET['test'])) {
+        $testrecipients = ['testy@gmail.com'];
+        foreach($wpt_email_handler_custom_forwarders as $femail => $earray) {
+            $testrecipients[] = $femail;
+        }
+        $slug_ids = get_officer_slug_ids();
+        if(is_array($slug_ids)) {
+            foreach($slug_ids as $slug => $ids) {
+                if(!empty($ids)) {
+                    $officers_fwd = wpt_format_email_forwarder($slug);
+                    if(!empty($officers_fwd)) {
+                        $testrecipients[] = $officers_fwd;
+                    }
+                }
+        }
+        }
+        $message = sprintf('<p>Test %s</p>',var_export($testrecipients,true));
+        echo $message;
+        error_log($message);
+        $filtered = rsvpmaker_recipients_no_problems($testrecipients);
+        printf('<p>Filtered %s</p>',var_export($filtered,true));
+    }
 ?>
 
 
@@ -3293,7 +3216,7 @@ if(!empty($wpt_email_handler_custom_forwarders)) {
 
 
 
-        printf('<p><strong>Forwarder</strong>: %s</p>',$forward_from);
+        printf('<p><strong>Forwarder</strong>: %s <input type="checkbox" name="delete_forwarder[]" value="%s" /> Delete</p>',$forward_from,$forward_from);
 
 
 
@@ -4686,93 +4609,35 @@ function wpt_mail_forwarders($mail) {
 
 }
 
-
-
 add_filter('rsvpmail_recipients_from_forwarders','wpt_slugs_to_recipients',10,4);
 
-
-
 function wpt_slugs_to_recipients($recipients,$slug_and_id,$from,$addresses) {
-
-
 
     $slug = $slug_and_id['slug'];
 
     $blog_id = $slug_and_id['blog_id'];
 
-
-
     $eparts = rsvpmail_email_to_parts($slug_and_id['forwarder']);
-
-    
 
     $custom_forwarders = (is_multisite()) ? get_blog_option($blog_id,'custom_forwarders') : get_option('custom_forwarders');
 
-
-
     foreach($addresses as $forwarder) {
-
-
-
         if(!empty($from) && ('members' == $slug)) {
-
-
-
             $on = (int) (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list', true) : get_option('member_distribution_list', true);
-
-
-
             if(!$on)
-
-
-
                 return;
-
-
-
             $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
-
-
-
             $mrecipients = get_club_member_emails($blog_id);
-
-
-
             $recipients = array_merge($mrecipients,$recipients);
-
-
-
             if(!empty($listvars['additional']))
-
-
-
             foreach($listvars['additional'] as $email) {
-
-
-
                 $recipients[] = $email;
-
-
-
             }
-
-
 
             if((!in_array($from,$recipients) && !in_array($from,$listvars['whitelist'])) || in_array($from,$listvars['blocked']) ) {
-
-
-
                 return 'BLOCKED'; //NOT FROM A RECOGNIZED MEMBER ADDRESS
-
-
-
             }
-
-
-
         }
-
-
 
         if(!empty($from) && ('officers' == $slug)) {
 
@@ -4835,9 +4700,6 @@ function wpt_slugs_to_recipients($recipients,$slug_and_id,$from,$addresses) {
 
 
                 if(!empty($off))
-
-
-
                     $recipients = array_merge($off,$recipients);
 
 
@@ -4915,116 +4777,38 @@ function wpt_slugs_to_recipients($recipients,$slug_and_id,$from,$addresses) {
 
 
             if(is_array($forward_by_id))
-
-
-
                 $recipients = array_merge($forward_by_id,$recipients);
-
-
-
         }
-
-
 
         $slug_ids = get_officer_slug_ids($blog_id);
 
-
-
         if(!empty(	$slug_ids [$slug]))
-
-
-
         {
-
-
-
             foreach($slug_ids[$slug] as $user_id) {
-
-
-
                 if($user_id) {
-
-
-
                     $officer = get_userdata($user_id);
-
-
-
                     $orecipients[] = $officer->user_email;
-
-
-
                 }
-
-
-
             }
-
-
-
+            if(!empty($orecipients))
             $recipients = array_merge($orecipients,$recipients);
-
-
-
         }
 
-
-
-    
-
-
-
-        if(!empty($custom_forwarders[$forwarder]))
-
-
-
+        if(!empty($forwarder) && !empty($custom_forwarders[$forwarder]))
         {
-
-
-
             //hack
-
-
-
             if('admins@toastmost.org'==$forwarder && 'david@carrcommunications.com' != $emailobj->From)
-
-
-
                 return array();
-
-
-
             $recipients = array_merge($recipients,$custom_forwarders[$forwarder]);
-
-
-
-        }    
-
-
-
+        }
     }
-
-
-
+    $unsubscribed = get_option('rsvpmail_unsubscribed');
     if(!empty($recipients)) {
-
-
-
+        if(is_array($unsubscribed))
         $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
-
-
-
         $recipients = array_unique($recipients);
-
-
-
     }
-
-
-
     return $recipients;
-
-
 
 }
 

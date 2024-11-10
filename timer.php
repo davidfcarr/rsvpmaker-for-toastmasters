@@ -976,6 +976,8 @@ printf(
 </select></p>
 
 <blockquote><a href="https://www.wp4toastmasters.com/knowledge-base/online-timer-tool/" target="_blank">Instructions</a></blockquote>
+<?php if(current_user_can(('edit_posts'))) {
+?>
 <form action="<?php echo rest_url('rsvptm/v1/timerimage'); ?>" method="post" enctype="multipart/form-data" class="newcolor">
 <p><strong>Upload color image</strong></p>
 <label for="file">File</label>
@@ -990,9 +992,12 @@ printf(
 global $post;
 $nonce = wp_create_nonce('timer_upload');
 update_post_meta($post->ID,'timer_nonce',$nonce);
-printf('<input type="hidden" name="timer_upload" value="%s" /><input type="hidden" name="post_id" value="%d" />',$nonce,$post->ID);
+printf('<input type="hidden" name="timer_upload" value="%s" /><input type="hidden" name="post_id" value="%d" /><input type="hidden" id="checkcheck" value="%s" />',$nonce,$post->ID,wp_create_nonce( 'wp_rest' ));
 ?>
 </form>
+<?php
+}
+?>
 
 </div><!-- end timer controls -->
 

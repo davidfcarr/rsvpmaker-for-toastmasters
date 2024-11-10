@@ -1396,12 +1396,15 @@ $( document ).ready(
 		  const url = new URL(form.action);
 		  const formData = new FormData(form);
 		  const searchParams = new URLSearchParams(formData);
-		
+		const wp_nonce = document.getElementById('checkcheck').value;
+		console.log('wp_nonce',wp_nonce);
 		  /** @type {Parameters<fetch>[1]} */
 		  const fetchOptions = {
-			method: form.method,
-		  };
-		
+			method: form.method, // or 'POST', 'PUT', etc.
+			headers: {
+				'X-WP-Nonce': wp_nonce,
+			},
+		  };		
 		  if (form.method.toLowerCase() === 'post') {
 			if (form.enctype === 'multipart/form-data') {
 			  fetchOptions.body = formData;
@@ -1411,7 +1414,6 @@ $( document ).ready(
 		  } else {
 			url.search = searchParams;
 		  }
-		
 		  fetch(url, fetchOptions).then((response) => response.json())
 		  .then((data) => {
 			console.log(data);

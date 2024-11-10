@@ -1,5 +1,143 @@
 <?php
 
+function wptmagenda_menu( $post_id, $frontend = true ) {
+	global $post, $rsvp_options;
+	$post       = get_post( $post_id );
+	$permalink  = get_permalink( $post_id );
+	$permalink .= strpos( $permalink, '?' ) ? '&' : '?';
+	$link       = '';
+	$link .= tm_grant_privacy_permission_ui(true);
+	if ( $frontend ) {
+		$link .= rsvpmaker_agenda_notifications( $permalink );
+	}
+	$agenda_lock = is_agenda_locked();
+
+	$blank = ( $frontend ) ? '' : ' target="_blank" ';
+	// defaults 'edit_signups' => 'read','email_list' => 'read','edit_member_stats' => 'edit_others_posts','view_reports' => 'read','view_attendance' => 'read','agenda_setup' => 'edit_others_posts'
+	$security = get_tm_security();
+
+	$link .= '<div id="cssmenu"><ul>';
+
+	if ( $frontend ) {
+		$events = future_toastmaster_meetings();
+
+		if ( $events ) {
+			$event = $events[0];
+			if($event->ID == $post->ID)
+				array_shift($events);
+			foreach ( $events as $index => $event ) {
+				if($index == 0)
+					$link .= '<li class="has-sub"><a href="' . rsvpmaker_permalink_query( $event->ID ).'">' . __( 'Next Meeting', 'rsvpmaker-for-toastmasters' ) . '</a><ul>';
+				if($event->ID == $post->ID)
+					continue;
+				$link .= '<li><a href="' . rsvpmaker_permalink_query( $event->ID ) . '"' . $blank . '>' . rsvpmaker_date( $rsvp_options['short_date'], (int) $event->ts_start ) . '</a></li>';
+			}
+		}
+		$link .= '</ul></li>';
+
+	}
+	$link .= '<li class="has-sub"><a target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Agenda', 'rsvpmaker-for-toastmasters' ) . '</a><ul> ';
+	if ( current_user_can( $security['email_list'] ) ) {
+		$link .= '<li><a  target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Print', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	}
+		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1">' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1&role_only=1">' . __( 'Email (roles only)', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	if ( ! get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
+		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	}
+	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&contacts=1">' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&word_agenda=1">' . __( 'Export to Word', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&simple=1">' . __( 'Simple Copy and Paste', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'voting=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$online   = get_option( 'tm_online_meeting' );
+	$platform = ( isset( $online['platform'] ) ) ? $online['platform'] : '';
+	if ( ( $platform == 'Jitsi' ) || empty( $platform ) ) {
+		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1&embed=jitsi">' . __( 'Online Meeting (Jitsi)', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	}
+	if ( $platform == 'Jitsi' ) {
+		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1&embed=jitsi&claim_timer=1">' . __( 'Online Timer (Jitsi)', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
+	} else {
+		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1">' . __( 'Online Timer', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
+	}
+
+	$template_id = get_post_meta( $post->ID, '_meet_recur', true );
+	if ( current_user_can( $security['agenda_setup'] ) ) {
+		$agenda_menu[ __( 'Setup', 'rsvpmaker-for-toastmasters' ) ] = admin_url( 'post.php?action=edit&post=' . $post->ID );
+		if ( $template_id ) {
+			$agenda_menu[ __( 'Setup: Template', 'rsvpmaker-for-toastmasters' ) ] = admin_url( 'post.php?action=edit&post=' . $template_id );
+		}
+	}
+	if ( current_user_can( 'edit_others_posts' ) ) {
+		if ( $agenda_lock ) {
+			$agenda_menu[ __( 'Unlock Agenda', 'rsvpmaker-for-toastmasters' ) ]              = $permalink . 'lock=unlockall';
+			$agenda_menu[ __( 'Unlock Agenda (Admin Only)', 'rsvpmaker-for-toastmasters' ) ] = $permalink . 'lock=unlockadmin';
+		} else {
+			$post_lock = get_post_meta( $post->ID, 'agenda_lock', true );
+			if ( strpos( $post_lock, 'admin' ) ) {
+				$agenda_menu[ __( 'Unlock Agenda for All', 'rsvpmaker-for-toastmasters' ) ] = $permalink . 'lock=unlockall';
+			}
+			$agenda_menu[ __( 'Lock Agenda', 'rsvpmaker-for-toastmasters' ) ]                    = $permalink . 'lock=on';
+			$agenda_menu[ __( 'Lock Agenda (Except for Admin)', 'rsvpmaker-for-toastmasters' ) ] = $permalink . 'lock=lockexceptadmin';
+		}
+	}
+	if ( current_user_can( $security['edit_signups'] ) ) {
+		// if(!function_exists('do_blocks'))
+		// $agenda_menu[__('Agenda Timing','rsvpmaker-for-toastmasters')] = admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$post->ID);
+		if ( $template_id && current_user_can( $security['agenda_setup'] ) ) {
+			// if(!function_exists('do_blocks'))
+			// $agenda_menu[__('Agenda Timing: Template','rsvpmaker-for-toastmasters')] = admin_url('edit.php?post_type=rsvpmaker&page=agenda_timing&post_id='.$template_id);
+			$agenda_menu[ __( 'Switch Template', 'rsvpmaker-for-toastmasters' ) ] = admin_url( 'edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&apply_target=' . $post->ID . '&apply_current=' . $template_id . '#applytemplate' );
+		}
+		if ( current_user_can( 'edit_others_rsvpmakers' ) ) {
+			$agenda_menu[ __( 'Agenda Layout', 'rsvpmaker-for-toastmasters' ) ] = $permalink . 'agenda_layout=1';
+		}
+		if ( current_user_can( 'manage_options' ) ) {
+			$agenda_menu[ __( 'Update Officers List', 'rsvpmaker-for-toastmasters' ) ] = admin_url('options-general.php?page=wp4toastmasters_settings#officers');
+		}
+	}
+	if ( ! empty( $agenda_menu ) ) {
+		$size        = sizeof( $agenda_menu );
+		$linkcounter = 1;
+		foreach ( $agenda_menu as $label => $agenda_link ) {
+			if ( $linkcounter == 1 ) {
+				if ( $size == 1 ) {
+					$link .= sprintf( '<li><a href="%s">%s</a></li>', $agenda_link, $label );
+				} else {
+					$link .= sprintf( '<li class="has-sub"><a href="%s">%s</a><ul>', $agenda_link, $label );
+				}
+			} else {
+				if ( $linkcounter == $size ) {
+					$link .= sprintf( '<li class="last"><a href="%s">%s</a></li></ul></li>', $agenda_link, $label );
+				} else {
+					$link .= sprintf( '<li><a href="%s">%s</a></li>', $agenda_link, $label );
+				}
+			}
+				$linkcounter++;
+		}
+	}
+
+	if ( current_user_can( 'edit_signups' ) ) {
+		$link .= '<li class="has-sub"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a><ul><li><a target="_blank" href="' . site_url( '?signup_sheet_editor=1' ) . '">' . __( 'Edit Signups (multiple weeks)', 'rsvpmaker-for-toastmasters' ) . '</a></li>'.wpt_clipboard_links().'</ul></li>';
+	} else {
+		$link .= '<li class="last"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	}
+	if ( $frontend ) {
+		$link .= '<li class="last"><a  target="_blank" href="' . admin_url( 'admin.php?page=toastmasters_planner' ) . '">' . __( 'Planner', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	}
+	$link .= '</ul></div>';
+
+	if ( $agenda_lock ) {
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked against changes and can only be unlocked by an administratoradministrator/manager/editor.</p>';
+	} elseif ( ! empty( $post_lock ) && strpos( $post_lock, 'admin' ) ) {
+		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator/manager/editor).</p>';
+	}
+
+	return $link;
+}
+
 //wp4toastmasters_event_content
 add_filter( 'the_content', function ( $content ) {
 	global $post;
@@ -51,7 +189,7 @@ add_filter( 'the_content', function ( $content ) {
 	elseif ( ! is_club_member() && ! current_user_can('manage_network') ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
-		$link .= agenda_menu( $post->ID );
+		$link .= wptmagenda_menu( $post->ID );
 		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
 			if(isset($_GET['revert_by_default']) && current_user_can('manage_options')) {
 				$revert_default = ('on' == $_GET['revert_by_default']);

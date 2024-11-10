@@ -8,7 +8,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 6.6.2
-Stable tag: 6.2.4
+Stable tag: 6.2.6
 
 License: GPLv2
 
@@ -75,6 +75,15 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 6.2.6 =
+
+* ReorgWidget for easier manipulation of the agenda
+* Fix for persistence of security options
+
+= 6.2.5 =
+
+* Timer image file upload security improvement
 
 = 6.2.4 =
 

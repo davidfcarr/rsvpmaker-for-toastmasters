@@ -2139,12 +2139,22 @@ class WP4T_Timer_Image extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		return $_POST['timer_upload'] == get_post_meta(intval($_POST['post_id']),'timer_nonce',true);
+		return current_user_can('edit_posts') && ($_POST['timer_upload'] == get_post_meta(intval($_POST['post_id']),'timer_nonce',true));
 	}
 
 	public function handle( $request ) {
 		$upload_dir = wp_upload_dir();
-		//print_r($_POST);
+		//checks suggested by https://www.wordfence.com/learn/how-to-prevent-file-upload-vulnerabilities/
+			$allowedMimes = array(
+				'jpg|jpeg|jpe' => 'image/jpeg',
+				'gif'          => 'image/gif',
+				'png'          => 'image/png',
+			);
+			$fileInfo = wp_check_filetype($_FILES["colorimage"]["name"],$allowedMimes);
+			if (empty($fileInfo['ext']) || !$fileInfo['type']) {
+				error_log('timer file upload error '.var_export($_FILES,true));
+				wp_die('invalid file type');
+			}
 			$check = getimagesize($_FILES["colorimage"]["tmp_name"]);
 			if($check !== false) {
 			$color = sanitize_text_field($_POST['color']);

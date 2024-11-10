@@ -3635,12 +3635,7 @@ $preview = (empty($thumbnail)) ? '' : sprintf('<br>Suggestion <img src="%s" styl
 
 <?php
 
-
-
 }
-
-
-
 
 
 add_filter('option_rsvpmaker_email_custom_styles','agenda_rsvpmaker_email_custom_styles');
