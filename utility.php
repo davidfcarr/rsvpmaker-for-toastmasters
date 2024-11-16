@@ -427,6 +427,7 @@ function awe_rest_user_options( $role, $post_id ) {
 
 
 	$options[] = array('label' => 'Open', 'name' => 'Open', 'value' => 0);
+	$options[] = array('label' => 'Guest', 'name' => 'Guest', 'value' => 'Guest');
 
 	$options[] = array('label' => 'Not Available', 'name' => 'Not Available', 'value' => -1);
 

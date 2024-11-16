@@ -7,8 +7,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 6.6.2
-Stable tag: 6.2.6
+Tested up to: 6.7
+Stable tag: 6.3
 
 License: GPLv2
 
@@ -75,6 +75,14 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 6.3 =
+
+* Most Organize mode options now available from main Agenda screen.
+
+= 6.2.9 =
+
+* Signup form shows edit options for role on mouseover (if user has permissions)
 
 = 6.2.6 =
 

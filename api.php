@@ -1769,6 +1769,11 @@ class WP4T_Permissions extends WP_REST_Controller {
 			else
 				$r->remove_cap($data->key);
 		}
+		$security = get_option( 'tm_caps' );
+		if(empty($security))
+			$security = [];
+		$security[$data->key] = $data->value;
+		update_option('tm_caps',$security);
 		//update_option($data->key,$data->value);
 		$response['status'] = "$data->key ".(($data->value) ? 'true' : 'false')." for ".implode(', ',$change);
 		return new WP_REST_Response($response,
