@@ -1307,6 +1307,150 @@ function wpt_get_agendadata($post_id = 0) {
 	return $agendadata;
 }
 
+class WP4T_Mobile extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'mobile/(?P<user_code>.+)';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		global $current_user;
+		$user_code = $request['user_code'];
+		$parts = explode('-',$user_code);
+		$user_id = intval($parts[0]);
+		$saved_code = get_user_meta($user_id,'wpt_mobile_code',true);
+		if($user_code != $saved_code)
+			return false;
+		$current_user = get_userdata($user_id);
+		return true;
+	}
+
+	public function handle( $request ) {
+		global $current_user;
+		error_log($current_user->display_name.' mobile request '.$request['user_code']);
+		//$agendadata['user_code'] = $user_code;
+		$json = file_get_contents('php://input');
+		if($json) {
+			$data = json_decode($json);
+			$post_id = intval($data->post_id);
+		}
+		$speechfields = ['title','manual','project','maxtime','display_time','intro'];
+		if(isset($data) && isset($data->ID))
+		{
+			$id = intval($data->ID);
+			$key = sanitize_text_field($data->assignment_key);
+			$result = update_post_meta($post_id,$key,$id);
+			$agendadata['update'][] = $key . ' = ' . $id .' post id = '.$post_id.' result '.var_export($result,true); 
+		}
+		if(isset($data) && 'Speaker' == $data->role)
+		{
+			$key = sanitize_text_field($data->assignment_key);
+			foreach($speechfields as $field) {
+				$k = '_'.$field.$key;
+				if($data->ID == 0)
+				{
+					$v = '';
+				}
+				else {
+					if(!isset($data->$field)) {
+						$agendadata['update'][] = "missing $field";
+						continue;
+					}
+					$v = sanitize_text_field($data->$field);
+				}
+				$agendadata['update'][] = "$k = $v";
+				update_post_meta($post_id,$k,$v);
+			}
+		}
+		$agendadata['user_id'] = $current_user->ID;
+		$agendadata['name'] = $current_user->display_name;
+		$agendadata['agendas'] = wpt_get_mobile_agendadata($current_user->ID);
+		$agendadata['projects'] = wp4t_program();
+		$agendadata['userblogs'] = wpt_domains_of_mobile_user($current_user->ID);
+		$memberlist = [];
+		$members = get_club_members();
+		foreach($members as $member) {
+			$memberlist[] = $member->display_name;
+		}
+		$agendadata['members'] = $memberlist;
+		$agendadata['code'] = $request['user_code'];
+		return new WP_REST_Response($agendadata,
+			200
+		);
+	}
+}
+
+function wpt_get_mobile_agendadata($user_id = 0) {
+	global $current_user,$post;
+	$agendas = [];
+	$post = false;
+	$meetings = future_toastmaster_meetings( 5 );
+	foreach($meetings as $meeting) {
+		$post_id = $meeting->ID;
+		$agenda['post_id'] = $post_id;
+		$agenda['title'] = rsvpmaker_date('M j',$meeting->ts_start) .' '.$meeting->post_title;
+		$agenda['html'] = tm_agenda_content($post_id);
+		$agenda['roles'] = [];
+		$blocksdata = parse_blocks($meeting->post_content);
+		foreach($blocksdata as $block) {
+			if(isset($block['attrs']) && isset($block['attrs']['role']))
+				{
+					$role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
+					$count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
+					$start = (isset($lastcount[$role])) ? $lastcount[$role] + 1 : 1;
+					$backup = !empty($block['attrs']['backup']) ? 1 : 0;
+					for($i=$start; $i < ($count + $start); $i++)
+					{
+						$key = wp4t_fieldbase($role,$i);
+						$assignment = array('post_id'=>$post_id,'assignment_key'=>$key,'role'=>$role);
+						$assignment['ID'] = get_post_meta($post_id,$key, true);
+						if(empty($assignment['ID'])) {
+							$assignment['name'] = '';
+						}
+						elseif(is_numeric($assignment['ID']))
+							$assignment['name'] = get_member_name($assignment['ID']);
+						else
+							$assignment['name'] = $assignment['ID'].' (guest)';
+						if($assignment['ID'] && ('Speaker' == $role)) {
+							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$post_id);
+							$project_key = ($speakerdata['project']) ? $speakerdata['project'] : '';
+							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id );//add_query_arg('evalme',$current_user->ID,get_permalink())
+							$assignment = array_merge($assignment,$speakerdata);
+						}
+						$agenda['roles'][] = $assignment;
+					}
+					if($backup) {
+						$key = wp4t_fieldbase('Backup '.$role,$start);
+						$assignment = array('post_id'=>$post_id,'assignment_key'=>$key,'role'=>'Backup '.$role);
+						$assignment['ID'] = intval( get_post_meta($post_id,$key, true) );
+						$assignment['name'] = ($assignment['ID']) ? get_member_name($assignment['ID']) : '';
+						if($assignment['ID'] && ('Speaker' == $role)) {
+							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$post_id);
+							$assignment = array_merge($assignment,$speakerdata);
+						}
+					$agenda['roles'][] = $assignment;
+					}
+				}
+		}
+		//end tour through blocks
+		$agendas[] = $agenda;
+	}//end meetings loop
+	
+return $agendas;
+}
+
 class WP4TRolesList extends WP_REST_Controller {
 	public function register_routes() {
 		$namespace = 'rsvptm/v1';
@@ -1489,30 +1633,33 @@ class WP4T_Paths_and_Projects extends WP_REST_Controller {
 	}
 
 	public function handle( $request ) {
-		$manuals_by_type = get_manuals_by_type();
-		$projects = get_projects_array();
-		$program['maxtime'] = get_projects_array('times');
-		$program['display_time'] = get_projects_array('display_times');
-		foreach($manuals_by_type as $pathkey => $marray) {
-			$program['paths'][] = array('label' => $pathkey,'value' => $pathkey);
-			$program['manuals'][$pathkey][] = array('label' => 'Choose a Level', 'value' => '');
-			foreach($marray as $mkey => $manual) {
-				$program['manuals'][$pathkey][] = array('label' => $mkey, 'value' => $manual);
-				$program['projects'][$manual][] = array('label' => 'Choose a Project', 'value' => '');
-				$manuals[] = $manual;
-			}
-		}
-		$program['manuals']['Other'][] = array('label' => 'Other','value' => 'Other');
-		foreach($projects as $key => $project) {
-			$manual = preg_replace('/([\s0-9]+)$/','',$key);
-			if(in_array($manual,$manuals))
-				$program['projects'][$manual][] = array('label' => $project, 'value' => $key);
-			else
-				$program['projects']['Other'][] = array('label' => $project, 'value' => $key);
-		}
-
-		return new WP_REST_Response($program,200);
+		return new WP_REST_Response(wp4t_program(),200);
 	}
+}
+
+function wp4t_program() {
+	$manuals_by_type = get_manuals_by_type();
+	$projects = get_projects_array();
+	$program['maxtime'] = get_projects_array('times');
+	$program['display_time'] = get_projects_array('display_times');
+	foreach($manuals_by_type as $pathkey => $marray) {
+		$program['paths'][] = array('label' => $pathkey,'value' => $pathkey);
+		$program['manuals'][$pathkey][] = array('label' => 'Choose a Level', 'value' => '');
+		foreach($marray as $mkey => $manual) {
+			$program['manuals'][$pathkey][] = array('label' => $mkey, 'value' => $manual);
+			$program['projects'][$manual][] = array('label' => 'Choose a Project', 'value' => '');
+			$manuals[] = $manual;
+		}
+	}
+	$program['manuals']['Other'][] = array('label' => 'Other','value' => 'Other');
+	foreach($projects as $key => $project) {
+		$manual = preg_replace('/([\s0-9]+)$/','',$key);
+		if(in_array($manual,$manuals))
+			$program['projects'][$manual][] = array('label' => $project, 'value' => $key);
+		else
+			$program['projects']['Other'][] = array('label' => $project, 'value' => $key);
+	}
+	return $program;
 }
 
 class WP4T_Members_for_Role extends WP_REST_Controller {
@@ -2306,5 +2453,7 @@ add_action(
 		$umeta->register_routes();
 		$timerimage = new WP4T_Timer_Image();
 		$timerimage->register_routes();
+		$wp4tmobile = new WP4T_Mobile();
+		$wp4tmobile->register_routes();
 	}
 );

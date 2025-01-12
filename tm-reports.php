@@ -37,6 +37,7 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_screen', __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports_dashboard', 'toastmasters_reports_dashboard' );
 	add_submenu_page( 'toastmasters_screen', __( 'Member List', 'rsvpmaker-for-toastmasters' ), __( 'Member List', 'rsvpmaker-for-toastmasters' ), 'view_contact_info', 'contacts_list', 'member_list' );
 	add_submenu_page( 'toastmasters_screen', __( 'My Data', 'rsvpmaker-for-toastmasters' ), __( 'My Data', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_my_data', 'wpt_my_data' );
+	add_submenu_page( 'toastmasters_screen', __("Enable Mobile App",'rsvpmaker-for-toastmasters'), __("Enable Mobile App",'rsvpmaker-for-toastmasters'), 'read', "wp4t_enable_mobile", "wp4t_enable_mobile" );
 	add_submenu_page( 'toastmasters_screen', __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_support', 'toastmasters_support' );
 
 	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
@@ -10167,7 +10168,7 @@ label {
 
 			if(is_multisite()) {
 
-				$sql = "SELECT blog_id FROM $wpdb->blogs WHERE domain='$row->domain' ";
+				$sql = "SELECT blog_id FROM $wpdb->blogs WHERE domain='$row->domain' ";  error_log('tm-reports.php line 10171 '.$sql);
 
 				//echo $sql;
 

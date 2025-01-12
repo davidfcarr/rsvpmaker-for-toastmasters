@@ -7,8 +7,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 6.7
-Stable tag: 6.3
+Tested up to: 6.7.1
+Stable tag: 6.3.1
 
 License: GPLv2
 
@@ -128,33 +128,3 @@ The toastmost.org service is supported by subscriptions from member clubs.
 = 6.0 =
 
 * Member signups and suggestions screen shows upcoming roles the member has signed up for, suggested roles if the member has not taken a role, plus contact info. Includes one-click signup links for the open roles. 
-
-= 5.9.9 =
-
-* Refinements to one-click signup method
-
-* Improved data model for roles
-
-* Improved logging of assignments, signups, and withdrawls
-
-= 5.9.8 =
-
-* Updated How to Edit the Agenda block
-
-= 5.9.5 =
-
-* Validation for application form
-
-= 5.9.2 =
-
-* Suggestion mode improvements
-
-= 5.9.1 =
-
-* Suggest all 
-
-* Fix missing directory in svn
-
-= 5.9 =
-
-* Enhancements to the meeting minutes tools

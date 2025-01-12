@@ -3279,7 +3279,7 @@ foreach($forwarders as $forwarder) {
         $list_lookup = $fparts[0];
     }
 
-    $lsql = "SELECT blog_id FROM wpt_blogs WHERE domain='$site_lookup' ";
+    $lsql = "SELECT blog_id FROM wpt_blogs WHERE domain='$site_lookup' "; error_log('email-forwarders-and-groups.php line 3282 '.$lsql);
     $list_blog_id = $wpdb->get_var($lsql);
     echo '<p>forwarder to blog id',"$forwarder lookup: $site_lookup list: $list_lookup id: $list_blog_id </p>\n";
     if($list_blog_id) {
@@ -3594,25 +3594,10 @@ function wpt_is_own_domain() {
 
 
 function wpt_subdomain_blog_id($subdomain, $basedomain) {
-
-
-
     global $wpdb;
-
-
-
     $domain = $subdomain.'.'.$basedomain;
-
-
-
-    $sql = "SELECT blog_id FROM $wpdb->blogs WHERE `domain` LIKE '%".$domain."'";
-
-
-
+    $sql = "SELECT blog_id FROM $wpdb->blogs WHERE `domain` LIKE '%".$domain."'";  error_log('email-forwarders-and-groups.php line 3608 '.$sql);
     return $wpdb->get_var($sql);
-
-
-
 }
 
 

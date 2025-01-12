@@ -2337,7 +2337,7 @@ printf('<table class="wp-list-table widefat fixed members" cellspacing="0"><thea
 foreach($results as $row) {
 	if(is_user_member_of_blog($row->user_id) )
 		continue;
-	if(in_array($row->email,$row->email))
+	if(in_array($row->email,$member_emails))
 		continue;	
 	$user = unpack_user_archive_data( $row->data );
 	$name = (empty($user["display_name"])) ? $user["first_name"].' '.$user["last_name"] : $user["display_name"];
@@ -2501,7 +2501,6 @@ function awesome_menu() {
 
 	add_submenu_page( 'profile.php', __( 'RSVP List to Members', 'rsvpmaker-for-toastmasters' ), __( 'RSVP List to Members', 'rsvpmaker-for-toastmasters' ), 'edit_members', 'rsvp_to_member', 'rsvp_to_member' );
 	add_submenu_page('profile.php', __("Former Members",'rsvpmaker-for-toastmasters'), __("Former Members",'rsvpmaker-for-toastmasters'), 'edit_members', "wp4t_extended_list", "wp4t_extended_list" );
-	add_submenu_page('profile.php', __("Enable Mobile App (experimental)",'rsvpmaker-for-toastmasters'), __("Enable Mobile App (experimental)",'rsvpmaker-for-toastmasters'), 'read', "wp4t_enable_mobile", "wp4t_enable_mobile" );
 
 	$page_title = 'Toastmasters';
 	$menu_title = $page_title;
@@ -6352,7 +6351,7 @@ class Toastmasters_Member {
 			}
 			if ( ! rsvpmail_contains_email( $user['user_email'] ) && ! strpos( $user['user_email'], 'example.com' ) ) {
 				$this->prompts[] = '<span style="color: red;">' . __( 'Error: invalid email address', 'rsvpmaker-for-toastmasters' ) . ' ' . $user['user_email'] . '</span><br />' . $this->prompt_fields( $user );
-				 return;
+				return;
 			}
 
 			if ( $login_exists ) {
