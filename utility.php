@@ -694,22 +694,12 @@ function wpt_remove_unsubscribed($source, $unsubscribed) {
 
 
 
-function is_officer() {
-
-
-
+function wpt_is_officer($user_id = 0) {
 	global $current_user;
-
-
-
+	if(!$user_id && !empty($current_user->ID))
+		$user_id = $current_user->ID;
 	$officer_ids = get_option( 'wp4toastmasters_officer_ids' );
-
-
-
 	return ( is_array( $officer_ids ) && in_array( $current_user->ID, $officer_ids ) );
-
-
-
 }
 
 
@@ -3327,8 +3317,6 @@ function wptm_count_votes($post_id) {
 
 	}
 
-
-
 	$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%' ORDER BY meta_key, meta_value";
 
 	$results = $wpdb->get_results($sql);
@@ -3338,6 +3326,7 @@ function wptm_count_votes($post_id) {
 		$p = explode('_',$row->meta_key);
 
 		$contest = $p[1];
+		$identifier = $p[2];
 
 		if(isset($votes[$contest][$row->meta_value]))
 
@@ -3346,14 +3335,12 @@ function wptm_count_votes($post_id) {
 			else
 
 		$votes[$contest][$row->meta_value] = 1;
-
+		$sigkey = 'signedvote_'.$contest.'_'.$identifier;
+		$signature = get_post_meta($post_id,$sigkey,true);
+		if($signature) {
+			$signedvote[$contest][$sigkey] = $signature.": $row->meta_value";
+		}
 	}
-
-
-
-
-
-
 
 	if(!empty($votes)) {
 
@@ -3364,6 +3351,10 @@ function wptm_count_votes($post_id) {
 			$label = get_post_meta($post_id,'votelabel_'.$contest,true);
 
 			$ranking[$contest] = sprintf('<h3>Votes for %s</h3>',$label);
+
+			if(isset($signedvote[$contest])) {
+				$ranking[$contest] .= '<p>'.implode('<br >',$signedvote[$contest]).'</p>';
+			}
 
 			if(empty($contestvote))
 

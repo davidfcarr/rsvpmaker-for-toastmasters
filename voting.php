@@ -15,28 +15,28 @@ foreach( $wp_styles->queue as $style ) {
 
 
 if(is_user_member_of_blog()) 
-
-$identifier = $current_user->ID;
-
+{
+    $identifier = $current_user->ID;
+    $identifier_from = 'current user';    
+}
 else {
 
     if(empty($_COOKIE["tm_voting_cookie"]))
 
     {
-
         $identifier = rand(1000,100000);
-
         setcookie("tm_voting_cookie", $identifier, time()+DAY_IN_SECONDS);
-
+        $identifier_from = 'new cookie';
     }
 
     else {
 
         $identifier = $_COOKIE["tm_voting_cookie"];
-
-        if(empty($identifier))
-
+        $identifier_from = 'saved cookie';
+        if(empty($identifier)){
             $identifier = $_SERVER['REMOTE_ADDR'];
+            $identifier_from = 'remote addr';
+        }
 
     }
 
@@ -56,7 +56,20 @@ if(isset($_POST['switch_vote_counter']) && rsvpmaker_verify_nonce()) {
 
 }
 
+if(isset($_POST['clearvotes']) && rsvpmaker_verify_nonce()) {
+    $wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE 'myvote_%' ");
+}
 
+if(isset($_POST['clearballots']) && rsvpmaker_verify_nonce()) {
+    $wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE 'voting_%' ");
+    delete_post_meta($post->ID,'openvotes');
+}
+$auditsql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post->ID AND meta_key LIKE 'audit%' ";
+$results = $wpdb->get_results($auditsql);
+$audit = '';
+foreach($results as $line) {
+    $audit .= "<p>$line->meta_key = $line->meta_value</p>";
+}
 
 ?>
 
@@ -134,7 +147,7 @@ if(isset($_POST['switch_vote_counter']) && rsvpmaker_verify_nonce()) {
 
 <div id="votingtoool">
 
-<h2>Voting for <?php echo rsvpmaker_date($rsvp_options['short_date'],get_rsvpmaker_timestamp( $post_id )) ?></h2>
+<h2>Voting for <?php echo rsvpmaker_date($rsvp_options['short_date'],get_rsvpmaker_timestamp( $post->ID )) ?></h2>
 
 <?php
 
@@ -201,6 +214,12 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
         $metakey = 'myvote_'.$key.'_'.$identifier;
 
         update_post_meta($post->ID,$metakey,$vote);
+        add_post_meta($post->ID,'audit_'.$metakey, $vote.' '.$_SERVER['REMOTE_ADDR'].' desktop '.date('r'));
+        if($_POST['signature']) {
+            $signature = sanitize_text_field($_POST['signature']);
+            $metakey = 'signedvote_'.$key.'_'.$identifier;
+            update_post_meta($post->ID,$metakey,$signature);
+        }
 
         echo '<div style="border: thin solid red; padding: 10px; background-color:#ffe">Vote recorded: '.$key.'</div>';
 
@@ -215,6 +234,8 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
         printf('<h2>Voting for %s</h2>',$label);
 
         $check = 'voting_'.$key;
+        $signature_required = boolval(get_post_meta($post->ID,'signature_'.$key,true));
+        $name = (isset($current_user->display_name)) ? $current_user->display_name : '';
 
         $contestants = get_post_meta($post->ID,$check,true);
 
@@ -230,17 +251,37 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
 
             }
 
+            if($signature_required)
+                printf('<p>Signature required:<br /><input type="text" name="signature" value="%s" placeholder="Type your name"></p>',$name);
+
             rsvpmaker_nonce();
 
-            printf('<input type="hidden" name="key" value="%s">',$key);
+            printf('<input type="hidden" id="key" name="key" value="%s">',$key);
 
-            printf('<input type="hidden" name="identifier" value="%s">',$identifier);
+            printf('<input type="hidden" id="identifier" name="identifier" value="%s">',$identifier);
 
-            echo '<button>Vote!</button></form>';        
-
+            echo '<button>Vote!</button></form>';
+?>
+<script>
+let token = localStorage.getItem("toastmastersVoting");
+if(token)
+{
+console.log('stored_token',token);
+} else
+    {
+        token = new Date().getTime()+Math.random();
+        localStorage.setItem("toastmastersVoting",token);
+        console.log('new token',token);
+    }
+let id = document.getElementById('identifier').value;
+console.log('current identifier',id);
+document.getElementById('identifier').value = token;
+</script>
+<?php
         }
 
     }
+    //echo '<br><br>'.$identifier_from;        
 
 
 
@@ -293,9 +334,8 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
             $openvotes = preg_replace('/[^a-z]/','',strtolower($openvotes));
 
             update_post_meta($post->ID,'votelabel_'.$openvotes,$label);
-
+            update_post_meta($post->ID,'signature_'.$openvotes,isset($_POST['signature']));
             if(!in_array($openvotes,$open)) // don't add duplicates
-
                 add_post_meta($post->ID,'openvotes',$openvotes);
 
         }
@@ -370,7 +410,8 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
 
             echo '<button>Update</button></form></div>';
 
-            printf('<p>Link to share:<br><input type="text" class="votinglink" status="status_%s" value="Vote for %s %s"></p><div id="status_%s"></div>',$v,$label, $voting_link,$v);
+            printf('<p>Description + link:<br><input type="text" class="votinglink" status="status_%s" value="Vote for %s %s"></p><div id="status_%s"></div>',$v,$label, $voting_link,$v);
+            printf('<p>Link only:<br><input type="text" class="votinglink" status="only_status_%s" value="%s"></p><div id="only_status_%s"></div>',$v,$voting_link,$v);
 
         }
 
@@ -449,7 +490,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
         echo '</div>';
 
         echo '<input type="hidden" name="openvotes" value="Speaker">';
-
+        echo '<div><input class="candidates" type="checkbox" name="signature" value="1" > Require a signature (vote not anonymous)</div>';
         rsvpmaker_nonce();
 
         echo '<button>Submit</button></form>';    
@@ -508,6 +549,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
 
     echo '<input type="hidden" name="openvotes" value="Evaluator">';
 
+    echo '<div><input class="candidates" type="checkbox" name="signature" value="1" > Require a signature (vote not anonymous)</div>';
     rsvpmaker_nonce();
 
     echo '<button>Submit</button></form>';    
@@ -540,6 +582,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
 
     echo '<input type="hidden" name="openvotes" value="Table Topics Speaker">';
 
+    echo '<div><input class="candidates" type="checkbox" name="signature" value="1" > Require a signature (vote not anonymous)</div>';
     rsvpmaker_nonce();
 
     echo '<button>Submit</button></form>';
@@ -548,7 +591,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
 
 
 
-    $club_contests = get_option('custom_club_contests');
+    $club_contests = get_option('custom_club_contests',[]);
 
     if(is_array($club_contests))
 
@@ -577,6 +620,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
                 echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
 
             echo '</div>';
+            echo '<div><input class="candidates" type="checkbox" name="signature" value="1" > Require a signature (vote not anonymous)</div>';
 
             rsvpmaker_nonce();
 
@@ -605,6 +649,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
 
     echo '</div>';
+    echo '<div><input class="candidates" type="checkbox" name="signature" value="1" > Require a signature (vote not anonymous)</div>';
 
     rsvpmaker_nonce();
 
@@ -629,6 +674,8 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
         echo '<div><input class="candidates" type="text" name="candidates[]"></div>';
 
     echo '</div>';
+
+    echo '<div><input class="candidates" type="checkbox" name="signature" value="1" checked="checked"> Require a signature (vote not anonymous)</div>';
 
     rsvpmaker_nonce();
 
@@ -708,7 +755,17 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
 
     echo '<button>Submit</button></form>';
 
-    
+    printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
+
+    echo '<h2>Clear Data</h2>';
+
+    echo '<p>Clear <input type="checkbox" name="clearvotes" value="1" checked="checked" /> Votes <input type="checkbox" name="clearballots" value="1" checked="checked" /> Ballots</p>';
+
+    rsvpmaker_nonce();
+
+    echo '<button>Submit</button></form>';
+
+    echo '<h2>Audit</h2>'.$audit.'<br>'.$auditsql;
 
 } // end vote counter controls
 
@@ -763,10 +820,11 @@ if ( ! empty( $u ) ) {
 ?>
 
 <script>
-
+console.log('voting tool');
 jQuery( document ).ready(
 
 	function($) {
+        console.log('voting tool jquery');
 
 	var members = <?php echo json_encode( $u ); ?>;
 

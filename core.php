@@ -293,7 +293,7 @@ echo '<p>'.club_member_mailto().'</p>';
 		if ( ! empty( $lists['member'] ) ) {
 			printf( '<p>' . __( 'Email all members', 'rsvpmaker-for-toastmasters' ) . ': <a href="mailto:%s" target="_blank">%s</a> (' . __( 'for club business or social invitations, no spam please', 'rsvpmaker-for-toastmasters' ) . ')<br /></p>', $lists['member'], $lists['member'] );
 		}
-		if ( ! empty( $lists['officer'] ) && is_officer() ) {
+		if ( ! empty( $lists['officer'] ) && wpt_is_officer() ) {
 			printf( '<p>' . __( 'Officers email list', 'rsvpmaker-for-toastmasters' ) . ': <a href="mailto:%s" target="_blank">%s</a> (' . __( 'for club business or social invitations, no spam please', 'rsvpmaker-for-toastmasters' ) . ')<br /></p>', $lists['officer'], $lists['officer'] );
 		}
 	} elseif ( current_user_can( 'email_list' ) && function_exists( 'wpt_mailster_get_email' ) && $list_email = wpt_mailster_get_email() ) {
@@ -5113,7 +5113,7 @@ function dash_wptmagenda_menu( $post_id ) {
 	}
 	$link    .= '<li ><a href="' . $permalink . 'assigned_open=1" ' . $blank . '>' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li ><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li ><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li ><a target="_blank" href="' . $permalink . 'voting=1">' . __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link .= '</ul></div>';
 
 	if ( $agenda_lock ) {

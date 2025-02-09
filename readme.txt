@@ -8,7 +8,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 6.7.1
-Stable tag: 6.3.1
+Stable tag: 6.3.3
 
 License: GPLv2
 
@@ -75,6 +75,11 @@ The toastmost.org service is supported by subscriptions from member clubs.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 
 == Changelog ==
+
+= 6.3.3 =
+
+* Updates to support integration with the Toastmost mobile app.
+* Voting tool fix to prevent caching of identifier
 
 = 6.3 =
 

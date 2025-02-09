@@ -94,6 +94,10 @@ if(isset($_POST['resend']) && isset($volunteer['type']) && ($volunteer['type'] =
 
 if($enabled) {
     printf('<p>Enter the domain %s and this code into the mobile app to enable role signups.</p><code>%s</code>',$_SERVER['SERVER_NAME'],$code);
+    if(current_user_can('manage_options')) {
+        $url = rest_url('rsvptm/v1/mobile/'.$code);
+        printf('<p>Test <a href="%s">%s</a></p>',$url,$url);
+    }
 }
 if(empty($volunteer) || isset($_GET['reset'])){ 
     ?>
@@ -188,53 +192,3 @@ function wpt_mobile_user_check() {
 
 }
 
-add_shortcode('toastmost_mobile_landing_page','toastmost_mobile_landing_page');
-
-function toastmost_mobile_landing_page() {
-if(empty($_GET['domain']) || empty($_GET['code'])) {
-    return '<p>Invalid link</p>';
-}
-$codelink = sanitize_text_field($_GET['domain']).'|'.sanitize_text_field($_GET['code']);
-$android_url = get_blog_option(1,'wpt_android_url');
-
-ob_start();
-?>
-<style>
-#codelink {
-    width: 100%;
-    font-size: 1.5em;
-}
-#status {
-    font-size: 1.5em;
-    color: green;
-    font-weight: bold;
-}
-</style>
-
-<h2>App Setup Helper</h2>
-<p>Copy the text below to paste into the Toastmost mobile app. You may want to do this even before installing the app.</p>
-<form autocomplete="off">
-<p>Domain|Code<br /><input autocomplete="off" value="<?php echo $codelink; ?>" id="codelink" /></p>
-</form>
-<p id="status"></p>
-<p>When you click on the field, the code should be copied automatically.</p>
-<script>
-jQuery( document ).ready(
-	function($) {
-
-    $('#codelink').click(
-        function() {
-this.select();
-this.setSelectionRange(0, 99999); /* For mobile devices */
-/* Copy the text inside the text field */
-navigator.clipboard.writeText(this.value);
-$('#status').text('Copied!');
-        }
-    );
-    }
-);
-</script>
-<p><a style="background-color:rgb(44, 7, 228);color: white;padding: 15px 25px;text-decoration: none; border-radius: 15px" href="<?php echo $android_url; ?>">Download the Android App</a></p>
-<?php
-return ob_get_clean();
-}

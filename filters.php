@@ -186,6 +186,10 @@ add_filter( 'the_content', function ( $content ) {
 		$link .= '<div  id="react-agenda" '.get_get_to_attributes('evaluation_guest').' >Loading ...</div>';
 		return $link;
 	}
+	elseif(isset($_GET['meetingvote'])) {
+		$link .= '<div id="react-agenda" mode="meeting_vote" post_id="'.$post->ID.'" >Loading ...</div>';
+		return $link;
+	}
 	elseif ( ! is_club_member() && ! current_user_can('manage_network') ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
