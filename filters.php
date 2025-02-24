@@ -42,26 +42,18 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 	}
 		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1">' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1&role_only=1">' . __( 'Email (roles only)', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	if ( ! get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
-		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+		$link .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	}
-	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&contacts=1">' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&word_agenda=1">' . __( 'Export to Word', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link     .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&simple=1">' . __( 'Simple Copy and Paste', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li class="last"><a target="_blank" href="' . $permalink . 'voting=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$online   = get_option( 'tm_online_meeting' );
-	$platform = ( isset( $online['platform'] ) ) ? $online['platform'] : '';
-	if ( ( $platform == 'Jitsi' ) || empty( $platform ) ) {
-		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1&embed=jitsi">' . __( 'Online Meeting (Jitsi)', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	}
-	if ( $platform == 'Jitsi' ) {
-		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1&embed=jitsi&claim_timer=1">' . __( 'Online Timer (Jitsi)', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
-	} else {
-		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1">' . __( 'Online Timer', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
-	}
+	$link    .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&contacts=1">' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&word_agenda=1">' . __( 'Export to Word', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&simple=1">' . __( 'Simple Copy and Paste', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li><a target="_blank" href="' . $permalink . 'voting=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li><a target="_blank" href="' . $permalink . 'meetingvote=1">' . __( "NEW: Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1">' . __( 'Online Timer', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
 
 	$template_id = get_post_meta( $post->ID, '_meet_recur', true );
 	if ( current_user_can( $security['agenda_setup'] ) ) {
@@ -187,7 +179,7 @@ add_filter( 'the_content', function ( $content ) {
 		return $link;
 	}
 	elseif(isset($_GET['meetingvote'])) {
-		$link .= '<div id="react-agenda" mode="meeting_vote" post_id="'.$post->ID.'" >Loading ...</div>';
+		$link .= '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
 		return $link;
 	}
 	elseif ( ! is_club_member() && ! current_user_can('manage_network') ) {

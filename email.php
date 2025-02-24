@@ -182,7 +182,8 @@ function email_with_without_role( $meeting_hours, $test = false ) {
         $mail['subject'] = str_replace('[rsvpdate]',$date,$mail['subject']);
         $mail['subject'] = str_replace('[rsvptitle]',$next->post_title,$mail['subject']);
         $mail['subject'] = do_shortcode($mail['subject']);
-		$role = array_shift($reminder_roles[ $index ]);
+		if(!is_empty($reminder_roles[ $index ]) && is_array($reminder_roles[ $index ]))
+			$role = array_shift($reminder_roles[ $index ]);
 		if($test) {
 			$output .= sprintf('<h3>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],$mail['to'],$mail['html']);
 		}

@@ -962,6 +962,8 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$identifier = sanitize_text_field($_GET['mobile']);
 		$authorized = wpt_mobile_auth($identifier);
 		$votingdata['post_id'] = $post_id;
+		$votingdata['url'] = add_query_arg('meetingvote',1,get_permalink($post_id));
+		$votingdata['login_url'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));
 		$votingdata['authorized_user'] = $authorized;
 		$votingdata['identifier'] = $identifier;
 		$votingdata['vote_counter'] = get_post_meta($post_id,'_role_Vote_Counter_1',true);
@@ -989,28 +991,52 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$votingdata['vote_counter'] = $authorized;
 			$votingdata['is_vote_counter'] = true;
 		}
-		if(isset($data) && isset($data->addvote_contest) && $authorized) {
-			$contest = sanitize_text_field($data->addvote_contest);
-			$addvote = array_map('sanitize_text_field',$data->addvote);
-			update_post_meta($post_id,'addvote_'.$contest,$addvote);
-			$votingdata['addvote'] = $contest.': '.var_export($addvote,true);
+		if(isset($data) && isset($data->ballot) && $authorized) {
+			$votingdata['ballot'] = update_post_meta($post_id,'tm_ballot',(array) $data->ballot);
 		}
-		if(isset($data) && isset($data->candidates) && $authorized) {
-			$votingdata['data'] = $data;
-			foreach($data->candidates as $candidate) {
-				if(!in_array($candidate->key,$open))
-				{
-					add_post_meta($post_id,'openvotes',$candidate->key);
-					$open[] = $candidate->key;
-					add_post_meta($post_id,'votelabel_'.$candidate->key,$candidate->label);
-					$votingdata['labeladded'][] = $candidate->label;
-				}
-				update_post_meta($post_id,'voting_'.$candidate->key,$candidate->options);
-				update_post_meta($post_id,'signature_'.$candidate->key,$candidate->signature);
-				$votingdata['ballot_updated'][] = $candidate->options;
-			}
+		if(isset($data) && isset($data->added) && $authorized) {
+			update_post_meta($post_id,'added_votes',$data->added);
 		}
 
+		if(isset($data->reset) && $authorized) {
+			delete_post_meta($post_id,'tm_ballot');
+			$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id=$post_id AND (meta_key LIKE 'myvote%' or meta_key = 'added_votes') ");
+		}
+		else
+			$votingdata['ballot'] = get_post_meta($post_id,'tm_ballot',true);
+		if( empty($votingdata['ballot']) ) {
+			
+				foreach(['Speaker','Evaluator'] as $role) {
+					$sql = "select * from $wpdb->postmeta WHERE post_id=$post_id and meta_key LIKE '_role_$role%'";
+					$results = $wpdb->get_results($sql);
+					$votingdata[$role] = [];
+					$ids = [];
+					foreach($results as $row) {
+						
+						if(!empty($row->meta_value)) {
+							if(is_numeric($row->meta_value)) {
+								if($row->meta_value > 0) {
+									if(!in_array($row->meta_key,$ids)) {
+										$user = get_userdata($row->meta_value);
+										$ids[] = $row->meta_key;
+										$speaker_name = ($user->display_name) ? $user->display_name : $user->login_name;
+									}
+								}
+							}
+							else
+								$speaker_name = $row->meta_value;
+							$votingdata[$role][] = $speaker_name;
+				}
+				
+				}
+			}
+			$emptyballot = array('status'=>'draft','contestants'=>[],'new'=>[],'deleted'=>[],'signature_required'=>false);
+			$votingdata['ballot'] = array('Speaker'=> array('status'=>'draft','contestants'=>[],'new'=>$votingdata['Speaker'],'deleted'=>[],'signature_required'=>false),'Evaluator'=> array('status'=>'draft','contestants'=>[],'new'=>$votingdata['Evaluator'],'deleted'=>[],'signature_required'=>false),'Table Topics'=> $emptyballot,'Template'=> $emptyballot);
+		}
+
+		$votingdata['added_votes'] = get_post_meta($post_id,'added_votes',true);
+		if(empty($votingdata['added_votes']))
+			$votingdata['added_votes'] = array();
 		$openvotes = [];
 		if(sizeof($open))
 		{
@@ -1043,7 +1069,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				foreach($rsvps as $rsvp) {
 					$display_name = $rsvp->first.' '.$rsvp->last;
 					if(!in_array($display_name,$memberlist))
-						$memberlist[] = array('label'=>$display_name.' (guest)','value'=>$display_name.' (guest)');
+						$memberlist[] = array('label'=>$display_name,'value'=>$display_name);
 				}
 			}
 			$sql = "SELECT meta_value as display_name from $wpdb->postmeta WHERE post_id=$post_id and meta_key LIKE '_role_%'";
@@ -1052,60 +1078,25 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				foreach($guestroles as $row) {
 					if(!is_numeric($row->display_name))
 					{
-						if(!in_array($row->display_name,$memberlist) || !in_array($row->display_name.' (guest)',$memberlist))
-							$memberlist[] = array('label'=>$row->display_name.' (guest)','value'=>$row->display_name.' (guest)');
+						if(!in_array($row->display_name,$memberlist) || !in_array($row->display_name,$memberlist))
+							$memberlist[] = array('label'=>$row->display_name,'value'=>$row->display_name);
 					}
 				}
 			}
-			$sql = "select * from $wpdb->postmeta WHERE post_id=$post_id and meta_key LIKE '_role_Speaker%'";
-			$results = $wpdb->get_results($sql);
-			$votingdata['speaker_results'] = $results;
-			$votingdata['speakers'] = [];
-			$ids = [];
-			foreach($results as $row) {
-				if(!empty($row->meta_value)) {
-					if(is_numeric($row->meta_value)) {
-						if($row->meta_value > 0) {
-							if(!in_array($row->meta_key,$ids)) {
-								$user = get_userdata($row->meta_value);
-								$ids[] = $row->meta_key;
-								$votingdata['speakers'][] = ($user->display_name) ? $user->display_name : $user->login_name;
-							}
-						}
-					}
-					else
-					$votingdata['speakers'][] = $row->meta_value.' (guest)';
-				}
-			}	
-			$sql = "select meta_value from $wpdb->postmeta WHERE post_id=$post_id and meta_key LIKE '_role_Evaluator%'";
-			$results = $wpdb->get_results($sql);
-			$votingdata['evaluators'] = [];
-			$ids = [];
-			foreach($results as $row) {
-				if(!empty($row->meta_value)) {
-					if(is_numeric($row->meta_value)) {
-						if($row->meta_value > 0) {
-							if(!in_array($row->meta_key,$ids)) {
-								$ids[] = $row->meta_key;
-								$user = get_userdata($row->meta_value);
-								$votingdata['evaluators'][] = ($user->display_name) ? $user->display_name : $user->login_name;
-							}
-						}
-					}
-					else
-						$votingdata['evaluators'][] = $row->meta_value.' (guest)';
-				}
-			}	
 		}
-		$agendadata['post_id'] = $post_id;
-		$agendadata['members'] = $memberlist;
-
-		
-		$votingdata['meetingvotes'] = $openvotes;
-		$votingdata['votecount'] = wptm_count_votes($post_id);
+		$votingdata['votecount'] = wptm_count_votes($post_id, $votingdata['added_votes']);
 		$votingdata['memberlist'] = $memberlist;
-		return new WP_REST_Response( $votingdata, 200 );
+		$votingdata['myvotes'] = [];
+		$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%_$identifier' ORDER BY meta_key, meta_value";
+		$results = $wpdb->get_results($sql);
+		foreach($results as $row) {
+			$parts = explode('_',$row->meta_key);
+			$votingdata['myvotes'][] = $parts[1];
+		}
+		$votingdata['myvotesresults'] = $results;
+	return new WP_REST_Response( $votingdata, 200 );
 	}
+
 
 		$output = wptm_count_votes($post_id);
 		do_action('rsvpmaker_log_array',
@@ -1548,10 +1539,9 @@ class WP4T_Mobile_Code extends WP_REST_Controller {
 						$code = $user->ID.'-'.wp_generate_password(8,false);
 						update_user_meta($user->ID,'wpt_mobile_code',$code);
 					}
-					$code_url = 'https://toastmost.org/app-setup/?domain='.$_SERVER['SERVER_NAME'].'&code='.$code;//.'&type=android';
-					$mail['html'] = '<p>Open this email on your phone to simplify connecting the Toastmost mobile app to your website.</p>
-					<p>The code to enter on the setup screen is </p><p>'.$code.'</p>
-					<p>You may find it easier to follow instructions on the <a href="'.$code_url.'">Code and Instructions</a> page, which provides an easier way of copying the code.</p>
+					$code_url = 'https://toastmost.org/app-setup/?domain='.$_SERVER['SERVER_NAME'].'&code='.$code;
+					$mail['html'] = '<p>Open this email on your phone to simplify connecting the app setup.</p>
+					<p>Visit the <a href="'.$code_url.'">app setup page</a>, which will help you connect the app to your account on a club website (or on demo.toastmost.org if you do not currently have a Toastmost or WordPress for Toastmasters website).</p>
 					'.$message;
 					$mail['to'] = $email;
 					$mail['cc'] = 'david@toastmost.org';

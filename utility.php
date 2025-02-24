@@ -3295,19 +3295,29 @@ function wp4t_wp_paypal_ipn_processed($response) {
 
 
 
-function wptm_count_votes($post_id) {
+function wptm_count_votes($post_id, $added_votes = array()) {
 
 	global $wpdb;
 
 	$output = '';
 
+	$ballot = get_post_meta($post_id,'tm_ballot',true);
+	if($ballot) {
+		$ballot = (array) $ballot;
+		foreach($ballot as $key => $vt) {
+			$open[] = (string) $key;// .= 'ballots '.var_export($key,true) . '  votes ' .var_export($votes,true);
+		}
 
+	}
+	else
+		$open = get_post_meta($post_id,'openvotes');
 
-	$open = get_post_meta($post_id,'openvotes');
-
+	//$output = var_export($open,true);
+	//return $output;
 	foreach($open as $v) {
 
 		$addvote = get_post_meta($post_id,'addvote_'.$v,true);
+		//$output .= '<p>checking ' .$post_id. ' addvote_'.$v.'</p>';
 
 		if(empty($addvote))
 
@@ -3315,6 +3325,12 @@ function wptm_count_votes($post_id) {
 
 		$votes[$v] = $addvote;
 
+	}
+
+	foreach($added_votes as $addit) {
+		if('Template' == $addit->ballot)
+			continue;
+		$votes[$addit->ballot][$addit->contestant] = $addit->add;
 	}
 
 	$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%' ORDER BY meta_key, meta_value";
@@ -3326,6 +3342,8 @@ function wptm_count_votes($post_id) {
 		$p = explode('_',$row->meta_key);
 
 		$contest = $p[1];
+		if('Template' == $contest)
+			continue;
 		$identifier = $p[2];
 
 		if(isset($votes[$contest][$row->meta_value]))
@@ -3349,6 +3367,11 @@ function wptm_count_votes($post_id) {
 		foreach($votes as $contest => $contestvote) {
 
 			$label = get_post_meta($post_id,'votelabel_'.$contest,true);
+			if(empty($label))
+				$label = $contest;
+
+			if('Template' == $label || 'c' == $label)
+				continue;
 
 			$ranking[$contest] = sprintf('<h3>Votes for %s</h3>',$label);
 

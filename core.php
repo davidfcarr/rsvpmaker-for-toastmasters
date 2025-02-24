@@ -1559,6 +1559,8 @@ function tm_agenda_content($post_id = 0) {
 		$content .= wp4_email_contacts($has_assignment);
 	if(isset($_GET['debug']))
 		$content .= '<pre>'.var_export($blocksdata,true).'</pre>';
+	$content = preg_replace('/<form[^>]+>/','',$content);
+	$content = str_replace('</form>','',$content);
 	return $content;
 }
 
@@ -5113,7 +5115,7 @@ function dash_wptmagenda_menu( $post_id ) {
 	}
 	$link    .= '<li ><a href="' . $permalink . 'assigned_open=1" ' . $blank . '>' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li ><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li ><a target="_blank" href="' . $permalink . 'voting=1">' . __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li ><a target="_blank" href="' . $permalink . '?meetingvote=1">' . __( 'NEW Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link .= '</ul></div>';
 
 	if ( $agenda_lock ) {
