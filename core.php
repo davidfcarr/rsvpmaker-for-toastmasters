@@ -13818,7 +13818,12 @@ else
 return ob_get_clean();	
 }
 
-add_action('init','wp4t_server_block_render');
+add_action('init','wp4t_init_actions');
+function wp4t_init_actions() {
+	wp4t_toastmost_app_redirect();
+	wp4t_server_block_render();
+}
+
 function wp4t_server_block_render() {
 	register_block_type( 'wp4toastmasters/memberaccess', array( 'render_callback' => 'wpt_member_access' ) );
 	register_block_type( 'wp4toastmasters/blog', array( 'render_callback' => 'wpt_blog_posts' ) );

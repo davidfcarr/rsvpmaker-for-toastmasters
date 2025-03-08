@@ -1,7 +1,5 @@
 <?php
 
-
-
 function wp4t_enable_mobile() {
 
     global $current_user;
@@ -64,9 +62,10 @@ if(isset($_POST['volunteer'])) {
         $mail['fromname'] = 'David @ Toastmost';
         $mail['to'] = $current_user->user_email;
         $mail['subject'] = 'Toastmost Mobile App Android Download '.date('r');
+        $app_redirect_url = site_url('?toastmost_app_redirect=Settings&domain='.$_SERVER['SERVER_NAME'].'&code='.$code);
         $rest_url = rest_url('rsvptm/v1/mobile/'.$code);
         $code_url = 'https://toastmost.org/app-setup/?domain='.$_SERVER['SERVER_NAME'].'&code='.$code.'&type=android';
-        $mail['html'] = sprintf('<p>Open this email on your phone and follow the link below for instructions to download and configure the Android app <a href="%s">%s</a><p>',$code_url,$code_url);
+        $mail['html'] = sprintf('<p>Open this email on your phone and follow this <a href="%s">magic link</a>, which should automatically open the Toastmost app and allow the app to use the website\'s agenda on your behalf. If the magic does not work for some reason, follow the link below instructions to download and configure the Android app <a href="%s">%s</a><p>',$code_url,$code_url);
         rsvpmailer($mail);
     }
 }
@@ -192,3 +191,16 @@ function wpt_mobile_user_check() {
 
 }
 
+function wp4t_toastmost_app_redirect () {
+    if(isset($_GET['toastmost_app_redirect'])) {
+        $url = 'toastmost:///';
+        if(!empty($_GET['toastmost_app_redirect']))
+            $url .= sanitize_text_field($_GET['toastmost_app_redirect']); //path
+        if(isset($_GET['domain']))
+            $url .= '?domain='.sanitize_text_field($_GET['domain']);
+        if(isset($_GET['code']))
+            $url .= '&code='.sanitize_text_field($_GET['code']);
+        header('Location: '.$url);
+        exit;    
+    }
+}

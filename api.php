@@ -986,6 +986,29 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$votingdata['voterecorded'] = $metakey;
 			update_post_meta($post_id,$metakey,$vote);
 		}
+		if(isset($data) && isset($data->email_link)) {
+			$auth_user = get_userdata($authorized);
+			$mail['from'] = $auth_user->user_email;
+			$mail['fromname'] = $auth_user->display_name;
+			$mail['subject'] = 'Voting link for '.get_bloginfo('name');
+			$mobile_link = site_url('?toastmost_app_redirect=Voting&domain='.$_SERVER['SERVER_NAME']);
+			$web_link = add_query_arg('meetingvote',1,get_permalink($post_id));
+			$mail['html'] = sprintf('<p>To cast votes on the website, visit <a href="%s">%s</a></p>',$web_link,$web_link);
+			$mail['html'] .= sprintf('<p>If you have the Toastmost mobile app on your phone, this link should open the <a href="%s">Voting screen</a> of the app.</p>',$mobile_link);
+			if('all' == $data->email_link)
+			{
+				$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+				foreach ( $blogusers as $user ) {
+					$emails[] = $user->user_email;
+				}
+				rsvpmaker_qemail ($mail, $emails);	
+			}
+			else
+			{
+				$mail['to'] = $auth_user->user_email;
+				rsvpmailer($mail);
+			}
+		}
 		if(isset($data) && isset($data->take_vote_counter) && $authorized) {
 			update_post_meta($post_id,'_role_Vote_Counter_1',$authorized);
 			$votingdata['vote_counter'] = $authorized;
@@ -1536,12 +1559,14 @@ class WP4T_Mobile_Code extends WP_REST_Controller {
 					$code = get_user_meta($user->ID,'wpt_mobile_code',true);
 					if(!$code)
 					{
-						$code = $user->ID.'-'.wp_generate_password(8,false);
+						$code = $user->ID.'-'.wp_generate_password(24,false);
 						update_user_meta($user->ID,'wpt_mobile_code',$code);
 					}
 					$code_url = 'https://toastmost.org/app-setup/?domain='.$_SERVER['SERVER_NAME'].'&code='.$code;
+					$app_redirect_url = site_url('?toastmost_app_redirect=Settings&domain='.$_SERVER['SERVER_NAME'].'&code='.$code);
 					$mail['html'] = '<p>Open this email on your phone to simplify connecting the app setup.</p>
-					<p>Visit the <a href="'.$code_url.'">app setup page</a>, which will help you connect the app to your account on a club website (or on demo.toastmost.org if you do not currently have a Toastmost or WordPress for Toastmasters website).</p>
+					<p>Click this <a href="'.$app_redirect_url.'">"magic link"</a> to open the app and connect the app to your club website account.</p>
+					<p>If the magic does not work for some reason, visit the <a href="'.$code_url.'">app setup page</a>, which will help you connect the app to your account on a club website (or on demo.toastmost.org if you do not currently have a Toastmost or WordPress for Toastmasters website).</p>
 					'.$message;
 					$mail['to'] = $email;
 					$mail['cc'] = 'david@toastmost.org';
