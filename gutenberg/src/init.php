@@ -50,11 +50,11 @@ function wpt_cgb_block_assets() {
 
 		'wpt-cgb-style-css', // Handle.
 
-		plugins_url( 'rsvpmaker-for-toastmasters/toastmasters-dynamic-agenda/build/gblocks/index.css' ), // Block style CSS.
+		plugins_url( 'rsvpmaker-for-toastmasters/agenda/build/gblocks/index.css' ), // Block style CSS.
 
 		array( 'wp-editor' ), // Dependency to include the CSS after it.
 
-		filemtime( str_replace('gutenberg','toastmasters-dynamic-agenda',plugin_dir_path( __DIR__ )) . '/build/gblocks/index.css' ) // Version: filemtime — Gets file modification time.
+		filemtime( str_replace('gutenberg','agenda',plugin_dir_path( __DIR__ )) . '/build/gblocks/index.css' ) // Version: filemtime — Gets file modification time.
 
 	);
 
@@ -94,13 +94,13 @@ function wpt_cgb_editor_assets() {
 
 	// Scripts.
 
-	$path = str_replace('gutenberg','toastmasters-dynamic-agenda',plugin_dir_path( __DIR__ ));
+	$path = str_replace('gutenberg','agenda',plugin_dir_path( __DIR__ ));
 
 	wp_enqueue_script(
 
 		'wpt-cgb-block-js', // Handle.
 
-		plugins_url( 'rsvpmaker-for-toastmasters/toastmasters-dynamic-agenda/build/gblocks/index.js' ), // Block.build.js: We register the block here. Built with Webpack.
+		plugins_url( 'rsvpmaker-for-toastmasters/agenda/build/gblocks/index.js' ), // Block.build.js: We register the block here. Built with Webpack.
 
 		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-block-editor' ), // Dependencies, defined above.
 
@@ -146,7 +146,7 @@ function wpt_cgb_editor_assets() {
 
 		'wpt-cgb-block-editor-css', // Handle.
 
-		plugins_url( 'rsvpmaker-for-toastmasters/toastmasters-dynamic-agenda/build/gblocks/index.css' ), // Block editor CSS.
+		plugins_url( 'rsvpmaker-for-toastmasters/agenda/build/gblocks/index.css' ), // Block editor CSS.
 
 		array( 'wp-edit-blocks' ), 
 

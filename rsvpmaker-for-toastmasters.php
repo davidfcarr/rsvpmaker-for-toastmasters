@@ -36,7 +36,7 @@ require 'history.php';
 require 'todo-list.php';
 require 'fse-navigation-block.php';
 require 'email-forwarders-and-groups.php';
-require 'toastmasters-dynamic-agenda/toastmasters-dynamic-agenda.php';
+require 'agenda/toastmasters-dynamic-agenda.php';
 require 'speaker-evaluator/speaker-evaluator.php';
 require 'mobile.php';
 require 'agenda-layout/agenda-layout.php';
