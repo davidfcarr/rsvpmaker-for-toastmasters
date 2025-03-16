@@ -5427,10 +5427,6 @@ function wpt_delete_forwarding_transient() {
 
 }
 
-
-
-//rsvpmaker $post = apply_filters('rsvpmail_post_for_email',$post);
-
 add_filter('rsvpmail_post_for_email','wpt_post_for_email');
 
 function wpt_post_for_email($epost) {

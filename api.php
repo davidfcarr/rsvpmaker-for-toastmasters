@@ -1638,15 +1638,24 @@ class WP4T_Mobile extends WP_REST_Controller {
 			$data = json_decode($json);
 			$post_id = intval($data->post_id);
 		}
+		$agendapost = get_post($post_id);
 		$speechfields = ['title','manual','project','maxtime','display_time','intro'];
 		if(isset($data) && isset($data->ID))
 		{
 			$id = sanitize_text_field($data->ID);
 			$key = sanitize_text_field($data->assignment_key);
-			$result = update_post_meta($post_id,$key,$id);
+			if(strpos($key,'planned_absence')) {
+				if($id)
+					$result = add_post_meta($post_id,'tm_absence',$id);
+				else {
+					$result = delete_post_meta($post_id,'tm_absence',$current_user->ID);
+				}
+			}
+			else {
+				$result = update_post_meta($post_id,$key,$id);
+			}
 			$agendadata['update'][] = $key . ' = ' . $id .' post id = '.$post_id.' result '.var_export($result,true);
 			if(strpos($key,'Vote_Counter')) {
-				$agendapost = get_post($post_id);
 				if(!strpos($agendapost->post_content,':"Vote Counter"')) {
 					$update['ID'] = $post_id;
 					$update['post_content'] = $agendapost->post_content."\n\n".'<!-- wp:wp4toastmasters/role {"role":"Vote Counter","count":1,"start":1} /-->';
@@ -1673,6 +1682,65 @@ class WP4T_Mobile extends WP_REST_Controller {
 				$agendadata['update'][] = "$k = $v";
 				update_post_meta($post_id,$k,$v);
 			}
+		}
+		if(isset($data) && isset($data->absence))
+		{
+			$absence = intval($data->absence);
+			if($absence) {
+				$result = add_post_meta($post_id,'tm_absence',$current_user->ID);
+				$agendadata['absence_update'] = 'added '.$current_user->ID.' '.$current_user->display_name;
+			}
+			else {
+				$result = delete_post_meta($post_id,'tm_absence',$current_user->ID);
+				$agendadata['absence_update'] = 'removed '.$current_user->ID.' '.$current_user->display_name;
+			}
+		}
+		if(isset($data) && isset($data->emailagenda))
+		{
+			global $email_context;
+			$email_context = true;	
+			$request_array['send'] = sanitize_text_field($data->emailagenda);
+			$request_array['subject'] = sanitize_text_field($data->subject);
+			$request_array['note'] = sanitize_text_field($data->note);
+			if($request_array['send'] == 'test') {
+				$request_array['testto'] = $current_user->user_email;
+			}
+			$content = '';
+			if(!empty($request_array['note']))
+				$content .= '<p><em>'.esc_html($request_array['note']).' &mdash; '.$current_user->display_name.'</em></p>';
+			try {
+				$content .= tm_agenda_content($post_id);
+			} catch (Exception $e) {
+				$content .= 'Caught exception: '.  $e->getMessage(). "\n";
+			}
+			try {
+				$content = apply_filters( 'email_agenda', $content );
+			} catch (Exception $e) {
+				$content .= 'Caught exception: '.  $e->getMessage(). "\n";
+			}
+			//ob_start();
+			//awesome_open_roles($post_id, false,$request_array);
+			$mail['html'] = $content;
+			$mail['from'] = $current_user->user_email;
+			$mail['fromname'] = $current_user->display_name;
+			$mail['subject'] = $request_array['subject'];
+			$emails = [];
+			if($request_array['send'] == 'members') {
+				$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
+
+				foreach ( $blogusers as $user ) {
+					$emails[] = $user->user_email;
+				}
+			}
+			else {
+				$emails[] = $current_user->user_email;
+			}
+			foreach($emails as $email) {
+				$mail['to'] = $email;
+				rsvpmailer($mail);
+			}
+			$agendadata['emailagenda_content'] = $content;
+			$agendadata['emailagenda_to'] = sizeof($emails).' emails: '.implode(', ',$emails);
 		}
 		$agendadata['sitename'] = get_option('blogname');
 		$agendadata['user_id'] = $current_user->ID;
@@ -1769,6 +1837,8 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 						}
 						$agenda['roles'][] = $assignment;
 					}
+
+			
 					if($backup) {
 						$key = wp4t_fieldbase('Backup '.$role,$start);
 						$assignment = array('post_id'=>$post_id,'assignment_key'=>$key,'role'=>'Backup '.$role);
@@ -1783,6 +1853,25 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 				}
 		}
 		//end tour through blocks
+		if(strpos($meeting->post_content,'wp:wp4toastmasters/absences')) {
+			$assignment = array('post_id'=>$post_id,'assignment_key'=>'_planned_absence_1','role'=>'Planned Absence');
+			$absences = get_post_meta( $meeting->ID, 'tm_absence' );
+			if(!is_array($absences))
+				$absences = [];
+			$agenda['absences'] = [];
+			foreach($absences as $ab) {
+				$abs_list[] = get_member_name($ab);
+			}
+			if(!empty($abs_list)) {
+				$assignment['name'] = implode(', ',$abs_list);
+			}
+			if(in_array($user_id,$absences)) {
+				$assignment['ID'] = $user_id;
+			}
+			else
+				$assignment['ID'] = 0;
+			$agenda['roles'][] = $assignment;
+		}
 		$agendas[] = $agenda;
 	}//end meetings loop
 	
