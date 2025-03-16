@@ -1621,13 +1621,18 @@ class WP4T_Mobile extends WP_REST_Controller {
 		if($user_code != $saved_code)
 			return false;
 		$current_user = get_userdata($user_id);
+		$stamp = date('r');
+		if(isset($_GET['mobileos'])) {
+			$mobileos = sanitize_text_field($_GET['mobileos']);
+			update_user_meta($user_id,'wpt_mobile_os_'.$mobileos,$stamp);
+		}
+		update_user_meta($user_id,'wpt_mobile_last_access',$stamp);
 		return true;
 	}
 
 	public function handle( $request ) {
 		global $current_user, $wpdb;
 		error_log($current_user->display_name.' mobile request '.$request['user_code']);
-		//$agendadata['user_code'] = $user_code;
 		$json = file_get_contents('php://input');
 		if($json) {
 			$data = json_decode($json);
@@ -1680,8 +1685,12 @@ class WP4T_Mobile extends WP_REST_Controller {
 		$memberlist = [];
 		$members = get_club_members();
 		foreach($members as $member) {
-			$memberlist[] = array('name'=>$member->display_name,'ID'=>$member->ID);
+			$name = (!empty($member->first_name)) ? $member->first_name.' '.$member->last_name : $member->display_name;
+			$memberlist[] = array('name'=>$name,'ID'=>$member->ID);
 		}
+		$memberlist[] = array('name' => 'Open', 'ID' => 0);
+		$memberlist[] = array('name' => 'Not Available', 'ID' => -1);
+		$memberlist[] = array('name' => 'To Be Announced', 'ID' => -2);
 		if(!isset($post_id)) {
 			$future = future_toastmaster_meetings();
 			if($future)

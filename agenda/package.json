@@ -20,9 +20,9 @@
 	"dependencies": {
 		"@tinymce/tinymce-react": "^5.0.1",
 		"@wordpress/icons": "^9.48.0",
-		"axios": "^1.4.0",
+		"axios": ">=1.8.2",
 		"clipboardy": "^3.0.0",
-		"dompurify": "^2.4.5",
+		"dompurify": ">=3.2.4",
 		"react-awesome-button": "^7.0.5",
 		"react-beautiful-dnd": "^13.1.1",
 		"react-collapsed": "^4.1.2",

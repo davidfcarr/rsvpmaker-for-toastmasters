@@ -191,6 +191,8 @@ function awesome_dashboard_widget_function() {
 	}
 
 	?>
+<p><a href="https://toastmost.org/app-setup/"><?php echo __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ) ?></a></p>
+<p><img decoding="async" data-attachment-id="18653" data-permalink="https://toastmost.org/2025/03/15/toastmost-phone-screenshot/image/" data-orig-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1033%2C1022&amp;ssl=1" data-orig-size="1033,1022" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-medium-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=300%2C297&amp;ssl=1" data-large-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1024%2C1013&amp;ssl=1" src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" data-src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" alt="" class="wp-image-18653 ls-is-cached lazyloaded" style="width:450px"></p>
 <p><?php echo sprintf( __( 'You are viewing the private members-only area of the website. For a basic orientation, see the <a href="%s">welcome page</a>.', 'rsvpmaker-for-toastmasters' ), admin_url( 'index.php?page=toastmasters_welcome' ) ); ?>
 <br /></p>
 	<?php

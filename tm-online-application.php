@@ -1273,7 +1273,27 @@ width: 150px;
 
 	}
 
+	if(isset($_POST['deletechecked'])) {
+		if (!isset($_POST['delete_checked_nonce']) || !check_admin_referer('delete_checked_action', 'delete_checked_nonce')) { wp_die('Nonce verification failed'); }
+		
+		$delete = $_POST['deletechecked'];
 
+		if(!empty($delete)) {
+
+			foreach($delete as $id) {
+
+				$application = get_post($id);
+
+				if($application) {
+
+					$result = $wpdb->delete($wpdb->posts, array('ID' => $id));
+					printf('<p>Application deleted: %s, %d, %s</p>',$application->post_title,$id,var_export($result,true));
+
+				}
+
+			}
+		}
+	}
 
 	if ( isset( $_POST['add_account'] ) ) {
 
@@ -1411,7 +1431,7 @@ width: 150px;
 
 		}
 
-		echo '<div style="border: thin solid #333; padding: 10px;">';
+		echo '<form action="'.admin_url( 'admin.php?page=member_application_approval' ).'" method="post" style="border: thin solid #333; padding: 10px;">';
 
 		foreach ( $results as $post ) {
 
@@ -1439,11 +1459,11 @@ width: 150px;
 
 			//echo esc_html($log);
 
-			printf( '<p><a href="%s">%s</a> %s %s</p>', admin_url( 'admin.php?page=member_application_approval&app=' . $post->ID ), $post->post_title, $post->post_modified, $verified );
+			printf( '<p><input type="checkbox" name="deletechecked[]" value="%d" /><a href="%s">%s</a> %s %s</p>', $post->ID, admin_url( 'admin.php?page=member_application_approval&app=' . $post->ID ), $post->post_title, $post->post_modified, $verified );
 
 		}
-
-		echo '<div>';
+		wp_nonce_field('delete_checked_action', 'delete_checked_nonce');
+		echo '<button>Delete Checked</button></form>';
 
 	}
 

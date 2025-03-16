@@ -186,6 +186,16 @@ add_filter( 'the_content', function ( $content ) {
 		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
 		$link .= wptmagenda_menu( $post->ID );
+		$shown = empty($_GET['app_promo']) ? get_user_meta($current_user->ID, 'app_promo_shown', true) : false;
+		if(empty($shown)) {
+			update_user_meta($current_user->ID, 'app_promo_shown', 1);
+			$link .= '<p><a href="https://toastmost.org/app-setup/">'. __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a></p>';
+			$link .= '<p><iframe width="560" height="315" src="https://www.youtube.com/embed/f19zh25JRco?si=jKbEC1HyRSA3cHK-" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>';
+			$link .= '<p>Visit <a href="https://toastmost.org/app-setup/">toastmost.org/app-setup/</a> from your phone or search the app store for "toastmost"</p>';
+			}
+		else {
+			$link .= '<p><a href="https://toastmost.org/app-setup/">'. __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a> | <a href="?app_promo=1">'. __( 'Video Demo', 'rsvpmaker-for-toastmasters' ). '</a></p>';
+		}
 		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
 			if(isset($_GET['revert_by_default']) && current_user_can('manage_options')) {
 				$revert_default = ('on' == $_GET['revert_by_default']);
@@ -239,6 +249,7 @@ add_filter( 'the_content', function ( $content ) {
 		$link .= '<input type="hidden" id="edit_roles_new" value="1" >';
 	if(wp4t_hour_past($post->ID) && current_user_can( 'edit_member_stats' )) 
 		$link .= sprintf('<h3>%s - <a href="%s">%s</a></h3>',__('Role data archived','rsvpmaker-for-toastmasters'),admin_url('admin.php?page=toastmasters_reconcile&post_id='.$post->ID),__('Edit','rsvpmaker-for-toastmasters'));
+			
 	return $output . $link . $content.'<div><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div>';
 
 }
