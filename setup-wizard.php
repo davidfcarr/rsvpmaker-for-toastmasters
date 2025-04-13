@@ -24,13 +24,17 @@ add_action( 'admin_init', 'wp4t_setup_wizard_no_distrations' );
 
 
 
-
-
-
-
 function wp4t_setup_wizard() {
 
-
+if(function_exists('toastmost_welcome_panel')) {
+	ob_start();
+	toastmost_welcome_panel();
+	$welcome = ob_get_clean();
+	if($welcome) {
+		echo $welcome;
+		return;
+	}	
+}
 
 	global $rsvp_options, $current_user, $wpdb;
 

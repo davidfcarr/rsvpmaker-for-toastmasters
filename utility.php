@@ -261,7 +261,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 			if ( ! empty( $held ) ) {
 
-				$status = __( 'Last did', 'rsvpmaker-for_toastmasters' ) . ': ' . $held;
+				$status = __( 'Last did', 'rsvpmaker-for-toastmasters' ) . ': ' . $held;
 
 			}
 
@@ -475,7 +475,7 @@ function awe_rest_user_options( $role, $post_id ) {
 
 			if ( ! empty( $held ) ) {
 
-				$status = __( 'Last did', 'rsvpmaker-for_toastmasters' ) . ': ' . $held;
+				$status = __( 'Last did', 'rsvpmaker-for-toastmasters' ) . ': ' . $held;
 
 			}
 
@@ -544,7 +544,7 @@ function future_toastmaster_meetings( $limit = 10 ) {
 
 	$event_table = $wpdb->prefix.'rsvpmaker_event';
 
-	$t = time();
+	$t = time() - (HOUR_IN_SECONDS * 2);
 
 	$sql = "SELECT *, date as datetime, ID as postID from $wpdb->posts JOIN $event_table ON $wpdb->posts.ID = $event_table.event WHERE post_status='publish' AND (ts_start > $t OR ts_end > $t) AND post_content LIKE '%wp:wp4toastmasters%' ORDER BY date LIMIT 0,$limit";
 
@@ -4100,5 +4100,180 @@ function tm_random_available_check() {
 			}
 		}
 	return $random_available;
+}
+
+function wpt_mobile_translations() {
+	$locale = get_locale();
+	if($locale == 'en_EN')
+		return;
+	global $toast_roles;
+	$translations = $toast_roles;
+	$localkey = 'wp4t_translations_'.$locale;
+	$localtranslations = get_option($localkey,[]);
+	$terms = array(
+		'Take Role' => __('Take Role','rsvpmaker-for-toastmasters'),
+		'Cancel' => __('Cancel','rsvpmaker-for-toastmasters'),
+		'Edit' => __('Edit','rsvpmaker-for-toastmasters'),
+		'Suggest' => __('Suggest','rsvpmaker-for-toastmasters'),
+		'Delete' => __('Delete','rsvpmaker-for-toastmasters'),
+		'Select' => __('Select','rsvpmaker-for-toastmasters'),
+		'Send Email' => __('Send Email','rsvpmaker-for-toastmasters'),
+		'Request by Email' => __('Request by Email','rsvpmaker-for-toastmasters'),
+		'Suggest' => __('Suggest','rsvpmaker-for-toastmasters'),
+		'Vote' => __('Vote','rsvpmaker-for-toastmasters'),
+		'Voting' => __('Voting','rsvpmaker-for-toastmasters'),
+		'Home' => __('Home','rsvpmaker-for-toastmasters'),
+		'Agenda' => __('Agenda','rsvpmaker-for-toastmasters'),
+		'Timer' => __('Timer','rsvpmaker-for-toastmasters'),
+		'Start' => __('Start','rsvpmaker-for-toastmasters'),
+		'Stop' => __('Stop','rsvpmaker-for-toastmasters'),
+		'Pause' => __('Pause','rsvpmaker-for-toastmasters'),
+		'Settings' => __('Settings','rsvpmaker-for-toastmasters'),
+		"Vote Counter's Tool" => __("Vote Counter's Tool",'rsvpmaker-for-toastmasters'),
+		"Publish" => __("Publish",'rsvpmaker-for-toastmasters'),
+		"Unpublish" => __("Unpublish",'rsvpmaker-for-toastmasters'),
+		"New Ballot" => __("New Ballot",'rsvpmaker-for-toastmasters'),
+		"Include for every meeting" => __("Include for every meeting",'rsvpmaker-for-toastmasters'),
+		"Signature Required" => __("Signature Required",'rsvpmaker-for-toastmasters'),
+		"Send web voting link" => __("Send web voting link",'rsvpmaker-for-toastmasters'),
+		"Email the link to me" => __("Email the link to me",'rsvpmaker-for-toastmasters'),
+		"Email the link to members" => __("Email the link to members",'rsvpmaker-for-toastmasters'),
+		"Reset Ballot" => __("Reset Ballot",'rsvpmaker-for-toastmasters'),
+		"Domain or domain|code" => __("Domain or domain|code",'rsvpmaker-for-toastmasters'),
+		"Code or email" => __("Code or email",'rsvpmaker-for-toastmasters'),
+		"Add" => __("Add",'rsvpmaker-for-toastmasters'),
+		"Reset Clubs List" => __("Reset Clubs List",'rsvpmaker-for-toastmasters'),
+		"Assign" => __("Assign","rsvpmaker-for-toastmasters"),
+		"Back to Vote Counter Controls?" => __("Back to Vote Counter Controls?","rsvpmaker-for-toastmasters"),
+		"Backup Speaker" => __("Backup Speaker","rsvpmaker-for-toastmasters"),
+		"Checking for ballots ..." => __("Checking for ballots ...","rsvpmaker-for-toastmasters"),
+		"Done" => __("Done","rsvpmaker-for-toastmasters"),
+		"Go Back" => __("Go Back","rsvpmaker-for-toastmasters"),
+		"Language Preference" => __("Language Preference","rsvpmaker-for-toastmasters"),
+		"Log missed translations" => __("Log missed translations","rsvpmaker-for-toastmasters"),
+		"Members can vote using the app or a web link." => __("Members can vote using the app or a web link.","rsvpmaker-for-toastmasters"),
+		"Note" => __("Note","rsvpmaker-for-toastmasters"),
+		"Or Type Choice" => __("Or Type Choice","rsvpmaker-for-toastmasters"),
+		"Planned Absence" => __("Planned Absence","rsvpmaker-for-toastmasters"),
+		"Progress Report" => __("Progress Report","rsvpmaker-for-toastmasters"),
+		"Send Web Voting Link" => __("Send Web Voting Link","rsvpmaker-for-toastmasters"),
+		"Status: French translation started." => __("Status: French translation started.","rsvpmaker-for-toastmasters"),
+		"Status: Spanish planned." => __("Status: Spanish planned.","rsvpmaker-for-toastmasters"),
+		"Suggest Role" => __("Suggest Role","rsvpmaker-for-toastmasters"),
+		"Translation" => __("Translation","rsvpmaker-for-toastmasters"),
+		"Use this function to recommend that another member take the selected role" => __("Use this function to recommend that another member take the selected role","rsvpmaker-for-toastmasters"),
+		"Voted" => __("Voted","rsvpmaker-for-toastmasters"),
+		"beta" => __("beta","rsvpmaker-for-toastmasters"),
+	"Path Not Set" => __("Path Not Set",'rsvpmaker-for-toastmasters'),
+	"Dynamic Leadership" => __("Dynamic Leadership",'rsvpmaker-for-toastmasters'),
+	"Effective Coaching" => __("Effective Coaching",'rsvpmaker-for-toastmasters'),
+	"Engaging Humor" => __("Engaging Humor",'rsvpmaker-for-toastmasters'),
+	"Innovative Planning" => __("Innovative Planning",'rsvpmaker-for-toastmasters'),
+	"Leadership Development" => __("Leadership Development",'rsvpmaker-for-toastmasters'),
+	"Motivational Strategies" => __("Motivational Strategies",'rsvpmaker-for-toastmasters'),
+	"Persuasive Influence" => __("Persuasive Influence",'rsvpmaker-for-toastmasters'),
+	"Presentation Mastery" => __("Presentation Mastery",'rsvpmaker-for-toastmasters'),
+	"Strategic Relationships" => __("Strategic Relationships",'rsvpmaker-for-toastmasters'),
+	"Team Collaboration" => __("Team Collaboration",'rsvpmaker-for-toastmasters'),
+	"Visionary Communication" => __("Visionary Communication",'rsvpmaker-for-toastmasters'),
+	"Pathways 360" => __("Pathways 360",'rsvpmaker-for-toastmasters'),
+	"Pathways Mentor Program" => __("Pathways Mentor Program",'rsvpmaker-for-toastmasters'),
+	"Other" => __("Other",'rsvpmaker-for-toastmasters'),
+	"Level" => __("Level",'rsvpmaker-for-toastmasters'),
+	"Pathways 360° Evaluation" => __("Pathways 360° Evaluation",'rsvpmaker-for-toastmasters'),
+	"Mentor Program: Mentoring" => __("Mentor Program: Mentoring",'rsvpmaker-for-toastmasters'),
+	"Mentor Program: Advanced Mentoring" => __("Mentor Program: Advanced Mentoring",'rsvpmaker-for-toastmasters'),
+	"Ice Breaker" => __("Ice Breaker",'rsvpmaker-for-toastmasters'),
+	"Evaluation and Feedback - First Speech" => __("Evaluation and Feedback - First Speech",'rsvpmaker-for-toastmasters'),
+	"Evaluation and Feedback - Second Speech" => __("Evaluation and Feedback - Second Speech",'rsvpmaker-for-toastmasters'),
+	"Evaluation and Feedback - Evaluator Speech" => __("Evaluation and Feedback - Evaluator Speech",'rsvpmaker-for-toastmasters'),
+	"Writing a Speech with Purpose" => __("Writing a Speech with Purpose",'rsvpmaker-for-toastmasters'),
+	"Introduction to Vocal Variety and Body Language" => __("Introduction to Vocal Variety and Body Language",'rsvpmaker-for-toastmasters'),
+	"Introduction to Vocal Variety and Body Language - Emphasis on Vocal Variety" => __("Introduction to Vocal Variety and Body Language - Emphasis on Vocal Variety",'rsvpmaker-for-toastmasters'),
+	"Researching and Presenting" => __("Researching and Presenting",'rsvpmaker-for-toastmasters'),
+	"Understanding Your Leadership Style" => __("Understanding Your Leadership Style",'rsvpmaker-for-toastmasters'),
+	"Understanding Your Communication Style" => __("Understanding Your Communication Style",'rsvpmaker-for-toastmasters'),
+	"Introduction to Toastmasters Mentoring" => __("Introduction to Toastmasters Mentoring",'rsvpmaker-for-toastmasters'),
+	"Negotiate the Best Outcome" => __("Negotiate the Best Outcome",'rsvpmaker-for-toastmasters'),
+	"Active Listening" => __("Active Listening",'rsvpmaker-for-toastmasters'),
+	"Connect with Storytelling" => __("Connect with Storytelling",'rsvpmaker-for-toastmasters'),
+	"Connect with Your Audience" => __("Connect with Your Audience",'rsvpmaker-for-toastmasters'),
+	"Creating Effective Visual Aids" => __("Creating Effective Visual Aids",'rsvpmaker-for-toastmasters'),
+	"Deliver Social Speeches - First Speech" => __("Deliver Social Speeches - First Speech",'rsvpmaker-for-toastmasters'),
+	"Deliver Social Speeches - Second Speech" => __("Deliver Social Speeches - Second Speech",'rsvpmaker-for-toastmasters'),
+	"Effective Body Language" => __("Effective Body Language",'rsvpmaker-for-toastmasters'),
+	"Focus on the Positive" => __("Focus on the Positive",'rsvpmaker-for-toastmasters'),
+	"Inspire Your Audience" => __("Inspire Your Audience",'rsvpmaker-for-toastmasters'),
+	"Know Your Sense of Humor" => __("Know Your Sense of Humor",'rsvpmaker-for-toastmasters'),
+	"Make Connections Through Networking" => __("Make Connections Through Networking",'rsvpmaker-for-toastmasters'),
+	"Prepare for an Interview" => __("Prepare for an Interview",'rsvpmaker-for-toastmasters'),
+	"Using Descriptive Language" => __("Using Descriptive Language",'rsvpmaker-for-toastmasters'),
+	"Using Presentation Software" => __("Using Presentation Software",'rsvpmaker-for-toastmasters'),
+	"Understanding Vocal Variety" => __("Understanding Vocal Variety",'rsvpmaker-for-toastmasters'),
+	"Manage Change" => __("Manage Change",'rsvpmaker-for-toastmasters'),
+	"Building a Social Media Presence" => __("Building a Social Media Presence",'rsvpmaker-for-toastmasters'),
+	"Create a Podcast" => __("Create a Podcast",'rsvpmaker-for-toastmasters'),
+	"Manage Online Meetings" => __("Manage Online Meetings",'rsvpmaker-for-toastmasters'),
+	"Managing a Difficult Audience" => __("Managing a Difficult Audience",'rsvpmaker-for-toastmasters'),
+	"Manage Projects Successfully - First Speech" => __("Manage Projects Successfully - First Speech",'rsvpmaker-for-toastmasters'),
+	"Manage Projects Successfully - Second Speech" => __("Manage Projects Successfully - Second Speech",'rsvpmaker-for-toastmasters'),
+	"Public Relations Strategies" => __("Public Relations Strategies",'rsvpmaker-for-toastmasters'),
+	"Question-and-Answer Session" => __("Question-and-Answer Session",'rsvpmaker-for-toastmasters'),
+	"Write a Compelling Blog" => __("Write a Compelling Blog",'rsvpmaker-for-toastmasters'),
+	"Lead in Any Situation" => __("Lead in Any Situation",'rsvpmaker-for-toastmasters'),
+	"Reflect on Your Path" => __("Reflect on Your Path",'rsvpmaker-for-toastmasters'),
+	"Ethical Leadership" => __("Ethical Leadership",'rsvpmaker-for-toastmasters'),
+	"High Performance Leadership - First Speech" => __("High Performance Leadership - First Speech",'rsvpmaker-for-toastmasters'),
+	"High Performance Leadership - Second Speech" => __("High Performance Leadership - Second Speech",'rsvpmaker-for-toastmasters'),
+	"Leading in Your Volunteer Organization" => __("Leading in Your Volunteer Organization",'rsvpmaker-for-toastmasters'),
+	"Lessons Learned" => __("Lessons Learned",'rsvpmaker-for-toastmasters'),
+	"Moderate a Panel Discussion" => __("Moderate a Panel Discussion",'rsvpmaker-for-toastmasters'),
+	"Prepare to Speak Professionally" => __("Prepare to Speak Professionally",'rsvpmaker-for-toastmasters'),
+	"DTM Project Speech 1" => __("DTM Project Speech 1",'rsvpmaker-for-toastmasters'),
+	"DTM Project Speech 2" => __("DTM Project Speech 2",'rsvpmaker-for-toastmasters'),
+	"Pathways 360 Evaluation" => __("Pathways 360 Evaluation",'rsvpmaker-for-toastmasters'),
+	"Reaching Consensus - Assignment Option 1" => __("Reaching Consensus - Assignment Option 1",'rsvpmaker-for-toastmasters'),
+	"Reaching Consensus - Assignment Option 2" => __("Reaching Consensus - Assignment Option 2",'rsvpmaker-for-toastmasters'),
+	"Improvement Through Positive Coaching" => __("Improvement Through Positive Coaching",'rsvpmaker-for-toastmasters'),
+	"Engage Your Audience with Humor" => __("Engage Your Audience with Humor",'rsvpmaker-for-toastmasters'),
+	"The Power of Humor in an Impromptu Speech" => __("The Power of Humor in an Impromptu Speech",'rsvpmaker-for-toastmasters'),
+	"Deliver Your Message With Humor" => __("Deliver Your Message With Humor",'rsvpmaker-for-toastmasters'),
+	"Present a Proposal" => __("Present a Proposal",'rsvpmaker-for-toastmasters'),
+	"Managing Time" => __("Managing Time",'rsvpmaker-for-toastmasters'),
+	"Planning and Implementing" => __("Planning and Implementing",'rsvpmaker-for-toastmasters'),
+	"Leading Your Team" => __("Leading Your Team",'rsvpmaker-for-toastmasters'),
+	"Manage Successful Events" => __("Manage Successful Events",'rsvpmaker-for-toastmasters'),
+	"Understanding Emotional Intelligence" => __("Understanding Emotional Intelligence",'rsvpmaker-for-toastmasters'),
+	"Motivate Others" => __("Motivate Others",'rsvpmaker-for-toastmasters'),
+	"Team Building" => __("Team Building",'rsvpmaker-for-toastmasters'),
+	"Understanding Conflict Resolution" => __("Understanding Conflict Resolution",'rsvpmaker-for-toastmasters'),
+	"Leading in Difficult Situations" => __("Leading in Difficult Situations",'rsvpmaker-for-toastmasters'),
+	"Persuasive Speaking" => __("Persuasive Speaking",'rsvpmaker-for-toastmasters'),
+	"Cross-Cultural Understanding" => __("Cross-Cultural Understanding",'rsvpmaker-for-toastmasters'),
+	"Successful Collaboration" => __("Successful Collaboration",'rsvpmaker-for-toastmasters'),
+	"Develop a Communication Plan" => __("Develop a Communication Plan",'rsvpmaker-for-toastmasters'),
+	"Communicate Change" => __("Communicate Change",'rsvpmaker-for-toastmasters'),
+	"Develop Your Vision - First Speech" => __("Develop Your Vision - First Speech",'rsvpmaker-for-toastmasters'),
+	"Develop Your Vision - Second Speech" => __("Develop Your Vision - Second Speech",'rsvpmaker-for-toastmasters'),
+	);
+	$combined = array_merge($translations,$terms);
+	$missed = [];
+	$translated = [];
+	$localsize = sizeof($localtranslations);
+	if($localsize) {
+		foreach($localtranslations as $key => $value) {
+			if((empty($combined[$key]) || $combined[$key] == $key)) {
+				$combined[$key] = $localtranslations[$key];
+			}
+		}
+	}
+	foreach($combined as $key => $value) {
+		if($value == $key) {
+			$missed[] = $key;
+		}
+		else
+			$translated[$key] = $value;
+	}
+	return array('translations'=>$translated,'missed'=>$missed);
 }
 

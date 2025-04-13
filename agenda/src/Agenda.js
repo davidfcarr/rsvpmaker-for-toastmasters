@@ -31,7 +31,7 @@ import {Hybrid} from './Hybrid.js';
 
 import {useBlocks,updateAgenda} from './queries.js';
 import { useCollapse } from 'react-collapsed';
-import { Icon, chevronUp, chevronDown } from '@wordpress/icons';
+import { Icon, chevronUp, chevronDown, edit } from '@wordpress/icons';
 
 export default function Agenda(props) {
 
@@ -91,8 +91,6 @@ export default function Agenda(props) {
         access.scrollIntoView({behavior: 'smooth'}, true);
 
     }
-
-
 
     function makeNotification(message, prompt = false, otherproperties = null) {
 
@@ -198,7 +196,7 @@ function ModeControl(props) {
 
     } else {
 
-        modeoptions.push({'label': 'SignUp', 'value':'signup'});
+        modeoptions.push({'label': 'Sign Up', 'value':'signup'});
 
         modeoptions.push({'label': 'Suggest', 'value':'suggest'});
 
@@ -223,6 +221,15 @@ function ModeControl(props) {
     }
 
     const viewoptions = ('reorganize' == mode) ? [{'value':'all','label':'Show All'},{'value':'','label':'Outline View'},{'value':'speakers-evaluators','label':'Speakers and Evaluators Only'},{'value':'timed','label':'Timed Elements Only'}] : [{'value':'all','label':'Show Details'},{'value':'','label':'Outline View'},{'value':'speakers-evaluators','label':'Speakers and Evaluators Only'}];    
+
+    return (
+    <div id="fixed-mode-control">
+        {notification && <div className="mode-centered tm-notification tm-notification-success suggestion-notification"> <SanitizedHTML innerHTML={notification.message} /> {notification.prompt && <NextMeetingPrompt />} {notification.otherproperties && notification.otherproperties.map( (property) => {if(property.template_prompt) return <div className="next-meeting-prompt"><a target="_blank" href={'/wp-admin/edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t='+property.template_prompt}>Create/Update</a> - copy content to new and existing events</div>} )} {isFetching && <em>Fetching fresh data ...</em>}</div>}
+        <div class="mode-centered">{modeoptions.map((option) => { return <button className={(mode == option.value) ? "blackButton bottomButton": 'bottomButton' } key={option.value} onClick={() => {setMode(option.value); setScrollTo('react-agenda');}}>{option.label}</button>})}</div>
+        <p className="mode-help mode-centered">{getHelpMessage()}</p>
+    </div>
+)    
+
 
     return (
 
@@ -447,14 +454,14 @@ if('settings' == mode)
 
                             return (
 
-                            <div key={'block'+blockindex} id={'block'+blockindex} className="block" onMouseEnter={() => {setShowControls(blockindex);}} >
+                            <div key={'block'+blockindex} id={'block'+blockindex} className="block" >
 
                             <div><strong>{datestring}</strong></div>
 
-                            <RoleBlock makeNotification={makeNotification} showDetails={showDetails} agendadata={data} post_id={post_id} blockindex={blockindex} mode={rolemode} block={block}  setMode={setMode} setScrollTo={setScrollTo} setEvaluate={setEvaluate} />
+                            <RoleBlock makeNotification={makeNotification} showDetails={showDetails} agendadata={data} post_id={post_id} blockindex={blockindex} mode={rolemode} block={block}  setMode={setMode} setScrollTo={setScrollTo} setEvaluate={setEvaluate} setShowControls={setShowControls} />
 
                             <SpeakerTimeCount block={block}  makeNotification={makeNotification} />
-                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} />}
+                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} setShowControls={setShowControls} />}
 
                             </div>
 
@@ -471,11 +478,11 @@ if('settings' == mode)
 
                             return (
 
-                                <div key={'block'+blockindex} id={'block'+blockindex} className="block" onMouseEnter={() => {setShowControls(blockindex);}} >
+                                <div key={'block'+blockindex} id={'block'+blockindex} className="block" >
                                 <div><strong>{datestring}</strong></div>
                                 <EditableNote  makeNotification={makeNotification} mode={notemode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} />
-                                {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} />}
-
+                                {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} setShowControls={setShowControls} />}
+                                {showControls != blockindex && user_can('organize_agenda') && <button  className="agenda-tooltip" onClick={() => {setShowControls(blockindex)}}><span class="agenda-tooltip-text">Edit/Organize</span><Icon icon={edit} /></button>}
                                 </div>
 
                             );
@@ -487,15 +494,15 @@ if('settings' == mode)
 
                             return (
 
-                            <div key={'block'+blockindex} id={'block'+blockindex} className="block" onMouseEnter={() => {setShowControls(blockindex);}} >
+                            <div key={'block'+blockindex} id={'block'+blockindex} className="block" >
 
                             <div><strong>{datestring}</strong></div>
 
                             {('edit' != notemode || !editNotes ) && <SanitizedHTML innerHTML={block.innerHTML} />}
                             {('edit' == notemode && !editNotes ) && <button class="tmsmallbutton" onClick={()=> setEditNotes(true)}>Edit</button>}
                             {'edit' == notemode && editNotes && <EditorAgendaNote  makeNotification={makeNotification} blockindex={blockindex} block={block} />}
-                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} />}
-
+                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} setShowControls={setShowControls} />}
+                            {showControls != blockindex && user_can('organize_agenda') && <button  className="agenda-tooltip" onClick={() => {setShowControls(blockindex)}}><span class="agenda-tooltip-text">Edit/Organize</span><Icon icon={edit} /></button>}
                             </div>)
 
                         }
@@ -542,14 +549,14 @@ if('settings' == mode)
 
                             return (
 
-                            <div key={'block'+blockindex} id={'block'+blockindex} className="block" onMouseEnter={() => {setShowControls(blockindex);}}>
+                            <div key={'block'+blockindex} id={'block'+blockindex} className="block" >
 
                             <div><strong>{datestring}</strong></div>
 
                             <RoleBlock makeNotification={makeNotification} showDetails={showDetails} agendadata={data} post_id={post_id} blockindex={blockindex} mode={mode} block={block} setEvaluate={setEvaluate} setMode={setMode} />
 
                             <SpeakerTimeCount block={block}  makeNotification={makeNotification} />
-                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} />}
+                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode}  setShowControls={setShowControls} />}
 
                             </div>
 
@@ -561,12 +568,13 @@ if('settings' == mode)
 
                             return (
 
-                                <div key={'block'+blockindex} id={'block'+blockindex} className="block" onMouseEnter={() => {setShowControls(blockindex); }} >
+                                <div key={'block'+blockindex} id={'block'+blockindex} className="block" >
 
                                 <div><strong>{datestring}</strong></div>
 
                                 <EditableNote  makeNotification={makeNotification} mode={mode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} />
-                                {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} />}
+                                {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode}  setShowControls={setShowControls} />}
+                                {showControls != blockindex && user_can('organize_agenda') && <button  className="agenda-tooltip" onClick={() => {setShowControls(blockindex)}}><span class="agenda-tooltip-text">Edit/Organize</span><Icon icon={edit} /></button>}
                                 </div>
 
                             );
@@ -577,12 +585,12 @@ if('settings' == mode)
 
                             return (
 
-                            <div key={'block'+blockindex} id={'block'+blockindex} className="block"  onMouseEnter={() => {setShowControls(blockindex); }} >
+                            <div key={'block'+blockindex} id={'block'+blockindex} className="block"  >
 
                             <div><strong>{datestring}</strong></div>
 
                             <EditorAgendaNote  makeNotification={makeNotification} blockindex={blockindex} block={block} />
-                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} />}
+                            {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode}  setShowControls={setShowControls}  />}
 
                             </div>)
 

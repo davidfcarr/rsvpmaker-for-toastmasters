@@ -7,156 +7,246 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: GlotPress/3.0.0-alpha.2\n"
+"X-Generator: GlotPress/4.0.1\n"
 "Language: fr\n"
 "Project-Id-Version: Plugins - RSVPMaker for Toastmasters - Stable (latest release)\n"
 
-#: tm-reports.php:460
+#: utility.php:4112 utility.php:4117
+msgid "Suggest"
+msgstr "Suggérer"
+
+#: utility.php:4115
+msgid "Send Email"
+msgstr "Envoyer un e-mail"
+
+#: utility.php:4116
+msgid "Request by Email"
+msgstr "Demande par e-mail"
+
+#: utility.php:4118
+msgid "Vote"
+msgstr "Voter"
+
+#: utility.php:4119
+msgid "Voting"
+msgstr "Vote"
+
+#: utility.php:4123
+msgid "Start"
+msgstr "Commencer"
+
+#: utility.php:4124
+msgid "Stop"
+msgstr "Arrêt"
+
+#: utility.php:4125
+msgid "Pause"
+msgstr "Pause"
+
+#: utility.php:4128
+msgid "Publish"
+msgstr "Publier"
+
+#: utility.php:4129
+msgid "Unpublish"
+msgstr "Dépublier"
+
+#: utility.php:4130
+msgid "New Ballot"
+msgstr "Nouveau scrutin"
+
+#: utility.php:4131
+msgid "Include for every meeting"
+msgstr "Inclure pour chaque réunion"
+
+#: utility.php:4133
+msgid "Send web voting link"
+msgstr "Envoyer un lien de vote en ligne"
+
+#: utility.php:4134
+msgid "Email the link to me"
+msgstr "Envoyez-moi le lien par e-mail"
+
+#: utility.php:4135
+msgid "Email the link to members"
+msgstr "Envoyer le lien par e-mail aux membres"
+
+#: utility.php:4136
+msgid "Reset Ballot"
+msgstr "Réinitialiser le bulletin de vote"
+
+#: utility.php:4137
+msgid "Domain or domain|code"
+msgstr "Domaine ou domaine|code"
+
+#: utility.php:4138
+msgid "Code or email"
+msgstr "Code ou email"
+
+#: utility.php:4140
+msgid "Reset Clubs List"
+msgstr "Réinitialiser la liste des clubs"
+
+#: utility.php:4132
+msgid "Signature Required"
+msgstr "Signature requise"
+
+#: core.php:12468 filters.php:54 utility.php:4127
+msgid "Vote Counter's Tool"
+msgstr "Outil de comptage des votes"
+
+#: tm-reports.php:915
 msgid "Grammarian"
 msgstr "Grammairien"
 
-#: tm-reports.php:459
+#: tm-reports.php:913
 msgid "General Evaluator"
 msgstr "Évaluateur Général"
 
-#: tm-reports.php:458
+#: tm-reports.php:911
 msgid "Evaluator"
 msgstr "Évaluateur"
 
-#: tm-reports.php:469
+#: tm-reports.php:933
 msgid "Chief Judge"
 msgstr "Chef Juge"
 
-#: tm-reports.php:465
+#: tm-reports.php:925 utility.php:4122
 msgid "Timer"
-msgstr "Maître du Temps "
+msgstr "Minuteur"
 
-#: tm-reports.php:463
+#: tm-reports.php:921
 msgid "Topics Master"
 msgstr "Maître des Improvisations"
 
-#: rsvpmaker-for-toastmasters.php:1209 rsvpmaker-for-toastmasters.php:1218
-#: rsvpmaker-for-toastmasters.php:1223 rsvpmaker-for-toastmasters.php:1226
+#: api.php:427 core.php:1283 core.php:1292 core.php:1299 core.php:1304
+#: utility.php:4109
 msgid "Take Role"
 msgstr "Prendre un rôle"
 
-#: rsvpmaker-for-toastmasters.php:9882 gutenberg/dist/blocks.build.js:1
+#: core.php:10169 agenda/build/gblocks/index.js:1
+#: agenda/src/gblocks/agenda_context.js:79
 msgid "Display"
 msgstr "Affichage"
 
-#: rsvpmaker-for-toastmasters.php:1200
+#: core.php:1274
 msgid "Take Role button appears here"
 msgstr "Le bouton \"Prendre un rôle\" apparait ici"
 
-#: tm-reports.php:464
+#: tm-reports.php:923
 msgid "Table Topics"
 msgstr "Improvisations"
 
-#: tm-reports.php:468
+#: tm-reports.php:931
 msgid "Contest Master"
 msgstr "Président de Concours"
 
-#: rsvpmaker-for-toastmasters.php:12475
+#: core.php:12781
 msgid "Cancel My Absence"
 msgstr "Annuler ma notification d'absence"
 
-#: rsvpmaker-for-toastmasters.php:7223 rsvpmaker-for-toastmasters.php:12477
-#: utility.php:125
+#: api.php:1693 core.php:7388 core.php:12783 utility.php:256 utility.php:471
 msgid "Planned Absence"
-msgstr "Planifier une absence"
+msgstr "Absence planifiée"
 
-#: tm-reports.php:46
-msgid "History (beta)"
-msgstr "Historique (beta)"
-
-#: rsvpmaker-for-toastmasters.php:12466
+#: core.php:12772
 msgid "Just this meeting"
 msgstr "Uniquement cette réunion"
 
-#: history.php:311
+#: history.php:516
 msgid "Refresh"
 msgstr "Rafraichir"
 
-#: rsvpmaker-for-toastmasters.php:2868
+#: core.php:2973
 msgid "Send Speech Introductions to Toastmaster of the Day"
 msgstr "Envoyer les présentations de discours à l'Animateurs"
 
-#: rsvpmaker-for-toastmasters.php:5517 rsvpmaker-for-toastmasters.php:5520
+#: core.php:5634 core.php:5637
 msgid "Set Your Profile Picture"
 msgstr "Changer Votre Photo de Profil"
 
-#: gutenberg/dist/blocks.build.js:1 gutenberg/src/block/block.js:200
-#: gutenberg/src/block/block.js:467
+#: agenda/src/gblocks/block.js:396 agenda/src/gblocks/block.js:996
 msgid "Role"
 msgstr "Rôle"
 
-#: gutenberg/dist/blocks.build.js:1 gutenberg/src/block/block.js:68
-#: gutenberg/src/block/block.js:155
+#: agenda/src/gblocks/block.js:139 agenda/src/gblocks/block.js:306
 msgid "Rich Text"
 msgstr "Texte Enrichi"
 
-#: setup-wizard.php:885
+#: setup-wizard.php:1795
 msgid "Confirm Password"
 msgstr "Confirmer le mot de passe"
 
-#: setup-wizard.php:871
+#: setup-wizard.php:1767
 msgid "Repeat New Password"
 msgstr "Répéter le mot de passe"
 
-#: setup-wizard.php:849
+#: setup-wizard.php:1723
 msgid "Hide"
 msgstr "Cacher"
 
-#: tm-reports.php:58
+#: setup-wizard.php:1739 utility.php:4110
+msgid "Cancel"
+msgstr "Annuler"
+
+#: tm-reports.php:115
 msgid "Upcoming Meetings"
 msgstr "Réunions à venir"
 
-#: rsvpmaker-for-toastmasters.php:9136 rsvpmaker-for-toastmasters.php:9161
+#: core.php:9379 core.php:9404 agenda/src/gblocks/sidebar-blocks.js:229
 msgid "Newest Members"
 msgstr "Nouveaux Membres"
 
-#: rsvpmaker-for-toastmasters.php:9134
+#: core.php:9377
 msgid "Newest Members of Club."
 msgstr "Nouveaux Membres du Club"
 
-#: rsvpmaker-for-toastmasters.php:5508 rsvpmaker-for-toastmasters.php:5510
+#: core.php:5625 core.php:5627
 msgid "Joined Club"
 msgstr "Date d'Adhésion"
 
-#: rsvpmaker-for-toastmasters.php:5437
+#: core.php:5556
 msgid "Email addresses and other contact information provided for Toastmasters business only."
 msgstr "Les adresses email et autre information de contact sont fournies pour une utilisation dans le cadre du club Toastmasters uniquement."
 
-#: tm-reports.php:466
+#: tm-reports.php:927
 msgid "Toastmaster of the Day"
 msgstr "Animateur de Soirée"
 
-#: rsvpmaker-for-toastmasters.php:6479
+#: core.php:6616 core.php:6760
 msgid "Activity"
 msgstr "Activité"
 
-#: rsvpmaker-for-toastmasters.php:1397 rsvpmaker-for-toastmasters.php:2211
-#: rsvpmaker-for-toastmasters.php:2384 rsvpmaker-for-toastmasters.php:5448
-#: rsvpmaker-for-toastmasters.php:5825 rsvpmaker-for-toastmasters.php:6355
-#: rsvpmaker-for-toastmasters.php:10847 rsvpmaker-for-toastmasters.php:11944
-#: rsvpmaker-for-toastmasters.php:12066 rsvpmaker-for-toastmasters.php:12100
-#: rsvpmaker-for-toastmasters.php:12130 rsvpmaker-for-toastmasters.php:12155
-#: tm-reports.php:3311 utility.php:769
+#: core.php:1585 core.php:2434 core.php:5567 core.php:5944 core.php:6492
+#: core.php:11139 core.php:11173 core.php:12228 core.php:12350 core.php:12384
+#: core.php:12414 core.php:12439 tm-reports.php:6923 utility.php:1639
 msgid "Mobile Phone"
 msgstr "Téléphone Portable"
 
-#: rsvpmaker-for-toastmasters.php:5400
+#: core.php:5519
 msgid "Contact details such as phone numbers and email are only displayed when you are logged into the website (and should only be used for Toastmasters business)"
 msgstr "Les informations de contact comme le numéro de téléphone et l'email sont affichées uniquement aux membres, après identification sur le site web (et doivent être utiliser uniquement dans le cadre du club Toastmasters) "
 
-#: rsvpmaker-for-toastmasters.php:5402
+#: core.php:5521
 msgid "Print Contact List"
 msgstr "Imprimer la Liste de Contacts"
 
-#: rsvpmaker-for-toastmasters.php:5402 rsvpmaker-for-toastmasters.php:9606
+#: core.php:5521 core.php:9892
 msgid "Related"
 msgstr "En lien"
 
-#: rsvpmaker-for-toastmasters.php:1266
+#: core.php:1345
 msgid "Remove Me"
 msgstr "Ne plus prendre le rôle"
+
+#: core.php:2528 tm-reports.php:61 utility.php:4126
+msgid "Settings"
+msgstr "Paramètres"
+
+#: core.php:12461 filters.php:39 utility.php:4121
+#: agenda/src/gblocks/agenda-layout.js:199 agenda/src/gblocks/block.js:137
+#: agenda/src/gblocks/block.js:394 agenda/src/gblocks/block.js:568
+#: agenda/src/gblocks/block.js:742 agenda/src/gblocks/block.js:824
+#: agenda/src/gblocks/block.js:922
+msgid "Agenda"
+msgstr "Ordre du jour"

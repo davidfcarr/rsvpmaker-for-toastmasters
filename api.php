@@ -388,7 +388,7 @@ class TM_Role extends WP_REST_Controller {
 	public function handle( $request ) {
 
 		if(isset($_POST['suggest_note']))
-			$response['content'] = wpt_suggest_role();
+			$response['content'] = wpt_suggest_role($_POST);
 		elseif(isset($_POST['away_user_id']))
 			$response['content'] = wpt_api_add_absence();
 		else
@@ -408,17 +408,16 @@ function wpt_api_add_absence() {
 	return get_member_name($away_user_id)." added to absences.";
 }
 
-function wpt_suggest_role() {
+function wpt_suggest_role($postdata) {
 	global $current_user, $rsvp_options;
-	$post_id = intval($_POST['post_id']);
-	$roletag = sanitize_text_field($_POST['role']);
+	$post_id = intval($postdata['post_id']);
+	$roletag = sanitize_text_field($postdata['role']);
 	$role = clean_role($roletag);
-	$member_id = intval($_POST['user_id']);
+	$member_id = intval($postdata['user_id']);
 	$member = get_userdata($member_id);
-	$post_id = intval($_POST['post_id']);
 	$t = get_rsvpmaker_timestamp( $post_id );
 	$date = rsvpmaker_date($rsvp_options['short_date'],$t);
-	$cleanrole = clean_role($_POST['role']);
+	$cleanrole = clean_role($postdata['role']);
 	$nonce = get_post_meta($post_id,'oneclicknonce',true);
 	if(empty($nonce)) {
 		$nonce = wp_create_nonce('oneclick');
@@ -972,6 +971,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$votingdata['is_vote_counter'] = $votingdata['vote_counter'] == $authorized;
 		$open = get_post_meta($post_id,'openvotes');
 		$json = file_get_contents('php://input');
+		$custom_club_contests = get_option('custom_club_contests');
+		if(!is_array($custom_club_contests))
+			$custom_club_contests = [];
 		if($json) {
 			$data = json_decode($json);
 		}
@@ -1015,7 +1017,18 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$votingdata['is_vote_counter'] = true;
 		}
 		if(isset($data) && isset($data->ballot) && $authorized) {
-			$votingdata['ballot'] = update_post_meta($post_id,'tm_ballot',(array) $data->ballot);
+			$ballot_array = (array) $data->ballot;
+			foreach($ballot_array as $b => $params) {
+				if(!empty($params->everyMeeting) && !in_array($b,$custom_club_contests))
+				{
+					$custom_club_contests[] = $b;
+					update_option('custom_club_contests',$custom_club_contests);
+					$votingdata['custom_club_contests'] = $b;
+					unset($ballot_array[$b]->everyMeeting);//don't store this property
+				}
+			}
+			update_post_meta($post_id,'tm_ballot',$ballot_array);
+			$votingdata['ballot'] = $ballot_array;
 		}
 		if(isset($data) && isset($data->added) && $authorized) {
 			update_post_meta($post_id,'added_votes',$data->added);
@@ -1054,7 +1067,13 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				}
 			}
 			$emptyballot = array('status'=>'draft','contestants'=>[],'new'=>[],'deleted'=>[],'signature_required'=>false);
-			$votingdata['ballot'] = array('Speaker'=> array('status'=>'draft','contestants'=>[],'new'=>$votingdata['Speaker'],'deleted'=>[],'signature_required'=>false),'Evaluator'=> array('status'=>'draft','contestants'=>[],'new'=>$votingdata['Evaluator'],'deleted'=>[],'signature_required'=>false),'Table Topics'=> $emptyballot,'Template'=> $emptyballot);
+			$votingdata['ballot'] = array('Speaker'=> array('status'=>'draft','contestants'=>$votingdata['Speaker'],'new'=>[],'deleted'=>[],'signature_required'=>false),'Evaluator'=> array('status'=>'draft','contestants'=>$votingdata['Evaluator'],'new'=>[],'deleted'=>[],'signature_required'=>false),'Table Topics'=> $emptyballot,'Template'=> $emptyballot);
+			
+			if($custom_club_contests && is_array($custom_club_contests)) {
+				foreach($custom_club_contests as $contest)
+					$votingdata['ballot'][$contest] = $emptyballot;
+			}
+			
 		}
 
 		$votingdata['added_votes'] = get_post_meta($post_id,'added_votes',true);
@@ -1428,6 +1447,8 @@ function wpt_get_agendadata($post_id = 0) {
 					$agendadata['blocksdata'][$index]['memberoptions'] = awe_rest_user_options($block['attrs']['role'],$post_id);
 					$agendadata['blocksdata'][$index]['assignments'] = [];
 					$role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
+					$trans  = translate($role,'rsvpmaker-for-toastmasters');
+					$agendadata['blocksdata'][$index]['attrs']['translated_role'] = ($trans != $role) ? $trans : '';
 					$count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
 					if('Speaker' == $role)
 						pack_speakers($count,$agendadata['post_id']);
@@ -1594,6 +1615,23 @@ class WP4T_Mobile_Code extends WP_REST_Controller {
 	}
 }
 
+if(!empty($_GET['language']))
+	add_filter( 'locale', 'wpt_mobile_language_preference', 1, 1 );
+
+function wpt_mobile_language_preference($language) {
+	global $current_user;
+	$user_preference = sanitize_text_field($_GET['language']);
+	if ( ! empty( $user_preference ) ) {
+		// Update user meta to store the language preference
+		if ( isset($current_user->ID) ) {
+			update_user_meta( $current_user->ID, 'locale', $user_preference );
+		}
+		// Return the user preference for localization
+		return $user_preference;
+	}
+	return $language;
+}
+
 class WP4T_Mobile extends WP_REST_Controller {
 	public function register_routes() {
 		$namespace = 'rsvptm/v1';
@@ -1638,8 +1676,80 @@ class WP4T_Mobile extends WP_REST_Controller {
 			$data = json_decode($json);
 			$post_id = intval($data->post_id);
 		}
+
+		if(!isset($post_id)) {
+			$future = future_toastmaster_meetings();
+			if($future)
+			$post_id = $future[0]->ID;
+		}
+
+		if(isset($_GET['ask'])) {
+			$ask = sanitize_text_field($_GET['ask']);
+			if('role_status' == $ask) {
+				$role = sanitize_text_field($_GET['role']);
+				$absences = get_post_meta( $post_id, 'tm_absence' );
+				if ( is_array( $absences ) ) {
+					$absences = array_unique( $absences );
+				}
+				else 
+					$absences = [];
+				$haverole = wp4t_haverole($post_id);
+				$members = get_club_members();
+				$memberstatus = [];
+				foreach($members as $member) {
+					$status = '';
+					if(isset($haverole[$member->ID]))			
+						$status = __( 'Signed up for', 'rsvpmaker-for_toastmasters' ) . ': ' . $haverole[$member->ID];
+					elseif(in_array($member->ID,$absences))
+						$status = __('Planned Absence','rsvpmaker-for-toastmasters');
+					elseif ( $member->ID > 0 ) {
+						$held = wp4t_last_held_role($member->ID, clean_role($role));
+						if ( ! empty( $held ) ) {
+							$status = __( 'Last did', 'rsvpmaker-for_toastmasters' ) . ': ' . $held;
+						}	
+				}
+				$memberstatus[$member->ID] = $status;
+				}
+				$answer['memberstatus']	= $memberstatus;
+				return new WP_REST_Response($answer,
+				200
+			);
+	
+			}
+		}
 		$agendapost = get_post($post_id);
 		$speechfields = ['title','manual','project','maxtime','display_time','intro'];
+		if(isset($data) && isset($data->suggest))
+		{
+			$response['content'] = wpt_suggest_role(array('suggest_note'=>$data->note,'post_id'=>$post_id,'user_id'=>$data->suggest,'role'=>$data->role));
+			return new WP_REST_Response($response,
+			200);
+		}
+		if(isset($data) && isset($data->sendBallot))
+		{
+			$votelink = add_query_arg('meetingvote','1',get_permalink($post_id));
+			$mail['from'] = $current_user->user_email;
+			$mail['fromname'] = $current_user->display_name;
+			$mail['subject'] = 'Toastmasters voting link';
+			$mail['html'] = sprintf('<p>The voting link is <a href="%s">%s</a></p>',$votelink,$votelink);
+			if('members' == $data->sendBallot) {
+				$members = get_club_members();
+				foreach($members as $member) {
+					$recipients[] = $member->user_email;
+				}
+			}
+			else {
+				$recipients[] = $current_user->user_email;
+			}
+			foreach($recipients as $to) {
+				$mail['to'] = $to;
+				rsvpmailer($mail);
+			}
+			$response['recipients_count'] = sizeof($recipients);
+			$response['recipients'] = $recipients;
+			return new WP_REST_Response($response,
+			200);
+		}
 		if(isset($data) && isset($data->ID))
 		{
 			$id = sanitize_text_field($data->ID);
@@ -1742,11 +1852,50 @@ class WP4T_Mobile extends WP_REST_Controller {
 			$agendadata['emailagenda_content'] = $content;
 			$agendadata['emailagenda_to'] = sizeof($emails).' emails: '.implode(', ',$emails);
 		}
+		if(isset($data) && isset($data->suggestTranslations))
+		{
+			$language = sanitize_text_field($_GET['language']);
+			$new_translations = (array) $data->suggestTranslations;
+			$current_trans = get_option('wp4t_translations_'.$language);
+			if(empty($current_trans) || !is_array($current_trans)) {
+				$translations = [];
+			}
+			foreach($new_translations as $key => $translation) {
+				if(!empty($translation)) {
+					$translations[$key] = sanitize_text_field($translation);
+				}
+			}
+			update_option('wp4t_translations_'.$language,$translations);
+			foreach($translations as $key => $translation) {
+					$content .= $key.' = '.$translation."\n";
+				}
+			$agendadata['translation_submitted'] = $content;
+			$mail['html'] = $content;
+			$mail['from'] = $current_user->user_email;
+			$mail['fromname'] = $current_user->display_name;
+			$mail['subject'] = 'Toastmasters app translation suggestions for '.$language.' on '.$_SERVER['SERVER_NAME'];
+			$mail['to'] = 'translation@toastmost.org';
+			rsvpmailer($mail);
+		}
+		if(isset($_GET['getprogress'])) {
+			$progress = '<p>'.__('Check this report against your Pathways Base Camp records.','rsvpmaker-for-toastmasters').'</p>';
+			$report = get_speech_progress_report();
+			if(empty($report))
+				$progress .= '<p>'.__('No speech records found.','rsvpmaker-for-toastmasters').'</p>';
+			else {
+				$progress .= $report;
+			}
+			$agendadata['progress'] = $progress;
+		}
+		$agendadata['domain'] = $_SERVER['SERVER_NAME'];
 		$agendadata['sitename'] = get_option('blogname');
 		$agendadata['user_id'] = $current_user->ID;
 		$agendadata['name'] = $current_user->display_name;
 		$agendadata['agendas'] = wpt_get_mobile_agendadata($current_user->ID);
 		$agendadata['projects'] = wp4t_program();
+		$trans = wpt_mobile_translations();
+		$agendadata['translations'] = ($trans && !empty($trans['translations'])) ? $trans['translations'] : array();
+		$agendadata['missedTranslation'] = ($trans && !empty($trans['missed'])) ? $trans['missed'] : array();
 		$agendadata['userblogs'] = wpt_domains_of_mobile_user($current_user->ID);
 		$agendadata['is_officer'] = wpt_is_officer($current_user->ID);
 		$agendadata['is_editor'] = current_user_can('edit_others_posts');
@@ -1759,11 +1908,6 @@ class WP4T_Mobile extends WP_REST_Controller {
 		$memberlist[] = array('name' => 'Open', 'ID' => 0);
 		$memberlist[] = array('name' => 'Not Available', 'ID' => -1);
 		$memberlist[] = array('name' => 'To Be Announced', 'ID' => -2);
-		if(!isset($post_id)) {
-			$future = future_toastmaster_meetings();
-			if($future)
-			$post_id = $future[0]->ID;
-		}
 		if(!empty($post_id)) {
 			$names = [];
 			$sql = "SELECT first, last from ".$wpdb->prefix."rsvpmaker WHERE event=$post_id";
@@ -1797,8 +1941,38 @@ class WP4T_Mobile extends WP_REST_Controller {
 	}
 }
 
+class WP4T_Translations extends WP_REST_Controller {
+	public function register_routes() {
+		$namespace = 'rsvptm/v1';
+		$path      = 'translations';
+
+		register_rest_route(
+			$namespace,
+			'/' . $path,
+			array(
+				array(
+					'methods'             => 'GET,POST',
+					'callback'            => array( $this, 'handle' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	public function get_items_permissions_check( $request ) {
+		return true;
+	}
+
+	public function handle( $request ) {
+		return new WP_REST_Response(wpt_mobile_translations(),
+			200
+		);
+	}
+}
+
 function wpt_get_mobile_agendadata($user_id = 0) {
-	global $current_user,$post;
+	global $current_user,$post,$email_context;
+	$email_context = true;
 	$agendas = [];
 	$post = false;
 	$meetings = future_toastmaster_meetings( 5 );
@@ -1813,13 +1987,14 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 			if(isset($block['attrs']) && isset($block['attrs']['role']))
 				{
 					$role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
+					$role_display = __($role,'rsvpmaker-for-toastmasters');
 					$count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
 					$start = (isset($lastcount[$role])) ? $lastcount[$role] + 1 : 1;
 					$backup = !empty($block['attrs']['backup']) ? 1 : 0;
 					for($i=$start; $i < ($count + $start); $i++)
 					{
 						$key = wp4t_fieldbase($role,$i);
-						$assignment = array('post_id'=>$post_id,'assignment_key'=>$key,'role'=>$role);
+						$assignment = array('post_id'=>$post_id,'assignment_key'=>$key,'role'=>$role,'role_display'=>$role_display);
 						$assignment['ID'] = get_post_meta($post_id,$key, true);
 						if(empty($assignment['ID'])) {
 							$assignment['name'] = '';
@@ -1856,7 +2031,9 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 		if(strpos($meeting->post_content,'wp:wp4toastmasters/absences')) {
 			$assignment = array('post_id'=>$post_id,'assignment_key'=>'_planned_absence_1','role'=>'Planned Absence');
 			$absences = get_post_meta( $meeting->ID, 'tm_absence' );
-			if(!is_array($absences))
+			if(is_array($absences))
+				$absences = array_unique($absences);
+			else
 				$absences = [];
 			$agenda['absences'] = [];
 			foreach($absences as $ab) {
@@ -2884,5 +3061,7 @@ add_action(
 		$wp4tmobile->register_routes();
 		$wp4tmc = new WP4T_Mobile_Code();
 		$wp4tmc->register_routes();
+		$wptr = new WP4T_Translations();
+		$wptr->register_routes();
 	}
 );

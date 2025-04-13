@@ -28,7 +28,7 @@ import {SelectCtrl, NumberCtrl} from './Ctrl.js'
 
 export default function ReorgWidget(props) {
 
-    const {data, post_id, makeNotification, block, blockindex, setMode} = props;
+    const {data, post_id, makeNotification, block, blockindex, setMode, setShowControls} = props;
 
     const [sync,setSync] = useState(true);
     const [showall,setShowall] = useState(false);
@@ -326,10 +326,9 @@ function selectMove(source,destination) {
 
     return (
 
-        <fieldset className="reorgwidget" onMouseLeave={() => {setShowall(false); }} >
+        <fieldset className="reorgwidget" >
              <legend>Organize</legend>
-             {!showall && <><button onClick={() => {setShowall(true); }}>Show</button> SET TIMING, MOVE, INSERT, DELETE, UPDATE TEMPLATE/FUTURE MEETINGS</>}
-             {showall && (<>
+             <>
                 {'wp4toastmasters/role' == block.blockName && (
                 <div>
                 <p className="tmflexrow"><div className="tmflex30"><NumberCtrl label={'Signup Slots ('+roleslug+')'} min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { data.blocksdata[blockindex].attrs.count = value; if(['Speaker','Evaluator'].includes(block.attrs.role)) { data.blocksdata[blockindex].attrs.time_allowed = calcTimeAllowed(block.attrs); data.blocksdata = syncToEvaluator(data.blocksdata,value); } agendaMutate(data); }} /></div><div className="tmflex30"><NumberCtrl label={"Time Allowed ("+roleslug+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {data.blocksdata[blockindex].attrs.padding_time = value; agendaMutate(data);}} /></div>}</p>
@@ -365,6 +364,7 @@ onChange={ () => {setSync(!sync);}} /></p>
             <div className="tmflexrow"><div><button className="blockmove" onClick={() => { moveBlock(blockindex, 'up') } }><Up /></button></div><div><button className="blockmove" onClick={() => { moveBlock(blockindex, 'down') } }><Down /></button></div><div><SelectCtrl label="Move" options={choicesForBlock} onChange={(value) => selectMove(blockindex,value)} /></div></div>
             <div><DeleteButton makeNotification={makeNotification} blockindex={blockindex} moveBlock={moveBlock} post_id={post_id} /> {data.has_template && <>Copy to template and future agendas: <CopyToTemplateButton /></>} </div>                
             <div><Inserter makeNotification={makeNotification} blockindex={blockindex} insertBlock={insertBlock} moveBlock={moveBlock} post_id={post_id} /> </div>
-             </>)}
+            <div style={{marginTop: '10px'}}><button onClick={() => setShowControls(null)}>Done</button></div>
+             </>
     </fieldset>)
 }

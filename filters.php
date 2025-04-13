@@ -189,12 +189,12 @@ add_filter( 'the_content', function ( $content ) {
 		$shown = empty($_GET['app_promo']) ? get_user_meta($current_user->ID, 'app_promo_shown', true) : false;
 		if(empty($shown)) {
 			update_user_meta($current_user->ID, 'app_promo_shown', 1);
-			$link .= '<p><a href="https://toastmost.org/app-setup/">'. __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a></p>';
+			$link .= '<p><a href="'.admin_url('admin.php?page=wp4t_enable_mobile').'">'. __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a></p>';
 			$link .= '<p><iframe width="560" height="315" src="https://www.youtube.com/embed/f19zh25JRco?si=jKbEC1HyRSA3cHK-" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>';
-			$link .= '<p>Visit <a href="https://toastmost.org/app-setup/">toastmost.org/app-setup/</a> from your phone or search the app store for "toastmost"</p>';
+			$link .= '<p>Visit the <a href="'.admin_url('admin.php?page=wp4t_enable_mobile').'">app setup page</a> from your phone or search the app store for "toastmost"</p>';
 			}
 		else {
-			$link .= '<p><a href="https://toastmost.org/app-setup/">'. __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a> | <a href="?app_promo=1">'. __( 'Video Demo', 'rsvpmaker-for-toastmasters' ). '</a></p>';
+			$link .= '<p><a href="'.admin_url('admin.php?page=wp4t_enable_mobile').'">'. __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a> | <a href="?app_promo=1">'. __( 'Video Demo', 'rsvpmaker-for-toastmasters' ). '</a></p>';
 		}
 		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
 			if(isset($_GET['revert_by_default']) && current_user_can('manage_options')) {

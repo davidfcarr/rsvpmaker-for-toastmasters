@@ -31,8 +31,6 @@ function wp4toastmasters_history() {
 
     $startover = isset($_GET['startover']);
 
-    update_user_role_archive_all();
-
     $output = '';
 
     if(isset($_GET['user_id']))
@@ -304,8 +302,8 @@ function wp4toastmasters_history() {
             $results = $wpdb->get_results($sql);
 
             foreach($results as $row) {
-
-                $output .= sprintf('<p><strong>%s</strong>, %s %s %s</p>',get_member_name($row->user_id),$row->role,rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
+                $role = str_replace('role ','',$row->role);
+                $output .= sprintf('<p><strong>%s</strong>, %s %s %s</p>',get_member_name($row->user_id),translate($role,'rsvpmaker-for-toastmasters'),rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
 
                 if(strpos($row->role,'peaker'))
 
@@ -863,7 +861,21 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
 
     }
 
-	if($role == 'Speaker') {
+	if(strpos($role,'Speaker') !== false) {
+
+        // This is a speech record, add to the speech history table
+
+        // If this is a duplicate, we will update it instead of inserting a new record
+
+        $manual = sanitize_text_field($manual);
+
+        $project_key = sanitize_text_field($project_key);
+
+        $title = sanitize_text_field(stripslashes($title));
+
+        $intro = wp_kses_post(stripslashes($intro));
+
+        // Check if there is already a speech record for this history_id
 
 		$speech_id = $wpdb->get_var("SELECT speech_id from $speech_history_table WHERE history_id=$id");
 
@@ -874,7 +886,7 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
 		else
 
 			$sql = $wpdb->prepare("INSERT INTO $speech_history_table SET manual=%s, project_key=%s, project=%s, title=%s, intro=%s, history_id=%d",$manual,$project_key,get_project_text($project_key),$title,$intro,$id);
-
+        //printf("<p>Adding speech record: %s</p>",$sql);
 		$wpdb->query($sql);
 
 	}

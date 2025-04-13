@@ -191,7 +191,7 @@ function awesome_dashboard_widget_function() {
 	}
 
 	?>
-<p><a href="https://toastmost.org/app-setup/"><?php echo __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ) ?></a></p>
+<p><a href="<?php echo admin_url('admin.php?page=wp4t_enable_mobile');?>"><?php echo __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ) ?></a></p>
 <p><img decoding="async" data-attachment-id="18653" data-permalink="https://toastmost.org/2025/03/15/toastmost-phone-screenshot/image/" data-orig-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1033%2C1022&amp;ssl=1" data-orig-size="1033,1022" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-medium-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=300%2C297&amp;ssl=1" data-large-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1024%2C1013&amp;ssl=1" src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" data-src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" alt="" class="wp-image-18653 ls-is-cached lazyloaded" style="width:450px"></p>
 <p><?php echo sprintf( __( 'You are viewing the private members-only area of the website. For a basic orientation, see the <a href="%s">welcome page</a>.', 'rsvpmaker-for-toastmasters' ), admin_url( 'index.php?page=toastmasters_welcome' ) ); ?>
 <br /></p>
@@ -12726,6 +12726,14 @@ function tm_absence( $atts ) {
 	}
 
 	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
+		$list = [];
+		foreach ( $absences as $absent ) {
+		$userdata = get_userdata( $absent );
+		$list[] = empty( $userdata->first_name ) ? $userdata->display_name : $userdata->first_name.' '.$userdata->last_name;
+		}
+		if(!empty($list)) {
+			$output .= '<div><strong>Planned Absences</strong>: '.implode(', ',$list).'</div>';
+		}
 		return $output; // don't display button
 	}
 
@@ -12837,7 +12845,12 @@ if ( is_array( $absences ) ) {
 }
 $result = [];
 foreach($absences as $ab) {
-	$result[] = array('ID'=>$ab,'name' => get_member_name($ab),'until'=> get_user_meta($ab,'tm_absence_until',true),'operation' => $operation, 'status' => $status, 'request' => $data);
+	$until = get_user_meta($ab,'tm_absence_until',true);
+	if(strtotime($until) < time()) {
+		delete_user_meta($ab,'tm_absence_until');
+		$until = '';
+	}
+	$result[] = array('ID'=>$ab,'name' => get_member_name($ab),'until'=> $until,'operation' => $operation, 'status' => $status, 'request' => $data);
 }
 return $result;
 }

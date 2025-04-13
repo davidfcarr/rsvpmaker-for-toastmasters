@@ -948,8 +948,6 @@ function wp4t_role_array() {
 
 }
 
-
-
 add_action('init','wp4t_role_array',15);
 
 
@@ -1006,20 +1004,16 @@ $competent_leader = array(
 
 );
 
-
-
 add_action( 'update_user_role_archive_all', 'update_user_role_archive_all' );
 
 function update_user_role_archive_all() {
 
-	$events = get_past_events('',5);
-
+	$events = get_past_events('',100);
+	if(!isset($_GET['tm_ajax']))
+		printf('Updating role archive for %d events...<br />', sizeof($events));
 	foreach ( $events as $event ) {
-
 		update_user_role_archive( $event->ID, $event->date );
-
 		update_post_meta($event->ID,'role_data_archived',true);
-
 	}
 
 }
@@ -8640,6 +8634,7 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 
 		}
 
+		/*
 		if ( ! empty( $archive_code ) && ( $archive_code == $aggregated ) ) {
 
 			//echo '<p>Nothing new</p>';
@@ -8647,18 +8642,15 @@ function update_user_role_archive( $post_id, $timestamp = '' ) {
 			return; // nothing new here
 
 		}
+		*/
 
 		if ( empty( $aggregated ) ) {
 
-			//echo '<p>Nothing to record</p>';
+			echo '<p>Nothing to record</p>';
 
 			return; // nothing to record
 
 		}
-
-		if(!isset($_GET['tm_ajax']))
-
-			echo '<p>' . __( 'Updating', 'rsvpmaker-for-toastmasters' ) . '</p>';
 
 		update_post_meta( $post_id, 'wpt_archive_code', $aggregated );
 
@@ -10148,8 +10140,6 @@ label {
 
 	$results = $wpdb->get_results($sql);
 
-	//(object) array( 'speech_id' => '1330', 'history_id' => '8716', 'manual' => 'Engaging Humor Level 3 Increasing Knowledge', 'project_key' => 'Engaging Humor Level 3 Increasing Knowledge 14085', 'project' => 'Focus on the Positive', 'title' => 'In praise of in person', 'intro' => '', 'id' => '8716', 'role' => 'Speaker', 'datetime' => '2022-02-04 07:00:00', 'rolecount' => '1', 'domain' => 'www.clubawesome.org', 'user_id' => '1', 'post_id' => '6936', 'metadata' => 'a:3:{s:13:"time_recorded";i:1643977517;s:11:"recorded_by";s:5:"abern";s:8:"function";s:24:"update_user_role_archive";}', 'timestamp' => '2022-02-04 12:25:17', )
-
 	foreach($results as $row) {
 
 		if($row->domain == 'demo.toastmost.org')
@@ -10830,13 +10820,13 @@ function wpt_json_send( $json_data, $upload_only = false ) {
 
 	update_option( 'last_sync_result', var_export( $json_response, true ) );
 
-	$download = $json_response['download'];
+	$download = isset($json_response['download']) ? $json_response['download'] : null;
 
-	$uploaded = $json_response['uploaded'];
+	$uploaded = isset($json_response['uploaded']) ? $json_response['uploaded'] : 0;
 
-	$deleted  = $json_response['deleted'];
+	$deleted  = (isset($json_response['deleted'])) ? $json_response['deleted'] : 0;
 
-	$members  = $json_response['members'];
+	$members  = isset($json_response['members']) ? $json_response['members'] : 0;
 
 	if ( isset( $_REQUEST['debug'] ) ) {
 
@@ -11717,7 +11707,50 @@ label {
 
 }
 
+function get_speech_progress_report() {
 
+	global $wpdb, $rsvp_options, $current_user;
+
+	$history_table = $wpdb->base_prefix.'tm_history';
+
+	$speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+	
+	$speakers = wp4t_history_query( "user_id=$current_user->ID AND role = 'Speaker' ");
+	$output  = '';
+
+	foreach ( $speakers as $row ) {
+
+		$speaker_id = $row->user_id;
+
+		$name       = get_member_name( $speaker_id );
+
+		if ( empty( trim( $name ) ) ) {
+
+			continue;
+
+		}
+
+		$manual       = $row->manual;
+
+		$project_key  = $row->project_key;
+
+		$project_text =  $row->project ;
+
+		$title        = $row->title;
+
+		if ( ! empty( $title ) ) {
+
+			$title = ', "' . $title . '"';
+
+		}
+
+		$date    = rsvpmaker_date( $rsvp_options['long_date'], strtotime( $row->datetime ) );
+
+		$output .= sprintf( '<p><strong>%s%s</strong><br />%s %s<br />%s</p>', $name, $title, $manual, $project_text, $date );
+
+	}
+	return $output;
+}
 
 function toastmasters_reports_dashboard() {
 
