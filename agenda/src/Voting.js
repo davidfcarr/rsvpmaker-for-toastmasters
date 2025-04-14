@@ -6,6 +6,7 @@ import {useBlocks,updateAgenda,useVoting,initVoting} from './queries.js';
 import { TextControl } from '@wordpress/components';
 import { formatStrikethrough } from "@wordpress/icons";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
+import mytranslate from './mytranslate'
 
 export default function Voting({post_id}) {
     const [votingdata,setVotingdata] = useState({});
@@ -111,9 +112,9 @@ export default function Voting({post_id}) {
             {copied ? <p style={{color:'green'}}>Copied!</p>: null}
             <div style={{display:'flex',flex:1,flexDirection:'row'}}>
             <CopyToClipboard text={votingdata.url} onCopy={() => setCopied(true)} >
-            <button style={styles.button}><span style={styles.buttonText}>Copy Voting Link</span></button>
+            <button style={styles.button}><span style={styles.buttonText}>{mytranslate('Copy Voting Link',data)}</span></button>
             </CopyToClipboard>
-                <button style={styles.button} onClick={() => {setControls('counting')}}><span style={styles.buttonText}>Vote Count</span></button> <button style={styles.button} onClick={() => {setControls('ballot')}}><span style={styles.buttonText}>Ballot</span></button> <button style={styles.button} onClick={() => {refetch()}}><span style={styles.buttonText}>Refresh</span></button>
+                <button style={styles.button} onClick={() => {setControls('counting')}}><span style={styles.buttonText}>{mytranslate('Vote Count',data)}</span></button> <button style={styles.button} onClick={() => {setControls('ballot')}}><span style={styles.buttonText}>Ballot</span></button> <button style={styles.button} onClick={() => {refetch()}}><span style={styles.buttonText}>Refresh</span></button>
             </div>
                 {contestlist.map(
                 (c, cindex) => {
@@ -128,11 +129,11 @@ export default function Voting({post_id}) {
                         <p><SelectCtrl label="Member to Add" value={candidate} options={[memberDefault,...votingdata.memberlist]} onChange={(choice) => { if(!choice) return; console.log('add on select',choice); currentBallot.contestants.push(choice); const ballotCopy = {...votingdata.ballot,c:currentBallot}; ballotCopy[c].status = 'draft'; console.log('altered ballot',ballotCopy[c]);  setVotingdata({...votingdata,ballot:ballotCopy}); sendVotingUpdate({ballot:ballotCopy,post_id:post_id,identifier:identifier}); } } /></p>
                         <div style={{display: 'flex',flex:1,flexDirection:'row'}}><div><TextControl label="Type Choice to Add" value={guest} onChange={ (value) => { setGuest(value); } } /></div><div style={{padding: '20px'}}><button style={styles.plusbutton} onClick={() => {currentBallot.contestants.push(guest); setGuest(''); const ballotCopy = {...votingdata.ballot,c:currentBallot}; ballotCopy[c].status = 'draft'; console.log('altered ballot',ballotCopy[c]);  setVotingdata({...votingdata,ballot:ballotCopy});}}><span style={styles.buttonText}>+</span></button></div></div>                    
                         {currentBallot.status == 'publish' ? <div><p><button style={styles.button} onClick={() => { const update = {...currentBallot,status:'draft'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>Unpublish</span></button></p></div> 
-                        : <p><button style={styles.button} onClick={() => { const update = {...currentBallot,status:'publish'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>Publish</span></button></p>}
+                        : <p><button style={styles.button} onClick={() => { const update = {...currentBallot,status:'publish'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>{mytranslate('Publish',data)}</span></button></p>}
                     </div>
                 }
             )}
-            <p style={styles.h2}>New Ballot</p>
+            <p style={styles.h2}>{mytranslate('New Ballot',data)}</p>
             <div style={{display: 'flex',flex:1,flexDirection:'row'}}><div><TextControl label="Contest or Question" value={newBallot} onChange={ (value) => { setNewBallot(value); } } /></div><div style={{padding: '20px'}}><button style={styles.plusbutton} onClick={() => {const newBallotEntry = {...votingdata.ballot}; newBallotEntry[newBallot] = {...votingdata.ballot.Template}; setVotingdata({...votingdata,ballot:newBallotEntry}); setNewBallot('');}}><span style={styles.buttonText}>+</span></button></div></div>
             {contestlist.map(
                 (c, cindex) => {
@@ -143,7 +144,7 @@ export default function Voting({post_id}) {
                         return;
                     const added_votes = [...votingdata.added_votes];
                     return <div key={'contestadd'+cindex}>
-                        <p style={styles.h2}>Add Votes: {c}</p>
+                        <p style={styles.h2}>{mytranslate('Add Votes',data)}: {c}</p>
                         <p>If you received votes from outside of this app, you can add them here.</p>
                         {currentBallot.contestants.map((contestant,index) => {let addvote = added_votes.find((item,itemindex) => {if(item.ballot == c && item.contestant == contestant) {item.index = itemindex; return item;} }); if(!addvote) {addvote = {'ballot':c,'contestant':contestant,add:0,index:added_votes.length}; added_votes.push(addvote); console.log('created addvote object',addvote)} 
                         return <p key={'addvotes'+index}>
@@ -154,8 +155,8 @@ export default function Voting({post_id}) {
                     </div>
                 }
             )}
-            <p style={styles.h2}>Reset</p>
-            <p><button style={styles.button} onClick={() => { sendVotingUpdate({reset:true,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>Reset Ballot</span></button></p>
+            <p style={styles.h2}>{mytranslate('Reset',data)}</p>
+            <p><button style={styles.button} onClick={() => { sendVotingUpdate({reset:true,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>{mytranslate('Reset Ballot',data)}</span></button></p>
         </div>
         );
     }    
@@ -163,7 +164,7 @@ export default function Voting({post_id}) {
     let openBallots = false;
     return (
         <div>
-            <p style={styles.h1}>Voting</p>
+            <p style={styles.h1}>{mytranslate('Voting',data)}</p>
             <p><button style={styles.button} onClick={() => {refetch()}}><span style={styles.buttonText}>Refresh</span></button></p>
             {votingdata.is_vote_counter ? <p><button style={styles.button} onClick={() => {setControls('')}}><span style={styles.buttonText}>Ballot Setup</span></button> <button style={styles.button} onClick={() => {setControls('counting')}}><span style={styles.buttonText}>Vote Count</span></button></p> : null}
                 {contestlist.map(

@@ -266,7 +266,7 @@ function onDragEnd(result) {
             }
             checked={ block.attrs.backup }
             onChange={ () => {data.blocksdata[blockindex].attrs.backup = !block.attrs.backup; agendaMutate(data);}} /></p>
-            <SpeakerTimeCount block={block} makeNotification={makeNotification} />
+            <SpeakerTimeCount block={block} makeNotification={makeNotification} data={data} />
                 </div>)}
             {showDetails && 'wp4toastmasters/absences' == block.blockName && (<div>
                 <ToggleControl label="Show on Agenda"
@@ -286,7 +286,7 @@ function onDragEnd(result) {
                 ) }
                 {showDetails && 'wp4toastmasters/agendanoterich2' == block.blockName && (
                     <div>
-                    {showDetails && <EditorAgendaNote  makeNotification={makeNotification} blockindex={blockindex} block={block} replaceBlock={replaceBlock} />}
+                    {showDetails && <EditorAgendaNote  makeNotification={makeNotification} blockindex={blockindex} block={block} replaceBlock={replaceBlock} data={data} />}
                     <div className="tmflexrow"><div className="tmflex30"><NumberControl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : 0} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div></div>
                     </div>
                 ) }

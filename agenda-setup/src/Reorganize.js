@@ -521,7 +521,7 @@ function selectMove(source,destination) {
 
 
 
-                            <SpeakerTimeCount block={block}  makeNotification={makeNotification} />
+                            <SpeakerTimeCount block={block}  makeNotification={makeNotification} data={data} />
 
                     <div className="tmflexrow"><div className="tmflex30"><NumberControl label="Signup Slots" min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { data.blocksdata[blockindex].attrs.count = value; if(['Speaker','Evaluator'].includes(block.attrs.role)) { data.blocksdata[blockindex].attrs.time_allowed = calcTimeAllowed(block.attrs); data.blocksdata = syncToEvaluator(data.blocksdata,value); } agendaMutate(data); }} /></div><div className="tmflex30"><NumberControl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberControl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {data.blocksdata[blockindex].attrs.padding_time = value; agendaMutate(data);}} /></div>}</div>
 
@@ -565,7 +565,7 @@ function selectMove(source,destination) {
 
             onChange={ () => {data.blocksdata[blockindex].attrs.backup = !block.attrs.backup; agendaMutate(data);}} /></p>
 
-            <SpeakerTimeCount block={block} makeNotification={makeNotification} />
+            <SpeakerTimeCount block={block} makeNotification={makeNotification} data={data} />
 
                 </div>)}
 
@@ -607,7 +607,7 @@ function selectMove(source,destination) {
 
                     <div>
 
-                    {showDetails && (editThis == blockindex) && <><ToggleControl label="Edit" checked={editThis == blockindex} onChange={() => {if(editThis == blockindex) setEditThis(-1); else setEditThis(blockindex); }} /><EditorAgendaNote  makeNotification={makeNotification} blockindex={blockindex} block={block} replaceBlock={replaceBlock} /></>}
+                    {showDetails && (editThis == blockindex) && <><ToggleControl label="Edit" checked={editThis == blockindex} onChange={() => {if(editThis == blockindex) setEditThis(-1); else setEditThis(blockindex); }} /><EditorAgendaNote  makeNotification={makeNotification} blockindex={blockindex} block={block} replaceBlock={replaceBlock}  data={data}  /></>}
 
                     {showDetails && (editThis != blockindex) && <><ToggleControl label="Edit" checked={editThis == blockindex} onChange={() => {if(editThis == blockindex) setEditThis(-1); else setEditThis(blockindex); }} /><SanitizedHTML innerHTML={block.innerHTML} /></>}
 

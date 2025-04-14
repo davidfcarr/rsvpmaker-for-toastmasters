@@ -1,17 +1,4 @@
 <?php
-/**
- * DISABLED Plugin Name:       Toastmasters Dynamic Agenda
- * Description:       Example block scaffolded with Create Block tool.
- * Requires at least: 6.1
- * Requires PHP:      7.0
- * Version:           0.1.0
- * Author:            The WordPress Contributors
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       toastmasters-dynamic-agenda
- *
- * @package           create-block
- */
 
 /**
  * Registers the block using the metadata loaded from the `block.json` file.
@@ -32,10 +19,6 @@ function get_wpt_blocks() {
 	return array(
 		'logo' => array(),
 		'help'  => array(),
-		/*
-		'logo' => array('render_callback'=>''),
-		'help'  => array('render_callback'=>''),
-		*/
 	);
 }
 
@@ -56,13 +39,26 @@ add_action('wp_enqueue_scripts', 'dynamic_agenda_script');
 add_action('admin_enqueue_scripts', 'dynamic_agenda_script');
 
 function dynamic_agenda_script() {
-	global $post;
+	global $post, $wp_scripts;
 	if(
 	($post && $post->post_type && (('rsvpmaker' == $post->post_type) || ('rsvpmaker_template' == $post->post_type) || strpos($post->post_content,'wp-block-wp4toastmasters-toastmasters-dynamic-agenda')))
 	|| (isset($_GET['page']) && ('wp4t_evaluations' == $_GET['page'] || 'agenda_template_editor' == $_GET['page']))
 	) {
-		wp_enqueue_script(get_dynamic_agenda_script_handle('viewScript'));
+		$script_handle = get_dynamic_agenda_script_handle('viewScript');
+		$frontend = get_block_asset_url((dirname(__FILE__)) . 'agenda/build/frontend.js');		
+		wp_enqueue_script($script_handle
+		, $frontend, 
+		['wp-i18n'], // Add wp-i18n as a dependency
+		null,
+		true // Load in footer
+		);
+		
+		$plugin_dir = plugin_dir_path(dirname(__FILE__)); // Get the parent directory of the current file
+		wp_set_script_translations($script_handle, 'rsvpmaker-for-toastmasters', $plugin_dir . 'translations');
+		wp_set_script_translations($script_handle.'-2', 'rsvpmaker-for-toastmasters', $plugin_dir . 'translations');
+		wp_localize_script( $script_handle, 'wpt_rest',wpt_rest_array());
 		wp_enqueue_style(get_dynamic_agenda_script_handle('style'),'',['forms','common']);
-		wp_localize_script( 'wp4toastmasters-toastmasters-dynamic-agenda-view-script', 'wpt_rest',wpt_rest_array());	
-	}	
+	}
+	if(isset($_GET['transdebug']))
+	die('<pre>'.htmlentities(var_export($wp_scripts->registered,true)).'</pre>');
 }

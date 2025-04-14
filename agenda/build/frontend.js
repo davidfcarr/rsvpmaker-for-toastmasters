@@ -980,37 +980,6 @@ const cancelCircleFilled = (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(
 
 /***/ }),
 
-/***/ "./node_modules/@wordpress/icons/build-module/library/chevron-down.js":
-/*!****************************************************************************!*\
-  !*** ./node_modules/@wordpress/icons/build-module/library/chevron-down.js ***!
-  \****************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/primitives */ "@wordpress/primitives");
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__);
-
-/**
- * WordPress dependencies
- */
-
-const chevronDown = (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__.SVG, {
-  viewBox: "0 0 24 24",
-  xmlns: "http://www.w3.org/2000/svg"
-}, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__.Path, {
-  d: "M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-}));
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (chevronDown);
-//# sourceMappingURL=chevron-down.js.map
-
-/***/ }),
-
 /***/ "./node_modules/@wordpress/icons/build-module/library/chevron-right.js":
 /*!*****************************************************************************!*\
   !*** ./node_modules/@wordpress/icons/build-module/library/chevron-right.js ***!
@@ -1039,37 +1008,6 @@ const chevronRight = (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordp
 }));
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (chevronRight);
 //# sourceMappingURL=chevron-right.js.map
-
-/***/ }),
-
-/***/ "./node_modules/@wordpress/icons/build-module/library/chevron-up.js":
-/*!**************************************************************************!*\
-  !*** ./node_modules/@wordpress/icons/build-module/library/chevron-up.js ***!
-  \**************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/primitives */ "@wordpress/primitives");
-/* harmony import */ var _wordpress_primitives__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__);
-
-/**
- * WordPress dependencies
- */
-
-const chevronUp = (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__.SVG, {
-  viewBox: "0 0 24 24",
-  xmlns: "http://www.w3.org/2000/svg"
-}, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_primitives__WEBPACK_IMPORTED_MODULE_1__.Path, {
-  d: "M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
-}));
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (chevronUp);
-//# sourceMappingURL=chevron-up.js.map
 
 /***/ }),
 
@@ -16424,8 +16362,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _mytranslate__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mytranslate */ "./src/mytranslate.js");
 /* harmony import */ var _Ctrl_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Ctrl.js */ "./src/Ctrl.js");
 /* harmony import */ var _RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./RoleBlock.js */ "./src/RoleBlock.js");
 /* harmony import */ var _SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./SpeakerTimeCount.js */ "./src/SpeakerTimeCount.js");
@@ -16439,20 +16376,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Inserter_js__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./Inserter.js */ "./src/Inserter.js");
 /* harmony import */ var _Absence_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./Absence.js */ "./src/Absence.js");
 /* harmony import */ var _Hybrid_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./Hybrid.js */ "./src/Hybrid.js");
-/* harmony import */ var _queries_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./queries.js */ "./src/queries.js");
-/* harmony import */ var react_collapsed__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react-collapsed */ "./node_modules/react-collapsed/dist/index.mjs");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/icon/index.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-up.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-down.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/edit.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var _Voting_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./Voting.js */ "./src/Voting.js");
+/* harmony import */ var _queries_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./queries.js */ "./src/queries.js");
+/* harmony import */ var react_collapsed__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! react-collapsed */ "./node_modules/react-collapsed/dist/index.mjs");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/icon/index.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/edit.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__);
 
 
 
 
 
 const EvaluationTool = react__WEBPACK_IMPORTED_MODULE_0___default().lazy(() => Promise.resolve(/*! import() */).then(__webpack_require__.bind(__webpack_require__, /*! ./EvaluationTool.js */ "./src/EvaluationTool.js")));
+
 
 
 
@@ -16489,7 +16426,7 @@ function Agenda(props) {
     if (!id) return;
     var access = document.getElementById(id);
     if (!access) {
-      console.log('scroll to id could not find element ' + id);
+      console.log('Scroll to ID could not find element' + ' ' + id);
       return;
     }
     access.scrollIntoView({
@@ -16510,15 +16447,15 @@ function Agenda(props) {
   }
   const {
     mutate: agendaMutate
-  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_15__.updateAgenda)(post_id, makeNotification, _Inserter_js__WEBPACK_IMPORTED_MODULE_12__.Inserter);
+  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_16__.updateAgenda)(post_id, makeNotification, _Inserter_js__WEBPACK_IMPORTED_MODULE_12__.Inserter);
   function NextMeetingPrompt() {
     if (typeof data == 'undefined') return;
     let pid = data.upcoming.findIndex(item => item.value == post_id);
-    if (data.upcoming[pid + 1]) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+    if (data.upcoming[pid + 1]) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
       className: "next-meeting-prompt",
-      children: ["Would you like to sign up for the ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
+      children: [(0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Would you like to sign up for the', data), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("a", {
         href: data.upcoming[pid + 1].permalink + '?newsignup',
-        children: "Next meeting?"
+        children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Next meeting?', data)
       })]
     });else return null;
   }
@@ -16535,21 +16472,28 @@ function Agenda(props) {
       data: axiosdata,
       error,
       refetch
-    } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_15__.useBlocks)(post_id);
-    if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("p", {
-      children: ["Error loading agenda data. Try ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
+    } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_16__.useBlocks)(post_id);
+    if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("p", {
+      children: ["Error loading agenda data. Try ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("a", {
         href: window.location.href,
         children: "reloading the page"
-      }), ". You can also ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
+      }), ". You can also", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("a", {
         href: window.location.href.indexOf('?') > 0 ? window.location.href + '&revert=1' : window.location.href + '?revert=1',
         children: "use the old version of the signup form"
       }), "."]
+    });
+    if (isLoading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("p", {
+      children: "Loading..."
+    });
+    if (!axiosdata.data.current_user_id) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("p", {
+      children: "You must be logged in as a member of this website to see the signup form."
     });
     if (axiosdata) {
       const {
         permissions
       } = axiosdata?.data;
     }
+    const data = axiosdata.data;
     function calcTimeAllowed(attrs) {
       let time_allowed = 0;
       let count = attrs.count ? attrs.count : 1;
@@ -16557,197 +16501,75 @@ function Agenda(props) {
       if ('Evaluator' == attrs.role) time_allowed = count * 3;
       return time_allowed;
     }
+    function getHelpMessage() {
+      if ('signup' == mode) return (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Sign yourself up for roles and enter/update speech details.', data);
+      if ('edit' == mode) return (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Assign others to roles and edit their speech details. Rearrange or delete assignments.', data);
+      if ('assign' == mode) return (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Assign others to roles (grid view).', data);
+      if ('suggest' == mode) return (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Nominate another member for a role -- they will get an email notification that makes it easy to say yes.', data);
+      if ('evaluation' == mode) return (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Provide written speech feedback using digital versions of the evaluation forms.', data);
+      if ('reorganize' == mode) return (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Rearrange roles and other elements on your agenda and adjust the timing.', data);
+      if ('settings' == mode) return (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Update your standard meeting template or switch the template for the current meeting. Adjust event date and time. Update settings.', data);
+    }
     function ModeControl(props) {
-      const [isExpanded, setExpanded] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
-      const {
-        getCollapseProps,
-        getToggleProps
-      } = (0,react_collapsed__WEBPACK_IMPORTED_MODULE_16__.useCollapse)({
-        isExpanded
-      });
-      (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-        const timer = setTimeout(() => {
-          setExpanded(false);
-        }, 5000);
-      }, []);
-      const {
-        note
-      } = props;
       const modeoptions = [];
       if (props.isTemplate) {
         modeoptions.push({
-          'label': 'Organize',
-          'value': 'reorganize'
+          label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Organize', data),
+          value: 'reorganize'
         });
         modeoptions.push({
-          'label': 'Template/Settings',
-          'value': 'settings'
+          label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Template/Settings', data),
+          value: 'settings'
         });
       } else {
         modeoptions.push({
-          'label': 'Sign Up',
-          'value': 'signup'
-        });
-        modeoptions.push({
-          'label': 'Suggest',
-          'value': 'suggest'
-        });
-        modeoptions.push({
-          'label': 'Evaluation',
-          'value': 'evaluation'
+          label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Sign Up', data),
+          value: 'signup'
         });
         if (user_can('edit_post') || user_can('organize_agenda') || user_can('edit_signups')) {
           modeoptions.push({
-            'label': 'Edit',
-            'value': 'edit'
+            label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Edit', data),
+            value: 'edit'
           });
           modeoptions.push({
-            'label': 'Assign',
-            'value': 'assign'
+            label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Assign', data),
+            value: 'assign'
           });
         }
+        modeoptions.push({
+          label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Evaluation', data),
+          value: 'evaluation'
+        });
+        modeoptions.push({
+          label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Voting', data),
+          value: 'voting'
+        });
         if (user_can('edit_post') || user_can('organize_agenda')) modeoptions.push({
-          'label': 'Organize',
-          'value': 'reorganize'
+          label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Organize', data),
+          value: 'reorganize'
         });
         if (user_can('edit_post')) modeoptions.push({
-          'label': 'Template/Settings',
-          'value': 'settings'
+          label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Settings', data),
+          value: 'settings'
         });
       }
-      const viewoptions = 'reorganize' == mode ? [{
-        'value': 'all',
-        'label': 'Show All'
-      }, {
-        'value': '',
-        'label': 'Outline View'
-      }, {
-        'value': 'speakers-evaluators',
-        'label': 'Speakers and Evaluators Only'
-      }, {
-        'value': 'timed',
-        'label': 'Timed Elements Only'
-      }] : [{
-        'value': 'all',
-        'label': 'Show Details'
-      }, {
-        'value': '',
-        'label': 'Outline View'
-      }, {
-        'value': 'speakers-evaluators',
-        'label': 'Speakers and Evaluators Only'
-      }];
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
         id: "fixed-mode-control",
-        children: [notification && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
-          className: "mode-centered tm-notification tm-notification-success suggestion-notification",
-          children: [" ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
-            innerHTML: notification.message
-          }), " ", notification.prompt && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(NextMeetingPrompt, {}), " ", notification.otherproperties && notification.otherproperties.map(property => {
-            if (property.template_prompt) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
-              className: "next-meeting-prompt",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
-                target: "_blank",
-                href: '/wp-admin/edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t=' + property.template_prompt,
-                children: "Create/Update"
-              }), " - copy content to new and existing events"]
-            });
-          }), " ", isFetching && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("em", {
-            children: "Fetching fresh data ..."
-          })]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-          class: "mode-centered",
-          children: modeoptions.map(option => {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("button", {
-              className: mode == option.value ? "blackButton bottomButton" : 'bottomButton',
-              onClick: () => {
-                setMode(option.value);
-                setScrollTo('react-agenda');
-              },
-              children: option.label
-            }, option.value);
-          })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("p", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+          className: "mode-centered",
+          children: modeoptions.map(option => /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("button", {
+            className: mode == option.value ? 'blackButton bottomButton' : 'bottomButton',
+            onClick: () => {
+              setMode(option.value);
+              setScrollTo('react-agenda');
+            },
+            children: option.label
+          }, option.value))
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("p", {
           className: "mode-help mode-centered",
           children: getHelpMessage()
         })]
       });
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
-        id: "fixed-mode-control",
-        children: [!isExpanded && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("button", {
-          style: {
-            'verticalAlign': 'middle'
-          },
-          ...getToggleProps({
-            onClick: () => setExpanded(prevExpanded => !prevExpanded)
-          }),
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_18__["default"], {
-            icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_19__["default"]
-          }), "Show Agenda Views"]
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("section", {
-          ...getCollapseProps(),
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-            className: "showtoggle",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("button", {
-              style: {
-                'verticalAlign': 'middle'
-              },
-              ...getToggleProps({
-                onClick: () => setExpanded(prevExpanded => !prevExpanded)
-              }),
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_18__["default"], {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_20__["default"]
-              }), " Hide Agenda Views"]
-            })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("p", {
-            className: "modenote",
-            children: [props.isTemplate && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("strong", {
-              children: ["Editing Template - ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
-                target: "_blank",
-                href: '/wp-admin/edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t=' + props.post_id,
-                children: "Create/Update"
-              }), " - "]
-            }), " ", note]
-          }), notification && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
-            className: "tm-notification tm-notification-success suggestion-notification",
-            children: [" ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
-              innerHTML: notification.message
-            }), " ", notification.prompt && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(NextMeetingPrompt, {}), " ", notification.otherproperties && notification.otherproperties.map(property => {
-              if (property.template_prompt) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
-                className: "next-meeting-prompt",
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
-                  target: "_blank",
-                  href: '/wp-admin/edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t=' + property.template_prompt,
-                  children: "Create/Update"
-                }), " - copy content to new and existing events"]
-              });
-            }), " ", isFetching && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("em", {
-              children: "Fetching fresh data ..."
-            })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.RadioControl, {
-            className: "radio-mode",
-            selected: mode,
-            label: "Mode",
-            onChange: value => {
-              setScrollTo('react-agenda');
-              setMode(value);
-            },
-            options: modeoptions
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("p", {
-            className: "mode-help",
-            children: getHelpMessage()
-          })]
-        })]
-      });
-    }
-    function getHelpMessage() {
-      if ('signup' == mode) return 'Sign yourself up for roles and enter/update speech details';
-      if ('edit' == mode) return 'Assign others to roles and edit their speech details. Rearrange or delete assignments.';
-      if ('assign' == mode) return 'Assign others to roles (grid view)';
-      if ('suggest' == mode) return 'Nominate another member for a role -- they will get an email notification that makes it easy to say yes';
-      if ('evaluation' == mode) return 'Provide written speech feedback using digital versions of the evaluation forms';
-      if ('reorganize' == mode) return 'Rearrange roles and other elements on your agenda and adjust the timing';
-      if ('settings' == mode) return 'Update your standard meeting template or switch the template for the current meeting. Adjust event date and time. Update settings.';
     }
     function user_can(permission) {
       const permissions = axiosdata.data.permissions;
@@ -16757,13 +16579,6 @@ function Agenda(props) {
       }
       return answer;
     }
-    if (isLoading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("p", {
-      children: "Loading ..."
-    });
-    if (!axiosdata.data.current_user_id) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("p", {
-      children: "You must be logged in as a member of this website to see the signup form."
-    });
-    const data = axiosdata.data;
     const raw = ['core/image', 'core/paragraph', 'core/heading', 'wp4toastmasters-signupnote'];
     const ignore = ['wp4toastmasters/agendanoterich2', 'wp4toastmasters/milestone', 'wp4toastmasters/help'];
     let date = new Date(data.datetime);
@@ -16777,12 +16592,12 @@ function Agenda(props) {
     if (!post_id) setPostId(data.post_id);
     if (!current_user_id) setCurrentUserId(data.current_user_id);
     if ('settings' == mode) {
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
         className: "agendawrapper",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(ModeControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(ModeControl, {
           isTemplate: false !== data.is_template,
           post_id: data.post_id
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_TemplateAndSettings_js__WEBPACK_IMPORTED_MODULE_5__.TemplateAndSettings, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_TemplateAndSettings_js__WEBPACK_IMPORTED_MODULE_5__.TemplateAndSettings, {
           makeNotification: makeNotification,
           setPostId: setPostId,
           user_can: user_can,
@@ -16791,13 +16606,13 @@ function Agenda(props) {
       });
     }
     if ('evaluation' == mode) {
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
         className: "agendawrapper",
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(ModeControl, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
-          fallback: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("h1", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(ModeControl, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
+          fallback: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("h1", {
             children: "Loading ..."
           }),
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(EvaluationTool, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(EvaluationTool, {
             scrolltoId: scrolltoId,
             makeNotification: makeNotification,
             data: data,
@@ -16807,11 +16622,24 @@ function Agenda(props) {
         })]
       });
     }
-    if ('reorganize' == mode) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
-      fallback: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("h1", {
+    if ('voting' == mode) {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
+        className: "agendawrapper",
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(ModeControl, {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
+          fallback: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("h1", {
+            children: "Loading ..."
+          }),
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_Voting_js__WEBPACK_IMPORTED_MODULE_15__["default"], {
+            post_id: post_id
+          })
+        })]
+      });
+    }
+    if ('reorganize' == mode) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(react__WEBPACK_IMPORTED_MODULE_0__.Suspense, {
+      fallback: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("h1", {
         children: "Loading ..."
       }),
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_Reorganize__WEBPACK_IMPORTED_MODULE_10__["default"], {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_Reorganize__WEBPACK_IMPORTED_MODULE_10__["default"], {
         data: data,
         mode: mode,
         setMode: setMode,
@@ -16825,42 +16653,40 @@ function Agenda(props) {
         setPostId: setPostId
       })
     });
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
       className: "agendawrapper",
-      id: "agendawrapper" + post_id,
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.Fragment, {
-        children: 'suggest' == mode && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("p", {
-          children: ["See also the ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
-            href: data.admin_url + 'admin.php?page=wpt_suggest_all_roles&meeting=' + post_id,
-            children: "Suggest All Roles"
-          }), " tool for sending suggestions in a batch."]
-        })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.Fragment, {
-        children: 'rsvpmaker' != wpt_rest.post_type && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
+      id: 'agendawrapper' + post_id,
+      children: ['suggest' == mode && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("p", {
+        children: [(0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('See also the', data), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("a", {
+          href: data.admin_url + 'admin.php?page=wpt_suggest_all_roles&meeting=' + post_id,
+          children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Suggest All Roles', data)
+        }), ' ', (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('tool for sending suggestions in a batch.', data)]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.Fragment, {
+        children: 'rsvpmaker' != wpt_rest.post_type && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
           label: "Choose Event",
           value: post_id,
           options: data.upcoming,
           onChange: value => {
             setPostId(parseInt(value));
-            makeNotification('Date changed, please wait for the date to change ...');
+            makeNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Date changed, please wait for the date to change ...', data));
             queryClient.invalidateQueries(['blocks-data', post_id]);
             refetch();
           }
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("h4", {
-        children: [date.toLocaleDateString('en-US', dateoptions), " ", data.is_template && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("span", {
-          children: "(Template)"
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("h4", {
+        children: [date.toLocaleDateString('en-US', dateoptions), ' ', data.is_template && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("span", {
+          children: ["(", (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Template', data), ")"]
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(ModeControl, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(ModeControl, {
         makeNotification: makeNotification,
         isTemplate: false !== data.is_template,
         post_id: data.post_id
-      }), !Array.isArray(data.blocksdata) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("p", {
-        children: ["Error loading agenda (", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
+      }), !Array.isArray(data.blocksdata) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("p", {
+        children: [(0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Error loading agenda', data), " (", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("a", {
           href: window.location.href + '?revert=1',
-          children: "try alternate version"
+          children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('try alternate version', data)
         }), ")."]
-      }), 'assign' == mode && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
+      }), 'assign' == mode && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
         className: "assignment",
         note: "workaround for alignment issue"
       }), Array.isArray(data.blocksdata) && data.blocksdata.map((block, blockindex) => {
@@ -16880,7 +16706,7 @@ function Agenda(props) {
         }
         if (!block.blockName || !block.attrs) return null;
         if ('assign' == mode) {
-          if ('wp4toastmasters/role' == block.blockName) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
+          if ('wp4toastmasters/role' == block.blockName) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
             makeNotification: makeNotification,
             showDetails: showDetails,
             agendadata: data,
@@ -16890,21 +16716,22 @@ function Agenda(props) {
             block: block,
             setMode: setMode,
             setScrollTo: setScrollTo,
-            setEvaluate: setEvaluate
-          });else return null; //in this mode, we only care about roles to assign                        
+            setEvaluate: setEvaluate,
+            data: data
+          });else return null; // in this mode, we only care about roles to assign
         }
         if ('signup' == mode) {
           if ('wp4toastmasters/role' == block.blockName) {
             let rolemode = user_can('edit_signups') && showControls == blockindex ? 'edit' : 'signup';
             if ('speakers-evaluators' == showDetails && !['Speaker', 'Evaluator'].includes(block.attrs.role)) return null;
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
                 makeNotification: makeNotification,
                 showDetails: showDetails,
                 agendadata: data,
@@ -16915,11 +16742,13 @@ function Agenda(props) {
                 setMode: setMode,
                 setScrollTo: setScrollTo,
                 setEvaluate: setEvaluate,
-                setShowControls: setShowControls
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_4__.SpeakerTimeCount, {
+                setShowControls: setShowControls,
+                data: data
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_4__.SpeakerTimeCount, {
                 block: block,
-                makeNotification: makeNotification
-              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                makeNotification: makeNotification,
+                data: data
+              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
                 block: block,
                 blockindex: blockindex,
                 data: data,
@@ -16932,21 +16761,21 @@ function Agenda(props) {
           }
           if ('speakers-evaluators' == showDetails) return null;else if (showDetails && 'wp4toastmasters/agendaedit' == block.blockName) {
             let notemode = user_can('edit_signups') && showControls == blockindex ? 'edit' : 'signup';
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_EditableNote_js__WEBPACK_IMPORTED_MODULE_8__.EditableNote, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_EditableNote_js__WEBPACK_IMPORTED_MODULE_8__.EditableNote, {
                 makeNotification: makeNotification,
                 mode: notemode,
                 block: block,
                 blockindex: blockindex,
                 uid: block.attrs.uid,
                 post_id: post_id
-              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
+              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
                 block: block,
                 blockindex: blockindex,
                 data: data,
@@ -16954,39 +16783,39 @@ function Agenda(props) {
                 makeNotification: makeNotification,
                 setMode: setMode,
                 setShowControls: setShowControls
-              }), showControls != blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("button", {
+              }), showControls != blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("button", {
                 className: "agenda-tooltip",
                 onClick: () => {
                   setShowControls(blockindex);
                 },
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("span", {
-                  class: "agenda-tooltip-text",
-                  children: "Edit/Organize"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_18__["default"], {
-                  icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_21__["default"]
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("span", {
+                  className: "agenda-tooltip-text",
+                  children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Edit/Organize', data)
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_19__["default"], {
+                  icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_20__["default"]
                 })]
               })]
             }, 'block' + blockindex);
           } else if (showDetails && 'wp4toastmasters/agendanoterich2' == block.blockName) {
             let notemode = user_can('edit_signups') && showControls == blockindex ? 'edit' : 'signup';
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), ('edit' != notemode || !editNotes) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
+              }), ('edit' != notemode || !editNotes) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
                 innerHTML: block.innerHTML
-              }), 'edit' == notemode && !editNotes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("button", {
-                class: "tmsmallbutton",
+              }), 'edit' == notemode && !editNotes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("button", {
+                className: "tmsmallbutton",
                 onClick: () => setEditNotes(true),
-                children: "Edit"
-              }), 'edit' == notemode && editNotes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_EditorAgendaNote_js__WEBPACK_IMPORTED_MODULE_7__.EditorAgendaNote, {
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Edit', data)
+              }), 'edit' == notemode && editNotes && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_EditorAgendaNote_js__WEBPACK_IMPORTED_MODULE_7__.EditorAgendaNote, {
                 makeNotification: makeNotification,
                 blockindex: blockindex,
                 block: block
-              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
+              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
                 block: block,
                 blockindex: blockindex,
                 data: data,
@@ -16994,39 +16823,38 @@ function Agenda(props) {
                 makeNotification: makeNotification,
                 setMode: setMode,
                 setShowControls: setShowControls
-              }), showControls != blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("button", {
+              }), showControls != blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("button", {
                 className: "agenda-tooltip",
                 onClick: () => {
                   setShowControls(blockindex);
                 },
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("span", {
-                  class: "agenda-tooltip-text",
-                  children: "Edit/Organize"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_18__["default"], {
-                  icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_21__["default"]
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("span", {
+                  className: "agenda-tooltip-text",
+                  children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Edit/Organize', data)
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_19__["default"], {
+                  icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_20__["default"]
                 })]
               })]
             }, 'block' + blockindex);
           } else if (showDetails && 'wp4toastmasters/context' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.Fragment, {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.Fragment, {
               children: block.innerBlocks.map(ib => {
-                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
+                return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
                   innerHTML: ib.innerHTML
                 });
               })
             });
           } else if (showDetails && block.innerHTML) {
             // agenda notes, signup notes and other raw content
-
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_6__.SanitizedHTML, {
                 innerHTML: block.innerHTML
               })
             }, 'block' + blockindex);
           } else if ('wp4toastmasters/absences' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_Absence_js__WEBPACK_IMPORTED_MODULE_13__.Absence, {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_Absence_js__WEBPACK_IMPORTED_MODULE_13__.Absence, {
               makeNotification: makeNotification,
               absences: data.absences,
               current_user_id: current_user_id,
@@ -17034,24 +16862,24 @@ function Agenda(props) {
               mode: mode
             });
           } else if ('wp4toastmasters/hybrid' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_Hybrid_js__WEBPACK_IMPORTED_MODULE_14__.Hybrid, {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_Hybrid_js__WEBPACK_IMPORTED_MODULE_14__.Hybrid, {
               makeNotification: makeNotification,
               current_user_id: current_user_id,
               post_id: post_id,
               mode: mode
             });
           } else return null;
-        } //end signup blocks
+        } // end signup blocks
         else if ('edit' == mode) {
           if ('wp4toastmasters/role' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
                 makeNotification: makeNotification,
                 showDetails: showDetails,
                 agendadata: data,
@@ -17060,11 +16888,13 @@ function Agenda(props) {
                 mode: mode,
                 block: block,
                 setEvaluate: setEvaluate,
-                setMode: setMode
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_4__.SpeakerTimeCount, {
+                setMode: setMode,
+                data: data
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_4__.SpeakerTimeCount, {
                 block: block,
-                makeNotification: makeNotification
-              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                makeNotification: makeNotification,
+                data: data
+              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
                 block: block,
                 blockindex: blockindex,
                 data: data,
@@ -17075,21 +16905,21 @@ function Agenda(props) {
               })]
             }, 'block' + blockindex);
           } else if (showDetails && 'wp4toastmasters/agendaedit' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_EditableNote_js__WEBPACK_IMPORTED_MODULE_8__.EditableNote, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_EditableNote_js__WEBPACK_IMPORTED_MODULE_8__.EditableNote, {
                 makeNotification: makeNotification,
                 mode: mode,
                 block: block,
                 blockindex: blockindex,
                 uid: block.attrs.uid,
                 post_id: post_id
-              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
+              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
                 block: block,
                 blockindex: blockindex,
                 data: data,
@@ -17097,33 +16927,34 @@ function Agenda(props) {
                 makeNotification: makeNotification,
                 setMode: setMode,
                 setShowControls: setShowControls
-              }), showControls != blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("button", {
+              }), showControls != blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("button", {
                 className: "agenda-tooltip",
                 onClick: () => {
                   setShowControls(blockindex);
                 },
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("span", {
-                  class: "agenda-tooltip-text",
-                  children: "Edit/Organize"
-                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_18__["default"], {
-                  icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_21__["default"]
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("span", {
+                  className: "agenda-tooltip-text",
+                  children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Edit/Organize', data)
+                }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_19__["default"], {
+                  icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_20__["default"]
                 })]
               })]
             }, 'block' + blockindex);
           }
           if (showDetails && 'wp4toastmasters/agendanoterich2' == block.blockName && (user_can('edit_post') || user_can('organize_agenda'))) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_EditorAgendaNote_js__WEBPACK_IMPORTED_MODULE_7__.EditorAgendaNote, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_EditorAgendaNote_js__WEBPACK_IMPORTED_MODULE_7__.EditorAgendaNote, {
                 makeNotification: makeNotification,
                 blockindex: blockindex,
-                block: block
-              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                block: block,
+                data: data
+              }), showControls == blockindex && user_can('organize_agenda') && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_ReorgWidget__WEBPACK_IMPORTED_MODULE_11__["default"], {
                 block: block,
                 blockindex: blockindex,
                 data: data,
@@ -17134,20 +16965,20 @@ function Agenda(props) {
               })]
             }, 'block' + blockindex);
           } else if (showDetails && 'wp4toastmasters/signupnote' == block.blockName && (user_can('edit_post') || user_can('organize_agenda'))) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SignupNote_js__WEBPACK_IMPORTED_MODULE_9__.SignupNote, {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_SignupNote_js__WEBPACK_IMPORTED_MODULE_9__.SignupNote, {
                 blockindex: blockindex,
                 block: block
               })]
             }, 'block' + blockindex);
           } else if ('wp4toastmasters/absences' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_Absence_js__WEBPACK_IMPORTED_MODULE_13__.Absence, {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_Absence_js__WEBPACK_IMPORTED_MODULE_13__.Absence, {
               makeNotification: makeNotification,
               absences: data.absences,
               current_user_id: current_user_id,
@@ -17155,57 +16986,53 @@ function Agenda(props) {
               post_id: post_id
             });
           } else if ('wp4toastmasters/hybrid' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_Hybrid_js__WEBPACK_IMPORTED_MODULE_14__.Hybrid, {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_Hybrid_js__WEBPACK_IMPORTED_MODULE_14__.Hybrid, {
               makeNotification: makeNotification,
               current_user_id: current_user_id,
               post_id: post_id,
               mode: mode
             });
           } else return null;
-        } //end edit blocks
+        } // end edit blocks
         else if ('suggest' == mode) {
           if ('wp4toastmasters/role' == block.blockName) {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("div", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("div", {
               id: 'block' + blockindex,
               className: "block",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("div", {
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("strong", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("div", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("strong", {
                   children: datestring
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_RoleBlock_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
                 makeNotification: makeNotification,
                 showDetails: showDetails,
                 agendadata: data,
                 post_id: post_id,
                 blockindex: blockindex,
                 mode: mode,
-                block: block
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_4__.SpeakerTimeCount, {
                 block: block,
-                makeNotification: makeNotification
+                data: data
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_4__.SpeakerTimeCount, {
+                block: block,
+                makeNotification: makeNotification,
+                data: data
               })]
             }, 'block' + blockindex);
           } else return null;
-        } //end suggest blocks
+        } // end suggest blocks
         else return null;
       })]
     });
   } catch (error) {
-    console.log('error loading agenda', error);
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsxs)("p", {
-      children: ["Error loading agenda (", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_17__.jsx)("a", {
+    console.log('Error loading agenda', error);
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsxs)("p", {
+      children: ["Error loading agenda", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_18__.jsx)("a", {
         href: window.location.href + '?revert=1',
         children: "try alternate version"
-      }), ")"]
+      })]
     });
   }
 }
-
-/*
-                            {showControls == blockindex && user_can('organize_agenda') && <div className="tmflexrow"><div className="tmflex30"><NumberCtrl label="Signup Slots" min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { data.blocksdata[blockindex].attrs.count = value; if(['Speaker','Evaluator'].includes(block.attrs.role)) { data.blocksdata[blockindex].attrs.time_allowed = calcTimeAllowed(block.attrs); data.blocksdata = syncToEvaluator(data.blocksdata,value); } agendaMutate(data); }} /></div><div className="tmflex30"><NumberCtrl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {data.blocksdata[blockindex].attrs.padding_time = value; agendaMutate(data);}} /></div>}</div>}
-                            {showControls == blockindex && user_can('organize_agenda') && <p>More options: <button class="tmsmallbutton" onClick={() =>{setMode('reorganize');}}>Organize</button></p>}
-
-*/
 
 /***/ }),
 
@@ -17529,8 +17356,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _tinymce_tinymce_react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @tinymce/tinymce-react */ "./node_modules/@tinymce/tinymce-react/lib/es2015/main/ts/index.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _mytranslate__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mytranslate */ "./src/mytranslate.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__);
+
 
 
 
@@ -17539,16 +17368,17 @@ function EditorAgendaNote(props) {
   const {
     block,
     blockindex,
-    replaceBlock
+    replaceBlock,
+    data
   } = props;
   function save() {
     block.innerHTML = editorRef.current.getContent();
     replaceBlock(blockindex, block);
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.Fragment, {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("h4", {
-      children: "Agenda Note"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_tinymce_tinymce_react__WEBPACK_IMPORTED_MODULE_1__.Editor, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.Fragment, {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("h4", {
+      children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Agenda Note', data)
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)(_tinymce_tinymce_react__WEBPACK_IMPORTED_MODULE_1__.Editor, {
       onInit: (evt, editor) => editorRef.current = editor,
       initialValue: block.innerHTML,
       init: {
@@ -17557,15 +17387,15 @@ function EditorAgendaNote(props) {
         toolbar: 'undo redo | bold italic | removeformat',
         content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
       }
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("button", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("button", {
         className: "tmform",
         onClick: save,
-        children: "Update"
+        children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Update', data)
       })
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("p", {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("em", {
-        children: "Agenda notes are the \"stage directions\" for your meeting. For elements like meeting theme that change from meeting to meeting, use an Editable Note instead."
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("p", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_3__.jsx)("em", {
+        children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Agenda notes are the "stage directions" for your meeting. For elements like meeting theme that change from meeting to meeting, use an Editable Note instead.', data)
       })
     })]
   });
@@ -17913,18 +17743,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
-/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Ctrl_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Ctrl.js */ "./src/Ctrl.js");
-/* harmony import */ var _SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./SanitizedHTML.js */ "./src/SanitizedHTML.js");
-/* harmony import */ var _queries_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./queries.js */ "./src/queries.js");
-/* harmony import */ var _EvaluationProjectChooser_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./EvaluationProjectChooser.js */ "./src/EvaluationProjectChooser.js");
-/* harmony import */ var _EvaluationPrompt_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./EvaluationPrompt.js */ "./src/EvaluationPrompt.js");
-/* harmony import */ var _icons_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./icons.js */ "./src/icons.js");
-/* harmony import */ var clipboardy__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! clipboardy */ "./node_modules/clipboardy/browser.js");
-/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__);
+/* harmony import */ var _mytranslate__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mytranslate */ "./src/mytranslate.js");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
+/* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _Ctrl_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Ctrl.js */ "./src/Ctrl.js");
+/* harmony import */ var _SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./SanitizedHTML.js */ "./src/SanitizedHTML.js");
+/* harmony import */ var _queries_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./queries.js */ "./src/queries.js");
+/* harmony import */ var _EvaluationProjectChooser_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./EvaluationProjectChooser.js */ "./src/EvaluationProjectChooser.js");
+/* harmony import */ var _EvaluationPrompt_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./EvaluationPrompt.js */ "./src/EvaluationPrompt.js");
+/* harmony import */ var _icons_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./icons.js */ "./src/icons.js");
+/* harmony import */ var clipboardy__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! clipboardy */ "./node_modules/clipboardy/browser.js");
+/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__);
+
 
 
 
@@ -17950,9 +17782,9 @@ function EvaluationTool(props) {
     isError,
     isFetching,
     data: evaldata
-  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_4__.useEvaluation)(evaluate.project, evaluate.ID, onSuccess);
-  if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-    children: "Error loading evaluation data"
+  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_5__.useEvaluation)(evaluate.project, evaluate.ID, onSuccess);
+  if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+    children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Error loading evaluation data', data)
   });
   const [path, setPath] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('Path Not Set');
   const [manual, setManual] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(evaluate && evaluate.manual ? evaluate.manual : '');
@@ -17970,7 +17802,7 @@ function EvaluationTool(props) {
   let resetLink = window.location.href.indexOf('mode') == -1 ? window.location.href + query : window.location.href;
   const {
     mutate: sendEvaluation
-  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_4__.initSendEvaluation)(data.post_id, setSent, makeNotification);
+  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_5__.initSendEvaluation)(data.post_id, setSent, makeNotification);
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     scrolltoId('react-agenda');
   }, [sent, form]);
@@ -17992,8 +17824,8 @@ function EvaluationTool(props) {
       });
     }
   }
-  if (isLoading || isFetching) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-    children: "Loading ..."
+  if (isLoading || isFetching) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+    children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Loading ...', data)
   });
   let assignment_options = [{
     'value': '',
@@ -18075,50 +17907,50 @@ function EvaluationTool(props) {
     navigator.clipboard.write([clipboardItemInput]);
   }
   console.log('evaluation tool mode', mode);
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
     className: "eval",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("h2", {
-      children: "Evaluation Tool"
-    }), sent && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("p", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("h2", {
+      children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Evaluation Tool', data)
+    }), sent && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("p", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("button", {
           onClick: copyEvaluation,
-          children: "Copy to Clipboard"
-        }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("em", {
-          children: "works in most browsers, but not Firefox"
+          children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Copy to Clipboard', data)
+        }), ' ', /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("em", {
+          children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('works in most browsers, but not Firefox', data)
         })]
-      }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("a", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("a", {
           href: resetLink,
-          children: "Reset"
+          children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Reset', data)
         })
-      }), "  ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_3__.SanitizedHTML, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_4__.SanitizedHTML, {
         innerHTML: sent
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("a", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("a", {
           href: resetLink,
-          children: "Reset"
+          children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Reset', data)
         })
       })]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("h3", {
-      children: "Get Feedback"
-    }), data.current_user_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("p", {
-      children: ["To request an evaluation, share this link", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("a", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("h3", {
+      children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Get Feedback', data)
+    }), data.current_user_id && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("p", {
+      children: [(0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('To request an evaluation, share this link', data), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("a", {
         href: data.request_evaluation,
         children: data.request_evaluation
-      }), " ", data.request_evaluation.indexOf('admin') > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
-        children: "(login required)"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("br", {})]
-    }), data.current_user_id == false && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-      children: "Toastmost users can request an evaluation from a fellow Toastmaster using this system."
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
+      }), " ", data.request_evaluation.indexOf('admin') > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("span", {
+        children: ["(", (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('login required', data), ")"]
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("br", {})]
+    }), data.current_user_id == false && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+      children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Toastmost users can request an evaluation from a fellow Toastmaster using this system.', data)
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
       id: "YoodliPromo",
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_7__.Yoodli, {})
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("h3", {
-      children: "Give Feedback"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-      children: "To give an evaluation, use the form below. When both the evaluator and the speaker have user accounts, the completed evaluation will be sent by email and archived on the member dashboard."
-    }), !name && (!mode || 'evaluation_demo' != mode) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_8__.Yoodli, {})
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("h3", {
+      children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Give Feedback', data)
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+      children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('To give an evaluation, use the form below. When both the evaluator and the speaker have user accounts, the completed evaluation will be sent by email and archived on the member dashboard.', data)
+    }), !name && (!mode || 'evaluation_demo' != mode) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_3__.SelectCtrl, {
       source: "Member or Guest",
       value: JSON.stringify(evaluate),
       options: assignment_options,
@@ -18132,8 +17964,8 @@ function EvaluationTool(props) {
         setProject(newevaluate.project);
         setEvaluate(newevaluate);
       }
-    }), (name || mode && 'evaluation_demo' == mode) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
-      label: "Speaker Name",
+    }), (name || mode && 'evaluation_demo' == mode) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
+      label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Speaker Name', data),
       value: name,
       onChange: value => {
         if (!value) {
@@ -18148,19 +17980,19 @@ function EvaluationTool(props) {
           return prev;
         });
       }
-    }), !data.current_user_name && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
-      label: "Evaluator Name",
+    }), !data.current_user_name && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
+      label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Evaluator Name', data),
       value: evaluatorName,
       onChange: value => {
         setEvaluatorName(value);
       }
-    }), 'evaluation_guest' == mode && !data.is_user_logged_in && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
-      label: "Evaluator Email",
+    }), 'evaluation_guest' == mode && !data.is_user_logged_in && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.TextControl, {
+      label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Evaluator Email', data),
       value: evaluatorEmail,
       onChange: value => {
         setEvaluatorEmail(value);
       }
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_EvaluationProjectChooser_js__WEBPACK_IMPORTED_MODULE_5__.EvaluationProjectChooser, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_EvaluationProjectChooser_js__WEBPACK_IMPORTED_MODULE_6__.EvaluationProjectChooser, {
       manual: manual,
       project: project,
       title: title,
@@ -18169,12 +18001,12 @@ function EvaluationTool(props) {
       setTitle: setTitle,
       setEvaluate: setEvaluate,
       makeNotification: makeNotification
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_3__.SanitizedHTML, {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_4__.SanitizedHTML, {
       innerHTML: form.intro
     }), form.prompts.map((item, index) => {
       if (!(responses[index] || notes[index])) openslots.push(index);
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_EvaluationPrompt_js__WEBPACK_IMPORTED_MODULE_6__.EvaluationPrompt, {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_EvaluationPrompt_js__WEBPACK_IMPORTED_MODULE_7__.EvaluationPrompt, {
           promptindex: index,
           response: responses[index],
           note: notes[index],
@@ -18186,8 +18018,8 @@ function EvaluationTool(props) {
     }), secondLanguagePrompt && form.second_language.map((item, slindex) => {
       let index = slindex + form.prompts.length;
       if (!(responses[index] || notes[index])) openslots.push(index);
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_EvaluationPrompt_js__WEBPACK_IMPORTED_MODULE_6__.EvaluationPrompt, {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("div", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)(_EvaluationPrompt_js__WEBPACK_IMPORTED_MODULE_7__.EvaluationPrompt, {
           promptindex: index,
           response: responses[index],
           note: notes[index],
@@ -18196,26 +18028,26 @@ function EvaluationTool(props) {
           item: item
         })
       });
-    }), openslots.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("em", {
-        children: [openslots.length, " prompts have not been answered"]
+    }), openslots.length > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("em", {
+        children: [openslots.length, " ", (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('prompts have not been answered', data)]
       })
-    }), form.second_language_requested && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("em", {
-        children: "The last four speaking-in-a-second-language prompts were requested by the speaker."
+    }), form.second_language_requested && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("em", {
+        children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('The last four speaking-in-a-second-language prompts were requested by the speaker.', data)
       })
-    }), !form.second_language_requested && !secondLanguagePrompt && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("p", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("input", {
+    }), !form.second_language_requested && !secondLanguagePrompt && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsxs)("p", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("input", {
         type: "checkbox",
         onClick: () => {
           setSecondLanguagePrompt(true);
         }
-      }), " Add prompts for those speaking in a second language"]
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
+      }), " ", (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Add prompts for those speaking in a second language', data)]
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("p", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_11__.jsx)("button", {
         className: "tmform",
         onClick: send,
-        children: "Send"
+        children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Send', data)
       })
     })]
   });
@@ -18280,11 +18112,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Ctrl_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Ctrl.js */ "./src/Ctrl.js");
-/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
-/* harmony import */ var _http_common_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./http-common.js */ "./src/http-common.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _mytranslate__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mytranslate */ "./src/mytranslate.js");
+/* harmony import */ var _Ctrl_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Ctrl.js */ "./src/Ctrl.js");
+/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
+/* harmony import */ var _http_common_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./http-common.js */ "./src/http-common.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__);
+
 
 
 
@@ -18298,7 +18132,7 @@ function Hybrid(props) {
     makeNotification
   } = props;
   const [addtolist, setAddToList] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(0);
-  const queryClient = (0,react_query__WEBPACK_IMPORTED_MODULE_2__.useQueryClient)();
+  const queryClient = (0,react_query__WEBPACK_IMPORTED_MODULE_3__.useQueryClient)();
   const {
     isLoading,
     isFetching,
@@ -18307,7 +18141,7 @@ function Hybrid(props) {
     data,
     error,
     refetch
-  } = (0,react_query__WEBPACK_IMPORTED_MODULE_2__.useQuery)(['hybrid-data', post_id], fetchInPersons, {
+  } = (0,react_query__WEBPACK_IMPORTED_MODULE_3__.useQuery)(['hybrid-data', post_id], fetchInPersons, {
     enabled: true,
     retry: 2,
     onSuccess,
@@ -18315,7 +18149,7 @@ function Hybrid(props) {
     refetchInterval: 60000
   });
   function fetchInPersons() {
-    return _http_common_js__WEBPACK_IMPORTED_MODULE_3__["default"].get('hybrid?post_id=' + post_id);
+    return _http_common_js__WEBPACK_IMPORTED_MODULE_4__["default"].get('hybrid?post_id=' + post_id);
   }
   function onSuccess(data) {
     console.log('hybrid data', data);
@@ -18323,11 +18157,11 @@ function Hybrid(props) {
   function onError(err, variables, context) {
     console.log('hybrid error', err);
   }
-  if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
-    children: "Error loading Hybrid.js data"
+  if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
+    children: __('Error loading Hybrid.js data', 'rsvpmaker-for-toastmasters')
   });
-  const hybridMutation = (0,react_query__WEBPACK_IMPORTED_MODULE_2__.useMutation)(async addremove => {
-    return await _http_common_js__WEBPACK_IMPORTED_MODULE_3__["default"].post("hybrid?post_id=" + post_id, addremove);
+  const hybridMutation = (0,react_query__WEBPACK_IMPORTED_MODULE_3__.useMutation)(async addremove => {
+    return await _http_common_js__WEBPACK_IMPORTED_MODULE_4__["default"].post("hybrid?post_id=" + post_id, addremove);
   }, {
     onMutate: async addremove => {
       await queryClient.cancelQueries(['hybrid-data', post_id]);
@@ -18352,7 +18186,7 @@ function Hybrid(props) {
         };
         return newdata;
       });
-      makeNotfication('Updating ...');
+      makeNotification(__('Updating ...', 'rsvpmaker-for-toastmasters'));
       return {
         previousData
       };
@@ -18361,16 +18195,16 @@ function Hybrid(props) {
       queryClient.invalidateQueries(['hybrid-data', variables.post_id]);
     },
     onSuccess: (data, error, variables, context) => {
-      makeNotification('Updated');
+      makeNotification(__('Updated', 'rsvpmaker-for-toastmasters'));
     },
     onError: (err, variables, context) => {
-      makeNotification('update hybrid error');
+      makeNotification(__('update hybrid error', 'rsvpmaker-for-toastmasters'));
       console.log('mutate hybrid error', err);
       queryClient.setQueryData("hybrid-data", context.previousData);
     }
   });
-  if (isLoading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("div", {
-    children: "Loading hybrid list ..."
+  if (isLoading) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("div", {
+    children: __('Loading hybrid list ...', 'rsvpmaker-for-toastmasters')
   });
   const {
     hybrid,
@@ -18404,58 +18238,58 @@ function Hybrid(props) {
       absentIndex = index;
     }
   });
-  if ('edit' == mode) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+  if ('edit' == mode) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
     className: "absence",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
-      children: "In Person Attendance"
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
+      children: __('In Person Attendance', 'rsvpmaker-for-toastmasters')
     }), hybrid.map((ab, index) => {
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
           className: "tmform",
           onClick: () => {
             removeInPerson(ab.ID, index, ab.until);
           },
-          children: "Remove"
-        }), " ", ab.name]
+          children: __('Remove', 'rsvpmaker-for-toastmasters')
+        }), ' ', ab.name]
       });
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_1__.SelectCtrl, {
-      label: "Add Member to List",
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
+      label: __('Add Member to List', 'rsvpmaker-for-toastmasters'),
       value: addtolist,
       options: memberlist,
       onChange: id => {
         setAddToList(id);
       }
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
       className: "tmform",
       onClick: () => {
         addInPerson(addtolist);
       },
-      children: "Add"
+      children: __('Add', 'rsvpmaker-for-toastmasters')
     })]
   });
 
-  //signup mode
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("div", {
+  // Signup mode
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("div", {
     className: "hybrid",
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("h3", {
-      children: "In Person Attendance"
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("h3", {
+      children: __('In Person Attendance', 'rsvpmaker-for-toastmasters')
     }), hybrid.map(ab => {
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("p", {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("p", {
         children: ab.name
       });
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)("p", {
-      children: [absentIndex > -1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsxs)("p", {
+      children: [absentIndex > -1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
         className: "tmform",
         onClick: () => {
           removeInPerson(current_user_id, absentIndex);
         },
-        children: "Remove Me"
-      }), " ", absentIndex < 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)("button", {
+        children: __('Remove Me', 'rsvpmaker-for-toastmasters')
+      }), absentIndex < 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_5__.jsx)("button", {
         className: "tmform",
         onClick: () => {
           addInPerson(current_user_id);
         },
-        children: "Add Me"
+        children: __('Add Me', 'rsvpmaker-for-toastmasters')
       })]
     })]
   });
@@ -19833,7 +19667,8 @@ function Reorganize(props) {
               }))]
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_5__.SpeakerTimeCount, {
               block: block,
-              makeNotification: makeNotification
+              makeNotification: makeNotification,
+              data: data
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)("div", {
               className: "tmflexrow",
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", {
@@ -19907,7 +19742,8 @@ function Reorganize(props) {
               })
             }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_SpeakerTimeCount_js__WEBPACK_IMPORTED_MODULE_5__.SpeakerTimeCount, {
               block: block,
-              makeNotification: makeNotification
+              makeNotification: makeNotification,
+              data: data
             })]
           }), showDetails && 'wp4toastmasters/absences' == block.blockName && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)("div", {
             children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToggleControl, {
@@ -19971,7 +19807,8 @@ function Reorganize(props) {
                 makeNotification: makeNotification,
                 blockindex: blockindex,
                 block: block,
-                replaceBlock: replaceBlock
+                replaceBlock: replaceBlock,
+                data: data
               })]
             }), showDetails && editThis != blockindex && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.Fragment, {
               children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_14__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.ToggleControl, {
@@ -20046,21 +19883,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/components */ "@wordpress/components");
 /* harmony import */ var _wordpress_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Ctrl_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Ctrl.js */ "./src/Ctrl.js");
-/* harmony import */ var _ProjectChooser_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ProjectChooser.js */ "./src/ProjectChooser.js");
-/* harmony import */ var _Suggest_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Suggest.js */ "./src/Suggest.js");
-/* harmony import */ var _icons_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./icons.js */ "./src/icons.js");
-/* harmony import */ var _http_common_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./http-common.js */ "./src/http-common.js");
-/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
-/* harmony import */ var _queries_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./queries.js */ "./src/queries.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/icon/index.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/plus-circle.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/cancel-circle-filled.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-right.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/edit.js");
-/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/tool.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _mytranslate__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./mytranslate */ "./src/mytranslate.js");
+/* harmony import */ var _Ctrl_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Ctrl.js */ "./src/Ctrl.js");
+/* harmony import */ var _ProjectChooser_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ProjectChooser.js */ "./src/ProjectChooser.js");
+/* harmony import */ var _Suggest_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Suggest.js */ "./src/Suggest.js");
+/* harmony import */ var _icons_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./icons.js */ "./src/icons.js");
+/* harmony import */ var _http_common_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./http-common.js */ "./src/http-common.js");
+/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
+/* harmony import */ var _queries_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./queries.js */ "./src/queries.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/icon/index.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/plus-circle.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/cancel-circle-filled.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/chevron-right.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/edit.js");
+/* harmony import */ var _wordpress_icons__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @wordpress/icons */ "./node_modules/@wordpress/icons/build-module/library/tool.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__);
+
 
 
 
@@ -20084,7 +19923,8 @@ function RoleBlock(props) {
     makeNotification,
     post_id,
     setEvaluate,
-    setShowControls
+    setShowControls,
+    data
   } = props;
   const {
     assignments,
@@ -20096,7 +19936,7 @@ function RoleBlock(props) {
     mode: ''
   });
   if (!attrs || !attrs.role) return null;
-  const queryClient = (0,react_query__WEBPACK_IMPORTED_MODULE_7__.useQueryClient)();
+  const queryClient = (0,react_query__WEBPACK_IMPORTED_MODULE_8__.useQueryClient)();
   const {
     current_user_id,
     current_user_name,
@@ -20105,7 +19945,7 @@ function RoleBlock(props) {
   const [guests, setGuests] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([].fill('', 0, attrs.count));
   const {
     mutate: mutatePreference
-  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_8__.updatePreference)(makeNotification);
+  } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_9__.updatePreference)(makeNotification);
   if (!attrs.role) return null;
   function user_can(permission) {
     let answer = false;
@@ -20123,10 +19963,8 @@ function RoleBlock(props) {
   let openslots = [];
   let filledslots = [];
   let role = attrs.role;
-  let role_label = attrs.role;
+  let role_label = (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])(attrs.role, data);
   function updateAssignment(assignment, blockindex = null, start = 1, count = 1) {
-    //embed index properties if passed to the function separately
-
     if (Array.isArray(assignment)) {
       assignment = assignment.map(a => {
         return {
@@ -20139,21 +19977,19 @@ function RoleBlock(props) {
         'assignments': assignment,
         'blockindex': blockindex,
         'start': 1
-      }); // todo start won't always be 1!
+      });
     } else {
       assignment.post_id = post_id;
       assignmentMutation.mutate(assignment);
     }
   }
-  const assignmentMutation = (0,react_query__WEBPACK_IMPORTED_MODULE_7__.useMutation)(async assignment => {
-    return await _http_common_js__WEBPACK_IMPORTED_MODULE_6__["default"].post("json_assignment_post", assignment);
+  const assignmentMutation = (0,react_query__WEBPACK_IMPORTED_MODULE_8__.useMutation)(async assignment => {
+    return await _http_common_js__WEBPACK_IMPORTED_MODULE_7__["default"].post("json_assignment_post", assignment);
   }, {
     onMutate: async assignment => {
       await queryClient.cancelQueries(['blocks-data', post_id]);
       const previousData = queryClient.getQueryData(['blocks-data', post_id]);
       queryClient.setQueryData(['blocks-data', post_id], oldQueryData => {
-        //function passed to setQueryData
-
         const {
           blockindex,
           roleindex
@@ -20174,7 +20010,7 @@ function RoleBlock(props) {
         };
         return newdata;
       });
-      makeNotification('Updating ...');
+      makeNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Updating ...', data));
       return {
         previousData
       };
@@ -20183,23 +20019,21 @@ function RoleBlock(props) {
       queryClient.invalidateQueries(['blocks-data', post_id]);
     },
     onSuccess: (data, error, variables, context) => {
-      makeNotification('Updated assignment: ' + data.data.role, true);
+      makeNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Updated assignment: ', data) + data.data.role, true);
     },
     onError: (err, variables, context) => {
-      console.log('mutate assignment error', err);
+      console.log((0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Mutate assignment error', data), err);
       queryClient.setQueryData("blocks-data", context.previousData);
-      makeNotification('Error updating assignment ' + err.message);
+      makeNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Error updating assignment ', data) + err.message);
     }
   });
-  const multiAssignmentMutation = (0,react_query__WEBPACK_IMPORTED_MODULE_7__.useMutation)(async multi => {
-    return await _http_common_js__WEBPACK_IMPORTED_MODULE_6__["default"].post("json_multi_assignment_post", multi);
+  const multiAssignmentMutation = (0,react_query__WEBPACK_IMPORTED_MODULE_8__.useMutation)(async multi => {
+    return await _http_common_js__WEBPACK_IMPORTED_MODULE_7__["default"].post("json_multi_assignment_post", multi);
   }, {
     onMutate: async multi => {
       await queryClient.cancelQueries(['blocks-data', post_id]);
       const previousValue = queryClient.getQueryData(['blocks-data', post_id]);
       queryClient.setQueryData(['blocks-data', post_id], oldQueryData => {
-        //function passed to setQueryData
-
         const {
           blockindex
         } = multi;
@@ -20219,7 +20053,7 @@ function RoleBlock(props) {
         };
         return newdata;
       });
-      makeNotification('Updating ...');
+      makeNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Updating ...', data));
       return {
         previousValue
       };
@@ -20228,10 +20062,10 @@ function RoleBlock(props) {
       queryClient.invalidateQueries(['blocks-data', post_id]);
     },
     onSuccess: (data, error, variables, context) => {
-      makeNotification('Updated');
+      makeNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Updated', data));
     },
     onError: (err, variables, context) => {
-      makeNotification('Error updating assignments ' + err.message);
+      makeNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Error updating assignments ', data) + err.message);
       queryClient.setQueryData("blocks-data", context.previousValue);
     }
   });
@@ -20253,14 +20087,12 @@ function RoleBlock(props) {
       prevassignment.role = attrs.role;
       if (previndex == newindex && newindex < roleindex) {
         newassignments.push(myassignment); //insert before
-
         newassignments.push(prevassignment);
       } else if (previndex == newindex && newindex > roleindex) {
         newassignments.push(prevassignment);
         newassignments.push(myassignment); //insert after
       } else if (previndex != roleindex)
         // skip spot my assignment previously occupied
-
         newassignments.push(prevassignment);
     });
     updateAssignment(newassignments, blockindex, start, count);
@@ -20303,69 +20135,67 @@ function RoleBlock(props) {
         showclose = true;
       }
     }
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("p", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("p", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
         className: "moveup",
-        children: assignments.length > 1 && roleindex > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
+        children: assignments.length > 1 && roleindex > 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
             className: "tmform",
             onClick: () => {
               moveItem(roleindex, 0);
             },
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_5__.Top, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_6__.Top, {
               type: attrs.role + ' ' + shownumber
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
             className: "tmform",
             onClick: () => {
               moveItem(roleindex, roleindex - 1);
             },
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_5__.Up, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_6__.Up, {
               type: attrs.role + ' ' + shownumber
             })
           })]
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
         className: "movedown",
-        children: assignments.length > 1 && roleindex < assignments.length - 1 && attrs.role.search('Backup') < 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
+        children: assignments.length > 1 && roleindex < assignments.length - 1 && attrs.role.search('Backup') < 0 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
           className: "tmform",
           onClick: () => {
             moveItem(roleindex, roleindex + 1);
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_5__.Down, {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_6__.Down, {
             type: attrs.role + ' ' + shownumber
           })
         })
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
         className: "closegaps",
-        children: showclose && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
+        children: showclose && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
           className: "tmform",
           onClick: removeBlanks,
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_5__.Close, {})
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_icons_js__WEBPACK_IMPORTED_MODULE_6__.Close, {})
         })
       })]
     });
   }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
     children: assignments && Array.isArray(assignments) && assignments.map((assignment, roleindex) => {
       if ("0" == assignment.ID || 0 == assignment.ID) openslots.push(roleindex);else filledslots.push(roleindex);
       let shownumber = attrs.count && attrs.count > 1 || start > 1 ? '#' + (roleindex + start) : '';
       if (roleindex == count) {
-        role_label = 'Backup ' + role;
+        role_label = (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Backup ', data) + role;
         shownumber = '';
       } else if (roleindex > count) {
-        //only show one backup assignment
-
         return null;
       }
       let id = 'role' + attrs.role.replaceAll(/[^A-z]/g, '') + roleindex;
       if ('assign' == mode) {
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
           id: id,
           className: "assignment",
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
             className: "assignment-assigned",
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_3__.SelectCtrl, {
               label: role_label + ' ' + shownumber,
               value: assignment.ID,
               options: memberoptions,
@@ -20402,14 +20232,14 @@ function RoleBlock(props) {
       }
       let isMe = current_user_id == assignment.ID;
       let isOpen = 0 == assignment.ID || assignment.ID == '0' || assignment.ID == '';
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
         id: id,
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
           className: "roleheader",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
             div: true,
             className: "role-buttons",
-            children: [isOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("button", {
+            children: [isOpen && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
               className: "agenda-tooltip",
               onClick: function (event) {
                 if ('Speaker' == role) updateAssignment({
@@ -20433,13 +20263,13 @@ function RoleBlock(props) {
                   'count': count
                 });
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
                 class: "agenda-tooltip-text",
-                children: "Sign Up"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"], {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"]
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Sign Up', data)
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_12__["default"]
               })]
-            }), isMe && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("button", {
+            }), isMe && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
               onClick: function (event) {
                 let a = 'Speaker' == role ? {
                   'ID': 0,
@@ -20467,13 +20297,13 @@ function RoleBlock(props) {
                 updateAssignment(a);
               },
               className: "agenda-tooltip",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
                 class: "agenda-tooltip-text",
-                children: "Cancel"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"], {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_12__["default"]
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Cancel', data)
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_13__["default"]
               })]
-            }), (isOpen || isMe) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("button", {
+            }), (isOpen || isMe) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
               className: "agenda-tooltip",
               onClick: () => {
                 if (isMe) {
@@ -20505,13 +20335,13 @@ function RoleBlock(props) {
                 setScrollTo(id);
                 setMode('suggest');
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
                 class: "agenda-tooltip-text",
-                children: "Suggest"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"], {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_13__["default"]
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Suggest', data)
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_14__["default"]
               })]
-            }), (user_can('edit_post') || user_can('organize_agenda') || user_can('edit_signups')) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("button", {
+            }), (user_can('edit_post') || user_can('organize_agenda') || user_can('edit_signups')) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
               className: "agenda-tooltip",
               onClick: () => {
                 setItemMode({
@@ -20519,42 +20349,42 @@ function RoleBlock(props) {
                   mode: 'edit'
                 });
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
                 class: "agenda-tooltip-text",
-                children: "Edit"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"], {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_14__["default"]
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Edit', data)
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_15__["default"]
               })]
-            }), (user_can('edit_post') || user_can('organize_agenda')) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("button", {
+            }), (user_can('edit_post') || user_can('organize_agenda')) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("button", {
               className: "agenda-tooltip",
               onClick: () => {
                 setShowControls(blockindex);
               },
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("span", {
                 class: "agenda-tooltip-text",
-                children: "Organize"
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_10__["default"], {
-                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_15__["default"]
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Organize', data)
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_icons__WEBPACK_IMPORTED_MODULE_11__["default"], {
+                icon: _wordpress_icons__WEBPACK_IMPORTED_MODULE_16__["default"]
               })]
             })]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("h3", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("h3", {
             className: "role-label",
             children: [role_label, " ", shownumber, " ", assignment.name]
           })]
-        }), attrs.agenda_note && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("p", {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("em", {
+        }), attrs.agenda_note && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("p", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("em", {
             children: attrs.agenda_note
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
-          children: 'suggest' == mode && (isMe || isOpen) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_Suggest_js__WEBPACK_IMPORTED_MODULE_4__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+          children: 'suggest' == mode && (isMe || isOpen) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_Suggest_js__WEBPACK_IMPORTED_MODULE_5__["default"], {
             memberoptions: memberoptions,
             roletag: roletagbase + (roleindex + 1),
             post_id: props.post_id,
             current_user_id: current_user_id
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
-          children: ('edit' == mode || itemMode.mode == 'edit' && itemMode.item == roleindex) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
-            label: "Select Member",
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+          children: ('edit' == mode || itemMode.mode == 'edit' && itemMode.item == roleindex) && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_3__.SelectCtrl, {
+            label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Select Member', data),
             value: assignment.ID,
             options: memberoptions,
             onChange: id => {
@@ -20583,13 +20413,13 @@ function RoleBlock(props) {
               });
             }
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
-          children: 'edit' == mode && assignment.ID == 'Guest' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+          children: 'edit' == mode && assignment.ID == 'Guest' && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
             className: "tmflexrow",
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("div", {
               className: "tmflex30",
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
-                label: "Guest Name",
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+                label: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Guest Name', data),
                 value: guests[roleindex],
                 onChange: id => {
                   let newguests = [...guests];
@@ -20597,9 +20427,9 @@ function RoleBlock(props) {
                   setGuests(newguests);
                 }
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
               className: "tmflex30",
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("button", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("button", {
                 className: "tmform",
                 onClick: () => {
                   updateAssignment({
@@ -20615,12 +20445,12 @@ function RoleBlock(props) {
                   newguests[roleindex] = '';
                   setGuests(newguests);
                 },
-                children: "Add"
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Add', data)
               })]
             })]
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
-          children: 'suggest' != mode && ('edit' == mode || itemMode.mode == 'edit' && itemMode.item == roleindex || current_user_id == assignment.ID) && (assignment.ID > 0 || typeof assignment.ID == 'string' && assignment.ID != '') && role.search('Speaker') > -1 && role.search('Backup') == -1 && showDetails && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(_ProjectChooser_js__WEBPACK_IMPORTED_MODULE_3__["default"], {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+          children: 'suggest' != mode && ('edit' == mode || itemMode.mode == 'edit' && itemMode.item == roleindex || current_user_id == assignment.ID) && (assignment.ID > 0 || typeof assignment.ID == 'string' && assignment.ID != '') && role.search('Speaker') > -1 && role.search('Backup') == -1 && showDetails && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(_ProjectChooser_js__WEBPACK_IMPORTED_MODULE_4__["default"], {
             attrs: attrs,
             assignment: assignment,
             project: assignment.project,
@@ -20633,8 +20463,8 @@ function RoleBlock(props) {
             roleindex: roleindex,
             blockindex: blockindex
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.Fragment, {
-          children: !!('edit' == mode) && assignments.length > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)(MoveButtons, {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.Fragment, {
+          children: !!('edit' == mode) && assignments.length > 1 && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)(MoveButtons, {
             assignments: assignments,
             roleindex: roleindex,
             filledslots: filledslots,
@@ -20642,27 +20472,27 @@ function RoleBlock(props) {
             attrs: attrs,
             shownumber: shownumber
           })
-        }), assignment.ID > 0 && 'Speaker' == attrs.role && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsxs)("div", {
+        }), assignment.ID > 0 && 'Speaker' == attrs.role && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("div", {
           className: "evaluation-request",
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("a", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("a", {
             href: assignment.evaluation_link,
             onClick: e => {
               e.preventDefault();
               setEvaluate(assignment);
               setMode('evaluation');
             },
-            children: "Evaluation Form"
-          }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("span", {
+            children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Evaluation Form', data)
+          }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsxs)("span", {
             style: {
               fontSize: '10px'
             },
-            children: "(copy-paste text below to share)"
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_9__.jsx)("textarea", {
+            children: ["(", (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('copy-paste text below to share', data), ")"]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("br", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_10__.jsx)("textarea", {
             rows: "3",
             style: {
               fontSize: '8px'
             },
-            value: 'Evaluation link for ' + assignment.name + '\n' + assignment.evaluation_link
+            value: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_2__["default"])('Evaluation link for ', data) + assignment.name + '\n' + assignment.evaluation_link
           })]
         })]
       }, id);
@@ -20776,15 +20606,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _mytranslate__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mytranslate */ "./src/mytranslate.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 function SpeakerTimeCount(props) {
   const {
     attrs,
     assignments,
-    makeNotification
+    makeNotification,
+    data
   } = props.block;
   const [warningGiven, setWarningGiven] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
   if (attrs.role != 'Speaker') return null;
@@ -20792,11 +20625,11 @@ function SpeakerTimeCount(props) {
     time_allowed,
     count
   } = attrs;
-  const time_allowed_text = time_allowed ? ' out of ' + time_allowed + ' allowed' : '';
+  const time_allowed_text = time_allowed ? (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])(' out of ', data) + time_allowed + (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])(' allowed', data) : '';
   let totaltime = 0;
   Array.isArray(assignments) && assignments.forEach((assignment, aindex) => {
     if (assignment.ID && aindex < count)
-      //count time for speakers but not backup speaker
+      // Count time for speakers but not backup speaker
       totaltime += parseInt(assignment.maxtime);
   });
   if (!totaltime) return null;
@@ -20808,17 +20641,17 @@ function SpeakerTimeCount(props) {
     setWarningGiven(true);
   }
   if (totaltime > time_allowed) {
-    if (!warningGiven) delayedNotification('Speakers have reserved ' + totaltime + ' minutes' + time_allowed_text + '. Meeting organizers may change the time allowed for different parts of the meeting on the Organize tab.');
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("p", {
+    if (!warningGiven) delayedNotification((0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Speakers have reserved ', data) + totaltime + (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])(' minutes', data) + time_allowed_text + (0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('. Meeting organizers may change the time allowed for different parts of the meeting on the Organize tab.', data));
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("p", {
         className: "speakertime speakertime-warning",
-        children: ["Speakers have reserved ", totaltime, " minutes", time_allowed_text]
+        children: [(0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Speakers have reserved ', data), totaltime, time_allowed_text]
       })
     });
-  } else return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)("p", {
+  } else return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)("div", {
+    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsxs)("p", {
       className: "speakertime",
-      children: ["Speakers have reserved ", totaltime, " minutes", time_allowed_text]
+      children: [(0,_mytranslate__WEBPACK_IMPORTED_MODULE_1__["default"])('Speakers have reserved ', data), totaltime, time_allowed_text]
     })
   });
 }
@@ -21434,8 +21267,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _queries_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./queries.js */ "./src/queries.js");
 /* harmony import */ var react_copy_to_clipboard__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-copy-to-clipboard */ "./node_modules/react-copy-to-clipboard/lib/index.js");
 /* harmony import */ var react_copy_to_clipboard__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(react_copy_to_clipboard__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _mytranslate__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./mytranslate */ "./src/mytranslate.js");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react/jsx-runtime */ "react/jsx-runtime");
+/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__);
+
 
 
 
@@ -21577,11 +21412,11 @@ function Voting({
     error,
     refetch
   } = (0,_queries_js__WEBPACK_IMPORTED_MODULE_4__.useVoting)(identifier, post_id, setVotingdata);
-  if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
-    children: ["Error loading agenda data. Try ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("a", {
+  if (isError) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
+    children: ["Error loading agenda data. Try ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("a", {
       href: window.location.href,
       children: "reloading the page"
-    }), ". You can also ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("a", {
+    }), ". You can also ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("a", {
       href: window.location.href.indexOf('?') > 0 ? window.location.href + '&revert=1' : window.location.href + '?revert=1',
       children: "use the old version of the signup form"
     }), "."]
@@ -21590,7 +21425,7 @@ function Voting({
     console.log('isLoading', isLoading);
     console.log('isFetching', isFetching);
     console.log('data', data);
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
       children: "Loading ..."
     });
   }
@@ -21612,94 +21447,94 @@ function Voting({
     console.log('ballot value', value);
   }
   if (votingdata.is_vote_counter && 'counting' == controls) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         style: styles.h1,
         children: "Vote Counter's Tool: Vote Count"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             setControls('');
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
             children: "Ballot Setup"
           })
-        }), "  ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+        }), "  ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             setControls('ballot');
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
             children: "Ballot"
           })
-        }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+        }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             refetch();
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
             children: "Refresh"
           })
         })]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_3__.SanitizedHTML, {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_SanitizedHTML_js__WEBPACK_IMPORTED_MODULE_3__.SanitizedHTML, {
         innerHTML: votingdata.votecount
       })]
     });
   }
   if (votingdata.is_vote_counter && '' == controls) {
-    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         style: styles.h1,
         children: "Vote Counter's Tool: Ballot Setup"
-      }), copied ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+      }), copied ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         style: {
           color: 'green'
         },
         children: "Copied!"
-      }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+      }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
         style: {
           display: 'flex',
           flex: 1,
           flexDirection: 'row'
         },
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(react_copy_to_clipboard__WEBPACK_IMPORTED_MODULE_5__.CopyToClipboard, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(react_copy_to_clipboard__WEBPACK_IMPORTED_MODULE_5__.CopyToClipboard, {
           text: votingdata.url,
           onCopy: () => setCopied(true),
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
             style: styles.button,
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
               style: styles.buttonText,
-              children: "Copy Voting Link"
+              children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('Copy Voting Link', data)
             })
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             setControls('counting');
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
-            children: "Vote Count"
+            children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('Vote Count', data)
           })
-        }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+        }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             setControls('ballot');
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
             children: "Ballot"
           })
-        }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+        }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             refetch();
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
             children: "Refresh"
           })
@@ -21707,13 +21542,13 @@ function Voting({
       }), contestlist.map((c, cindex) => {
         if ('Template' == c || 'C' == c || 'c' == c) return;
         const currentBallot = votingdata.ballot[c];
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
             style: styles.h2,
             children: c
           }), currentBallot.contestants.map((contestant, index) => {
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                 style: styles.minusbutton,
                 onClick: () => {
                   currentBallot.deleted.push(contestant);
@@ -21729,18 +21564,18 @@ function Voting({
                     ballot: ballotCopy
                   });
                 },
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                   style: styles.buttonText,
                   children: "-"
                 })
               }), " ", contestant]
             }, 'contestant' + index);
-          }), currentBallot.new.length ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+          }), currentBallot.new.length ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
               children: "Pending:"
             }), currentBallot.new.map((maybecontestant, index) => {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                   style: styles.plusbutton,
                   onClick: () => {
                     currentBallot.contestants.push(maybecontestant);
@@ -21756,22 +21591,22 @@ function Voting({
                       ballot: ballotCopy
                     });
                   },
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                     style: styles.buttonText,
                     children: "+"
                   })
                 }), " ", maybecontestant]
               }, 'pending' + index);
             })]
-          }) : null, currentBallot.deleted.length ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+          }) : null, currentBallot.deleted.length ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
               children: "Deleted:"
             }), currentBallot.deleted.map((deletedcontestant, index) => {
-              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
+              return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
                 style: {
                   textDecoration: 'line-through'
                 },
-                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+                children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                   style: styles.plusbutton,
                   onClick: () => {
                     currentBallot.contestants.push(deletedcontestant);
@@ -21787,15 +21622,15 @@ function Voting({
                       ballot: ballotCopy
                     });
                   },
-                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                  children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                     style: styles.buttonText,
                     children: "+"
                   })
                 }), " ", deletedcontestant]
               }, 'deleted' + index);
             })]
-          }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
+          }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_Ctrl_js__WEBPACK_IMPORTED_MODULE_2__.SelectCtrl, {
               label: "Member to Add",
               value: candidate,
               options: [memberDefault, ...votingdata.memberlist],
@@ -21820,25 +21655,25 @@ function Voting({
                 });
               }
             })
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
             style: {
               display: 'flex',
               flex: 1,
               flexDirection: 'row'
             },
-            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+            children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
                 label: "Type Choice to Add",
                 value: guest,
                 onChange: value => {
                   setGuest(value);
                 }
               })
-            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+            }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
               style: {
                 padding: '20px'
               },
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                 style: styles.plusbutton,
                 onClick: () => {
                   currentBallot.contestants.push(guest);
@@ -21854,15 +21689,15 @@ function Voting({
                     ballot: ballotCopy
                   });
                 },
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                   style: styles.buttonText,
                   children: "+"
                 })
               })
             })]
-          }), currentBallot.status == 'publish' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+          }), currentBallot.status == 'publish' ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                 style: styles.button,
                 onClick: () => {
                   const update = {
@@ -21880,14 +21715,14 @@ function Voting({
                     identifier: identifier
                   });
                 },
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                   style: styles.buttonText,
                   children: "Unpublish"
                 })
               })
             })
-          }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+          }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
               style: styles.button,
               onClick: () => {
                 const update = {
@@ -21905,35 +21740,35 @@ function Voting({
                   identifier: identifier
                 });
               },
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                 style: styles.buttonText,
-                children: "Publish"
+                children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('Publish', data)
               })
             })
           })]
         }, 'contest' + cindex);
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         style: styles.h2,
-        children: "New Ballot"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
+        children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('New Ballot', data)
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
         style: {
           display: 'flex',
           flex: 1,
           flexDirection: 'row'
         },
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__.TextControl, {
             label: "Contest or Question",
             value: newBallot,
             onChange: value => {
               setNewBallot(value);
             }
           })
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
           style: {
             padding: '20px'
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
             style: styles.plusbutton,
             onClick: () => {
               const newBallotEntry = {
@@ -21948,7 +21783,7 @@ function Voting({
               });
               setNewBallot('');
             },
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
               style: styles.buttonText,
               children: "+"
             })
@@ -21959,11 +21794,11 @@ function Voting({
         const currentBallot = votingdata.ballot[c];
         if (currentBallot.status != 'publish') return;
         const added_votes = [...votingdata.added_votes];
-        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
+        return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
             style: styles.h2,
-            children: ["Add Votes: ", c]
-          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+            children: [(0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('Add Votes', data), ": ", c]
+          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
             children: "If you received votes from outside of this app, you can add them here."
           }), currentBallot.contestants.map((contestant, index) => {
             let addvote = added_votes.find((item, itemindex) => {
@@ -21982,8 +21817,8 @@ function Voting({
               added_votes.push(addvote);
               console.log('created addvote object', addvote);
             }
-            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+            return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                 style: styles.plusbutton,
                 onClick: () => {
                   console.log('add vote', contestant);
@@ -21999,11 +21834,11 @@ function Voting({
                   console.log('added update', update);
                   setVotingdata(update);
                 },
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                   style: styles.buttonText,
                   children: "+"
                 })
-              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+              }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                 style: styles.minusbutton,
                 onClick: () => {
                   console.log('add vote', contestant);
@@ -22019,14 +21854,14 @@ function Voting({
                   console.log('added update', update);
                   setVotingdata(update);
                 },
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                   style: styles.buttonText,
                   children: "-"
                 })
               }), contestant, " +", addvote.add]
             }, 'addvotes' + index);
-          }), votesToAdd ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+          }), votesToAdd ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
               style: styles.button,
               onClick: () => {
                 sendVotingUpdate({
@@ -22036,18 +21871,18 @@ function Voting({
                 });
                 setVotesToAdd(false);
               },
-              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+              children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                 style: styles.buttonText,
                 children: "Update"
               })
             })
           }) : null]
         }, 'contestadd' + cindex);
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         style: styles.h2,
-        children: "Reset"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+        children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('Reset', data)
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             sendVotingUpdate({
@@ -22056,46 +21891,46 @@ function Voting({
               identifier: identifier
             });
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
-            children: "Reset Ballot"
+            children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('Reset Ballot', data)
           })
         })
       })]
     });
   }
   let openBallots = false;
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
       style: styles.h1,
-      children: "Voting"
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+      children: (0,_mytranslate__WEBPACK_IMPORTED_MODULE_6__["default"])('Voting', data)
+    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
         style: styles.button,
         onClick: () => {
           refetch();
         },
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
           style: styles.buttonText,
           children: "Refresh"
         })
       })
-    }), votingdata.is_vote_counter ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+    }), votingdata.is_vote_counter ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
         style: styles.button,
         onClick: () => {
           setControls('');
         },
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
           style: styles.buttonText,
           children: "Ballot Setup"
         })
-      }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+      }), " ", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
         style: styles.button,
         onClick: () => {
           setControls('counting');
         },
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
           style: styles.buttonText,
           children: "Vote Count"
         })
@@ -22105,24 +21940,24 @@ function Voting({
       const currentBallot = votingdata.ballot[c];
       if (currentBallot.status != 'publish') return null;
       openBallots = true; //at least one open ballot
-      if (votingdata.myvotes.includes(c)) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+      if (votingdata.myvotes.includes(c)) return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           style: styles.h2,
           children: c
-        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           children: "Voted"
         })]
       }, 'contest' + cindex);
-      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           style: styles.h2,
           children: c
-        }), currentBallot.contestants.length ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+        }), currentBallot.contestants.length ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
           children: "Vote for:"
         }) : null, currentBallot.contestants.map((contestant, index) => {
-          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("div", {
-            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
-              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+          return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("div", {
+            children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
+              children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
                 style: {
                   backgroundColor: 'black',
                   padding: '10px'
@@ -22137,7 +21972,7 @@ function Voting({
                   console.log('vote', vote);
                   sendVotingUpdate(vote);
                 },
-                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+                children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
                   style: styles.buttonText,
                   children: "\u2714"
                 })
@@ -22146,16 +21981,16 @@ function Voting({
           }, 'contestant' + index);
         })]
       }, 'contest' + cindex);
-    }), !votingdata.is_vote_counter && !openBallots ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("p", {
+    }), !votingdata.is_vote_counter && !openBallots ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("p", {
         children: ["The current vote counter is \"", votingdata.vote_counter_name, "\" but no ballots have been created yet."]
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         style: styles.h2,
         children: "Assume the role of Vote Counter?"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         children: "If no Vote Counter is available, any member can assume the role."
-      }), votingdata.authorized_user ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+      }), votingdata.authorized_user ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             sendVotingUpdate({
@@ -22164,28 +21999,28 @@ function Voting({
               take_vote_counter: true
             });
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
             children: "Take Vote Counter Role"
           })
         })
-      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("a", {
+      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("a", {
           href: votingdata.login_url,
           children: "Please login first"
         })
       })]
-    }) : null, votingdata.is_vote_counter ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsxs)("div", {
-      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
+    }) : null, votingdata.is_vote_counter ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsxs)("div", {
+      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
         style: styles.h2,
         children: "Back to Vote Counter Controls?"
-      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("p", {
-        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("button", {
+      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("p", {
+        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("button", {
           style: styles.button,
           onClick: () => {
             setControls('');
           },
-          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_6__.jsx)("span", {
+          children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_7__.jsx)("span", {
             style: styles.buttonText,
             children: "Go Back"
           })
@@ -22520,6 +22355,27 @@ function Yoodli() {
       }), "."]
     })]
   });
+}
+
+/***/ }),
+
+/***/ "./src/mytranslate.js":
+/*!****************************!*\
+  !*** ./src/mytranslate.js ***!
+  \****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ mytranslate)
+/* harmony export */ });
+function mytranslate(term, data) {
+  if (!data || !data.hasOwnProperty("translations") || !data.translations[term]) {
+    console.log('Missed translation', term);
+    return term;
+  }
+  return data.translations[term];
 }
 
 /***/ }),
