@@ -16,4 +16,3 @@ function wp4toastmasters_agenda_layout_block_init() {
 	register_block_type( __DIR__ . '/build/meetingdate' );
 	register_block_type( __DIR__ . '/build/officers' );
 }
-add_action( 'init', 'wp4toastmasters_agenda_layout_block_init' );

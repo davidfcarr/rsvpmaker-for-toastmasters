@@ -8,17 +8,17 @@ Tags: Toastmasters, public speaking, community, agenda
 Author URI: http://www.carrcommunications.com
 Text Domain: rsvpmaker-for-toastmasters
 Domain Path: /translations
-Version: 6.4
+Version: 6.4.2
 */
 function rsvptoast_load_plugin_textdomain() {
 	load_plugin_textdomain( 'rsvpmaker-for-toastmasters', false, basename( dirname( __FILE__ ) ) . '/translations/' );
 }
-add_action( 'init', 'rsvptoast_load_plugin_textdomain' );
 function wp4t_js_translation () {
 	wp_set_script_translations( 'wpt-cgb-block-js', 'rsvpmaker-for-toastmasters',plugin_dir_path( __FILE__ ) . 'translations' );
 }
 add_action('wp_enqueue_scripts','wp4t_js_translation',100);
 require 'core.php';
+require 'actions.php';
 require 'filters.php';
 require 'tm-reports.php';
 require 'contest.php';

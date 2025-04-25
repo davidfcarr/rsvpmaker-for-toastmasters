@@ -556,9 +556,6 @@ function toastmasters_reminder_preview() {
 	}
 	wp_die( $content, 'Preview of Toastmasters reminders' );
 }
-if ( isset( $_GET['tm_reminders_preview'] ) ) {
-	add_action( 'init', 'toastmasters_reminder_preview' );
-}
 function wp4toast_reminders() {
 	if ( ! isset( $_REQUEST['cron_reminder'] ) ) {
 		return;
@@ -1429,45 +1426,7 @@ function tm_agenda_content($post_id = 0) {
 	$content = str_replace('</form>','',$content);
 	return $content;
 }
-function toastmasters_officer_single( $atts ) {
-	$title                          = ( isset( $atts['title'] ) ) ? $atts['title'] : 'VP of Education';
-	$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
-	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
-	$index                          = array_search( $title, $wp4toastmasters_officer_titles );
-	if ( $index === false ) {
-		return;
-	}
-	$officer_id = $wp4toastmasters_officer_ids[ $index ];
-	$contact = '';
-	if ( $officer_id ) {
-		$userdata                       = get_userdata( $officer_id );
-		$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
-		$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
-		$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
-		$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
-		$contact                        = '<div><strong>' . $title . ': ' . $userdata->first_name . ' ' . $userdata->last_name . '</strong></div>';
-		foreach ( $contactmethods as $name => $value ) {
-			if ( strpos( $name, 'phone' ) && ! empty( $userdata->$name ) ) {
-				$contact .= sprintf( "<div>%s: %s</div>\n", $value, $userdata->$name );
-			}
-		}
-		$contact .= sprintf( '<div>' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . ': <a href="mailto:%s">%s</a></div>' . "\n", $userdata->user_email, $userdata->user_email );
-	}
-	return $contact;
-}
-function toastmasters_officer_email_by_title( $title, $site_id = 0 ) {
-	$wp4toastmasters_officer_ids    = ($site_id) ? get_blog_option( $site_id, 'wp4toastmasters_officer_ids' ) : get_option( 'wp4toastmasters_officer_ids' );
-	$wp4toastmasters_officer_titles = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_titles' ) : get_option( 'wp4toastmasters_officer_titles' );
-	$index                          = array_search( $title, $wp4toastmasters_officer_titles );
-	if ( $index === false ) {
-		return;
-	}
-	$officer_id = $wp4toastmasters_officer_ids[ $index ];
-	$userdata                       = get_userdata( $officer_id );
-	if ( !empty($userdata->user_email) ) {
-		return $userdata->user_email;
-	}
-}
+
 $wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
 function toastmaster_officers( $atts = array() ) {
 	if ( !isset($_GET['context']) && ! isset( $_REQUEST['print_agenda'] ) && ! is_email_context() ) {
@@ -2298,6 +2257,7 @@ function wp4toastmasters_settings() {
 	global $wpdb, $current_user;
 	add_awesome_roles();
     rsvpmail_clear_allforwarders(get_current_blog_id());
+	wpt_flattened_forwarders();//new forwarding rules
 	?>
 <div class="wrap">
 <?php rsvpmaker_admin_heading('Toastmasters '.__( 'Settings', 'rsvpmaker-for-toastmasters' ),__FUNCTION__);?>
@@ -3221,28 +3181,33 @@ function register_wp4toastmasters_settings() {
 	}
 }
 add_action('wp4toast_reminders_intros','wp4toast_reminders_intros',10,2);
-function wp4toast_reminders_intros($post_id, $hours = 0) {
-if(!$hours)
-	return;
+add_action('init','reminders_test');
+function reminders_test() {
+	if ( isset( $_GET['reminder_test'] ) ) {
+			wp4toast_reminders_intros(  );
+	}
+}
+function wp4toast_reminders_intros($post_id = 0, $hours = 0) {
 global $wpdb, $rsvp_options;
-$sql = "SELECT * FROM ".$wpdb->prefix."rsvpmaker_event WHERE event=$post_id AND date > NOW() AND date <= DATE_ADD(NOW(), INTERVAL $hours HOUR) ";
-$row = $wpdb->get_row($sql);
-//rsvpmaker_debug_log($sql,'speech intros sql');
-//rsvpmaker_debug_log($row,'speech intros row');
-if($row)
-	{
-		$date = rsvpmaker_date($rsvp_options['long_date'], (int) $row->ts_start);
+$future = future_toastmaster_meetings(1);
+$next = $future[0];
+$post_id = $next->ID;
+if(!$next || ($next->ts_start > time() + HOUR_IN_SECONDS))
+	return;
+		$date = rsvpmaker_date($rsvp_options['long_date'], (int) $next->ts_start);
 		$msg = '';
-		echo $sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_role_Speaker%' AND meta_value > 0";
+		echo $sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$next->ID AND meta_key LIKE '_role_Speaker%' AND meta_value > 0 ORDER BY meta_key";
 		$results = $wpdb->get_results($sql);
+		error_log($sql.var_export($results,true));
 		foreach($results as $row) {
 			if($row->meta_value > 0)
-				$msg .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $post_id, $row->meta_key ) ) . '</div>';
+				$msg .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $row->post_id, $row->meta_key ) ) . '</div>';
 		}
 		if(!empty($msg))
 		{
-			$meeting_leader_tag = '_Toastmaster_of_the_Day_1';
+			$meeting_leader_tag = '_role_Toastmaster_of_the_Day_1';
 			$meeting_leader_id = get_post_meta($post_id,$meeting_leader_tag,true);
+			error_log('Meeting leader id: '.$meeting_leader_id.' Meeting leader tag: '.$meeting_leader_tag.' Post ID: '.$post_id.' Post meta: '.var_export($row,true) );
 			if($meeting_leader_id)
 				{
 				$user = get_userdata($meeting_leader_id);
@@ -3250,7 +3215,8 @@ if($row)
 					$mail['to'] = $user->user_email;
 					$mail['subject'] = __('Speech introductions for','rsvpmaker-for-toastmasters').' '.$date;
 					$mail['html'] = $msg.'<p>Sent to meeting leader: '.$user->display_name.'</p>';
-					rsvpmailer($mail);	
+					rsvpmailer($mail);
+					error_log(var_export($mail,true));	
 				}
 				}
 			$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
@@ -3273,7 +3239,6 @@ if($row)
 				}
 			}
 		}
-	}
 }
 function wp4toast_reminders_cron_status() {
 	global $rsvp_options;
@@ -6568,8 +6533,8 @@ Number of Meetings Shown:
 </select>
 <button>Get</button>
 </form>
-	</body></html>';
-		exit();
+</body></html>';
+exit();
 }
 function signup_sheet( $atts = array() ) {
 	if ( isset( $_GET['signup_sheet_editor'] ) ) {
@@ -7094,11 +7059,14 @@ p
 	if ( isset( $_REQUEST['intros'] ) && is_numeric( $_REQUEST['intros'] ) ) {
 		$event = (int) $_REQUEST['intros'];
 	} else {
-			global $post;
+		global $post;
+		if($agenda)
+			$event = intval($agenda);
+		else
 			$event = $post->ID;
 	}
 	global $wpdb;
-	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = $event and meta_key LIKE '_role_Speaker_%' ");
+	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = $event and meta_key LIKE '_role_Speaker_%' ORDER BY meta_key ASC");
 	foreach ( $results as $row ) {
 			echo '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $event, $row->meta_key ) ) . '</div>';
 	}
@@ -12614,11 +12582,6 @@ else
 </div>";
 return ob_get_clean();	
 }
-add_action('init','wp4t_init_actions');
-function wp4t_init_actions() {
-	wp4t_toastmost_app_redirect();
-	wp4t_server_block_render();
-}
 function wp4t_server_block_render() {
 	register_block_type( 'wp4toastmasters/memberaccess', array( 'render_callback' => 'wpt_member_access' ) );
 	register_block_type( 'wp4toastmasters/blog', array( 'render_callback' => 'wpt_blog_posts' ) );
@@ -12645,40 +12608,3 @@ function toastmasters_agenda_category($categories, $post) {
 	}
 	return $categories;
 }
-add_filter( 'jetpack_seo_meta_tags', 'members_only_jetpack' );
-add_filter( 'excerpt_more', 'toast_excerpt_more' );
-add_filter( 'lectern_default_header', 'wp4t_header' );
-add_filter( 'user_contactmethods', 'awesome_contactmethod', 10, 1 );
-add_action( 'init', 'signup_sheet' );
-add_action( 'init', 'print_contacts' );
-add_action( 'init', 'awesome_open_roles' );
-add_action( 'init', 'role_post' );
-add_action('init','minutes_post_type');
-add_action( 'widgets_init', 'wptoast_widgets' );
-add_action( 'wp_enqueue_scripts', 'toastmasters_css_js' );
-add_action( 'pre_get_posts', 'toast_modify_query_exclude_category' );
-//was wp_login
-add_action( 'admin_menu', 'tm_security_setup', 1 );
-add_action( 'admin_bar_menu', 'toolbar_add_member', 999 );
-add_action( 'admin_bar_menu', 'toolbar_link_to_agenda', 999 );
-add_action( 'admin_init', 'check_first_login' );
-add_action( 'admin_init', 'archive_users_init' );
-add_action( 'admin_menu', 'awesome_menu' );
-add_action( 'admin_init', 'awesome_role_activation_wrapper' );
-add_action( 'admin_init', 'register_wp4toastmasters_settings' );
-add_action( 'admin_init', 'new_agenda_template' );
-add_action( 'admin_notices', 'rsvptoast_admin_notice' );
-add_action( 'wp_dashboard_setup', 'awesome_add_dashboard_widgets', 99 );
-add_action( 'admin_init', 'awesome_roles' );
-add_action( 'wp', 'accept_recommended_role' );
-add_action( 'show_user_profile', 'awesome_user_profile_fields' );
-add_action( 'edit_user_profile', 'awesome_user_profile_fields' );
-add_action( 'personal_options_update', 'save_awesome_user_profile_fields' );
-add_action( 'edit_user_profile_update', 'save_awesome_user_profile_fields' );
-add_action( 'user_new_form', 'member_not_user' );
-add_action( 'rsvpmaker_datebox_message', 'toastmasters_datebox_message' );
-add_action( 'toastmasters_agenda_notification', 'bp_toastmasters', 10, 3 );
-add_action( 'toastmasters_agenda_notification', 'wp4t_intro_notification', 10, 5 );
-add_action( 'bp_profile_header_meta', 'display_toastmasters_profile' );
-add_action( 'admin_head', 'profile_richtext' );
-add_action( 'admin_init', 'wp4t_cron_nudge_setup' );

@@ -7,6 +7,14 @@ function wp4toast_reminders_cron( $meeting_hours ) {
 	wp_suspend_cache_addition(true);
 	email_with_without_role( $meeting_hours );
 	wp_suspend_cache_addition(false);
+	error_log('wp4toast_reminders_cron memory: '.memory_get_peak_usage(true));
+	return;
+}
+add_action( 'wp4toast_tod_reminder_cron', 'wp4toast_tod_reminder_cron', 10, 1 );
+function wp4toast_tod_reminder_cron( $meeting_hours ) {
+	wp_suspend_cache_addition(true);
+	wpt_email_tod( $meeting_hours );
+	wp_suspend_cache_addition(false);
 	return;
 }
 function wp4t_role($role) {
@@ -69,6 +77,62 @@ function email_with_without_role_test( $meeting_hours, $test = false ) {
 	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
 	$output .= ' t = '.$t . ' date '.$date .' next '.var_export($next,true);
 	return $output;
+}
+function wpt_email_tod($meeting_hours = 0) {
+	global $wpdb, $rsvp_options;
+	$future = future_toastmaster_meetings( 1 );
+	if ( empty( $future ) ) {
+		return;
+	}
+	$next = $future[0];
+	$hours_away = floor( ( $next->ts_start - time() ) / 3600 );
+	$tod = get_post_meta( $next->ID, '_role_Toastmaster_of_the_Day_1', true );
+	$vpe_email = toastmasters_officer_email_by_title('vpe');
+
+	if(is_numeric($tod)) {
+		$tmdata = get_userdata( $tod );
+		$todemail = $tmdata->user_email;
+	}
+	if(isset($todemail))
+	{
+		$mail['to']       = $todemail;
+		/*
+		if($vpe_email) {
+			$mail['cc']       = $vpe_email;
+		}*/
+	}
+	/*
+	elseif($vpe_email) {
+		$mail['to']       = $vpe_email;
+	}
+	*/
+	$nospeakers = true;
+	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = $next->ID and meta_key LIKE '_role_Speaker_%' ");
+	foreach ( $results as $row ) {
+		if(!empty($row->meta_key))
+			$nospeakers = false;
+	}
+	if($nospeakers)
+	{
+		return;
+	}
+	$message = '<p>'.__( 'Here is the speaker lineup with the path, project, title, and introduction information they provided through the online form.', 'rsvpmaker-for-toastmasters' ).'<p>';
+	foreach ( $results as $row ) {
+		$message .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $next->ID, $row->meta_key ) ) . '</div>'."\n";
+	}
+	$message .= '<p>'.sprintf(__( 'If the speakers post updates, you will be able to see them here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?print_agenda=1&no_print=1', get_permalink( $next->ID ) .'?intros=1').'</p>';
+	$message .= '<p>'.sprintf(__( 'You can view the full agenda here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?print_agenda=1&no_print=1', get_permalink( $next->ID ) .'?print_agenda=1&no_print=1').'</p>';
+	$message .= "<p>This meeting is $hours_away hours away</p>";
+	if(!empty($mail)) {
+			$subject = sprintf( __( 'Speakers and Introductions for %s %s', 'rsvpmaker-for-toastmasters' ), $next->post_title, rsvpmaker_date($rsvp_options['short_date'],$next->ts_start ));
+			$mail['from']     = get_option( 'admin_email' );
+			$mail['fromname'] = get_bloginfo( 'name' );
+			$mail['subject']  = $subject;
+			$mail['html']     = "<html>\n<body>\n" . wpautop( $message ) . "\n</body></html>";
+			if(isset($_GET['test_email']))
+				awemailer( $mail );
+			printf('<p>tod %s vpe %s</p>',$todemail,$vpe_email);
+	}
 }
 function email_with_without_role( $meeting_hours, $test = false ) {
 	global $wpdb, $email_context, $post, $rsvp_options, $toast_roles;

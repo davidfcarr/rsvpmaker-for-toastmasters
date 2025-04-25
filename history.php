@@ -447,9 +447,8 @@ function refresh_tm_history() {
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
 	$events_table = $wpdb->prefix . 'rsvpmaker_event';
-    echo $sql = "SELECT * FROM $wpdb->posts JOIN $events_table ON $wpdb->posts.ID=$events_table.event WHERE post_content LIKE '%wp:wp4toastmasters%' AND post_status='publish' AND date < NOW() ORDER BY date DESC LIMIT 0, 5";
+    $sql = "SELECT * FROM $wpdb->posts JOIN $events_table ON $wpdb->posts.ID=$events_table.event WHERE post_content LIKE '%wp:wp4toastmasters%' AND post_status='publish' AND date < NOW() ORDER BY date DESC LIMIT 0, 5";
     $results = $wpdb->get_results($sql);
-    print_r($results);
     foreach($results as $row) {
         echo $sql = "SELECT id FROM $history_table WHERE post_id=$row->ID";
         $found = $wpdb->get_var($sql);

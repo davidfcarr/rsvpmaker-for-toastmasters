@@ -222,4 +222,3 @@ return;
 
 
 
-add_action('init','wpt_server_block_render');

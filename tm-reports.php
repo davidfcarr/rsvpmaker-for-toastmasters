@@ -447,7 +447,6 @@ function wp4t_role_array() {
 		'Tall Tales Contest Speaker' => __('Tall Tales Contest Speaker','rsvpmaker-for-toastmasters'),
 	);
 }
-add_action('init','wp4t_role_array',15);
 function wp4t_role_display ($role) {
 	global $toast_roles;
 	if(!empty($toast_roles[$role]))
@@ -3257,7 +3256,6 @@ function toastmasters_support() {
 	<?php
 	tm_admin_page_bottom( $hook );
 }
-add_action( 'init', 'tm_export' );
 function tm_export() {
 	if ( ! isset( $_REQUEST['tm_export'] ) ) {
 		return;
@@ -4485,7 +4483,6 @@ function show_evaluation() {
 		exit();
 	}
 }
-add_action( 'init', 'show_evaluation' );
 function pathways_checklist( ) {
 	?>
 <style>

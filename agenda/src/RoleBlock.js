@@ -80,7 +80,10 @@ export default function RoleBlock(props) {
                 queryClient.invalidateQueries(['blocks-data', post_id]);
             },
             onSuccess: (data, error, variables, context) => {
-                makeNotification(mytranslate('Updated assignment: ', data) + data.data.role, true);
+                if(data.data.taken) 
+                    makeNotification('Role already taken: ' + data.data.taken);
+                else
+                    makeNotification('Updated assignment: ' + data.data.role, true);
             },
             onError: (err, variables, context) => {
                 console.log(mytranslate('Mutate assignment error', data), err);
@@ -238,11 +241,11 @@ export default function RoleBlock(props) {
                         <div div className="role-buttons">
                             {isOpen && <button className="agenda-tooltip" onClick={function (event) {
                                 if ('Speaker' == role) updateAssignment({
-                                    'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'maxtime': 7, 'display_time': '5 - 7 minutes'
+                                    'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'maxtime': 7, 'display_time': '5 - 7 minutes', 'wasopen': true
                                 }); updateAssignment({
-                                    'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count
+                                    'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'wasopen': true
                                 })
-                            }} ><span class="agenda-tooltip-text">{mytranslate('Sign Up', data)}</span><Icon icon={plusCircle} /></button>}
+                            }} ><span class="agenda-tooltip-text">{mytranslate('Take Role', data)}</span><Icon icon={plusCircle} /></button>}
                             {isMe && <button onClick={function (event) {
                                 let a = ('Speaker' == role) ? {
                                     'ID': 0, 'name': '', 'role': role, 'blockindex': blockindex, 'roleindex': roleindex, 'start': start, 'count': count, 'intro': '', 'title': '', 'manual': '', 'project': '', 'maxtime': 7, 'display_time': '5 - 7 minutes'

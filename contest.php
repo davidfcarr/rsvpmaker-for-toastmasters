@@ -1313,7 +1313,6 @@ function toast_scoring_update() {
 	$update = toast_scoring_update_get( sanitize_text_field($_GET['toast_scoring_update']) );
 	die( $update );
 }
-add_action( 'init', 'toast_scoring_update' );
 function toast_scoring_sheet() {
 	ob_start();
 	global $post;

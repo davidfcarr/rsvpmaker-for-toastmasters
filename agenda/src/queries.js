@@ -11,7 +11,7 @@ export function useBlocks(post_id,mode='',admin = false) {
 
         admin = window.location.href.indexOf('wp-admin') != -1;
 
-        return apiClient.get('blocks_data/'+post_id+'?mode='+mode+'&admin='+admin);
+        return apiClient.get('blocks_data/'+post_id+'?mode='+mode+'&admin='+admin+'&_locale=user');
 
     }
 
@@ -25,7 +25,7 @@ export function useMemberEvaluation(member,project) {
 
     function fetchMemberEvaluation(queryobj) {
 
-        return apiClient.get('member_evaluation?member='+member+'&project='+project);
+        return apiClient.get('member_evaluation?member='+member+'&project='+project+'&_locale=user');
 
     }
 
@@ -39,11 +39,9 @@ export function initSendEvaluation(post_id, setSent, makeNotification) {
 
         evaluation.post_id = post_id;
 
-        return await apiClient.post('evaluation', evaluation);
+        return await apiClient.post('evaluation?_locale=user', evaluation);
 
     }
-
-    
 
     return useMutation(postEvaluation, {
 
@@ -93,7 +91,7 @@ export function initChangeBlockAttribute(post_id,blockindex) {
 
 async function updateAgendaPost (agenda) {
 
-    return await apiClient.post('update_agenda', agenda);
+    return await apiClient.post('update_agenda?_locale=user', agenda);
 
 }
 
@@ -166,7 +164,7 @@ export function updateAgenda(post_id,makeNotification=null,Inserter = null) {
 }
 
 async function copyToTemplatePost (post_id,template_id) {
-    return await apiClient.post('update_agenda', {'post_id':post_id,'template_id':template_id});
+    return await apiClient.post('update_agenda?_locale=user', {'post_id':post_id,'template_id':template_id});
 }
 
 export function copyToTemplate(post_id,template_id) {
@@ -209,7 +207,7 @@ export function useEvaluation(project,speaker_id,evalSuccess) {
 
     function fetchEvaluation(queryobj) {
 
-        return apiClient.get('evaluation/?project='+project+'&speaker='+speaker_id);
+        return apiClient.get('evaluation/?project='+project+'&speaker='+speaker_id+'&_locale=user');
 
     }
 
@@ -223,11 +221,10 @@ export function updatePreference(makeNotification) {
 
     async function postPreference (keyValue) {
 
-        return await apiClient.post('user_meta', keyValue);
+        return await apiClient.post('user_meta?_locale=user', keyValue);
 
     }
 
-    
 
     return useMutation(postPreference, {
 
@@ -257,7 +254,7 @@ export function useVoting(identifier,post_id=0, setVotingdata) {
     function fetchVotingData(queryobj) {
         const ts = new Date().getTime();
         console.log('get','regularvoting/'+post_id+'?mobile='+identifier+'&ts='+ts);
-        const result = apiClient.get('regularvoting/'+post_id+'?mobile='+identifier+'&ts='+ts);
+        const result = apiClient.get('regularvoting/'+post_id+'?mobile='+identifier+'&ts='+ts+'&_locale=user');
         console.log('result',result);
         return result;
     }
@@ -269,7 +266,7 @@ export function initVoting(setVotingdata) {
     async function postVoting (postdata) {
         const ts = new Date().getTime();
         console.log('voting postdata',postdata);
-        return await apiClient.post('regularvoting/'+postdata.post_id+'?mobile='+postdata.identifier+'&ts='+ts, postdata);
+        return await apiClient.post('regularvoting/'+postdata.post_id+'?mobile='+postdata.identifier+'&ts='+ts+'&_locale=user', postdata);
     }
     return useMutation(postVoting, {
         

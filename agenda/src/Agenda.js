@@ -167,7 +167,8 @@ export default function Agenda(props) {
 
             return (
                 <div id="fixed-mode-control">
-                    <div className="mode-centered">
+                        {notification && notification.message && <div className="mode-control-notification">{notification.message}</div>}
+                        <div className="mode-centered">
                         {modeoptions.map((option) => (
                             <button
                                 className={mode == option.value ? 'blackButton bottomButton' : 'bottomButton'}
@@ -235,7 +236,7 @@ export default function Agenda(props) {
                 <div className="agendawrapper">
                     <ModeControl />
                     <Suspense fallback={<h1>Loading ...</h1>}>
-                        <Voting post_id={post_id} />
+                        <Voting post_id={post_id} data={data} />
                     </Suspense>
                 </div>
             );
@@ -426,6 +427,7 @@ export default function Agenda(props) {
                     else
                         return null;
                 })}
+                <div><button onClick={refetch}>Refresh</button></div>
             </div>
         );
     } catch (error) {

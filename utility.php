@@ -933,8 +933,11 @@ if ( strpos( $menu_html, '#rolesignup' ) || strpos( $menu_html, '#tmlogin' ) ) {
 }
 function wpt_login_permalink( $id = 0, $permalink = '' ) {
 	global $post;
-	if ( empty( $id ) ) {
+	if ( empty( $id ) && !empty(($post->ID)) ) {
 		$id = $post->ID;
+	}
+	if( empty( $id ) ) {
+		return '';
 	}
 	if ( empty( $permalink ) ) {
 		$permalink = get_permalink( $id );
@@ -1090,11 +1093,6 @@ function wptm_count_votes($post_id, $added_votes = array()) {
 		$votes[$contest][$row->meta_value]++;
 			else
 		$votes[$contest][$row->meta_value] = 1;
-		$sigkey = 'signedvote_'.$contest.'_'.$identifier;
-		$signature = get_post_meta($post_id,$sigkey,true);
-		if($signature) {
-			$signedvote[$contest][$sigkey] = $signature.": $row->meta_value";
-		}
 	}
 	if(!empty($votes)) {
 		$output .= '<div id="votingresults"><h2>Voting Results as of '.rsvpmaker_date('H:i:s',time()).'</h2>';
@@ -1105,11 +1103,8 @@ function wptm_count_votes($post_id, $added_votes = array()) {
 			if('Template' == $label || 'c' == $label)
 				continue;
 			$ranking[$contest] = sprintf('<h3>Votes for %s</h3>',$label);
-			if(isset($signedvote[$contest])) {
-				$ranking[$contest] .= '<p>'.implode('<br >',$signedvote[$contest]).'</p>';
-			}
 			if(empty($contestvote))
-			$ranking[$contest] .= '<p>none</p>';
+				$ranking[$contest] .= '<p>none</p>';
 			else {
 				arsort($contestvote);
 				$count = 0;
@@ -1120,7 +1115,9 @@ function wptm_count_votes($post_id, $added_votes = array()) {
 						$winner[$contest] = sprintf('%s: %s',$label,$name);
 					if(($count == 1) && ($last == $score))
 						$winner[$contest] .= ' (tie with '.$name.')';
-					$ranking[$contest] .= sprintf('<p>%s: %s</p>',$name,$score);
+						$sigkey = '_signedvote_'.$contest.$name;
+						$signatures = get_post_meta($post_id,$sigkey);
+						$ranking[$contest] .= sprintf('<p>%s: %s %s</p>',$name,$score,empty($signatures) ? '' : ' votes from: '.implode(', ',$signatures));
 					$last = $score;
 					$count++;
 				}
@@ -1282,8 +1279,7 @@ else
 return $norole;
 }
 add_action('pre_get_users','fix_cache_users_bug');
-add_action('init','fix_cache_users_bug');
-function fix_cache_users_bug($query) {
+function fix_cache_users_bug($query = null) {
 	if ( ! function_exists( 'cache_users' ) ) {
 		require_once ABSPATH . WPINC . '/pluggable.php';
 	}	
@@ -1387,7 +1383,6 @@ if($version == $model)
 	}
 update_option("wp4t_data_model",$version);
 }
-add_action('init','wp4t_data_model_update');
 //before recorded
 add_action('update_postmeta','wpt_updated_postmeta',10,4);
 function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
@@ -1718,5 +1713,17 @@ function wpt_mobile_translations() {
 		else
 			$translated[$key] = $value;
 	}
-	return array('translations'=>$translated,'missed'=>$missed);
+	$t = array('translations'=>$translated,'missed'=>$missed);
+	if(isset($_GET['wp'])) {
+		$wptrans = [];
+		foreach($missed as $miss) {
+			$try = __($miss,'wordpress');
+			if($try != $miss) {
+				$wptrans[$miss] = $try;
+			}
+		}
+		$t['wp'] = $wptrans;
+	}
+
+	return $t;
 }

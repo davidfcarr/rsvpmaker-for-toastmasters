@@ -26,7 +26,7 @@ export function Absence(props) {
     const queryClient = useQueryClient();
 
     const absMutation = useMutation(
-        async (addremove) => { return await apiClient.post("absences?post_id="+post_id, addremove)},
+        async (addremove) => { return await apiClient.post("absences?post_id="+post_id+'&_locale=user', addremove)},
         {
             onMutate: async (addremove) => {
                 await queryClient.cancelQueries(['absences-data',post_id]);

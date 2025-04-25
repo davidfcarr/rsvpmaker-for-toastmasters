@@ -1,4 +1,21 @@
 <?php
+add_shortcode('toastmost_mobile_qr_shortcode','toastmost_mobile_qr_shortcode');
+function toastmost_mobile_qr_shortcode($atts) {
+    global $current_user;
+    if(!is_user_logged_in()) {
+        return '<p>'.__('You must be logged in to view the QR code.','rsvpmaker-for-toastmasters').'</p>';
+    }
+    if(!is_user_member_of_blog($current_user->ID)) {
+        return '<p>'.__('You do not have permission to view this page.','rsvpmaker-for-toastmasters').'</p>';
+    }
+    ob_start();
+    echo '<div>';
+    wp4t_enable_mobile();
+    echo '</div>';
+    $output = ob_get_contents();
+    ob_end_clean();
+    return $output;
+}
 function wp4t_enable_mobile() {
 $current_user = wp_get_current_user();
 $code = get_user_meta($current_user->ID,'wpt_mobile_code',true);
@@ -6,10 +23,14 @@ if(empty($code)) {
     $code = $current_user->ID.'-'.wp_generate_password(8,false);
     update_user_meta($current_user->ID,'wpt_mobile_code',$code);
 }
+if(is_admin()) {
 ?>
 <h1><?php _e("Download and enable the Toastmost mobile app",'rsvpmaker-for_toastmasters'); ?></h2>
+<?php
+}
+?>
 <p><?php _e('Use the camera on your phone to scan the QR code shown below to authorize the app. If you have not yet installed it, the QR codes linked to the app stores are also included.','rsvpmaker-for-toastmasters'); ?></p>
-<iframe src="https://toastmost.org/qr/?domain=<?php echo $_SERVER['SERVER_NAME']; ?>&code=<?php echo $code; ?>&type=android" width="100%" height="1200">  </iframe>
+<iframe style="border: none;" src="https://toastmost.org/qr/?domain=<?php echo $_SERVER['SERVER_NAME']; ?>&code=<?php echo $code; ?>&type=android" width="100%" height="1200">  </iframe>
 <?php
     printf('<p>Domain/code string:</p><code>%s|%s</code>',$_SERVER['SERVER_NAME'],$code);
     if(current_user_can('manage_options')) {

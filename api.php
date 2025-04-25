@@ -836,8 +836,10 @@ function wpt_mobile_auth($user_code) {
 		$parts = explode('-',$user_code);
 		$user_id = intval($parts[0]);
 		$saved_code = get_user_meta($user_id,'wpt_mobile_code',true);
-		if($user_code == $saved_code)
+		if($user_code == $saved_code) {
+			$current_user = get_userdata($user_id);
 			return $user_id;
+		}
 	}
 	return 0;
 }
@@ -869,33 +871,46 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				$post_id = $meetings[0]->ID;
 		}
 	if(isset($_GET['mobile'])) {
-		$votingdata['current_user'] = $current_user->ID;
+		$json = file_get_contents('php://input');
+		if($json) {
+			$data = json_decode($json);
+		}
 		$identifier = sanitize_text_field($_GET['mobile']);
-		$authorized = wpt_mobile_auth($identifier);
+		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth($identifier);
+		$votingdata['current_user'] = $current_user->ID;
+		$votingdata['current_user_name'] = $current_user->display_name;
 		$votingdata['post_id'] = $post_id;
 		$votingdata['url'] = add_query_arg('meetingvote',1,get_permalink($post_id));
 		$votingdata['login_url'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));
 		$votingdata['authorized_user'] = $authorized;
 		$votingdata['identifier'] = $identifier;
 		$votingdata['vote_counter'] = get_post_meta($post_id,'_role_Vote_Counter_1',true);
-		$votecounter = ($votingdata['vote_counter']) ? get_userdata($votingdata['vote_counter']) : null;		
+		$votecounter = ($votingdata['vote_counter']) ? get_userdata($votingdata['vote_counter']) : null;
 		$votingdata['vote_counter_name'] = ($votecounter) ? $votecounter->display_name : '';
 		$votingdata['is_vote_counter'] = $votingdata['vote_counter'] == $authorized;
+		$votingdata['loginurl'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));	
+		$trans = wpt_mobile_translations();
+		$votingdata['translations'] = ($trans && !empty($trans['translations'])) ? $trans['translations'] : array();
 		$open = get_post_meta($post_id,'openvotes');
-		$json = file_get_contents('php://input');
 		$custom_club_contests = get_option('custom_club_contests');
 		if(!is_array($custom_club_contests))
 			$custom_club_contests = [];
-		if($json) {
-			$data = json_decode($json);
+		if(isset($data->deleteRecurring)) {
+			$custom_club_contests = [];
+			$shortened = array_diff($custom_club_contests,[$data->deleteRecurring]);
+			foreach($shortened as $s) 
+				$custom_club_contests[] = $s;
+			update_option('custom_club_contests',$custom_club_contests);
+			$votingdata['deleteRecurring'] = $data->deleteRecurring;
 		}
+		$votingdata['everyWeek'] = $custom_club_contests;
 		if(isset($data) && isset($data->vote)) {
 			$votingdata['data'] = $data;
 			$vote = sanitize_text_field($data->vote);
 			$key = sanitize_text_field($data->key);
 			$metakey = 'myvote_'.$key.'_'.$identifier;
 			if(!empty($data->signature))
-				update_post_meta($post_id,'signedvote_'.$key.'_'.$identifier,sanitize_text_field($data->signature));
+				update_post_meta($post_id,'_signedvote_'.$key.$vote,sanitize_text_field($data->signature));
 			add_post_meta($post_id,'audit_'.$metakey,$vote.' '.$_SERVER['REMOTE_ADDR'].' api '.date('r'));
 			$votingdata['voterecorded'] = $metakey;
 			update_post_meta($post_id,$metakey,$vote);
@@ -945,14 +960,20 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		if(isset($data) && isset($data->added) && $authorized) {
 			update_post_meta($post_id,'added_votes',$data->added);
 		}
-		if(isset($data->reset) && $authorized) {
-			delete_post_meta($post_id,'tm_ballot');
-			$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id=$post_id AND (meta_key LIKE 'myvote%' or meta_key = 'added_votes') ");
+		if(isset($data->reset)) {
+			if($authorized) {
+				delete_post_meta($post_id,'tm_ballot');
+				$sql = "DELETE FROM $wpdb->postmeta WHERE post_id=$post_id AND (meta_key LIKE 'myvote%' or meta_key = 'added_votes' or meta_key LIKE '%ballot%' ) ";
+				$wpdb->query($sql);	
+				$votingdata['reset'] = $sql;
+			}
+			else {
+				$votingdata['reset_error'] = 'not authorized';
+			}
 		}
 		else
 			$votingdata['ballot'] = get_post_meta($post_id,'tm_ballot',true);
 		if( empty($votingdata['ballot']) ) {
-			
 				foreach(['Speaker','Evaluator'] as $role) {
 					$sql = "select * from $wpdb->postmeta WHERE post_id=$post_id and meta_key LIKE '_role_$role%'";
 					$results = $wpdb->get_results($sql);
@@ -1466,12 +1487,14 @@ class WP4T_Mobile_Code extends WP_REST_Controller {
 					{
 						$code = $user->ID.'-'.wp_generate_password(24,false);
 						update_user_meta($user->ID,'wpt_mobile_code',$code);
-					}
+					}					
 					$code_url = 'https://toastmost.org/app-setup/?domain='.$_SERVER['SERVER_NAME'].'&code='.$code;
 					$app_redirect_url = site_url('?toastmost_app_redirect=Settings&domain='.$_SERVER['SERVER_NAME'].'&code='.$code);
 					$mail['html'] = '<p>Open this email on your phone to simplify connecting the app setup.</p>
-					<p>Click this <a href="'.$app_redirect_url.'">"magic link"</a> to open the app and connect the app to your club website account.</p>
-					<p>If the magic does not work for some reason, visit the <a href="'.$code_url.'">app setup page</a>, which will help you connect the app to your account on a club website (or on demo.toastmost.org if you do not currently have a Toastmost or WordPress for Toastmasters website).</p>
+					
+					<p><a href="'.$app_redirect_url.'" style="display: inline-block; padding: 10px 20px; background-color: #004165; color: #ffffff; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; text-align: center;">Connect Now!</a></p>
+					<p>Clicking the button above should open the app and connect the app to your club website account.</p>
+					<p>If that does not work for some reason, visit the <a href="'.$code_url.'">app setup page</a>, which will help you connect the app to your account on a club website (or on demo.toastmost.org if you do not currently have a Toastmost or WordPress for Toastmasters website).</p>
 					'.$message;
 					$mail['to'] = $email;
 					$mail['cc'] = 'david@toastmost.org';
@@ -1512,7 +1535,7 @@ function wpt_mobile_language_preference($language) {
 	}
 	return $language;
 }
-class WP4T_Mobile extends WP_REST_Controller {
+class WP4T_Mobile_Agenda extends WP_REST_Controller {
 	public function register_routes() {
 		$namespace = 'rsvptm/v1';
 		$path      = 'mobile/(?P<user_code>.+)';
@@ -1629,11 +1652,23 @@ class WP4T_Mobile extends WP_REST_Controller {
 		{
 			$id = sanitize_text_field($data->ID);
 			$key = sanitize_text_field($data->assignment_key);
+			$wasopen = !empty($data->wasopen);
 			if(strpos($key,'planned_absence')) {
 				if($id)
 					$result = add_post_meta($post_id,'tm_absence',$id);
 				else {
 					$result = delete_post_meta($post_id,'tm_absence',$current_user->ID);
+				}
+			}
+			elseif($wasopen) {
+				$was = get_post_meta($post_id,$key,true);
+				if(!empty($was)) {
+					$agendadata['taken'] = get_member_name($was);
+					$agendadata['update'][] ='already assigned: '.get_member_name($was);
+				}
+				else {
+					$result = update_post_meta($post_id,$key,$id);
+					$agendadata['wasopen_check'] = 'still open';
 				}
 			}
 			else {
@@ -1680,6 +1715,12 @@ class WP4T_Mobile extends WP_REST_Controller {
 				$agendadata['absence_update'] = 'removed '.$current_user->ID.' '.$current_user->display_name;
 			}
 		}
+		if(isset($data) && isset($data->note_update))
+		{
+			$note = wpautop(strip_tags(sanitize_textarea_field($data->note_update)));
+			$r = update_post_meta($data->post_id,$data->note_update_key,$note);
+			$agendadata['note_update'] = $data->post_id.':'.$data->note_update_key.':'.$note.':'.var_export($r,true);	
+		}
 		if(isset($data) && isset($data->emailagenda))
 		{
 			global $email_context;
@@ -1725,6 +1766,11 @@ class WP4T_Mobile extends WP_REST_Controller {
 			}
 			$agendadata['emailagenda_content'] = $content;
 			$agendadata['emailagenda_to'] = sizeof($emails).' emails: '.implode(', ',$emails);
+		}
+		if(isset($data) && isset($data->firstName) && isset($data->lastName))
+		{
+			$current_user->display_name = $data->firstName.' '.$data->lastName;
+			wp_update_user(array('ID'=>$current_user->ID,'display_name'=>$current_user->display_name,'first_name'=>$data->firstName,'last_name'=>$data->lastName));
 		}
 		if(isset($data) && isset($data->suggestTranslations))
 		{
@@ -1829,6 +1875,7 @@ class WP4T_Mobile extends WP_REST_Controller {
 		$agendadata['post_id'] = $post_id;
 		$agendadata['members'] = $memberlist;
 		$agendadata['code'] = $request['user_code'];
+		$agendadata['payload'] = $data;
 		return new WP_REST_Response($agendadata,
 			200
 		);
@@ -1869,6 +1916,7 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 		$post_id = $meeting->ID;
 		$agenda['post_id'] = $post_id;
 		$agenda['title'] = rsvpmaker_date('M j',$meeting->ts_start) .' '.$meeting->post_title;
+		$agenda['intros'] = speech_intros($post_id);
 		$agenda['html'] = tm_agenda_content($post_id);
 		$agenda['roles'] = [];
 		$blocksdata = parse_blocks($meeting->post_content);
@@ -1913,6 +1961,13 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 						}
 					$agenda['roles'][] = $assignment;
 					}
+				}
+				elseif('wp4toastmasters/agendaedit' == $block['blockName']) {
+					$editable['headline'] = $block['attrs']['editable'];
+					$text = get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
+					$editable['content'] = ($text) ? trim(html_entity_decode(strip_tags($text))) : '';
+					$editable['key'] = 'agenda_note_'.$block['attrs']['uid'];
+					$agenda['editable'][] = $editable;
 				}
 		}
 		//end tour through blocks
@@ -2188,6 +2243,7 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 		$role = $data->role;
 		$start = $data->start;
 		$count = $data->count;
+		$wasopen = !empty($data->wasopen);
 		if($count == $roleindex) {
 			$role = 'Backup '.$role;
 			$roleindex = 0;
@@ -2208,6 +2264,17 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 			else
 				$key = '_'.$type.$keybase.($roleindex+$start);
 			//$updated[$type] = $value;
+			if(($type == "ID") && $wasopen && !empty($value)) {
+				$was = get_post_meta($post_id,$key,true);
+				if(!empty($was)) {
+					$agendadata = wpt_get_agendadata($post_id);
+					$agendadata['taken'] = get_member_name($was);
+					$agendadata['status'] = 'already assigned: '.get_member_name($was);
+					return new WP_REST_Response($agendadata,200);						
+				}
+				else
+					$status .= ' Confirmed not assigned ';
+			}
 			update_post_meta($post_id,$key,$value);
 			$status .= ' '.$key.' = '.$value;
 			$updated['status'] .= ' '.$key.' = '.$value;
@@ -2859,7 +2926,7 @@ add_action(
 		$umeta->register_routes();
 		$timerimage = new WP4T_Timer_Image();
 		$timerimage->register_routes();
-		$wp4tmobile = new WP4T_Mobile();
+		$wp4tmobile = new WP4T_Mobile_Agenda();
 		$wp4tmobile->register_routes();
 		$wp4tmc = new WP4T_Mobile_Code();
 		$wp4tmc->register_routes();

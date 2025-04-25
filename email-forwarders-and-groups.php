@@ -987,6 +987,9 @@ foreach($forwarders as $forwarder) {
     }
 }
 }
+//refresh list
+wpt_flattened_forwarders();
+wpt_all_flattened_forwarders();
 }
 function wpt_format_email_forwarder($lookup = '', $blog_id = 0, $format = '') {
     if(!$blog_id)
@@ -1663,4 +1666,148 @@ function wpt_post_for_email($epost) {
     }
     $post = $backup;
     return $epost;
+}
+function toastmasters_officer_single( $atts ) {
+	$title                          = ( isset( $atts['title'] ) ) ? $atts['title'] : 'VP of Education';
+	$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
+	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+	$index                          = array_search( $title, $wp4toastmasters_officer_titles );
+	if ( $index === false ) {
+		return;
+	}
+	$officer_id = $wp4toastmasters_officer_ids[ $index ];
+	$contact = '';
+	if ( $officer_id ) {
+		$userdata                       = get_userdata( $officer_id );
+		$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
+		$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
+		$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
+		$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
+		$contact                        = '<div><strong>' . $title . ': ' . $userdata->first_name . ' ' . $userdata->last_name . '</strong></div>';
+		foreach ( $contactmethods as $name => $value ) {
+			if ( strpos( $name, 'phone' ) && ! empty( $userdata->$name ) ) {
+				$contact .= sprintf( "<div>%s: %s</div>\n", $value, $userdata->$name );
+			}
+		}
+		$contact .= sprintf( '<div>' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . ': <a href="mailto:%s">%s</a></div>' . "\n", $userdata->user_email, $userdata->user_email );
+	}
+	return $contact;
+}
+function toastmasters_officer_email_by_title( $title, $site_id = 0 ) {
+	$wp4toastmasters_officer_ids    = ($site_id) ? get_blog_option( $site_id, 'wp4toastmasters_officer_ids' ) : get_option( 'wp4toastmasters_officer_ids' );
+	$wp4toastmasters_officer_titles = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_titles' ) : get_option( 'wp4toastmasters_officer_titles' );
+	$wp4toastmasters_officer_slugs = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_titles' ) : get_option( 'wp4toastmasters_officer_slugs' );
+	$index                          = array_search( $title, $wp4toastmasters_officer_titles );
+	$slug_index                    = array_search( $title, $wp4toastmasters_officer_slugs );
+	if ( $slug_index !== false ) {
+		$officer_id = $wp4toastmasters_officer_ids[ $slug_index ];
+	}
+	elseif ( $index !== false ) {
+		$officer_id = $wp4toastmasters_officer_ids[ $index ];
+	}
+	if(empty($officer_id))
+		return;
+	$userdata                       = get_userdata( $officer_id );
+	if ( !empty($userdata->user_email) ) {
+		return $userdata->user_email;
+	}
+}
+function toastmasters_officer_email_array( $site_id = 0 ) {
+	$wp4toastmasters_officer_ids    = ($site_id) ? get_blog_option( $site_id, 'wp4toastmasters_officer_ids' ) : get_option( 'wp4toastmasters_officer_ids' );
+	$wp4toastmasters_officer_titles = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_titles' ) : get_option( 'wp4toastmasters_officer_titles' );
+	$wp4toastmasters_officer_slugs = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_slugs' ) : get_option( 'wp4toastmasters_officer_slugs' );
+	$dp = wpt_domain_prefix($site_id);
+	foreach($wp4toastmasters_officer_ids as $index => $id) {
+		if(!$id)
+			continue;
+		$userdata = get_userdata( $id );
+		if ( !empty($userdata->user_email) && !strpos($userdata->user_email,'example.com') ) {
+			$slug = strtolower($wp4toastmasters_officer_slugs[$index]);
+			$officer_emails[$dp['prefix'].$slug.'@'.$dp['domain']] = $userdata->user_email;
+		}
+	}
+	$officer_emails[$dp['prefix'].'admin@'.$dp['domain']] = ($site_id) ? get_blog_option( $site_id,'admin_email' ) : get_option( 'admin_email' );
+	return $officer_emails;
+}
+
+//$mail = apply_filters('rsvpmailer_mail',$mail);
+
+add_filter('rsvpmailer_mail','wpt_check_local_forwarders',10,1);
+function wpt_check_local_forwarders($mail) {
+    $mail['to'] = strtolower($mail['to']);
+    $forwarders = wpt_flattened_forwarders($mail['blog_id']);
+    if(!empty($forwarders[$mail['to']]))
+        $mail['to'] = (sizeof($forwarders[$mail['to']]) > 1) ? $forwarders[$mail['to']] : $forwarders[$mail['to']][0];
+    return $mail;
+}
+
+function wpt_flattened_forwarders($site_id = 0) {
+	$forwarders = array();
+	$officer_emails = toastmasters_officer_email_array($site_id);
+	foreach($officer_emails as $key => $value) {
+		$forwarders[$key] = array($value);
+	}
+    $wpt_email_handler_custom_forwarders = ($site_id) ? get_blog_option($site_id,'custom_forwarders') : get_option('custom_forwarders');
+    if(empty($wpt_email_handler_custom_forwarders))
+        $wpt_email_handler_custom_forwarders = array();
+    else {
+        foreach($wpt_email_handler_custom_forwarders as $forwarder => $targets) 
+		{
+			foreach($targets as $target) {
+				$target = trim($target);
+                if(empty($target))
+                    continue;
+                $target = strtolower($target);
+				if(isset($officer_emails[$target])) {
+					$target = $officer_emails[$target];
+				}
+				$forwarders[$forwarder][] = $target;
+			}
+		}
+	}
+	update_option('flattened_forwarders',$forwarders);
+	if(!$site_id && is_multisite()) {
+		if(get_current_blog_id() != 1) {
+            delete_blog_option(1,'all_flattened_forwarders'); //reset so it will be rebuilt
+		}
+	}
+	return $forwarders;
+}
+function wpt_all_flattened_forwarders() {
+    if(is_multisite()) {
+        if(get_current_blog_id() != 1) {
+            if(isset($_GET['page']))
+            echo '<p>wpt_all_flattened_forwarders must be run from main site</p>';
+            return;
+        }
+        $forwarders = isset($_GET['reset']) ? null : get_option('all_flattened_forwarders');
+        if(empty($forwarders)) {
+            $forwarders = array();
+            $sites = get_sites(array('public' => 1, 'limit' => 1000, 'number' => 1000));
+            foreach($sites as $site) {
+                $local_forwarders = wpt_flattened_forwarders($site->blog_id);
+                $forwarders = array_merge($forwarders,$local_forwarders);
+                if(isset($_GET['page']))
+                printf('<p><strong>added %s forwarders from %s</strong></p><pre>%s</pre>',sizeof($local_forwarders),$site->domain,var_export($local_forwarders,true));
+            }
+            update_option('all_flattened_forwarders',$forwarders);
+        }
+    }
+    else 
+        $forwarders = wpt_flattened_forwarders();
+    if(isset($_GET['page']))
+        printf('<p>Total flattened forwarders %s</p><pre>%s</pre>',sizeof($forwarders),var_export($forwarders,true));
+    return $forwarders;
+}
+function wpt_domain_prefix( $site_id = 0 ) {
+	$url = ($site_id) ? get_blog_option( $site_id,'siteurl' ) : get_option( 'siteurl' );
+	$domain = parse_url(strtolower($url), PHP_URL_HOST);
+	$dp = explode('.',$domain);
+	$prefix = '';
+	if(sizeof($dp) > 2)
+		$prefix = array_shift($dp).'-';
+    if('www-' == $prefix)
+        $prefix = '';
+	$base_domain = implode('.',$dp);
+	return array('prefix' => $prefix, 'domain' => $base_domain);
 }
