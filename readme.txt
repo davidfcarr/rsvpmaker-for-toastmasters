@@ -4,8 +4,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 6.8
-Stable tag: 6.4.2
+Tested up to: 6.8.1
+Stable tag: 6.4.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking.
@@ -39,6 +39,8 @@ The toastmost.org service is supported by subscriptions from member clubs.
 1. Role signup on the online agenda.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 == Changelog ==
+= 6.4.3 =
+* More efficient database queries for "last did" and agenda metadata via api
 = 6.4.2 =
 * Shortcode for displaying QR code to enable app on the front end [[toastmost_mobile_qr_shortcode]]
 = 6.4.1 =

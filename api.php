@@ -1249,6 +1249,7 @@ function wpt_get_agendadata($post_id = 0) {
 		return [];
 	global $current_user,$post;
 	wpt_mobile_user_check();
+	$all_assignments = wpt_all_assignments($post_id);
 	$agendadata = [];
 	$post = false;
 	$meetings = future_toastmaster_meetings( 10 );
@@ -1346,7 +1347,7 @@ function wpt_get_agendadata($post_id = 0) {
 		if(!empty($agendadata['blocksdata']))
 		foreach($agendadata['blocksdata'] as $index => $block) {
 			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid']))
-				$agendadata['blocksdata'][$index]['edithtml'] = get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
+				$agendadata['blocksdata'][$index]['edithtml'] = empty($all_assignments['agenda_note_'.$block['attrs']['uid']]) ? '' : $all_assignments['agenda_note_'.$block['attrs']['uid']];// get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
 			if(!empty($block['attrs']['custom_role']))
 				$agendadata['blocksdata'][$index]['attrs']['role'] = $block['attrs']['custom_role'];
 			$agendadata['blocksdata'][$index]['DnDid'] = 'dnd'.$index;
@@ -1369,7 +1370,8 @@ function wpt_get_agendadata($post_id = 0) {
 					{
 						$key = wp4t_fieldbase($role,$i);
 						$assignment = array('post_id'=>$post_id);
-						$assignment['ID'] = get_post_meta($post_id,$key, true);
+						//$assignment['ID'] = get_post_meta($post_id,$key, true);
+						$assignment['ID'] = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
 						if(empty($assignment['ID'])) {
 							$assignment['name'] = '';
 						}
@@ -1378,7 +1380,7 @@ function wpt_get_agendadata($post_id = 0) {
 						else
 							$assignment['name'] = $assignment['ID'].' (guest)';
 						if($assignment['ID'] && ('Speaker' == $role)) {
-							$speakerdata = get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
+							$speakerdata = extract_speaker_array($key,$assignment['ID'],$all_assignments);
 							$project_key = ($speakerdata['project']) ? $speakerdata['project'] : '';
 							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id );//add_query_arg('evalme',$current_user->ID,get_permalink())
 							$assignment = array_merge($assignment,$speakerdata);

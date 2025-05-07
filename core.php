@@ -7212,6 +7212,33 @@ function get_speaker_array_by_field( $field, $assigned, $post_id = 0 ) {
 	}
 	return apply_filters( 'get_speaker_array', $speaker, $field, $post_id );
 }
+function extract_speaker_array( $field, $assigned, $all_assignments ) {
+	if ( ! $post_id ) {
+		global $post;
+		$post_id = $post->ID;
+	}
+	$speaker['ID']           = $assigned;
+	$key = '_manual' . $field;
+	$speaker['manual']       = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
+	$key = '_project' . $field;
+	$speaker['project']      = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
+	$speaker['project_text'] = ($speaker['project']) ? get_project_text($speaker['project']) : '';
+	$key = '_maxtime' . $field;
+	$speaker['maxtime']      = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
+	$key = '_display_time' . $field;
+	$speaker['display_time'] = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
+	$key = '_title' . $field;
+	$speaker['title']        = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
+	$key = '_intro' . $field;
+	$speaker['intro']        = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
+	if ( empty( $speaker['manual'] ) ) {
+		$speaker['manual'] = 'Path Not Set Level 1 Mastering Fundamentals';
+	}
+	if ( empty( $speaker['maxtime'] ) ) {
+		$speaker['maxtime'] = 7;
+	}
+	return apply_filters( 'get_speaker_array', $speaker, $field, $post_id );
+}
 function save_speaker_array( $speaker, $count, $post_id = 0 ) {
 	$field = wp4t_fieldbase('Speaker',$count);
 	if ( ! $post_id ) {
@@ -12349,6 +12376,8 @@ function tm_attend_in_person_json($data) {
 }
 add_shortcode('tm_attend_in_person','tm_attend_in_person');
 function tm_in_person_checkbox($user_id = 0) {
+	if(!is_single())
+		return;
 	global $current_user,$post, $wpdb, $in_person_checkbox;
 	if(!empty($in_person_checkbox))
 		return $in_person_checkbox;

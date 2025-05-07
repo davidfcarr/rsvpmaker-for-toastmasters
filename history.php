@@ -740,3 +740,24 @@ function wpt_update_history_by_id_log($user_id, $role, $post_id, $was) {
     $message = "Changed <strong>$wasname to $name</strong>: $role";
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
 }
+function tm_history_lastdid() {
+    $lastdid = get_transient('tm_history_lastdid');
+    global $wpdb;
+    $history_table = $wpdb->base_prefix.'tm_history';
+    $members = get_club_members();
+    foreach($members as $member) {
+        $m[] = $member->ID;
+    }
+    $sql = "SELECT * FROM $history_table WHERE user_id IN (".implode(',',$m).") AND datetime > DATE_SUB(CURRENT_DATE, INTERVAL 1 YEAR) ORDER BY datetime";
+    $results = $wpdb->get_results($sql);
+    $output = '';
+    $lastdid = array();
+    foreach($results as $row) {
+        $key = $row->role.'_'.$row->user_id;
+        if(!isset($lastdid[$key]))
+            $lastdid[$key] = $row->datetime;
+    }
+    set_transient('tm_history_lastdid', $lastdid, DAY_IN_SECONDS);
+    $lastdid['lastdid'] = 'saved transient';
+    return $lastdid;
+}

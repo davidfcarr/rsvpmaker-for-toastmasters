@@ -202,8 +202,10 @@ add_filter( 'the_content', function ( $content ) {
 			elseif(current_user_can('manage_options')) {
 				if($revert_default)
 					$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert_by_default=off">Switch to new form</a></div>';
-				else
-					$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert=1&revert_by_default=on">Default to old form</a></div>';
+				else {
+					// do not display content or process blocks on client side
+					$content = '';
+				}
 			}
 		}	
 		$link .= sprintf( '<input type="hidden" id="editor_id" value="%s" />', $current_user->ID );

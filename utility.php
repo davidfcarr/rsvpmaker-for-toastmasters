@@ -18,14 +18,15 @@ function wp4t_haverole($post_id) {
 	return $haverole;
 }
 function wp4t_last_held_role($user_id, $role, $include_ts = false) {
-	global $wpdb, $rsvp_options;
-	$history_table = $wpdb->base_prefix.'tm_history';
-	$sql = $wpdb->prepare("SELECT datetime FROM $history_table WHERE role=%s AND user_id=%d AND datetime < NOW() ORDER BY datetime DESC",$role,$user_id);
-	$d = $wpdb->get_var($sql);
-	if(empty($d))
-		return ($include_ts) ? ['?',0] : null;
-	$t = rsvpmaker_strtotime($d);
-	return ($include_ts) ? [rsvpmaker_date($rsvp_options['long_date'],$t), $t] : rsvpmaker_date($rsvp_options['long_date'],$t);
+	global $wpdb, $rsvp_options, $lastdid;
+	if ( empty( $lastdid ) ) {
+		$lastdid = tm_history_lastdid();
+	}
+	$key = $role.'_'.$user_id;
+	if ( isset( $lastdid[ $key ] ) ) {
+		return rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($lastdid[ $key ]));
+	}
+	return '';
 }
 function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel = 'Open' ) {
 	if ( rsvpmaker_is_template() ) {
@@ -128,11 +129,6 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 	} elseif ( isset( $_GET['recommend_roles'] ) ) {
 		return '<select name="editor_suggest[' . $role . ']" id="editor_suggest' . $role . '" class="editor_suggest" >' . $options . '</select>';
 	}
-	/*
-	 elseif ( is_edit_roles() ) {
-		return "\n\n" . '<input type="checkbox" class="recommend_instead" name="recommend_instead' . $role . '" id="recommend_instead' . $role . '" class="editor_assign" post_id="' . $post->ID . '" value="_rm' . $role . '" /> ' . __( 'Recommend instead of assign', 'rsvpmaker-for-toastmasters' ) . '<br /><select name="editor_assign[' . $role . ']" id="editor_assign' . $role . '" class="editor_assign"  post_id="' . $post->ID . '">' . $options . '</select><span id="_rm' . $role . '"></span>';
-	}
-	*/
 	else {
 		return "\n\n" . '<select name="editor_assign[' . $role . ']" id="' . $post->ID . '_editor_assign' . $role . '" class="editor_assign" post_id="' . $post->ID . '" role="' . $role . '">' . $options . '</select>';
 	}
@@ -1726,4 +1722,16 @@ function wpt_mobile_translations() {
 	}
 
 	return $t;
+}
+function wpt_all_assignments($post_id) {
+	global $wpdb;
+	$assignments = array();
+	$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND (meta_key LIKE '%_role_%' OR meta_key LIKE 'agenda_note_%')";
+	$results = $wpdb->get_results($sql);
+	foreach($results as $row) {
+		if(!empty($row->meta_value)) {
+			$assignments[$row->meta_key] = $row->meta_value;
+		}
+	}
+	return $assignments;
 }
