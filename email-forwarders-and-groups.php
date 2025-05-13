@@ -261,14 +261,6 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             continue;
         }
-        /*
-        set_transient('before_admin_slug_test',$slug);
-        if('admin' == $slug) {
-            $recipients = array(get_blog_option($blog_id,'admin_email'));
-            set_transient('admin_slug_recipients',$recipients);
-            wpt_email_handler_qemail($qpost, $recipients, $from, $fromname, $blog_id);
-        }
-        */
         $slug_ids = get_officer_slug_ids($blog_id);
         //$output .= sprintf("<p>Officer slug ids %s</p>",var_export($slug_ids, true));
         if(!empty(	$slug_ids [$slug]))
@@ -1012,7 +1004,6 @@ function wpt_format_email_forwarder($lookup = '', $blog_id = 0, $format = '') {
     elseif((empty($lookup)) && empty($username))
         $username = 'members';
     $username .= $lookup;
-    set_transient('wpt_format_email_forwarder',$lookup.' site id '.$blog_id.' = '.$username .'@' .$domain);
     return $username .'@' .$domain;
 }
 function wpt_get_site_domain($blog_id = 0) {
@@ -1232,7 +1223,6 @@ function wpt_member_email_check() {
     echo $output;
 }
 function wpt_email_forwarder_recipients($forwarder) {
-    set_transient('wpt_email_forwarder_recipients',$forwarder);
     $address = explode('@',$forwarder);
     $recipients = array();
     $hosts_and_subdomains = rsvpmaker_get_hosts_and_subdomains();
@@ -1307,14 +1297,6 @@ if('officers' == $slug) {
     }
     }
 }
-/*
-set_transient('admin_slug_test',$forwarder);
-if('admin' == $slug) {
-    set_transient('admin_id_detected',$forwarder);
-    $recipients[] = get_blog_option($blog_id,'admin_email');
-    set_transient('admin_recipients',$recipients);
-}
-*/
 $slug_ids = get_officer_slug_ids($blog_id);
 if(!empty(	$slug_ids [$slug]))
 {

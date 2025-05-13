@@ -16,6 +16,8 @@ class Toast_Norole_Controller extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
 		return true;
 	}
 	public function get_items( $request ) {
@@ -41,6 +43,9 @@ class WPTContest_Order_Controller extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		return true;
 	}
 	public function get_items( $request ) {
@@ -66,6 +71,9 @@ class WPTContest_Send_Link extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		return is_user_logged_in();
 	}
 	public function get_items( $request ) {
@@ -103,6 +111,9 @@ class WPTContest_VoteCheck extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		global $current_user;
 		if ( current_user_can( 'manage_options' ) ) {
 			return true;
@@ -135,6 +146,9 @@ class WPTContest_GotVote extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		return true;
 	}
 	public function get_items( $request ) {
@@ -161,6 +175,9 @@ class WPT_Timer_Control extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		return true;
 	}
 	public function get_items( $request ) {
@@ -190,6 +207,9 @@ class Toast_Agenda_Timing extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		return true;
 	}
 	public function get_items( $request ) {
@@ -900,7 +920,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$shortened = array_diff($custom_club_contests,[$data->deleteRecurring]);
 			foreach($shortened as $s) 
 				$custom_club_contests[] = $s;
-			update_option('custom_club_contests',$custom_club_contests);
+			update_option('custom_club_contests',$custom_club_contests,false);
 			$votingdata['deleteRecurring'] = $data->deleteRecurring;
 		}
 		$votingdata['everyWeek'] = $custom_club_contests;
@@ -949,7 +969,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				if(!empty($params->everyMeeting) && !in_array($b,$custom_club_contests))
 				{
 					$custom_club_contests[] = $b;
-					update_option('custom_club_contests',$custom_club_contests);
+					update_option('custom_club_contests',$custom_club_contests,false);
 					$votingdata['custom_club_contests'] = $b;
 					unset($ballot_array[$b]->everyMeeting);//don't store this property
 				}
@@ -1235,6 +1255,8 @@ class WP4TBlocksData extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
 		return true;
 	}
 	public function handle( $request ) {
@@ -1380,7 +1402,7 @@ function wpt_get_agendadata($post_id = 0) {
 						else
 							$assignment['name'] = $assignment['ID'].' (guest)';
 						if($assignment['ID'] && ('Speaker' == $role)) {
-							$speakerdata = extract_speaker_array($key,$assignment['ID'],$all_assignments);
+							$speakerdata = extract_speaker_array($post_id, $key,$assignment['ID'],$all_assignments);
 							$project_key = ($speakerdata['project']) ? $speakerdata['project'] : '';
 							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id );//add_query_arg('evalme',$current_user->ID,get_permalink())
 							$assignment = array_merge($assignment,$speakerdata);
@@ -1900,6 +1922,9 @@ class WP4T_Translations extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		return true;
 	}
 	public function handle( $request ) {
@@ -2016,6 +2041,9 @@ class WP4TRolesList extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+		if(wpt_exclude_agenda_functions())
+			return false;
+
 		return true;
 	}
 	public function handle( $request ) {
@@ -2161,6 +2189,7 @@ class WP4T_Paths_and_Projects extends WP_REST_Controller {
 		);
 	}
 	public function get_items_permissions_check( $request ) {
+
 		return true;
 	}
 	public function handle( $request ) {
@@ -2420,7 +2449,7 @@ class WP4T_Permissions extends WP_REST_Controller {
 		$json = file_get_contents('php://input');
 		$data = json_decode($json);
 		if('newSignupDefault' == $data->key) {
-		update_option('wp4t_newSignupDefault',$data->value);
+		update_option('wp4t_newSignupDefault',$data->value,false);
 		$response['status'] = "$data->key ".(($data->value) ? 'true' : 'false');
 		return new WP_REST_Response($response,
 			200
@@ -2611,10 +2640,10 @@ class WP4T_Evaluation extends WP_REST_Controller {
 				$eval_data = json_decode( $json );
 				foreach ( $eval_data as $eval_row ) {
 					if ( isset( $eval_row->timestamp ) ) {
-						update_option( 'evaluation_forms_updated', $eval_row->timestamp );
+						update_option( 'evaluation_forms_updated', $eval_row->timestamp, false );
 						$updated = $eval_row->timestamp;
 					} elseif ( $eval_row->option_value ) {
-						update_option( $eval_row->option_name, $eval_row->option_value );
+						update_option( $eval_row->option_name, $eval_row->option_value, false );
 					}
 				}
 			}

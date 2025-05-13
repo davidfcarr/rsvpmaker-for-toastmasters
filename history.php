@@ -442,6 +442,7 @@ function wp4t_delete_history($role, $timestamp, $post_id) {
 	$wpdb->query( $sql );
 }
 function refresh_tm_history() {
+    if(defined('RSVPMAKER_DEBUG')) error_log('refresh_tm_history called');
     wp_suspend_cache_addition(true);
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
@@ -457,8 +458,8 @@ function refresh_tm_history() {
         }
     }
     wp_suspend_cache_addition(false);
+    if(defined('RSVPMAKER_DEBUG')) error_log('refresh_tm_history done');
 }
-add_action( 'refresh_tm_history', 'refresh_tm_history' );
 function wp4t_recent_history($user_id) {
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
@@ -706,13 +707,6 @@ function wpt_minutes_from_history_draft() {
         die();
     }    
 }
-add_action('admin_init','wpt_minutes_from_history_draft');
-add_filter('default_title','wpt_minutes_from_history_title');
-add_filter('default_content','wpt_minutes_from_history');
-add_action('wp4t_add_history_to_table','wp4t_add_history_to_table_log',10, 12);
-add_action('wpt_update_speech_history_by_id','wpt_update_speech_history_by_id_log',10,6);
-add_action('wpt_remove_history_by_id','wpt_remove_history_by_id_log',10,3);
-add_action('wpt_update_history_by_id','wpt_update_history_by_id_log',10,4);
 //new role logged
 function wp4t_add_history_to_table_log($user_id, $role, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $role_count, $was) {
     $name = get_member_name($user_id);

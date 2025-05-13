@@ -194,7 +194,7 @@ echo '<p>'.club_member_mailto().'</p>';
 	printf('<p><a href="%s">See club minutes</a> (%d on website, %s)</p>',$minutes_archive, sizeof($minutes_docs), $minutes_updated);
 	$count = 0;
 	$allow_assign = get_option( 'allow_assign' );
-	$results = get_future_events( " ( post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%' ) ", 3, OBJECT, 4 );
+	$results = rsvpmaker_get_future_events( " ( post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%' ) ", 3, OBJECT, 4 );
 	if ( $results ) {
 		  $upcoming_roles = '';
 		foreach ( $results as $index => $row ) {
@@ -301,7 +301,7 @@ echo '<p>'.club_member_mailto().'</p>';
 <p><a href="./users.php?page=wp4t_extended_list"><?php _e( 'Guests/Former Members', 'rsvpmaker-for-toastmasters' ); ?></a>
 <br /></p>
 		<?php
-		$future    = get_future_events();
+		$future    = rsvpmaker_get_future_events();
 		$count     = sizeof( $future );
 		$args      = array(
 			'post_type'   => 'rsvpmaker',
@@ -451,7 +451,7 @@ else {
 					'post_status' => 'private',
 				)
 			);
-			update_option( 'wp4toastmasters_welcome_message', $wp4toastmasters_welcome_message );
+			update_option( 'wp4toastmasters_welcome_message', $wp4toastmasters_welcome_message, false );
 			$is_blank = '(blank)';
 		}
 		printf( '%s - edit new member welcome message %s', rsvpmaker_edit_link( $wp4toastmasters_welcome_message, '', true ), $is_blank );
@@ -547,7 +547,7 @@ function toastmasters_reminder_preview() {
 	global $email_context;
 	$email_context = true;
 	wpt_timecheck();
-	$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
+	$future = rsvpmaker_get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 	if ( sizeof( $future ) ) {
 		$next = $future[0];
 		$content = email_with_without_role('',true);
@@ -566,7 +566,7 @@ function wp4toast_reminders() {
 	if ( ! $wp4toast_reminder ) {
 		die( 'no reminder set' );
 	}
-	$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
+	$future = rsvpmaker_get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 	if ( sizeof( $future ) ) {
 		$next = $future[0];
 	} else {
@@ -587,7 +587,7 @@ function wp4toast_reminders() {
 		} else {
 			echo '<div>' . __( 'Run reminder now', 'rsvpmaker-for-toastmasters' ) . ' </div>';
 			wp4_speech_prompt( $next, strtotime( $next->datetime ) );
-			update_option( 'reminder_run', $t );
+			update_option( 'reminder_run', $t, false );
 		}
 	} else {
 		echo '<br />' . __( 'Reminder time is NOT past', 'rsvpmaker-for-toastmasters' );
@@ -1589,7 +1589,7 @@ function role_post() {
 			foreach ( $_POST['edit_default'] as $role => $defaulton ) {
 				$role = sanitize_text_field($role);
 				$assign = intval($_POST['editor_assign'][$role]);
-				$future = get_future_events();
+				$future = rsvpmaker_get_future_events();
 				foreach($future as $event) {
 					update_post_meta($event->ID,$role,$assign);
 				}
@@ -1597,7 +1597,7 @@ function role_post() {
 		}
 		if ( ! empty( $edit_log ) ) {
 			add_post_meta( $post_id, '_activity_editor', implode( '<br />', $edit_log ) );
-			update_option( '_tm_updates_logged', strtotime( '+ 2 minutes' ) );
+			update_option( '_tm_updates_logged', strtotime( '+ 2 minutes' ), false );
 		}
 	}
 	if ( isset( $_POST['_manual'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
@@ -2315,7 +2315,6 @@ submit_button('Switch to District');
 		delete_option('toastmasters_district');
 	}
 	if(isset($_GET['district']) && rsvpmaker_verify_nonce()) {
-		update_option('toastmasters_district',sanitize_text_field($_GET['district']));
 		$titles = array('District Director','Program Quality Director','Club Growth Director','Public Relations Manager','Administration Manager','Finance Manager','Logistics Manager','Immediate Past District Director');
 		$slugs = array('dd','pqd','cgd','prm','administration','finance','logistics','ipdd');
 		$divisions = array('A','B','C','D','E','F','G');
@@ -2324,9 +2323,9 @@ submit_button('Switch to District');
 			$titles[] = "Division $d Director";
 			$slugs[] = "div_".strtolower($d);
 		}
-		update_option ('wp4toastmasters_officer_titles',$titles);
-		update_option( 'wp4toastmasters_officer_slugs',$slugs );
-		update_option( 'wp4toastmasters_officer_ids',array() );
+		update_option ('wp4toastmasters_officer_titles',$titles,false);
+		update_option( 'wp4toastmasters_officer_slugs',$slugs,false );
+		update_option( 'wp4toastmasters_officer_ids',array(), false );
 		update_option('toastmasters_district',sanitize_text_field($_GET['district']));
 	}
 	settings_fields( 'wp4toastmasters-settings-group' );
@@ -2831,7 +2830,7 @@ Sidebar Items Font <input class="fontcontrol" type="number" name="wp4toastmaster
 				'post_status' => 'private',
 			)
 		);
-		update_option( 'wp4toastmasters_welcome_message', $wp4toastmasters_welcome_message );
+		update_option( 'wp4toastmasters_welcome_message', $wp4toastmasters_welcome_message, false );
 		$is_blank = '(blank)';
 	}
 	printf( '<p>Edit %s %s</p>', rsvpmaker_edit_link( $wp4toastmasters_welcome_message, '', true ), $is_blank );
@@ -2867,14 +2866,14 @@ rsvpmaker_nonce(); ?>
 <section class="toastmasters-admin" id="notifications">
 <?php
 if(isset($_POST['wpt_notification_emails'])) {
-	update_option('wpt_notification_emails', sanitize_text_field($_POST['wpt_notification_emails']) );
-	update_option('wpt_notification_leader', isset($_POST['wpt_notification_leader']) );
+	update_option('wpt_notification_emails', sanitize_text_field($_POST['wpt_notification_emails']),false);
+	update_option('wpt_notification_leader', isset($_POST['wpt_notification_leader']),false);
 	if(isset($_POST['wpt_notification_titles'])) {
 		$titles = array_map('sanitize_text_field', $_POST['wpt_notification_titles']);
-		update_option('wpt_notification_titles',$titles);
+		update_option('wpt_notification_titles',$titles, false);
 	}
 	else
-		update_option('wpt_notification_titles',array());
+		update_option('wpt_notification_titles',array(), false);
 }
 $titles = get_option('wpt_notification_titles');
 printf('<form method="post" action="%s">',admin_url('options-general.php?page=wp4toastmasters_settings'));
@@ -3123,10 +3122,11 @@ function register_wp4toastmasters_settings() {
 				$hours = $p[0] * 24;
 			}
 				$fudge  = $hours + 1;
-				$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
+				$future = rsvpmaker_get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 			if ( sizeof( $future ) ) {
 				$next = $future[0];
 				$timestamp = rsvpmaker_strtotime( $next->datetime . ' -' . $hours . ' hours' );
+				if(!wpt_exclude_agenda_functions())
 				wp_schedule_event( $timestamp, 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 				update_option( 'wp4toast_reminders_cron', 1 );
 			}
@@ -3152,10 +3152,11 @@ function register_wp4toastmasters_settings() {
 				$hours = $p[0] * 24;
 			}
 				$fudge  = $hours + 1;
-				$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
+				$future = rsvpmaker_get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 			if ( sizeof( $future ) ) {
 				$next = $future[0];
 				rsvpmaker_fix_timezone();
+				if(!wpt_exclude_agenda_functions())
 				wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 				update_option( 'wp4toast_reminders_cron', 1 );
 			}
@@ -3168,7 +3169,7 @@ function register_wp4toastmasters_settings() {
 			$hours = $p[0] * 24;
 		}
 			$fudge  = $hours + 1;
-			$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
+			$future = rsvpmaker_get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 		if ( sizeof( $future ) ) {
 			$next = $future[0];
 		}
@@ -3180,8 +3181,6 @@ function register_wp4toastmasters_settings() {
 		wp_update_post( $agenda );
 	}
 }
-add_action('wp4toast_reminders_intros','wp4toast_reminders_intros',10,2);
-add_action('init','reminders_test');
 function reminders_test() {
 	if ( isset( $_GET['reminder_test'] ) ) {
 			wp4toast_reminders_intros(  );
@@ -3279,10 +3278,11 @@ function wp4toast_reminders_dst_fix( $args = array() ) {
 			$hours = $p[0] * 24;
 		}
 			$fudge  = $hours + 1;
-			$future = get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
+			$future = rsvpmaker_get_future_events( " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ", 1 );
 		if ( sizeof( $future ) ) {
 				$next = $future[0];
 				rsvpmaker_fix_timezone();
+				if(!wpt_exclude_agenda_functions())
 				wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 		}
 	}
@@ -3302,7 +3302,7 @@ function wp4toast_reminders_dst_fix( $args = array() ) {
 			$hours = $p[0] * 24;
 		}
 			$fudge = $hours + 1;
-		if ( ! empty( $next ) ) {
+		if ( ! empty( $next ) && (!wpt_exclude_agenda_functions())) {
 				wp_schedule_event( rsvpmaker_strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 		}
 	}
@@ -4214,7 +4214,7 @@ function wp4toastmasters_agenda_layout_check( $sidebar_officers = false ) {
 		$layout['post_status']  = 'publish';
 		$layout_id              = wp_insert_post( $layout );
 		update_post_meta( $layout_id, '_rsvpmaker_special', 'Agenda Layout' );
-		update_option( 'rsvptoast_agenda_layout', $layout_id );
+		update_option( 'rsvptoast_agenda_layout', $layout_id, false );
 	return $layout_id;
 }
 function agenda_add_editor_styles() {
@@ -6563,7 +6563,7 @@ function signup_sheet( $atts = array() ) {
 			$next               = 'CURDATE()';
 			ob_start();
 		}
-		$dates     = get_future_events( " date > $next AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ", $limit );
+		$dates     = rsvpmaker_get_future_events( " date > $next AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') ", $limit );
 		$head      = $cells = '';
 		$datecount = 0;
 		foreach ( $dates as $date ) {
@@ -6745,7 +6745,6 @@ function wp_ajax_wptoast_role_planner_update() {
 	}
 	die();
 }
-add_action( 'wp_ajax_wptoast_role_planner_update', 'wp_ajax_wptoast_role_planner_update' );
 function toastmasters_planner() {
 	$hook = tm_admin_page_top( __( 'Multi-Meeting Role Planner', 'rsvpmaker-for-toastmasters' ) );
 	?>
@@ -7212,8 +7211,8 @@ function get_speaker_array_by_field( $field, $assigned, $post_id = 0 ) {
 	}
 	return apply_filters( 'get_speaker_array', $speaker, $field, $post_id );
 }
-function extract_speaker_array( $field, $assigned, $all_assignments ) {
-	if ( ! $post_id ) {
+function extract_speaker_array( $post_id, $field, $assigned, $all_assignments ) {
+	if ( empty($post_id) ) {
 		global $post;
 		$post_id = $post->ID;
 	}
@@ -8977,7 +8976,7 @@ function rsvptoast_admin_notice() {
 	}
 	if ( isset( $_GET['calendar_toastmost'] ) ) {
 		$action = 'calendar_toastmost_' . sanitize_text_field($_GET['calendar_toastmost']);
-		set_transient( $action, true );
+		set_transient( $action, true, HOUR_IN_SECONDS );
 		printf(
 			'<div class="notice notice-info">
 	<h1>Toastmost Calendar Sync On/Off</h1>
@@ -10231,7 +10230,6 @@ function update_stats_model() {
 	}
 	update_option( 'stats_data_model', 1 );
 }
-add_action('admin_init','toastmasters_stats_model_check');
 add_filter( 'bp_get_activity_content_body', 'members_only_bp' );
 function members_only_bp( $args ) {
 	global $activities_template;
@@ -11194,7 +11192,7 @@ function evaluation_links() {
 	}
 	$is_current                       = false;
 	$tmagendadata['evaluation_links'] = '';
-	$future                           = get_future_events( '', 1 );
+	$future                           = rsvpmaker_get_future_events( '', 1 );
 	if ( $future ) {
 		foreach ( $future as $meet ) {
 			$sql     = "SELECT * FROM $wpdb->postmeta WHERE post_id=" . $post->ID . " AND meta_key LIKE '_role_Speak%' ORDER BY meta_key";
@@ -11983,7 +11981,6 @@ function wp4t_cron_nudge_setup() {
 	wp_unschedule_hook( 'wp4t_reminders_nudge' );
 	wp_schedule_event( strtotime( 'tomorrow 1 am' ), 'daily', 'wp4t_reminders_nudge' );
 }
-add_action( 'wp4t_reminders_nudge', 'wp4t_reminders_nudge' );
 function wp4t_reminders_nudge() {
 	wp_suspend_cache_addition(true);
 	$future = future_toastmaster_meetings( 2 );
@@ -12005,6 +12002,7 @@ function wp4t_reminders_nudge() {
 				$timestamp = rsvpmaker_strtotime( $string );
 				$hours = trim( str_replace( 'hours', '', $hours ) );
 				if ( $timestamp > time() ) {
+					if(!wpt_exclude_agenda_functions())
 					$result = wp_schedule_single_event( $timestamp, 'wp4toast_reminders_intros', array( $meeting->ID,$hours ) );
 				}
 		}

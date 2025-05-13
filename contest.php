@@ -398,9 +398,9 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		if ( ! empty( $contest_scoring ) ) {
 			$custom    = get_option( 'toast_custom_contest' );
 			$newcustom = sprintf( '<option value="%s">%s</option>', implode( ',', $foropt ), sanitize_text_field(stripslashes( $_POST['contest_name'] ) ) );
-			update_option( 'toast_custom_contest', $custom . $newcustom );
-			update_post_meta( $post->ID, 'toast_contest_scoring', $contest_scoring );
-			update_post_meta( $post->ID, 'toast_timing', sanitize_text_field($_POST['toast_timing']) );
+			update_option( 'toast_custom_contest', $custom . $newcustom, false );
+			update_post_meta( $post->ID, 'toast_contest_scoring', $contest_scoring, false );
+			update_post_meta( $post->ID, 'toast_timing', sanitize_text_field($_POST['toast_timing']), false );
 		}
 	} else {
 		$contest_scoring = get_post_meta( $post->ID, 'toast_contest_scoring', true );
@@ -1743,7 +1743,7 @@ function get_practice_contest_links() {
 		$judges['100000'] = 'Demo Judge';
 		update_post_meta( $practice_contest, 'tm_scoring_judges', $judges );
 		update_post_meta( $practice_contest, 'tm_timer_code', '200000' );
-		update_option( 'tm_practice_contest', $practice_contest );
+		update_option( 'tm_practice_contest', $practice_contest, false );
 	}
 	if ( isset( $_GET['reset'] ) ) {
 		delete_post_meta( $practice_contest, '_time_report' );

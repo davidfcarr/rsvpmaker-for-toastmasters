@@ -7,7 +7,7 @@ function wp4toast_reminders_cron( $meeting_hours ) {
 	wp_suspend_cache_addition(true);
 	email_with_without_role( $meeting_hours );
 	wp_suspend_cache_addition(false);
-	error_log('wp4toast_reminders_cron memory: '.memory_get_peak_usage(true));
+	rsvp_memory_peak_limit(0.9,'wp4toast_reminders_cron');
 	return;
 }
 add_action( 'wp4toast_tod_reminder_cron', 'wp4toast_tod_reminder_cron', 10, 1 );

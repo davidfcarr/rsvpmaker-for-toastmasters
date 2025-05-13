@@ -27,14 +27,14 @@ function agenda_layout_options() {
     if(isset($_POST['main']))
     {
         $mainfont = intval($_POST['main']);
-        update_option('wp4toastmasters_agenda_font_main',$mainfont);
+        update_option('wp4toastmasters_agenda_font_main',$mainfont,false);
     }
     else
     	$mainfont = get_option( 'wp4toastmasters_agenda_font_main' );
     if(isset($_POST['side']))
         {
             $sidebarfont = intval($_POST['side']);
-            update_option('wp4toastmasters_agenda_font_sidebar',$sidebarfont);
+            update_option('wp4toastmasters_agenda_font_sidebar',$sidebarfont,false);
         }
     else
         $sidebarfont = get_option( 'wp4toastmasters_agenda_font_sidebar' );
@@ -89,11 +89,11 @@ function agenda_layout_options() {
             wp_update_post($up);
     }
     if(isset($_POST['wp4toastmasters_agenda_css'])) {
-        update_option( 'wp4toastmasters_agenda_css',sanitize_textarea_field(stripslashes($_POST['wp4toastmasters_agenda_css'])));
+        update_option( 'wp4toastmasters_agenda_css',sanitize_textarea_field(stripslashes($_POST['wp4toastmasters_agenda_css'])),false);
     }
     if(isset($_POST['wp4t_disable_timeblock'])) {
         $notime = (bool) $_POST['wp4t_disable_timeblock'];
-        update_option('wp4t_disable_timeblock', $notime);
+        update_option('wp4t_disable_timeblock', $notime, false);
     }
     else
         $notime = (bool) get_option('wp4t_disable_timeblock');

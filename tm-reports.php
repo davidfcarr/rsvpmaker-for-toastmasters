@@ -3097,7 +3097,7 @@ function tm_member_welcome_redirect() {
 	{
 		// don't interfere with setup wizard or any admin or edit page
 		add_user_meta( $current_user->ID, 'tm_member_welcome', time() );
-		set_transient('todo_shown',1, time() +HOUR_IN_SECONDS);
+		set_transient('todo_shown',1, HOUR_IN_SECONDS);
 		return;
 	}
 	if ( isset( $_REQUEST['forget_welcome'] ) ) {
@@ -3108,7 +3108,7 @@ function tm_member_welcome_redirect() {
 	}
 	if(current_user_can('manage_options') && !get_option('blog_public') && !get_transient('todo_shown')) {
 	wp_safe_redirect( add_query_arg( array( 'page' => 'wp4t_todolist_screen' ), admin_url( 'admin.php' ) ) );
-	set_transient('todo_shown',1, time() +HOUR_IN_SECONDS);
+	set_transient('todo_shown',1, HOUR_IN_SECONDS);
 	return;
 	}
 	if ( get_user_meta( $current_user->ID, 'tm_member_welcome', true ) ) {
@@ -5371,7 +5371,7 @@ function toastmasters_reports_dashboard() {
 		}//end speeches
 		elseif ( $report_slug == 'no_assignment' ) {
 			$where  = " (post_content LIKE '%role=%' OR post_content LIKE '%wp:wp%') ";
-			$future = get_future_events( $where, 5 );
+			$future = rsvpmaker_get_future_events( $where, 5 );
 			if ( isset( $_GET['id'] ) ) {
 				foreach ( $future as $f ) {
 					if ( $f->ID == $_GET['id'] ) {
@@ -6698,8 +6698,6 @@ function wpt_evaluation_reminder() {
 	}
 	return $output;
 }
-add_action('wpt_evaluation_reminder','wpt_evaluation_reminder');
-add_shortcode('wpt_evaluation_reminder','wpt_evaluation_reminder');
 function wpt_evaluation_check($speaker_id,$date) {
 	global $wpdb;
 	$sql = "SELECT umeta_id FROM $wpdb->usermeta WHERE user_id=$speaker_id AND meta_key LIKE 'evaluation|".$date."%'";

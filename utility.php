@@ -40,6 +40,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 	if(empty($absences))
 		$absences = array();
 	if ( ! wp_next_scheduled( 'refresh_tm_history' ) ) {
+		if(!wpt_exclude_agenda_functions())
 		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'refresh_tm_history' );
 	}
 	$options = '<option value="0">' . $openlabel . '</option>';
@@ -1416,7 +1417,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 	mail('dev-email@wpengine.local','update',$comment_content);
 	$soon = ($ts < time() + 2 * DAY_IN_SECONDS);
 	add_post_meta( $post_id, '_activity', $comment_content, false );
-	if($soon && empty($didthis)) {
+	if($soon && empty($didthis) && !wpt_exclude_agenda_functions()) {
 		wp_unschedule_hook( 'wp4t_log_notify'); //clear any that might be waiting
 		wp_schedule_single_event( time() + 1800, 'wp4t_log_notify', array($post_id));
 		$didthis = true;
@@ -1734,4 +1735,10 @@ function wpt_all_assignments($post_id) {
 		}
 	}
 	return $assignments;
+}
+
+function wpt_exclude_agenda_functions() {
+	if(!defined('EXCLUDE_AGENDA'))
+		return false;
+	return in_array(get_current_blog_id(),EXCLUDE_AGENDA);
 }
