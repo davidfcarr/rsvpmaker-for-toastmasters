@@ -474,7 +474,7 @@ $competent_leader = array(
 );
 add_action( 'update_user_role_archive_all', 'update_user_role_archive_all' );
 function update_user_role_archive_all() {
-	$events = get_past_events('',100);
+	$events = rsvpmaker_get_past_events('',100);
 	if(!isset($_GET['tm_ajax']))
 		printf('Updating role archive for %d events...<br />', sizeof($events));
 	foreach ( $events as $event ) {
@@ -715,7 +715,7 @@ function toastmasters_reconcile() {
 			$time           = get_rsvp_date( $id );
 			$r_post->date   = rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $time ) );
 		} else {
-			$past   = get_past_events( " (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ", 1 );
+			$past   = rsvpmaker_get_past_events( " (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ", 1 );
 			$r_post = $past[0];
 		}
 		printf( '<h2>%s</h2>', $r_post->date );
@@ -1176,7 +1176,7 @@ if ( isset( $_REQUEST['post_id'] ) ) {
 			$time           = get_rsvp_date( $id );
 			$r_post->date   = rsvpmaker_date( $rsvp_options['long_date'], strtotime( $time ) );
 		} else {
-			$past   = get_past_events( " (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ", 1 );
+			$past   = rsvpmaker_get_past_events( " (post_content LIKE '%[toast%' OR post_content LIKE '%wp4toastmasters/role%') ", 1 );
 			$r_post = $past[0];
 		}
 	} // not history
@@ -6649,7 +6649,7 @@ function wpt_data_disclosure ($user_id) {
 function wpt_evaluation_reminder() {
 	global $wpdb;
 	$output = '';
-	$past = get_past_events( '', 1 );
+	$past = rsvpmaker_get_past_events( '', 1 );
 	if(!empty($past[0])) {
 		$date = preg_replace('/ [0-9]{2}:[0-9]{2}:[0-9]{2}/','',$past[0]->datetime);
 		$mail['html'] = "<p>You are receiving this message as part of the evaluation team for $date</p>";
