@@ -126,6 +126,8 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 //wp4toastmasters_event_content
 add_filter( 'the_content', function ( $content ) {
 	global $post;
+	$reactdiv ='';
+	$promo = '';
 	if('rsvpmaker_template' == $post->post_type)
 		return '<div  id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'rsvpmaker' ) || is_admin() ) {
@@ -192,20 +194,11 @@ add_filter( 'the_content', function ( $content ) {
 			else
 				$revert_default = get_option('toast_revert_default');
 			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
-				$link .= '<div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
-				$parts = explode('<div id="rsvpsection">',$content);
-				if(!empty($parts[1]))
-					$content = '<div style="margin-top: 500px;" id="rsvpsection">'.$parts[1];
-				else
-					$content = '';
-			}
-			elseif(current_user_can('manage_options')) {
-				if($revert_default)
-					$link .= '<div style="width: 200px;float:right;"><a style="color:#5A808D; background-color:#fff;" href="?revert_by_default=off">Switch to new form</a></div>';
-				else {
-					// do not display content or process blocks on client side
-					$content = '';
-				}
+				$reactdiv = '<div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
+				$parts = explode('<!-- wp:wp4toastmasters',$content);
+				$content = '';
+				if(!empty($parts[0]))
+					$promo = $parts[0];
 			}
 		}	
 		$link .= sprintf( '<input type="hidden" id="editor_id" value="%s" />', $current_user->ID );
@@ -237,7 +230,7 @@ add_filter( 'the_content', function ( $content ) {
 	if(wp4t_hour_past($post->ID) && current_user_can( 'edit_member_stats' )) 
 		$link .= sprintf('<h3>%s - <a href="%s">%s</a></h3>',__('Role data archived','rsvpmaker-for-toastmasters'),admin_url('admin.php?page=toastmasters_reconcile&post_id='.$post->ID),__('Edit','rsvpmaker-for-toastmasters'));
 			
-	return $output . $link . $content.'<div><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div>';
+	return $output . $link . $promo . $reactdiv . $content.'<div><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div>';
 }
 , 2 );
 //edit_toast_roles

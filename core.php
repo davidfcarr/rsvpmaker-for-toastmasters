@@ -151,7 +151,7 @@ function toastmost_other_sites() {
 		$bloglist = '';
 		if ( ! empty( $blogs ) ) {
 			foreach ( $blogs as $blog ) {
-				if($blog_id != $blog->blog_id)
+				if($blog_id != $blog->userblog_id)
 				$bloglist .= sprintf( '<li><a href="%s">%s</a></li>', $blog->siteurl, $blog->blogname );
 			}
 		}
@@ -2093,6 +2093,7 @@ printf('<form method="post" action="%s">
 <input type="submit" id="doaction" class="button action" value="Apply">
 </div>',admin_url('users.php?page=wp4t_extended_list'), (isset($_GET['make_user_member']) ? ' selected="selecte" ': '') );
 printf('<table class="wp-list-table widefat fixed members" cellspacing="0"><thead><tr><th id="cb" class="manage-column column-cb check-column"><input id="cb-select-all-1" type="checkbox"></th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>',  __( 'Name', 'rsvpmaker-for_toastmasters' ), __( 'Email', 'rsvpmaker-for_toastmasters' ), __( 'Phone', 'rsvpmaker-for_toastmasters' ) );
+$csv = '';
 foreach($results as $row) {
 	if(is_user_member_of_blog($row->user_id) )
 		continue;
@@ -2101,12 +2102,26 @@ foreach($results as $row) {
 	$user = unpack_user_archive_data( $row->data );
 	$name = (empty($user["display_name"])) ? $user["first_name"].' '.$user["last_name"] : $user["display_name"];
 	$phones = array();
-	if(!empty($user["mobile_phone"]))
+	$csv .= $user['first_name'].','.$user['last_name'].','.$user['user_email'].',';
+	if(!empty($user["mobile_phone"])) {
 		$phones[] = 'Mobile: '.$user["mobile_phone"];
-	if(!empty($user["home_phone"]))
+		$csv .= 'Mobile,'.$user['mobile_phone'].',';
+	}
+	else
+		$csv .= 'Mobile,,';
+	if(!empty($user["home_phone"])) {
 		$phones[] = 'Home: '.$user["home_phone"];
-	if(!empty($user["work_phone"]))
+		$csv .= 'Home,'.$user['home_phone'].',';
+	}
+	else
+		$csv .= 'Home,,';
+	if(!empty($user["work_phone"])) {
+		$csv .= 'Work,'.$user['work_phone'].',';
 		$phones[] = 'Work: '.$user["work_phone"];
+	}
+	else
+		$csv .= 'Work,,';
+	$csv .= "\n";
 	$checked = (isset($_GET['make_user_member']) && ($row->id == $_GET['make_user_member']) ) ? ' checked="checked" ' : '';
 	printf('<tr><td class="check-column">&nbsp;<input name="former[]" type="checkbox" %s class="subscriber" value="%d"></td><td>%s <span class="reactivate"><a href="%s">%s</a></td><td>%s</td><td>%s</td></tr>', $checked ,$row->id, $name, admin_url('users.php?page=wp4t_extended_list&make_user_member='.$row->id), __('Reactivate','rsvpmaker-for_toastmasters'), $row->email, implode('<br>',$phones));
 }
@@ -2120,6 +2135,7 @@ echo '<div class="alignleft actions bulkactions">
 </select>
 <input type="submit" id="doaction" class="button action" value="Apply">
 </div></form>';
+echo '<textarea rows="10" cols="200">'.$csv.'</textarea>';
 }
 function edit_members() {
 	$hook = tm_admin_page_top( __( 'Edit Member', 'rsvpmaker-for-toastmasters' ) );
@@ -12627,7 +12643,7 @@ add_filter( 'nocache_headers', function() {
 } );
 add_filter('block_categories_all','toastmasters_agenda_category',10,2);
 function toastmasters_agenda_category($categories, $post) {
-	if(in_array($post->post_type,['rsvpmaker','rsvpmaker_template'])) {
+	if(!empty($post->post_type) && in_array($post->post_type,['rsvpmaker','rsvpmaker_template'])) {
 		array_unshift( $categories, array(
 			'slug'	=> 'toastmasters-agenda',
 			'title' => 'Toastmasters Agenda'

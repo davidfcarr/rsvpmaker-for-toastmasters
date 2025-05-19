@@ -267,6 +267,10 @@ export default function Agenda(props) {
                 {Array.isArray(data.blocksdata) && data.blocksdata.map((block, blockindex) => {
                     datestring = date.toLocaleTimeString('en-US', { hour: "2-digit", minute: "2-digit", hour12: true });
 
+                    if(block.rendered && block.rendered.length > 0) {
+                        return <SanitizedHTML innerHTML={block.rendered} />
+                    }
+
                     if (block?.attrs?.time_allowed) {
                         date.setMilliseconds(date.getMilliseconds() + (parseInt(block.attrs.time_allowed) * 60000));
                         if (block.attrs.padding_time)

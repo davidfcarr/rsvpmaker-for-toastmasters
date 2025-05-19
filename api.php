@@ -864,10 +864,16 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 		return new WP_REST_Response( $response, 200 );
 	}
 }
-function wpt_mobile_auth($user_code) {
+function wpt_mobile_auth($user_code = '') {
 	global $current_user;
 	if(is_user_logged_in() && is_user_member_of_blog($current_user->ID, get_current_blog_id()))
 		return $current_user->ID;
+	if(empty($user_code) && isset($_GET['mobile']) && !empty($_GET['mobile'])) {
+		$user_code = sanitize_text_field($_GET['mobile']);
+	}
+	if(empty($user_code))
+		return 0;
+
 	if(strpos($user_code,'-')) {
 		$parts = explode('-',$user_code);
 		$user_id = intval($parts[0]);
@@ -912,8 +918,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		if($json) {
 			$data = json_decode($json);
 		}
-		$identifier = sanitize_text_field($_GET['mobile']);
-		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth($identifier);
+		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth();
 		$votingdata['current_user'] = $current_user->ID;
 		$votingdata['current_user_name'] = $current_user->display_name;
 		$votingdata['post_id'] = $post_id;
@@ -1381,20 +1386,26 @@ function wpt_get_agendadata($post_id = 0) {
 		$agendadata['permissions'] = array('member' => is_club_member(), 'edit_post' => current_user_can('edit_post',$post_id),'edit_signups' => current_user_can('edit_signups'),'organize_agenda'=>current_user_can('organize_agenda'),'manage_options' => current_user_can('manage_options'));
 		$agendadata['allmembers'] = awe_rest_user_options('',$post_id);
 	
-		//filter empty blocks
+		//filter empty blocks. also remove promo content above the start of the agenda
+		$agendastart = false;
 		foreach($blocksdata as $block)
 		{
-			if(!empty($block["blockName"]))
-				$agendadata['blocksdata'][] = $block; 
+			if(!empty($block["blockName"])) {
+				if(strpos($block["blockName"],'wp4toastmasters') !== false) {
+					$agendastart = true;
+				}
+				if($agendastart)
+					$agendadata['blocksdata'][] = $block;
+			}
 		}
 		if(!empty($agendadata['blocksdata']))
 		foreach($agendadata['blocksdata'] as $index => $block) {
-			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid']))
-				$agendadata['blocksdata'][$index]['edithtml'] = empty($all_assignments['agenda_note_'.$block['attrs']['uid']]) ? '' : $all_assignments['agenda_note_'.$block['attrs']['uid']];// get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
 			if(!empty($block['attrs']['custom_role']))
 				$agendadata['blocksdata'][$index]['attrs']['role'] = $block['attrs']['custom_role'];
 			$agendadata['blocksdata'][$index]['DnDid'] = 'dnd'.$index;
-			if(isset($block['attrs']) && isset($block['attrs']['role']))
+			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid']))
+				$agendadata['blocksdata'][$index]['edithtml'] = empty($all_assignments['agenda_note_'.$block['attrs']['uid']]) ? '' : $all_assignments['agenda_note_'.$block['attrs']['uid']];// get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
+			elseif(isset($block['attrs']) && isset($block['attrs']['role']))
 				{
 					$agendadata['blocksdata'][$index]['memberoptions'] = awe_rest_user_options($block['attrs']['role'],$post_id);
 					$agendadata['blocksdata'][$index]['assignments'] = [];
@@ -1458,6 +1469,9 @@ function wpt_get_agendadata($post_id = 0) {
 						}
 					$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
 					}
+				}//end if role
+				else {
+					$agendadata['blocksdata'][$index]['rendered'] = render_block($block);
 				}
 		}
 		$trans = wpt_mobile_translations();
@@ -1600,12 +1614,17 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 	public function get_items_permissions_check( $request ) {
 		global $current_user;
 		$user_code = $request['user_code'];
+		$user_id = wpt_mobile_auth($user_code);
+		if(empty($user_id))
+			return false;
+		/*
 		$parts = explode('-',$user_code);
 		$user_id = intval($parts[0]);
 		$saved_code = get_user_meta($user_id,'wpt_mobile_code',true);
 		if($user_code != $saved_code)
 			return false;
 		$current_user = get_userdata($user_id);
+		*/
 		$stamp = date('r');
 		if(isset($_GET['mobileos'])) {
 			$mobileos = sanitize_text_field($_GET['mobileos']);
@@ -2598,7 +2617,8 @@ class WP4T_Evaluation extends WP_REST_Controller {
 		global $wpdb, $rsvp_options;
 		$json = file_get_contents('php://input');
 		if(!empty($json))
-		$data = json_decode($json);
+		$data = json_decode($json);	
+		$response['authorized'] = wpt_mobile_auth(); //set current user if mobile code included
 		$speaker_id = (isset($_GET['speaker'])) ? intval($_GET['speaker']) : 0;
 		if(!empty($data)) {
 			global $current_user, $rsvp_options;
@@ -2609,6 +2629,7 @@ class WP4T_Evaluation extends WP_REST_Controller {
 			if($speaker) {
 				$mail['to'] = $speaker->user_email;
 			}
+			error_log('data '.var_export($data,true));
 			$name = sanitize_text_field($data->evaluate->name);
 			$manual = sanitize_text_field($data->evaluate->manual);
 			$project_text = ($data->evaluate->project) ? get_project_text($data->evaluate->project) : '';
@@ -2629,7 +2650,7 @@ class WP4T_Evaluation extends WP_REST_Controller {
 				$choice = empty($data->responses[$index]) ? '' : sanitize_text_field($data->responses[$index]);
 				$output .= '<p><strong>'.sanitize_text_field($p->prompt).(($choice) ? ': <em>'.$choice.'</em>' : '')."</strong></p>\n";
 				if($p->choices) {
-					$output .= '<div style="display:flex;font-family: Arial, Helvetica, sans-serif;line-height:1em;">';
+					$output .= "<div style=\"display:flex;font-family: Arial, Helvetica, sans-serif;flex-direction:row;\">";
 					foreach($p->choices as $option) {
 						$output .= format_eval_opt($option->value,($choice == $option->value));
 					}
@@ -2751,44 +2772,11 @@ class WP4T_Evaluation extends WP_REST_Controller {
 }
 function format_eval_opt($opt,$is_true) {
 	$parts = preg_split('/[\(\)]/',$opt);
-	//width: 30px; height: 30px; 
-	//$opt = '<span style="font-size:20px;"><strong>'.$parts[0].'</strong></span><br><span style="font-size:10px;">'.$parts[1].'</span>';
-	$outer_style = 'display: inline; margin-right: 10px; border: thick solid #000; border-radius: 50%; text-align: center; padding: 10px; font-size: 30px;';
+	$outer_style = 'margin-right: 10px; border: thick solid #000; padding: 5px; font-size: 25px;height: 40px; width: 40px; text-align: center; display: flex; justify-content: center; align-items: center;';
 	$outer_style .= ($is_true) ? 'font-weight: bold; color: #fff; background-color: #000' : 'opacity: 0.5';
 	return sprintf('<div class="%s" style="%s">%s</div>',($is_true) ? 'evalchoice' : '', $outer_style,$parts[0]);
 }
-class WP4T_Member_Evaluation extends WP_REST_Controller {
-	public function register_routes() {
-		$namespace = 'rsvptm/v1';
-		$path      = 'member_evaluation';
-		register_rest_route(
-			$namespace,
-			'/' . $path,
-			array(
-				array(
-					'methods'             => 'GET,POST',
-					'callback'            => array( $this, 'handle' ),
-					'permission_callback' => array( $this, 'get_items_permissions_check' ),
-				),
-			)
-		);
-	}
-	public function get_items_permissions_check( $request ) {
-		return true;
-	}
-	public function handle( $request ) {
-	rsvpmaker_debug_log($_SERVER['SERVER_NAME'].' '.$_SERVER['REQUEST_URI'],'rsvpmaker_api');
-		global $wpdb, $rsvp_options;
-		$member = intval($_GET['member']);
-		$project = sanitize_text_field($_GET['project']);
-		$response = array('member'=>$member,'project'=>$project);
-			//process evaluation
-			return new WP_REST_Response($response,
-			200
-		);
-		
-	}
-}
+
 class WP4T_User_Meta extends WP_REST_Controller {
 	public function register_routes() {
 		$namespace = 'rsvptm/v1';
@@ -2990,8 +2978,6 @@ add_action(
 		$hybrid->register_routes();
 		$eval = new WP4T_Evaluation();
 		$eval->register_routes();
-		$meval = new WP4T_Member_Evaluation();
-		$meval->register_routes();
 		$umeta = new WP4T_User_Meta();
 		$umeta->register_routes();
 		$timerimage = new WP4T_Timer_Image();
