@@ -2,7 +2,8 @@
 add_action( 'admin_menu', 'toastmasters_reports_menu' );
 add_action( 'admin_menu', 'tm_welcome_screen_pages' );
 add_action( 'admin_enqueue_scripts', 'tm_welcome_screen_assets' );
-add_action( 'admin_init', 'tm_member_welcome_redirect' );
+if($_SERVER['SERVER_SOFTWARE'] != 'PHP.wasm') //disable within WordPress Playground
+	add_action( 'admin_init', 'tm_member_welcome_redirect' );
 add_action( 'admin_head', 'tm_welcome_screen_remove_menus' );
 function toastmasters_reports_menu() {
 	if(wp4t_is_district())

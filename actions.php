@@ -60,7 +60,8 @@ add_action( 'admin_menu', 'tm_security_setup', 1 );
 add_action( 'admin_bar_menu', 'toolbar_add_member', 999 );
 add_action( 'admin_bar_menu', 'toolbar_link_to_agenda', 999 );
 add_action( 'admin_init', 'check_first_login' );
-add_action( 'admin_init', 'archive_users_init' );
+if($_SERVER['SERVER_SOFTWARE'] != 'PHP.wasm') //disable within WordPress Playground
+	add_action( 'admin_init', 'archive_users_init' );
 add_action( 'admin_menu', 'awesome_menu' );
 add_action( 'admin_init', 'awesome_role_activation_wrapper' );
 add_action( 'admin_init', 'register_wp4toastmasters_settings' );

@@ -913,7 +913,8 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			if(sizeof($meetings))
 				$post_id = $meetings[0]->ID;
 		}
-	if(isset($_GET['mobile'])) {
+	if(!empty($_GET['mobile'])) {
+		$identifier = sanitize_text_field($_GET['mobile']);
 		$json = file_get_contents('php://input');
 		if($json) {
 			$data = json_decode($json);
@@ -1102,6 +1103,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$votingdata['memberlist'] = $memberlist;
 		$votingdata['myvotes'] = [];
 		$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%_$identifier' ORDER BY meta_key, meta_value";
+		error_log($sql);
 		$results = $wpdb->get_results($sql);
 		foreach($results as $row) {
 			$parts = explode('_',$row->meta_key);
@@ -1292,7 +1294,7 @@ class WP4TBlocksData extends WP_REST_Controller {
 		);
 	}
 }
-function wpt_get_agendadata($post_id = 0) {
+function wpt_get_agendadata($post_id = 0, $render = true) {
 	if(!$post_id)
 		return [];
 	global $current_user,$post;
@@ -1470,7 +1472,7 @@ function wpt_get_agendadata($post_id = 0) {
 					$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
 					}
 				}//end if role
-				else {
+				elseif($render) {
 					$agendadata['blocksdata'][$index]['rendered'] = render_block($block);
 				}
 		}
@@ -1617,14 +1619,6 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 		$user_id = wpt_mobile_auth($user_code);
 		if(empty($user_id))
 			return false;
-		/*
-		$parts = explode('-',$user_code);
-		$user_id = intval($parts[0]);
-		$saved_code = get_user_meta($user_id,'wpt_mobile_code',true);
-		if($user_code != $saved_code)
-			return false;
-		$current_user = get_userdata($user_id);
-		*/
 		$stamp = date('r');
 		if(isset($_GET['mobileos'])) {
 			$mobileos = sanitize_text_field($_GET['mobileos']);

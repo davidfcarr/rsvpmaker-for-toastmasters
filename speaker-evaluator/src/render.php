@@ -1,7 +1,8 @@
 <?php 
 global $post;
 $columns = (isset($attributes['columns'])) ? intval($attributes['columns']) : 5;
-$agenda = wpt_get_agendadata($post->ID);
+$agenda = wpt_get_agendadata($post->ID, false);
+error_log('speaker evalutor agenda: '.var_export($agenda,true));
 $backup = null;
 foreach($agenda['blocksdata'] as $block) {
 	if('wp4toastmasters/role' == $block['blockName'])
@@ -15,6 +16,8 @@ foreach($agenda['blocksdata'] as $block) {
 			$evaluator_assignments = $block['assignments'];
 	}
 }
+error_log('speaker assignments: '.var_export($speaker_assignments,true));
+error_log('evalutor assignments: '.var_export($evaluator_assignments,true));
 if(empty($speaker_assignments) || empty($evaluator_assignments))
 	return;
 	$notime = (bool) get_option('wp4t_disable_timeblock');

@@ -1414,8 +1414,8 @@ function tm_agenda_content($post_id = 0) {
 					$content .= wp_kses_post($block['edithtml']);	
 			}
 		}
-		else 
-			$content .= render_block($block);
+		elseif(!empty($block['rendered']))
+			$content .= $block['rendered'];
 		$content .= '</div></div>'; //end blockcontent, flex wrapper
 	}
 	if(isset($_GET['contacts']) && is_club_member())
