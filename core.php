@@ -1107,7 +1107,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 			} else {
 				$detailsform = '';
 			}
-			$random_available = random_available_check();
+			$random_available = tm_random_available_check();
 			if ( isset( $_GET['debug'] ) ) {
 				echo 'random check</br>';
 				print_r( $random_available );
@@ -2016,7 +2016,11 @@ function unpack_user_archive_data( $raw ) {
 	return $userdata;
 }
 function wp4t_extended_list() {
+	global $wpdb;
 	echo '<h2>' . __( 'Former Members', 'rsvpmaker-for-toastmasters' ) . '</h2>';
+	$emails = wpt_get_former_member_emails();
+	printf('<p>%s</p>',implode(',',$emails));
+
 	echo '<p><em>' . __( 'This list includes inactive members and gives you the option of reactivating their accounts', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
 	echo '<p><a href="'.admin_url('users.php?page=wp4t_extended_list&sort=newest').'">Sort Newest to Oldest Records</a> | <a href="'.admin_url('users.php?page=wp4t_extended_list&sort=oldest').'">Sort Oldest to Newest Records</a></p>';
 	$member_emails = [];
@@ -4958,71 +4962,6 @@ function summarize_agenda_times( $editor_atts ) {
 	$start_time_text = rsvpmaker_date( $time_format, $t );
 	$output .= sprintf('<div><strong>%s %s</strong></div>',$start_time_text, __('End','rsvpmaker-for-toastmasters'));
 	return $output;
-}
-function random_available_check() {
-	global $wpdb;
-	global $post;
-	global $current_user;
-	global $random_available;
-	if ( ! empty( $random_available ) ) {
-		return $random_available;
-	} else {
-		$random_available = array();
-	}
-	if ( isset( $_REQUEST['rm'] ) ) {
-		if ( isset( $_REQUEST['sure'] ) ) {
-			$sure = (int) $_REQUEST['sure'];
-			update_user_meta( $current_user->ID, 'assign_okay', $sure );
-		}
-		$sql     = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key LIKE '_role_%' AND post_id=$post->ID";
-		$results = $wpdb->get_results( $sql );
-		$preassigned = array();
-		global $histories;
-		if ( empty( $histories ) ) {
-			$histories = tm_get_histories();
-		}
-		foreach ( $results as $row ) {
-			if ( is_numeric( $row->meta_value ) ) {
-				$preassigned[] = $row->meta_value;
-			}
-		}
-		$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
-		foreach ( $blogusers as $user ) {
-			if ( isset( $_GET['debug'] ) ) {
-				echo '<div style="background-color: #fff;">test user ' . $user->ID . ': <pre>';
-				echo "\npreassigned";
-				print_r( $preassigned );
-				echo "\naway";
-				print_r( $histories[ $user->ID ]->away_active );
-				echo '</pre></div>';
-			}
-			if ( in_array( $user->ID, $preassigned ) ) {
-				continue;
-			}
-			if ( ! empty( $histories[ $user->ID ]->away_active ) ) {
-				continue;
-			}
-			$userdata = get_userdata( $user->ID );
-			// if($userdata->hidden_profile)
-			// continue;
-			if ( is_array( $random_available ) ) {
-				$random_available[] = $user->ID;
-			} elseif ( isset( $_GET['debug'] ) ) {
-				echo '<div>not an array"';
-				print_r( $random_array );
-				echo '"</div>';
-			}
-			if ( isset( $_GET['debug'] ) ) {
-				echo '<div style="background-color: #fff;">add to array ' . $user->ID;
-				print_r( $random_available );
-				echo '</div>';
-			}
-		}
-		if ( ! empty( $random_available ) && is_array( $random_available ) ) {
-			shuffle( $random_available );
-		}
-	}
-	return $random_available;
 }
 function pick_random_member( $role ) {
 	global $random_available;
@@ -8113,7 +8052,7 @@ function new_agenda_template() {
 	header( 'Location: ' . admin_url( 'edit.php?post_type=rsvpmaker&page=agenda_setup&post_id=' . $templateID ) );
 	exit();
 }
-function toast_activate(  ) {
+function toast_activate( ) {
 	if(!function_exists('rsvpmaker_create_post_type'))
 	{
 		//rsvpmaker is not active
@@ -8122,6 +8061,10 @@ function toast_activate(  ) {
 	}
 	tm_security_setup();
 	global $wpdb;
+	if(!empty($wpdb->get_var("SHOW TABLES LIKE '".$wpdb->base_prefix."tm_history'"))) {
+		return;
+	}
+
 	$history_table = $wpdb->base_prefix.'tm_history';
 	$speech_history_table = $wpdb->base_prefix.'tm_speech_history';
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -8183,7 +8126,7 @@ function check_first_login() {
 		return;
 	}
 	update_option( 'first_tm_login', current_time( 'timestamp' ) );
-	toast_activate(  ); // in case this didn't run on plugin activation (multisite)
+	toast_activate( ); // in case this didn't run on plugin activation (multisite)
 }
 function archive_users_init() {
 	// if a logged in user access the users list, back up users
@@ -10221,31 +10164,6 @@ function display_toastmasters_profile() {
 		printf( '<p>&mdash;<a href="%s">%s</a></p>', admin_url( 'profile.php' ), __( 'Edit my Toastmasters profile', 'rsvpmaker-for-toastmasters' ) );
 	}
 }
-/* Ajax */
-function toastmasters_stats_model_check() {
-	$model = get_option( 'stats_data_model' );
-	if ( empty( $model ) || $model < 1 ) {
-		update_stats_model();
-	}	
-}
-function update_stats_model() {
-	global $wpdb;
-	$users = get_users();
-	foreach ( $users as $user ) {
-		$sql     = 'SELECT SUM(quantity) as total,role FROM `' . $wpdb->prefix . 'toastmasters_history` where user_id=' . $user->ID . ' group by role';
-		$results = $wpdb->get_results( $sql );
-		if ( $results ) {
-			foreach ( $results as $row ) {
-				$role = $row->role;
-				if ( $role == 'COMPETENT COMMUNICATION' ) {
-					$role = 'COMPETENT COMMUNICATION';
-				}
-				update_user_meta( $user->ID, 'tmstat:' . $role, $row->total );
-			}
-		}
-	}
-	update_option( 'stats_data_model', 1 );
-}
 add_filter( 'bp_get_activity_content_body', 'members_only_bp' );
 function members_only_bp( $args ) {
 	global $activities_template;
@@ -12194,7 +12112,7 @@ function wp4t_log_notify($post_id, $test = false) {
 	$hash = hash('crc32c',$mail['html']);
 	$check_sent = get_post_meta($post_id,'wp4t_log_notify_sent',true);
 	if($check_sent == $hash) {
-		mail(postmark_admin_email(),'duplicate notification blocked','blog: '.get_currnt_blog_id().' post: '.$post_id);
+		mail(postmark_admin_email(),'duplicate notification blocked','blog: '.get_current_blog_id().' post: '.$post_id);
 		return;
 	}
 	update_post_meta($post_id,'wp4t_log_notify_sent',$hash);

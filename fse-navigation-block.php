@@ -1,7 +1,7 @@
 <?php
 function wp4t_block_theme_menu() {
 	global $wpdb, $current_user;
-	$menu_id = $wpdb->get_var("SELECT ID from $wpdb->posts WHERE post_type='wp_navigation' and post_status='publish' AND post_title='Toastmasters Navigation' ORDER BY ID DESC");
+	$menu_id = $wpdb->get_var("SELECT ID from $wpdb->posts WHERE post_type='wp_navigation' and post_status='publish' ORDER BY ID DESC");
 	if(!$menu_id)
 	{
 	$link_format = '<!-- wp:navigation-link {"label":"%s","type":"page","id":%d,"url":"%s","kind":"post-type","isTopLevelLink":true} /-->'."\n\n";

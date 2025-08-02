@@ -30,7 +30,7 @@ if(is_admin()) {
 }
 ?>
 <p><?php _e('Use the camera on your phone to scan the QR code shown below to authorize the app. If you have not yet installed it, the QR codes linked to the app stores are also included.','rsvpmaker-for-toastmasters'); ?></p>
-<iframe style="border: none;" src="https://toastmost.org/qr/?domain=<?php echo $_SERVER['SERVER_NAME']; ?>&code=<?php echo $code; ?>&type=android" width="100%" height="1200">  </iframe>
+<iframe style="border: none;" src="https://toastmost.org/qr/?domain=<?php echo $_SERVER['SERVER_NAME']; ?>&code=<?php echo $code; ?>&type=android" width="100%" height="600">  </iframe>
 <?php
     printf('<p>Domain/code string:</p><code>%s|%s</code>',$_SERVER['SERVER_NAME'],$code);
     if(current_user_can('manage_options')) {

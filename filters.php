@@ -49,8 +49,7 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&word_agenda=1">' . __( 'Export to Word', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&simple=1">' . __( 'Simple Copy and Paste', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li><a target="_blank" href="' . $permalink . 'voting=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li><a target="_blank" href="' . $permalink . 'meetingvote=1">' . __( "NEW: Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li><a target="_blank" href="' . $permalink . 'meetingvote=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1">' . __( 'Online Timer', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
 	$template_id = get_post_meta( $post->ID, '_meet_recur', true );
 	if ( current_user_can( $security['agenda_setup'] ) ) {

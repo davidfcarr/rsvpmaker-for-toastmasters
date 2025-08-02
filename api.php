@@ -1975,7 +1975,7 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 	$email_context = true;
 	$agendas = [];
 	$post = false;
-	$meetings = future_toastmaster_meetings( 5 );
+	$meetings = future_toastmaster_meetings( 16 );
 	foreach($meetings as $meeting) {
 		$post_id = $meeting->ID;
 		$agenda['post_id'] = $post_id;

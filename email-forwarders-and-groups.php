@@ -1699,6 +1699,7 @@ function toastmasters_officer_email_array( $site_id = 0 ) {
 	$wp4toastmasters_officer_titles = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_titles' ) : get_option( 'wp4toastmasters_officer_titles' );
 	$wp4toastmasters_officer_slugs = ($site_id) ? get_blog_option( $site_id,'wp4toastmasters_officer_slugs' ) : get_option( 'wp4toastmasters_officer_slugs' );
 	$dp = wpt_domain_prefix($site_id);
+    if(is_array($wp4toastmasters_officer_ids))
 	foreach($wp4toastmasters_officer_ids as $index => $id) {
 		if(!$id)
 			continue;
@@ -1716,6 +1717,8 @@ function toastmasters_officer_email_array( $site_id = 0 ) {
 
 add_filter('rsvpmailer_mail','wpt_check_local_forwarders',10,1);
 function wpt_check_local_forwarders($mail) {
+    if(empty($mail['to']) || empty($mail['blog_id']))
+        return $mail;
     $mail['to'] = strtolower($mail['to']);
     $forwarders = wpt_flattened_forwarders($mail['blog_id']);
     if(!empty($forwarders[$mail['to']]))

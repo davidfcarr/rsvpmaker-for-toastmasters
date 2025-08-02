@@ -735,15 +735,28 @@ function wpt_update_history_by_id_log($user_id, $role, $post_id, $was) {
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
 }
 function tm_history_lastdid() {
-    $lastdid = get_transient('tm_history_lastdid');
     global $wpdb;
+    $lastdid = get_transient('tm_history_lastdid');
+    if($lastdid)
+        return $lastdid;
     $history_table = $wpdb->base_prefix.'tm_history';
+    error_log("passed test SHOW TABLES LIKE '$history_table'; ");
+
+    $m = [];
     $members = get_club_members();
     foreach($members as $member) {
         $m[] = $member->ID;
     }
-    $sql = "SELECT * FROM $history_table WHERE user_id IN (".implode(',',$m).") AND datetime > DATE_SUB(CURRENT_DATE, INTERVAL 1 YEAR) ORDER BY datetime";
+    $sql = "SELECT * FROM $history_table WHERE user_id IN (".implode(',',$m).") AND datetime > DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 YEAR) ORDER BY datetime";
+    error_log("Wrap this query with try / catch $sql, set show errors false");
+    try {
+    $wpdb->show_errors(false);
     $results = $wpdb->get_results($sql);
+    } catch (Exception $e) {
+        //handle unexplained glitch with this query in Playground (new installs also?)
+        error_log($e->getMessage());
+        $results = [];
+    }
     $output = '';
     $lastdid = array();
     foreach($results as $row) {

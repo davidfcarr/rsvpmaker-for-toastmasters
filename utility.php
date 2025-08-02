@@ -17,6 +17,7 @@ function wp4t_haverole($post_id) {
 	}
 	return $haverole;
 }
+$lastdid = [];
 function wp4t_last_held_role($user_id, $role, $include_ts = false) {
 	global $wpdb, $rsvp_options, $lastdid;
 	if ( empty( $lastdid ) ) {
@@ -1424,17 +1425,19 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 	}
 }
 function wpt_get_former_member_emails() {
+	global $wpdb;
 	$former_emails = [];
 	$member_emails = [];
 	$members = get_club_members();
 	foreach($members as $m) {
 		$member_emails[] = $m->user_email;
 	}
-$results = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ORDER BY '.$sort );
+	$sql = 'SELECT * FROM ' . $wpdb->prefix . 'users_archive ';
+$results = $wpdb->get_results( $sql );
 foreach($results as $row) {
 	if(is_user_member_of_blog($row->user_id) )
 		continue;
-	if(in_array($row->email,$row->email))
+	if(in_array($row->email,$former_emails))
 		continue;
 	$former_emails[] = $row->email;
 	}

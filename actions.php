@@ -17,7 +17,6 @@ function wp4t_init_actions() {
 	add_action('wp4toast_reminders_intros','wp4toast_reminders_intros',10,2);
 	add_action('init','reminders_test');
 	add_action( 'wp_ajax_wptoast_role_planner_update', 'wp_ajax_wptoast_role_planner_update' );
-	add_action('admin_init','toastmasters_stats_model_check');
 	add_action( 'wp4t_reminders_nudge', 'wp4t_reminders_nudge' );
 	add_action( 'refresh_tm_history', 'refresh_tm_history' );
 	add_action('admin_init','wpt_minutes_from_history_draft');
