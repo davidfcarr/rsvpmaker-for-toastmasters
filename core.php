@@ -198,13 +198,14 @@ echo '<p>'.club_member_mailto().'</p>';
 	if ( $results ) {
 		  $upcoming_roles = '';
 		foreach ( $results as $index => $row ) {
-				$t            = rsvpmaker_strtotime( $row->datetime );
+				$t            = $row->ts_start;
 				$title        = $row->post_title . ' ' . rsvpmaker_date( 'F jS', $t );
 				$permalink    = rsvpmaker_permalink_query( $row->postID );
 				$sql          = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $row->postID . '  AND meta_value=' . $current_user->ID . " AND meta_key LIKE '_role%' ";
 				$role_results = $wpdb->get_results( $sql );
 				$roles        = array();
 				$absences     = get_absences_array( $row->postID );
+				$rsvp_report = current_user_can('edit_rsvpmakers') ? admin_url('edit.php?post_type=rsvpmaker&page=rsvp_report&event='.$row->ID) : '';
 			if ( in_array( $current_user->ID, $absences ) ) {
 				$roles[] = 'planned abscence';
 			}
@@ -222,7 +223,7 @@ echo '<p>'.club_member_mailto().'</p>';
 			}
 				$title .= ' (Role: ' . $r . ')';
 			if ( strpos( $row->post_content, 'role' ) ) {
-				$link = dash_wptmagenda_menu( $row->ID, false );
+				$link = dash_wptmagenda_menu( $row->ID, $rsvp_report );
 				printf( '<div class="dashdate" id="dashdate' . $row->ID . '"><p><strong>%s</strong></p> %s</div>', $title, $link );
 			}
 		}
@@ -4523,6 +4524,11 @@ function oneclick_future ($user_id = 0) {
 		$output = '<h3>Openings for Upcoming Meetings</h3>'.$output;
 	return $output;
 }
+function wpt_oneclick_not_toolate($role) {
+	global $post;
+	$assigned = get_post_meta($post->ID,$role,true);
+	return ('' == $assigned || '0' == $assigned);
+}
 function wpt_oneclick_signup() {
 global $post, $rsvp_options;
 $output = '';
@@ -4544,7 +4550,7 @@ if(!empty($user->display_name))
 	$output .= sprintf('<h2 id="oneclick">One Click Signup</h2><p>Recognized member: %s</p>',$user->display_name);
 else
 	return 'Sorry, member account not recognized.';
-if(strpos($role,'role_'))
+if(strpos($role,'role_') && wpt_oneclick_not_toolate($role))
 	return wpt_oneclick_signup_post($user_id, $role); // signup for different role or speaker
 if(isset($_REQUEST['abs'])) {
 	foreach($_REQUEST['abs'] as $abs) {
@@ -4715,7 +4721,7 @@ $output .= sprintf('<p>Want first pick of roles for future meetings? <a href="%s
 $output .= sprintf('<p><a href="%s">Exit one-click signup mode</a> to see the regular agenda signup sheet.</p><div style="height: 1000px; "></div>',get_permalink());
 return $output;
 }
-function dash_wptmagenda_menu( $post_id ) {
+function dash_wptmagenda_menu( $post_id, $rsvp_report = '' ) {
 	global $post, $rsvp_options;
 	$post       = get_post( $post_id );
 	$permalink  = get_permalink( $post_id );
@@ -4723,7 +4729,6 @@ function dash_wptmagenda_menu( $post_id ) {
 	$agenda_lock = is_agenda_locked();
 	$link       = '';
 	$blank = ' target="_blank" ';
-	// defaults 'edit_signups' => 'read','email_list' => 'read','edit_member_stats' => 'edit_others_posts','view_reports' => 'read','view_attendance' => 'read','agenda_setup' => 'edit_others_posts'
 	$security = get_tm_security();
 	$link .= '<div id="cssmenu"><ul>';
 	$link .= '<li><a href="' . $permalink . '" ' . $blank . '>' . __( 'Signup', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
@@ -4742,6 +4747,8 @@ function dash_wptmagenda_menu( $post_id ) {
 	$link    .= '<li ><a href="' . $permalink . 'assigned_open=1" ' . $blank . '>' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li ><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li ><a target="_blank" href="' . $permalink . '?meetingvote=1">' . __( 'NEW Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	if($rsvp_report)
+		$link    .= '<li ><a href="' . $rsvp_report . '">' . __( 'RSVP Report', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link .= '</ul></div>';
 	if ( $agenda_lock ) {
 		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked against changes and can only be unlocked by an administrator.</p>';
@@ -5381,6 +5388,7 @@ function add_awesome_member() {
 	?>
 		<div class="wrap">
 <div id="ajax-response"></div>
+<p><?php _e( 'Enter member records one at a time, or <a href="#import">import records from Club Central</a>');?>.</p>
 <p><?php _e( 'Create a website user account for a new member. The only required fields are name and email address.', 'rsvpmaker-for-toastmasters' ); ?></p>
 <form action="<?php echo admin_url( 'users.php?page=add_awesome_member' ); ?>" method="post" name="createuser" id="createuser" class="add:users: validate">
 <input name="action" type="hidden" value="createuser" />
@@ -5440,13 +5448,12 @@ function add_awesome_member() {
 	?>
 <div id="import">
 <h3><?php _e( 'Batch Import From Toastmasters.org spreadsheet', 'rsvpmaker-for-toastmasters' ); ?></h3>
-<p><?php _e( 'If you download the member spreadsheet from toastmasters.org, you can import it here to create or update member records.', 'rsvpmaker-for-toastmasters' ); ?></p>
+<p><?php _e( 'If you download the member spreadsheet from the Membership Management section of Club Central toastmasters.org, you can import it here to create or update member records. The import function will also help you remove inactive members (select the Check for Missing Members checkbox).', 'rsvpmaker-for-toastmasters' ); ?></p>
+<p><img src="<?php echo plugins_url( 'images/club-central-membership-csv.png', __FILE__ ); ?>" width="800" height="432" /><br /><em><?php _e( 'Download the membership list from Club Central','rsvpmaker-for-toastmasters'); ?></em></p>
 <form method="post" enctype="multipart/form-data" action="<?php echo admin_url( 'users.php?page=add_awesome_member' ); ?>">
 <p><?php _e( 'Select file to upload', 'rsvpmaker-for-toastmasters' ); ?>: <input type="file" name="upload_file" /></p>
-<p><?php _e( 'Alternative: you can open the CSV export file in Excel, then copy-and-paste records (including the header row of column labels) into the field below (use CTRL-C to copy, CTRL-V to paste on Windows).', 'rsvpmaker-for-toastmasters' ); ?></p>
-<p><?php _e( 'If you do not have access to Club Central, you can use the same copy-and-paste method after putting member names and email addresses in this spreadsheet: ', 'rsvpmaker-for-toastmasters' ); ?><a href="https://www.wp4toastmasters.com/wp-content/uploads/2023/07/Club-Member-Import.xlsx">Excel</a> or <a href="https://docs.google.com/spreadsheets/d/16ZqaQXKcxpMsUEYPOyx9tHVrDkL7Zdd4/edit?usp=sharing&ouid=113166369746212246457&rtpof=true&sd=true">Google Sheets</a> (make a copy).</p>
-<p><textarea cols="80" rows="3" name="spreadsheet"></textarea></p>
-	<div><input type="checkbox" name="check_missing" value="1" /> <?php _e( 'Check for missing members (if you post a complete list of current members, this checkbox triggers a check of which website users are NOT currently on the toastmasters.org list and gives you an option to delete them).', 'rsvpmaker-for-toastmasters' ); ?></div>
+<p><?php _e( 'If you do not have access to Club Central, you can use the same method after putting member names and email addresses in this spreadsheet: ', 'rsvpmaker-for-toastmasters' ); ?><a href="https://www.wp4toastmasters.com/wp-content/uploads/2023/07/Club-Member-Import.xlsx">Excel</a> or <a href="https://docs.google.com/spreadsheets/d/16ZqaQXKcxpMsUEYPOyx9tHVrDkL7Zdd4/edit?usp=sharing&ouid=113166369746212246457&rtpof=true&sd=true">Google Sheets</a> (make a copy) and exporting to CSV (a standard file format).</p>
+	<div><input type="checkbox" name="check_missing" value="1" /> <?php _e( 'Check for missing members. If you post a complete list of current members, this checkbox triggers a check of which website users are NOT currently on the toastmasters.org list and gives you an option to delete them. Information about members deleted from your active list will be retained on the Former Members screen in case you have the opportunity to reactivate them.', 'rsvpmaker-for-toastmasters' ); ?></div>
 	<div>
 	<?php
 	clean_toastmasters_id();
@@ -5470,7 +5477,6 @@ function add_awesome_member() {
 <p class="submit"><input type="submit" name="createuser" id="createusersub" class="button-primary" value="<?php _e( 'Import', 'rsvpmaker-for-toastmasters' ); ?>"  /></p>
 <?php rsvpmaker_nonce(); ?>
 </form>
-<p><img src="<?php echo plugins_url( 'spreadsheet.png', __FILE__ ); ?>" width="500" height="169" /></p>
 </div>
 <div id="resend">
 <h3>Resend Welcome Message</h3>
