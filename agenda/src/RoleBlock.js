@@ -238,7 +238,7 @@ export default function RoleBlock(props) {
 
                 return (<div id={id} key={id}>
                     <div className="roleheader">
-                        <div div className="role-buttons">
+                        <div className="role-buttons">
                             {isOpen && <button className="agenda-tooltip" onClick={function (event) {
                                 if ('Speaker' == role) updateAssignment({
                                     'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'maxtime': 7, 'display_time': '5 - 7 minutes', 'wasopen': true

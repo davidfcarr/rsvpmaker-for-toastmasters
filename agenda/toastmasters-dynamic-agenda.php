@@ -18,6 +18,7 @@ function get_wpt_blocks() {
 	return array(
 		'logo' => array(),
 		'help'  => array(),
+		'rsvplist'  => array(),
 	);
 }
 

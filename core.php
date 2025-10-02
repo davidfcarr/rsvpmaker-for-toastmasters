@@ -3380,16 +3380,17 @@ h3 {font-size: 18px; font-weight: bold; margin-bottom: 5px; font-style: italic;}
 td {vertical-align: top;}
 strong { font-weight: bold; }
 em {font-style: italic; }
-@page Section1
-   {size:8.5in 11.0in; 
-   margin: 0.5in; 
-   mso-header-margin:.5in;
-   mso-footer-margin:.5in; mso-paper-source:0;}
- div.Section1
- {
-page:Section1;
-width: 750px;
- }
+@media print {
+  .wp-block-columns {
+    page-break-after: avoid;
+	page-break-inside: avoid;
+  }
+@page {
+    margin: 0; /* Removes all margins, including space for browser headers/footers */
+  }
+  /* Optional: Add custom margins or padding to the body or content wrapper */
+  body {margin: 2%; }
+}
 div, p, table, blockquote {
 max-width: 750px;
 }
@@ -3457,10 +3458,7 @@ alignment tweaks
 }
 #agenda-sidebar {max-width: 175px; padding-right: 15px;}
 /* selected Gutenberg block css */
-.wp-block-columns {
-	display: flex;
-	margin-bottom: 28px;
-	flex-wrap: nowrap; }
+.wp-block-columns { display: flex;flex-wrap: nowrap; }
 /*	@media (min-width: 782px) {
 	  .wp-block-columns {
 		flex-wrap: nowrap; } }
@@ -12074,6 +12072,9 @@ function wp4t_log_notify($post_id, $test = false) {
 	global $post;
 	if(!$post_id)
 		$post_id = $post->ID;
+	$disable = get_option('wpt_disable_log_notifications');
+	if($disable)
+		return;
 	global $wpdb, $rsvp_options;
 	$emails = get_option('wpt_notification_emails');
 	$leader_notify = get_option('wpt_notification_leader'); // 1 or 0 if set;

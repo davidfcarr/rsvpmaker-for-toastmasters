@@ -377,3 +377,9 @@ min-height: 150px;
 	visibility: visible;
 	opacity: 1;
 }
+
+.role-buttons button, button.agenda-tooltip  {
+	background-color: lightgray;
+	padding: 2px;
+	border-radius: 2px;
+}

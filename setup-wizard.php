@@ -76,6 +76,7 @@ p {
 	);
 	if ( isset( $_POST['setup_wizard'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		if ( $_POST['setup_wizard'] == '1' ) {
+			do_action('wp4t_setup_wizard_step1', $_POST );
 			$standard_roles = array('Ah Counter', 'Body Language Monitor', 'Grammarian', 'Humorist', 'Timer', 'Vote Counter');
 			$agenda_content = '<!-- wp:wp4toastmasters/help /-->' . "\n\n";
 			$time_open = (int) $_POST['time_open'];
@@ -340,7 +341,9 @@ function wpt_setup_wizard_1() {
 	<p><label>Allow Member Data to Sync (see <a target="_blank" href="" target="_blank">blog post</a>)</label> <input type="radio" name="sync" value="1" checked="checked" /> Yes <input type="radio" name="sync" value="0" > No</p>
 	<input type="hidden" name="setup_wizard" value="1" />
 	<p>Template to Update <select name="template_id"><?php echo $options; ?></select></p>
-	<?php submit_button( 'Next' ); ?>
+	<?php 
+	do_action('wpt_wizard_screen_1');
+	submit_button( 'Next' ); ?>
 	<?php rsvpmaker_nonce(); ?>
 	</form>
 	<p><em>Icons from <a href="https://thenounproject.com/">The Noun Project</a>: "welcome" by Gan Khoon Lay, "public speaking" by Becris, "Microphone" by Nawicon, "Award" by Flatart, "Registration" by Shiva.</em></p>

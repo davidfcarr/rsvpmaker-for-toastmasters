@@ -19,6 +19,7 @@ import './style.scss';
 import './editor.scss';
 
 import './agenda_context.js';
+import './toastmasters-sidebar.js';
 
 //import './logo.js';
 
@@ -1051,7 +1052,7 @@ return (
 
 							min={0}
 
-							onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }//  setAttributes( { time_allowed } ) }
+							onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }
 
 						/>
 
