@@ -230,6 +230,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 	foreach ( $reminders as $index => $email ) {
 		$mail['to']      = ( $test ) ? $mail['from'] : $email;
 		$testtext        = ( $test ) ? "<p>$email</p>" : '';
+		$mail['from'] = wpt_format_email_forwarder('vpe');
         $mail['html'] = str_replace('[wpt_open_roles]',$content,$reminder_body[$index]);
         $mail['html'] = str_replace('[rsvpdate]',$date,$mail['html']);
         $mail['html'] = str_replace('[rsvptitle]',$next->post_title,$mail['html']);
@@ -609,12 +610,22 @@ $header .= '</head>
 			$output = '<div id="message">' . wp_kses_post(stripslashes( $request_vars['note'] )) . "</div>\n<p>Sent by: " . $current_user->display_name . ' <a href="mailto:' . $current_user->user_email . '">' . $current_user->user_email . "</a>\n" . $output;
 		}
 		$mail['html']     = $header . $output . '</body></html>';
-		$mail['replyto'] = $mail['from']     = $current_user->user_email;
+		$mail['from']     = $current_user->user_email;
 		$mail['fromname'] = (!empty($_POST['fromname'])) ? $current_user->display_name. ' via ' .get_bloginfo( 'name' ) : get_bloginfo( 'name' ) . ' / ' . $current_user->display_name;
 		$mail['subject']  = sanitize_text_field( stripslashes( $request_vars['subject'] ) );
 		update_user_meta($current_user->ID,'agenda_fromname',intval($_POST['fromname']));
 if ( isset( $emails ) && is_array( $emails ) ) {
-			rsvpmaker_qemail ($mail, $emails);
+		echo '<p>';
+		foreach($emails as $email) {
+			if($problem = rsvpmail_is_problem($email)) {
+				echo ' Skipping <span style="color:red">'.$problem.'</span> ';
+				continue;
+			}
+			$mail['to'] = $email;
+			printf('Sending to %s ',$mail['to']);
+			rsvpmailer($mail);
+		}
+		echo '</p>';		
 		} else {
 			echo awemailer( $mail );
 		}

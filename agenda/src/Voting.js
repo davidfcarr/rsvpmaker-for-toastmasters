@@ -108,13 +108,13 @@ export default function Voting({post_id}) {
         return (
             <div>
             <p style={styles.h1}>{mytranslate('Vote Counter\'s Tool',votingdata)}: {mytranslate('Ballot Setup',votingdata)}</p>
-            {copied ? <p style={{color:'green'}}>{mytranslate('Copied!',votingdata)}</p>: null}
             <div style={{display:'flex',flex:1,flexDirection:'row'}}>
-            <CopyToClipboard text={mytranslate('Please vote using the link below. For subsequent votes, click "Refresh" if the ballot of choices is not displayed')+"\n\n"+votingdata.url} onCopy={() => setCopied(true)} >
+            {copied ? <button style={styles.button} ><span style={{color:'green',backgroundColor:'white',padding:'5px'}}>{mytranslate('Copied!',votingdata)}</span></button> : <CopyToClipboard text={mytranslate('Please vote using the link below. For subsequent votes, click "Refresh" if the ballot of choices is not displayed')+"\n\n"+votingdata.url} onCopy={() => {setCopied(true); setTimeout(() => {setCopied(false)},9000)}} >
             <button style={styles.button}><span style={styles.buttonText}>{mytranslate('Copy Voting Link',votingdata)}</span></button>
-            </CopyToClipboard>
+            </CopyToClipboard>}
                 <button style={styles.button} onClick={() => {setControls('counting')}}><span style={styles.buttonText}>{mytranslate('Vote Count',votingdata)}</span></button> <button style={styles.button} onClick={() => {setControls('ballot')}}><span style={styles.buttonText}>Ballot</span></button> <button style={styles.button} onClick={() => {refetch()}}><span style={styles.buttonText}>Refresh</span></button>
             </div>
+            
                 {contestlist.map(
                 (c, cindex) => {
                     if(('Template' == c) || ('C' == c) || ('c' == c))
@@ -134,8 +134,14 @@ export default function Voting({post_id}) {
                             }
                             checked={ currentBallot.signature_required }
                         onChange={ () => { const ballotCopy = {...currentBallot}; ballotCopy.signature_required = !currentBallot.signature_required; console.log('modified ballot',ballotCopy); const ballots = {...votingdata.ballot}; ballots[c] =ballotCopy; console.log('modified ballots',ballots); const votingCopy = {...votingdata, ballot: ballots}; console.log('modified voting data',votingCopy); setVotingdata(votingCopy);}} /></p>
-                        {currentBallot.status == 'publish' ? <div><p><button style={styles.button} onClick={() => { const update = {...currentBallot,status:'draft'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>Unpublish</span></button></p></div> 
-                        : <p><button style={styles.button} onClick={() => { const update = {...currentBallot,status:'publish'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>{mytranslate('Publish',votingdata)}</span></button></p>}
+                        {currentBallot.status == 'publish' ? <div><p><button style={styles.button} onClick={() => { const update = {...currentBallot,status:'draft'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>Unpublish</span></button></p>                        
+                        {copied ? <button style={styles.button} ><span style={{color:'green',backgroundColor:'white',padding:'5px'}}>{mytranslate('Copied!',votingdata)}</span></button> : <CopyToClipboard text={mytranslate('Please vote using the link below. For subsequent votes, click "Refresh" if the ballot of choices is not displayed')+"\n\n"+votingdata.url} onCopy={() => {setCopied(true); setTimeout(() => {setCopied(false)},9000)}} >
+                        <button style={styles.button}><span style={styles.buttonText}>{mytranslate('Copy Voting Link',votingdata)}</span></button>
+                        </CopyToClipboard>}
+                        </div> 
+                        : 
+                        <p><button style={styles.button} onClick={() => { const update = {...currentBallot,status:'publish'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier}); setCopied(false);} }><span style={styles.buttonText}>{mytranslate('Publish',votingdata)}</span></button></p>
+                        }
                     </div>
                 }
             )}

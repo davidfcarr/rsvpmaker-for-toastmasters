@@ -572,6 +572,55 @@ $display_times['Dynamic Leadership Level 3 Increasing Knowledge 111'] = '5 - 7 m
 $projects['Dynamic Leadership Level 3 Increasing Knowledge 117']      = __( 'Understanding Vocal Variety', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 3 Increasing Knowledge 117'] = 7;
 $display_times['Dynamic Leadership Level 3 Increasing Knowledge 117'] = '5 - 7 minutes';
+$scindex = 5500;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Moments of Truth (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Finding New Members for Your Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Evaluate to Motivate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Closing the Sale (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Creating the Best Club Climate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Meeting Roles and Responsibilities (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Mentoring (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Keeping the Commitment (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Going Beyond Our Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'How to Be a Distinguished Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
 $projects['Dynamic Leadership Level 4 Building Skills 126']      = __( 'Manage Change', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 4 Building Skills 126'] = 7;
 $display_times['Dynamic Leadership Level 4 Building Skills 126'] = '5 - 7 minutes';
@@ -602,6 +651,53 @@ $display_times['Dynamic Leadership Level 4 Building Skills 167'] = '15 - 20 minu
 $projects['Dynamic Leadership Level 4 Building Skills 173']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 4 Building Skills 173'] = 3;
 $display_times['Dynamic Leadership Level 4 Building Skills 173'] = '2 - 3 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Beginning Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Concluding Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Controlling Your Fear (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Impromptu Speaking (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Know Your Audience (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Organizing Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Creating an Introduction (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Preparation and Practice (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Using Body Language (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+
 $projects['Dynamic Leadership Level 5 Demonstrating Expertise 182']      = __( 'Lead in Any Situation', 'rsvpmaker-for-toastmasters' );
 $project_times['Dynamic Leadership Level 5 Demonstrating Expertise 182'] = 7;
 $display_times['Dynamic Leadership Level 5 Demonstrating Expertise 182'] = '5 - 7 minutes';
@@ -638,6 +734,67 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $path = 'Effective Coaching';
 $projects['Effective Coaching Level 1 Mastering Fundamentals 233']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Effective Coaching Level 1 Mastering Fundamentals 233'] = 6;
@@ -790,6 +947,67 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $path = 'Engaging Humor';
 $projects['Engaging Humor Level 1 Mastering Fundamentals 14004']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 1 Mastering Fundamentals 14004'] = 6;
@@ -872,6 +1090,56 @@ $display_times['Engaging Humor Level 3 Increasing Knowledge 150150'] = '5 - 7 mi
 $projects['Engaging Humor Level 3 Increasing Knowledge 15021']      = __( 'Using Presentation Software', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 3 Increasing Knowledge 15021'] = 7;
 $display_times['Engaging Humor Level 3 Increasing Knowledge 15021'] = '5 - 7 minutes';
+
+$path = 'Engaging Humor';
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Moments of Truth (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Finding New Members for Your Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Evaluate to Motivate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Closing the Sale (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Creating the Best Club Climate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Meeting Roles and Responsibilities (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Mentoring (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Keeping the Commitment (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Going Beyond Our Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'How to Be a Distinguished Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
 $projects['Engaging Humor Level 4 Building Skills 15025']      = __( 'The Power of Humor in an Impromptu Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 4 Building Skills 15025'] = 3;
 $display_times['Engaging Humor Level 4 Building Skills 15030'] = '2 -3 minutes';
@@ -902,6 +1170,52 @@ $display_times['Engaging Humor Level 4 Building Skills 15067'] = '150 - 20 minut
 $projects['Engaging Humor Level 4 Building Skills 15073']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 4 Building Skills 15073'] = 3;
 $display_times['Engaging Humor Level 4 Building Skills 15073'] = '2 - 3 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Beginning Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Concluding Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Controlling Your Fear (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Impromptu Speaking (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Know Your Audience (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Organizing Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Creating an Introduction (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Preparation and Practice (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Using Body Language (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
 $projects['Engaging Humor Level 5 Demonstrating Expertise 15082']      = __( 'Deliver Your Message With Humor', 'rsvpmaker-for-toastmasters' );
 $project_times['Engaging Humor Level 5 Demonstrating Expertise 15082'] = 22;
 $display_times['Engaging Humor Level 5 Demonstrating Expertise 15082'] = '18 - 22 minutes';
@@ -938,6 +1252,66 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $path = 'Innovative Planning';
 $projects['Innovative Planning Level 1 Mastering Fundamentals 470']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 1 Mastering Fundamentals 470'] = 6;
@@ -1050,6 +1424,52 @@ $display_times['Innovative Planning Level 4 Building Skills 633'] = '15 - 20 min
 $projects['Innovative Planning Level 4 Building Skills 639']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 4 Building Skills 639'] = 3;
 $display_times['Innovative Planning Level 4 Building Skills 639'] = '2 - 3 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Beginning Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Concluding Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Controlling Your Fear (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Impromptu Speaking (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Know Your Audience (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Organizing Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Creating an Introduction (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Preparation and Practice (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Using Body Language (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
 $projects['Innovative Planning Level 5 Demonstrating Expertise 648']      = __( 'High Performance Leadership - First Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Innovative Planning Level 5 Demonstrating Expertise 648'] = 7;
 $display_times['Innovative Planning Level 5 Demonstrating Expertise 648'] = '5 - 7 minutes';
@@ -1083,6 +1503,66 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $path = 'Leadership Development';
 $projects['Leadership Development Level 1 Mastering Fundamentals 694']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 1 Mastering Fundamentals 694'] = 6;
@@ -1200,6 +1680,7 @@ $display_times['Leadership Development Level 4 Building Skills 869'] = '15 - 20 
 $projects['Leadership Development Level 4 Building Skills 875']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 4 Building Skills 875'] = 3;
 $display_times['Leadership Development Level 4 Building Skills 875'] = '2 - 3 minutes';
+
 $projects['Leadership Development Level 5 Demonstrating Expertise 884']      = __( 'Manage Successful Events', 'rsvpmaker-for-toastmasters' );
 $project_times['Leadership Development Level 5 Demonstrating Expertise 884'] = 7;
 $display_times['Leadership Development Level 5 Demonstrating Expertise 884'] = '5 - 7 minutes';
@@ -1321,6 +1802,57 @@ $display_times['Motivational Strategies Level 3 Increasing Knowledge 1048'] = '5
 $projects['Motivational Strategies Level 3 Increasing Knowledge 1054']      = __( 'Using Presentation Software', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 3 Increasing Knowledge 1054'] = 7;
 $display_times['Motivational Strategies Level 3 Increasing Knowledge 1054'] = '5 - 7 minutes';
+
+$path = 'Motivational Strategies';
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Moments of Truth (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Finding New Members for Your Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Evaluate to Motivate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Closing the Sale (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Creating the Best Club Climate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Meeting Roles and Responsibilities (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Mentoring (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Keeping the Commitment (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Going Beyond Our Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'How to Be a Distinguished Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+
 $projects['Motivational Strategies Level 4 Building Skills 1063']      = __( 'Motivate Others', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 4 Building Skills 1063'] = 7;
 $display_times['Motivational Strategies Level 4 Building Skills 1063'] = '5 - 7 minutes';
@@ -1351,6 +1883,52 @@ $display_times['Motivational Strategies Level 4 Building Skills 1106'] = '15 - 2
 $projects['Motivational Strategies Level 4 Building Skills 1112']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 4 Building Skills 1112'] = 3;
 $display_times['Motivational Strategies Level 4 Building Skills 1112'] = '2 - 3 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Beginning Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Concluding Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Controlling Your Fear (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Impromptu Speaking (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Know Your Audience (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Organizing Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Creating an Introduction (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Preparation and Practice (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Using Body Language (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
 $projects['Motivational Strategies Level 5 Demonstrating Expertise 1121']      = __( 'Team Building', 'rsvpmaker-for-toastmasters' );
 $project_times['Motivational Strategies Level 5 Demonstrating Expertise 1121'] = 7;
 $display_times['Motivational Strategies Level 5 Demonstrating Expertise 1121'] = '5 - 7 minutes';
@@ -1387,6 +1965,67 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $path = 'Persuasive Influence';
 $projects['Persuasive Influence Level 1 Mastering Fundamentals 1173']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 1 Mastering Fundamentals 1173'] = 6;
@@ -1473,6 +2112,55 @@ $projects['Persuasive Influence Level 3 Increasing Knowledge 1290']      = __( '
 $project_times['Persuasive Influence Level 3 Increasing Knowledge 1290'] = 7;
 $display_times['Persuasive Influence Level 3 Increasing Knowledge 1290'] = '5 - 7 minutes';
 $projects['Persuasive Influence Level 4 Building Skills 1299']      = __( 'Building a Social Media Presence', 'rsvpmaker-for-toastmasters' );
+
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Moments of Truth (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Finding New Members for Your Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Evaluate to Motivate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Closing the Sale (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Creating the Best Club Climate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Meeting Roles and Responsibilities (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Mentoring (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Keeping the Commitment (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Going Beyond Our Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'How to Be a Distinguished Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
 $project_times['Persuasive Influence Level 4 Building Skills 1299'] = 7;
 $display_times['Persuasive Influence Level 4 Building Skills 1299'] = '5 - 7 minutes';
 $projects['Persuasive Influence Level 4 Building Skills 1306']      = __( 'Leading in Difficult Situations', 'rsvpmaker-for-toastmasters' );
@@ -1502,6 +2190,52 @@ $display_times['Persuasive Influence Level 4 Building Skills 1342'] = '15 - 20 m
 $projects['Persuasive Influence Level 4 Building Skills 1348']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 4 Building Skills 1348'] = 3;
 $display_times['Persuasive Influence Level 4 Building Skills 1348'] = '2 - 3 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Beginning Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Concluding Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Controlling Your Fear (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Impromptu Speaking (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Know Your Audience (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Organizing Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Creating an Introduction (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Preparation and Practice (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Using Body Language (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
 $projects['Persuasive Influence Level 5 Demonstrating Expertise 1357']      = __( 'High Performance Leadership - First Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Persuasive Influence Level 5 Demonstrating Expertise 1357'] = 7;
 $display_times['Persuasive Influence Level 5 Demonstrating Expertise 1357'] = '5 - 7 minutes';
@@ -1535,6 +2269,66 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $path = 'Presentation Mastery';
 $projects['Presentation Mastery Level 1 Mastering Fundamentals 1404']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 1 Mastering Fundamentals 1404'] = 6;
@@ -1620,6 +2414,55 @@ $display_times['Presentation Mastery Level 3 Increasing Knowledge 1515'] = '5 - 
 $projects['Presentation Mastery Level 3 Increasing Knowledge 1521']      = __( 'Using Presentation Software', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 3 Increasing Knowledge 1521'] = 7;
 $display_times['Presentation Mastery Level 3 Increasing Knowledge 1521'] = '5 - 7 minutes';
+
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Moments of Truth (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Finding New Members for Your Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Evaluate to Motivate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Closing the Sale (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Creating the Best Club Climate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Meeting Roles and Responsibilities (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Mentoring (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Keeping the Commitment (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Going Beyond Our Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'How to Be a Distinguished Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
 $projects['Presentation Mastery Level 4 Building Skills 1530']      = __( 'Managing a Difficult Audience', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 4 Building Skills 1530'] = 15;
 $display_times['Presentation Mastery Level 4 Building Skills 1530'] = '10 - 15 minutes';
@@ -1647,6 +2490,52 @@ $display_times['Presentation Mastery Level 4 Building Skills 1567'] = '15 - 20 m
 $projects['Presentation Mastery Level 4 Building Skills 1573']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 4 Building Skills 1573'] = 3;
 $display_times['Presentation Mastery Level 4 Building Skills 1573'] = '2 - 3 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Beginning Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Concluding Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Controlling Your Fear (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Impromptu Speaking (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Know Your Audience (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Organizing Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Creating an Introduction (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Preparation and Practice (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Using Body Language (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
 $projects['Presentation Mastery Level 5 Demonstrating Expertise 1582']      = __( 'Prepare to Speak Professionally', 'rsvpmaker-for-toastmasters' );
 $project_times['Presentation Mastery Level 5 Demonstrating Expertise 1582'] = 22;
 $display_times['Presentation Mastery Level 5 Demonstrating Expertise 1582'] = '18 - 22 minutes';
@@ -1680,6 +2569,66 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $path = 'Strategic Relationships';
 $projects['Strategic Relationships Level 1 Mastering Fundamentals 1628']      = __( 'Ice Breaker', 'rsvpmaker-for-toastmasters' );
 $project_times['Strategic Relationships Level 1 Mastering Fundamentals 1628'] = 6;
@@ -2062,6 +3011,55 @@ $display_times['Visionary Communication Level 3 Increasing Knowledge 2205'] = '5
 $projects['Visionary Communication Level 3 Increasing Knowledge 2211']      = __( 'Using Presentation Software', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 3 Increasing Knowledge 2211'] = 7;
 $display_times['Visionary Communication Level 3 Increasing Knowledge 2211'] = '5 - 7 minutes';
+
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Moments of Truth (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Finding New Members for Your Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Evaluate to Motivate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Closing the Sale (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Creating the Best Club Climate (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Meeting Roles and Responsibilities (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Mentoring (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Keeping the Commitment (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'Going Beyond Our Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 3 Increasing Knowledge ' . $scindex ]      = __( 'How to Be a Distinguished Club (Successful Club Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = 15;
+$display_times[ $path . ' Level 3 Increasing Knowledge ' . $scindex ] = '10 -15 minutes';
+
 $projects['Visionary Communication Level 4 Building Skills 2220']      = __( 'Communicate Change', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 4 Building Skills 2220'] = 7;
 $display_times['Visionary Communication Level 4 Building Skills 2220'] = '5 - 7 minutes';
@@ -2092,6 +3090,52 @@ $display_times['Visionary Communication Level 4 Building Skills 2263'] = '15 - 2
 $projects['Visionary Communication Level 4 Building Skills 2269']      = __( 'Write a Compelling Blog', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 4 Building Skills 2269'] = 3;
 $display_times['Visionary Communication Level 4 Building Skills 2269'] = '2 - 3 minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Beginning Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Concluding Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Controlling Your Fear (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Impromptu Speaking (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Know Your Audience (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Organizing Your Speech (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Creating an Introduction (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Preparation and Practice (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
+$scindex++;
+$projects[ $path . ' Level 4 Building Skills ' . $scindex ]      = __( 'Using Body Language (Better Speaker Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 4 Building Skills ' . $scindex ] = 15;
+$display_times[ $path . ' Level 4 Building Skills ' . $scindex ] = '10 - 15 minutes minutes';
+
 $projects['Visionary Communication Level 5 Demonstrating Expertise 2278']      = __( 'Develop Your Vision - First Speech', 'rsvpmaker-for-toastmasters' );
 $project_times['Visionary Communication Level 5 Demonstrating Expertise 2278'] = 7;
 $display_times['Visionary Communication Level 5 Demonstrating Expertise 2278'] = '5 - 7 minutes';
@@ -2131,6 +3175,67 @@ $display_times[$path.' Level 5 Demonstrating Expertise 1233072'] = '8 - 10 minut
 $projects[$path.' Level 5 Demonstrating Expertise 9999']      = __( 'Pathways 360 Evaluation', 'rsvpmaker-for-toastmasters' );
 $project_times[$path.' Level 5 Demonstrating Expertise 9999'] = 7;
 $display_times[$path.' Level 5 Demonstrating Expertise 9999'] = '5 - 7 minutes';
+
+$leindex = 1.1;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Service and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'The Leader as a Coach (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Developing a Mission (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Motivating People (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Building a Team (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Delegate to Empower (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Resolving Conflict (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Visionary Leader (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Beginning Your Speech (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Values and Leadership (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Goal Setting and Planning (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
+$leindex++;
+$projects[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ]      = __( 'Giving Effective Feedback (Leadership Excellence Series)', 'rsvpmaker-for-toastmasters' );
+$project_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = 15;
+$display_times[ $path . ' Level 5 Demonstrating Expertise ' . $leindex ] = '10 - 15 minutes minutes';
+
 $projects['HIGH PERFORMANCE LEADERSHIP 1']      = __( 'Sharing Your Vision', 'rsvpmaker-for-toastmasters' );
 $project_times['HIGH PERFORMANCE LEADERSHIP 1'] = 7;
 $display_times['HIGH PERFORMANCE LEADERSHIP 1'] = '5 - 7 minutes';

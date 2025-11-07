@@ -1203,9 +1203,16 @@ function wpt_member_email_check() {
     rsvpmaker_admin_heading('Member Email Check',__FUNCTION__);
     echo '<p>This screen allows you to see whether any members have unsubscribed from email notifications, indicated a preference against receiving group email messages and event notifications, or have bad email addresses associated with their member profiles.</p>';
     
+    $member_emails = [];
+
     $members = get_club_members();
     $output = '';
     foreach($members as $member) {
+        if(empty($member->user_email)) {
+            printf('<p>User %d %s %s <span style="color:red; font-weight: bold;">no email address</span></p>',$member->ID, $member->user_login, $member->display_name);
+            continue;
+        }
+        $member_emails[] = strtolower($member->user_email);
         $problem = rsvpmail_is_problem($member->user_email);
         if(strpos($problem,'ManualSuppression')) {
             $suppressions[] = strtolower($member->user_email);
@@ -1217,6 +1224,49 @@ function wpt_member_email_check() {
         $status = (empty($problem)) ? '<span style="color:green; font-weight: bold;">OK</span>' : '<span style="color:red; font-weight: bold;">'.$problem.'</span>';
         $output .= '<p>'.$member->display_name.' '.$member->user_email.' '.$status.'</p>';
     }
+
+    $wpt_email_handler_custom_forwarders = get_option('custom_forwarders');
+    foreach($wpt_email_handler_custom_forwarders as $forwarder => $targets) {
+        foreach($targets as $target) {
+            if(empty($target))
+                continue; 
+            $target = strtolower($target);
+
+            //if(!in_array($target,$member_emails)) {
+                $problem = rsvpmail_is_problem($target);
+                if(strpos($problem,'ManualSuppression')) {
+                    $suppressions[] = strtolower($target);
+                }
+                $rsvpmailer_rule = apply_filters('rsvpmailer_rule','permit',$target, 'group_email');
+                if($rsvpmailer_rule == 'deny') {
+                    $problem .= ' blocks group email and forwarding';
+                }
+                $status = (empty($problem)) ? '<span style="color:green; font-weight: bold;">OK</span>' : '<span style="color:red; font-weight: bold;">'.$problem.'</span>';
+                $output .= '<p>Forward '.$forwarder.' to '.$target.' '.$status.'</p>';
+            //}
+            $inner_targets = wpt_email_forwarder_recipients($target); //expand members, officers, etc
+            if(!empty($inner_targets)) {
+                foreach($inner_targets as $itarget) {
+                    if(empty($itarget))
+                        continue;
+                    $itarget = strtolower($itarget);
+                    //if(!in_array($itarget,$member_emails)) {
+                        $problem = rsvpmail_is_problem($itarget);
+                        if(strpos($problem,'ManualSuppression')) {
+                            $suppressions[] = strtolower($itarget);
+                        }
+                        $rsvpmailer_rule = apply_filters('rsvpmailer_rule','permit',$itarget, 'group_email');
+                        if($rsvpmailer_rule == 'deny') {
+                            $problem .= ' blocks group email and forwarding';
+                        }
+                        $status = (empty($problem)) ? '<span style="color:green; font-weight: bold;">OK</span>' : '<span style="color:red; font-weight: bold;">'.$problem.'</span>';
+                        $output .= '<p>Forward '.$forwarder.' to '.$itarget.' '.$status.'</p>';
+                    //}
+                }
+            }
+        }
+    }
+
     if(!empty($suppressions))
         do_action('rsvpmaker_postmark_suppressions',$suppressions);
     if(empty($_POST))
@@ -1226,7 +1276,7 @@ function wpt_email_forwarder_recipients($forwarder) {
     $address = explode('@',$forwarder);
     $recipients = array();
     $hosts_and_subdomains = rsvpmaker_get_hosts_and_subdomains();
-    if(!in_array($address[1],$hosts_and_subdomains) && ($address[1]!=$hosts_and_subdomains['basedomain']))
+    if(!in_array($address[1],$hosts_and_subdomains['hosts']) && ($address[1]!=$hosts_and_subdomains['basedomain']))
         return;
     $hosts = wpt_get_hosts();
     $subdomains = wpt_get_subdomains();
@@ -1317,6 +1367,11 @@ return $recipients;
 //	$mail = apply_filters('rsvpmailer_mail',$mail);
 add_filter('rsvpmailer_mail','wpt_mail_forwarders');
 function wpt_mail_forwarders($mail) {
+    if(empty($mail['from']))
+    {
+        $mail['from'] = get_option('admin_email');
+        do_action('rsvpmailer_missing_from_address',$mail);
+    }
     $recipients = wpt_email_forwarder_recipients($mail['to']);
     if(empty($recipients))
         return $mail;

@@ -7785,8 +7785,8 @@ function toastmasters_datebox_message() {
 }
 function wp4toast_template( $user_id = 1, $autorenew = false ) {
 	global $wpdb, $rsvp_options;
-	$sql = "SELECT ID FROM `$wpdb->posts` WHERE (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish' ORDER BY `ID` DESC ";
-	if ( $wpdb->get_var( $sql ) ) {
+	$sql = "SELECT ID FROM `$wpdb->posts` WHERE post_type='rsvpmaker_template' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish' ORDER BY `ID` DESC ";
+	if ( $id = $wpdb->get_var( $sql ) ) {
 		return;
 	}
 	$default = '<!-- wp:wp4toastmasters/help /-->
@@ -8029,7 +8029,6 @@ foreach($contest_templates as $title => $default) {
 update_option('wpt_contest_templates_version',$v);
 return $v;
 }
-register_activation_hook( __FILE__, 'wp4toast_template' );
 function new_agenda_template() {
 	global $current_user;
 	if ( ! isset( $_REQUEST['submit'] ) || ( $_REQUEST['submit'] != 'Make New Agenda Template' ) ) {

@@ -9,22 +9,70 @@ function wp4toastmasters_history() {
 	$export_role = sprintf( '<a href="%s?page=%s&tm_export=%s&%s&role=1">Export Role Report</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
     $sidebar = sprintf('<div>Export Options (Spreadsheet/CSV)<br>%s<br>%s</div>',$export_link,$export_role);
     wpt_rsvpmaker_admin_heading(__('Reports','rsvpmaker-for-toastmasters'),__FUNCTION__,'',$sidebar);
-    //$hook = tm_admin_page_top(__('Reports','rsvpmaker-for-toastmasters'),$sidebar);
-    if(empty($_GET['rsvp_print']))
+    $last_update_all = get_transient('tm_history_update_all');
+    if(empty($_GET['rsvp_print']) && (empty($last_update_all) || isset($_GET['refresh_cache']))) {
         update_user_role_archive_all();
+        set_transient('tm_history_update_all',time(),12 * HOUR_IN_SECONDS);
+    }
     global $wpdb, $rsvp_options, $current_user, $page;
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+    $members = get_club_members();
+
+if(is_multisite()) {
+    $history_cache_updated = isset($_GET['refresh_cache']) ? 0 : get_transient('tm_history_cache_updated');
+	$history_table_core = $history_table;
+    $history_table = $wpdb->prefix.'tm_history_cache';
+    if(empty($history_cache_updated) || isset($_GET['refresh_cache'])) {
+    printf('<p>%s</p>',__('Updating role history cache','rsvpmaker-for-toastmasters'));
+    $sql = "CREATE TABLE `$history_table` (
+	`id` int(11) NOT NULL,
+	`role` varchar(100) NOT NULL,
+	`datetime` datetime NOT NULL,
+	`rolecount` smallint(6) NOT NULL,
+	`domain` varchar(255) NOT NULL,
+	`user_id` int(11) NOT NULL,
+	`post_id` int(11) NOT NULL,
+	`metadata` text,
+	`timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY  (`id`),
+	KEY `user_id` (`user_id`),
+	KEY `role` (`role`),
+	KEY `datetime` (`datetime`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  ";
+	dbDelta( $sql );
+    foreach($members as $member)
+        $and[] = 'user_id='.$member->ID;
+    $syncwhere = 'WHERE 1 AND ('.implode(' OR ',$and).')';
+    $last_update = $wpdb->get_var("SELECT MAX(timestamp) from $history_table");
+    if(empty($last_update))
+        $last_update = '2000-01-01 00:00:00';
+    $sql = "SELECT * from $history_table_core $syncwhere AND timestamp > '$last_update' ORDER BY datetime DESC";
+    $results = $wpdb->get_results($sql);
+    printf('<p>%s %d %s</p>',__('Processing','rsvpmaker-for-toastmasters'),sizeof($results),__('new records','rsvpmaker-for-toastmasters'));
+    foreach($results as $row) {
+        $sql = $wpdb->prepare("INSERT INTO $history_table SET id=%d, domain=%s, role=%s, rolecount=%s, datetime=%s, user_id=%d, post_id=%d, metadata=%s",$row->id,$row->domain,$row->role,$row->rolecount,$row->datetime,$row->user_id,$row->post_id,$row->metadata);
+        $wpdb->query($sql);
+    }
+    set_transient('tm_history_cache_updated',time(),12 * HOUR_IN_SECONDS);
+    }
+    else
+        printf('<p>%s %s <a href="%s">(%s)</a></p>',__('Cache updated','rsvpmaker-for-toastmasters'),rsvpmaker_date($rsvp_options['long_date'].' '.$rsvp_options['time_format'], $history_cache_updated), admin_url('admin.php?page=toastmasters_reports&refresh_cache=1'),__('Refresh Cache','rsvpmaker-for-toastmasters'));
+}
+
     $startover = isset($_GET['startover']);
     $output = '';
-    if(isset($_GET['user_id']))
+    $where = ' WHERE 1 ';
+    if(isset($_GET['user_id'])) {
         $user_id = intval($_GET['user_id']);
-    else
+    }
+    else {
         $user_id = ('my_progress_report' == $_GET['page']) ? $current_user->ID : 0;
-        $members = get_club_members();
-        foreach($members as $member)
-            $and[] = 'user_id='.$member->ID;
-        $where = 'WHERE 1 AND ('.implode(' OR ',$and).')';
+    }
+    if($user_id) 
+        $where .= ' and user_id='.$user_id;
+
         $allchecked = '';
         $notallchecked = '';
         $datechecked = '';
@@ -62,7 +110,13 @@ function wp4toastmasters_history() {
             $where .= " AND user_id=" . $user_id. ' ';
             $filters[] = 'filtered by user';
         }
-        if(!empty($_GET['datefilter']) && !empty($_GET['since']))
+        if(!isset($_GET['datefilter'])) {
+            $datechecked = ' checked="checked" ';
+            $date = date('Y-m-d', strtotime('-1 year'));
+            $where .= sprintf(" AND datetime > '%s' ",$date);
+            $filters[] = ' more recent than '.$date;
+        }
+        elseif(!empty($_GET['datefilter']) && !empty($_GET['since']))
         {
             $datechecked = ' checked="checked" ';
             $date = sanitize_text_field($_GET['since']);
@@ -89,9 +143,12 @@ function wp4toastmasters_history() {
                     $manualsort[$index] = $temp;
                 }
             }
+            if(!empty($manualsort)) {
             ksort($manualsort);
             foreach($manualsort as $manual => $content)
                 $output .= '<h2>'.$manual.'</h2>'.$content;
+            }
+            $output .= '<p>Sort by manual not found</p>';
         }
         elseif(isset($_GET['type']) && ($_GET['type'] == 'path'))
         {
@@ -157,8 +214,7 @@ function wp4toastmasters_history() {
                     $output .= sprintf('<p class="speech_details">Title: <em>%s</em>, Path/Level: %s, Project: %s</p>',$row->title,$row->manual,$row->project);
             }    
         }
-    $year = (rsvpmaker_date('n') < 7) ? (rsvpmaker_date('Y') - 1) : rsvpmaker_date('Y');
-    $since = (empty($_GET['since'])) ?  $year.'-07-01': sanitize_text_field($_GET['since']);
+    $since = (empty($_GET['since'])) ?  $date : sanitize_text_field($_GET['since']);
     if(empty($_GET['rsvp_print'])) {
         printf("<p>Active filters: %s</p>",implode(', ',$filters));
         printf('<form method="get" action="%s">
@@ -327,8 +383,7 @@ function wp4toastmasters_history_edit() {
     <div style="position: fixed; top: 50%; right: 0; width: 200px; padding: 50px; background-color: #fff; border-radius: 10px; ">
     <p>Pick records to edit or delete and click Select.</p>
     <button style="font-size: larger;">'.__('Select','rsvpmaker-for-toastmasters').'</button></div></form>';
-    $year = (rsvpmaker_date('n') < 7) ? (rsvpmaker_date('Y') - 1) : rsvpmaker_date('Y');
-    $since = (empty($_GET['since'])) ?  $year.'-07-01': sanitize_text_field($_GET['since']);
+    $since = (empty($_GET['since'])) ?  $date : sanitize_text_field($_GET['since']);
     printf("<p>Active filters: %s</p>",implode(', ',$filters));
     printf('<form method="get" action="%s">
     <p>%s</p>
@@ -346,10 +401,10 @@ function wp4toastmasters_history_edit() {
     <option value="all">%s</option>
     </select><br>
     <button>Filter</button>
-    </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
+    </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since.'test', $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
     echo $output;
 $examined = array();
-echo $sql = "SELECT * from $history_table order by datetime DESC LIMIT 0, 30";
+$sql = "SELECT * from $history_table order by datetime DESC LIMIT 0, 30";
 $results = $wpdb->get_results($sql);
 foreach($results as $row) {
     if(in_array($row->id,$examined))
@@ -368,15 +423,6 @@ foreach($results as $row) {
         printf('<p><em>Duplicate?</em> %s %s %s %s %s</p>',$drow->role, $drow->rolecount, $drow->user_id, $drow->datetime, $drow->domain);
     }
     }
-}
-return;
-echo '<h3>Debugging</h3>';
-echo $sql = "SELECT * FROM $wpdb->usermeta where meta_key LIKE 'tm|Ah%' ORDER BY umeta_id DESC LIMIT 0,100";
-$results = $wpdb->get_results($sql);
-foreach($results as $row) {
-    printf('<p>%s</p>',$row->meta_key);
-    $data = unserialize($row->meta_value);
-    printf('<pre>%s</pre>',var_export($data,true));
 }
 }
 function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0, $was = 0) {
@@ -405,7 +451,6 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
     if(empty($timestamp) && $post_id)
         $timestamp = get_rsvp_date($post_id);
 	$sql = $wpdb->prepare("SELECT id FROM $history_table WHERE domain=%s AND role=%s AND (rolecount=%s OR user_id=%s) AND datetime=%s",$domain,$role,$role_count,$user_id,$timestamp);
-    //echo "<p>$sql</p>";
 	$id = $wpdb->get_var($sql);
 	if($id) {
 		$sql = $wpdb->prepare("UPDATE $history_table SET domain=%s, role=%s, rolecount=%s, datetime=%s, user_id=%d, post_id=%d, metadata=%s WHERE id=%d",$domain,$role,$role_count,$timestamp,$user_id,$post_id, serialize(make_tm_roledata_array( $function )),$id);

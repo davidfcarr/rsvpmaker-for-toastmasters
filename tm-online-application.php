@@ -126,7 +126,7 @@ function club_fee_schedule() {
 	$ti_dues             = get_option( 'ti_dues' );
 	$club_dues           = get_option( 'club_dues' );
 	$club_new_member_fee = (int) get_option( 'club_new_member_fee' );
-	$new_member_fee      = 20 + $club_new_member_fee;
+	$new_member_fee      = 25 + $club_new_member_fee;
 	$output              = '';
 	$months              = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
 	if ( empty( $ti_dues ) ) {
@@ -136,7 +136,7 @@ function club_fee_schedule() {
 		$output .= sprintf( '<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', __( 'Month', 'rsvpmaker-for-toastmasters' ), __( 'TI Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club New Member', 'rsvpmaker-for-toastmasters' ), __( 'Total', 'rsvpmaker-for-toastmasters' ), __( '+ New Member Fee', 'rsvpmaker-for-toastmasters' ) );
 		foreach ( $months as $index => $month ) {
 			$total   = number_format( $ti_dues[ $index ] + $club_dues[ $index ] + $club_new_member_fee, 2 );
-			$new     = number_format( $total + 20, 2 );
+			$new     = number_format( $total + 25, 2 );
 			$output .= sprintf( '<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $month, number_format( $ti_dues[ $index ], 2 ), number_format( $club_dues[ $index ], 2 ), $club_new_member_fee, $total, $new );
 		}
 		$output .= '</table>';
@@ -146,7 +146,7 @@ function club_fee_schedule() {
 function tm_application_fee() {
 	global $post;
 	if ( isset( $_POST['membership_type'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		$new     = ( $_POST['membership_type'] == 'New' ) ? 20 : 0;
+		$new     = ( $_POST['membership_type'] == 'New' ) ? 25 : 0;
 		$ti_dues = get_option( 'ti_dues' );
 		if ( empty( $ti_dues )  || $ti_dues[3] == '45.00' ) {
 			$ti_dues = array( 30.00, 20.00, 10.00, 60.00, 50.00, 40.00, 30.00, 20.00, 10.00, 60.00, 50.00, 40.00 );
@@ -171,7 +171,7 @@ function tm_application_fee() {
 		if ( $ti_dues_calc == 0 ) {
 			$feetext .= '<p>(Paid member of another club requesting transfer.)</p>';
 		}
-		$feetext .= sprintf( '<p>New member fee (US$20): <strong>%s</strong><br /><em>Paid only by new members, this fee covers the cost of the first education path, online copy of The Navigator and processing</em></p>', number_format( $new, 2 ) );
+		$feetext .= sprintf( '<p>New member fee (US$25): <strong>%s</strong><br /><em>Paid only by new members, this fee covers the cost of the first education path, online copy of The Navigator and processing</em></p>', number_format( $new, 2 ) );
 		$renewal_dates = wpt_renewal_dates();
 		if($ti_dues_calc > 60)
 			array_shift($renewal_dates);
@@ -674,8 +674,10 @@ width: 150px;
 			$last     = $post->post_title;
 			$verified = '';
 			$approval = get_post_meta( $post->ID, 'officer_signature', true );
+			$email = strtolower( get_post_meta( $post->ID, 'user_email', true ) );
 			if ( $approval ) {
-				$verified = sprintf( '(Approved %s)', get_post_meta( $post->ID, 'officer_signature_date', true ) );
+				$user_created = get_user_by('email', $email) ? __('User account created','rsvpmaker-for-toastmasters') : '<span style="color:red">'.__('No user account match for email','rsvpmaker-for-toastmasters').'</span>';
+				$verified = sprintf( '(Approved %s, %s)', get_post_meta( $post->ID, 'officer_signature_date', true ), $user_created );
 			} else {
 				$verified = check_application_payment( $post->ID );
 			}
