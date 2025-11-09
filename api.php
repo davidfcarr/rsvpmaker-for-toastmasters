@@ -1431,8 +1431,10 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 						if(empty($assignment['ID'])) {
 							$assignment['name'] = '';
 						}
-						elseif(is_numeric($assignment['ID']))
+						elseif(is_numeric($assignment['ID'])) {
 							$assignment['name'] = get_member_name($assignment['ID']);
+							$assignment['avatar'] = get_avatar_url( $assignment['ID'], ['size' => 48,'default' => 'blank'] );
+						}							
 						else
 							$assignment['name'] = $assignment['ID'].' (guest)';
 						if($assignment['ID'] && ('Speaker' == $role)) {

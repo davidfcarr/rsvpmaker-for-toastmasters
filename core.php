@@ -1293,6 +1293,12 @@ function agendanoterich2_timeblock( $matches ) {
 }
 function tm_agenda_content($post_id = 0) {
 	global $post, $rsvp_options;
+	if(isset($_GET['avatars'])) {
+		$avatars_on_agenda = intval($_GET['avatars']);
+		update_option('wp4t_avatar_in_agenda',$avatars_on_agenda);
+	}
+	else
+		$avatars_on_agenda = intval(get_option('wp4t_avatar_in_agenda'));
 	$notime = (bool) get_option('wp4t_disable_timeblock');
 	if(is_admin())
 		return;
@@ -1371,7 +1377,13 @@ function tm_agenda_content($post_id = 0) {
 					$link = sprintf('Open - <a href="%s#oneclick">One-Click Signup</a>',$link);
 					$assignment['name'] = $link;
 				}
-				$content .= sprintf('<div><strong>%s %s</strong> %s</div>',$role,($count > 1) ? $number : '',$assignment['name']);
+				$avatar = '';
+				if($avatars_on_agenda && is_numeric($assignment["ID"]) && ($assignment["ID"] > 0))
+				{
+					//$content .= '<div style="clear: left; float: left; padding-right: 5px;">'.get_avatar( $assignment["ID"], 30, 'blank', '', array( 'class' => 'tm_avatar' ) ).'</div>';
+					$avatar = get_avatar( $assignment["ID"], 48, 'blank', '', array( 'class' => 'tm_avatar' ) );
+				}
+				$content .= sprintf('<div>%s <strong>%s %s</strong> %s</div>',$avatar,$role,($count > 1) ? $number : '',$assignment['name']);
 				if(isset($_GET['contacts']) && is_numeric($assignment["ID"]) && ($assignment["ID"] > 0) && is_club_member())
 				{
 					$content .= wp4_format_contact(get_userdata($assignment["ID"]),false);
@@ -2761,6 +2773,21 @@ Sidebar Items Font <input class="fontcontrol" type="number" name="wp4toastmaster
 		echo ' checked="checked" ';}
 	?>
 	 /> <?php _e( 'No', 'rsvpmaker-for-toastmasters' ); ?>.</p>
+<h3><?php _e( 'Show Profile Pictures on Agenda', 'rsvpmaker-for-toastmasters' ); ?></h3>
+	<?php $avatars = intval(get_option( 'wp4t_avatar_in_agenda' )); 
+	?>
+<p><input type="radio" name="wp4t_avatar_in_agenda" value="1" 
+	<?php
+	if ( $avatars ) {
+		echo ' checked="checked" ';}
+	?>
+	 /> <?php _e( 'Yes', 'rsvpmaker-for-toastmasters' ); ?></p>
+<p><input type="radio" name="wp4t_avatar_in_agenda" value="0" 
+	<?php
+	if ( !$avatars ) {
+		echo ' checked="checked" ';}
+	?>
+	 /> <?php _e( 'No', 'rsvpmaker-for-toastmasters' ); ?>.</p>
 <h3><?php _e( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ); ?> </h3>
 <p><?php _e( 'Future Meetings Displayed', 'rsvpmaker-for-toastmasters' ); ?> <select name="tm_signup_count">
 	<?php
@@ -3132,6 +3159,7 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'show_legacy_manuals' );
 	register_setting( 'wp4toastmasters-settings-group', 'wp4t_disable_timeblock' );
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_evaluation_reminder' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4t_avatar_in_agenda' );
 	if ( isset( $_POST['wp4toast_reminder'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 				// clear cron
 			wptoast_reminder_clear();
@@ -3228,6 +3256,8 @@ if(!$next || ($next->ts_start > time() + HOUR_IN_SECONDS))
 			$meeting_leader_tag = '_role_Toastmaster_of_the_Day_1';
 			$meeting_leader_id = get_post_meta($post_id,$meeting_leader_tag,true);
 			error_log('Meeting leader id: '.$meeting_leader_id.' Meeting leader tag: '.$meeting_leader_tag.' Post ID: '.$post_id.' Post meta: '.var_export($row,true) );
+			$mail['from'] = get_option('admin_email');
+			$mail['fromname'] = get_bloginfo('name');
 			if($meeting_leader_id)
 				{
 				$user = get_userdata($meeting_leader_id);

@@ -181,7 +181,8 @@ function awe_rest_user_options( $role, $post_id ) {
 		if ( empty( $member->first_name ) ) {
 			$member->first_name = $member->display_name;
 		}
-		$options[] = array('value' => $member->ID, 'label' => $member->first_name . ' ' . $member->last_name.$status,'name' => $member->first_name . ' ' . $member->last_name);
+		$avatar_url = get_avatar_url( $member->ID, ['size' => 30,'default' => 'blank'] );
+		$options[] = array('value' => $member->ID, 'label' => $member->first_name . ' ' . $member->last_name.$status,'name' => $member->first_name . ' ' . $member->last_name, 'avatar' => $avatar_url );
 		}
 		$sql = "select meta_value from $wpdb->postmeta where post_id=$post_id AND meta_key LIKE '_role_%' AND meta_value RLIKE '[A-z]+'";
 		$guests = $wpdb->get_results($sql);

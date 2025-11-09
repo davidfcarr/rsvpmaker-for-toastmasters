@@ -266,7 +266,7 @@ export default function RoleBlock(props) {
                             {(user_can('edit_post') || user_can('organize_agenda')) && <button className="agenda-tooltip" onClick={() => { setShowControls(blockindex) }}><span class="agenda-tooltip-text">{mytranslate('Organize', data)}</span><Icon icon={tool} /></button>}
                         </div>
                         <h3 className="role-label">
-                            {role_label} {shownumber} {assignment.name}
+                             {assignment.avatar && <div style={{float:'left',marginRight:'10px'}}><img src={assignment.avatar} className="tm_avatar" alt={assignment.name} /></div>} {role_label} {shownumber} {assignment.name}
                         </h3>
                     </div>
                     {attrs.agenda_note && <p><em>{attrs.agenda_note}</em></p>}
