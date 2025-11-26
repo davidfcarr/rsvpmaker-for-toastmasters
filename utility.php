@@ -427,6 +427,8 @@ function get_member_name( $user_id, $credentials = true ) {
 }
 function is_wp4t( $content = '' ) {
 	global $post;
+	if('tmminutes' == get_post_type($post))
+		return true;
 	if ( ! empty( $post ) && empty( $content ) ) {
 		$content = $post->post_content;
 	}

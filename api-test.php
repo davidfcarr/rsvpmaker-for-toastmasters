@@ -1064,7 +1064,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				foreach($ballot as $bkey => $bdata) {
 					if(!empty($votingdata['ballot'][$bkey]))
 						continue;
-					$bdata->ballot_post_id = $row->post_id;
+					$bdata['ballot_post_id'] = $row->post_id;
 					$votingdata['ballot'][$bkey] = $bdata;
 				}
 			}
