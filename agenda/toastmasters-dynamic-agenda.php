@@ -41,7 +41,7 @@ add_action('admin_enqueue_scripts', 'dynamic_agenda_script');
 function dynamic_agenda_script() {
 	global $post, $wp_scripts;
 	if(
-	($post && $post->post_type && (('rsvpmaker' == $post->post_type) || ('rsvpmaker_template' == $post->post_type) || strpos($post->post_content,'wp-block-wp4toastmasters-toastmasters-dynamic-agenda')))
+	($post && $post->post_type && (('rsvpmaker' == $post->post_type) || ('rsvpmaker_template' == $post->post_type) || ('tmminutes' == $post->post_type) || strpos($post->post_content,'wp-block-wp4toastmasters-toastmasters-dynamic-agenda')))
 	|| (isset($_GET['page']) && ('wp4t_evaluations' == $_GET['page'] || 'agenda_template_editor' == $_GET['page']))
 	) {
 		$script_handle = get_dynamic_agenda_script_handle('viewScript');

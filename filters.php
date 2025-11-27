@@ -129,6 +129,9 @@ add_filter( 'the_content', function ( $content ) {
 	$promo = '';
 	if('rsvpmaker_template' == $post->post_type)
 		return '<div  id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
+	if(isset($_GET['meetingvote']) && $post->post_type == 'tmminutes') {
+		return '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
+	}
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'rsvpmaker' ) || is_admin() ) {
 		return $content;
 	}

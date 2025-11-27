@@ -193,7 +193,7 @@ function tm_application_fee() {
 	}
 }
 function tm_application_form_start( $atts ) {
-	$pdf = ( isset( $atts['pdf'] ) ) ? $atts['pdf'] : 'https://toastmasterscdn.azureedge.net/medias/files/membership-files/membership-applications/800-membership-application.pdf';
+	$pdf = ( isset( $atts['pdf'] ) ) ? $atts['pdf'] : 'https://toastmost.org/wp-content/uploads/2025/11/800-membership-application-ff.pdf';
 	if ( isset( $_POST['user_email'] ) && empty( $_POST['user_email'] ) ) {
 		return 'Email address is required <a href="' . get_permalink() . '">Try again</a>';
 	}
@@ -223,7 +223,7 @@ $o .= '<option value="'.$monthindex.'">'.$monthtext.' 1</option>';
 <p><em>&quot;New&quot; means the member is new to Toastmasters (not just new to this club).</em></p>
 <p><em>"Transfer" means you are currently enrolled as a paying member of another club, which you wish to withdraw from and apply credit for your dues to our club.</em></p>
 <p id="transferprompt">If you are transferring from another club, please provide as much information as possible so we can look up your records. The <a href="https://www.toastmasters.org/Find-a-Club">Find a Club</a> feature of the toastmasters.org website can help you look up club numbers.</p>
-<p id="formerclubinfo"><label>Previous club name</label> <?php tm_application_form_field( 'previous_club_name' ); ?><br ><label>Previous club number</label><?php tm_application_form_field( 'previous_club_number' ); ?><br /> <label>Member number</label><?php tm_application_form_field( 'toastmasters_id' ); ?><br /><em>Appears above your name on the mailing label for Toastmaster magazine.</em></p>
+<p id="formerclubinfo"><label>Previous club name</label> <?php tm_application_form_field( 'previous_club_name' ); ?><br ><label>Previous club number</label><?php tm_application_form_field( 'previous_club_number' ); ?><br /> <label>Member number</label><?php tm_application_form_field( 'toastmasters_id' ); ?><br ><em><a target="_blank" id="find-member-id" href="https://toastmost.org/your-member-id/">Where to find this</a></em></p>
 <?php wp_nonce_field('application_email'); ?>
 <button>Next Screen</button>
 <?php rsvpmaker_nonce(); ?>

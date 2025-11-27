@@ -43,6 +43,7 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_member_votes', 'toastmasters_member_votes' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
 }
@@ -7002,4 +7003,78 @@ function wpt_suggest_all_roles() {
 	printf('<form method="post" action="%s">',admin_url('admin.php?page=wpt_suggest_all_roles'));
 	submit_button('Reset to Defaults');
 	echo '<input type="hidden" name="reset_defaults" value="1"></form>';
+}
+
+function toastmasters_member_votes () {
+	global $wpdb;
+
+		if(isset($_POST['candidates'])) {
+		$candidates = explode("\n",$_POST['candidates']);
+		print_r($candidates);
+		$names = [];
+		foreach($candidates as $name) {
+			$name = trim($name);
+			$names[] = sanitize_text_field(stripslashes($name));
+		}
+		$new['post_title'] = 'New Member Vote:' . implode(', ',$names);
+		$new['post_type'] = 'tmminutes';
+		$new['post_status'] = 'publish';
+		$post_id = wp_insert_post($new);
+		$ballot = [];
+		foreach($names as $name) {
+			$slug = __('New Member Vote','rsvpmaker-for-toastmasters').':'.$name;
+			$ballot[$slug] = (object) array(
+				'status' => 'publish',
+				'contestants' => ['Yes','No','Abstain'],
+				'new' => [],
+				'deleted' => [],
+				'signature_required' => true,
+				'ballot_post_id' => $post_id,
+				'everyMeeting' => false,
+			);
+		}
+		update_post_meta($post_id,'tm_ballot',$ballot);
+		printf('<p>Created ballot post %d</p>',$post_id);
+	}
+
+	printf('<form method="post" action="%s"><h3>New Member Vote</h3><p>Enter member names, one per line</p><p><textarea name="candidates" rows="5" cols="80"></textarea><button>Submit</button></form>',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'));
+
+	$ballots = [];
+	echo $sql ="SELECT post_id, meta_key, meta_value FROM $wpdb->posts p JOIN $wpdb->postmeta m ON p.ID = m.post_id WHERE p.post_type='tmminutes' AND m.`meta_key` = 'tm_ballot' ORDER BY `meta_id` DESC";
+	$results = $wpdb->get_results($sql);
+	printf('<pre>%s</pre>',var_export($results,true));
+	foreach($results as $row) {
+		$ballot = unserialize($row->meta_value);
+		if(is_array($ballot)) {
+			foreach($ballot as $bkey => $bdata) {
+				$bdata->ballot_post_id = $row->post_id;
+				$ballots[$bkey] = $bdata;
+			}
+		}
+	}
+	printf('<pre>%s</pre>',var_export($ballots,true));
+
+	/*
+	array (
+  'New Member' => 
+  (object) array(
+     'status' => 'publish',
+     'contestants' => 
+    array (
+      0 => 'Yes',
+      1 => 'No',
+      2 => 'Abstain',
+    ),
+     'new' => 
+    array (
+    ),
+     'deleted' => 
+    array (
+    ),
+     'signature_required' => true,
+     'ballot_post_id' => '7971',
+     'everyMeeting' => false,
+  ),
+)
+	*/
 }

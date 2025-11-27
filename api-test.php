@@ -1064,7 +1064,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				foreach($ballot as $bkey => $bdata) {
 					if(!empty($votingdata['ballot'][$bkey]))
 						continue;
-					$bdata->ballot_post_id = $row->post_id;
+					$bdata['ballot_post_id'] = $row->post_id;
 					$votingdata['ballot'][$bkey] = $bdata;
 				}
 			}
@@ -1780,9 +1780,6 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 						continue;
 					}
 					$v = sanitize_text_field($data->$field);
-					if(strpos($field,'intro') !== false) {
-						$v = preg_replace('/style=".+"/','', $v); //strip inline style
-					}
 				}
 				$agendadata['update'][] = "$k = $v";
 				update_post_meta($post_id,$k,$v);
@@ -2055,7 +2052,6 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 					$editable['headline'] = $block['attrs']['editable'];
 					$text = get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
 					$editable['content'] = ($text) ? trim(html_entity_decode(strip_tags($text))) : '';
-					$editable['content'] = preg_replace( '/(style=("|\Z)(.*?)("|\Z))/', '', $editable['content'] );
 					$editable['key'] = 'agenda_note_'.$block['attrs']['uid'];
 					$agenda['editable'][] = $editable;
 				}
@@ -2351,8 +2347,6 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 		$name = get_member_name($user_id);
 		$keybase = wp4t_fieldbase($role).'_';
 		$updated = $item = (array) $data;
-		if(!empty($item['intro']))
-			$item['intro'] = str_replace('&nbsp;','',preg_replace( '/style=".+"/', '', $item['intro'] ));
 		$status = 'updated post id '.$post_id.' count: '.$count;
 		$updated['name'] = $name;
 		$control = ['role','blockindex','roleindex','name','post_id','start','count'];
