@@ -1056,48 +1056,72 @@ add_action('wp_paypal_ipn_processed','wp4t_wp_paypal_ipn_processed');
 function wp4t_wp_paypal_ipn_processed($response) {
 	mail('david@carrcommunications.com','paypal IPN Toastmasters',var_export($response,true));
 }
-function wptm_count_votes($post_id, $added_votes = array()) {
+
+function wptm_sort_contests_by_count_desc(array &$data): void {
+    foreach ($data as $contest => &$candidates) {
+        if (!is_array($candidates)) {
+            continue;
+        }
+        uasort($candidates, function($a, $b) {
+            return ($b['count'] ?? 0) <=> ($a['count'] ?? 0);
+        });
+    }
+    unset($candidates); // break reference
+}
+
+function wptm_count_votes($post_id, $votingdata) {
+	$added_votes = empty($votingdata['added_votes']) ? array() : $votingdata['added_votes'];
 	global $wpdb;
 	$output = '';
-	$ballot = get_post_meta($post_id,'tm_ballot',true);
-	if($ballot) {
-		$ballot = (array) $ballot;
-		foreach($ballot as $key => $vt) {
-			$open[] = (string) $key;// .= 'ballots '.var_export($key,true) . '  votes ' .var_export($votes,true);
+
+/*
+"Table Topics": {
+            "status": "draft",
+            "contestants": [],
+            "new": [],
+            "deleted": [],
+            "signature_required": false,
+            "ballot_post_id": 161
+        },
+
+"Evaluator": {
+            "Joe": {
+                "count": 0,
+                "voters": []
+            },
+            "Sally": {
+                "count": 0,
+                "voters": []
+            }
+        },
+		*/
+	foreach($votingdata['ballot'] as $bkey => $ballot) {
+		$pid = (isset($ballot->ballot_post_id)) ? $ballot->ballot_post_id : $votingdata["post_id"];
+		$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$pid." AND meta_key LIKE 'myvote_$bkey%' ORDER BY meta_key, meta_value";
+		$results = $wpdb->get_results($sql);
+		foreach($results as $row) {
+			$p = explode('_',$row->meta_key);
+			$contest = $p[1];
+			if(('Template' == $contest) || ('c' == $contest))
+				continue;
+			$identifier = $p[2];
+			if(isset($votingdata['votes'][$contest][$row->meta_value]['count'])) {
+				$votingdata['votes'][$contest][$row->meta_value]['count']++;
+				$votingdata['votes'][$contest][$row->meta_value]['voters'][] = $identifier;
+			}
+			else
+				$votingdata['votes'][$contest][$row->meta_value]['count'] = 1;
 		}
-	}
-	else
-		$open = get_post_meta($post_id,'openvotes');
-	//$output = var_export($open,true);
-	//return $output;
-	foreach($open as $v) {
-		$addvote = get_post_meta($post_id,'addvote_'.$v,true);
-		//$output .= '<p>checking ' .$post_id. ' addvote_'.$v.'</p>';
-		if(empty($addvote))
-			$addvote = array();
-		$votes[$v] = $addvote;
 	}
 	foreach($added_votes as $addit) {
 		if('Template' == $addit->ballot)
 			continue;
-		$votes[$addit->ballot][$addit->contestant] = $addit->add;
+		$votingdata['votes'][$addit->ballot][$addit->contestant]['count'] += $addit->add;
 	}
-	$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%' ORDER BY meta_key, meta_value";
-	$results = $wpdb->get_results($sql);
-	foreach($results as $row) {
-		$p = explode('_',$row->meta_key);
-		$contest = $p[1];
-		if('Template' == $contest)
-			continue;
-		$identifier = $p[2];
-		if(isset($votes[$contest][$row->meta_value]))
-		$votes[$contest][$row->meta_value]++;
-			else
-		$votes[$contest][$row->meta_value] = 1;
-	}
-	if(!empty($votes)) {
+	wptm_sort_contests_by_count_desc($votingdata['votes']);
+	if(!empty($votingdata['votes'])) {
 		$output .= '<div id="votingresults"><h2>Voting Results as of '.rsvpmaker_date('H:i:s',time()).'</h2>';
-		foreach($votes as $contest => $contestvote) {
+		foreach($votingdata['votes'] as $contest => $contestvote) {
 			$label = get_post_meta($post_id,'votelabel_'.$contest,true);
 			if(empty($label))
 				$label = $contest;
@@ -1107,20 +1131,31 @@ function wptm_count_votes($post_id, $added_votes = array()) {
 			if(empty($contestvote))
 				$ranking[$contest] .= '<p>none</p>';
 			else {
-				arsort($contestvote);
+				$i = 0;
 				$count = 0;
 				$last = 0;
-				foreach($contestvote as $name => $score)
+				foreach($contestvote as $name => $count_voters)
 				{
-					if(empty($winner[$contest]))
+					$count = $count_voters['count'];
+					$voters = $count_voters['voters'];
+					if(!$i && !$count) {
+						$winner[$contest] = 'None';
+						continue;
+					}
+					elseif(empty($winner[$contest])) {
 						$winner[$contest] = sprintf('%s: %s',$label,$name);
-					if(($count == 1) && ($last == $score))
+						$winner_score = $count;
+					}
+					if($i && ($count == $winner_score)) {
 						$winner[$contest] .= ' (tie with '.$name.')';
-						$sigkey = '_signedvote_'.$contest.$name;
-						$signatures = get_post_meta($post_id,$sigkey);
-						$ranking[$contest] .= sprintf('<p>%s: %s %s</p>',$name,$score,empty($signatures) ? '' : ' votes from: '.implode(', ',$signatures));
-					$last = $score;
-					$count++;
+					}
+					$signatures = [];
+					foreach($voters as $voter) {
+						//if(is_integer($voter) && $voter > 0)
+							$signatures[] = get_member_name($voter);
+					}
+					$ranking[$contest] .= sprintf('<p>%s: %s %s</p>',$name,$count,empty($signatures) ? '' : ' votes from: '.implode(', ',$signatures));
+					$i++;
 				}
 			}
 	}

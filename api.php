@@ -920,6 +920,8 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$data = json_decode($json);
 		}
 		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth();
+		if($authorized) //if not anonymous, use user ID as identifier
+			$identifier = $authorized;
 		$votingdata['current_user'] = $current_user->ID;
 		$votingdata['current_user_name'] = $current_user->display_name;
 		$votingdata['post_id'] = $post_id;
@@ -934,7 +936,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$votingdata['loginurl'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));	
 		$trans = wpt_mobile_translations();
 		$votingdata['translations'] = ($trans && !empty($trans['translations'])) ? $trans['translations'] : array();
-		$open = get_post_meta($post_id,'openvotes');
+		//$open = get_post_meta($post_id,'openvotes');
 		$custom_club_contests = get_option('custom_club_contests');
 		if(!is_array($custom_club_contests))
 			$custom_club_contests = [];
@@ -947,17 +949,6 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$votingdata['deleteRecurring'] = $data->deleteRecurring;
 		}
 		$votingdata['everyWeek'] = $custom_club_contests;
-		if(isset($data) && isset($data->vote)) {
-			$votingdata['data'] = $data;
-			$vote = sanitize_text_field($data->vote);
-			$key = sanitize_text_field($data->key);
-			$metakey = 'myvote_'.$key.'_'.$identifier;
-			if(!empty($data->signature))
-				update_post_meta($post_id,'_signedvote_'.$key.$vote,sanitize_text_field($data->signature));
-			add_post_meta($post_id,'audit_'.$metakey,$vote.' '.$_SERVER['REMOTE_ADDR'].' api '.date('r'));
-			$votingdata['voterecorded'] = $metakey;
-			update_post_meta($post_id,$metakey,$vote);
-		}
 		if(isset($data) && isset($data->email_link)) {
 			$auth_user = get_userdata($authorized);
 			$mail['from'] = $auth_user->user_email;
@@ -1070,9 +1061,36 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			}
 		}
 
+		if(isset($data) && isset($data->vote)) {
+			$votingdata['data'] = $data;
+			$vote = sanitize_text_field($data->vote);
+			$key = sanitize_text_field($data->key);
+			$ballot_post_id = isset($votingdata['ballot'][$key]->ballot_post_id) ? $votingdata['ballot'][$key]->ballot_post_id : $post_id;
+			$metakey = 'myvote_'.$key.'_'.$identifier;
+			if(!empty($data->signature))
+				update_post_meta($ballot_post_id,'_signedvote_'.$key.$vote,sanitize_text_field($data->signature));
+			add_post_meta($ballot_post_id,'audit_'.$metakey,$vote.' '.$_SERVER['REMOTE_ADDR'].' api '.date('r'));
+			$votingdata['voterecorded'] = $metakey;
+			update_post_meta($ballot_post_id,$metakey,$vote);
+		}
+
+		$votingdata['myvotes'] = [];
+
+		foreach($votingdata['ballot'] as $bkey => $bdata) {
+			$myvote_key = 'myvote_'.$bkey.'_'.$identifier;
+			$myvote_test = get_post_meta($bdata->ballot_post_id,$myvote_key,true);
+			if($myvote_test)
+				$votingdata['myvotes'][] = $bkey;
+			foreach($bdata->contestants as $contestant) {
+				$votingdata['votes'][$bkey][$contestant]['count'] = 0;
+				$votingdata['votes'][$bkey][$contestant]['voters'] = [];
+			}
+		}
+
 		$votingdata['added_votes'] = get_post_meta($post_id,'added_votes',true);
 		if(empty($votingdata['added_votes']))
 			$votingdata['added_votes'] = array();
+		/*
 		$openvotes = [];
 		if(sizeof($open))
 		{
@@ -1091,6 +1109,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				$votingdata['votesfor'][$value] = $wpdb->get_var($sql);
 			}
 		}
+		*/
 		$memberlist = [];
 		$members = get_club_members();
 		foreach($members as $member) {
@@ -1119,8 +1138,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				}
 			}
 		}
-		$votingdata['votecount'] = wptm_count_votes($post_id, $votingdata['added_votes']);
+		$votingdata['votecount'] = wptm_count_votes($post_id, $votingdata);
 		$votingdata['memberlist'] = $memberlist;
+		/*
 		$votingdata['myvotes'] = [];
 		$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%_$identifier' ORDER BY meta_key, meta_value";
 		error_log($sql);
@@ -1130,6 +1150,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$votingdata['myvotes'][] = $parts[1];
 		}
 		$votingdata['myvotesresults'] = $results;
+		*/
 	return new WP_REST_Response( $votingdata, 200 );
 	}
 		$output = wptm_count_votes($post_id);
