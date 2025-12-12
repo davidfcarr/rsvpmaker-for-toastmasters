@@ -22,6 +22,7 @@ export default function Voting({post_id}) {
     const [newBallot,setNewBallot] = useState('');
     const [votesToAdd,setVotesToAdd] = useState(false);
     const [copied,setCopied] = useState(false);
+    const [close,setClose] = useState(0);
 
     const styles = {
         button: {minWidth: '120px',backgroundColor: 'black',padding: '10px',borderRadius:'4px', marginRight: '10px'},
@@ -189,6 +190,13 @@ export default function Voting({post_id}) {
                         </div>
                 }
             )}
+            {(votingdata.open_club_ballots && votingdata.open_club_ballots.length) ? <div>
+                <p style={styles.h2}>{mytranslate('Close Ballots (Signed Votes)',votingdata)}</p>
+                <p>{mytranslate('Once you have received the required number of votes, close the voting. Voting results will be saved as a club minutes document on the website.',votingdata)}</p>
+                <SelectCtrl label={mytranslate('Select Ballot to Close',votingdata)} value={close} options={[{'value':0,'label':'Select Ballot to Close'},...votingdata.open_club_ballots]} onChange={(choice) => { setClose(choice); console.log('setClose',close); } } />
+                <p><button style={styles.button} onClick={() => { const update = {...votingdata,close_ballot:close}; setVotingdata(update); sendVotingUpdate({close_ballot:close,post_id:post_id,identifier:identifier}); setClose({'value':0,'label':'Select Ballot to Close'}) } }><span style={styles.buttonText}>{mytranslate('Close',votingdata)}</span></button></p>
+                </div> : null
+            }
             <p style={styles.h2}>{mytranslate('Reset',votingdata)}</p>
             <p><button style={styles.button} onClick={() => { sendVotingUpdate({reset:true,post_id:post_id,identifier:identifier});} }><span style={styles.buttonText}>{mytranslate('Reset Ballot',votingdata)}</span></button></p>
         </div>

@@ -7010,7 +7010,15 @@ function wp4t_ballot_status_email() {
 	toastmasters_member_votes(['ballot_status'=>true]);
 }
 
+function toastmasters_close_ballot($post_id) {
+	ob_start();
+	toastmasters_member_votes(['close_ballot'=>$post_id]);
+	ob_clean();
+}
+
 function toastmasters_member_votes ($args=[]) {
+	if(!is_array($args))
+		$args = [];
 	global $wpdb, $current_user;
 	$output = '';
 		if(isset($_POST['candidates'])) {
@@ -7096,8 +7104,11 @@ function toastmasters_member_votes ($args=[]) {
 	$email_vote = [];
 	$totalvotes = [];
 	$email_check_vote = '';
-	if(isset($_GET['close_ballot'])) {
-		$where = " AND p.ID = ".intval($_GET['close_ballot']);
+	if(isset($_GET['close_ballot']))
+		$args['close_ballot'] = intval($_GET['close_ballot']);
+
+	if(isset($args['close_ballot'])) {
+		$where = " AND p.ID = ".intval($args['close_ballot']);
 	}
 	$sql ="SELECT post_id, meta_key, meta_value FROM $wpdb->posts p JOIN $wpdb->postmeta m ON p.ID = m.post_id WHERE p.post_type='tmminutes' AND m.`meta_key` = 'tm_ballot' $where ORDER BY `meta_id` DESC";
 	$results = $wpdb->get_results($sql);
@@ -7212,10 +7223,8 @@ function toastmasters_member_votes ($args=[]) {
 			echo '<p>Status update email sent to '.$mail['to'].'</p>';
 		}
 	}//!EMPTY VOTES
-	if(!empty($args))
-		return; //cron mode exit here
-	if(isset($_GET['close_ballot'])) {
-		$ballot_id = intval($_GET['close_ballot']);
+	if(isset($args['close_ballot'])) {
+		$ballot_id = intval($args['close_ballot']);
 		if(!empty($output)) {
 			$new['post_content'] = $output;
 			$new['ID'] = $ballot_id;
@@ -7226,6 +7235,9 @@ function toastmasters_member_votes ($args=[]) {
 		$title = get_the_title($ballot_id);
 		printf('<p>Closed voting on %s <a href="%s">Edit</a> | <a href="%s">View</a></p>',$title,admin_url('post.php?post='.$ballot_id.'&action=edit'),get_permalink($ballot_id));
 	}
+
+	if(!empty($args))
+		return; //cron or api mode exit here
 
 	$clubname = get_bloginfo('name');
 	if(isset($_REQUEST['email_vote'])) {

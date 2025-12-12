@@ -432,7 +432,7 @@ function is_wp4t( $content = '' ) {
 	if ( ! empty( $post ) && empty( $content ) ) {
 		$content = $post->post_content;
 	}
-	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) ) {
+	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) && ( strpos( $content, '[tm_member_application' ) === false ) ) {
 		return false;
 	} else {
 		return true;
@@ -1073,28 +1073,6 @@ function wptm_count_votes($post_id, $votingdata) {
 	$added_votes = empty($votingdata['added_votes']) ? array() : $votingdata['added_votes'];
 	global $wpdb;
 	$output = '';
-
-/*
-"Table Topics": {
-            "status": "draft",
-            "contestants": [],
-            "new": [],
-            "deleted": [],
-            "signature_required": false,
-            "ballot_post_id": 161
-        },
-
-"Evaluator": {
-            "Joe": {
-                "count": 0,
-                "voters": []
-            },
-            "Sally": {
-                "count": 0,
-                "voters": []
-            }
-        },
-		*/
 	foreach($votingdata['ballot'] as $bkey => $ballot) {
 		$pid = (isset($ballot->ballot_post_id)) ? $ballot->ballot_post_id : $votingdata["post_id"];
 		$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$pid." AND meta_key LIKE 'myvote_$bkey%' ORDER BY meta_key, meta_value";
@@ -1118,8 +1096,8 @@ function wptm_count_votes($post_id, $votingdata) {
 			continue;
 		$votingdata['votes'][$addit->ballot][$addit->contestant]['count'] += $addit->add;
 	}
-	wptm_sort_contests_by_count_desc($votingdata['votes']);
 	if(!empty($votingdata['votes'])) {
+		wptm_sort_contests_by_count_desc($votingdata['votes']);
 		$output .= '<div id="votingresults"><h2>Voting Results as of '.rsvpmaker_date('H:i:s',time()).'</h2>';
 		foreach($votingdata['votes'] as $contest => $contestvote) {
 			$label = get_post_meta($post_id,'votelabel_'.$contest,true);
@@ -1134,6 +1112,7 @@ function wptm_count_votes($post_id, $votingdata) {
 				$i = 0;
 				$count = 0;
 				$last = 0;
+				$total_votes = 0;
 				foreach($contestvote as $name => $count_voters)
 				{
 					$count = $count_voters['count'];
@@ -1155,8 +1134,10 @@ function wptm_count_votes($post_id, $votingdata) {
 							$signatures[] = get_member_name($voter);
 					}
 					$ranking[$contest] .= sprintf('<p>%s: %s %s</p>',$name,$count,empty($signatures) ? '' : ' votes from: '.implode(', ',$signatures));
+					$total_votes += $count;
 					$i++;
 				}
+				$ranking[$contest] .= sprintf('<p>Total votes cast: %s</p>',$total_votes);
 			}
 	}
 	foreach($winner as $w)

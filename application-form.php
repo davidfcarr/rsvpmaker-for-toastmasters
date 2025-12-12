@@ -7,6 +7,7 @@ if ( empty( $_POST['applicant_signature'] ) ) {
 	<?php
 }
 ?>
+<div id="toastmasters-application">
 <p><strong>TOASTMASTERS INTERNATIONAL MEMBERSHIP APPLICATION</strong></p>
 <div style="margin-left: 10px; width: 200px; float: right; padding: 5px; border: thin solid #000; font-size: small;">
 Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
@@ -26,7 +27,7 @@ Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
 <br><label>First name</label> <?php tm_application_form_field( 'first_name' ); ?>
 <br><label>Middle name</label> <?php tm_application_form_field( 'middle_name' ); ?></p>
 <p><label>Last name/Surname</label> <?php tm_application_form_field( 'last_name' ); ?>
-<p>The monthly <em>Toastmaster&nbsp;</em>magazine will be sent to the following address:</p>
+<p>Any correspondence mailed to you will be sent to the following address:</p>
 <p><label>Organization/In care of</label> <?php tm_application_form_field( 'address_organization' ); ?><br >
 <label>Address line 1</label> <?php tm_application_form_field( 'address_line1' ); ?><br>
 <label>Address line 2</label> <?php tm_application_form_field( 'address_line2' ); ?><br>
@@ -78,7 +79,7 @@ if ( isset( $_POST['sponsor'] ) ) {
 <li>That my information may be accessed and used by Toastmasters, its employees and agents, district officers and club officers.</li>
 <li>Maintain&nbsp;changes to my personal contact information to ensure it is accurate and current by updating my personal profile page located on the Toastmasters International website:&nbsp;<strong>www.toastmasters.org/login</strong>. I understand that the majority of the data requested in this application is necessary for administrative and planning purposes.</li>
 </ul>
-<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> Mail <?php tm_application_form_radio( 'mail_ok', array( 'Yes', 'No' ) ); ?> <br>Email <?php tm_application_form_radio( 'email_ok', array( 'Yes', 'No' ) ); ?> <br>Phone <?php tm_application_form_radio( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
+<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> <label class="small">Mail</label> <?php tm_application_form_radio( 'mail_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Email</label> <?php tm_application_form_radio( 'email_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Phone</label> <?php tm_application_form_radio( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
 <p>If you would rather not receive non-essential communications from us, please select "No" <?php tm_application_form_choice( 'opt_out', array( 'Yes, communication is welcome', 'No, I wish to opt out of non-esssential communications' ) ); ?></p>
 <p>For our full privacy policy, you may visit&nbsp;<strong><a target="_blank" href="https://www.toastmasters.org/footer/privacy-policy">www.toastmasters.org/footer/privacy-policy</a></strong>.</p>
 <p><strong>Club email and privacy settings</strong></p>
@@ -90,6 +91,7 @@ if ( isset( $_POST['sponsor'] ) ) {
 <p><label>Applicant’s signature</label> <?php tm_application_form_field( 'applicant_signature' ); ?><br >
 <label>Date</label> <?php tm_application_form_field( 'applicant_signature_date' ); ?>
 </p>
+</div>
 <?php
 rsvpmaker_nonce();
 if ( empty( $_POST['applicant_signature'] ) ) {
@@ -97,17 +99,61 @@ if ( empty( $_POST['applicant_signature'] ) ) {
 }
 ?>
 <script>
+    // Capitalize first letter of each word, lower-case the rest
+    function capitalizeName(s) {
+        if (!s) return s;
+		// If the string already contains any uppercase letter, leave it unchanged
+        if (/[A-Z]/.test(s)) return s;
+        return s.replace(/\b[a-zà-ÿ]+/gi, function(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        });
+    }
+
+    // Normalize a field's value in-place
+    function normalizeFieldById(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.value = capitalizeName(el.value.trim());
+    }
+
+    // Attach onblur handlers after DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        var first = document.getElementById('first_name');
+        var last  = document.getElementById('last_name');
+
+        if (first) {
+            first.addEventListener('blur', function() {
+                normalizeFieldById('first_name');
+            });
+        }
+        if (last) {
+            last.addEventListener('blur', function() {
+                normalizeFieldById('last_name');
+            });
+        }
+    });
+
 	function validateForm() {
 		const sig = document.getElementById('applicant_signature').value;
 		const first_name = document.getElementById('first_name').value;
 		const last_name = document.getElementById('last_name').value;
+		const address = document.getElementById('address_line1').value;
+		const city = document.getElementById('address_city').value;
+		const state = document.getElementById('address_state').value;
+		const postal = document.getElementById('address_postalcode').value;
+		console.log('validate form first',first_name);
+		console.log('validate form postal',first_name);
 		console.log('signature',sig);
 		if('' == sig) {
 			alert('A typed signature is required');
 			return false;
 		}
 		else if (('' == first_name) || ('' == last_name)) {
-			alert('You must enter a first and last name');
+			alert('Please enter a first and last name');
+			return false;
+		}  
+		else if (('' == address) || ('' == city) || ('' == state) || ('' == city) || ('' == postal)) {
+			alert('Please enter a complete address');
 			return false;
 		}  
 		else {

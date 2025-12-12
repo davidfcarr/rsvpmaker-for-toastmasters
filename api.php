@@ -977,6 +977,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$votingdata['vote_counter'] = $authorized;
 			$votingdata['is_vote_counter'] = true;
 		}
+		if(isset($data) && isset($data->close_ballot) && user_can($authorized,'edit_others_posts')) {
+			toastmasters_close_ballot($data->close_ballot);
+		}
 		if(isset($data) && isset($data->ballot) && $authorized) {
 			$ballot_array = (array) $data->ballot;
 			foreach($ballot_array as $b => $params) {
@@ -987,6 +990,29 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 					$votingdata['custom_club_contests'] = $b;
 					unset($ballot_array[$b]->everyMeeting);//don't store this property
 				}
+				if($params->signature_required) {
+					if($post_id == $params->ballot_post_id || empty($params->ballot_post_id)) {
+					$params->ballot_post_id = wp_insert_post([
+						'post_type' => 'tmminutes',
+						'post_title' => $b,
+						'post_status' => 'publish',
+						'post_content' => sprintf('<!-- wp:paragraph -->
+<p>This is an open vote.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p><a href="?meetingvote=1">Vote</a></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Editors: <a href="%s">Check votes and close voting</a></p>
+<!-- /wp:paragraph -->',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'))
+					]);
+					}
+				update_post_meta($params->ballot_post_id,'tm_ballot',[$b => $params]);
+				if($post_id != $params->ballot_post_id)
+					unset($ballot_array[$b]);  //remove from main ballot
+				}	
 			}
 			update_post_meta($post_id,'tm_ballot',$ballot_array);
 			$votingdata['ballot'] = $ballot_array;
@@ -1059,6 +1085,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 					$votingdata['ballot'][$bkey] = $bdata;
 				}
 			}
+			if(user_can($authorized,'edit_others_posts')) {
+				$votingdata['open_club_ballots'][] = array('value'=>$row->post_id,'label'=>get_the_title($row->post_id));
+			}
 		}
 
 		if(isset($data) && isset($data->vote)) {
@@ -1090,26 +1119,6 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$votingdata['added_votes'] = get_post_meta($post_id,'added_votes',true);
 		if(empty($votingdata['added_votes']))
 			$votingdata['added_votes'] = array();
-		/*
-		$openvotes = [];
-		if(sizeof($open))
-		{
-			foreach($open as $key => $value)
-			{
-				$vote_options = get_post_meta($post_id,'voting_'.$value,true);
-				if(!is_array($vote_options))
-					$vote_options = [];
-				$open_label = get_post_meta($post_id,'votelabel_'.$value,true);
-				$signature_required = boolval(get_post_meta($post_id,'signature_'.$value,true));
-				$openvotes[] = array('key' => $value, 'label' => $open_label, 'options' => $vote_options,'signature' => $signature_required);
-				$sql = "select count(*) from $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE 'myvote_$value%' ";
-				$metakey = 'myvote_'.$value.'_'.$identifier;
-				$votingdata['myvotekey'][] = $metakey;
-				$votingdata['myvote'][$value] = boolval(get_post_meta($post_id,$metakey, true));
-				$votingdata['votesfor'][$value] = $wpdb->get_var($sql);
-			}
-		}
-		*/
 		$memberlist = [];
 		$members = get_club_members();
 		foreach($members as $member) {
@@ -1140,25 +1149,8 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		}
 		$votingdata['votecount'] = wptm_count_votes($post_id, $votingdata);
 		$votingdata['memberlist'] = $memberlist;
-		/*
-		$votingdata['myvotes'] = [];
-		$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$post_id." AND meta_key LIKE 'myvote%_$identifier' ORDER BY meta_key, meta_value";
-		error_log($sql);
-		$results = $wpdb->get_results($sql);
-		foreach($results as $row) {
-			$parts = explode('_',$row->meta_key);
-			$votingdata['myvotes'][] = $parts[1];
-		}
-		$votingdata['myvotesresults'] = $results;
-		*/
 	return new WP_REST_Response( $votingdata, 200 );
 	}
-		$output = wptm_count_votes($post_id);
-		do_action('rsvpmaker_log_array',
-	array('meta_key' => 'voting',
-	'meta_value' => $output,
-    ));
-		return new WP_REST_Response( $output, 200 );
 	}
 }
 class WPTM_Reorder extends WP_REST_Controller {
@@ -1474,7 +1466,8 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 						}
 						elseif(is_numeric($assignment['ID'])) {
 							$assignment['name'] = get_member_name($assignment['ID']);
-							$assignment['avatar'] = get_avatar_url( $assignment['ID'], ['size' => 48,'default' => 'blank'] );
+							if($assignment['ID'] > 0)
+								$assignment['avatar'] = get_avatar_url( $assignment['ID'], ['size' => 48,'default' => 'blank'] );
 						}							
 						else
 							$assignment['name'] = $assignment['ID'].' (guest)';

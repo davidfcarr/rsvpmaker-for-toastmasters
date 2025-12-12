@@ -58,8 +58,10 @@ label {
 	if ( ! empty( $_POST['applicant_signature'] ) ) {
 		if(!wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) )
 			wp_die('security error');
+		$parts = explode('<script',$output);
+		$output = $parts[0];
 		$content                 = preg_replace( '/(<(style)\b[^>]*>).*?(<\/\2>)/is', '$1$3', $output );
-		$newpost['post_type']    = 'tmapplication';
+		$newpost['post_type']    = 'tmminutes';
 		$newpost['post_status']  = 'private';
 		$newpost['post_content'] = wp_kses_post($content);
 		$newpost['post_title']   = 'Membership Application: ' . sanitize_text_field($_POST['first_name'] . ' ' . $_POST['last_name']);
@@ -640,7 +642,7 @@ width: 150px;
 	}
 	$emailopt = '';
 	$emails   = array();
-	$results  = $wpdb->get_results( 'SELECT ID, post_title, meta_value FROM ' . $wpdb->posts . ' JOIN ' . $wpdb->postmeta . ' on ' . $wpdb->posts . '.ID = ' . $wpdb->postmeta . '.post_id WHERE post_status="private" AND post_type="tmapplication" AND meta_key="user_email" ORDER BY ID DESC' );
+	$results  = $wpdb->get_results( 'SELECT ID, post_title, meta_value FROM ' . $wpdb->posts . ' JOIN ' . $wpdb->postmeta . ' on ' . $wpdb->posts . '.ID = ' . $wpdb->postmeta . '.post_id WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") AND meta_key="user_email" ORDER BY ID DESC' );
 	if ( $results ) {
 		foreach ( $results as $row ) {
 			$p = explode( ': ', $row->post_title );
@@ -661,7 +663,7 @@ width: 150px;
 		}
 	}
 	$last    = '';
-	$results = $wpdb->get_results( 'SELECT ID, post_title, post_modified FROM ' . $wpdb->posts . ' WHERE post_status="private" AND post_type="tmapplication" ORDER BY ID DESC' );
+	$results = $wpdb->get_results( 'SELECT ID, post_title, post_modified FROM ' . $wpdb->posts . ' WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") ORDER BY ID DESC' );
 	if ( $results ) {
 		if ( ! empty( $emailopt ) ) {
 			printf( '<form method="post" action="%s"><p>%s <select name="add_account">%s</select> <button>%s</button></p>%s</form>', admin_url( 'admin.php?page=member_application_approval' ), __( 'Create user account for', 'rsvpmaker-for-toastmasters' ), $emailopt, __( 'Add', 'rsvpmaker-for-toastmasters' ),rsvpmaker_nonce('return') );
@@ -714,7 +716,7 @@ function member_application_upload() {
 			$content .= sprintf( '<p><a target="_blank" href="%s">Application file (external link)</a></p>', $_POST['application3'] );
 		}
 		if ( ! empty( $content ) ) {
-			$newpost['post_type']    = 'tmapplication';
+			$newpost['post_type']    = 'tmminutes';
 			$newpost['post_status']  = 'private';
 			$newpost['post_content'] = $content;
 			$newpost['post_title']   = 'Membership Application: ' . $_POST['first_name'] . ' ' . $_POST['last_name'];
@@ -838,6 +840,7 @@ function wp4t_dues_renewal($atts) {
 }
 function tm_application_form_radio( $slug, $choices ) {
 	global $post;
+	$default = true;
 	if ( isset( $_POST['first_name'] ) ) {
 		$posted = sanitize_text_field($_POST[$slug]);
 		foreach ( $choices as $value => $choice ) {
@@ -847,7 +850,9 @@ function tm_application_form_radio( $slug, $choices ) {
 	}
 	else {
 		foreach ( $choices as $value => $choice ) {
-			printf( ' <input type="radio" name="%s" value="%s">	%s ', $slug, $value, $choice );
+			$ch = ($default) ? ' checked="checked" ' : '';
+			$default = false;
+			printf( ' <input type="radio" name="%s" value="%s" %s>	%s ', $slug, $value, $ch, $choice );
 		}	
 	}
 }

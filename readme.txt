@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 6.5.5
+Stable tag: 6.5.6
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking.
@@ -39,6 +39,9 @@ The toastmost.org service is supported by subscriptions from member clubs.
 1. Role signup on the online agenda.
 2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
 == Changelog ==
+= 6.5.6 =
+* Voting tool now supports signed club votes (budget, new members) as well as casual meeting votes (best speaker)
+* Updates to online application form
 = 6.4.3 =
 * More efficient database queries for "last did" and agenda metadata via api
 = 6.4.2 =
