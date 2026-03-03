@@ -37,10 +37,10 @@ require 'todo-list.php';
 require 'fse-navigation-block.php';
 require 'email-forwarders-and-groups.php';
 require 'agenda/toastmasters-dynamic-agenda.php';
-require 'speaker-evaluator/speaker-evaluator.php';
+//require 'speaker-evaluator/speaker-evaluator.php';
 require 'mobile.php';
-require 'agenda-layout/agenda-layout.php';
-require 'memberoptions/memberoptions.php';
+//require 'agenda-layout/agenda-layout.php';
+//require 'memberoptions/memberoptions.php';
 require_once plugin_dir_path( __FILE__ ) . 'gutenberg/src/init.php';
 if ( isset( $_GET['email_agenda'] ) || isset( $_GET['send_by_email'] ) ) {
 	global $email_context;

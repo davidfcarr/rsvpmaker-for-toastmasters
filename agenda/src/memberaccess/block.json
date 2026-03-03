@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/memberaccess",
+	"version": "0.1.0",
+	"title": "Toastmasters Member Access Sidebar Widget",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "Displays member signup opportunities, profile links, etc.",
+	"keywords": [
+		"toastmasters",
+		"sidebar",
+		"member"
+	],
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "Member Access"
+		},
+		"dateformat": {
+			"type": "string",
+			"default": "M j"
+		},
+		"limit": {
+			"type": "int",
+			"default": 10
+		},
+		"showmore": {
+			"type": "int",
+			"default": 4
+		},
+		"showlog": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+    "render": "file:./render.php",
+	"style": "file:./style-index.css"
+}

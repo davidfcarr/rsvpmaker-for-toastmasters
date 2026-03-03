@@ -1,0 +1,50 @@
+{
+	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/context",
+	"version": "0.1.0",
+	"title": "Agenda Display Wrapper, Agenda Context",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "Wrapper block for displaying content in different agenda contexts.",
+	"keywords": [
+		"toastmasters",
+		"agenda",
+		"context"
+	],
+	"attributes": {
+		"content": {
+			"type": "array",
+			"source": "children",
+			"selector": "p"
+		},
+		"webContext": {
+			"type": "boolean",
+			"default": true
+		},
+		"emailContext": {
+			"type": "boolean",
+			"default": true
+		},
+		"agendaContext": {
+			"type": "boolean",
+			"default": true
+		},
+		"printContext": {
+			"type": "boolean",
+			"default": true
+		},
+		"anonContext": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"supports": {
+		"html": true
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+    "render": "file:./render.php",
+	"style": "file:./style-index.css"
+}

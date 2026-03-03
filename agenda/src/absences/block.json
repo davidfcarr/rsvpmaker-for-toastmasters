@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/absences",
+	"version": "0.1.0",
+	"title": "Toastmasters Absences",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "Invite members to record planned absences.",
+	"keywords": [
+		"toastmasters",
+		"agenda",
+		"absences"
+	],
+	"attributes": {
+		"show_on_agenda": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+    "render": "file:./render.php",
+	"style": "file:./style-index.css"
+}

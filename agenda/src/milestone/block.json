@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/milestone",
+	"version": "0.1.0",
+	"title": "Toastmasters Agenda Milestone",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "Milestone such as the end of the meeting, displayed with time",
+	"keywords": [
+		"toastmasters",
+		"agenda",
+		"milestone"
+	],
+	"attributes": {
+		"label": {
+			"type": "string",
+			"default": "Meeting ends"
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
+}

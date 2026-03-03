@@ -5,7 +5,7 @@ function add_contest_userlink( $user_id, $link, $post_id = 0 ) {
 		$post_id = $post->ID;
 	}
 	$contest_users = get_post_meta( $post_id, 'contest_user' );
-	if ( ! in_array( $user_id, $contest_users ) ) {
+	if ( empty($contest_users) || ! in_array( $user_id, $contest_users ) ) {
 		add_post_meta( $post_id, 'contest_user', $user_id );
 	}
 	update_post_meta( $post_id, 'contest_link_' . $user_id, $link );
@@ -244,6 +244,8 @@ function toast_related_contests($post_id) {
 	}
 	else {
 		$all_related = get_post_meta( $post_id, '_contest_related' );
+		if(empty($all_related))
+			$all_related = array();
 		array_unshift($all_related,$post_id);
 	}
 	return $all_related;

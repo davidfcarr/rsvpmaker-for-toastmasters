@@ -23,6 +23,14 @@ function agenda_layout_options() {
     $agendalink = add_query_arg(array('print_agenda'=>1,'no_print'=>1,'t'=>time()),$permalink);
     $layoutlink = add_query_arg(array('agenda_layout'=>1),$permalink);
     $layout = wp4toastmasters_agenda_layout_check( );
+    $version = get_option('wpt_layout_version');
+    if('2026' != $version) {
+        echo '<p style="color:red;">Updating to layout for 2026.</p>';
+        $up['ID'] = $layout;
+        $up['post_content'] = wpt_custom_layout_default(true,true);
+        wp_update_post($up);
+    }
+
     $layout_edit = admin_url( 'post.php?action=edit&post=' . $layout );
     if(isset($_POST['main']))
     {
@@ -43,50 +51,22 @@ function agenda_layout_options() {
     if(!$sidebarfont)
         $sidebarfont = 12;
     $custom = get_option( 'wp4toastmasters_agenda_css' );
-    $agenda_header = '<!-- wp:columns {"className":"titleblock"} -->
-    <div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
-    <div class="wp-block-column" style="flex-basis:10%"><!-- wp:image {"width":40,"sizeSlug":"large"} -->
-    <figure class="wp-block-image size-large is-resized"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="" style="width:40px" width="40"/></figure>
-    <!-- /wp:image --></div>
-    <!-- /wp:column -->
-    
-    <!-- wp:column {"width":"90%"} -->
-    <div class="wp-block-column" style="flex-basis:90%"><!-- wp:heading {"style":{"typography":{"fontSize":22}}} -->
-    <!-- wp:paragraph {"style":{"typography":{"fontSize":22}},"className":"agenda-title"} -->
-    <p class="agenda-title" style="font-size:22px">'.esc_html(get_option('blogname')).' [tmlayout_post_title]</p>
-    <!-- /wp:paragraph -->
-    
-    <!-- wp:wp4toastmasters/meetingdate /--></div>
-    <!-- /wp:column --></div>
-    <!-- /wp:columns -->';
+
     if(isset($_POST['change_layout'])) {
         $l = $_POST['change_layout'];
         if('default'==$l) {
             $up['ID'] = $layout;
-            $up['post_content'] = $agenda_header . '
-            
-            <!-- wp:columns -->
-            <div class="wp-block-columns"><!-- wp:column {"width":"33.33%"} -->
-            <div class="wp-block-column" style="flex-basis:33.33%" id="agenda-sidebar"><!-- wp:paragraph -->
-            <p><br><strong>Club Mission: </strong>We provide a supportive and positive learning experience in which members are empowered to develop communication and leadership skills, resulting in greater self-confidence and personal growth.</p>
-            <!-- /wp:paragraph -->
-            
-            <!-- wp:wp4toastmasters/officers /--></div>
-            <!-- /wp:column -->
-            
-            <!-- wp:column {"width":"66.66%"} -->
-            <div class="wp-block-column" style="flex-basis:66.66%" id="agenda"><!-- wp:wp4toastmasters/agendamain /--></div>
-            <!-- /wp:column --></div>
-            <!-- /wp:columns -->';
+            $up['post_content'] = wpt_custom_layout_default(true,true);
         }
         elseif('nosidebar' == $l) {
             $up['ID'] = $layout;
-            $up['post_content'] = $agenda_header . '
-            
-            <!-- wp:wp4toastmasters/agendamain /-->';
+            $up['post_content'] = wpt_custom_layout_default(false,false);
         }
-        if(!empty($up))
+        if(!empty($up)) {
             wp_update_post($up);
+        }
+        else
+            printf('<p>Unknown layout: %s</p>',$l);
     }
     if(isset($_POST['wp4toastmasters_agenda_css'])) {
         update_option( 'wp4toastmasters_agenda_css',sanitize_textarea_field(stripslashes($_POST['wp4toastmasters_agenda_css'])),false);

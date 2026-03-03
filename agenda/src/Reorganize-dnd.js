@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from "react"
 import apiClient from './http-common.js';
 import { __experimentalNumberControl as NumberControl, TextareaControl, SelectControl, ToggleControl, RadioControl, TextControl } from '@wordpress/components';
-import RoleBlock from "./RoleBlock.js";
+//import RoleBlock from "./RoleBlock.js";
 import {SpeakerTimeCount} from "./SpeakerTimeCount.js";
 import {Inserter} from "./Inserter.js";
 import {SanitizedHTML} from "./SanitizedHTML.js";

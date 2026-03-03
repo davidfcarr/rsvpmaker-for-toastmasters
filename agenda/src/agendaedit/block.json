@@ -1,0 +1,41 @@
+{
+	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/agendaedit",
+	"version": "0.1.0",
+	"title": "Toastmasters Editable Agenda Note",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "A note that can be edited by a meeting organizer on the signup form. Used for things that change from meeting to meeting, such as Meeting Theme. Does not require editing rights.",
+	"keywords": [
+		"toastmasters",
+		"agenda",
+		"editable"
+	],
+	"attributes": {
+		"uid": {
+			"type": "string",
+			"default": ""
+		},
+		"time_allowed": {
+			"type": "string",
+			"default": "0"
+		},
+		"editable": {
+			"type": "string",
+			"default": ""
+		},
+		"inline": {
+			"type": "int",
+			"default": 0
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+    "render": "file:./render.php",
+	"style": "file:./style-index.css"
+}

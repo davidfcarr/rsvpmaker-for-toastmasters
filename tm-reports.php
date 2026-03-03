@@ -6706,8 +6706,15 @@ function wpt_evaluation_check($speaker_id,$date) {
 }
 function agenda_template_editor () {
 	echo '<h1>Agenda Template Editor</h1>';
-	echo '<div id="react-agenda" mode="settings_admin">Loading ... </div>
-	<p id="loading-icon"><img width="256" height="256" src="'.plugins_url('images/load-32_256.gif', __FILE__).'" /></p>';
+	$templates = rsvpmaker_get_templates();
+	foreach($templates as $template) {
+		$related = get_events_by_template($template->ID);
+		$events = (empty($related)) ? '' : sizeof($related).' '.__('scheduled','rsvpmaker-for-toastmasters');
+		printf('<p><a href="%s">Edit: %s</a> <strong>%s</strong></p>',esc_url(admin_url('post.php?action=edit&post='.$template->ID)),esc_html($template->post_title),esc_html($events));
+	}
+	return; // fix this
+	echo '<div id="react-agenda" mode="settings_admin">Loading ... </div>';
+	echo '<p id="loading-icon"><img width="256" height="256" src="'.plugins_url('images/load-32_256.gif', __FILE__).'" /></p>';
 }
 function tm_oneclick_message($post_id,$role,$nonce,$shortdate,$suggest_all_message) {
 	global $current_user, $login_signup;

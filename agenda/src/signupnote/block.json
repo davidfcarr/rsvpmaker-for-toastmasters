@@ -1,0 +1,28 @@
+{
+	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/signupnote",
+	"version": "0.1.0",
+	"title": "Toastmasters Signup Note",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "A note that appears only on the signup form, not on the agenda.",
+	"keywords": [
+		"toastmasters",
+		"signup",
+		"note"
+	],
+	"attributes": {
+		"content": {
+			"source": "html",
+			"selector": "p"
+		}
+	},
+	"supports": {
+		"html": true
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css"
+}

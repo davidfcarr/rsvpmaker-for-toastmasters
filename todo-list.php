@@ -23,6 +23,7 @@ function wp4t_todolist($blog_id, $send = false) {
     switch_to_blog($blog_id);
     $output = '<h2>This Is The Website Administrator Todo List</h2>'."\n";
     $theme = wp_get_theme();
+    /*
     $demo_sites = array(
         "astra-tm" => "astra.toastmost.org",
         "lectern" => "lectern.toastmost.org",
@@ -38,6 +39,7 @@ function wp4t_todolist($blog_id, $send = false) {
     
     if(isset($demo_sites[$theme->stylesheet]))
         $output .= sprintf('<h3><a target="_blank" href="https://%s">%s</a></h3><p>Consult this demo site for tips related to your chosentheme (design) choice, %s </p>',$demo_sites[$theme->stylesheet],$demo_sites[$theme->stylesheet], $theme->Name);
+    */
     if($fth = get_option('freetoasthost'))
     {
         $todo['freetoasthost'] = 'Your home page should include content imported from your old FreeToastHost website, and you can see what other content was imported by visiting the Free Toast Host Import screen. That tool also gives you the option of importing agendas from an FTH website.';
@@ -84,28 +86,6 @@ function wp4t_todolist($blog_id, $send = false) {
     {
         $featured_image = get_the_post_thumbnail_url($home);
         if($featured_image) {
-            /*
-            $defaultimages = array('MEL_665-scaled',
-            'public-speaking-3956908_1920',
-            'MEL_534-scaled',
-            'NBM_1721-scaled',
-            '2019-LASTUDIO-5-scaled',
-            '2019-LASTUDIO-6-scaled',
-            '2019-LASTUDIO-7-scaled',
-            '2019-LASTUDIO-8-scaled',
-            '2019-LASTUDIO-9-scaled',
-            '2019-LASTUDIO-16-scaled');
-            $is_default = false;
-            foreach($defaultimages as $img)
-            {
-                if(strpos($featured_image, $img))
-                    $is_default = true;
-            }
-            if($is_default)
-                $todo['change_featured_image'] = 'How to change the default image on the home page. Your current theme (WordPress design) is set up to use featured images at the top of the page, which can be different from page to page. Currently, you have one of the featured images from the initial setup on the home page.';
-            else
-                $done['change_featured_image'] = 'Looks like you know how to change the featured image, but here is a reminder just in case.';
-            */
             $done['change_featured_image'] = 'Your current theme (WordPress design) is set up to let you set a featured images for each page. If you do not like the one currently shown on the home page, you can change it or remove it. You can have a different featured image for each page.';
         }
         //does the home page have a featured image? Is it one of the defaults? Instructions on how to change
@@ -269,8 +249,6 @@ function wp4t_todolist($blog_id, $send = false) {
             $mail['to'] = $user->user_email;
             rsvpmailer($mail);
         }
-        $mail['to'] = 'david@carrcommunications.com';
-        rsvpmailer($mail);
     }
     if(is_multisite())
     restore_current_blog();

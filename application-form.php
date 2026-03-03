@@ -1,9 +1,10 @@
 <?php
 if ( empty( $_POST['applicant_signature'] ) ) {
-	if($_POST['applicant_signature']) 
+	if(isset($_POST['applicant_signature'])) 
 		echo '<h2 style="color:red">Signature left empty</h2><p>Application cannot be processed without a typed digital signature.</p>';
 	?>
 <form method="post" action="<?php echo get_permalink(); ?>" onsubmit="return validateForm()">
+<p>By submitting this online membership application, you agree to treat it as the legally binding equivalent of the standard Toastmasters International membership application, and you will be prompted to agree to all the same terms and conditions.</p>
 	<?php
 }
 ?>
@@ -24,20 +25,20 @@ Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
 <p><strong>Applicant Information</strong></p>
 <p>Gender <?php tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Non-binary', 'Decline to respond' ) ); ?></p>
 <?php rsvphoney_ui(); ?>
-<br><label>First name</label> <?php tm_application_form_field( 'first_name' ); ?>
-<br><label>Middle name</label> <?php tm_application_form_field( 'middle_name' ); ?></p>
-<p><label>Last name/Surname</label> <?php tm_application_form_field( 'last_name' ); ?>
+<div class="memberdata"><label>First name</label> <?php tm_application_form_field( 'first_name' ); ?></div>
+<div class="memberdata"><label>Middle name</label> <?php tm_application_form_field( 'middle_name' ); ?></div>
+<div class="memberdata"><label>Last name/Surname</label> <?php tm_application_form_field( 'last_name' ); ?></div>
 <p>Any correspondence mailed to you will be sent to the following address:</p>
-<p><label>Organization/In care of</label> <?php tm_application_form_field( 'address_organization' ); ?><br >
-<label>Address line 1</label> <?php tm_application_form_field( 'address_line1' ); ?><br>
-<label>Address line 2</label> <?php tm_application_form_field( 'address_line2' ); ?><br>
-<label>City</label> <?php tm_application_form_field( 'address_city' ); ?><br>
-<label>State or province</label> <?php tm_application_form_field( 'address_state' ); ?><br>
-<label>Country</label> <?php tm_application_form_field( 'address_country' ); ?><br>
-<label>Postal Code</label> <?php tm_application_form_field( 'address_postalcode' ); ?></p>
-<p><label>Home phone number</label> <?php tm_application_form_field( 'home_phone' ); ?><br>
-<label>Mobile phone number</label> <?php tm_application_form_field( 'mobile_phone' ); ?><br>
-<label>Email address</label> <?php tm_application_form_hidden( 'user_email' ); ?></p>
+<div class="memberdata"><label>Organization/In care of</label> <?php tm_application_form_field( 'address_organization' ); ?></div>
+<div class="memberdata"><label>Address line 1</label> <?php tm_application_form_field( 'address_line1' ); ?></div>
+<div class="memberdata"><label>Address line 2</label> <?php tm_application_form_field( 'address_line2' ); ?></div>
+<div class="memberdata"><label>City</label> <?php tm_application_form_field( 'address_city' ); ?></div>
+<div class="memberdata"><label>State or province</label> <?php tm_application_form_field( 'address_state' ); ?></div>
+<div class="memberdata"><label>Country</label> <?php tm_application_form_field( 'address_country' ); ?></div>
+<div class="memberdata"><label>Postal Code</label> <?php tm_application_form_field( 'address_postalcode' ); ?></div>
+<div class="memberdata"><label>Home phone number</label> <?php tm_application_form_field( 'home_phone' ); ?></div>
+<div class="memberdata"><label>Mobile phone number</label> <?php tm_application_form_field( 'mobile_phone' ); ?></div>
+<div class="memberdata"><label>Email address</label> <?php tm_application_form_field( 'user_email' ); ?></div>
 <p><strong>Toastmasters International Dues and Fees</strong></p>
 <div style="padding: 5px; border: thin dotted #000;">
 <?php
@@ -80,24 +81,27 @@ if ( isset( $_POST['sponsor'] ) ) {
 <li>Maintain&nbsp;changes to my personal contact information to ensure it is accurate and current by updating my personal profile page located on the Toastmasters International website:&nbsp;<strong>www.toastmasters.org/login</strong>. I understand that the majority of the data requested in this application is necessary for administrative and planning purposes.</li>
 </ul>
 <p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> <label class="small">Mail</label> <?php tm_application_form_radio( 'mail_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Email</label> <?php tm_application_form_radio( 'email_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Phone</label> <?php tm_application_form_radio( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
-<p>If you would rather not receive non-essential communications from us, please select "No" <?php tm_application_form_choice( 'opt_out', array( 'Yes, communication is welcome', 'No, I wish to opt out of non-esssential communications' ) ); ?></p>
+<p>If you would rather not receive non-essential communications from us, please select "No" </p>
+<div class="memberdata"><?php tm_application_form_choice( 'opt_out', array( 'Yes, communication is welcome', 'No, I wish to opt out of non-esssential communications' ) ); ?></div>
 <p>For our full privacy policy, you may visit&nbsp;<strong><a target="_blank" href="https://www.toastmasters.org/footer/privacy-policy">www.toastmasters.org/footer/privacy-policy</a></strong>.</p>
 <p><strong>Club email and privacy settings</strong></p>
-<p>Do you grant the club permission to send you email communications such as meeting updates.<br><?php tm_application_form_radio( 'tm_privacy_prompt', array( '0' => 'Yes, permission granted', '2' => 'No, permission DENIED' ) ); ?> </p>
-<p>Do you grant permission for your contact information to be shared with other members in the member directory.<br><?php tm_application_form_radio( 'tm_directory_blocked', array( '0' => 'Yes, permission granted', '1' => 'No, permission DENIED' ) ); ?> </p>
+<p>Do you grant the club permission to send you email communications such as meeting updates.</p>
+<div class="memberdata"><?php tm_application_form_radio( 'tm_privacy_prompt', array( '0' => 'Yes, permission granted', '2' => 'No, permission DENIED' ) ); ?> </div>
+<p>Do you grant permission for your contact information to be shared with other members in the member directory.</p>
+<div class="memberdata"><?php tm_application_form_radio( 'tm_directory_blocked', array( '0' => 'Yes, permission granted', '1' => 'No, permission DENIED' ) ); ?> </div>
 <p><strong>Verification of Applicant</strong></p>
 <p>By my signature below, I agree to the terms of A Toastmaster’s Promise and the Member’s Agreement and Release stated above, and certify that I am 18 years of age or older (in compliance with the Toastmasters Club Constitution for Clubs of Toastmasters International).</p>
 <p><em>I acknowledge that my electronic signature on this document is legally equivalent to my handwritten signature.</em> Type your name as the electronic signature.</p>
-<p><label>Applicant’s signature</label> <?php tm_application_form_field( 'applicant_signature' ); ?><br >
-<label>Date</label> <?php tm_application_form_field( 'applicant_signature_date' ); ?>
-</p>
-</div>
+<div class="memberdata"><label>Applicant’s signature</label>
+<?php tm_application_form_field( 'applicant_signature' ); ?></div>
+<div class="memberdata"><label>Date</label> <?php tm_application_form_field( 'applicant_signature_date' ); ?></div>
 <?php
 rsvpmaker_nonce();
 if ( empty( $_POST['applicant_signature'] ) ) {
 	echo '<p><button>Submit</button></p></form>';
 }
 ?>
+</div>
 <script>
     // Capitalize first letter of each word, lower-case the rest
     function capitalizeName(s) {

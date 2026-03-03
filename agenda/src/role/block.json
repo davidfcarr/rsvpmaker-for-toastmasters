@@ -1,0 +1,65 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/role",
+	"version": "0.1.0",
+	"title": "Toastmasters Agenda Role",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "Role to be assigned and displayed on the agenda.",
+	"keywords": [
+		"toastmasters",
+		"agenda",
+		"role"
+	],
+	"attributes": {
+		"role": {
+			"type": "string",
+			"default": ""
+		},
+		"custom_role": {
+			"type": "string",
+			"default": ""
+		},
+		"count": {
+			"type": "number",
+			"default": 1
+		},
+		"start": {
+			"type": "string",
+			"default": ""
+		},
+		"agenda_notes": {
+			"type": "string",
+			"default": ""
+		},
+		"time_allowed": {
+			"type": "string",
+			"default": "0"
+		},
+		"timing_updated": {
+			"type": "number",
+			"default": 0
+		},
+		"padding_time": {
+			"type": "string",
+			"default": "0"
+		},
+		"backup": {
+			"type": "string",
+			"default": ""
+		},
+		"show_timing_summary": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+    "render": "file:./render.php",
+	"style": "file:./style-index.css"
+}

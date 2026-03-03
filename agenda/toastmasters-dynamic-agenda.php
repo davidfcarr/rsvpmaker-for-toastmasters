@@ -7,6 +7,7 @@
  *
  * @see https://developer.wordpress.org/reference/functions/register_block_type/
  */
+
 function create_block_toastmasters_dynamic_agenda_block_init() {
 	register_block_type( __DIR__ . '/build' );
 	$blocks = get_wpt_blocks();		
@@ -19,6 +20,23 @@ function get_wpt_blocks() {
 		'logo' => array(),
 		'help'  => array(),
 		'rsvplist'  => array(),
+		'role'  => array(),
+		'agendanoterich2'  => array(),
+		'signupnote'  => array(),
+		'agendaedit'  => array(),
+		'milestone'  => array(),
+		'absences'  => array(),
+		'hybrid'  => array(),
+		'duesrenewal'  => array(),
+		'context'  => array(),
+		'blog'  => array(),
+		'newestmembers'  => array(),
+		'memberaccess'  => array(),
+		'agendamain'  => array(),
+		'meetingdate'  => array(),
+		'officers'  => array(),
+		'memberoptions'  => array(),
+		'speaker-evaluator'  => array(),		
 	);
 }
 

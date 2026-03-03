@@ -278,7 +278,7 @@ export default function RoleBlock(props) {
                             'ID': id, 'name': getMemberName(id), 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count
                         })
                     }} />}</>
-                    <>{'edit' == mode && assignment.ID == 'Guest' && <div className="tmflexrow"><div className="tmflex30"><TextControl label={mytranslate('Guest Name', data)} value={guests[roleindex]} onChange={(id) => {
+                    <>{assignment.ID == 'Guest' && <div className="tmflexrow"><div className="tmflex30"><TextControl label={mytranslate('Guest Name', data)} value={guests[roleindex]} onChange={(id) => {
                         let newguests = [...guests]; newguests[roleindex] = id; setGuests(newguests);
                     }} /></div><div className="tmflex30"><br /><button className="tmform" onClick={() => {
                         updateAssignment({

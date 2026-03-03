@@ -11,6 +11,7 @@ const { Component } = wp.element;
 const { InspectorControls } = wp.blockEditor;
 const { PanelBody, ToggleControl, SelectControl } = wp.components;
 
+
 registerBlockType( 'wp4toastmasters/context', {
 	title: ( 'Agenda Display Wrapper' ), // Block title.
 	icon: 'admin-comments', 

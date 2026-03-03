@@ -4887,10 +4887,7 @@ input[type="number"].time_allowed, input[type="number"].padding_time, input[type
 #toastmasters-application,
 #toastmasters-application p,
 #toastmasters-application label,
-#toastmasters-application input,
-#toastmasters-application textarea,
-#toastmasters-application select,
-#toastmasters-application button {
+#toastmasters-application textarea {
   font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
   font-weight: 400; /* regular */
   font-size: 14px;
@@ -4899,3 +4896,9 @@ input[type="number"].time_allowed, input[type="number"].padding_time, input[type
 }
 #toastmasters-application label { display: inline-block; width: 200px; }
 #toastmasters-application label.small { width: 100px; }
+#toastmasters-application input, #toastmasters-application select, #toastmasters-application button {
+  font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: 400; /* regular */
+  line-height: 1.4;
+	font-size: 20px;
+}

@@ -20,7 +20,7 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 	$link .= '<div id="cssmenu"><ul>';
 	if ( $frontend ) {
 		$events = future_toastmaster_meetings();
-		if ( $events ) {
+		if ( sizeof($events) > 1) {
 			$event = $events[0];
 			if($event->ID == $post->ID)
 				array_shift($events);
@@ -31,8 +31,15 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 					continue;
 				$link .= '<li><a href="' . rsvpmaker_permalink_query( $event->ID ) . '"' . $blank . '>' . rsvpmaker_date( $rsvp_options['short_date'], (int) $event->ts_start ) . '</a></li>';
 			}
-		}
 		$link .= '</ul></li>';
+		}
+		elseif (current_user_can( 'edit_rsvpmakers' ) ) {
+			$template_id = get_post_meta( $post->ID, '_meet_recur', true );
+			if($template_id) {
+				$add = admin_url('edit.php?post_type=rsvpmaker&page=rsvpmaker_template_list&t='.$template_id);
+				$link .= '<li><a href="' . $add . '">' . __( 'Add Meetings from Template', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+			}
+		}
 	}
 	$link .= '<li class="has-sub"><a target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Agenda', 'rsvpmaker-for-toastmasters' ) . '</a><ul> ';
 	if ( current_user_can( $security['email_list'] ) ) {
@@ -175,7 +182,13 @@ add_filter( 'the_content', function ( $content ) {
 		return $link;
 	}
 	elseif ( ! is_club_member() && ! current_user_can('manage_network') ) {
-		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
+		if(strpos($post->post_content,'<hr')) {
+			$parts = explode('<hr',$content);//code rendered on page
+			$content = sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to='. urlencode($permalink ), site_url() . '/wp-login.php?redirect_to='. urlencode($permalink . 'print_agenda=1&no_print=1' ));
+			$content .= $parts[0];
+			return $content;
+		}
+		$link .= sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ).' more:'.$morefound . '</a></div>', site_url() . '/wp-login.php?redirect_to=' . urlencode( $permalink ), $permalink . 'print_agenda=1&no_print=1' );
 	} else {
 		$link .= wptmagenda_menu( $post->ID );
 		$shown = empty($_GET['app_promo']) ? get_user_meta($current_user->ID, 'app_promo_shown', true) : false;

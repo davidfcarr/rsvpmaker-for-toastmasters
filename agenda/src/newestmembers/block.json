@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/newestmembers",
+	"version": "0.1.0",
+	"title": "Toastmasters Newest Members",
+	"category": "widgets",
+	"icon": "groups",
+	"description": "Newest members in the club.",
+	"keywords": [
+		"toastmasters",
+		"newest",
+		"members"
+	],
+	"attributes": {
+		"title": {
+			"type": "string",
+			"default": "Newest Members"
+		},
+		"number": {
+			"type": "int",
+			"default": 5
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+    "render": "file:./render.php",
+	"style": "file:./style-index.css"
+}

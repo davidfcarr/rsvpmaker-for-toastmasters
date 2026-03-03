@@ -1,0 +1,75 @@
+/**
+ * Retrieves the translation of text.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * React hook that is used to mark the block wrapper element.
+ * It provides all the necessary props like the class name.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
+ */
+import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import { __experimentalNumberControl as NumberControl, TextControl, SelectControl } from '@wordpress/components';
+
+/**
+ * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
+ * Those files can contain any CSS code that gets applied to the editor.
+ *
+ * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
+ */
+import './editor.scss';
+
+/**
+ * The edit function describes the structure of your block in the context of the
+ * editor. This represents what the editor will render when the block is used.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/#edit
+ *
+ * @return {WPElement} Element to render.
+ */
+
+export default function Edit({ attributes, attributes: { title, type, number }, setAttributes, isSelected, className, clientId }) {
+const dates = [];
+for(let i=1; i <= number; i++) {
+    dates.push(<li><a href="#">Post Title <em>{type}</em></a> Date</li>);
+}         
+if(('private' === type) && ('Club News' === title)) {
+    title = 'Members Only';
+    setAttributes( { title } );
+}
+if(('public' === type) && ('Members Only' === title)) {
+    title = 'Club News';
+    setAttributes( { title } );
+}
+
+return (
+<div { ...useBlockProps() }>
+{title && <h5>{title}</h5>}	  
+<ul>
+{dates}
+</ul>
+<InspectorControls>
+            <TextControl
+        label="Title"
+        value={ title }
+        onChange={ ( title ) => setAttributes( { title } ) }
+    />
+ <SelectControl
+				label={ __( 'Type', 'rsvpmaker-for-toastmasters' ) }
+				value={ type }
+				onChange={ ( type ) => setAttributes( { type } ) }
+				options={ [{value: 'private', label: 'private'},{value: 'public', label: 'public'}] }
+/>
+       <NumberControl
+                label={ __( 'Number of Posts', 'rsvpmaker-for-toastmasters' ) }
+                min={0}
+                value={ number }
+                onChange={ ( number ) => setAttributes({ number }) }
+            />
+</InspectorControls>
+</div>
+	);
+}

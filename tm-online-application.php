@@ -6,8 +6,15 @@ function wp4t_paypal_application_payment($response,$get) {
 	rsvpmaker_debug_log($get,'wp4t_paypal_application_payment http request');
 	global $wpdb;
 }
+$formdefaults = [];
 function tm_member_application( $atts ) {
-	global $rsvp_options;
+	global $rsvp_options, $formdefaults, $wpdb;
+	$formdefaults = array(
+		'club_name'   => get_option( 'club_name' ),
+		'club_number' => get_option( 'club_number' ),
+		'club_city'   => get_option( 'club_city' ),
+		'date'        => rsvpmaker_date( 'F j, Y' ),
+	);
 	rsvpmaker_fix_timezone();
 	if ( isset( $_GET['rsvpstripeconfirm'] ) ) {
 		return; // let rsvpmaker show payment message
@@ -16,9 +23,36 @@ function tm_member_application( $atts ) {
 		return paydues_later();
 	}
 	global $post;
-	if ( empty( $_POST['user_email'] ) ) {
+	if ( empty( $_POST['user_email'] ) && empty($_GET['rsvp_id']) ) {
 		return tm_application_form_start( $atts );
 	}
+	if(!empty($_REQUEST['user_email']))
+		{
+		$user_email = sanitize_text_field($_REQUEST['user_email']);
+		$sql = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}rsvpmaker WHERE email = %s", $user_email);
+		$rsvprow = $wpdb->get_row($sql,ARRAY_A);
+		}
+	if(!empty($rsvprow))
+		{
+			$fields = ['first_name','last_name','user_email','mobile_phone','home_phone','work_phone'];
+			$rsvpdata = rsvp_row_to_profile( $rsvprow );
+			$rsvpdata['user_email'] = $rsvprow['email'];
+			if(isset($rsvprow['first'])) $rsvpdata['first_name'] = $rsvprow['first'];
+			if(isset($rsvprow['last'])) $rsvpdata['last_name'] = $rsvprow['last'];
+			if(isset($rsvpdata['phone_type']) && $rsvpdata['phone_type'] == 'Mobile Phone')
+				$rsvpdata['mobile_phone'] = $rsvpdata['phone'];
+			elseif(isset($rsvpdata['phone_type']) && $rsvpdata['phone_type'] == 'Home Phone')
+				$rsvpdata['home_phone'] = $rsvpdata['phone'];
+			if(isset($rsvpdata['first_name']) && !preg_match('/[A-Z]/',$rsvpdata['first_name']))
+				$rsvpdata['first_name'] = ucwords($rsvpdata['first_name']);
+			if(isset($rsvpdata['last_name']) && !preg_match('/[A-Z]/',$rsvpdata['last_name']))
+				$rsvpdata['last_name'] = ucwords($rsvpdata['last_name']);
+			foreach($rsvpdata as $key => $value)
+				{
+					if(in_array($key,$fields))
+						$formdefaults[$key] = $value;
+				}
+		}
 	$notifications = get_option( 'tm_application_notifications' );
 	$titles = get_option('tm_application_titles');
 	if(!empty($titles))
@@ -127,28 +161,46 @@ add_shortcode( 'club_fee_schedule', 'club_fee_schedule' );
 function club_fee_schedule() {
 	$ti_dues             = get_option( 'ti_dues' );
 	$club_dues           = get_option( 'club_dues' );
+	$includes_renewal = get_option( 'includes_renewal' );
+	if ( empty( $includes_renewal ) ) {
+		$includes_renewal = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
+		foreach($ti_dues as $i => $dues) {
+			if($dues > 60)
+				$includes_renewal[$i] = '1';
+		}
+	}
+
 	$club_new_member_fee = (int) get_option( 'club_new_member_fee' );
 	$new_member_fee      = 25 + $club_new_member_fee;
 	$output              = '';
+	$month_start_end = [['start' => 'January 1', 'end' => 'April 1'], ['start' => 'February 1', 'end' => 'April 1'], ['start' => 'March 1', 'end' => 'April 1'], ['start' => 'April 1', 'end' => 'October 1'], ['start' => 'May 1', 'end' => 'October 1'], ['start' => 'June 1', 'end' => 'October 1'], ['start' => 'July 1', 'end' => 'October 1'], ['start' => 'August 1', 'end' => 'October 1'], ['start' => 'September 1', 'end' => 'October 1'], ['start' => 'October 1','end'  => 'April 1' ],['start' => 'November 1','end'=> 'April 1' ],['start' => 'December 1', 'end' => 'April 1' ]];
+foreach($month_start_end as $i => $start_end) {
+	$endtime = (empty( $includes_renewal ) || empty( $includes_renewal[ $i ] ) ) ? strtotime($start_end['end']) : strtotime($start_end['end']) + 7 * MONTH_IN_SECONDS;
+	$end = date('F 1, Y', $endtime);
+	$datestext[$i] = $start_end['start'].' to<br />'.$end;
+}
 	$months              = array( 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' );
 	if ( empty( $ti_dues ) ) {
 		return 'not set';
 	} else {
-		$output .= '<style>.feeschedule th {text-align: center;} .feeschedule td {text-align: center; min-width: 100px;}</style>';
-		$output .= sprintf( '<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', __( 'Month', 'rsvpmaker-for-toastmasters' ), __( 'TI Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club New Member', 'rsvpmaker-for-toastmasters' ), __( 'Total', 'rsvpmaker-for-toastmasters' ), __( '+ New Member Fee', 'rsvpmaker-for-toastmasters' ) );
-		foreach ( $months as $index => $month ) {
+		$output .= '<style>.feeschedule th {text-align: center; font-size:11px} .feeschedule td {text-align: center; min-width: 100px; border: 1px solid #ccc;}</style>';
+		$output .= sprintf( '<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', __( 'Month', 'rsvpmaker-for-toastmasters' ), __( 'TI Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club New Member', 'rsvpmaker-for-toastmasters' ), __( 'Total', 'rsvpmaker-for-toastmasters' ), __( '+ $25 New Member Fee', 'rsvpmaker-for-toastmasters' ) );
+		foreach ( $datestext as $index => $month ) {
 			$total   = number_format( $ti_dues[ $index ] + $club_dues[ $index ] + $club_new_member_fee, 2 );
 			$new     = number_format( $total + 25, 2 );
 			$output .= sprintf( '<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $month, number_format( $ti_dues[ $index ], 2 ), number_format( $club_dues[ $index ], 2 ), $club_new_member_fee, $total, $new );
 		}
 		$output .= '</table>';
 	}
+	if(get_option('ti_show_extended_dues')) {
+		$output .= sprintf('<p>%s: $%s USD</p>',__('Option: pay the next 6 month renewal for and additional ','rsvpmaker-for-toastmasters'),number_format($ti_dues[3] + $club_dues[3],2)).'</p>';
+	}
 	return $output;
 }
 function tm_application_fee() {
 	global $post;
-	if ( isset( $_POST['membership_type'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		$new     = ( $_POST['membership_type'] == 'New' ) ? 25 : 0;
+	if ( isset( $_REQUEST['membership_type'] ))  {
+		$new     = ( strtolower($_REQUEST['membership_type']) == 'new' ) ? 25 : 0;
 		$ti_dues = get_option( 'ti_dues' );
 		if ( empty( $ti_dues )  || $ti_dues[3] == '45.00' ) {
 			$ti_dues = array( 30.00, 20.00, 10.00, 60.00, 50.00, 40.00, 30.00, 20.00, 10.00, 60.00, 50.00, 40.00 );
@@ -157,17 +209,33 @@ function tm_application_fee() {
 		if ( empty( $club_dues ) ) {
 			$club_dues = array( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
 		}
-		$monthindex     = (isset($_POST['monthindex'])) ? $_POST['monthindex'] : rsvpmaker_date( 'n' ) - 1;
+		$duesperiod = (isset($_REQUEST['duesperiod'])) ? sanitize_text_field($_REQUEST['duesperiod']) : '';
+		printf('<input type="hidden" name="duesperiod" value="%s">',esc_attr($duesperiod));
+		$parts = explode(':',$duesperiod);
+		$monthindex     = intval($parts[0]);
+		$extended = sanitize_text_field($parts[1]);
+		$end = (isset($parts[2])) ? sanitize_text_field($parts[2]) : '';
+		$extended_dues = get_option( 'extended_dues' );
 		$t = mktime(12,0,0,$monthindex + 1);
 		
 		$club_new       = (int) get_option( 'club_new_member_fee' );
-		$ti_dues_calc   = ( $_POST['membership_type'] == 'Transfer' ) ? 0 : $ti_dues[ $monthindex ];
+		$ti_dues_calc   = ( $_REQUEST['membership_type'] == 'Transfer' ) ? 0 : $ti_dues[ $monthindex ];
 		$club_dues_calc = $club_dues[ $monthindex ];
 		$fee            = $ti_dues_calc + $club_dues_calc + $new + $club_new;
-		$feetext        = sprintf( '<p>Membership Starting: %s</p>', rsvpmaker_date( 'F 1, Y',$t ));
+		if ( ! empty( $extended_dues ) && ! empty( $extended_dues[ $monthindex ] )) {
+			$ti_dues_calc += $ti_dues[3];
+			$club_dues_calc += $club_dues[3];
+			$fee += $ti_dues[3] + $club_dues[3];
+		}
+		if ( ! empty( $extended ) ) {
+			$ti_dues_calc += $ti_dues[3];
+			$club_dues_calc += $club_dues[3];
+			$fee += ($ti_dues[3] + $club_dues[3]);
+		}
+		$feetext        = sprintf( '<p>Membership Term: %s to %s</p>', rsvpmaker_date( 'F 1, Y',$t ),esc_html($end) );
 		$feetext       .= sprintf(
 			'<p>Toastmasters International Dues: <strong>%s</strong><br>
-    <em>Paid twice a year by all members, membership dues are pro-rated from the member’s start month.</em></p>',
+    <em>Toastmasters International dues are $60, paid twice a year (April and Octobder) by all members. New member dues are pro-rated from the member’s start month.</em></p>',
 			number_format( $ti_dues_calc, 2 )
 		);
 		if ( $ti_dues_calc == 0 ) {
@@ -195,11 +263,45 @@ function tm_application_fee() {
 	}
 }
 function tm_application_form_start( $atts ) {
+	global $wpdb, $current_user;
 	$pdf = ( isset( $atts['pdf'] ) ) ? $atts['pdf'] : 'https://toastmost.org/wp-content/uploads/2025/11/800-membership-application-ff.pdf';
-	if ( isset( $_POST['user_email'] ) && empty( $_POST['user_email'] ) ) {
-		return 'Email address is required <a href="' . get_permalink() . '">Try again</a>';
-	}
 	ob_start();
+	if ( isset( $_POST['user_email'] ) && empty( $_POST['user_email'] ) ) {
+		echo '<p style="color:red">An email address is required</p>';
+	}
+
+	if(isset($_POST['rsvp_link_emails']))
+		{
+			foreach($_POST['rsvp_link_emails'] as $email)
+				{
+				if(empty($email) || !is_email($email))
+					continue;
+				$email = sanitize_text_field($email);
+				$rsvprow = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}rsvpmaker WHERE email = %s",$email));
+				$link = add_query_arg(['rsvp_email' => $email], get_permalink());
+				$link_to_send = sprintf('<p><a href="%s">Personalized signup link for %s</a></p>',$link,$rsvprow->first.' '.$rsvprow->last);
+				if(isset($_POST['send']))
+					{
+						$mail['fromname'] = $current_user->display_name;
+						$mail['from'] = $current_user->user_email;
+						$mail['to'] = $email;
+						if(isset($_POST['cc']))
+							$mail['cc'] = $current_user->user_email;
+						$mail['subject'] = sanitize_text_field(stripslashes($_POST['email_subject']));
+						$message = sanitize_textarea_field(stripslashes($_POST['email_message']));
+						$signature = sanitize_textarea_field(stripslashes($_POST['email_signature']));
+						update_user_meta($current_user->ID,'tm_application_link_signature',$signature);
+						$mail['html'] = '<p>'.$message.'</p>'.$link_to_send.'<p>'.$signature.'</p>';
+						echo $mail['html'];
+						rsvpmailer($mail);
+						printf('<p>Email sent to %s</p>',$email);
+					}
+					else
+					{
+						echo $link_to_send;
+					}
+				}	
+		}
 	?>
 <style>
 label {
@@ -207,21 +309,50 @@ label {
 	width: 150px;
 }
 </style>
+<div id="toastmasters-application">
 <p>By submitting this online membership application, you agree to treat it as the legally binding equivalent of the standard Toastmasters International membership application, and you will be prompted to agree to all the same terms and conditions. If you prefer, you can download and sign the <a href="<?php echo esc_attr($pdf); ?>" target="_blank">PDF version</a>.</p>
 <form method="post" action="<?php echo get_permalink(); ?>">
 <p>Step 1: We need a little data to set up the application form and calculate the pro-rated dues (based on the month that you are joining). On the next screen, you will enter your personal data and electronically sign the application.</p>
 <p>Email address <?php tm_application_form_field( 'user_email' ); ?> (required)</p>
 <p>Application Type <?php tm_application_form_choice( 'membership_type', array( 'New', 'Dual', 'Transfer', 'Reinstated (break in membership)', 'Renewing (no break in membership)' ) ); ?></p>
 <?php
-$monthindex = date('n') - 1;
-$monthtext = date('F');
-$o = '<option value="'.$monthindex.'">'.$monthtext.' 1</option>';
-$t = strtotime('Next month');
-$monthindex = date('n',$t) - 1;
-$monthtext = date('F',$t);
-$o .= '<option value="'.$monthindex.'">'.$monthtext.' 1</option>';
+
+	$ti_dues = get_option( 'ti_dues' );
+	if ( empty( $ti_dues ) || $ti_dues[3] == '45.00' ) {
+		$ti_dues = array( '30.00', '20.00', '10.00', '60.00', '50.00', '40.00', '30.00', '20.00', '10.00', '60.00', '50.00', '40.00' );
+		update_option( 'ti_dues',$ti_dues );
+	}
+	$club_dues = get_option( 'club_dues' );
+	if ( empty( $club_dues ) ) {
+		$club_dues = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
+	}
+	$includes_renewal = get_option( 'includes_renewal' );
+	if ( empty( $includes_renewal ) ) {
+		$includes_renewal = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
+		foreach($ti_dues as $i => $dues) {
+			if($dues > 60)
+				$includes_renewal[$i] = '1';
+		}
+	}
+$monthindex = (isset($_GET['monthindex'])) ? intval($_GET['monthindex']) : date('n') - 1;
+$o = '';
+$month_start_end = [['start' => 'January 1', 'end' => 'April 1'], ['start' => 'February 1', 'end' => 'April 1'], ['start' => 'March 1', 'end' => 'April 1'], ['start' => 'April 1', 'end' => 'October 1'], ['start' => 'May 1', 'end' => 'October 1'], ['start' => 'June 1', 'end' => 'October 1'], ['start' => 'July 1', 'end' => 'October 1'], ['start' => 'August 1', 'end' => 'October 1'], ['start' => 'September 1', 'end' => 'October 1'], ['start' => 'October 1','end'  => 'April 1' ],['start' => 'November 1','end'=> 'April 1' ],['start' => 'December 1', 'end' => 'April 1' ]];
+foreach($month_start_end as $i => $start_end) {
+	if(($i != $monthindex) && ($i != ($monthindex + 1)) )
+		continue;
+$endtime = (empty( $includes_renewal ) || empty( $includes_renewal[ $i ] ) ) ? strtotime($start_end['end']) : strtotime($start_end['end']) + 7 * MONTH_IN_SECONDS;
+$end = date('F 1, Y', $endtime);
+$datestext = $start_end['start'].' to '.$end;
+$o .= '<option value="'.$i.':0:'.$end.'">'.$datestext.'</option>';
+if(get_option('ti_show_extended_dues')) {
+$endtime = (empty( $includes_renewal ) || empty( $includes_renewal[ $i ] ) ) ? strtotime($start_end['end']) + 7 * MONTH_IN_SECONDS : strtotime($start_end['end']) + 13 * MONTH_IN_SECONDS;
+$end = date('F 1, Y', $endtime);
+$datestext = $start_end['start'].' to '.$end.' (+ 6 months)';
+$o .= '<option value="'.$i.':1:'.$end.'">'.$datestext.'</option>';
+}
+}
 ?>
-<p>Start membership: <select name="monthindex"><?php echo $o ?></select></p>
+<p>Membership Term: <select name="duesperiod"><?php echo $o ?></select></p>
 <p><em>&quot;New&quot; means the member is new to Toastmasters (not just new to this club).</em></p>
 <p><em>"Transfer" means you are currently enrolled as a paying member of another club, which you wish to withdraw from and apply credit for your dues to our club.</em></p>
 <p id="transferprompt">If you are transferring from another club, please provide as much information as possible so we can look up your records. The <a href="https://www.toastmasters.org/Find-a-Club">Find a Club</a> feature of the toastmasters.org website can help you look up club numbers.</p>
@@ -229,7 +360,66 @@ $o .= '<option value="'.$monthindex.'">'.$monthtext.' 1</option>';
 <?php wp_nonce_field('application_email'); ?>
 <button>Next Screen</button>
 <?php rsvpmaker_nonce(); ?>
+</div>
 </form>
+<?php 
+echo '<h2>Membership Dues Schedule</h2>';
+echo club_fee_schedule();
+
+if(current_user_can('manage_options'))
+{
+	printf('<p><a href="%s">Edit dues and membership application settings</a></p>',admin_url('options-general.php?page=member_application_settings'));
+}
+
+$rsvps = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}rsvpmaker ORDER BY id DESC LIMIT 0, 50");
+if(current_user_can('add_users') && !empty($rsvps))
+	{
+		$shown = [];
+		$options = '<option value="">Select from recent RSVPs</option>';
+		foreach($rsvps as $rsvp)
+			{
+				$email = $rsvp->email;
+				if(in_array($email,$shown))
+					continue;
+				$shown[] = $email;
+				$options .= sprintf('<option value="%s">%s (%s)</option>',$email,$rsvp->first.' '.$rsvp->last,$email);
+			}
+	if(empty($message))
+		$message = 'Use this link for our club\'s application form with your information pre-filled based on your guest registration:';
+	if(empty($signature)) {
+		$signature = get_user_meta($current_user->ID,'tm_application_link_signature',true);
+		if(empty($signature))
+			$signature = 'Let me know if you have any questions!';
+	}
+	?>
+	<h3>Create personalized signup links from existing RSVPs</h3>
+	<p>As an officer, you can transform any guest RSVP record into a personalized signup link that will pre-fill the application form with the RSVP data.</p>
+	<form method="post" action="<?php echo get_permalink(); ?>">
+	<select name="rsvp_link_emails[]" >
+	<?php echo $options; ?>
+	</select>
+	<select name="rsvp_link_emails[]" >
+	<?php echo $options; ?>
+	</select>
+	<select name="rsvp_link_emails[]" >
+	<?php echo $options; ?>
+	</select>
+	<select name="rsvp_link_emails[]" >
+	<?php echo $options; ?>
+	</select>
+	<select name="rsvp_link_emails[]" >
+	<?php echo $options; ?>
+	</select>
+	<p><input type="checkbox" name="send" value="1" checked="checked"> Email from Server <input type="checkbox" name="cc" value="1" > CC me</p>
+	<p>Subject: <input type="text" name="email_subject" style="width:100%" value="Your personalized Toastmasters application link for <?php echo get_option('club_name'); ?>"></p>
+	<p>Message (displayed before link):<br /><textarea name="email_message" style="width:100%" rows="3"><?php echo $message; ?></textarea></p>
+	<p>Signature (displayed after link):<br /><textarea name="email_signature" style="width:100%" rows="3"><?php echo $signature; ?></textarea></p>
+	<button>Create Links</button>
+	<?php rsvpmaker_nonce(); ?>
+	</form>
+	<?php
+	}
+?>
 <p>&nbsp;</p>
 <script>
 jQuery(document).ready(function($) {
@@ -251,31 +441,30 @@ $('#membership_type').change(function(){
 	return ob_get_clean();
 }
 function tm_application_form_hidden( $slug ) {
-	echo ' <strong>' . esc_html(stripslashes( $_POST[ $slug ] )) . '</strong>';
-	printf( '<input type="hidden" name="%s" id="%s" value="%s" />', $slug, $slug, sanitize_text_field(stripslashes( $_POST[ $slug ]) ) );
+	echo ' <strong>' . esc_html(stripslashes( $_REQUEST[ $slug ] )) . '</strong>';
+	printf( '<input type="hidden" name="%s" id="%s" value="%s" />', $slug, $slug, sanitize_text_field(stripslashes( $_REQUEST[ $slug ]) ) );
 }
 function tm_application_form_field( $slug ) {
-	global $post;
-	$defaults = array(
-		'club_name'   => get_option( 'club_name' ),
-		'club_number' => get_option( 'club_number' ),
-		'club_city'   => get_option( 'club_city' ),
-		'date'        => rsvpmaker_date( 'F j, Y' ),
-	);
-	if ( isset( $_POST[ $slug ] ) ) {
-		echo ' <strong>' . esc_html(stripslashes( sanitize_text_field($_POST[ $slug ]) )) . '</strong>';
-	} else {
-		$value = '';
-		if ( ! empty( $defaults[ $slug ] ) ) {
-			$value = $defaults[ $slug ];
-		} elseif ( strpos( $slug, 'date' ) ) {
-			$value = $defaults['date'];
+	global $post, $formdefaults;
+	$value = '';
+	if ( isset( $_REQUEST[ $slug ] ) ) {
+		$value = stripslashes( sanitize_text_field($_REQUEST[ $slug ]) );
+	}
+	elseif ( ! empty( $formdefaults[ $slug ] ) ) {
+			$value = $formdefaults[ $slug ];
+	} elseif ( strpos( $slug, 'date' ) ) {
+			$value = $formdefaults['date'];
+	}
+	if(isset($_GET['rsvp_email']) && $slug == 'user_email')
+		{
+			$value = sanitize_text_field($_GET['rsvp_email']);
 		}
-		if ( empty( $value ) ) {
-			printf( ' <input type="text" name="%s" id="%s" value="" />', $slug, $slug );
-		} else {
-			printf( ' <input type="hidden" name="%s" id="%s" value="%s" /> <strong>%s</strong>', $slug, $slug, esc_attr($value), esc_html($value) );
-		}
+	if(empty($value))
+	{
+		printf( ' <input type="text" name="%s" id="%s" value="%s" />', $slug, $slug, esc_attr($value) );
+	}
+	else {
+		printf( ' <input type="hidden" name="%s" id="%s" value="%s" /> <strong>%s</strong>', $slug, $slug, esc_attr($value), esc_html($value) );
 	}
 }
 function tm_application_form_choice( $slug, $choices ) {
@@ -305,9 +494,17 @@ function member_application_settings( $action = '' ) {
 		update_option( 'club_city', sanitize_text_field(stripslashes( $_POST['club_city'] ) ) );
 		update_option( 'ti_dues', array_map('sanitize_text_field',$_POST['ti_dues']) );
 		update_option( 'club_dues', array_map('sanitize_text_field',$_POST['club_dues']) );
+		update_option( 'includes_renewal', array_map('sanitize_text_field',$_POST['includes_renewal']) );
 		update_option( 'club_new_member_fee', sanitize_text_field($_POST['club_new_member_fee']) );
 		update_option( 'tm_application_notifications', sanitize_text_field($_POST['tm_application_notifications']) );
-		update_option( 'tm_application_titles', $_POST['tm_application_titles'] );
+		if(isset($_POST['ti_show_extended_dues']))
+			update_option( 'ti_show_extended_dues', '1' );
+		else
+			update_option( 'ti_show_extended_dues', '0' );
+		if(isset($_POST['tm_application_dues_message']))
+			update_option( 'tm_application_dues_message', wp_kses_post($_POST['tm_application_dues_message']) );
+		if(isset($_POST['tm_application_titles']))
+			update_option( 'tm_application_titles', $_POST['tm_application_titles'] );
 		if ( isset( $_POST['rsvpmaker_stripe_pk'] ) ) {
 			update_option( 'rsvpmaker_stripe_pk', sanitize_text_field($_POST['rsvpmaker_stripe_pk']) );
 			update_option( 'rsvpmaker_stripe_sk', sanitize_text_field($_POST['rsvpmaker_stripe_sk']) );
@@ -331,6 +528,14 @@ function member_application_settings( $action = '' ) {
 	$club_dues = get_option( 'club_dues' );
 	if ( empty( $club_dues ) ) {
 		$club_dues = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
+	}
+	$includes_renewal = get_option( 'includes_renewal' );
+	if ( empty( $includes_renewal ) ) {
+		$includes_renewal = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
+		foreach($ti_dues as $i => $dues) {
+			if($dues > 60)
+				$includes_renewal[$i] = '1';
+		}
 	}
 	if ( isset( $_GET['reset_renewal_page'] ) ) {
 		delete_option( 'ti_dues_renewal_page' );
@@ -365,15 +570,29 @@ function member_application_settings( $action = '' ) {
 <p><strong>Club Number:</strong><br /><input type="text" name="club_number" value="<?php echo esc_attr(get_option( 'club_number' )); ?>" /> </p>
 <p><strong>Club City:</strong><br /><input type="text" name="club_city" value="<?php echo esc_attr(get_option( 'club_city' )); ?>" /> </p>
 <table>
-<tr><th>Month</th><th>TI Dues</th><th>Club Dues</th></tr>
+<tr><th>Month</th><th>TI Dues</th><th>Club Dues</th><th>Includes Renewal</th></tr>
 	<?php
 	foreach ( $months as $i => $month ) {
+		if(empty($includes_renewal[$i])) {
+		if($i < 3 || $i > 8)
+			$renewal = 'April 1';
+		else
+			$renewal = 'October 1';
+
+		}
+		else {
+			if($i < 3 || $i > 8)
+				$renewal = 'October 1, '.date("Y", (strtotime('April 1') + 6 * MONTH_IN_SECONDS) );
+			else
+				$renewal = 'April 1, '.date("Y", (strtotime('October 1') + 6 * MONTH_IN_SECONDS) );
+		}
 		?>
-<tr><td><?php echo esc_attr($month); ?></td><td><input type="text" name="ti_dues[<?php echo $i; ?>]" id="ti_dues<?php echo $i; ?>" value="<?php echo esc_attr($ti_dues[ $i ]); ?>"  /></td><td><input type="text" name="club_dues[<?php echo $i; ?>]" id="club_dues<?php echo $i; ?>"" value="<?php echo esc_attr($club_dues[ $i ]); ?>"  /></td></tr>
+<tr><td><?php echo esc_attr($month); ?></td><td><input type="text" name="ti_dues[<?php echo $i; ?>]" id="ti_dues<?php echo $i; ?>" value="<?php echo esc_attr($ti_dues[ $i ]); ?>"  /></td><td><input type="text" name="club_dues[<?php echo $i; ?>]" id="club_dues<?php echo $i; ?>" value="<?php echo esc_attr($club_dues[ $i ]); ?>"  /></td><td><input type="checkbox" name="includes_renewal[<?php echo $i; ?>]" id="includes_renewal<?php echo $i; ?>" value="1" <?php if(!empty($includes_renewal[$i])) echo ' checked="checked" '; ?> /> <?php echo esc_attr($renewal); ?></td></tr>
 		<?php
 	}
 	?>
 </table>
+<p><input type="checkbox" name="ti_show_extended_dues" id="ti_show_extended_dues" value="1" <?php if(get_option('ti_show_extended_dues')) echo ' checked="checked" '; ?>> Show extended dues option on form</p>
 <p><strong>Club New Member Fee:</strong><br /><input type="text" name="club_new_member_fee" value="<?php echo esc_attr(get_option( 'club_new_member_fee' )); ?>" /> </p>
 <p><strong>Renewal Fee:</strong><br>
 <?php
@@ -765,7 +984,7 @@ label {
 	<?php
 }
 function tm_application_menus() {
-	add_options_page( 'TM Application Form', 'TM Application Form', 'manage_options', 'member_application_settings', 'member_application_settings' );
+	add_options_page( 'TM Application & Dues', 'TM Application & Dues', 'manage_options', 'member_application_settings', 'member_application_settings' );
 	add_menu_page( 'Review/Approve Applications', 'Review/Approve Applications', 'edit_users', 'member_application_approval', 'member_application_approval' );
 	add_submenu_page( 'member_application_approval', 'Add File or Link', 'Add File or Link', 'edit_users', 'member_application_upload', 'member_application_upload' );
 }

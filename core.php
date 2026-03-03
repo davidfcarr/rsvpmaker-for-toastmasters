@@ -500,7 +500,7 @@ else {
 	do_action( 'toastmasters_admin_widget_end' );
 }
 function awesome_add_dashboard_widgets() {
-	wp_add_dashboard_widget( 'awesome_dashboard_widget', 'WordPress for Toastmasters Dashboard', 'awesome_dashboard_widget_function' );
+	wp_add_dashboard_widget( 'awesome_dashboard_widget', 'Toastmasters Dashboard', 'awesome_dashboard_widget_function' );
 	// Globalize the metaboxes array, this holds all the widgets for wp-admin
 	global $wp_meta_boxes;
 	unset( $wp_meta_boxes['dashboard']['normal']['core']['dashboard_plugins'] );
@@ -4215,40 +4215,50 @@ function stoplight_shortcode( $atts ) {
 	$yellow = ( isset( $atts['yellow'] ) ) ? $atts['yellow'] : null;
 	return get_stoplight( $green, $red, $yellow );
 }
-function wpt_custom_layout_default($sidebar_officers = false) {
-	global $wpdb;
-	$sidebar_content = '<!-- wp:paragraph -->
-		<p><br><strong>Club Mission: </strong>We provide a supportive and positive learning experience in which members are empowered to develop communication and leadership skills, resulting in greater self-confidence and personal growth.</p>
-		<!-- /wp:paragraph -->';
-	$officers_content = '<!-- wp:wp4toastmasters/officers /-->';
-	return '<!-- wp:columns {"className":"titleblock"} -->
-    <div class="wp-block-columns titleblock"><!-- wp:column {"width":"10%"} -->
-    <div class="wp-block-column" style="flex-basis:10%"><!-- wp:image {"width":40,"sizeSlug":"large"} -->
-    <figure class="wp-block-image size-large is-resized"><img src="https://toastmost.org/tmbranding/ToastmastersAgendaLogo.png" alt="" style="width:40px" width="40"/></figure>
-    <!-- /wp:image --></div>
-    <!-- /wp:column -->
-    
-    <!-- wp:column {"width":"90%"} -->
-    <div class="wp-block-column" style="flex-basis:90%"><!-- wp:heading {"style":{"typography":{"fontSize":22}}} -->
-    <!-- wp:paragraph {"style":{"typography":{"fontSize":22}},"className":"agenda-title"} -->
-    <p class="agenda-title" style="font-size:22px">'.esc_html(get_option('blogname')).' [tmlayout_post_title]</p>
-    <!-- /wp:paragraph -->
-    
-    <!-- wp:wp4toastmasters/meetingdate /--></div>
-    <!-- /wp:column --></div>
-    <!-- /wp:columns -->
-	
-	<!-- wp:columns -->
-	<div class="wp-block-columns"><!-- wp:column {"width":"33.33%"} -->
-	<div class="wp-block-column" style="flex-basis:33.33%" id="agenda-sidebar">'.$sidebar_content.'
-	
-	'.$officers_content.'</div>
-	<!-- /wp:column -->
-	
-	<!-- wp:column {"width":"66.66%"} -->
-	<div class="wp-block-column" style="flex-basis:66.66%" id="agenda"><!-- wp:wp4toastmasters/agendamain /--></div>
-	<!-- /wp:column --></div>
-	<!-- /wp:columns -->';
+function wpt_custom_layout_default($sidebar_officers = false, $sidebar = true) {
+update_option('wpt_layout_version','2026');
+$officers_content = ($sidebar_officers) ? '<!-- wp:wp4toastmasters/officers /-->' : '';
+
+if($sidebar)
+return '<!-- wp:columns {"className":"layout2026"} -->
+<div class="wp-block-columns"><!-- wp:column {"width":"33.33%"} -->
+<div class="wp-block-column" style="flex-basis:33.33%"><!-- wp:site-logo {"width":80} /-->
+
+<!-- wp:paragraph -->
+<p><strong>Club Mission: </strong>We provide a supportive and positive learning experience in which members are empowered to develop communication and leadership skills, resulting in greater self-confidence and personal growth.</p>
+<!-- /wp:paragraph -->
+
+'.$officers_content.'</div>
+<!-- /wp:column -->
+
+<!-- wp:column {"width":"66.66%"} -->
+<div class="wp-block-column" style="flex-basis:66.66%"><!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">'.esc_html(get_option('blogname')).' [tmlayout_post_title]</h3>
+<!-- /wp:heading -->
+
+<!-- wp:wp4toastmasters/meetingdate /-->
+
+<!-- wp:wp4toastmasters/agendamain /--></div>
+<!-- /wp:column --></div>
+<!-- /wp:columns -->';
+else 
+return '<!-- wp:columns {"className":"layout2026"} -->
+<div class="wp-block-columns"><!-- wp:column {"width":"33.33%"} -->
+<div class="wp-block-column" style="flex-basis:33.33%"><!-- wp:site-logo {"width":80} /--></div>
+<!-- /wp:column -->
+
+<!-- wp:column {"width":"66.66%"} -->
+<div class="wp-block-column" style="flex-basis:66.66%"><!-- wp:heading {"level":3} -->
+<h3 class="wp-block-heading">'.esc_html(get_option('blogname')).' [tmlayout_post_title]</h3>
+<!-- /wp:heading -->
+
+<!-- wp:wp4toastmasters/meetingdate /-->
+</div>
+<!-- /wp:column --></div>
+<!-- /wp:columns -->
+
+<!-- wp:wp4toastmasters/agendamain /-->';
+
 }
 function wp4toastmasters_agenda_layout_check( $sidebar_officers = false ) {
 	global $current_user;
@@ -4279,7 +4289,7 @@ function agenda_add_editor_styles() {
 .editor-styles-wrapper h1, .editor-styles-wrapper h2 {height: 50px; vertical-align: middle;}
 		.editor-styles-wrapper {background: none; background-color: #fff;}
 		.editor-styles-wrapper .wp-block-heading h1, .editor-styles-wrapper h1, .editor-styles-wrapper .h1, .editor-styles-wrapper .wp-block-heading h2, .editor-styles-wrapper h2, .editor-styles-wrapper .h2, .editor-styles-wrapper .wp-block-heading h3, .editor-styles-wrapper h3, .editor-styles-wrapper .h3, .editor-styles-wrapper .wp-block-heading h4, .editor-styles-wrapper h4, .editor-styles-wrapper .h4, .editor-styles-wrapper .wp-block-heading h5, .editor-styles-wrapper h5, .editor-styles-wrapper .h5, .editor-styles-wrapper .wp-block-heading h6, .editor-styles-wrapper h6, .editor-styles-wrapper .h6 {
-			clear: none; color: red;
+			clear: none;
 		}';
 		//printf('<style>%s</style>',$css);
 		$theme_root = get_stylesheet_directory();
@@ -6535,7 +6545,7 @@ function signup_sheet( $atts = array() ) {
 		global $rsvp_options;
 		global $post;
 		if ( function_exists( 'register_block_type' ) ) {
-			register_block_type( 'wp4toastmasters/role', array( 'render_callback' => 'toastmaster_short' ) );
+			//register_block_type( 'wp4toastmasters/role', array( 'render_callback' => 'toastmaster_short' ) );
 		}
 		$limit = get_option( 'tm_signup_count' );
 		if ( empty( $limit ) ) {
@@ -8181,7 +8191,7 @@ function toolbar_link_to_agenda( $wp_admin_bar ) {
 		'id'    => 'agenda_layout',
 		'title' => 'Agenda Layout',
 		'href'  => add_query_arg('agenda_layout','1',get_permalink($post->ID)),
-		'meta'  => array( 'class' => 'edit-agenda-layout' ),
+		'meta'  => array( 'class' => 'edit-agenda-layout', 'target' => '_blank' ),
 	);
 	$wp_admin_bar->add_node( $args );
 }
@@ -12578,11 +12588,6 @@ else
 </script>
 </div>";
 return ob_get_clean();	
-}
-function wp4t_server_block_render() {
-	register_block_type( 'wp4toastmasters/memberaccess', array( 'render_callback' => 'wpt_member_access' ) );
-	register_block_type( 'wp4toastmasters/blog', array( 'render_callback' => 'wpt_blog_posts' ) );
-	register_block_type( 'wp4toastmasters/newestmembers', array( 'render_callback' => 'wpt_newest_members_block' ) );
 }
 add_filter( 'nocache_headers', function() {
     global $post;
