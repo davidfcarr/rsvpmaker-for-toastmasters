@@ -1,8 +1,9 @@
 import { useSelect } from '@wordpress/data';
-import { useRsvpmakerRest } from '../../../rsvpmaker/admin/src/queries.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export default function TimeBlock({clientId}) {
 	const rsvpmaker_rest = useRsvpmakerRest();
+	console.log('rsvpmaker_rest in TimeBlock', rsvpmaker_rest);
 	const start_time = new Date(rsvpmaker_rest.date.replace(' ', 'T'));
 
 	const { previousBlocks, nextBlocks } = useSelect((select) => {

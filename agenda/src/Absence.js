@@ -1,12 +1,20 @@
 import React, {useState, useEffect} from "react"
 import {useQuery,useMutation, useQueryClient} from 'react-query';
-import apiClient from './http-common.js';
 import {SelectCtrl} from './Ctrl.js'
+import apiClient, { setupNonceInterceptor } from './http-common.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export function Absence(props) {
     const {current_user_id, post_id, mode, makeNotification} = props;
     const [addtolist,setAddToList] = useState(0);
     const [until,setUntil] = useState('');
+    const rsvpmaker_rest = useRsvpmakerRest();
+    
+    useEffect(() => {
+        if (rsvpmaker_rest?.nonce) {
+        setupNonceInterceptor(rsvpmaker_rest.nonce);
+        }
+    }, [rsvpmaker_rest?.nonce]);
 
     const { isLoading, isFetching, isSuccess, isError, data, error, refetch} =
     useQuery(['absences-data',post_id], fetchAbsences, { enabled: true, retry: 2, onSuccess, onError, refetchInterval: 60000 });

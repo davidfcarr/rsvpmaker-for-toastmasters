@@ -1,18 +1,22 @@
 import React from "react"
 import {useQuery,useMutation, useQueryClient} from 'react-query';
 import axios from "axios";
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
-const rsvpmakerClient = axios.create({
+const rsvpmakerClient = () => {
+    const wpt_rest = useRsvpmakerRest();
+    return axios.create({
   baseURL: '/wp-json/rsvpmaker/v1/',
   headers: {
     "Content-type": "application/json",
     'X-WP-Nonce': wpt_rest.nonce,
   }
 });
+}
 
 export function rsvpMetaData(post_id) {
     function fetchMeta(queryobj) {
-        return rsvpmakerClient.get('json_meta?post_id='+post_id);
+        return rsvpmakerClient().get('json_meta?post_id='+post_id);
     }
     return useQuery(['rsvp-meta',post_id], fetchMeta, { enabled: true, retry: 2, onSuccess, onError, refetchInterval: 50000 });
 }

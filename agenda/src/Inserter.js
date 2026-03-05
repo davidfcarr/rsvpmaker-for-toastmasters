@@ -1,8 +1,9 @@
-import React, {useState, useRef} from "react"
+import React, {useState, useRef, useEffect} from "react"
 
 import { TextControl } from '@wordpress/components';
 
-import apiClient from './http-common.js';
+import apiClient, { setupNonceInterceptor } from './http-common.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 import {useQuery, useQueryClient} from 'react-query';
 
@@ -22,7 +23,13 @@ export function Inserter(props) {
 
     const queryClient = useQueryClient();
 
+    const rsvpmaker_rest = useRsvpmakerRest();
     
+    useEffect(() => {
+        if (rsvpmaker_rest?.nonce) {
+        setupNonceInterceptor(rsvpmaker_rest.nonce);
+        }
+    }, [rsvpmaker_rest?.nonce]);
 
     const { isLoading, isSuccess, isError, data:roledata, error, refetch } =
 

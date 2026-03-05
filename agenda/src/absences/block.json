@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/absences",
 	"version": "0.1.0",
 	"title": "Toastmasters Absences",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Invite members to record planned absences.",
 	"keywords": [

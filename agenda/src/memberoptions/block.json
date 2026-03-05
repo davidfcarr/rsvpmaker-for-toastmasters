@@ -4,8 +4,8 @@
 	"name": "create-block/memberoptions",
 	"version": "0.1.0",
 	"title": "Memberoptions",
-	"category": "widgets",
-	"icon": "smiley",
+	"category": "toastmasters",
+	"icon": "groups",
 	"description": "Access to login and sign up for roles.",
 	"supports": {
 		"html": false

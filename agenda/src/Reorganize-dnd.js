@@ -11,8 +11,10 @@ import {EditableNote} from './EditableNote.js';
 import {Up, Down, DownUp} from './icons.js';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {updateAgenda} from './queries.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export default function Reorganize(props) {
+    const wpt_rest = useRsvpmakerRest();
     const {data, mode,post_id, makeNotification, ModeControl,showDetails, setshowDetails} = props;
     const [sync,setSync] = useState(true);
     const [downUpOn,setDownUpOn] = useState(-1);

@@ -36,7 +36,8 @@ function get_wpt_blocks() {
 		'meetingdate'  => array(),
 		'officers'  => array(),
 		'memberoptions'  => array(),
-		'speaker-evaluator'  => array(),		
+		'speaker-evaluator'  => array(),
+		'agendaprivacy'  => array(),		
 	);
 }
 
@@ -76,6 +77,7 @@ function dynamic_agenda_script() {
 		wp_set_script_translations($script_handle.'-2', 'rsvpmaker-for-toastmasters', $plugin_dir . 'translations');
 		wp_localize_script( $script_handle, 'wpt_rest',wpt_rest_array());
 		wp_enqueue_style(get_dynamic_agenda_script_handle('style'),'',['forms','common']);
+		rsvpmaker_enqueue_block_store();
 	}
 	if(isset($_GET['transdebug']))
 	die('<pre>'.htmlentities(var_export($wp_scripts->registered,true)).'</pre>');

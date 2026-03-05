@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/agendanoterich2",
 	"version": "0.1.0",
 	"title": "Toastmasters Agenda Note",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Displays \"stage directions\" for the organization of your meetings. You can set the time allowed for an activity (5-minute break, for example).",
 	"keywords": [

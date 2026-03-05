@@ -4,8 +4,8 @@ Donate link: https://wp4toastmasters.com/support/
 Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
-Tested up to: 6.9
-Stable tag: 6.5.6
+Tested up to: 7.0
+Stable tag: 6.5.8
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking.
@@ -36,9 +36,16 @@ The software will run on any WordPress web hosting service.
 When you install this software on your own website, you have greater freedom to install other plugins or themes, including those of your own design. However, you must also take more responsibility for providing your own technical support and solving problems such as spam filters blocking email notifications.
 The toastmost.org service is supported by subscriptions from member clubs.
 == Screenshots ==
-1. Role signup on the online agenda.
-2. Data collected through the plugin feeds performance reports, such as this one showing progress toward Competent Communicator.
+1. Role signup on a dynamic, digital agenda.
+2. Edit agendas as documents of WordPress blocks representing meeting roles and stage directions for the flow of the meeting.
+3. Track speeches and other roles recorded on the agenda. Each member can review their own records.
+4. Printable agenda with a customizable layout.
+5. Email version of the agenda with one-click signup links for open roles (inset).
+6. Web-based application form saves you the trouble of emailing PDFs. Members who complete the online application can be prompted to pay via PayPal or Stripe. Members can also pay dues renewal online.
 == Changelog ==
+= 6.5.7 =
+* Agenda blocks and other Toastmasters blocks updated for compatability with WordPress 7.0
+* Timing for agenda now shown more clearly when editing the document in the WordPress editor.
 = 6.5.6 =
 * Voting tool now supports signed club votes (budget, new members) as well as casual meeting votes (best speaker)
 * Updates to online application form

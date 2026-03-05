@@ -1,7 +1,5 @@
 import React, {useState, useEffect, useRef} from "react"
 
-import apiClient from './http-common.js';
-
 import { TextControl, ToggleControl, RadioControl } from '@wordpress/components';
 
 import RoleBlock from "./RoleBlock.js";
@@ -25,6 +23,7 @@ import {Up, Down, DownUp} from './icons.js';
 import {updateAgenda,copyToTemplate} from './queries.js';
 
 import {SelectCtrl, NumberCtrl} from './Ctrl.js'
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export default function Reorganize(props) {
 
@@ -33,6 +32,7 @@ export default function Reorganize(props) {
     const [sync,setSync] = useState(true);
 
     const [editThis,setEditThis] = useState(-1);
+
 
     const {mutate:agendaMutate} = updateAgenda(post_id, makeNotification,Inserter);
     const {mutate:copyToMutate} = copyToTemplate(post_id, data.has_template);

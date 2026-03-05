@@ -8,8 +8,8 @@
     "help",
     "toastmasters"
   ],
-  "category": "widgets",
-  "icon": "smiley",
+  "category": "toastmasters",
+  "icon": "groups",
   "description": "Show help tips and links",
   "supports": {
     "html": false

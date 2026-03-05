@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/hybrid",
 	"version": "0.1.0",
 	"title": "Toastmasters Hybrid Meeting",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Ask whether members will be attending in person.",
 	"keywords": [

@@ -4,6 +4,7 @@
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
  */
+
 import { useBlockProps } from '@wordpress/block-editor';
 
 /**
@@ -15,13 +16,8 @@ import { useBlockProps } from '@wordpress/block-editor';
  *
  * @return {WPElement} Element to render.
  */
-export default function save({attributes,className}) {
-
-	const { src } = attributes;
-	//const props = useBlockProps();
+export default function save() {
 	return (
-		<div className={ className }>
-		<a href="/"><img src={src} /></a>
-		</div>
-	);
+<hr { ...useBlockProps.save() } style={{ display: 'none' }} />
+	)
 }

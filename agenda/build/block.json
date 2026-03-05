@@ -4,8 +4,8 @@
   "name": "wp4toastmasters/toastmasters-dynamic-agenda",
   "version": "0.1.0",
   "title": "Toastmasters Dynamic Agenda",
-  "category": "widgets",
-  "icon": "smiley",
+  "category": "toastmasters",
+  "icon": "groups",
   "description": "Add to the top of an agenda template for the new role signup experience",
   "supports": {
     "html": false
@@ -22,7 +22,6 @@
   "editorStyle": "file:./index.css",
   "viewScript": [
     "file:./frontend.js",
-    "file:./gblocks/index.js",
     "agenda-view-script"
   ],
   "style": "file:./style-index.css"

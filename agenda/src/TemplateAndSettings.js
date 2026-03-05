@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from "react"
-import apiClient from './http-common.js';
+import apiClient, { setupNonceInterceptor } from './http-common.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 import {useMutation, useQueryClient} from 'react-query';
 import { ToggleControl } from '@wordpress/components';
 import {SelectCtrl} from './Ctrl.js'
@@ -14,6 +15,13 @@ export function TemplateAndSettings (props) {
     const [newSignupDefault, setNewSignupDefault] = useState(data.newSignupDefault);
     const [templateToEdit, setTemplateToEdit] = useState(data.is_template ? data.post_id: data.has_template);
     const [newtemplate, setNewTemplate] = useState(0);
+    const rsvpmaker_rest = useRsvpmakerRest();
+
+    useEffect(() => {
+        if (rsvpmaker_rest?.nonce) {
+            setupNonceInterceptor(rsvpmaker_rest.nonce);
+        }
+    }, [rsvpmaker_rest?.nonce]);
 
     const {data:mdata,isLoading:metaIsLoading,isError:metaIsError} = rsvpMetaData(data.post_id);
     if(metaIsError)

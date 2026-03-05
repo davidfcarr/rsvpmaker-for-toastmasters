@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/context",
 	"version": "0.1.0",
 	"title": "Agenda Display Wrapper, Agenda Context",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Wrapper block for displaying content in different agenda contexts.",
 	"keywords": [

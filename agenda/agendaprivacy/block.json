@@ -1,29 +1,22 @@
 {
 	"$schema": "https://schemas.wp.org/wp/trunk/block.json",
 	"apiVersion": 3,
-	"name": "wp4toastmasters/duesrenewal",
+	"name": "wp4toastmasters/agendaprivacy",
 	"version": "0.1.0",
-	"title": "Toastmasters Dues Renewal",
+	"title": "Agenda Privacy Separator",
 	"category": "toastmasters",
 	"icon": "groups",
-	"description": "Payment form for dues renewal.",
+	"description": "Divides publicly visible content from content that is only visible to members.",
 	"keywords": [
 		"toastmasters",
-		"payment",
-		"dues"
+		"agenda",
+		"privacy"
 	],
-	"attributes": {
-		"show_on_agenda": {
-			"type": "boolean",
-			"default": false
-		}
-	},
 	"supports": {
 		"html": false
 	},
 	"textdomain": "rsvpmaker-for-toastmasters",
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
-    "render": "file:./render.php",
 	"style": "file:./style-index.css"
 }

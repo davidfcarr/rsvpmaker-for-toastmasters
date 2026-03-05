@@ -4,8 +4,8 @@
 	"name": "wp4toastmasters/meetingdate",
 	"version": "0.1.0",
 	"title": "Meeting Date (Toastmasters agenda layout)",
-	"category": "widgets",
-	"icon": "smiley",
+	"category": "toastmasters",
+	"icon": "groups",
 	"description": "Meeting date for agenda layout.",
 	"example": {},
 	"supports": {

@@ -2291,6 +2291,7 @@ function wp4toastmasters_settings() {
 	add_awesome_roles();
     rsvpmail_clear_allforwarders(get_current_blog_id());
 	wpt_flattened_forwarders();//new forwarding rules
+
 	?>
 <div class="wrap">
 <?php rsvpmaker_admin_heading('Toastmasters '.__( 'Settings', 'rsvpmaker-for-toastmasters' ),__FUNCTION__);?>
@@ -2591,9 +2592,26 @@ submit_button('Switch to District');
 	if ( empty( $reserved_label ) ) {
 		$reserved_label = 'Ask VPE';
 	}
+	$custom_roles = get_option( 'toastmasters_custom_roles', array() );
+	$toast_role_times = get_option( 'toastmasters_custom_roles_time', array('Speaker'=>7,'Evaluator'=>3) );
 	?>
 <h3><?php _e( 'Reserved Role Label', 'rsvpmaker-for-toastmasters' ); ?></h3>
 <p>Reserved <input type="text" name="wpt_reserved_role_label" value="<?php echo esc_attr($reserved_label); ?>" /></p>
+<h3><?php _e( 'Custom Roles', 'rsvpmaker-for-toastmasters' ); ?></h3>
+<?php
+if ( ! empty( $custom_roles ) ) {
+	foreach ( $custom_roles as $index => $role ) {
+		$time = (isset($toast_role_times[$role])) ? $toast_role_times[$role] : 0;
+		printf( '<p>Custom Role<br /><input type="text" name="toastmasters_custom_roles[%s]" value="%s" /> Time Allowed <input type="number" name="toastmasters_custom_roles_time[%s]" value="%s" /></p>', $index, esc_attr($role), $index, esc_attr($time) );
+	}
+}
+	echo '<p>Add Custom Role <br /><input type="text" name="add_custom_role" value="" /> Time Allowed <input type="number" name="add_custom_role_time" value="0" /> </p>';
+	foreach($toast_role_times as $role => $time) {
+		if(!in_array($role,$custom_roles)) {
+			printf( '<input type="hidden" name="toastmasters_custom_roles_time[%s]" value="%s" />', $role, esc_attr($time) );
+		}
+	}
+?>
 <h3><?php _e( 'Include Time/Timezone on Agenda Email', 'rsvpmaker-for-toastmasters' ); ?></h3>
 <p><input type="radio" name="wp4toastmasters_agenda_timezone" value="1" 
 	<?php
@@ -3229,6 +3247,33 @@ function register_wp4toastmasters_settings() {
 		$agenda['post_content'] = wpt_custom_layout_default();
 		wp_update_post( $agenda );
 	}
+		if(isset($_POST['toastmasters_custom_roles_time']) && rsvpmaker_verify_nonce()) {
+		$toastmasters_custom_roles = isset($_POST['toastmasters_custom_roles']) ? array_map('sanitize_text_field', $_POST['toastmasters_custom_roles']) : array();
+		$toastmasters_custom_roles_time = array_map('intval', $_POST['toastmasters_custom_roles_time']);
+		if(isset($_POST['add_custom_role']) && !empty($_POST['add_custom_role'])) {
+			$new_role = sanitize_text_field($_POST['add_custom_role']);
+			$new_time = isset($_POST['add_custom_role_time']) ? intval($_POST['add_custom_role_time']) : 0;
+			$toastmasters_custom_roles[$new_role] = $new_role;
+			$toastmasters_custom_roles_time[$new_role] = $new_time;
+		}
+		update_option('toastmasters_custom_roles', $toastmasters_custom_roles);
+		update_option('toastmasters_custom_roles_time', $toastmasters_custom_roles_time);
+	}
+/*
+if ( ! empty( $custom_roles ) ) {
+	foreach ( $custom_roles as $index => $role ) {
+		$time = (isset($toast_role_times[$role])) ? $toast_role_times[$role] : 0;
+		printf( '<p><input type="text" name="toastmasters_custom_roles[%s]" value="%s" /> Time Allowed <input type="text" name="toastmasters_custom_roles_time[%s]" value="%s" /></p>', $index, esc_attr($role), $index, esc_attr($time) );
+	}
+}
+	printf( '<p>Add Custom Role <input type="text" name="add_custom_role" value="" /> Time Allowed <input type="text" name="add_custom_role_time" value="0" /> </p>', $index + 1 );
+	foreach($toast_role_times as $role => $time) {
+		if(!in_array($role,$custom_roles)) {
+			printf( '<input type="hidden" name="toastmasters_custom_roles_time[%s]" value="%s" />', $index, esc_attr($time) );
+		}
+	}
+*/
+
 }
 function reminders_test() {
 	if ( isset( $_GET['reminder_test'] ) ) {
@@ -12089,6 +12134,7 @@ function toastmasters_shared_templates() {
 add_action( 'import_shared_template_prompt', 'toastmasters_shared_templates' );
 function wp4t_agenda_display_context($atts, $content) {
 	global $email_context;
+	//return 'wp4t_agenda_display_context:'.$content.var_export($atts,true);
 	if(isset($_GET['agenda_email']))
 		$email_context = true;
 	$agenda_context = (isset($_GET['print_agenda']) || isset($_GET['agenda_email']));
@@ -12604,8 +12650,8 @@ add_filter('block_categories_all','toastmasters_agenda_category',10,2);
 function toastmasters_agenda_category($categories, $post) {
 	if(!empty($post->post_type) && in_array($post->post_type,['rsvpmaker','rsvpmaker_template'])) {
 		array_unshift( $categories, array(
-			'slug'	=> 'toastmasters-agenda',
-			'title' => 'Toastmasters Agenda'
+			'slug'	=> 'toastmasters',
+			'title' => 'Toastmasters'
 		) );
 	}
 	return $categories;

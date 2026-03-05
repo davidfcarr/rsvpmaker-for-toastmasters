@@ -1,26 +1,12 @@
-import React, {useState, useEffect, useRef} from "react"
+import {useState, useEffect, useRef} from "react"
 
-import apiClient from './http-common.js';
-
-import { TextControl, ToggleControl, RadioControl } from '@wordpress/components';
-
-import RoleBlock from "./RoleBlock.js";
+import { ToggleControl } from '@wordpress/components';
 
 import DeleteButton from "./Delete.js";
 
-import {SpeakerTimeCount} from "./SpeakerTimeCount.js";
-
 import {Inserter} from "./Inserter.js";
 
-import {SanitizedHTML} from "./SanitizedHTML.js";
-
-import {EditorAgendaNote} from './EditorAgendaNote.js';
-
-import {SignupNote} from './SignupNote.js';
-
-import {EditableNote} from './EditableNote.js';
-
-import {Up, Down, DownUp} from './icons.js';
+import {Up, Down} from './icons.js';
 
 import {updateAgenda,copyToTemplate} from './queries.js';
 

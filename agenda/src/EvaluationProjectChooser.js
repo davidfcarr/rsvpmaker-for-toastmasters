@@ -1,11 +1,13 @@
 import React, {useState, useEffect, useRef} from "react"
 import { TextControl } from '@wordpress/components';
 import {SelectCtrl} from './Ctrl.js'
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export function EvaluationProjectChooser(props) {
     const [path, setPath] = useState('');
     const [choices, setChoices] = useState([]);
     const {project,manual,title,setEvaluate,setManual,setProject,setTitle,makeNotification} = props;
+    const wpt_rest = useRsvpmakerRest();
 
     useEffect( () => {
         fetch(wpt_rest.url + 'rsvptm/v1/paths_and_projects', {headers: {'X-WP-Nonce': wpt_rest.nonce}})

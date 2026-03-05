@@ -20,9 +20,13 @@ import Voting from './Voting.js';
 import { useBlocks, updateAgenda } from './queries.js';
 import { useCollapse } from 'react-collapsed';
 import { Icon, chevronUp, chevronDown, edit } from '@wordpress/icons';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export default function Agenda(props) {
     let initialPost = 0;
+
+    const wpt_rest = useRsvpmakerRest();
+    console.log('wpt_rest in Agenda.js', wpt_rest);
 
     if ('rsvpmaker' == wpt_rest.post_type) {
         initialPost = wpt_rest.post_id;

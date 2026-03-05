@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/blog",
 	"version": "0.1.0",
 	"title": "Club News / Member Only Blog Posts",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Blog posts visible only to Toastmasters members.",
 	"keywords": [

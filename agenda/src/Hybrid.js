@@ -2,11 +2,19 @@ import React, { useState, useEffect } from "react";
 import mytranslate from './mytranslate'
 import { SelectCtrl } from './Ctrl.js';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import apiClient from './http-common.js';
+import apiClient, { setupNonceInterceptor } from './http-common.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export function Hybrid(props) {
     const { current_user_id, post_id, mode, makeNotification } = props;
     const [addtolist, setAddToList] = useState(0);
+    const rsvpmaker_rest = useRsvpmakerRest();
+
+    useEffect(() => {
+        if (rsvpmaker_rest?.nonce) {
+        setupNonceInterceptor(rsvpmaker_rest.nonce);
+        }
+    }, [rsvpmaker_rest?.nonce]);
 
     const queryClient = useQueryClient();
     const { isLoading, isFetching, isSuccess, isError, data, error, refetch } =

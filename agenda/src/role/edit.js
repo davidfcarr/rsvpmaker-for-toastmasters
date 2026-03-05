@@ -16,8 +16,8 @@ import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 const { TextareaControl, SelectControl, ToggleControl, TextControl, ServerSideRender } = wp.components;
 import { useSelect } from '@wordpress/data';
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
-import { useRsvpmakerRest } from '../../../../rsvpmaker/admin/src/queries.js';
 import TimeBlock from '../TimeBlock.js';
+import { useRsvpmakerRest } from '../useRsvpmakerRest.js';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -37,7 +37,10 @@ import './editor.scss';
  */
 
 export default function Edit({ attributes, attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected, className, clientId }) {
-		return (			
+const rsvpmaker_rest = useRsvpmakerRest();
+const toast_roles = rsvpmaker_rest.toast_roles;
+const toast_role_times = rsvpmaker_rest.toast_role_times;
+return (			
 <div {...useBlockProps()}>
 <TimeBlock clientId={clientId} />
 <div className={ className }>
@@ -51,7 +54,12 @@ export default function Edit({ attributes, attributes: { role, custom_role, coun
 	
 					value={ role }
 	
-					onChange={ ( role ) => setAttributes( { role } ) }
+					onChange={ ( role ) => {
+						if(toast_role_times && toast_role_times[role]) {
+							setAttributes({ time_allowed: count * toast_role_times[role] });
+						}
+						setAttributes( { role } );
+				} }
 	
 					options={ toast_roles }
 	
@@ -77,7 +85,7 @@ export default function Edit({ attributes, attributes: { role, custom_role, coun
 	
 			value={ count }
 	
-			onChange={ ( count ) => setAttributes( { count } ) }
+			onChange={ ( count ) => { setAttributes( { count } ); if(toast_role_times && toast_role_times[role]) { setAttributes({ time_allowed: count * toast_role_times[role] }); } } }
 	
 		/>
 	

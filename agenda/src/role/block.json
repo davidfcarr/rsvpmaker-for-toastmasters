@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/role",
 	"version": "0.1.0",
 	"title": "Toastmasters Agenda Role",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Role to be assigned and displayed on the agenda.",
 	"keywords": [
@@ -34,16 +34,16 @@
 			"default": ""
 		},
 		"time_allowed": {
-			"type": "string",
-			"default": "0"
+			"type": "number",
+			"default": 0
 		},
 		"timing_updated": {
 			"type": "number",
 			"default": 0
 		},
 		"padding_time": {
-			"type": "string",
-			"default": "0"
+			"type": "number",
+			"default": 0
 		},
 		"backup": {
 			"type": "string",

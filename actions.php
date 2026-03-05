@@ -5,7 +5,7 @@ function wp4t_init_actions() {
 	rsvptoast_load_plugin_textdomain();
 	fix_cache_users_bug();
 	create_block_toastmasters_dynamic_agenda_block_init();
-	wpt_server_block_render();
+	//wpt_server_block_render();
 	if(!wpt_exclude_agenda_functions()) {
 	//excluded on specified sites
 	//wp4toastmasters_agenda_layout_block_init();

@@ -5,7 +5,8 @@ import { SelectCtrl } from './Ctrl.js';
 import ProjectChooser from "./ProjectChooser.js";
 import Suggest from "./Suggest.js";
 import { Up, Down, Top, Close } from './icons.js';
-import apiClient from './http-common.js';
+import apiClient, { setupNonceInterceptor } from './http-common.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 import { useMutation, useQueryClient } from 'react-query';
 import { updatePreference } from "./queries.js";
 import { Icon, plusCircle, chevronRight, cancelCircleFilled, edit, tool } from '@wordpress/icons';
@@ -14,6 +15,13 @@ export default function RoleBlock(props) {
     const { agendadata, mode, showDetails, blockindex, setMode, setScrollTo, block, makeNotification, post_id, setEvaluate, setShowControls, data } = props;
     const { assignments, attrs, memberoptions } = block;
     const [itemMode, setItemMode] = useState({ item: null, mode: '' });
+    const rsvpmaker_rest = useRsvpmakerRest();
+
+    useEffect(() => {
+        if (rsvpmaker_rest?.nonce) {
+        setupNonceInterceptor(rsvpmaker_rest.nonce);
+        }
+    }, [rsvpmaker_rest?.nonce]);
 
     if (!attrs || !attrs.role)
         return null;

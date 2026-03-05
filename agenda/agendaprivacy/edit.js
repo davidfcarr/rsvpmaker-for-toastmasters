@@ -29,10 +29,14 @@ import './editor.scss';
  *
  * @return {WPElement} Element to render.
  */
-export default function Edit() {
+
+export default function Edit({ attributes: { label }, setAttributes, clientId }) {
+
+	
 	return (
-		<div { ...useBlockProps() }>
-			<p>Placeholder for officers list</p>
-		</div>
+
+<div { ...useBlockProps() }>
+{__('Divides publicly visible content (above this line) from content that is only visible to logged in members (below this line).', 'rsvpmaker-for-toastmasters')}
+</div>
 	);
 }

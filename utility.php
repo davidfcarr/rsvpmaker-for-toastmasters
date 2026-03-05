@@ -1764,3 +1764,29 @@ function wpt_exclude_agenda_functions() {
 		return false;
 	return in_array(get_current_blog_id(),EXCLUDE_AGENDA);
 }
+
+function agendanoterich2($atts, $content) {
+
+if(wp_is_json_request())
+
+	return;
+
+$output = false;
+
+global $emailcontext;
+
+if($emailcontext)
+
+	$output = true;
+
+if(isset($_GET['print_agenda']) || isset($_GET['email_agenda']))
+
+	$output = true;
+
+if($output)
+
+	return $content;
+
+return;
+
+}

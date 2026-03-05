@@ -4,8 +4,8 @@
 	"name": "wp4toastmasters/logo",
 	"version": "0.1.0",
 	"title": "Toastmasters Logo",
-	"category": "widgets",
-	"icon": "smiley",
+	"category": "toastmasters",
+	"icon": "groups",
 	"description": "Add the Toastmasters logo (choice of size)",
 	"attributes": {
 		"src": {

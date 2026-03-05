@@ -424,6 +424,7 @@ function toastmasters_screen() {
 } // end toastmasters_screen
 function wp4t_role_array() {
 	global $toast_roles;
+	$custom_roles = get_option( 'toastmasters_custom_roles' );
 	$toast_roles = array(
 		'Ah Counter' => __('Ah Counter','rsvpmaker-for-toastmasters'),
 		'Body Language Monitor' => __('Body Language Monitor','rsvpmaker-for-toastmasters'),
@@ -446,6 +447,11 @@ function wp4t_role_array() {
 		'International Contest Speaker' => __('International Contest Speaker','rsvpmaker-for-toastmasters'),
 		'Tall Tales Contest Speaker' => __('Tall Tales Contest Speaker','rsvpmaker-for-toastmasters'),
 	);
+	if ( ! empty( $custom_roles ) ) {
+		foreach ( $custom_roles as $role ) {
+			$toast_roles[ $role ] = $role;
+		}
+	}
 }
 function wp4t_role_display ($role) {
 	global $toast_roles;

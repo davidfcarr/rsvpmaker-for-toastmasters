@@ -4,8 +4,8 @@
 	"name": "wp4toastmasters/officers",
 	"version": "0.1.0",
 	"title": "Toastmasters Officers List",
-	"category": "widgets",
-	"icon": "smiley",
+	"category": "toastmasters",
+	"icon": "groups",
 	"description": "Officers list for agenda layout.",
 	"example": {},
 	"supports": {

@@ -1,9 +1,6 @@
-import React, {useState} from "react"
-
 import apiClient from './http-common.js';
 
 import {useQuery, useMutation, useQueryClient} from 'react-query';
-
 
 export function useBlocks(post_id,mode='',admin = false) {
 
@@ -18,8 +15,6 @@ export function useBlocks(post_id,mode='',admin = false) {
     return useQuery(['blocks-data',post_id], fetchBlockData, { enabled: true, retry: 2, onSuccess, onError, refetchInterval: 60000, 'meta': mode });
 
 }
-
-
 
 export function useMemberEvaluation(member,project) {
 

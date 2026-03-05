@@ -4,8 +4,8 @@
 	"name": "wp4toastmasters/rsvplist",
 	"version": "0.1.0",
 	"title": "Agenda RSVP List",
-	"category": "widgets",
-	"icon": "smiley",
+	"category": "toastmasters",
+	"icon": "groups",
 	"description": "Show the RSVP list for an event on the agenda.",
 	"supports": {
 		"html": false

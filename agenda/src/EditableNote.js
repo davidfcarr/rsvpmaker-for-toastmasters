@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
-import apiClient from './http-common.js';
+import apiClient, { setupNonceInterceptor } from './http-common.js';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 import {useQuery,useMutation, useQueryClient} from 'react-query';
 import {SanitizedHTML} from './SanitizedHTML.js';
 import { __experimentalNumberControl as NumberControl, TextControl } from '@wordpress/components';
@@ -14,6 +15,14 @@ export function EditableNote(props) {
 
     const {mutate:agendaMutate} = updateAgenda(post_id, makeNotification);
     const changeBlockAttribute = initChangeBlockAttribute(post_id,blockindex);
+
+    const rsvpmaker_rest = useRsvpmakerRest();
+    
+    useEffect(() => {
+        if (rsvpmaker_rest?.nonce) {
+        setupNonceInterceptor(rsvpmaker_rest.nonce);
+        }
+    }, [rsvpmaker_rest?.nonce]);
 
     function save() {
       if(insertBlock) {

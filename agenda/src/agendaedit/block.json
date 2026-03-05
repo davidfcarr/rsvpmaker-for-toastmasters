@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/agendaedit",
 	"version": "0.1.0",
 	"title": "Toastmasters Editable Agenda Note",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "A note that can be edited by a meeting organizer on the signup form. Used for things that change from meeting to meeting, such as Meeting Theme. Does not require editing rights.",
 	"keywords": [
@@ -26,7 +26,7 @@
 			"default": ""
 		},
 		"inline": {
-			"type": "int",
+			"type": "integer",
 			"default": 0
 		}
 	},

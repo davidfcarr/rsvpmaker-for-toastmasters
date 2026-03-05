@@ -3,8 +3,10 @@ import { Editor } from '@tinymce/tinymce-react';
 import { RadioControl } from '@wordpress/components';
 import {SelectCtrl} from './Ctrl.js'
 import { SanitizedHTML } from './SanitizedHTML';
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export default function Suggest(props) {
+  const wpt_rest = useRsvpmakerRest();
   const editorRef = useRef(null);
   const [member,setMember] = useState(0);
   const [ccme,setCcme] = useState('0');

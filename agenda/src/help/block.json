@@ -5,8 +5,8 @@
 	"version": "0.1.0",
 	"title": "Toastmasters Help",
 	"keywords": [ "help", "toastmasters" ],
-	"category": "widgets",
-	"icon": "smiley",
+	"category": "toastmasters",
+	"icon": "groups",
 	"description": "Show help tips and links",
 	"supports": {
 		"html": false

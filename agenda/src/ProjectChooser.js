@@ -5,9 +5,7 @@ import {TextControl } from '@wordpress/components';
 import { Editor } from '@tinymce/tinymce-react';
 
 import {SelectCtrl} from './Ctrl.js'
-import { update } from "@wordpress/icons";
-
-
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
 export default function ProjectChooser(props) {
 
@@ -26,8 +24,7 @@ export default function ProjectChooser(props) {
     const [maxtime, setMaxTime] = useState(props.maxtime);
 
     const editorRef = useRef(null);
-
-
+    const wpt_rest = useRsvpmakerRest();
 
     useEffect( () => {
 

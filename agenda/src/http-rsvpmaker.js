@@ -1,6 +1,9 @@
 import axios from "axios";
+import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
-export default axios.create({
+export default () => {
+    const wpt_rest = useRsvpmakerRest();
+    return axios.create({
   baseURL: '/wp-json/rsvpmaker/v1/',
   headers: {
     "Content-type": "application/json",
@@ -10,5 +13,4 @@ export default axios.create({
     return status < 400; // Resolve only if the status code is less than 400
   }
 });
-
-//    'X-WP-Nonce': wpApiSettings.nonce
+} 

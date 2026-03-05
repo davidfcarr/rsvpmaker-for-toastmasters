@@ -18,17 +18,7 @@ function wpt_is_evaluation_demo() {
 	return apply_filters('wpt_is_evaluation_demo',false);
 }
 function wpt_rest_array() {
-	global $post;
-	$post_id = (empty($post) || empty($post->ID)) ? 0 : $post->ID;
-	$post_type = (empty($post) || empty($post->post_type)) ? '' : $post->post_type;
-	$is_agenda = ($post && isset($post->post_content) && strpos($post->post_content,'wp4toastmasters/role'));
-	return array(
-		'nonce'   => wp_create_nonce( 'wp_rest' ),
-		'url'     => get_rest_url(),
-		'post_id' => $post_id,
-		'post_type' => $post_type,
-		'is_agenda' => $is_agenda,
-	);
+	return rsvpmaker_rest_array();
 }
 //use rsvpmaker script for tabbed ui
 add_filter('rsvpmaker_tab_pages','toastmasters_tabs');
@@ -142,4 +132,19 @@ function toastmasters_css_js() {
 }
 function wpt_fetch_report( $report, $user_id ) {
 	printf( '<div id="%s_content">Loading ...</div>', $report );
+}
+
+add_filter('rsvpmaker_rest_array', 'wpt_rsvpmaker_rest');
+function wpt_rsvpmaker_rest($array) {
+	global $toast_roles, $post;
+	$toast_role_times = get_option( 'toastmasters_custom_roles_time', array('Speaker'=>7,'Evaluator'=>3) );	
+		$toast[] = array('value' =>'', 'label' => __('Select Role (not set)','rsvpmaker-for-toastmasters'));
+	$toast[] = array('value' =>'custom', 'label' => __('Custom Role','rsvpmaker-for-toastmasters'));
+	foreach($toast_roles as $key => $value)
+		$toast[] = array('value' => $key, 'label' => $value);
+	$array['toast_roles'] = $toast;
+	$array['toast_role_times'] = $toast_role_times;
+	$array['is_agenda'] = ($post && isset($post->post_content) && strpos($post->post_content,'wp4toastmasters/role'));
+	$array['url'] = get_rest_url();
+	return $array;
 }

@@ -4,7 +4,7 @@
 	"name": "wp4toastmasters/newestmembers",
 	"version": "0.1.0",
 	"title": "Toastmasters Newest Members",
-	"category": "widgets",
+	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Newest members in the club.",
 	"keywords": [
@@ -18,7 +18,7 @@
 			"default": "Newest Members"
 		},
 		"number": {
-			"type": "int",
+			"type": "integer",
 			"default": 5
 		}
 	},
