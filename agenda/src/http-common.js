@@ -9,7 +9,6 @@ const client = axios.create({
     return status < 400;
   }
 });
-
 export function setupNonceInterceptor(nonce) {
   client.interceptors.request.use((config) => {
     config.headers['X-WP-Nonce'] = nonce;

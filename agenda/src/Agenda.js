@@ -21,11 +21,20 @@ import { useBlocks, updateAgenda } from './queries.js';
 import { useCollapse } from 'react-collapsed';
 import { Icon, chevronUp, chevronDown, edit } from '@wordpress/icons';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
+import apiClient, { setupNonceInterceptor } from './http-common.js';
 
 export default function Agenda(props) {
     let initialPost = 0;
 
     const wpt_rest = useRsvpmakerRest();
+    const rsvpmaker_rest = useRsvpmakerRest();
+    
+    useEffect(() => {
+        if (rsvpmaker_rest?.nonce) {
+        setupNonceInterceptor(rsvpmaker_rest.nonce);
+        }
+    }, [rsvpmaker_rest?.nonce]);
+
     console.log('wpt_rest in Agenda.js', wpt_rest);
 
     if ('rsvpmaker' == wpt_rest.post_type) {
