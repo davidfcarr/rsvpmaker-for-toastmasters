@@ -36,7 +36,7 @@ export default function Edit({ attributes: { label }, setAttributes, clientId })
 	return (
 
 <div { ...useBlockProps() }>
-{__('Divides publicly visible content (above this line) from content that is only visible to logged in members (below this line). If you have the RSVP function active, members will see the public content above, followed by the RSVP event registration form.', 'rsvpmaker-for-toastmasters')}
+{__('Put members-only content below this line, and it will not be displayed to visitors who are not logged in as authorized club members.', 'rsvpmaker-for-toastmasters')}
 </div>
 	);
 }

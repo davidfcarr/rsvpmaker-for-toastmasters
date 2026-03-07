@@ -3,6 +3,7 @@ import { TextControl } from '@wordpress/components';
 import mytranslate from './mytranslate'
 import { SelectCtrl } from './Ctrl.js';
 import ProjectChooser from "./ProjectChooser.js";
+import OtherRoleTitle from "./OtherRoleTitle.js";
 import Suggest from "./Suggest.js";
 import { Up, Down, Top, Close } from './icons.js';
 import apiClient, { setupNonceInterceptor } from './http-common.js';
@@ -13,7 +14,7 @@ import { Icon, plusCircle, chevronRight, cancelCircleFilled, edit, tool } from '
 
 export default function RoleBlock(props) {
     const { agendadata, mode, showDetails, blockindex, setMode, setScrollTo, block, makeNotification, post_id, setEvaluate, setShowControls, data } = props;
-    const { assignments, attrs, memberoptions } = block;
+    const { assignments, attrs, attrs: {titlePrompt}, memberoptions } = block;
     const [itemMode, setItemMode] = useState({ item: null, mode: '' });
     const rsvpmaker_rest = useRsvpmakerRest();
 
@@ -25,6 +26,9 @@ export default function RoleBlock(props) {
 
     if (!attrs || !attrs.role)
         return null;
+
+    //console.log('RoleBlock attrs', attrs );
+    //console.log('RoleBlock titlePrompt', titlePrompt );
 
     const queryClient = useQueryClient();
     const { current_user_id, current_user_name, request_evaluation } = agendadata;
@@ -56,9 +60,10 @@ export default function RoleBlock(props) {
     let role_label = mytranslate(attrs.role,data);
 
     function updateAssignment(assignment, blockindex = null, start = 1, count = 1) {
+        console.log('updateAssignment', assignment, blockindex, start, count);
         if (Array.isArray(assignment)) {
-            assignment = assignment.map((a) => { return { ...a, post_id: post_id, count: count } });
-            return multiAssignmentMutation.mutate({ 'assignments': assignment, 'blockindex': blockindex, 'start': 1 });
+            const assignments = assignment.map((a) => { return { ...a, post_id: post_id, count: count } });
+            return multiAssignmentMutation.mutate({ 'assignments': assignments, 'blockindex': blockindex, 'start': 1 });
         } else {
             assignment.post_id = post_id;
             assignmentMutation.mutate(assignment);
@@ -73,8 +78,11 @@ export default function RoleBlock(props) {
                 const previousData = queryClient.getQueryData(['blocks-data', post_id]);
                 queryClient.setQueryData(['blocks-data', post_id], (oldQueryData) => {
                     const { blockindex, roleindex } = assignment;
+                    console.log('assignmentMutation setQueryData blockindex / roleindex', blockindex, roleindex);
                     const { data } = oldQueryData;
                     const { blocksdata } = data;
+                    console.log('assignmentMutation setQueryData old blocksdata', blocksdata);
+                    console.log('blocksdata[blockindex]', blocksdata[blockindex]);
                     blocksdata[blockindex].assignments[roleindex] = assignment;
                     const newdata = {
                         ...oldQueryData, data: { ...data, blocksdata: blocksdata }
@@ -132,7 +140,7 @@ export default function RoleBlock(props) {
             },
         }
     );
-
+    
     function scrolltoId(id) {
         if (!id)
             return;
@@ -293,7 +301,8 @@ export default function RoleBlock(props) {
                             'ID': guests[roleindex], 'name': guests[roleindex] + ' (guest)', 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count
                         }); let newguests = [...guests]; newguests[roleindex] = ''; setGuests(newguests);
                     }} >{mytranslate('Add', data)}</button></div></div>}</>
-                    <>{'suggest' != mode && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && ((assignment.ID > 0) || (typeof assignment.ID == 'string' && assignment.ID != '')) && (role.search('Speaker') > -1) && (role.search('Backup') == -1) && showDetails && <ProjectChooser attrs={attrs} assignment={assignment} project={assignment.project} title={assignment.title} intro={assignment.intro} manual={assignment.manual} maxtime={assignment.maxtime} display_time={assignment.display_time} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
+                    <>{'suggest' != mode && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && ((assignment.ID > 0) || (typeof assignment.ID == 'string' && assignment.ID != '')) && role.includes('Speaker') && (role.includes('Backup') == false) && showDetails && <ProjectChooser attrs={attrs} assignment={assignment} project={assignment.project} title={assignment.title} intro={assignment.intro} manual={assignment.manual} maxtime={assignment.maxtime} display_time={assignment.display_time} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
+                    <>{titlePrompt && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && showDetails && <OtherRoleTitle role={role} attrs={attrs} assignment={assignment} title={assignment.title} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
                     <>{!!('edit' == mode) && assignments.length > 1 && <MoveButtons assignments={assignments} roleindex={roleindex} filledslots={filledslots} openslots={openslots} attrs={attrs} shownumber={shownumber} />}</>
                     {assignment.ID > 0 && 'Speaker' == attrs.role && <div className="evaluation-request"><a href={assignment.evaluation_link} onClick={(e) => { e.preventDefault(); setEvaluate(assignment); setMode('evaluation') }} >{mytranslate('Evaluation Form', data)}</a> <span style={{ fontSize: '10px' }}>({mytranslate('copy-paste text below to share', data)})</span><br /><textarea rows="3" style={{ fontSize: '8px' }} value={mytranslate('Evaluation link for ', data) + assignment.name + '\n' + assignment.evaluation_link} /></div>}
                 </div>)

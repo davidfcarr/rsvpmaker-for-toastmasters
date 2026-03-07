@@ -1404,7 +1404,7 @@ function tm_agenda_content($post_id = 0) {
 						$details .= '<div><strong>'.$assignment['display_time'].'</strong></div>';
 					if(!empty($assignment['title']))
 						$details .= '<div><em>'.$assignment['title'].'</em></div>';
-					if(!empty($assignment['intro']) && get_option( 'wp4toastmasters_intros_on_agenda' )) //check preference
+					if(!empty($assignment['intro']) && (isset($_GET['showintros']) || get_option( 'wp4toastmasters_intros_on_agenda' ))) //check preference
 						$details .= wp_kses_post($assignment['intro']);
 					if(($assignment['ID'] > 0) || (!is_numeric($assignment['ID']) && !empty($assignment['ID'])))
 						{
@@ -1413,6 +1413,10 @@ function tm_agenda_content($post_id = 0) {
 					if(isset($_GET['debug']))
 						$details = '<pre>'.var_export($assignment,true).'</pre>';
 					$content .= $details;				
+				}
+				else {
+					if(!empty($assignment['title']))
+						$content .= '<div><em>'.$assignment['title'].'</em></div>';
 				}
 			}
 			if('Speaker' == $role) {
@@ -2593,7 +2597,7 @@ submit_button('Switch to District');
 		$reserved_label = 'Ask VPE';
 	}
 	$custom_roles = get_option( 'toastmasters_custom_roles', array() );
-	$toast_role_times = get_option( 'toastmasters_custom_roles_time', array('Speaker'=>7,'Evaluator'=>3) );
+	$toast_role_properties = get_option( 'toastmasters_custom_roles_properties', array('Speaker'=>array('time'=>7,'titlePrompt' => false),'Evaluator'=>array('time'=>3,'titlePrompt' => false)) );
 	?>
 <h3><?php _e( 'Reserved Role Label', 'rsvpmaker-for-toastmasters' ); ?></h3>
 <p>Reserved <input type="text" name="wpt_reserved_role_label" value="<?php echo esc_attr($reserved_label); ?>" /></p>
@@ -2601,14 +2605,15 @@ submit_button('Switch to District');
 <?php
 if ( ! empty( $custom_roles ) ) {
 	foreach ( $custom_roles as $index => $role ) {
-		$time = (isset($toast_role_times[$role])) ? $toast_role_times[$role] : 0;
-		printf( '<p>Custom Role<br /><input type="text" name="toastmasters_custom_roles[%s]" value="%s" /> Time Allowed <input type="number" name="toastmasters_custom_roles_time[%s]" value="%s" /></p>', $index, esc_attr($role), $index, esc_attr($time) );
+		$properties = (isset($toast_role_properties[$role])) ? $toast_role_properties[$role] : array('time' => 0, 'titlePrompt' => false);
+		printf( '<p>Custom Role<br /><input type="text" name="toastmasters_custom_roles[%s]" value="%s" /> Time Allowed <input type="number" name="toastmasters_custom_roles_properties[%s][time]" value="%s" /> <input type="checkbox" name="toastmasters_custom_roles_properties[%s][titlePrompt]" value="1" %s /> Prompt for Note or Title</p>', $index, esc_attr($role), $index, esc_attr($properties['time']), $index, checked( $properties['titlePrompt'], true, false ) );
 	}
 }
-	echo '<p>Add Custom Role <br /><input type="text" name="add_custom_role" value="" /> Time Allowed <input type="number" name="add_custom_role_time" value="0" /> </p>';
-	foreach($toast_role_times as $role => $time) {
+	echo '<p>Add Custom Role <br /><input type="text" name="add_custom_role" value="" /> Time Allowed <input type="number" name="add_custom_role_time" value="0" /> <input type="checkbox" name="add_custom_role_titlePrompt" value="1" />  Prompt for Note or Title</p>';
+	foreach($toast_role_properties as $role => $properties) {
 		if(!in_array($role,$custom_roles)) {
-			printf( '<input type="hidden" name="toastmasters_custom_roles_time[%s]" value="%s" />', $role, esc_attr($time) );
+			printf( '<input type="hidden" name="toastmasters_custom_roles_properties[%s][time]" value="%s" />', $role, esc_attr($properties['time']) );
+			printf( '<input type="hidden" name="toastmasters_custom_roles_properties[%s][titlePrompt]" value="%s" />', $role, esc_attr($properties['titlePrompt']) );
 		}
 	}
 ?>
@@ -3247,17 +3252,21 @@ function register_wp4toastmasters_settings() {
 		$agenda['post_content'] = wpt_custom_layout_default();
 		wp_update_post( $agenda );
 	}
-		if(isset($_POST['toastmasters_custom_roles_time']) && rsvpmaker_verify_nonce()) {
+		if(isset($_POST['toastmasters_custom_roles_properties']) && rsvpmaker_verify_nonce()) {
 		$toastmasters_custom_roles = isset($_POST['toastmasters_custom_roles']) ? array_map('sanitize_text_field', $_POST['toastmasters_custom_roles']) : array();
-		$toastmasters_custom_roles_time = array_map('intval', $_POST['toastmasters_custom_roles_time']);
+		$toastmasters_custom_roles_properties = isset($_POST['toastmasters_custom_roles_properties']) ? $_POST['toastmasters_custom_roles_properties'] : array();
 		if(isset($_POST['add_custom_role']) && !empty($_POST['add_custom_role'])) {
 			$new_role = sanitize_text_field($_POST['add_custom_role']);
 			$new_time = isset($_POST['add_custom_role_time']) ? intval($_POST['add_custom_role_time']) : 0;
+			$new_titlePrompt = isset($_POST['add_custom_role_titlePrompt']) ? boolval($_POST['add_custom_role_titlePrompt']) : false;
 			$toastmasters_custom_roles[$new_role] = $new_role;
-			$toastmasters_custom_roles_time[$new_role] = $new_time;
+			$toastmasters_custom_roles_properties[$new_role] = array(
+				'time' => $new_time,
+				'titlePrompt' => $new_titlePrompt
+			);
 		}
 		update_option('toastmasters_custom_roles', $toastmasters_custom_roles);
-		update_option('toastmasters_custom_roles_time', $toastmasters_custom_roles_time);
+		update_option('toastmasters_custom_roles_properties', $toastmasters_custom_roles_properties);
 	}
 /*
 if ( ! empty( $custom_roles ) ) {
@@ -7875,29 +7884,55 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 		return;
 	}
 	$default = '<!-- wp:wp4toastmasters/help /-->
-<!-- wp:wp4toastmasters/agendaedit {"editable":"Welcome and Introductions","uid":"editable16181528933590.29714489144034184","time_allowed":"5","inline":true} /-->
-<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day","agenda_note":"Introduces supporting roles. Leads the meeting.","time_allowed":"4"} /-->
+
+<!-- wp:wp4toastmasters/signupnote -->
+<p class="wp-block-wp4toastmasters-signupnote">Guests are always welcome at our club. Scroll to the bottom of the page for the guest registration form.</p>
+<!-- /wp:wp4toastmasters/signupnote -->
+
+<!-- wp:wp4toastmasters/agendaprivacy -->
+<hr class="wp-block-wp4toastmasters-agendaprivacy" style="display:none"/>
+<!-- /wp:wp4toastmasters/agendaprivacy -->
+
+<!-- wp:wp4toastmasters/agendaedit {"uid":"editable16181528933590.29714489144034184","time_allowed":"3","editable":"Welcome and Introductions"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day"} /-->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note17727398557420.22279318486908772","time_allowed":"3"} -->
+<p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day introduces the team of members taking supporting roles.</p>
+<!-- /wp:wp4toastmasters/agendanoterich2 -->
+
 <!-- wp:wp4toastmasters/role {"role":"Ah Counter"} /-->
+
 <!-- wp:wp4toastmasters/role {"role":"Timer"} /-->
+
 <!-- wp:wp4toastmasters/role {"role":"Vote Counter"} /-->
-<!-- wp:wp4toastmasters/role {"role":"Grammarian","agenda_note":"Leads word of the day contest."} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Grammarian"} /-->
+
 <!-- wp:wp4toastmasters/role {"role":"Topics Master","time_allowed":"10"} /-->
-<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":"23","backup":"1"} /-->
-<!-- wp:wp4toastmasters/role {"role":"General Evaluator","agenda_note":"Explains the importance of evaluations. Introduces Evaluators."} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":"25","padding_time":"1","backup":"1"} /-->
+
+<!-- wp:wp4toastmasters/role {"role":"General Evaluator"} /-->
+
 <!-- wp:wp4toastmasters/role {"role":"Evaluator","count":3,"time_allowed":"9"} /-->
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"2","uid":"note31972"} -->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note31972","time_allowed":"5"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note21837"} -->
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note21837","time_allowed":"1"} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day presents the awards.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"1","uid":"note30722"} -->
-<p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting.</p>
+
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note30722","time_allowed":"3"} -->
+<p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting. VPE lines up volunteers for future meetings.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
+
 <!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
-<p maxtime="x" class="wp-block-wp4toastmasters-milestone">Meeting Ends</p>
+<div class="wp-block-wp4toastmasters-milestone"><p maxtime="x">Meeting Ends</p></div>
 <!-- /wp:wp4toastmasters/milestone -->
-<!-- wp:wp4toastmasters/agendaedit {"editable":"Theme and Word of the Day","uid":"editable16181528612380.6987292403509966"} /-->
+
 <!-- wp:wp4toastmasters/absences /-->';
 	$post       = array(
 		'post_content' => $default,

@@ -35,8 +35,6 @@ export default function Agenda(props) {
         }
     }, [rsvpmaker_rest?.nonce]);
 
-    console.log('wpt_rest in Agenda.js', wpt_rest);
-
     if ('rsvpmaker' == wpt_rest.post_type) {
         initialPost = wpt_rest.post_id;
     } else {

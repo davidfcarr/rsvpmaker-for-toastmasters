@@ -1477,6 +1477,12 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 							$speakerdata['evaluation_link'] = evaluation_form_url( $assignment['ID'], $post_id );//add_query_arg('evalme',$current_user->ID,get_permalink())
 							$assignment = array_merge($assignment,$speakerdata);
 						}
+						else {
+								$metakey = '_title' . $key;
+								$assignment['title'] = empty($all_assignments[$metakey]) ? '' : $all_assignments[$metakey];
+								if(isset($_GET['debug']))
+								printf('<p>key %s title %s </p>',$metakey,$assignment['title']);
+						}
 						if(isset($_GET['mode']) && 'reorg_admin' == $_GET['mode']) {
 							if(!isset($democharacters)) {
 								$democharacters = array('George Washington','John Adams','Thomas Jefferson','James Madison','James Monroe','John Quincy Adams','Andrew Jackson','Martin Van Buren','William Henry Harrison','John Tyler','James K. Polk','Zachary Taylor','Millard Fillmore','Franklin Pierce','James Buchanan','Abraham Lincoln');

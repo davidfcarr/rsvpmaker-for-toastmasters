@@ -78,7 +78,15 @@ p {
 		if ( $_POST['setup_wizard'] == '1' ) {
 			do_action('wp4t_setup_wizard_step1', $_POST );
 			$standard_roles = array('Ah Counter', 'Body Language Monitor', 'Grammarian', 'Humorist', 'Timer', 'Vote Counter');
-			$agenda_content = '<!-- wp:wp4toastmasters/help /-->' . "\n\n";
+			$agenda_content = '<!-- wp:wp4toastmasters/help /-->
+
+<!-- wp:wp4toastmasters/signupnote -->
+<p class="wp-block-wp4toastmasters-signupnote">Guests are always welcome at our club. Scroll to the bottom of the page for the guest registration form.</p>
+<!-- /wp:wp4toastmasters/signupnote -->
+
+<!-- wp:wp4toastmasters/agendaprivacy -->
+<hr class="wp-block-wp4toastmasters-agendaprivacy" style="display:none"/>
+<!-- /wp:wp4toastmasters/agendaprivacy -->' . "\n\n";
 			$time_open = (int) $_POST['time_open'];
 			$time_tod = (int) $_POST['time_tod'];
 			$time_ge = (int) $_POST['time_ge'];
@@ -144,8 +152,8 @@ p {
     <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 			}
 			$agenda_content .= '<!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
-<p maxtime="x" class="wp-block-wp4toastmasters-milestone">Meeting Ends</p>
-<!-- /wp:wp4toastmasters/milestone -->';
+<div class="wp-block-wp4toastmasters-milestone"><p maxtime="x">Meeting Ends</p></div>
+<!-- /wp:wp4toastmasters/milestone -->' . "\n\n";
 			if ( ! empty( $_POST['theme'] ) ) {
 				$agenda_content .= '<!-- wp:wp4toastmasters/agendaedit {"editable":"' . sanitize_text_field(stripslashes( $_POST['theme_label'] ) ) . '","uid":"Theme"} /-->' . "\n\n";
 			}

@@ -137,13 +137,13 @@ function wpt_fetch_report( $report, $user_id ) {
 add_filter('rsvpmaker_rest_array', 'wpt_rsvpmaker_rest');
 function wpt_rsvpmaker_rest($array) {
 	global $toast_roles, $post;
-	$toast_role_times = get_option( 'toastmasters_custom_roles_time', array('Speaker'=>7,'Evaluator'=>3) );	
+	$toast_role_properties = get_option( 'toastmasters_custom_roles_properties', array('Speaker'=>array('time'=>7,'titlePrompt' => false),'Evaluator'=>array('time'=>3,'titlePrompt' => false)) );	
 		$toast[] = array('value' =>'', 'label' => __('Select Role (not set)','rsvpmaker-for-toastmasters'));
 	$toast[] = array('value' =>'custom', 'label' => __('Custom Role','rsvpmaker-for-toastmasters'));
 	foreach($toast_roles as $key => $value)
 		$toast[] = array('value' => $key, 'label' => $value);
 	$array['toast_roles'] = $toast;
-	$array['toast_role_times'] = $toast_role_times;
+	$array['toast_role_properties'] = $toast_role_properties;
 	$array['is_agenda'] = ($post && isset($post->post_content) && strpos($post->post_content,'wp4toastmasters/role'));
 	$array['url'] = get_rest_url();
 	return $array;

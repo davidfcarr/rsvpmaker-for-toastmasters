@@ -34,22 +34,22 @@
 			"default": ""
 		},
 		"time_allowed": {
-			"type": "number",
-			"default": 0
+			"type": "string",
+			"default": "0"
 		},
 		"timing_updated": {
-			"type": "number",
-			"default": 0
+			"type": "string",
+			"default": "0"
 		},
 		"padding_time": {
-			"type": "number",
-			"default": 0
+			"type": "string",
+			"default": "0"
 		},
 		"backup": {
 			"type": "string",
 			"default": ""
 		},
-		"show_timing_summary": {
+		"titlePrompt": {
 			"type": "boolean",
 			"default": false
 		}

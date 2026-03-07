@@ -12,9 +12,10 @@ import { __ } from '@wordpress/i18n';
  * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
  */
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import { useEffect } from '@wordpress/element';
 
 const { TextareaControl, SelectControl, ToggleControl, TextControl, ServerSideRender } = wp.components;
-import { useSelect } from '@wordpress/data';
+import { useSelect, useDispatch } from '@wordpress/data';
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 import TimeBlock from '../TimeBlock.js';
 import { useRsvpmakerRest } from '../useRsvpmakerRest.js';
@@ -27,6 +28,11 @@ import { useRsvpmakerRest } from '../useRsvpmakerRest.js';
  */
 import './editor.scss';
 
+function toNumber(value, fallback = 0) {
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 /**
  * The edit function describes the structure of your block in the context of the
  * editor. This represents what the editor will render when the block is used.
@@ -36,10 +42,32 @@ import './editor.scss';
  * @return {WPElement} Element to render.
  */
 
-export default function Edit({ attributes, attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup }, setAttributes, isSelected, className, clientId }) {
+export default function Edit({ attributes, attributes: { role, custom_role, count, start, agenda_note, time_allowed, padding_time, backup, titlePrompt }, setAttributes, isSelected, className, clientId }) {
 const rsvpmaker_rest = useRsvpmakerRest();
 const toast_roles = rsvpmaker_rest.toast_roles;
-const toast_role_times = rsvpmaker_rest.toast_role_times;
+const toast_role_properties = rsvpmaker_rest.toast_role_properties;
+const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
+
+const roleBlocks = useSelect( ( select ) => {
+	const editor = select( 'core/block-editor' );
+	const rootClientId = editor.getBlockRootClientId( clientId );
+	return editor.getBlocks( rootClientId ).filter( ( block ) => block.name === 'wp4toastmasters/role' );
+}, [ clientId ] );
+
+function syncEvaluatorCount(nextCount) {
+	if (role !== 'Speaker') {
+		return;
+	}
+	const evaluatorBlock = roleBlocks.find( ( block ) => block.attributes?.role === 'Evaluator' );
+	if (!evaluatorBlock) {
+		return;
+	}
+	const evaluatorCount = toNumber(evaluatorBlock.attributes?.count, 1);
+	if (evaluatorCount !== nextCount) {
+		updateBlockAttributes(evaluatorBlock.clientId, { count: nextCount, time_allowed: (3 * nextCount).toString() });
+	}
+}
+
 return (			
 <div {...useBlockProps()}>
 <TimeBlock clientId={clientId} />
@@ -55,8 +83,8 @@ return (
 					value={ role }
 	
 					onChange={ ( role ) => {
-						if(toast_role_times && toast_role_times[role]) {
-							setAttributes({ time_allowed: count * toast_role_times[role] });
+						if(toast_role_properties && toast_role_properties[role]) {
+							setAttributes({ time_allowed: (toNumber(count, 1) * toNumber(toast_role_properties[role].time, 0)).toString(), titlePrompt: toast_role_properties[role].titlePrompt });
 						}
 						setAttributes( { role } );
 				} }
@@ -85,7 +113,14 @@ return (
 	
 			value={ count }
 	
-			onChange={ ( count ) => { setAttributes( { count } ); if(toast_role_times && toast_role_times[role]) { setAttributes({ time_allowed: count * toast_role_times[role] }); } } }
+			onChange={ ( count ) => {
+				const numericCount = toNumber(count, 1);
+				setAttributes( { count: numericCount } );
+				if(toast_role_properties && toast_role_properties[role]) {
+					setAttributes({ time_allowed: (numericCount * toNumber(toast_role_properties[role].time, 0)).toString(), titlePrompt: toast_role_properties[role].titlePrompt });
+				}
+				syncEvaluatorCount(numericCount);
+			} }
 	
 		/>
 	
@@ -113,7 +148,7 @@ return (
 	
 								min={0}
 	
-								onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }
+								onChange={ ( time_allowed ) => setAttributes({ time_allowed: time_allowed }) }
 	
 							/>
 	
@@ -129,7 +164,7 @@ return (
 	
 					value={ padding_time }
 	
-					onChange={ ( padding_time ) => setAttributes({ padding_time }) }
+					onChange={ ( padding_time ) => setAttributes({ padding_time: padding_time }) }
 	
 				/>
 	
@@ -157,12 +192,17 @@ return (
 	
 								value={ time_allowed }
 	
-								onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }//  setAttributes( { time_allowed } ) }
+								onChange={ ( time_allowed ) => setAttributes({ time_allowed: time_allowed }) }//  setAttributes( { time_allowed } ) }
 	
 							/>
 	
 	<p><em><strong>Time Allowed</strong>: Total minutes allowed on the agenda. In the case of speeches, limits the time that can be booked for speeches without a warning. Example: 24 minutes for 3 speeches, one of which might be longer than 7 minutes.</em></p>
+	<ToggleControl
+			label={ __( 'Show Title Prompt', 'rsvpmaker-for-toastmasters' ) }	
+			checked={ titlePrompt }
+			onChange={ ( titlePrompt ) => setAttributes( { titlePrompt } ) }
 	
+	/>
 	</div>
 	
 	}
