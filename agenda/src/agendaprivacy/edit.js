@@ -36,7 +36,7 @@ export default function Edit({ attributes: { label }, setAttributes, clientId })
 	return (
 
 <div { ...useBlockProps() }>
-{__('Put members-only content below this line, and it will not be displayed to visitors who are not logged in as authorized club members.', 'rsvpmaker-for-toastmasters')}
+{__('Put members-only content below this line, and it will ONLY be displayed to logged in, authorized club members (not to anonymous visitors).', 'rsvpmaker-for-toastmasters')}
 </div>
 	);
 }
