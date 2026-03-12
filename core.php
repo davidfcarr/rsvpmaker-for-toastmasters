@@ -949,6 +949,20 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 			}
 			$output .= '<div class="role_agenda_note">' . $note . '</div>';
 		}
+		
+		if('wp4toastmasters/context' == $atts['blockName']) {
+			foreach($atts['innerBlocks'] as $block) {
+				if('wp4toastmasters/agenda-note' == $block['blockName']) {
+					foreach($block['innerBlocks'] as $iblock) {
+						$output .= htmlentities(var_export($iblock,true));
+						//$output .= wp_kses_post( $iblock['innerHTML'] );
+					}
+				}
+			}
+		}
+		
+		if(isset($_GET['debug']))
+			$output .= sprintf('<p>Values: %s</p>',htmlentities(var_export($values,true)));
 	}//end for loop
 	if(!empty($atts['backup']) && !empty($open[ $atts['role'] ]))
 		$open[ $atts['role'] ]--;
@@ -1344,6 +1358,24 @@ function tm_agenda_content($post_id = 0) {
 		if(!$notime && (!isset($_REQUEST['role_only'])))
 			$content .= '<div class="timetoleft" style="width: max-content; min-width: 125px; font-size: 12px;">'.$time.'</div>';
 		$content .= '<div class="blockcontent" >';
+		if('wp4toastmasters/context' == $block["blockName"]) {
+			if(isset($attrs['agendaContext']) && !$attrs['agendaContext'])
+				;//$content .= '<div><em>'.__('Agenda context is false.','rsvpmaker-for-toastmasters').'</em></div>';
+			elseif(isset($attrs['printContext']) && !$attrs['printContext'])
+				;//$content .= '<div><em>'.__('Print context is false.','rsvpmaker-for-toastmasters').'</em></div>';
+			elseif(isset($attrs['anonContext']) && !$attrs['anonContext'] && !is_user_logged_in())
+				;//$content .= '<div><em>'.__('Anon context is false.','rsvpmaker-for-toastmasters').'</em></div>';
+			else {
+				$stop = sizeof($block['innerBlocks']) - 1;
+				foreach($block['innerBlocks'] as $index => $innerblock) {
+					if($index == $stop)
+						break;
+				$content .= '<p>Inner '.$index.': </p>'.wp_kses_post($innerblock['innerHTML']);
+				}
+			}
+		}
+		
+
 		if('wp4toastmasters/role' == $block["blockName"] && !empty($attrs['role'])) {
 			$role = $attrs['role'];
 			$count = isset($attrs['count']) ? intval($attrs['count']) : 1;

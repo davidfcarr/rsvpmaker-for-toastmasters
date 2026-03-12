@@ -22,8 +22,8 @@
 			"default": ""
 		},
 		"time_allowed": {
-			"type": "string",
-			"default": "0"
+			"type": "number",
+			"default": 0
 		}
 	},
 	"supports": {

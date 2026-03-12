@@ -34,16 +34,16 @@
 			"default": ""
 		},
 		"time_allowed": {
-			"type": "string",
-			"default": "0"
+			"type": "number",
+			"default": 0
 		},
 		"timing_updated": {
 			"type": "string",
 			"default": "0"
 		},
 		"padding_time": {
-			"type": "string",
-			"default": "0"
+			"type": "number",
+			"default": 0
 		},
 		"backup": {
 			"type": "string",

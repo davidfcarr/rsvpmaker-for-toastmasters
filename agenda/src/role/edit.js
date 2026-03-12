@@ -64,7 +64,7 @@ function syncEvaluatorCount(nextCount) {
 	}
 	const evaluatorCount = toNumber(evaluatorBlock.attributes?.count, 1);
 	if (evaluatorCount !== nextCount) {
-		updateBlockAttributes(evaluatorBlock.clientId, { count: nextCount, time_allowed: (3 * nextCount).toString() });
+		updateBlockAttributes(evaluatorBlock.clientId, { count: nextCount, time_allowed: (3 * nextCount) });
 	}
 }
 
@@ -84,7 +84,7 @@ return (
 	
 					onChange={ ( role ) => {
 						if(toast_role_properties && toast_role_properties[role]) {
-							setAttributes({ time_allowed: (toNumber(count, 1) * toNumber(toast_role_properties[role].time, 0)).toString(), titlePrompt: toast_role_properties[role].titlePrompt });
+							setAttributes({ time_allowed: (toNumber(count, 1) * toNumber(toast_role_properties[role].time, 0)), titlePrompt: toast_role_properties[role].titlePrompt });
 						}
 						setAttributes( { role } );
 				} }
@@ -112,12 +112,13 @@ return (
 			label={ __( 'Count', 'rsvpmaker-for-toastmasters' ) }
 	
 			value={ count }
+			min = {1}
 	
 			onChange={ ( count ) => {
 				const numericCount = toNumber(count, 1);
 				setAttributes( { count: numericCount } );
 				if(toast_role_properties && toast_role_properties[role]) {
-					setAttributes({ time_allowed: (numericCount * toNumber(toast_role_properties[role].time, 0)).toString(), titlePrompt: toast_role_properties[role].titlePrompt });
+					setAttributes({ time_allowed: (numericCount * toNumber(toast_role_properties[role].time, 0)), titlePrompt: toast_role_properties[role].titlePrompt });
 				}
 				syncEvaluatorCount(numericCount);
 			} }
@@ -148,7 +149,7 @@ return (
 	
 								min={0}
 	
-								onChange={ ( time_allowed ) => setAttributes({ time_allowed: time_allowed }) }
+								onChange={ ( time_allowed ) => setAttributes({ time_allowed: Math.abs(parseInt(time_allowed)) }) }
 	
 							/>
 	
@@ -164,7 +165,7 @@ return (
 	
 					value={ padding_time }
 	
-					onChange={ ( padding_time ) => setAttributes({ padding_time: padding_time }) }
+					onChange={ ( padding_time ) => setAttributes({ padding_time: Math.abs(parseInt(padding_time)) }) }
 	
 				/>
 	
@@ -192,7 +193,7 @@ return (
 	
 								value={ time_allowed }
 	
-								onChange={ ( time_allowed ) => setAttributes({ time_allowed: time_allowed }) }//  setAttributes( { time_allowed } ) }
+								onChange={ ( time_allowed ) => setAttributes({ time_allowed: Math.abs(parseInt(time_allowed)) }) }//  setAttributes( { time_allowed } ) }
 	
 							/>
 	

@@ -317,7 +317,7 @@ function selectMove(source,destination) {
              <>
                 {'wp4toastmasters/role' == block.blockName && (
                 <div>
-                <p className="tmflexrow"><div className="tmflex30"><NumberCtrl label={'Signup Slots ('+roleslug+')'} min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { data.blocksdata[blockindex].attrs.count = value; if(['Speaker','Evaluator'].includes(block.attrs.role)) { data.blocksdata[blockindex].attrs.time_allowed = calcTimeAllowed(block.attrs); data.blocksdata = syncToEvaluator(data.blocksdata,value); } agendaMutate(data); }} /></div><div className="tmflex30"><NumberCtrl label={"Time Allowed ("+roleslug+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {data.blocksdata[blockindex].attrs.padding_time = value; agendaMutate(data);}} /></div>}</p>
+                <p className="tmflexrow"><div className="tmflex30"><NumberCtrl label={'Signup Slots ('+roleslug+')'} min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.count = value; if(['Speaker','Evaluator'].includes(block.attrs.role)) { data.blocksdata[blockindex].attrs.time_allowed = calcTimeAllowed(block.attrs); data.blocksdata = syncToEvaluator(data.blocksdata,value); } agendaMutate(data); }} /></div><div className="tmflex30"><NumberCtrl label={"Time Allowed ("+roleslug+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.padding_time = value; agendaMutate(data);}} /></div>}</p>
                 {('Speaker' == block.attrs.role) && 
 (<div>
 
@@ -341,11 +341,11 @@ onChange={ () => {setSync(!sync);}} /></p>
             </div>)}
             {'wp4toastmasters/agendaedit' == block.blockName && (
                 <div>
-                <p><NumberCtrl label={"Time Allowed (" +block.attrs.editable+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></p>
+                <p><NumberCtrl label={"Time Allowed (" +block.attrs.editable+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => {value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></p>
             </div>)}
             {'wp4toastmasters/agendanoterich2' == block.blockName && (
                 <div>
-                <p><NumberCtrl label={"Time Allowed ("+summary+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></p>
+                <p><NumberCtrl label={"Time Allowed ("+summary+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></p>
             </div>)}
             <div className="tmflexrow"><div><button className="blockmove" onClick={() => { moveBlock(blockindex, 'up') } }><Up /></button></div><div><button className="blockmove" onClick={() => { moveBlock(blockindex, 'down') } }><Down /></button></div><div><SelectCtrl label="Move" options={choicesForBlock} onChange={(value) => selectMove(blockindex,value)} /></div></div>
             <div><DeleteButton makeNotification={makeNotification} blockindex={blockindex} moveBlock={moveBlock} post_id={post_id} /> {data.has_template && <>Copy to template and future agendas: <CopyToTemplateButton /></>} </div>                

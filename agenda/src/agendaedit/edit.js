@@ -82,7 +82,7 @@ export default function Edit({ attributes, attributes: { uid, time_allowed, edit
 
 			min={0}
 
-			onChange={ ( time_allowed ) => setAttributes({ time_allowed }) }
+			onChange={ ( time_allowed ) => setAttributes({ time_allowed: Math.abs(parseInt(time_allowed)) }) }
 
 		/>
 	<ToggleControl
