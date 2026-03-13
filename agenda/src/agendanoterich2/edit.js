@@ -15,6 +15,7 @@ import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 
 import { RichText } from '@wordpress/block-editor';
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
+import { RadioControl } from '@wordpress/components';
 import TimeBlock from '../TimeBlock.js';
 
 /**
@@ -34,7 +35,7 @@ import './editor.scss';
  * @return {WPElement} Element to render.
  */
 
-export default function Edit({ attributes, attributes: { uid, time_allowed }, setAttributes, isSelected, className, clientId }) {
+export default function Edit({ attributes, attributes: { uid, time_allowed, visibility }, setAttributes, isSelected, className, clientId }) {
 
 	if(!uid)
 
@@ -93,3 +94,4 @@ export default function Edit({ attributes, attributes: { uid, time_allowed }, se
 </div>
 	);
 }
+//<RadioControl selected={visibility} label={ __( "Visibility", "rsvpmaker-for-toastmasters" ) } onChange={(value)=> setAttributes({visibility: value})} options={[{'label': 'Agenda', 'value':''},{'label': 'Both Agenda and Signup Form', 'value':'both'},{'label': 'Signup Form', 'value':'signup'}]}/>

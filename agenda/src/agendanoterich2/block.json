@@ -17,6 +17,10 @@
 			"source": "html",
 			"selector": "p"
 		},
+		"visibility": {
+			"type": "string",
+			"default": ""
+		},
 		"uid": {
 			"type": "string",
 			"default": ""

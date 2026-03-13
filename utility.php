@@ -2184,15 +2184,17 @@ function wptm_count_votes($post_id, $votingdata) {
 
 	}
 
+	
 	foreach($added_votes as $addit) {
 
 		if('Template' == $addit->ballot)
 
 			continue;
-
-		$votingdata['votes'][$addit->ballot][$addit->contestant]['count'] += $addit->add;
-
+		for($addone = 0; $addone < $addit->add; $addone++) {
+			$votingdata['votes'][$addit->ballot][$addit->contestant]['voters'][] = $addone.' admin added';
+		}
 	}
+	
 
 	if(!empty($votingdata['votes'])) {
 
@@ -2232,9 +2234,9 @@ function wptm_count_votes($post_id, $votingdata) {
 
 				{
 
-					$count = $count_voters['count'];
+					$voters = array_unique($count_voters['voters']);
 
-					$voters = $count_voters['voters'];
+					$count = sizeof($voters);
 
 					if(!$i && !$count) {
 
@@ -2259,17 +2261,20 @@ function wptm_count_votes($post_id, $votingdata) {
 					}
 
 					$signatures = [];
+					$admin_added = 0;
 
 					foreach($voters as $voter) {
-
-						//if(is_integer($voter) && $voter > 0)
-
+						if(strpos($voter,'admin added') !== false) {
+							$admin_added++;
+						}
+						elseif(is_int($voter) && $voter > 0)
 							$signatures[] = get_member_name($voter);
-
 					}
 
 					$ranking[$contest] .= sprintf('<p>%s: %s %s</p>',$name,$count,empty($signatures) ? '' : ' votes from: '.implode(', ',$signatures));
-
+					if($admin_added) {
+						$ranking[$contest] .= sprintf('<p>%s admin added votes</p>',$admin_added);
+					}
 					$total_votes += $count;
 
 					$i++;
@@ -2293,6 +2298,8 @@ function wptm_count_votes($post_id, $votingdata) {
 	$output .= '</div>';
 
 	}
+	if(isset($_GET['debug']))
+		$output .= '<pre>'.var_export($votingdata,true).'</pre>';
 
 	return $output;
 
@@ -3531,54 +3538,25 @@ function wpt_exclude_agenda_functions() {
 }
 
 
-
 function agendanoterich2($atts, $content) {
 
-
-
 if(wp_is_json_request())
-
-
-
 	return;
 
-
-
 $output = false;
-
-
-
 global $emailcontext;
 
-
-
-if($emailcontext)
-
-
-
+$showonagenda = (empty($atts['visibility']) || $atts['visibility'] == 'both');
+$showonsignup = ($atts['visibility'] == 'signup' || $atts['visibility'] == 'both');
+if($emailcontext && $showonagenda)
 	$output = true;
-
-
-
 if(isset($_GET['print_agenda']) || isset($_GET['email_agenda']))
-
-
-
 	$output = true;
-
-
-
+if(!$output && $showonsignup)
+	$output = true;
 if($output)
-
-
-
 	return $content;
-
-
-
 return;
-
-
 
 }
 

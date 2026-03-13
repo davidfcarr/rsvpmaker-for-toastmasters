@@ -6758,8 +6758,7 @@ function openings_for_date( $datepost, $user_id = 0 ) {
 		$user_id = $current_user->ID;
 	}
 	$data = wpt_blocks_to_data( $datepost->post_content );
-	// printf('<pre>%s</pre>',var_export($data,true));
-	$openings = $bases = array();
+	$openings = $bases = $current = array();
 	foreach ( $data as $row ) {
 		if ( empty( $row['role'] ) ) {
 			continue;
@@ -6774,19 +6773,20 @@ function openings_for_date( $datepost, $user_id = 0 ) {
 		}
 		for ( $i = 1; $i <= $count; $i++ ) {
 			$field    = wp4t_fieldbase($role,$i);
-			$assigned = (int) get_post_meta( $datepost->ID, $field, true );
+			$assigned = get_post_meta( $datepost->ID, $field, true );
 			$open     = ( ( $assigned == '' ) || ( $assigned == 0 ) );
 			// printf('<p>%d %s %d</p>',$datepost->ID,$field,$assigned);
 			if ( $assigned == $user_id ) {
-				$openings['assigned'] = $field;
+				$current[] = $field;
 			}
-			if ( $open && ! in_array( $field_base, $bases ) ) {
+			//&& ! in_array( $field_base, $bases 
+			if ( $open )  {
 				$openings[] = $field;
 				$bases[]    = $field_base;
 			}
 		}
 	}
-	return $openings;
+	return ['openings'=>$openings,'current'=>$current];
 }
 function wp_ajax_wptoast_role_planner_update() {
 	$post_id = (int) $_POST['datepost'];
@@ -6836,6 +6836,7 @@ function toastmasters_planner() {
 <p>This tool allows you to see your currently assigned roles and open roles at upcoming meetings. If you do not have a role, the software will attempt to recommend one you have not filled recently. Open roles are shuffled into a random order.</p>
 <p>You can change your role assignments one meeting at a time or scroll to the bottom and click <strong>Save All Updates</strong>.</p>
 	<?php
+	$recent_history = [];
 	printf( '<form method="post" action="%s">', admin_url( 'admin.php?page=toastmasters_planner' ) );
 	if ( isset( $_REQUEST['user_id'] ) ) {
 		$user_id = (int) $_REQUEST['user_id'];
@@ -6887,8 +6888,9 @@ function toastmasters_planner() {
 			printf('<p>%s</p>',__('Planned Absence','rsvpmaker-for-toastmasters'));
 			continue;
 		}
-		$meeting_openings = openings_for_date( $date, $user_id );
-		$recent_history   = wp4t_recent_history($user_id);
+		$opdata = openings_for_date( $date, $user_id );
+		$meeting_openings = $opdata['openings'];
+		$current_assignments = $opdata['current'];
 		if ( ! empty( $suggested ) ) {
 			$recent_history = array_merge( $recent_history, $suggested );
 		}
@@ -6896,15 +6898,24 @@ function toastmasters_planner() {
 		$dontrepeat = array();
 		$o          = '<option value="">None</option>';
 		$picked     = false;
-		if ( ! empty( $meeting_openings ) ) {
-			if ( ! empty( $meeting_openings['assigned'] ) ) {
-				$o     .= sprintf( '<option value="%s" selected="selected">%s (currently assigned)</option>', $meeting_openings['assigned'], clean_role( $meeting_openings['assigned'] ) );
-				$picked = true;
-				printf( '<input type="hidden" id="was%d" name="wasrole[%d]" value="%s" />', $date->ID, $date->ID, $meeting_openings['assigned'] );
-				if ( strpos( $meeting_openings['assigned'], 'Speaker' ) && ! get_post_meta( $date->ID, '_project' . $meeting_openings['assigned'], true ) ) {
-					$prompt = '<p><a href="' . $permalink . '#' . $meeting_openings['assigned'] . '">* Add speech project details</a></p>';
+		if ( ! empty( $current_assignments ) ) {
+			foreach ( $current_assignments as $index => $assigned_role ) {
+				if(0 == $index) {
+					$o .= sprintf( '<option value="%s" selected="selected">%s (currently assigned)</option>', $assigned_role, clean_role( $assigned_role ) );
+					printf( '<input type="hidden" id="was%d" name="wasrole[%d]" value="%s" />', $date->ID, $date->ID, $assigned_role );
 				}
-			} else {
+				else
+					$o .= sprintf( '<option value="%s">%s (currently assigned)</option>', $assigned_role, clean_role( $assigned_role ) );
+				$prompt = '✓';//assigned, no specific prompt
+				if ( strpos( $assigned_role, 'Speaker' ) && ! get_post_meta( $date->ID, '_project' . $assigned_role, true ) ) {
+					$prompt = '<a href="' . $permalink . '#' . $assigned_role . '">* Add speech project details</a>';
+				}
+			}
+			$recent_history = array_merge( $recent_history, array_map( 'clean_role', $current_assignments ) );
+			$dontrepeat     = array_merge( $dontrepeat, array_map( 'clean_role', $current_assignments ) );
+		}
+		if ( ! empty( $meeting_openings ) ) {
+			if(empty($prompt)) {
 				$prompt = '<span style="color: red;">Suggested role (not confirmed)</span>';
 			}
 			shuffle( $meeting_openings );
@@ -6931,16 +6942,15 @@ function toastmasters_planner() {
 				$clean_role  = clean_role( $role );
 				$suggest    .= sprintf( '<option value="%s" selected="selected">%s (suggested)</option>', $role, $clean_role );
 				$suggested[] = $clean_role;
-				// printf('<p>Suggested %s</p>',$clean_role);
 				$picked = true;
 			}
 			if ( ! empty( $suggest ) || ! empty( $olow ) || $picked ) {
-				printf( '<p>%s <select class="takerole" id="takerole%d" name="takerole[%d]" post_id="%d">%s</select></p>', __( 'Choices', 'rsvpmaker-for_toastmasters' ), $date->ID, $date->ID, $date->ID, $suggest . $o . $olow );
+				printf( '<p>%s <select class="takerole" id="takerole%d" name="takerole[%d]" post_id="%d">%s</select> <span id="change' . $date->ID . '">%s</span></p>', __( 'Choices', 'rsvpmaker-for_toastmasters' ), $date->ID, $date->ID, $date->ID, $suggest . $o . $olow, $prompt );
 				printf( '<div class="takerole_speaker" id="takerolespeaker%d">%s</div>', $date->ID, speaker_details( '_role_Speaker_' . $date->ID ) );
 				printf( '<p><button class="roleplanupdate button button-primary" datepost="%d">%s</button></p>', $date->ID, __( 'Update', 'rsvpmaker-for_toastmasters' ) );
 				// submit_button('Update');
 			}
-			echo '<div id="change' . $date->ID . '">' . $prompt . '</div>';
+			echo '<div id="change' . $date->ID . '"></div>';
 		}
 	}
 	rsvpmaker_nonce();
@@ -7150,9 +7160,19 @@ p
 			$event = $post->ID;
 	}
 	global $wpdb;
+	$shown = array();
 	$results = $wpdb->get_results("SELECT * FROM $wpdb->postmeta WHERE post_id = $event and meta_key LIKE '_role_Speaker_%' ORDER BY meta_key ASC");
+	if(isset($_GET['debug'])) {
+		echo '<pre>';
+		print_r($results);
+		echo '</pre>';
+	}	
 	foreach ( $results as $row ) {
-			echo '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $event, $row->meta_key ) ) . '</div>';
+		if ( in_array( $row->meta_value, $shown ) || strpos( $row->meta_key, 'Backup' ) !== false || strpos( $row->meta_key, 'Speaker_0' ) !== false ) {
+			continue;
+		}
+		$shown[] = $row->meta_value;
+		echo '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $event, $row->meta_key ) ) . '</div>';
 	}
 	if ( ! $agenda ) {
 		?>
@@ -7925,11 +7945,11 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 <hr class="wp-block-wp4toastmasters-agendaprivacy" style="display:none"/>
 <!-- /wp:wp4toastmasters/agendaprivacy -->
 
-<!-- wp:wp4toastmasters/agendaedit {"uid":"editable16181528933590.29714489144034184","time_allowed":"3","editable":"Welcome and Introductions"} /-->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"editable16181528933590.29714489144034184","time_allowed":3,"editable":"Welcome and Introductions"} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note17727398557420.22279318486908772","time_allowed":"3"} -->
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note17727398557420.22279318486908772","time_allowed":3} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day introduces the team of members taking supporting roles.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -7941,23 +7961,23 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 <!-- wp:wp4toastmasters/role {"role":"Grammarian"} /-->
 
-<!-- wp:wp4toastmasters/role {"role":"Topics Master","time_allowed":"10"} /-->
+<!-- wp:wp4toastmasters/role {"role":"Topics Master","time_allowed":10} /-->
 
-<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":"25","padding_time":"1","backup":"1"} /-->
+<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":25,"padding_time":1,"backup":1} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"General Evaluator"} /-->
 
-<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":3,"time_allowed":"9"} /-->
+<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":3,"time_allowed":9} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note31972","time_allowed":"5"} -->
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note31972","time_allowed":5} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note21837","time_allowed":"1"} -->
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note21837","time_allowed":1} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">Toastmaster of the Day presents the awards.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note30722","time_allowed":"3"} -->
+<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note30722","time_allowed":3} -->
 <p class="wp-block-wp4toastmasters-agendanoterich2">President wraps up the meeting. VPE lines up volunteers for future meetings.</p>
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
