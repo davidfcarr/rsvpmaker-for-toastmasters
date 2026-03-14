@@ -40,7 +40,7 @@ export default function ProjectChooser(props) {
 
             } 
 
-        },[]);
+        });
 
 
 
@@ -53,6 +53,19 @@ export default function ProjectChooser(props) {
         }
 
     },[]);
+
+    useEffect(() => {
+        setManual(props.manual ? props.manual : '');
+        setProject(props.project ? props.project : '');
+        setTitle(props.title ? props.title : '');
+        setDisplayTime(props.display_time ? props.display_time : '5 - 7 minutes');
+        setMaxTime(props.maxtime ? props.maxtime : 7);
+        if (props.project) {
+            startFromProject(props.project);
+        } else {
+            setPath('Path Not Set');
+        }
+    }, [props.assignment?.ID, props.manual, props.project, props.title, props.display_time, props.maxtime]);
 
 
 

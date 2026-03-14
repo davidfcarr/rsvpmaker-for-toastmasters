@@ -2024,7 +2024,8 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 	foreach($meetings as $meeting) {
 		$post_id = $meeting->ID;
 		$agenda['post_id'] = $post_id;
-		$agenda['title'] = rsvpmaker_date('M j',$meeting->ts_start) .' '.$meeting->post_title;
+		$title = strlen($meeting->post_title) > 30 ? substr($meeting->post_title,0,27).'...' : $meeting->post_title;
+		$agenda['title'] = rsvpmaker_date('M j',$meeting->ts_start) .' '.$title;
 		$agenda['intros'] = speech_intros($post_id);
 		$agenda['html'] = tm_agenda_content($post_id);
 		$agenda['roles'] = [];

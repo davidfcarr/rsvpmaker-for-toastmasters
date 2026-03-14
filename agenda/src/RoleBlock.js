@@ -77,13 +77,18 @@ export default function RoleBlock(props) {
                 await queryClient.cancelQueries(['blocks-data', post_id]);
                 const previousData = queryClient.getQueryData(['blocks-data', post_id]);
                 queryClient.setQueryData(['blocks-data', post_id], (oldQueryData) => {
+                    if (!oldQueryData?.data?.blocksdata)
+                        return oldQueryData;
                     const { blockindex, roleindex } = assignment;
                     console.log('assignmentMutation setQueryData blockindex / roleindex', blockindex, roleindex);
                     const { data } = oldQueryData;
-                    const { blocksdata } = data;
-                    console.log('assignmentMutation setQueryData old blocksdata', blocksdata);
-                    console.log('blocksdata[blockindex]', blocksdata[blockindex]);
-                    blocksdata[blockindex].assignments[roleindex] = assignment;
+                    const blocksdata = data.blocksdata.map((block, bi) => {
+                        if (bi !== blockindex)
+                            return block;
+                        const nextAssignments = Array.isArray(block.assignments) ? [...block.assignments] : [];
+                        nextAssignments[roleindex] = assignment;
+                        return { ...block, assignments: nextAssignments };
+                    });
                     const newdata = {
                         ...oldQueryData, data: { ...data, blocksdata: blocksdata }
                     };
@@ -103,7 +108,7 @@ export default function RoleBlock(props) {
             },
             onError: (err, variables, context) => {
                 console.log(mytranslate('Mutate assignment error', data), err);
-                queryClient.setQueryData("blocks-data", context.previousData);
+                queryClient.setQueryData(['blocks-data', post_id], context.previousData);
                 makeNotification(mytranslate('Error updating assignment ', data) + err.message);
             },
         }
@@ -116,10 +121,15 @@ export default function RoleBlock(props) {
                 await queryClient.cancelQueries(['blocks-data', post_id]);
                 const previousValue = queryClient.getQueryData(['blocks-data', post_id]);
                 queryClient.setQueryData(['blocks-data', post_id], (oldQueryData) => {
+                    if (!oldQueryData?.data?.blocksdata)
+                        return oldQueryData;
                     const { blockindex } = multi;
                     const { data } = oldQueryData;
-                    const { blocksdata } = data;
-                    blocksdata[blockindex].assignments = multi.assignments;
+                    const blocksdata = data.blocksdata.map((block, bi) => {
+                        if (bi !== blockindex)
+                            return block;
+                        return { ...block, assignments: [...multi.assignments] };
+                    });
                     const newdata = {
                         ...oldQueryData, data: { ...data, blocksdata: blocksdata }
                     };
@@ -136,7 +146,7 @@ export default function RoleBlock(props) {
             },
             onError: (err, variables, context) => {
                 makeNotification(mytranslate('Error updating assignments ', data) + err.message);
-                queryClient.setQueryData("blocks-data", context.previousValue);
+                queryClient.setQueryData(['blocks-data', post_id], context.previousValue);
             },
         }
     );
@@ -301,7 +311,7 @@ export default function RoleBlock(props) {
                             'ID': guests[roleindex], 'name': guests[roleindex] + ' (guest)', 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count
                         }); let newguests = [...guests]; newguests[roleindex] = ''; setGuests(newguests);
                     }} >{mytranslate('Add', data)}</button></div></div>}</>
-                    <>{'suggest' != mode && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && ((assignment.ID > 0) || (typeof assignment.ID == 'string' && assignment.ID != '')) && role.includes('Speaker') && (role.includes('Backup') == false) && showDetails && <ProjectChooser attrs={attrs} assignment={assignment} project={assignment.project} title={assignment.title} intro={assignment.intro} manual={assignment.manual} maxtime={assignment.maxtime} display_time={assignment.display_time} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
+                    <>{'suggest' != mode && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && ((assignment.ID > 0) || (typeof assignment.ID == 'string' && assignment.ID != '')) && role.includes('Speaker') && (role.includes('Backup') == false) && showDetails && <ProjectChooser key={'projectchooser-' + blockindex + '-' + roleindex + '-' + assignment.ID} attrs={attrs} assignment={assignment} project={assignment.project} title={assignment.title} intro={assignment.intro} manual={assignment.manual} maxtime={assignment.maxtime} display_time={assignment.display_time} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
                     <>{titlePrompt && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && showDetails && <OtherRoleTitle role={role} attrs={attrs} assignment={assignment} title={assignment.title} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
                     <>{!!('edit' == mode) && assignments.length > 1 && <MoveButtons assignments={assignments} roleindex={roleindex} filledslots={filledslots} openslots={openslots} attrs={attrs} shownumber={shownumber} />}</>
                     {assignment.ID > 0 && 'Speaker' == attrs.role && <div className="evaluation-request"><a href={assignment.evaluation_link} onClick={(e) => { e.preventDefault(); setEvaluate(assignment); setMode('evaluation') }} >{mytranslate('Evaluation Form', data)}</a> <span style={{ fontSize: '10px' }}>({mytranslate('copy-paste text below to share', data)})</span><br /><textarea rows="3" style={{ fontSize: '8px' }} value={mytranslate('Evaluation link for ', data) + assignment.name + '\n' + assignment.evaluation_link} /></div>}
