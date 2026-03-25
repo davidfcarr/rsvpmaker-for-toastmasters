@@ -1,0 +1,69 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "wp4toastmasters/memberprofile",
+	"version": "0.1.0",
+	"title": "Member Profile",
+	"category": "toastmasters",
+	"icon": "groups",
+	"description": "Display a member profile for an officer role, the profile of a specific member, or a list of all members with public profiles.",
+	"keywords": [
+		"toastmasters",
+		"member",
+		"profile"
+	],
+	"attributes": {
+		"identifier": {
+			"type": "string",
+			"default": "any"
+		},
+		"pictureSize": {
+			"type": "string",
+			"default": "200"
+		},
+		"pictureShape": {
+			"type": "string",
+			"default": "square"
+		},
+		"showEmail": {
+			"type": "boolean",
+			"default": false
+		},
+		"showEdAwards": {
+			"type": "boolean",
+			"default": false
+		},
+		"showBio": {
+			"type": "boolean",
+			"default": true
+		},
+		"showPicture": {
+			"type": "boolean",
+			"default": true
+		},
+		"joinedTm": {
+			"type": "boolean",
+			"default": false
+		},
+		"joinedClub": {
+			"type": "boolean",
+			"default": false
+		},
+		"showLinks": {
+			"type": "boolean",
+			"default": true
+		},
+		"centerHeading": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"html": false
+	},
+	"textdomain": "rsvpmaker-for-toastmasters",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+    "render": "file:./render.php",
+	"style": "file:./style-index.css"
+}

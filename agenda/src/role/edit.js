@@ -216,11 +216,11 @@ return (
 	
 			label="Agenda Note"
 	
-			help="A note that appears immediately below the role on the agenda and signup form"
+			help="A note that appears immediately below the role on the agenda and signup form. Do not include quotation marks or HTML."
 	
 			value={ agenda_note }
 	
-			onChange={ ( agenda_note ) => setAttributes( { agenda_note: fix_quotes_in_note(agenda_note) } ) }
+			onChange={ ( agenda_note ) => { setAttributes( { agenda_note: fix_quotes_in_note(agenda_note) } ); } }
 	
 		/>
 	
@@ -240,4 +240,14 @@ return (
 
 </div>
 		);
+}
+
+function fix_quotes_in_note(agenda_note) {
+
+	agenda_note = agenda_note.replace('"','');
+
+	agenda_note = agenda_note.replace('\u0022','');
+
+	return agenda_note;
+
 }

@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 6.6.5
+Stable tag: 6.6.8
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking.
@@ -43,6 +43,8 @@ The toastmost.org service is supported by subscriptions from member clubs.
 5. Email version of the agenda with one-click signup links for open roles (inset).
 6. Web-based application form saves you the trouble of emailing PDFs. Members who complete the online application can be prompted to pay via PayPal or Stripe. Members can also pay dues renewal online.
 == Changelog ==
+= 6.6.7 =
+* New memberprofile block added to replace old shortcode for member listings, provides more formatting control.
 = 6.5.7 =
 * Agenda blocks and other Toastmasters blocks updated for compatability with WordPress 7.0
 * Timing for agenda now shown more clearly when editing the document in the WordPress editor.

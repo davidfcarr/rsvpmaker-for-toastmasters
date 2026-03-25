@@ -1799,9 +1799,12 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 						$agendadata['update'][] = "missing $field";
 						continue;
 					}
-					$v = sanitize_text_field($data->$field);
 					if(strpos($field,'intro') !== false) {
+						$v = wp_kses_post(wpautop($data->$field));
 						$v = preg_replace('/style=".+"/','', $v); //strip inline style
+					}
+					else {
+					$v = sanitize_text_field($data->$field);
 					}
 				}
 				$agendadata['update'][] = "$k = $v";
@@ -2924,10 +2927,10 @@ class WP4T_Timer_Image extends WP_REST_Controller {
 	}
 }
 
-class WP4T_Agenda_Time extends WP_REST_Controller {
+class WP4T_Member_Profile extends WP_REST_Controller {
 	public function register_routes() {
 		$namespace = 'rsvptm/v1';
-		$path      = 'agenda_time/(?P<post_id>[0-9]+)';
+		$path      = 'members/(?P<profile>[a-z_0-9\s]+)';
 		register_rest_route(
 			$namespace,
 			'/' . $path,
@@ -2944,16 +2947,13 @@ class WP4T_Agenda_Time extends WP_REST_Controller {
 		return true;
 	}
 	public function handle( $request ) {
-		$post_id = $request['post_id'];
-		$content = get_post($post)->post_content;
-		$time = 0;
-		preg_match_all('/"(time_allowed|padding_time)":"([\d]+)"/',$content,$matches);
-		foreach($matches[2] as $add)
-			$time += intval($add);
-		$response['agenda_time'] = $time;
-		return new WP_REST_Response($response,
-			200
-		);
+	rsvpmaker_debug_log($_SERVER['SERVER_NAME'].' '.$_SERVER['REQUEST_URI'],'rsvpmaker_api');
+	$identifier = $request['profile'];
+	$attributes = $request->get_params();
+	$response = tm_member_profile_retrieve($identifier, $attributes);
+	return new WP_REST_Response($response,
+		200
+	);
 	}
 }
 
@@ -3065,5 +3065,7 @@ add_action(
 		$wp4tmc->register_routes();
 		$wptr = new WP4T_Translations();
 		$wptr->register_routes();
+		$wptm = new WP4T_Member_Profile();
+		$wptm->register_routes();
 	}
 );

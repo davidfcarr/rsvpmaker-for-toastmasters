@@ -1,12 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
+import simplifyPastedHtml from './simplifyPastedHtml';
 
 export function SignupNote(props) {
   const editorRef = useRef(null);
   const {block, blockindex, replaceBlock} = props;
 
   function save() {
-      block.innerHTML = editorRef.current.getContent();
+      const currentContent = editorRef.current ? editorRef.current.getContent() : '';
+      const simplifiedContent = simplifyPastedHtml(currentContent);
+      block.innerHTML = simplifiedContent;
       replaceBlock(blockindex,block);
   }
 

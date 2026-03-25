@@ -452,6 +452,22 @@ function next_toastmaster_meeting() {
 
 }
 
+function wpt_get_club_officers() {
+		$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+		$officer_ids = get_option( 'wp4toastmasters_officer_ids' );
+		$slugs = get_option( 'wp4toastmasters_officer_slugs' );
+		if ( is_array( $wp4toastmasters_officer_titles ) && is_array( $officer_ids )  && is_array( $slugs ) ) {
+			foreach($slugs as $index => $slug) {
+				if(empty($slug) || empty($officer_ids[$index]) || empty($wp4toastmasters_officer_titles[$index]))
+					continue;
+				$officers[$slug] = array('title' => $wp4toastmasters_officer_titles[$index], 'id' => $officer_ids[$index]);
+			}
+		} else {
+			$officers = array();
+		}
+		return $officers;
+}
+
 function get_club_members( $blog_id = 0 ) {
 
 	if ( empty( $blog_id ) ) {
@@ -3664,6 +3680,223 @@ function toastmasters_fix_agenda_attribute_type() {
 	// Mark as done so this never runs again.
 
 	update_option( 'toastmasters_agenda_attribute_version', 1 );
+
+}
+
+function tm_member_profile_display($attributes) {
+	global $current_user;
+	extract($attributes); //identifier,showPicture,pictureSize,pictureShape,showEmail,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading
+	$response = tm_member_profile_retrieve($identifier, $attributes);
+	if($pictureShape === 'rounded')
+		$rounding = '10px';
+	elseif($pictureShape === 'circle')
+		$rounding = '50%';
+	else
+		$rounding = '0';
+	$profileMap = $response['map'];
+	$excludeFromContacts = ['ID', 'toastmasters_id', 'education_awards'];
+	$response = tm_member_profile_retrieve($identifier, $attributes);
+	foreach($response['list'] as $profile) {
+		echo '<div class="tm-profile" style="text-align:'.($centerHeading ? 'center' : 'left').'">';
+		if($showPicture) {
+			echo '<div><img src="'.$profile['avatar'].'" style="width:'.intval($pictureSize).'px;height:auto;border-radius:'.$rounding.';margin:10px;"></div>';
+		}
+		echo '<h2>'.$profile['display_name'].($showEdAwards && !empty($profile['education_awards']) ? ', '.$profile['education_awards'] : '').'</h2>';
+		if(!empty($profile['title']))
+			echo '<h3>'.$profile['title'].'</h3>';
+		echo '</div>';
+		if($showBio &&!empty($profile['description']))
+			echo wp_kses_post(wpautop($profile['description']));;
+		foreach($profileMap as $key => $label) {
+			if(in_array($key,$excludeFromContacts))
+				continue;
+			if(empty($profile[$key]))
+				continue;
+			if(!empty($profile[$key]) && strpos($profile[$key],'@') !== false)
+				{
+				if($showEmail)
+				printf('<div class="contactdetails"><label>%s:</label> <a href="mailto:%s">%s</a></div>', esc_html($label), esc_attr($profile[$key]), esc_html($profile[$key]));
+				}  
+			elseif(!empty($profile[$key]) && strpos($profile[$key],'http') !== false)
+				{
+				if($showLinks)
+				printf('<div class="contactdetails"><label>%s:</label> <a href="%s">%s</a></div>', esc_html($label), esc_url($profile[$key]), esc_html($profile[$key]));
+				}
+			else
+				printf('<div class="contactdetails"><label>%s:</label> %s</div>', esc_html($label), esc_html($profile[$key]));
+		}
+	if(current_user_can('manage_options') && !empty($profile['title']))
+		{
+		printf('<div class="contactdetails">For the Administrator: <a href="%s">%s</a></div>',admin_url('options-general.php?page=wp4toastmasters_settings'), esc_html(__('Edit Officers List','rsvpmaker-for-toastmasters')));
+		}
+	if($profile['ID'] == $current_user->ID )
+		{
+		printf('<div class="contactdetails">Your Data: <a href="%s">%s</a> | <a href="%s">%s</a></div>', admin_url('profile.php'), esc_html(__('Edit Profile','rsvpmaker-for-toastmasters')), admin_url('profile.php#simple-local-avatar-section'), esc_html(__('Edit Profile Picture','rsvpmaker-for-toastmasters')));
+		}
+	elseif(current_user_can('edit_user', $profile['ID']) && !user_can($profile['ID'],'manage_options') )
+		{
+		printf('<div class="contactdetails">Based on Your Editing Rights: <a href="%s">%s</a> | <a href="%s">%s</a></div>', admin_url('user-edit.php?user_id=' . $profile['ID']), esc_html(__('Edit Profile','rsvpmaker-for-toastmasters')), admin_url('user-edit.php?user_id=' . $profile['ID'] . '#simple-local-avatar-section'), esc_html(__('Edit Profile Picture','rsvpmaker-for-toastmasters')));
+		}
+	}
+}
+
+function tm_member_profile_retrieve($identifier, $attributes) {
+	$response['profile'] = null;
+	$response['map'] = wpt_get_contact_methods(false);
+	$response['options'] = [array('value' => 'any','label' => __('Choose an option','rsvpmaker-for-toastmasters'))];
+	$officers = wpt_get_club_officers();
+	$officers_by_id = [];
+	$response['list'] = [];
+	foreach($officers as $key => $data) {
+		$officers_by_id[$data['id']] = $data['title'];
+	}
+	$members = get_club_members();
+	foreach($officers as $key => $data) {
+		$response['options'][] = array('value' => $key,'label' => $data['title']);
+	}
+	$response['options'][] = array('value' => 'list','label' => __('Member list (public profiles)','rsvpmaker-for-toastmasters'));
+	$response['options'][] = array('value' => 'officerslist','label' => __('Officers List','rsvpmaker-for-toastmasters'));
+	$response['options'][] = array('value' => 'nonofficers','label' => __('Non-officers list','rsvpmaker-for-toastmasters'));
+	foreach($members as $key => $data) {
+		$response['options'][] = array('value' => $data->ID,'label' => $data->display_name);
+	}
+	if(is_numeric($identifier)) {
+		$identifier = intval($identifier);
+		$response['list'][] = wpt_public_profile($identifier,$response['map'],$attributes);
+	}
+	elseif('list' == $identifier) {
+		foreach($members as $key => $data) {
+			$profile = wpt_public_profile($data->ID,$response['map'],$attributes);
+			if($profile) {
+				$profile['title'] = $officers_by_id[$data->ID] ?? '';
+				$response['list'][] = $profile;
+			}
+		}
+	}
+	elseif('nonofficers' == $identifier) {
+		$response['list'] = [];
+		$exclude = [];
+			foreach($officers as $key => $data) {
+				$exclude[] = $data['id'];
+			}
+		foreach($members as $key => $data) {
+			if(in_array($data->ID,$exclude))
+				continue;
+			$profile = wpt_public_profile($data->ID,$response['map'],$attributes);
+			if($profile) {
+				$response['list'][] = $profile;
+			}
+		}
+	}
+	elseif('officerslist' == $identifier) {
+		$response['list'] = [];
+		$include = [];
+		$officer_ids = [];
+			foreach($officers as $key => $data) {
+				if(in_array($data['id'], $officer_ids)) {
+					$index = array_search($data['id'], $officer_ids);
+					$titles[$index] .= ', ' . $data['title'];
+					continue;
+				}
+				$officer_ids[] = $data['id'];
+				$titles[] = $data['title'];
+			}
+		foreach($officer_ids as $index => $id) {
+			if(0 == $id) {
+				$profile['display_name'] = 'Open';
+				$profile['title'] = $titles[$index];
+			}
+			else {
+				$data = get_userdata($id);
+				$profile = wpt_public_profile($data->ID ?? 0,$response['map'],$attributes, true);
+				if($profile) {
+					$profile['title'] = $titles[$index];
+				}
+			}
+			$response['list'][] = $profile;
+		}
+	}
+	elseif('any' != $identifier) {
+		$identifier = sanitize_text_field($identifier);
+		if(!empty($officers[$identifier]) ) {
+			$profile = wpt_public_profile($officers[$identifier]['id'],$response['map'],$attributes, true);
+			$profile['title'] = $officers[$identifier]['title'] ?? '';
+			$response['list'][] = $profile;
+		}
+	}
+	return $response;
+}
+
+function wpt_public_profile($id,$contactmethods,$attributes, $is_officer = false) {
+	$data = get_userdata($id);
+	$public_profile = !empty($data->public_profile) || get_user_meta($id,'public_profile',true) || $is_officer;
+	$public_email = !empty($data->public_email) || get_user_meta($id,'public_email',true);
+	if(!is_club_member() && !$public_profile) {
+		error_log('wpt_public_profile: user ' . $id . ' does not have a public profile and is not an officer, returning null '.var_export($data->public_profile,true) . ' '.var_export(get_user_meta($id,'public_profile',true), true).' '.var_export($data,true));
+		error_log('is_club_member '.var_export(is_club_member(), true));
+		return null;
+	}
+
+	$profile = [];
+
+	$contactmethods = array_keys($contactmethods);
+	$contactmethods[] = 'ID';
+	$contactmethods[] = 'display_name';
+	$contactmethods[] = 'description';
+	$contactmethods[] = 'original_join_date';
+	foreach($contactmethods as $method) {
+		$item = $data->$method ?? get_user_meta($id,$method,true);
+		if(strpos($item,'@') !== false && !$public_email)
+			continue;
+		$profile[$method] = $item;
+	}
+	$profile['avatar'] = get_avatar_url($id,[
+		'size' => isset($attributes['pictureSize']) ? intval($attributes['pictureSize']) : 200
+	]);
+	$profile['joined_club'] = get_user_meta( $id, 'joined' . get_current_blog_id(), true );
+	return $profile;
+}
+
+add_action( 'admin_init', 'wptm_register_member_listing' );
+function wptm_register_member_listing() {
+register_block_pattern_category(
+    'toastmasters',
+    array( 'label' => __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ) )
+);
+
+register_block_pattern(
+		'rsvpmaker-for-toastmasters/member-profile',
+		[
+			'title'       => __( 'Toastmasters Officer and Member Profile Listing', 'rsvpmaker-for-toastmasters' ),
+			'categories'    => ['toastmasters'],
+			'description' => __( 'Displays member profile blocks for each of the standard officer roles, followed by a listing of the profiles of members who have chosen to make their profiles public.', 'rsvpmaker-for-toastmasters' ),
+			'content'     => "<!-- wp:group {\"style\":{\"border\":{\"width\":\"5px\",\"color\":\"#004165\",\"radius\":{\"topLeft\":\"15px\",\"topRight\":\"15px\",\"bottomLeft\":\"15px\",\"bottomRight\":\"15px\"}},\"spacing\":{\"padding\":{\"right\":\"var:preset|spacing|10\",\"left\":\"var:preset|spacing|10\"}}},\"layout\":{\"type\":\"constrained\"}} -->
+<div class=\"wp-block-group has-border-color\" style=\"border-color:#004165;border-width:5px;border-top-left-radius:15px;border-top-right-radius:15px;border-bottom-left-radius:15px;border-bottom-right-radius:15px;padding-right:var(--wp--preset--spacing--10);padding-left:var(--wp--preset--spacing--10)\"><!-- wp:heading {\"style\":{\"elements\":{\"link\":{\"color\":{\"text\":\"var:preset|color|loyalblue\"}}}},\"textColor\":\"loyalblue\"} -->
+<h2 class=\"wp-block-heading has-loyalblue-color has-text-color has-link-color\">Leadership</h2>
+<!-- /wp:heading -->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"president\",\"pictureSize\":\"300\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /-->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"vpe\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /-->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"vpm\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /-->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"vppr\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /-->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"secretary\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /-->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"treasurer\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /-->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"saa\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /--></div>
+<!-- /wp:group -->
+
+<!-- wp:heading {\"style\":{\"elements\":{\"link\":{\"color\":{\"text\":\"var:preset|color|loyalblue\"}}}},\"textColor\":\"loyalblue\"} -->
+<h2 class=\"wp-block-heading has-loyalblue-color has-text-color has-link-color\">Members</h2>
+<!-- /wp:heading -->
+
+<!-- wp:wp4toastmasters/memberprofile {\"identifier\":\"nonofficers\",\"pictureShape\":\"rounded\",\"showEdAwards\":true,\"centerHeading\":true} /-->",
+		]
+	);
 
 }
 

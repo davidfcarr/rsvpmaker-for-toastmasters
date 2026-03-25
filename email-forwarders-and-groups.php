@@ -770,6 +770,42 @@ function wpt_consolidated_forwarders($recipients, $blog_id) {
     return $recipients;
 }
 add_filter('rsvpmaker_consolidated_forwarders','wpt_consolidated_forwarders',10,2);
+
+function wpt_forwarder_recipients_test($email, $flattened, $depth = 0, &$seen = []) {
+if($depth > 10)
+    return [];
+$email = strtolower(trim($email));
+if(empty($email))
+    return [];
+if(isset($seen[$email]))
+    return [];
+$seen[$email] = true;
+$dp = wpt_domain_prefix(0);
+$check = empty($dp['prefix']) ? $dp['domain'] : $dp['prefix'];
+$recipients = [];
+if(!empty($flattened[$email]) && is_array($flattened[$email])) {
+            foreach($flattened[$email] as $to) {
+                $to = strtolower(trim($to));
+                if(empty($to))
+                    continue;
+                if(!empty($flattened[$to])) {
+                    // Keep reducing any forwarder that can be expanded again.
+                    $more = wpt_forwarder_recipients_test($to, $flattened, $depth + 1, $seen);
+                    if(!empty($more)) {
+                        foreach($more as $m) {
+                            if(!in_array($m,$recipients))
+                                $recipients[] = $m;
+                        }
+                    }
+                }
+                elseif(strpos($to,$check) === false && !in_array($to,$recipients))
+                    $recipients[] = $to; // not a local forwarder that still needs setup
+            }
+        }
+unset($seen[$email]);
+return $recipients;
+}
+
 function wpt_email_handler_forwarders() {
     rsvpmaker_admin_heading('Email Forwarders',__FUNCTION__,'','<img style="max-width: 300px;" src="https://www.wp4toastmasters.com/wp-content/uploads/2022/05/forwarders.jpg" /><br><em>Example</em>');
     $blog_id = get_current_blog_id();
@@ -886,7 +922,13 @@ function wpt_email_handler_forwarders() {
         error_log($message);
         $filtered = rsvpmaker_recipients_no_problems($testrecipients);
         printf('<p>Filtered %s</p>',var_export($filtered,true));
+
     }
+        //refresh list
+        $local_forwarders = wpt_flattened_forwarders();
+        $flattened_forwarders = wpt_all_flattened_forwarders();
+        if(isset($_GET['showflattened']))
+        printf('<p>Flattened forwarders %s</p>',var_export($flattened_forwarders,true));
 ?>
 <p>Use the form below to specify custom email forwarding addresses, or aliases.</p>
 <p>By default, <strong><?php echo wpt_format_email_forwarder('members'); ?></strong> is used for a members email list and <strong><?php echo wpt_format_email_forwarder('officers'); ?></strong> is for an officers email lists. Forwarding addresses in the format <?php echo wpt_format_email_forwarder('vpe'); ?> are enabled based on the officers list from the <a href="<?php echo admin_url('options-general.php?page=wp4toastmasters_settings'); ?>">Toastmasters Settings</a> screen.</p>
@@ -894,17 +936,7 @@ function wpt_email_handler_forwarders() {
     if($site_domain != $base_domain) {
         printf('<div style="margin: 20px;background-color:#000;color:#fff; padding: 10px;"><p>For a site with a custom domain (other than %s), email addresses in the format %s / %s or %s / %s will work the same.</p><p>However, the @%s version requires proper email formatting setup for the domain.</p></div>',$base_domain,wpt_format_email_forwarder('members'),wpt_format_email_forwarder('members',0,'root'),wpt_format_email_forwarder('mentors'),wpt_format_email_forwarder('mentors',0,'root'),$site_domain);
     }
-    $slug_ids = get_officer_slug_ids();
-    if(isset($_GET['debug']))
-        print_r($slug_ids);
-    if(is_array($slug_ids)) {
-        foreach($slug_ids as $slug => $ids) {
-            if(!empty($ids))
-            $alias[] = '<strong>'.wpt_format_email_forwarder($slug).'</strong>';
-        }
-    }
-if(!empty($alias))
-    printf('<p>Currently configured: %s</p>', implode(', ',$alias));
+
 printf('<p><strong>%s</strong> forwards to the current website administrator email registered in WordPress.<p>',wpt_format_email_forwarder('admin'));
 if(function_exists('toastmost_billing_email')) {
     $billing = toastmost_billing_email();
@@ -922,6 +954,10 @@ if(!empty($wpt_email_handler_custom_forwarders)) {
             continue;
         printf('<p><strong>Forwarder</strong>: %s <input type="checkbox" name="delete_forwarder[]" value="%s" /> Delete</p>',$forward_from,$forward_from);
         printf('<p><strong>Forwards to</strong>: <br /><textarea name="forward_update[%s]" cols="120">%s</textarea></p>',$forward_from, implode(', ',$forward_to));
+        $test = wpt_forwarder_recipients_test($forward_from, $flattened_forwarders);
+        if(!empty($test)) {
+            printf('<p><em>Final recipients for %s: %s</em></p>',$forward_from, implode(', ',$test));
+        }
     }
 }
 for($i = 0; $i < 3; $i++)
@@ -936,7 +972,13 @@ printf('<h3>Blacklist (blocked senders)</h3><p>You can prevent messages from bei
 rsvpmaker_nonce();
 submit_button();
 echo '</form>';
-if(current_user_can('manage_network')) {
+
+echo '<h2>Current Forwarders</h2>';
+foreach($local_forwarders as $forwarder => $targets) {
+    printf('<p>%s forwards to %s</p>',$forwarder, implode(', ',$targets));
+}
+
+if(current_user_can('manage_network') && isset($_GET['debug'])) {
 $clubemails = get_blog_option(1,'toastmost_club_email_list');
 if(!$clubemails)
     $clubemails = array();
@@ -952,8 +994,6 @@ foreach($forwarders as $forwarder) {
     if($domain == 'toastmost.org')
     {
         $site_lookup = $fparts[0].'.toastmost.org';
-        if('digitalcommunicators' == $parts[0])
-            $site_lookup = 'digitalcommunicators.org';
         $list_lookup = (isset($fparts[1])) ? $fparts[1] : 'members'; //example: op@toastmost.org
     }
     else {
@@ -979,9 +1019,6 @@ foreach($forwarders as $forwarder) {
     }
 }
 }
-//refresh list
-wpt_flattened_forwarders();
-wpt_all_flattened_forwarders();
 }
 function wpt_format_email_forwarder($lookup = '', $blog_id = 0, $format = '') {
     if(!$blog_id)
@@ -1272,37 +1309,61 @@ function wpt_member_email_check() {
     if(empty($_POST))
     echo $output;
 }
-function wpt_email_forwarder_recipients($forwarder) {
-    $address = explode('@',$forwarder);
+function wpt_email_forwarder_recipients($forwarder, $depth = 0, &$seen = []) {
+    $debug = isset($_GET['debug']) && $_GET['debug'];
+    if($depth > 10)
+        return [];
+    $forwarder = strtolower(trim($forwarder));
+    if($debug)
+        error_log(sprintf('wpt_email_forwarder_recipients depth %d checking %s',$depth,$forwarder));
+    if(empty($forwarder) || strpos($forwarder,'@') === false)
+        return [];
+    if(isset($seen[$forwarder]))
+    {
+        if($debug)
+            error_log(sprintf('wpt_email_forwarder_recipients cycle detected at %s',$forwarder));
+        return [];
+    }
+    $seen[$forwarder] = true;
+    $address = explode('@',$forwarder,2);
+    $mailbox = $address[0];
+    $host = $address[1];
     $recipients = array();
+    $unsubscribed = get_option('rsvpmail_unsubscribed');
+    if(!is_array($unsubscribed))
+        $unsubscribed = array();
     $hosts_and_subdomains = rsvpmaker_get_hosts_and_subdomains();
-    if(!in_array($address[1],$hosts_and_subdomains['hosts']) && ($address[1]!=$hosts_and_subdomains['basedomain']))
-        return;
+    if(!in_array($host,$hosts_and_subdomains['hosts']) && ($host != $hosts_and_subdomains['basedomain'])) {
+        if($debug)
+            error_log(sprintf('wpt_email_forwarder_recipients skip non-local %s',$forwarder));
+        unset($seen[$forwarder]);
+        return [];
+    }
     $hosts = wpt_get_hosts();
     $subdomains = wpt_get_subdomains();
     $ffemails = (is_multisite()) ? get_blog_option(1,'findclub_emails') : get_option('findclub_emails');
     if(is_multisite()) {
         //returns 0 for main host, blog_id for subdomains
-        $blog_id = array_search($address[0],$hosts);
+        $blog_id = array_search($mailbox,$hosts);
         if($blog_id) {//has own domain
-            $slug = $address->mailbox;
+            $slug = $mailbox;
         } else {
-            $parts = explode('-',$address[0]);
+            $parts = explode('-',$mailbox);
             $subdomain = $parts[0];
             if(sizeof($parts) > 1)
                 $slug = $parts[1]; //op-officers
             elseif(in_array($subdomain,$subdomains))
                 $slug = 'members';
             else
-                $slug = $address[0];
+                $slug = $mailbox;
             $blog_id = array_search($subdomain,$subdomains); // wpt_subdomain_blog_id($subdomain, $hosts[0]);
-            if(!$blog_id && $address[0] == $hosts[0])
+            if(!$blog_id && $mailbox == $hosts[0])
                 $blog_id = 1;//root domain, no subdomain
         }
     }
     else {
         $blog_id = 1;
-        $slug = $address->mailbox;
+        $slug = $mailbox;
     }
     if($ffemails && is_array($ffemails))
     $finda_id = array_search($forwarder,$ffemails);
@@ -1362,7 +1423,28 @@ if(!empty($custom_forwarders[$forwarder]))
 {
     $recipients = array_merge($custom_forwarders[$forwarder],$recipients);
 }
-return $recipients;
+$recipients = array_unique($recipients);
+if($debug)
+    error_log(sprintf('wpt_email_forwarder_recipients raw recipients for %s: %s',$forwarder,var_export($recipients,true)));
+$expanded = array();
+foreach($recipients as $recipient) {
+    $recipient = strtolower(trim($recipient));
+    if(empty($recipient))
+        continue;
+    $more = wpt_email_forwarder_recipients($recipient, $depth + 1, $seen);
+    if(!empty($more)) {
+        foreach($more as $m) {
+            if(!in_array($m,$expanded))
+                $expanded[] = $m;
+        }
+    }
+    elseif(!in_array($recipient,$expanded))
+        $expanded[] = $recipient;
+}
+if($debug)
+    error_log(sprintf('wpt_email_forwarder_recipients final recipients for %s: %s',$forwarder,var_export($expanded,true)));
+unset($seen[$forwarder]);
+return $expanded;
 }
 //	$mail = apply_filters('rsvpmailer_mail',$mail);
 add_filter('rsvpmailer_mail','wpt_mail_forwarders');
@@ -1781,61 +1863,88 @@ function wpt_check_local_forwarders($mail) {
     return $mail;
 }
 
-function wpt_flattened_forwarders($site_id = 0) {
+function wpt_flattened_forwarders($site_id = 0, $inloop = false) {
 	$forwarders = array();
+    $dp = wpt_domain_prefix($site_id);
 	$officer_emails = toastmasters_officer_email_array($site_id);
+    if(isset($_GET['debug']))
+        printf('<p>officer emails for site %s</p><pre>%s</pre>',$site_id,var_export($officer_emails,true));
 	foreach($officer_emails as $key => $value) {
 		$forwarders[$key] = array($value);
 	}
     $wpt_email_handler_custom_forwarders = ($site_id) ? get_blog_option($site_id,'custom_forwarders') : get_option('custom_forwarders');
+    if(isset($_GET['debug']))
+        printf('<p>custom forwarders for site %s</p><pre>%s</pre>',$site_id,var_export($wpt_email_handler_custom_forwarders,true));
     if(empty($wpt_email_handler_custom_forwarders))
         $wpt_email_handler_custom_forwarders = array();
-    else {
-        foreach($wpt_email_handler_custom_forwarders as $forwarder => $targets) 
-		{
-			foreach($targets as $target) {
-				$target = trim($target);
-                if(empty($target))
-                    continue;
-                $target = strtolower($target);
-				if(isset($officer_emails[$target])) {
-					$target = $officer_emails[$target];
-				}
-				$forwarders[$forwarder][] = $target;
-			}
-		}
-	}
+    foreach($wpt_email_handler_custom_forwarders as $forwarder => $targets) 
+    {
+        if(!is_array($targets)) {
+            $targets = array($targets);
+        }
+        foreach($targets as $target) {
+            $target = trim($target);
+            if(empty($target))
+                continue;
+            $target = strtolower($target);
+            if(isset($officer_emails[$target])) {
+                $target = $officer_emails[$target];
+            }
+            if(empty($forwarders[$forwarder]) || !in_array($target,$forwarders[$forwarder]))
+            $forwarders[$forwarder][] = $target;
+        }
+    }
+        $members = get_club_members();
+        if(is_array($members)) {
+            foreach($members as $member) {
+                if(!empty($member->user_email) && !strpos($member->user_email,'example.com')) {
+                    $email = strtolower($member->user_email);
+                    $forwarders[preg_replace('/[^a-z0-9]+/','_',$member->user_login).'@'.$dp['domain']][] = $email;
+                }
+            }
+        }
 	update_option('flattened_forwarders',$forwarders);
-	if(!$site_id && is_multisite()) {
+	if(!$inloop && is_multisite()) {
 		if(get_current_blog_id() != 1) {
-            delete_blog_option(1,'all_flattened_forwarders'); //reset so it will be rebuilt
+            $all = get_blog_option(1,'all_flattened_forwarders'); //reset so it will be rebuilt
+            if(empty($all))
+                $all = array();
+            $all = array_merge($all,$forwarders);
+            update_blog_option(1,'all_flattened_forwarders',$all);
 		}
 	}
 	return $forwarders;
 }
+
+add_action( 'admin_init', 'wpt_flattened_email_change' );//will detect change of admin_email and update forwarders
+add_action('wpt_flattened_email_change', 'wpt_flattened_email_change_run');
+function wpt_flattened_email_change() {
+    if(isset($_GET['adminhash']))//user followed link to confirm change
+        wp_schedule_single_event(strtotime("+2 minutes"), 'wpt_flattened_email_change');
+}
+function wpt_flattened_email_change_run() {
+    $forwarders = wpt_flattened_forwarders();
+    mail('david@carrcommunications.com','timed flattened forwarders updated',var_export($forwarders,true));
+}
+
 function wpt_all_flattened_forwarders() {
     if(is_multisite()) {
-        if(get_current_blog_id() != 1) {
-            if(isset($_GET['page']))
-            echo '<p>wpt_all_flattened_forwarders must be run from main site</p>';
-            return;
-        }
-        $forwarders = isset($_GET['reset']) ? null : get_option('all_flattened_forwarders');
+        $forwarders = isset($_GET['reset']) ? null : get_blog_option(1,'all_flattened_forwarders');
         if(empty($forwarders)) {
             $forwarders = array();
             $sites = get_sites(array('public' => 1, 'limit' => 1000, 'number' => 1000));
             foreach($sites as $site) {
-                $local_forwarders = wpt_flattened_forwarders($site->blog_id);
+                $local_forwarders = wpt_flattened_forwarders($site->blog_id, true);
                 $forwarders = array_merge($forwarders,$local_forwarders);
-                if(isset($_GET['page']))
-                printf('<p><strong>added %s forwarders from %s</strong></p><pre>%s</pre>',sizeof($local_forwarders),$site->domain,var_export($local_forwarders,true));
+                if(isset($_GET['debug']))
+                    printf('<p><strong>added %s forwarders from %s</strong></p><pre>%s</pre>',sizeof($local_forwarders),$site->domain,var_export($local_forwarders,true));
             }
-            update_option('all_flattened_forwarders',$forwarders);
+            update_blog_option(1,'all_flattened_forwarders',$forwarders);
         }
     }
     else 
         $forwarders = wpt_flattened_forwarders();
-    if(isset($_GET['page']))
+    if(isset($_GET['debug']))
         printf('<p>Total flattened forwarders %s</p><pre>%s</pre>',sizeof($forwarders),var_export($forwarders,true));
     return $forwarders;
 }

@@ -1,13 +1,15 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import mytranslate from './mytranslate'
+import simplifyPastedHtml from './simplifyPastedHtml';
 
 export function EditorAgendaNote(props) {
   const editorRef = useRef(null);
   const {block, blockindex, replaceBlock,data} = props;
 
   function save() {
-      block.innerHTML = editorRef.current.getContent();
+      const currentContent = editorRef.current ? editorRef.current.getContent() : '';
+      block.innerHTML = simplifyPastedHtml(currentContent);
       replaceBlock(blockindex, block);
   }
 
@@ -19,8 +21,8 @@ export function EditorAgendaNote(props) {
         initialValue={block.innerHTML}
         init={{
           height: 100,
-          menubar: false,
-          toolbar: 'undo redo | bold italic | removeformat',
+          plugins: 'link autolink',
+          toolbar: 'undo redo | bold italic | link | removeformat',
           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
         }}
       />

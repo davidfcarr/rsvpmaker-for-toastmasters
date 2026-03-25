@@ -42,17 +42,17 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 		}
 	}
 	$link .= '<li class="has-sub"><a target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Agenda', 'rsvpmaker-for-toastmasters' ) . '</a><ul> ';
-	if ( current_user_can( $security['email_list'] ) ) {
-		$link .= '<li><a  target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Print', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	}
-		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1">' . __( 'Email', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-		$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1&role_only=1">' . __( 'Email (roles only)', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link .= '<li><a  target="_blank" href="' . $permalink . 'print_agenda=1">' . __( 'Print Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Show Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	if ( ! get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
 		$link .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	}
 	$link    .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&contacts=1">' . __( 'Agenda with Contacts', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	
+	$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1">' . __( 'Email Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link .= '<li><a  target="_blank" href="' . $permalink . 'email_agenda=1&role_only=1">' . __( 'Email (roles only)', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	
 	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&word_agenda=1">' . __( 'Export to Word', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&simple=1">' . __( 'Simple Copy and Paste', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';

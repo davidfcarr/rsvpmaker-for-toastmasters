@@ -36,9 +36,35 @@ if ( isset( $_GET['word_agenda'] ) ) {
 		printf('#agenda-sidebar, #agenda-sidebar p, #agenda-sidebar div, #agenda-sidebar li {font-size: %dpx;} ',$side);
 	echo get_option( 'wp4toastmasters_agenda_css' );
 ?>
+@media print {
+   .noPrint {display:none;}
+}
+fieldset {
+  background-color: #eeeeee;
+}
+
+legend {
+  background-color: black;
+  color: white;
+  padding: 5px 10px;
+}
 </style>
 </head>
 <body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['no_print'])) echo ' id="show" '; ?> >
+<?php
+if ( !isset($_GET['showintros']) && !isset($_GET['simple']) && !isset($_GET['word_agenda']) && !get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
+	?>
+<div class="noPrint" style="text-align:center;margin:10px;">
+<fieldset>
+<legend><strong><?php _e( 'Will not print', 'rsvpmaker-for-toastmasters' ); ?></strong></legend>
+<p style="font-size: 15px;"><a href="<?php echo get_permalink(); ?>?print_agenda=1&no_print=1&showintros=1"><?php _e( 'Show Speech Introductions on Agenda', 'rsvpmaker-for-toastmasters' ); ?></a> |
+<a href="<?php echo get_permalink(); ?>?intros=show" target="_blank"><?php _e( 'Show Speech Introductions (New Tab)', 'rsvpmaker-for-toastmasters' ); ?></a><br />
+<em><?php _e( 'Note: content shown above will not be included on the printed agenda.', 'rsvpmaker-for-toastmasters' ); ?></em></p>
+</fieldset>
+</div>
+<?php
+}
+?>
 <div class="Section1">
 <?php
 if(isset($_GET['simple'])) {

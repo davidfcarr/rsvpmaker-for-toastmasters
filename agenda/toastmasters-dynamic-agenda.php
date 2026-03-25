@@ -38,7 +38,7 @@ function get_wpt_blocks() {
 		'memberoptions'  => array(),
 		'speaker-evaluator'  => array(),
 		'agendaprivacy'  => array(),		
-	);
+		'memberprofile'  => array());
 }
 
 add_filter('block_type_metadata_settings','agenda_block_type_metadata',10,2);

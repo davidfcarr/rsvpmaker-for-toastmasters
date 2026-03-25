@@ -23,10 +23,23 @@ if ( isset( $_GET['word_agenda'] ) ) {
 <!-- /* Style Definitions */
 <?php echo wpt_default_agenda_css(); ?>
 <?php echo get_option( 'wp4toastmasters_agenda_css' ); ?>
-</style>
+@media print {
+   .noPrint {display:none;}
+}
 </style>
 </head>
 <body lang=EN-US style='tab-interval:.5in'>
+<?php
+if ( !isset($_GET['showintros']) && !get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
+	?>
+<div class="noPrint" style="text-align:right;margin:10px;">
+<p><a href="<?php echo get_permalink(); ?>?print_agenda=1&no_print=1&showintros=1"><?php _e( 'Show Intros on Agenda', 'rsvpmaker-for-toastmasters' ); ?></a> |
+<a href="<?php echo get_permalink(); ?>?intros=show" target="_blank"><?php _e( 'Show Intros (New Tab)', 'rsvpmaker-for-toastmasters' ); ?></a></p>
+<p><em><?php _e( 'Note: content shown above will not be included on the printed agenda.', 'rsvpmaker-for-toastmasters' ); ?></em></p>
+</div>
+<?php
+}
+?>
 <div class="Section1">
 <?php
 the_post();

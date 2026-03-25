@@ -1018,7 +1018,7 @@ function wp4t_reconcile_roleblock( $atts ) {
 }
 function toastmaster_short( $atts = array(), $content = '' ) {
 	if(empty($atts['role']) && wp_is_json_request())
-		return __('Select a role or specify a custom role using the editor sidebar. If the sidebar is not displayed, click the gear icon in the upper right corner of the screen','rsvpmaker-for-toastmasters');
+		return '';
 	if ( isset( $_GET['convert'] ) ) {
 		return toastmaster_short_convert( $atts );
 	}
@@ -1451,6 +1451,8 @@ function tm_agenda_content($post_id = 0) {
 						$content .= '<div><em>'.$assignment['title'].'</em></div>';
 				}
 			}
+			if(!empty($attrs['agenda_note']))
+				$content .= '<div><em>'.wp_kses_post($attrs['agenda_note']).'</em></div>';
 			if('Speaker' == $role) {
 				$style = ($totaltime > $time_allowed) ? 'style="font-weight: bold;font-style:italic;"':'';
 				$content .= sprintf('<p %s>Speakers have reserved %d minutes out of %s planned</p>',$style,$totaltime,$time_allowed);				
@@ -5202,16 +5204,37 @@ function awesome_members( $atts ) {
 	wp_suspend_cache_addition(false);
 	return ob_get_clean();
 }
-function display_member( $userdata, $title = '' ) {
-	global $post, $current_user;
+
+function wpt_get_contact_methods($phone = true) {
+	global $wpdb;
+	$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
+	$twittermeta = $wpdb->get_results( "SELECT * FROM $wpdb->usermeta WHERE meta_key = 'twitter_url' " );
+	if( $twittermeta ) {
+		foreach( $twittermeta as $entry ) {	
+			$entry->meta_value = str_replace('twitter.com','x.com',$entry->meta_value);
+			update_user_meta( $entry->user_id, 'x_url', $entry->meta_value );
+			delete_user_meta( $entry->user_id, 'twitter_url' );
+		}
+	}
+	if( $phone ) {
 	$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
 	$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['facebook_url'] = __( 'Facebook Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['twitter_url']  = __( 'Twitter Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['linkedin_url'] = __( 'LinkedIn Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['business_url'] = __( 'Business Web Address', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
+	}
+	$contactmethods['facebook_url'] = __( 'Facebook', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['x_url']        = __( 'X (Formerly Twitter)', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['linkedin_url'] = __( 'LinkedIn', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['bluesky_url'] = __( 'Bluesky', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['business_url'] = __( 'Business Website', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['other_email']       = __( 'Other Email', 'rsvpmaker-for-toastmasters' );
+	$contactmethods['toastmasters_id']  = 'Toastmasters ID';
+	$contactmethods['education_awards'] = 'Toastmasters Awards (DTM etc)';
+	return $contactmethods;
+}
+
+function display_member( $userdata, $title = '' ) {
+	global $post, $current_user;
+	$contactmethods = wpt_get_contact_methods();
 	$default_expires = date( 'Y-m-d', strtotime( '+1 Month' ) );
 	if ( is_club_member() ) {
 		$public_context = false;
@@ -6047,16 +6070,7 @@ function add_member_user( $user, $override_check = false ) {
 }
 function awesome_contactmethod( $contactmethods ) {
 	clean_toastmasters_id();
-	$contactmethods['other_email']       = __( 'Other Email', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['home_phone']       = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['work_phone']       = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['mobile_phone']     = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['facebook_url']     = __( 'Facebook Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['twitter_url']      = __( 'Twitter Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['linkedin_url']     = __( 'LinkedIn Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['business_url']     = __( 'Business Web Address', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['toastmasters_id']  = 'Toastmasters ID';
-	$contactmethods['education_awards'] = 'Toastmasters Awards (DTM etc)';
+	$contactmethods = wpt_get_contact_methods();
 	unset( $contactmethods['yim'] );
 	unset( $contactmethods['aim'] );
 	unset( $contactmethods['jabber'] );
@@ -10267,19 +10281,12 @@ function bp_toastmasters( $post_id, $actiontext, $user_id ) {
 function wpt_get_member_profile($user_id,$email_query = '') {
 	$userdata = get_userdata( $user_id );
 	$output = '';
-	$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['facebook_url'] = __( 'Facebook Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['twitter_url']  = __( 'Twitter Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['linkedin_url'] = __( 'LinkedIn Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['business_url'] = __( 'Business Web Address', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
+	$contactmethods = wpt_get_contact_methods();
 	foreach ( $contactmethods as $name => $value ) {
 		if ( strpos( $name, 'phone' ) && $userdata->$name ) {
 			$output .= sprintf( '<div>%s: %s</div>', $value, $userdata->$name );
 		}
-		elseif ( strpos( $name, 'url' && $userdata->$name ) ) {
+		elseif ( strpos( $name, 'url' ) && $userdata->$name ) {
 			$output .= sprintf( '<div><a target="_blank" href="%s">%s</a></div>', $userdata->$name, $userdata->name );
 		}
 		elseif ( strpos( $name, 'email' ) && $userdata->$name) {
@@ -10298,14 +10305,7 @@ function display_toastmasters_profile() {
 	}
 	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
 	$title                          = $wp4toastmasters_officer_titles[ $userdata->ID ];
-	$contactmethods['home_phone']   = __( 'Home Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['work_phone']   = __( 'Work Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['mobile_phone'] = __( 'Mobile Phone', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['facebook_url'] = __( 'Facebook Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['twitter_url']  = __( 'Twitter Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['linkedin_url'] = __( 'LinkedIn Profile', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['business_url'] = __( 'Business Web Address', 'rsvpmaker-for-toastmasters' );
-	$contactmethods['user_email']   = __( 'Email', 'rsvpmaker-for-toastmasters' );
+	$contactmethods = wpt_get_contact_methods();
 	?>
 <p id="member_<?php echo esc_attr($userdata->ID); ?>"><strong><?php echo esc_html($userdata->first_name . ' ' . $userdata->last_name); ?></strong> 
 						 <?php

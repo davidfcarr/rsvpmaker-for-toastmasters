@@ -39,7 +39,7 @@ function rsvptoast_exporter( $email_address, $page = 1 ) {
 		}
 	} else {
 		$userdata = get_userdata( $user->ID );
-		$extra = array( 'educational_awards', 'home_phone', 'work_phone', 'mobile_phone', 'toastmasters_id', 'club_member_since', 'original_join_date', 'facebook_url', 'twitter_url', 'linkedin_url', 'business_url' );
+		$extra = array( 'educational_awards', 'home_phone', 'work_phone', 'mobile_phone', 'toastmasters_id', 'club_member_since', 'original_join_date', 'facebook_url', 'x_url', 'linkedin_url', 'business_url' );
 		foreach ( $extra as $slug ) {
 			if ( empty( $userdata->$slug ) ) {
 				continue;

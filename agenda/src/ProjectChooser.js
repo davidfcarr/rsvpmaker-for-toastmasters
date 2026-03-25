@@ -6,6 +6,7 @@ import { Editor } from '@tinymce/tinymce-react';
 
 import {SelectCtrl} from './Ctrl.js'
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
+import simplifyPastedHtml from "./simplifyPastedHtml.js";
 
 export default function ProjectChooser(props) {
 
@@ -101,13 +102,15 @@ export default function ProjectChooser(props) {
 
     function updateSpeech() {
 
-        let newrole = {'role': 'Speaker', 'ID': props.assignment.ID,'roleindex':props.roleindex,'blockindex':props.blockindex,'manual':manual,'project':project,'title':title,'intro':editorRef.current.getContent(),'start':props.attrs.start,'maxtime':maxtime,'display_time':display_time,'count':props.attrs.count};
+    const currentContent = editorRef.current ? editorRef.current.getContent() : '';
+    const simplifiedContent = simplifyPastedHtml(currentContent);
+
+        let newrole = {'role': 'Speaker', 'ID': props.assignment.ID,'roleindex':props.roleindex,'blockindex':props.blockindex,'manual':manual,'project':project,'title':title,'intro':simplifiedContent,'start':props.attrs.start,'maxtime':maxtime,'display_time':display_time,'count':props.attrs.count};
 
         props.updateAssignment(newrole);
 
     }
 
-    
 
     if(!choices || typeof choices.manuals == 'undefined')
 

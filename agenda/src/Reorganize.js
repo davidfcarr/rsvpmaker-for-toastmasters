@@ -23,7 +23,7 @@ import {Up, Down, DownUp} from './icons.js';
 import {updateAgenda,copyToTemplate} from './queries.js';
 
 import {SelectCtrl, NumberCtrl} from './Ctrl.js'
-import { useRsvpmakerRest } from './useRsvpmakerRest.js';
+import simplifyPastedHtml from "./simplifyPastedHtml.js";
 
 export default function Reorganize(props) {
 

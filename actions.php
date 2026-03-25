@@ -3,7 +3,7 @@ add_action('init','wp4t_init_actions');
 function wp4t_init_actions() {
 	wp4t_role_array();
 	rsvptoast_load_plugin_textdomain();
-	fix_cache_users_bug();
+	//fix_cache_users_bug();
 	create_block_toastmasters_dynamic_agenda_block_init();
 	//wpt_server_block_render();
 	if(!wpt_exclude_agenda_functions()) {

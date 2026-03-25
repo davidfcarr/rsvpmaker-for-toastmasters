@@ -1,0 +1,20 @@
+/**
+ * The following styles get applied inside the editor only.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+
+.wp-block-wp4toastmasters-memberprofile {
+	clear: both;
+}
+
+.wp-block-wp4toastmasters-memberprofile label {
+  font-weight: bold;
+  width: 200px;
+  display: inline-block;
+}
+
+.wp-block-wp4toastmasters-memberprofile .contactdetails {
+  margin-bottom: 10px;
+  border-bottom: thin solid #ccc;
+}

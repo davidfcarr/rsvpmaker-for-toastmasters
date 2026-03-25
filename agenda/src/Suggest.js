@@ -4,6 +4,7 @@ import { RadioControl } from '@wordpress/components';
 import {SelectCtrl} from './Ctrl.js'
 import { SanitizedHTML } from './SanitizedHTML';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
+import simplifyPastedHtml from './simplifyPastedHtml';
 
 export default function Suggest(props) {
   const wpt_rest = useRsvpmakerRest();
@@ -23,8 +24,9 @@ function send() {
     setNotification({'message':'No recipient selected','error':true});
     return;
   }
-    if (editorRef.current) {
+    if (editorRef.current) {    
         let message = editorRef.current.getContent();
+        message = simplifyPastedHtml(message);
         console.log(message + 'from '+props.current_user_id+' to '+member+' for post '+props.post_id+' '+props.roletag);
         let url = wpt_rest.url + 'rsvptm/v1/tm_role?tm_ajax=role';
         const formData = new FormData();

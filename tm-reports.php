@@ -3362,7 +3362,7 @@ function tm_export() {
 	else {
 		$users   = get_club_members();
 		$contact = array();
-		$urls    = array( 'facebook_url', 'twitter_url', 'linkedin_url', 'business_url' );
+		$urls    = array( 'facebook_url', 'x_url', 'linkedin_url', 'business_url' );
 		$header = array( 'user_id', 'user_login', 'first_name', 'last_name', 'user_email', 'toastmasters_id', 'home_phone', 'work_phone', 'mobile_phone' );
 		$manuals = get_manuals_array();
 		global $toast_roles;
@@ -3673,7 +3673,7 @@ return;//disabled for now
 					if ( ! isset( $_POST['add_members'] ) ) {
 						continue;
 					}
-					$user_fields = array( 'user_login', 'first_name', 'last_name', 'user_email', 'home_phone', 'work_phone', 'mobile_phone', 'facebook_url', 'twitter_url', 'linkedin_url', 'business_url' );
+					$user_fields = array( 'user_login', 'first_name', 'last_name', 'user_email', 'home_phone', 'work_phone', 'mobile_phone', 'facebook_url', 'x_url', 'linkedin_url', 'business_url' );
 						$newuser = array();
 					foreach ( $user_fields as $field ) {
 						$newuser['user_login'] = $cells[1];
@@ -7090,8 +7090,10 @@ function toastmasters_member_votes ($args=[]) {
 					$cleaned[] = $e;
 			}
 			update_option('tm_ballot_status_emails',$cleaned);
-			wp_unschedule_hook( 'wp4t_ballot_status_email'); //clear any that might be waiting
-			wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'wp4t_ballot_status_email');
+			if(isset($_GET['page']) && 'toastmasters_member_votes' == $_GET['page']) {
+				wp_unschedule_hook( 'wp4t_ballot_status_email'); //clear any that might be waiting
+				wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'wp4t_ballot_status_email');
+			}
 		}
 		printf('<p>Created ballot post %d</p>',$post_id);
 	}
