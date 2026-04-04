@@ -7030,6 +7030,9 @@ function toastmasters_close_ballot($post_id) {
 }
 
 function toastmasters_member_votes ($args=[]) {
+echo '<h1>Function Disabled, needs to be updated</h1>';
+return;
+
 	if(!is_array($args))
 		$args = [];
 	global $wpdb, $current_user;
@@ -7126,6 +7129,7 @@ function toastmasters_member_votes ($args=[]) {
 		$where = " AND p.ID = ".intval($args['close_ballot']);
 	}
 	$sql ="SELECT post_id, meta_key, meta_value FROM $wpdb->posts p JOIN $wpdb->postmeta m ON p.ID = m.post_id WHERE p.post_type='tmminutes' AND m.`meta_key` = 'tm_ballot' $where ORDER BY `meta_id` DESC";
+	echo $sql;
 	$results = $wpdb->get_results($sql);
 	foreach($results as $row) {
 		if(empty($email_vote[$row->post_id]))

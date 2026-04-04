@@ -919,9 +919,11 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		if($json) {
 			$data = json_decode($json);
 		}
-		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth();
+		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth($identifier);
 		if($authorized) //if not anonymous, use user ID as identifier
 			$identifier = $authorized;
+		$votingdata['current_user_id'] = $current_user->ID;
+		$votingdata['mobileauth'] = wpt_mobile_auth($identifier);
 		$votingdata['current_user'] = $current_user->ID;
 		$votingdata['current_user_name'] = $current_user->display_name;
 		$votingdata['post_id'] = $post_id;

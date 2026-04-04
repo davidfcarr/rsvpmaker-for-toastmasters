@@ -143,7 +143,7 @@ return (
 				} }
 					options={ options }	
 	/>
-
+	<p><strong>Note:</strong> Although duplicates may displayed in the editor, on the front end only unique entries will be shown. For example, you can add a profile block for the President or District Director with special formatting, followed by a block that lists all officers, and the featured officer profiles will not be repeated.</p>
 	<ToggleControl
 		label={ __( 'Show picture', 'rsvpmaker-for-toastmasters' ) }
 		checked={ showPicture }

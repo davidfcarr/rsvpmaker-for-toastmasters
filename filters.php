@@ -1,7 +1,7 @@
 <?php
 add_filter( 'jetpack_seo_meta_tags', 'members_only_jetpack' );
 add_filter( 'excerpt_more', 'toast_excerpt_more' );
-add_filter( 'user_contactmethods', 'awesome_contactmethod', 10, 1 );
+add_filter( 'user_contactmethods', 'awesome_contactmethod', 1000, 1 );
 
 function wptmagenda_menu( $post_id, $frontend = true ) {
 	global $post, $rsvp_options;
