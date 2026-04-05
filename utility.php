@@ -904,7 +904,30 @@ function next_toastmaster_meeting() {
 
 }
 
+add_shortcode('wpt_get_club_officers','wpt_get_club_officers_test');
 
+function wpt_get_club_officers_test() {
+
+	$officers = wpt_get_club_officers();
+
+	ob_start();
+
+	foreach($officers as $slug => $officer) {
+
+		echo '<p>'.$officer['title'].': '.get_member_name($officer['id']).'</p>';
+
+	}
+	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+
+	$officer_ids = get_option( 'wp4toastmasters_officer_ids' );
+
+	$slugs = get_option( 'wp4toastmasters_officer_slugs' );
+
+	printf('<p>Titles (%d): %s</p><p>IDs (%d): %s</p><p>Slugs (%d): %s</p>', count($wp4toastmasters_officer_titles), implode(', ',$wp4toastmasters_officer_titles), count($officer_ids), implode(', ',$officer_ids), count($slugs), implode(', ',$slugs));
+
+	return ob_get_clean();
+
+}
 
 function wpt_get_club_officers() {
 
@@ -7390,7 +7413,7 @@ function tm_member_profile_display($attributes) {
 
 	$profileMap = $response['map'];
 
-	$excludeFromContacts = ['ID', 'toastmasters_id', 'education_awards', 'public_profile'];
+	$excludeFromContacts = ['ID', 'toastmasters_id', 'education_awards', 'public_profile', 'alias'];
 
 	$response = tm_member_profile_retrieve($identifier, $attributes);
 
@@ -7418,6 +7441,10 @@ function tm_member_profile_display($attributes) {
 
 			echo '<h3>'.$profile['title'].'</h3>';
 
+		if(!empty($profile['alias']) && $showEmailAlias)
+			{
+				printf('<p><a href="mailto:%s">%s</a></p>', esc_attr($profile['alias']), esc_html($profile['alias']));
+			}
 		echo '</div>';
 
 		if($showBio &&!empty($profile['description']))
@@ -7431,9 +7458,7 @@ function tm_member_profile_display($attributes) {
 				continue;
 
 			if(empty($profile[$key]))
-
 				continue;
-
 			if(!empty($profile[$key]) && strpos($profile[$key],'@') !== false)
 
 				{
@@ -7481,11 +7506,10 @@ function tm_member_profile_display($attributes) {
 		printf('<div class="contactdetails">Based on Your Editing Rights: <a href="%s">%s</a> | <a href="%s">%s</a></div>', admin_url('user-edit.php?user_id=' . $profile['ID']), esc_html(__('Edit Profile','rsvpmaker-for-toastmasters')), admin_url('user-edit.php?user_id=' . $profile['ID'] . '#simple-local-avatar-section'), esc_html(__('Edit Profile Picture','rsvpmaker-for-toastmasters')));
 		}
 	}
-
 }
 
 function tm_member_profile_retrieve($identifier, $attributes) {
-
+	$dp = wpt_domain_prefix(get_current_blog_id());
 	$response['profile'] = null;
 
 	$response['map'] = wpt_get_contact_methods(true);
@@ -7501,6 +7525,12 @@ function tm_member_profile_retrieve($identifier, $attributes) {
 	foreach($officers as $key => $data) {
 
 		$officers_by_id[$data['id']] = $data['title'];
+		$officer_ids[] = $data['id'];
+		$titles[$data['id']][] = $data['title'];
+		$slugs[$data['id']][] = $key;
+		$response['officer_ids'][] = $data['id'];
+		$response['titles'][$data['id']][] = $data['title'];
+		$response['slugs'][$data['id']][] = $key;
 
 	}
 
@@ -7586,33 +7616,13 @@ function tm_member_profile_retrieve($identifier, $attributes) {
 
 		$include = [];
 
-		$officer_ids = [];
-
-			foreach($officers as $key => $data) {
-
-				if(in_array($data['id'], $officer_ids)) {
-
-					$index = array_search($data['id'], $officer_ids);
-
-					$titles[$index] .= ', ' . $data['title'];
-
-					continue;
-
-				}
-
-				$officer_ids[] = $data['id'];
-
-				$titles[] = $data['title'];
-
-			}
-
 		foreach($officer_ids as $index => $id) {
 
 			if(0 == $id) {
 
 				$profile['display_name'] = 'Open';
 
-				$profile['title'] = $titles[$index];
+				$profile['title'] = implode(', ',$titles[0]);
 
 			}
 
@@ -7624,7 +7634,8 @@ function tm_member_profile_retrieve($identifier, $attributes) {
 
 				if($profile) {
 
-					$profile['title'] = $titles[$index];
+					$profile['title'] = implode(', ',$titles[$id]);
+					$profile['alias'] = $dp['prefix'] . $slugs[$id][0].'@'.$dp['domain'];
 
 				}
 
@@ -7641,15 +7652,14 @@ function tm_member_profile_retrieve($identifier, $attributes) {
 		$identifier = sanitize_text_field($identifier);
 
 		if(!empty($officers[$identifier]) ) {
-
 			$profile = wpt_public_profile($officers[$identifier]['id'],$response['map'],$attributes, true);
-
-			$profile['title'] = $officers[$identifier]['title'] ?? '';
-
+			$profile['title'] = !empty($titles[$officers[$identifier]['id']]) ? implode(', ',$titles[$officers[$identifier]['id']]) : '';
+			if(!empty($profile['title']) && !empty($slugs[$officers[$identifier]['id']]))
+			{
+			$profile['alias'] = $dp['prefix'] . $slugs[$officers[$identifier]['id']][0].'@'.$dp['domain'];
+			}
 			$response['list'][] = $profile;
-
 		}
-
 	}
 
 	return $response;
@@ -7657,6 +7667,8 @@ function tm_member_profile_retrieve($identifier, $attributes) {
 }
 
 function wpt_public_profile($id,$contactmethods,$attributes, $is_officer = false) {
+	if(!$is_officer)
+		$is_officer = wpt_is_officer($id);
 
 	$profile = [];
 
@@ -7686,12 +7698,11 @@ function wpt_public_profile($id,$contactmethods,$attributes, $is_officer = false
 		$contactmethods = array_keys($contactmethods);
 
 		$contactmethods[] = 'ID';
-
+		$contactmethods[] = 'user_login';
 		$contactmethods[] = 'display_name';
-
 		$contactmethods[] = 'description';
-
 		$contactmethods[] = 'original_join_date';
+		$contactmethods[] = 'alias';
 
 	}
 
@@ -7701,6 +7712,10 @@ function wpt_public_profile($id,$contactmethods,$attributes, $is_officer = false
 
 		if(strpos($method,'phone') !== false && !$public_phone)
 			continue;
+		if('x_url' == $method && !empty($item) && strpos($item,'https://x.com/') === false)
+			$item = 'https://x.com/'.$item;//handle only
+		if(!empty($item) && strpos($method,'url') !== false && !strpos($item,'//'))
+			$item = 'https://'.$item;//missing http prefix
 
 		if(strpos($item,'@') !== false && !$public_email)
 

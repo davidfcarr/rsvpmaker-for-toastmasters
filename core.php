@@ -4809,16 +4809,17 @@ submit_button('Switch to District');
 
 	$wp4toastmasters_officer_slugs = get_option( 'wp4toastmasters_officer_slugs' );
 
-	if(empty($wp4toastmasters_officer_slugs))
-
-		$wp4toastmasters_officer_slugs = array();
-
 	if ( ! is_array( $wp4toastmasters_officer_titles ) ) {
-
 		$wp4toastmasters_officer_titles = array( __( 'President', 'rsvpmaker-for-toastmasters' ), __( 'VP of Education', 'rsvpmaker-for-toastmasters' ), __( 'VP of Membership', 'rsvpmaker-for-toastmasters' ), __( 'VP of Public Relations', 'rsvpmaker-for-toastmasters' ), __( 'Secretary', 'rsvpmaker-for-toastmasters' ), __( 'Treasurer', 'rsvpmaker-for-toastmasters' ), __( 'Sgt. at Arms', 'rsvpmaker-for-toastmasters' ), __( 'Immediate Past President', 'rsvpmaker-for-toastmasters' ) );
+		$wp4toastmasters_officer_ids = array(0, 0, 0, 0, 0, 0, 0, 0);
+		$wp4toastmasters_officer_slugs = array( 'president', 'vpe', 'vpm', 'vpr', 'secretary', 'treasurer', 'saa', 'ipp' );
+	}
 
-		$wp4toastmasters_officer_ids = array();
-
+	if(sizeof($wp4toastmasters_officer_slugs) != sizeof($wp4toastmasters_officer_titles)) {
+		foreach($wp4toastmasters_officer_titles as $index => $title) {
+			$wp4toastmasters_officer_slugs[$index] = wpt_officer_title_to_slug($title);
+		}
+		update_option( 'wp4toastmasters_officer_slugs', $wp4toastmasters_officer_slugs );
 	}
 
 	$wp4toastmasters_member_message  = get_option( 'wp4toastmasters_member_message' );
@@ -10458,7 +10459,6 @@ function wpt_get_contact_methods($phone = true) {
 	$contactmethods['toastmasters_id']  = 'Toastmasters ID';
 
 	$contactmethods['education_awards'] = 'Toastmasters Awards (DTM etc)';
-	$contactmethods['public_profile'] = 'Public Profile';
 
 	return $contactmethods;
 

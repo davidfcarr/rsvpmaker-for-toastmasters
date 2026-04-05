@@ -6,11 +6,12 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { useRsvpmakerRest } from '../useRsvpmakerRest.js';
 import './editor.scss';
 
-export default function Edit({ attributes, attributes: { identifier,showPicture,pictureSize,pictureShape,showEmail,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading }, setAttributes, isSelected, className, clientId }) {
+export default function Edit({ attributes, attributes: { identifier,showPicture,pictureSize,pictureShape,showEmail,showEmailAlias,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading }, setAttributes, isSelected, className, clientId }) {
 const [options, setOptions] = useState([]);
 const [list, setList] = useState([]);
 const [profile, setProfile] = useState(null);
 const [map, setMap] = useState(null);
+const [previousMemberIds, setPreviousMemberIds] = useState(new Set());
 const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
 const rsvpmaker_rest = useRsvpmakerRest();
 const defaultProfileMap = {
@@ -44,12 +45,92 @@ fetch(rest_urlendpoint, { headers: { 'X-WP-Nonce': rsvpmaker_rest.nonce } }).the
 const mpBlocks = useSelect( ( select ) => {
 	const editor = select( 'core/block-editor' );
 	const rootClientId = editor.getBlockRootClientId( clientId );
-	return editor.getBlocks( rootClientId ).filter( ( block ) => block.name === 'wp4toastmasters/memberprofile' );
+	const collectMemberProfileBlocks = ( blocks ) => {
+		return ( blocks || [] ).flatMap( ( block ) => {
+			const nestedMatches = collectMemberProfileBlocks( block.innerBlocks );
+			return block.name === 'wp4toastmasters/memberprofile'
+				? [ block, ...nestedMatches ]
+				: nestedMatches;
+		} );
+	};
+
+	return collectMemberProfileBlocks( editor.getBlocks( rootClientId ) );
 }, [ clientId ] );
 
 const rounding = pictureShape === 'rounded' ? '10px' : pictureShape === 'circle' ? '50%' : '0';
 const profileMap = map || defaultProfileMap;
 const excludeFromContacts = ['ID', 'toastmasters_id', 'education_awards','joined_club','original_join_date'];
+
+const getMemberId = (member) => member?.ID ?? member?.id ?? member?.user_id ?? null;
+
+useEffect(() => {
+	let isActive = true;
+	const blockIndex = mpBlocks.findIndex((block) => block.clientId === clientId);
+	if (blockIndex <= 0) {
+		setPreviousMemberIds(new Set());
+		return () => {
+			isActive = false;
+		};
+	}
+
+	const previousBlocks = mpBlocks.slice(0, blockIndex);
+	const previousIdentifiers = [
+		...new Set(
+			previousBlocks
+				.map((block) => block?.attributes?.identifier)
+				.filter(Boolean)
+		),
+	];
+
+	if (previousIdentifiers.length === 0) {
+		setPreviousMemberIds(new Set());
+		return () => {
+			isActive = false;
+		};
+	}
+
+	const fetchPreviousMemberIds = async () => {
+		const idSet = new Set();
+		await Promise.all(
+			previousIdentifiers.map(async (previousIdentifier) => {
+				const endpoint = `${rsvpmaker_rest.rest_url}rsvptm/v1/members/${previousIdentifier}?pictureSize=${pictureSize}`;
+				try {
+					const response = await fetch(endpoint, { headers: { 'X-WP-Nonce': rsvpmaker_rest.nonce } });
+					const data = await response.json();
+					const priorMembers = [];
+					if (Array.isArray(data?.list)) {
+						priorMembers.push(...data.list);
+					}
+					if (Array.isArray(data?.profile?.list)) {
+						priorMembers.push(...data.profile.list);
+					}
+					if (data?.profile && !Array.isArray(data.profile)) {
+						priorMembers.push(data.profile);
+					}
+
+					priorMembers.forEach((member) => {
+						const memberId = getMemberId(member);
+						if (memberId !== null && memberId !== undefined && memberId !== '') {
+							idSet.add(String(memberId));
+						}
+					});
+				} catch (error) {
+					console.error('Error fetching previous member profile:', error);
+				}
+			})
+		);
+
+		if (isActive) {
+			setPreviousMemberIds(idSet);
+		}
+	};
+
+	fetchPreviousMemberIds();
+
+	return () => {
+		isActive = false;
+	};
+}, [mpBlocks, clientId, rsvpmaker_rest.rest_url, rsvpmaker_rest.nonce, pictureSize]);
 
 const renderContactDetails = (member) => {
 	if (!showLinks || !member) {
@@ -105,6 +186,7 @@ const renderMemberProfile = (member, keyPrefix = 'member') => {
 			{showPicture ? <div><img src={member?.avatar ?? ''} alt={member?.display_name ?? ''} style={{ borderRadius: rounding }} /></div> : null}
 			<h2>{member?.display_name ?? ''}{showEdAwards && member?.education_awards ? `, ${member.education_awards}` : ''}</h2>
 			<h3>{member?.title ?? ''}</h3>
+			{showEmailAlias && member?.alias ? <p><a href={`mailto:${member.alias}`}>{member.alias}</a></p> : null}
 			</div>
 			{showBio && member?.description ? <p dangerouslySetInnerHTML={{ __html: member.description.replace(/\n/g, '<br />') }} /> : null}
 			{renderContactDetails(member)}
@@ -115,7 +197,7 @@ const renderMemberProfile = (member, keyPrefix = 'member') => {
 function syncAttributes() {
 	mpBlocks.forEach( ( block ) => {
 		//copy all except identifier and options (which are used to populate the dropdown and should not be overridden across blocks)
-		updateBlockAttributes(block.clientId, { showPicture, pictureSize, pictureShape, showEmail, showBio, joinedClub, joinedTm, showLinks, showEdAwards, centerHeading });
+		updateBlockAttributes(block.clientId, { showPicture, pictureSize, pictureShape, showEmail, showEmailAlias, showBio, joinedClub, joinedTm, showLinks, showEdAwards, centerHeading });
 	});
 }
 
@@ -123,13 +205,30 @@ const membersToRender = Array.isArray(list) && list.length > 0
 	? list
 	: (Array.isArray(profile?.list) ? profile.list : []);
 
+const seenMemberIds = new Set();
+const filteredMembersToRender = membersToRender.filter((member) => {
+	const memberId = getMemberId(member);
+	if (memberId === null || memberId === undefined || memberId === '') {
+		return true;
+	}
+	const key = String(memberId);
+	if (previousMemberIds.has(key) || seenMemberIds.has(key)) {
+		return false;
+	}
+	seenMemberIds.add(key);
+	return true;
+});
+
+const singleProfileId = getMemberId(profile);
+const shouldRenderSingleProfile = !singleProfileId || !previousMemberIds.has(String(singleProfileId));
+
 return (			
 <div {...useBlockProps()}>
 {(list.length === 0 || !list[0]) ? <div>{__('Loading ...', 'rsvpmaker-for-toastmasters')}</div> : null}
 <div>
-{membersToRender.length > 0
-	? membersToRender.map((item, index) => renderMemberProfile(item, `list-${index}`))
-	: renderMemberProfile(profile, 'single-profile')}
+{filteredMembersToRender.length > 0
+	? filteredMembersToRender.map((item, index) => renderMemberProfile(item, `list-${index}`))
+	: (shouldRenderSingleProfile ? renderMemberProfile(profile, 'single-profile') : null)}
 
 <InspectorControls>
 	<PanelBody title={ __( 'Member Profile Settings', 'rsvpmaker-for-toastmasters' ) }>
@@ -188,6 +287,11 @@ return (
 		label={ __( 'Show email', 'rsvpmaker-for-toastmasters' ) }
 		checked={ showEmail }
 		onChange={ ( showEmail ) => setAttributes( { showEmail } ) }
+	/>
+	<ToggleControl
+		label={ __( 'Show email alias', 'rsvpmaker-for-toastmasters' ) }
+		checked={ showEmailAlias }
+		onChange={ ( showEmailAlias ) => setAttributes( { showEmailAlias } ) }
 	/>
 	<ToggleControl
 		label={ __( 'Show joined TM date', 'rsvpmaker-for-toastmasters' ) }

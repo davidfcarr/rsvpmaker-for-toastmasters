@@ -29,6 +29,10 @@
 			"type": "boolean",
 			"default": false
 		},
+		"showEmailAlias": {
+			"type": "boolean",
+			"default": false
+		},
 		"showEdAwards": {
 			"type": "boolean",
 			"default": false
