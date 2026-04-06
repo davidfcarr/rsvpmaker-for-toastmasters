@@ -14851,7 +14851,15 @@ function wp4t_redirect() {
 
 			die();
 
-		} elseif ( isset( $_REQUEST['blank'] ) ) {
+		} elseif ( isset( $_REQUEST['print_this'] ) ) {
+				echo '<html><head><title>' . esc_html(get_the_title($post->ID)) . '</title><style>body { font-family: Arial, Helvetica, sans-serif; width: 800px; }</style></head><body>';
+				if(empty($_REQUEST['no_title']))
+				printf('<h1>%s</h1>', esc_html(get_the_title($post->ID)));
+				echo do_blocks(do_shortcode($post->post_content));
+				echo '</body></html>';
+				die();	
+		}
+		elseif ( isset( $_REQUEST['blank'] ) ) {
 
 			$template = get_block_template( get_stylesheet() . '//blank' );
 

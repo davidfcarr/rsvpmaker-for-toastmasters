@@ -36,6 +36,7 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_screen', __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'fth_importer_docs', 'fth_importer_docs' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'member_application_approval', 'member_application_approval' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'member_application_settings', 'member_application_settings' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Role Descriptions Setup', 'rsvpmaker-for-toastmasters' ), __( 'Role Descriptions Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wpt_role_descriptions', 'wpt_role_descriptions' );
 	if(!is_toastmost_site())
 		add_submenu_page( 'toastmasters_admin_screen', __( 'Include on Toastmost Calendar?', 'rsvpmaker-for-toastmasters' ), __( 'Include on Toastmost Calendar?', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'include_toastmost_calendar', 'include_toastmost_calendar' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
@@ -46,6 +47,425 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_member_votes', 'toastmasters_member_votes' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
+}
+
+add_shortcode('wpt_role_descriptions_listing', 'wpt_role_descriptions_listing');
+function wpt_role_descriptions_listing() {
+	global $toast_roles, $rsvp_options;
+	$output = '';	
+	wp4t_role_array(); //initialize roles, including custom roles added by users
+	ksort($toast_roles);
+	$role_pages = get_option('wp4t_role_pages',[]);
+	if(isset($_GET['all'])) {
+		$css = isset($_GET['eachpage']) ? 'break-after: page;' : 'break-inside: avoid;';
+		$count = 1;
+		$size = count($role_pages);
+		foreach($role_pages as $roleslug => $page_id) {
+			$page = get_post($page_id);
+			if($size == $count)
+				$css = '';
+			if($page) {
+				$output .= sprintf('<div style="%s"><h2>%s</h2>%s</div>', $css, $toast_roles[$roleslug] ?? $roleslug, do_blocks(do_shortcode($page->post_content)));
+			}
+			$count++;
+		}
+		if(empty($_GET['print_this'])) {
+			$output .= sprintf('<p><a href="%s">Print</a></p>',get_permalink($role_page_listing).'?all=1&print_this=1');
+		}
+		return $output;
+	}
+
+	foreach($role_pages as $roleslug => $page_id) {
+		$output .= sprintf('<p><a href="%s">%s</a> | <a href="%s">Print</a></p>',get_permalink($page_id), $toast_roles[$roleslug] ?? $roleslug, get_permalink($page_id).'?print_this=1');
+	}
+	$output .= sprintf('<p><a href="%s">%s</a> | <a href="%s">%s</a> | <a href="%s">%s</a></p>',get_permalink().'?all=1', __('View All', 'rsvpmaker-for-toastmasters'), get_permalink($role_page_listing).'?all=1&print_this=1', __('Print All', 'rsvpmaker-for-toastmasters'), get_permalink().'?all=1&eachpage=1&print_this=1&no_title=1', __('Print 1 Role Per Page', 'rsvpmaker-for-toastmasters') );
+	if(current_user_can('manage_options'))
+		$output .= sprintf('<p><a href="%s">%s</a></p>',admin_url('admin.php?page=wpt_role_descriptions'), __('Role List & Descriptions Setup', 'rsvpmaker-for-toastmasters'));
+	return $output;
+}
+
+function wpt_role_descriptions() {
+global $toast_roles, $rsvp_options;
+echo '<h1>Meeting Role Descriptions</h1><p>Check off one or more roles to create pages for them. An index of role description pages will also be created.</p>';	
+wp4t_role_array(); //initialize roles, including custom roles added by users
+ksort($toast_roles);
+$role_page_listing = get_option('wp4t_role_pages_listing');
+
+$deflaultcontent["Ah Counter"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves observational and listening skills  </strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The purpose of the Ah Counter is to note any overused words or filler sounds used as a crutch by anyone who speaks during the meeting. Words may be inappropriate interjections, such as <em>and, well, but, so</em> and <em>you know</em>. Sounds may be <em>ah, um</em> or <em>er</em>. As Ah Counter you:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Request a copy of the Ah Counter’s log from your sergeant at arms. If a log is not available, be prepared to take notes.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>When introduced during the club meeting, explain the role of the Ah-Counter.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>In the Ah Counter’s log, record overlong pauses, overused words and filler sounds relied upon too often by all speakers. Examples include: <em>and, but, so, you know,</em> <em>ah, um.</em></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>During the evaluation portion of the meeting, report your observations when called upon.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["Body Language Monitor"] = '<!-- wp:paragraph -->
+<p>Just as the Grammarian monitors use of language, The Body Language Monitor watches for uses of body language that excel, as well as those that could use improvement.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The body language monitor also watches for the use of props, visual aids, and on-screen presentation in virtual or hybrid meetings.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Take notes and deliver your report at the end of the meeting.</p>
+<!-- /wp:paragraph -->';
+$deflaultcontent["Evaluator"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves active listening, critical thinking and positive feedback skills.</strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Evaluation is the heart of the Toastmasters educational program. You observe the speeches and leadership roles of your fellow club members and offer evaluations of their efforts, and they do the same for you. As evaluator you:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Ask those you\'ve been assigned to evaluate what they will present and what they wish to achieve.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Provide objective verbal and written evaluations for speakers.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>When giving any evaluation, offer praise as well as constructive criticism.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["General Evaluator"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves critical thinking, organization, time management, motivational and team-building skills.</strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The General Evaluator evaluates everything that takes place during the club meeting. In addition, the General Evaluator conducts the evaluation portion of the meeting and is responsible for the evaluation team: the speech evaluators, Ah Counter, grammarian and timer. As General Evaluator, you:<strong></strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Ensure other evaluators know their tasks and responsibilities.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Explain the purpose and benefits of evaluations to the group.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Identify and confirm meeting assignments with the timer, grammarian and Ah Counter.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Confirm the club meeting program and/or checklist with the Toastmaster.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>During the meeting, take notes and report on all club proceedings to evaluate things such as timeliness, enthusiasm, preparation, organization, performance of duties, etc.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["Grammarian"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves vocabulary, grammar, critical listening skills and evaluation skills</strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The grammarian plays an important role in helping all club members improve their grammar and vocabulary. As grammarian you:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Introduce new words to meeting participants and monitor language and grammar usage</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Write down the language and grammar usage of all speakers, noting incomplete sentences, mispronunciations, grammatical mistakes, non-sequiturs, malapropisms, etc. <em>Example: "One in five children wear glasses" </em>should be <em>"one in five children wears glasses."</em></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>At the end of the meeting, give your complete report when called on.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Optional: Introduce a "<a href="https://www.toastmasters.org/Membership/Club-Meeting-Roles/Grammarian/Word-of-the-Week"></a><a href="https://www.toastmasters.org/Membership/Club-Meeting-Roles/Grammarian/Word-of-the-Week">Word of the Week</a>" that helps meeting participants increase their vocabulary; display the word, part of speech, and a brief definition with a visual aid and prepare a sentence showcasing how the word should be used. Note who uses this word or any derivatives thereof correctly or incorrectly during the meeting.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["Humorist"] = '<!-- wp:paragraph -->
+<p>Whether you tell a joke, a series of jokes, or a humorous personal story, your job as humorist is to make the club laugh. Humor is one of a speaker\'s most powerful tools, so this is a good chance to practice timing and delivery.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Keep in mind that we typically only allow a few minutes on the agenda for this role, so make to keep it brief. If you have a longer humorous story you want to tell, make it a speech instead.</p>
+<!-- /wp:paragraph -->';
+$deflaultcontent["Speaker"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves critical thinking, confidence and public speaking skills</strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Every speaker is a role model, and club members learn from one another\'s speeches. As a meeting speaker, you:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Prepare, rehearse and present a speech during the club meeting.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Arrive early to make sure the microphone, lectern and lighting are working and in place.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Discuss your goals, strengths and weaknesses with your evaluator prior to giving your speech.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["Timer"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves time management skills.</strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>One of the skills Toastmasters practice is expressing a thought within a specific time. The timer is responsible for monitoring time for each meeting segment and each speaker. As Timer, you:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Acquire the timing/signaling equipment from the sergeant at arms and know how to operate it.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Explain the timing rules and demonstrate the signal device if called upon to do so. </li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Throughout the meeting, listen carefully to each participant and signal them accordingly.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>When called to report, announce the speakers\' names and the time taken.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>After the meeting, return the timing/signaling equipment to the sergeant at arms.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["Toastmaster of the Day"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves organization, time management and public speaking skills.</strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The Toastmaster is the meeting\'s director and host. A member typically will not be assigned this role until they are thoroughly familiar with the club and its procedures. As Toastmaster, you:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Acquire a meeting agenda from your vice president education.<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Work with the General Evaluator to ensure all club participants know their roles and responsibilities.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Introduce speakers during the club meeting, including their speech topic, project title, objectives, delivery time, etc. during your introduction.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Ensure smooth transitions between speakers during the club meeting.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list --></li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["Topics Master"] = '<!-- wp:paragraph -->
+<p><strong>Taking on this role improves organization skills, time management and facilitation skills.</strong></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>The Topics Master delivers the Table Topics<sup>® </sup>portion of the meeting, which helps train members to quickly organize and express their thoughts in an impromptu setting. As Topics Master, you:</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Select topics in advance of the meeting that allow speakers to offer opinions.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Give members who aren\'t assigned a speaking role the opportunity to speak during the meeting by assigning impromptu talks on non-specialized themes or topics.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Don\'t ask two people the same thing unless you specify that it is to generate opposing viewpoints.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>In clubs presenting a Best Table Topics speaker award, ask members to vote for the best Table Topics speaker.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->';
+$deflaultcontent["Vote Counter"] = '<!-- wp:paragraph -->
+<p>The Vote Counter counts the votes for best Speaker, best Evaluator, best Table Topics Speaker, and anything other roles for which the club holds contests at its regular monthly meetings.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Collect the votes for each contest, whether on paper or by other means such as private chat in a Zoom meeting, tally the results, and report the results at the end of the meeting.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph -->
+<p>Our website includes a <a href="https://toastmost.org/knowledge-base/how-to-use-the-vote-counters-tool-website-and-mobile-app-versions/">vote counter\'s online ballot system</a>, which can be useful for online and hybrid meetings. Using this tool, the vote counter posts a link to the online meeting chat, and the software helps tally the results.</p>
+<!-- /wp:paragraph -->';
+
+
+
+if(!empty($_POST['addpage'])) {
+	if(!$role_page_listing) {
+	$role_page_listing = wp_insert_post([
+		'post_title' => 'Meeting Role Descriptions',
+		'post_content' => '<!-- wp:shortcode -->
+[wpt_role_descriptions_listing note="placeholder for role descriptions listing"]
+<!-- /wp:shortcode -->',
+		'post_type' => 'page',
+		'post_status' => 'publish'
+	]);
+	update_option('wp4t_role_pages_listing', $role_page_listing);
+	}
+	$role_pages = get_option('wp4t_role_pages',[]);
+	foreach($_POST['addpage'] as $roleslug) {
+		$role = $toast_roles[$roleslug] ?? '';
+		if(!empty($deflaultcontent[$roleslug])) {
+			$content = $deflaultcontent[$roleslug];
+		} 
+		elseif(strpos($roleslug,'Toastmaster') !== false) { //this is a bit of a hack to provide default content for the Toastmaster of the Day role, which has a different slug than its name
+			$content = $deflaultcontent["Toastmaster of the Day"];
+		}
+		else {
+			$content = '';
+		}
+		if($role) {
+			$post_id = wp_insert_post([
+				'post_title' => $role.' - Role Description',
+				'post_content' => $content,
+				'post_type' => 'page',
+				'post_parent' => $role_page_listing,
+				'post_status' => 'publish'
+			]);
+			if($post_id) {
+				$role_pages[$roleslug] = $post_id;
+			}
+		}
+	}
+	if(!empty($role_pages)) {
+		update_option('wp4t_role_pages', $role_pages);
+	}
+}
+elseif(!empty($_POST['deletepage'])) {
+	$role_pages = get_option('wp4t_role_pages',[]);
+	foreach($_POST['deletepage'] as $roleslug) {
+		if(isset($role_pages[$roleslug])) {
+			wp_delete_post($role_pages[$roleslug], true);
+			unset($role_pages[$roleslug]);
+		}
+	}
+	update_option('wp4t_role_pages', $role_pages);
+} else {
+	$role_pages = get_option('wp4t_role_pages',[]);
+}
+printf('<form method="post" action="%s">', admin_url('admin.php?page=wpt_role_descriptions'));
+$code = '';
+foreach($toast_roles as $roleslug => $rolename) {
+	$page_id = $role_pages[$roleslug] ?? 0;
+	if($page_id) {
+		$page = get_post($page_id);
+		$code .= sprintf('<pre>$deflaultcontent["%s"] = \'%s\';</pre>',$roleslug, esc_html($page->post_content));
+		$edit_link = admin_url('post.php?action=edit&post='.$page_id);
+		printf('<p><span style="display:inline-block; width: 300px;"><a target="_blank" href="%s">Edit: %s</a></span> <input type="checkbox" name="deletepage[]" value="%s"> Delete %s</p>',$edit_link, $rolename, $roleslug, $rolename);
+	} else {
+		printf('<p><span style="display:inline-block; width: 300px;"><input type="checkbox" name="addpage[]" value="%s"> Add: %s</span></p>',$roleslug, $rolename);
+	}
+}
+submit_button('Add Pages');
+printf('</form>');
+	if($role_page_listing) {
+		printf('<p><a href="%s">%s</a></p>',get_permalink($role_page_listing), 'Role Descriptions Index');
+	}
+if(isset($_GET['showcode'])) {
+echo $code;
+}
+
+if((isset($_POST['toastmasters_custom_roles_properties']) || isset($_POST['add_custom_role'])) && rsvpmaker_verify_nonce()) {
+
+$toastmasters_custom_roles = isset($_POST['toastmasters_custom_roles']) ? array_map('sanitize_text_field', $_POST['toastmasters_custom_roles']) : array();
+
+$toastmasters_custom_roles_properties = isset($_POST['toastmasters_custom_roles_properties']) ? $_POST['toastmasters_custom_roles_properties'] : array();
+
+if(isset($_POST['add_custom_role']) && !empty($_POST['add_custom_role'])) {
+
+	$new_role = sanitize_text_field($_POST['add_custom_role']);
+
+	$new_time = isset($_POST['add_custom_role_time']) ? intval($_POST['add_custom_role_time']) : 0;
+
+	$new_titlePrompt = isset($_POST['add_custom_role_titlePrompt']) ? boolval($_POST['add_custom_role_titlePrompt']) : false;
+
+	$toastmasters_custom_roles[$new_role] = $new_role;
+
+	$toastmasters_custom_roles_properties[$new_role] = array(
+
+		'time' => $new_time,
+
+		'titlePrompt' => $new_titlePrompt
+
+	);
+
+}
+
+if(!empty($_POST['toastmasters_custom_roles_remove'])) {
+
+	foreach($_POST['toastmasters_custom_roles_remove'] as $index) {
+		printf('<p>Removing %s</p>', esc_html($index));
+
+		if(isset($toastmasters_custom_roles[$index])) {
+			unset($toastmasters_custom_roles[$index]);
+		}
+		if(isset($toastmasters_custom_roles_properties[$index])) {
+			unset($toastmasters_custom_roles_properties[$index]);
+		}
+	}
+}
+
+
+update_option('toastmasters_custom_roles', $toastmasters_custom_roles);
+
+update_option('toastmasters_custom_roles_properties', $toastmasters_custom_roles_properties);
+
+}
+
+printf('<h2>%s</h2><form method="post" action="%s">', __('Custom Roles', 'rsvpmaker-for-toastmasters'), admin_url('admin.php?page=wpt_role_descriptions'));
+rsvpmaker_nonce();
+$custom_roles = get_option( 'toastmasters_custom_roles', array() );
+
+$toast_role_properties = get_option( 'toastmasters_custom_roles_properties', array('Speaker'=>array('time'=>7,'titlePrompt' => false),'Evaluator'=>array('time'=>3,'titlePrompt' => false)) );
+
+if ( ! empty( $custom_roles ) ) {
+
+	foreach ( $custom_roles as $index => $role ) {
+
+		$properties = (isset($toast_role_properties[$role])) ? $toast_role_properties[$role] : array('time' => 0, 'titlePrompt' => false);
+
+		printf( '<p>Custom Role<br /><input type="text" name="toastmasters_custom_roles[%s]" value="%s" /> Time Allowed <input type="number" name="toastmasters_custom_roles_properties[%s][time]" value="%s" /> <input type="checkbox" name="toastmasters_custom_roles_properties[%s][titlePrompt]" value="1" %s /> Prompt for Note or Title <input type="checkbox" name="toastmasters_custom_roles_remove[]" value="%s" /> Remove</p>', $index, esc_attr($role), $index, esc_attr($properties['time']), $index, checked( $properties['titlePrompt'], true, false ), $index );
+
+	}
+
+}
+
+echo '<p>Add Custom Role <br /><input type="text" name="add_custom_role" value="" /> Time Allowed <input type="number" name="add_custom_role_time" value="0" /> <input type="checkbox" name="add_custom_role_titlePrompt" value="1" />  Prompt for Note or Title</p>';
+submit_button( 'Save Custom Roles' );
+echo '</form>';
 }
 function toastmasters_admin_help() {
 ?>
