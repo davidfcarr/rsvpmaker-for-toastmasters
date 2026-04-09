@@ -27,7 +27,7 @@
 		},
 		"showEmail": {
 			"type": "boolean",
-			"default": false
+			"default": true
 		},
 		"showEmailAlias": {
 			"type": "boolean",
@@ -63,7 +63,33 @@
 		}
 	},
 	"supports": {
-		"html": false
+		"html": false,
+		"color": {
+			"background": true,
+			"text": true,
+			"gradients": true,
+			"link": true
+		},
+		"background": {
+			"backgroundImage": true,
+			"backgroundSize": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"fontStyle": true,
+			"fontWeight": true,
+			"textTransform": true,
+			"letterSpacing": true
+		},
+		"spacing": {
+			"padding": true,
+			"margin": true
+		},
+		"align": true,
+		"alignWide": true,
+		"anchor": true,
+		"shadow": true
 	},
 	"textdomain": "rsvpmaker-for-toastmasters",
 	"editorScript": "file:./index.js",

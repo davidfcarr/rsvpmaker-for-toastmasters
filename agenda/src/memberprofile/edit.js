@@ -195,9 +195,9 @@ const renderMemberProfile = (member, keyPrefix = 'member') => {
 };
 
 function syncAttributes() {
+	const { identifier: _ignoredIdentifier, ...attributesToCopy } = attributes;
 	mpBlocks.forEach( ( block ) => {
-		//copy all except identifier and options (which are used to populate the dropdown and should not be overridden across blocks)
-		updateBlockAttributes(block.clientId, { showPicture, pictureSize, pictureShape, showEmail, showEmailAlias, showBio, joinedClub, joinedTm, showLinks, showEdAwards, centerHeading });
+		updateBlockAttributes(block.clientId, attributesToCopy);
 	});
 }
 
@@ -224,7 +224,8 @@ const shouldRenderSingleProfile = !singleProfileId || !previousMemberIds.has(Str
 
 return (			
 <div {...useBlockProps()}>
-{(list.length === 0 || !list[0]) ? <div>{__('Loading ...', 'rsvpmaker-for-toastmasters')}</div> : null}
+{('any' != identifier) && (list.length === 0 || !list[0]) ? <div>{__('Loading ...', 'rsvpmaker-for-toastmasters')}</div> : null}
+{('any' == identifier) ? <div>{__('Choose an option', 'rsvpmaker-for-toastmasters')+'...'}</div> : null}
 <div>
 {filteredMembersToRender.length > 0
 	? filteredMembersToRender.map((item, index) => renderMemberProfile(item, `list-${index}`))
@@ -242,7 +243,7 @@ return (
 				} }
 					options={ options }	
 	/>
-	<p><strong>Note:</strong> Duplicate entries will be filtered out. For example, you can add a profile block for the President or District Director with special formatting, followed by a block that lists all officers, and the featured officer profiles will not be repeated.</p>
+	<p><strong>Notes:</strong> Duplicate entries will be filtered out. For example, you can add a profile block for the President or District Director with special formatting, followed by a block that lists all officers, and the featured officer profiles will not be repeated.</p>
 	<ToggleControl
 		label={ __( 'Show picture', 'rsvpmaker-for-toastmasters' ) }
 		checked={ showPicture }
@@ -284,7 +285,7 @@ return (
 		onChange={ ( showLinks ) => setAttributes( { showLinks } ) }
 	/>
 	<ToggleControl
-		label={ __( 'Show email', 'rsvpmaker-for-toastmasters' ) }
+		label={ __( 'Show email (only shown publicly with user\'s permisson)', 'rsvpmaker-for-toastmasters' ) }
 		checked={ showEmail }
 		onChange={ ( showEmail ) => setAttributes( { showEmail } ) }
 	/>

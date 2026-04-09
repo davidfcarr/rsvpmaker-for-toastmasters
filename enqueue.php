@@ -20,6 +20,25 @@ function wpt_is_evaluation_demo() {
 function wpt_rest_array() {
 	return rsvpmaker_rest_array();
 }
+
+add_filter( 'pre_user_description', 'wpt_sanitize_profile_description' );
+function wpt_sanitize_profile_description( $description ) {
+	$allowed = array(
+		'p'      => array(),
+		'strong' => array(),
+		'b'      => array(),
+		'em'     => array(),
+		'i'      => array(),
+		'a'      => array(
+			'href'   => true,
+			'target' => true,
+			'rel'    => true,
+		),
+	);
+
+	return wp_kses( $description, $allowed );
+}
+
 //use rsvpmaker script for tabbed ui
 add_filter('rsvpmaker_tab_pages','toastmasters_tabs');
 function toastmasters_tabs($hastabs) {
@@ -31,7 +50,7 @@ function toastmasters_css_js() {
 	if(is_network_admin())
 		return;
 	global $post, $current_user;
-	$version = '5.5.1';
+	$version = '5.5.2';
 	if ( is_admin() && ( strpos( $_SERVER['REQUEST_URI'], 'edit.php' ) || ( strpos( $_SERVER['REQUEST_URI'], 'post.php' ) && empty( $_GET['page'] ) ) || strpos( $_SERVER['REQUEST_URI'], 'post-new.php' ) ) ) {
 		return; // don't load all this in editor or post listings wp4toastmasters_history_edit
 	}
@@ -93,6 +112,11 @@ function toastmasters_css_js() {
 	|| ( strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) || strpos( $_SERVER['REQUEST_URI'], 'user-edit.php' ) )
 	) {
 		wp_enqueue_script( 'wp-tinymce' );
+	}
+	if ( strpos( $_SERVER['REQUEST_URI'], 'profile.php' ) || strpos( $_SERVER['REQUEST_URI'], 'user-edit.php' ) ) {
+		wp_enqueue_editor();
+		wp_register_script( 'wp4t-profile-description-editor', plugins_url( 'rsvpmaker-for-toastmasters/profile-description-editor.js' ), array( 'jquery', 'editor' ), $version, true );
+		wp_enqueue_script( 'wp4t-profile-description-editor' );
 	}
 	if ( isset( $_REQUEST['page'] ) && ( $_REQUEST['page'] == 'wp4t_setup_wizard' ) ) {
 		wp_enqueue_script( 'password-strength-meter' );

@@ -89,9 +89,8 @@ function minutes_post_type() {
 
     );
 
-      
 
-    register_post_type( 'tm_minutes', $args );
+    register_post_type( 'tmminutes', $args );
 
 		// Add new taxonomy, make it hierarchical (like categories)
 

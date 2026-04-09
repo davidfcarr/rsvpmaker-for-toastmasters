@@ -1949,7 +1949,7 @@ function wpt_all_flattened_forwarders() {
     return $forwarders;
 }
 function wpt_domain_prefix( $site_id = 0 ) {
-	$url = ($site_id) ? get_blog_option( $site_id,'siteurl' ) : get_option( 'siteurl' );
+	$url = ($site_id && is_multisite()) ? get_blog_option( $site_id,'siteurl' ) : get_option( 'siteurl' );
 	$domain = parse_url(strtolower($url), PHP_URL_HOST);
 	$dp = explode('.',$domain);
 	$prefix = '';
