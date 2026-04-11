@@ -107,7 +107,7 @@ if(isset($_POST['custom_club_contests']) && rsvpmaker_verify_nonce())
         $c = explode(',',$input);
         update_option('custom_club_contests',$c);
     }
-    $vote_counter_name = ($vote_counter) ? get_member_name($vote_counter) : 'not yet claimed';
+    $vote_counter_name = ($vote_counter) ? wp4t_get_member_name($vote_counter) : 'not yet claimed';
     if(isset($_POST['my_vote']) && rsvpmaker_verify_nonce()){
         $vote = sanitize_text_field($_POST['my_vote']);
         $key = sanitize_text_field($_POST['key']);
@@ -243,7 +243,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
                 $row->meta_value = intval($row->meta_value);
                 if($row->meta_value < 1)
                     continue;
-                $speakers[] = get_member_name($row->meta_value);
+                $speakers[] = wp4t_get_member_name($row->meta_value);
             }
             else
                 $speakers[] = $row->meta_value;//guest
@@ -272,7 +272,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
             $row->meta_value = intval($row->meta_value);
             if($row->meta_value < 1)
                 continue;
-            $evaluators[] = get_member_name($row->meta_value);
+            $evaluators[] = wp4t_get_member_name($row->meta_value);
         }
         else
             $evaluators[] = $row->meta_value;//guest
@@ -383,7 +383,7 @@ if(($admin_view || ($current_user->ID == $vote_counter)) && !isset($_GET['previe
     
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
     echo '<h2>Switch Vote Counter Role to Another Member</h2>';
-    echo awe_user_dropdown( 'switch_vote_counter', 0, true, 'Select Member' );
+    echo wp4t_awe_user_dropdown( 'switch_vote_counter', 0, true, 'Select Member' );
     rsvpmaker_nonce();
     echo '<button>Submit</button></form>';
     printf('<form method="post" adtion="%s">',add_query_arg('voting',1,get_permalink()));    
@@ -407,7 +407,7 @@ if(is_array($open)) {
                 printf('<h3><a href="%s">Vote for %s</a></h3>',$voting_link,$label);
         }
 }
-$users = get_club_members();
+$users = wp4t_get_club_members();
 foreach ( $users as $user ) {
 	$userdata = get_userdata( $user->ID );
 	$u[]      = $userdata->first_name . ' ' . $userdata->last_name;

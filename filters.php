@@ -1,7 +1,7 @@
 <?php
-add_filter( 'jetpack_seo_meta_tags', 'members_only_jetpack' );
+add_filter( 'jetpack_seo_meta_tags', 'wp4t_members_only_jetpack' );
 add_filter( 'excerpt_more', 'toast_excerpt_more' );
-add_filter( 'user_contactmethods', 'awesome_contactmethod', 1000, 1 );
+add_filter( 'user_contactmethods', 'wp4t_awesome_contactmethod', 1000, 1 );
 
 function wptmagenda_menu( $post_id, $frontend = true ) {
 	global $post, $rsvp_options;
@@ -9,14 +9,14 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 	$permalink  = get_permalink( $post_id );
 	$permalink .= strpos( $permalink, '?' ) ? '&' : '?';
 	$link       = '';
-	$link .= tm_grant_privacy_permission_ui(true);
+	$link .= wp4t_tm_grant_privacy_permission_ui(true);
 	if ( $frontend ) {
-		$link .= rsvpmaker_agenda_notifications( $permalink );
+		$link .= wp4t_rsvpmaker_agenda_notifications( $permalink );
 	}
-	$agenda_lock = is_agenda_locked();
+	$agenda_lock = wp4t_is_agenda_locked();
 	$blank = ( $frontend ) ? '' : ' target="_blank" ';
 	// defaults 'edit_signups' => 'read','email_list' => 'read','edit_member_stats' => 'edit_others_posts','view_reports' => 'read','view_attendance' => 'read','agenda_setup' => 'edit_others_posts'
-	$security = get_tm_security();
+	$security = wp4t_get_tm_security();
 	$link .= '<div id="cssmenu"><ul>';
 	if ( $frontend ) {
 		$events = future_toastmaster_meetings();
@@ -114,7 +114,7 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 		}
 	}
 	if ( current_user_can( 'edit_signups' ) ) {
-		$link .= '<li class="has-sub"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a><ul><li><a target="_blank" href="' . site_url( '?signup_sheet_editor=1' ) . '">' . __( 'Edit Signups (multiple weeks)', 'rsvpmaker-for-toastmasters' ) . '</a></li>'.wpt_clipboard_links().'</ul></li>';
+		$link .= '<li class="has-sub"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a><ul><li><a target="_blank" href="' . site_url( '?wp4t_signup_sheet_editor=1' ) . '">' . __( 'Edit Signups (multiple weeks)', 'rsvpmaker-for-toastmasters' ) . '</a></li>'.wpt_clipboard_links().'</ul></li>';
 	} else {
 		$link .= '<li class="last"><a target="_blank" href="' . site_url( '?signup2=1' ) . '">' . __( 'Signup Sheet', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	}
@@ -135,7 +135,7 @@ add_filter( 'the_content', function ( $content ) {
 	$reactdiv ='';
 	$promo = '';
 	if('rsvpmaker_template' == $post->post_type)
-		return '<div  id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
+		return '<div  id="react-agenda" '.wp4t_get_get_to_attributes().' >Loading ...</div>';
 	if(isset($_GET['meetingvote']) && $post->post_type == 'tmminutes') {
 		return '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
 	}
@@ -168,20 +168,20 @@ add_filter( 'the_content', function ( $content ) {
 		return $content;
 	}
 	$permalink = rsvpmaker_permalink_query( $post->ID );
-	if ( isset( $_REQUEST['print_agenda'] ) || is_email_context() ) {
+	if ( isset( $_REQUEST['print_agenda'] ) || rsvpmaker_is_email_context() ) {
 	} 
-	elseif(isset($_GET['evalme']) && (!is_user_logged_in() || !is_club_member())) {
+	elseif(isset($_GET['evalme']) && (!is_user_logged_in() || !wp4t_is_club_member())) {
 		if(!is_user_logged_in()) {
 			$link = sprintf('<p>If you have a password, please <a href="%s">log in</a></p>',wp_login_url(get_permalink().'?evalme='.$_GET['evalme']));
 		}
-		$link .= '<div  id="react-agenda" '.get_get_to_attributes('evaluation_guest').' >Loading ...</div>';
+		$link .= '<div  id="react-agenda" '.wp4t_get_get_to_attributes('evaluation_guest').' >Loading ...</div>';
 		return $link;
 	}
 	elseif(isset($_GET['meetingvote'])) {
 		$link .= '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
 		return $link;
 	}
-	elseif ( ! is_club_member() && ! current_user_can('manage_network') ) {
+	elseif ( ! wp4t_is_club_member() && ! current_user_can('manage_network') ) {
 		if(strpos($post->post_content,'<hr')) {
 			$parts = explode('<hr',$content);//code rendered on page
 			$content = sprintf( '<div id="agendalogin"><a href="%s">' . __( 'Login to Sign Up for Roles', 'rsvpmaker-for-toastmasters' ) . '</a> or <a href="%s">' . __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url() . '/wp-login.php?redirect_to='. urlencode($permalink ), site_url() . '/wp-login.php?redirect_to='. urlencode($permalink . 'print_agenda=1&no_print=1' ));
@@ -208,8 +208,8 @@ add_filter( 'the_content', function ( $content ) {
 			}
 			else
 				$revert_default = get_option('toast_revert_default');
-			if((current_user_can('manage_network') || is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
-				$reactdiv = '<div id="react-agenda" '.get_get_to_attributes().' >Loading ...</div>';
+			if((current_user_can('manage_network') || wp4t_is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
+				$reactdiv = '<div id="react-agenda" '.wp4t_get_get_to_attributes().' >Loading ...</div>';
 				$parts = explode('<!-- wp:wp4toastmasters',$content);
 				$content = '';
 				if(!empty($parts[0]))
@@ -231,7 +231,7 @@ add_filter( 'the_content', function ( $content ) {
 				if ( $value < 1 ) {
 					continue;
 				}
-				tm_recommend_send( $name, $value, $permalink, $count, $post->ID, $current_user->ID );
+				wp4t_tm_recommend_send( $name, $value, $permalink, $count, $post->ID, $current_user->ID );
 			}
 		}
 		$logged = (int) get_option( '_tm_updates_logged' );
@@ -253,10 +253,10 @@ add_filter( 'the_content', function ( $content ) {
 	global $post;
 	global $current_user;
 	if ( isset( $_POST['_tm_sidebar'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		tm_sidebar_post( $post->ID );
+		wp4t_tm_sidebar_post( $post->ID );
 	}
 	if ( isset( $_REQUEST['edit_sidebar'] ) ) {
-		$sidebar_editor = agenda_sidebar_editor( $post->ID );
+		$sidebar_editor = wp4t_agenda_sidebar_editor( $post->ID );
 		return sprintf(
 			'<form id="edit_roles_form" method="post" action="%s"">
 %s<button class="save_changes">' . __( 'Save Changes', 'rsvpmaker-for-toastmasters' ) . '</button><input type="hidden" name="post_id" class="post_id" value="%d">'.rsvpmaker_nonce('return').'</form>%s',
@@ -269,14 +269,14 @@ add_filter( 'the_content', function ( $content ) {
 	if ( isset( $_REQUEST['reorder'] ) ) {
 		return '<p><em>' . __( 'Drag and drop to change the order in which speakers, evaluators and other roles with multiple participants will appear on the agenda' ) . '</em></p>' . $content;
 	} elseif ( isset( $_GET['tweak_times'] ) ) {
-		return tweak_agenda_times( $post );
-	} elseif ( ! is_edit_roles() || ( ! current_user_can( 'edit_signups' ) && ! edit_signups_role() ) ) {
+		return wp4t_tweak_agenda_times( $post );
+	} elseif ( ! wp4t_is_edit_roles() || ( ! current_user_can( 'edit_signups' ) && ! wp4t_edit_signups_role() ) ) {
 		return $content;
 	}
 	$r        = 'x' . rand();
 	$content .= '<p><span id="time' . $r . '" class="toasttime" "></span><select class="tweakminutes" timetarget="' . $r . '" style="display:none;"><option value="0" selected="selected">0</option></select> End of meeting</p>';
 	if ( current_user_can( 'agenda_setup' ) ) {
-		$content .= sprintf( '<p><a href="%sedit_sidebar=1">%s</a></p>', rsvpmaker_permalink_query( $post->ID ), __( 'Edit Sidebar', 'rsvpmaker-for-toastmasters' ) );// agenda_sidebar_editor($post->ID);
+		$content .= sprintf( '<p><a href="%sedit_sidebar=1">%s</a></p>', rsvpmaker_permalink_query( $post->ID ), __( 'Edit Sidebar', 'rsvpmaker-for-toastmasters' ) );// wp4t_agenda_sidebar_editor($post->ID);
 	}
 	return sprintf(
 		'<form id="edit_roles_form" method="post" action="%s"">
@@ -329,7 +329,7 @@ add_filter( 'the_content', function ( $content ) {
 			$content .= implode(', ',$term_links).'</p>';
 		}
 	}
-	if ( ! is_club_member() ) {
+	if ( ! wp4t_is_club_member() ) {
 		return '<div style="width: 100%; background-color: #ddd;">' . __( 'To view this content, you must be logged with a member account.', 'rsvpmaker-for-toastmasters' ) . '</div>' . sprintf( '<div id="member_only_login"><a href="%s">' . __( 'Login to View', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url( '/wp-login.php?redirect_to=' . urlencode( get_permalink() ) ) );		
 	}  
 	elseif(isset($_GET['print']))
@@ -349,13 +349,13 @@ add_filter( 'login_message', function ( $message ) {
 	}
 }
 );
-add_filter( 'the_excerpt', 'member_only_excerpt' );
-add_filter( 'get_the_excerpt', 'member_only_excerpt' );
-function member_only_excerpt( $excerpt ) {
+add_filter( 'the_excerpt', 'wp4t_member_only_excerpt' );
+add_filter( 'get_the_excerpt', 'wp4t_member_only_excerpt' );
+function wp4t_member_only_excerpt( $excerpt ) {
 	if ( ! in_category( 'members-only' ) && ! has_term( 'members-only', 'rsvpmaker-type' ) ) {
 		return $excerpt;
 	}
-	if ( ! is_club_member() ) {
+	if ( ! wp4t_is_club_member() ) {
 		return __( 'To view this content, you must be logged in with a member account.', 'rsvpmaker-for-toastmasters' );
 	} else {
 		return $excerpt;

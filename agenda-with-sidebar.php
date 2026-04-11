@@ -61,7 +61,7 @@ foreach ( $wp_filter['the_content'] as $priority => $filters ) {
 <body lang=EN-US style='tab-interval:.5in'>
 <div class="Section1">
 <div id="banner">
-<?php echo tm_branded_image( 'agenda-rays.png' ); ?>
+<?php echo wp4t_tm_branded_image( 'agenda-rays.png' ); ?>
 <!--img src="< ?php echo plugins_url('rsvpmaker-for-toastmasters/agenda-rays.png'); ?>" width="700" height="79" -->
 </div>
 <h2 id="title"><?php echo get_bloginfo( 'name' ); ?><?php echo ' - ' . $date; ?></h2>
@@ -95,7 +95,7 @@ if ( isset( $officers ) ) {
 </td>
 <td id="agenda" width="*">
 <?php
-echo tm_agenda_content();
+echo wp4t_tm_agenda_content();
 ?>
 </td>
 </tr>
@@ -104,7 +104,7 @@ echo tm_agenda_content();
 	
 <?php
 // if(!isset($_GET["word_agenda"]))
-   // agenda_timing_footer($datestring);
+   // wp4t_agenda_timing_footer($datestring);
 if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['no_print'] ) ) {
 	echo '<script type="text/javascript">
 <!--

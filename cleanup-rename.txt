@@ -1,0 +1,1108 @@
+Function Rename Report
+======================
+Date: April 11, 2026
+Plugin: rsvpmaker-for-toastmasters
+
+Criteria: Renamed functions whose names did NOT already contain
+  wpt, wp4t, toastmasters, or toast.
+New prefix applied: wp4t_
+
+Total functions renamed:    317
+Total files modified:       49
+Total occurrences replaced: 2041
+
+======================================================================
+PER-FILE DETAILS  (showing new wp4t_ names and occurrence counts)
+======================================================================
+
+FILE: actions.php
+  (22 renamed function(s) present, 27 total occurrence(s))
+  save_awesome_user_profile_fields  ->  wp4t_save_awesome_user_profile_fields  (2x)
+  awesome_role_activation_wrapper  ->  wp4t_awesome_role_activation_wrapper  (1x)
+  awesome_add_dashboard_widgets  ->  wp4t_awesome_add_dashboard_widgets  (1x)
+  awesome_user_profile_fields  ->  wp4t_awesome_user_profile_fields  (2x)
+  accept_recommended_role  ->  wp4t_accept_recommended_role  (1x)
+  toolbar_link_to_agenda  ->  wp4t_toolbar_link_to_agenda  (1x)
+  fix_cache_users_bug  ->  wp4t_fix_cache_users_bug  (1x)
+  new_agenda_template  ->  wp4t_new_agenda_template  (1x)
+  archive_users_init  ->  wp4t_archive_users_init  (1x)
+  refresh_tm_history  ->  wp4t_refresh_tm_history  (2x)
+  toolbar_add_member  ->  wp4t_toolbar_add_member  (1x)
+  check_first_login  ->  wp4t_check_first_login  (1x)
+  minutes_post_type  ->  wp4t_minutes_post_type  (1x)
+  tm_security_setup  ->  wp4t_tm_security_setup  (1x)
+  profile_richtext  ->  wp4t_profile_richtext  (1x)
+  member_not_user  ->  wp4t_member_not_user  (1x)
+  show_evaluation  ->  wp4t_show_evaluation  (2x)
+  reminders_test  ->  wp4t_reminders_test  (1x)
+  awesome_roles  ->  wp4t_awesome_roles  (1x)
+  awesome_menu  ->  wp4t_awesome_menu  (1x)
+  signup_sheet  ->  wp4t_signup_sheet  (1x)
+  tm_export  ->  wp4t_tm_export  (2x)
+
+FILE: agenda-custom.php
+  (2 renamed function(s) present, 2 total occurrence(s))
+  tmlayout_meeting_date  ->  wp4t_tmlayout_meeting_date  (1x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (1x)
+
+FILE: agenda-printfriendlyphp.php
+  (2 renamed function(s) present, 2 total occurrence(s))
+  tmlayout_meeting_date  ->  wp4t_tmlayout_meeting_date  (1x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (1x)
+
+FILE: agenda-with-sidebar.php
+  (3 renamed function(s) present, 3 total occurrence(s))
+  agenda_timing_footer  ->  wp4t_agenda_timing_footer  (1x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (1x)
+  tm_branded_image  ->  wp4t_tm_branded_image  (1x)
+
+FILE: agenda.php
+  (3 renamed function(s) present, 3 total occurrence(s))
+  agenda_timing_footer  ->  wp4t_agenda_timing_footer  (1x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (1x)
+  tm_branded_image  ->  wp4t_tm_branded_image  (1x)
+
+FILE: agenda\build\absences\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tm_absence  ->  wp4t_tm_absence  (1x)
+
+FILE: agenda\build\agendaedit\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  editable_note  ->  wp4t_editable_note  (1x)
+
+FILE: agenda\build\agendamain\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tmlayout_main_block  ->  wp4t_tmlayout_main_block  (1x)
+
+FILE: agenda\build\agendanoterich2\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  agendanoterich2  ->  wp4t_agendanoterich2  (1x)
+
+FILE: agenda\build\hybrid\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tm_attend_in_person  ->  wp4t_tm_attend_in_person  (1x)
+
+FILE: agenda\build\meetingdate\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tmlayout_meeting_date  ->  wp4t_tmlayout_meeting_date  (1x)
+
+FILE: agenda\build\memberprofile\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tm_member_profile_display  ->  wp4t_tm_member_profile_display  (1x)
+
+FILE: agenda\src\absences\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tm_absence  ->  wp4t_tm_absence  (1x)
+
+FILE: agenda\src\agendaedit\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  editable_note  ->  wp4t_editable_note  (1x)
+
+FILE: agenda\src\agendamain\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tmlayout_main_block  ->  wp4t_tmlayout_main_block  (1x)
+
+FILE: agenda\src\agendanoterich2\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  agendanoterich2  ->  wp4t_agendanoterich2  (1x)
+
+FILE: agenda\src\hybrid\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tm_attend_in_person  ->  wp4t_tm_attend_in_person  (1x)
+
+FILE: agenda\src\meetingdate\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tmlayout_meeting_date  ->  wp4t_tmlayout_meeting_date  (1x)
+
+FILE: agenda\src\memberprofile\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  tm_member_profile_display  ->  wp4t_tm_member_profile_display  (1x)
+
+FILE: agenda\src\milestone\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  editable_note  ->  wp4t_editable_note  (1x)
+
+FILE: agenda\src\signupnote\render.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  agendanoterich2  ->  wp4t_agendanoterich2  (1x)
+
+FILE: agenda\toastmasters-dynamic-agenda.php
+  (5 renamed function(s) present, 10 total occurrence(s))
+  get_dynamic_agenda_script_handle  ->  wp4t_get_dynamic_agenda_script_handle  (3x)
+  agenda_block_type_metadata  ->  wp4t_agenda_block_type_metadata  (2x)
+  agenda_template_editor  ->  wp4t_agenda_template_editor  (1x)
+  dynamic_agenda_script  ->  wp4t_dynamic_agenda_script  (3x)
+  agendanoterich2  ->  wp4t_agendanoterich2  (1x)
+
+FILE: agenda_layout.php
+  (2 renamed function(s) present, 3 total occurrence(s))
+  agenda_css_customization_form  ->  wp4t_agenda_css_customization_form  (1x)
+  agenda_layout_options  ->  wp4t_agenda_layout_options  (2x)
+
+FILE: api-test.php
+  (32 renamed function(s) present, 88 total occurrence(s))
+  get_manuals_by_type_options  ->  wp4t_get_manuals_by_type_options  (2x)
+  get_speaker_array_by_field  ->  wp4t_get_speaker_array_by_field  (3x)
+  get_speech_progress_report  ->  wp4t_get_speech_progress_report  (1x)
+  tm_attend_in_person_json  ->  wp4t_tm_attend_in_person_json  (1x)
+  awe_rest_user_options  ->  wp4t_awe_rest_user_options  (3x)
+  extract_speaker_array  ->  wp4t_extract_speaker_array  (1x)
+  fetch_evaluation_form  ->  wp4t_fetch_evaluation_form  (2x)
+  evaluation_form_url  ->  wp4t_evaluation_form_url  (2x)
+  get_manuals_by_type  ->  wp4t_get_manuals_by_type  (2x)
+  jsonBlockDataOutput  ->  wp4t_jsonBlockDataOutput  (1x)
+  awesome_open_roles  ->  wp4t_awesome_open_roles  (1x)
+  get_projects_array  ->  wp4t_get_projects_array  (4x)
+  get_speaking_track  ->  wp4t_get_speaking_track  (1x)
+  save_speaker_array  ->  wp4t_save_speaker_array  (1x)
+  speeches_by_manual  ->  wp4t_speeches_by_manual  (2x)
+  get_agenda_timing  ->  wp4t_get_agenda_timing  (1x)
+  get_speaker_array  ->  wp4t_get_speaker_array  (1x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (2x)
+  get_club_members  ->  wp4t_get_club_members  (5x)
+  get_project_text  ->  wp4t_get_project_text  (1x)
+  tm_absences_json  ->  wp4t_tm_absences_json  (1x)
+  agendanoterich2  ->  wp4t_agendanoterich2  (5x)
+  format_eval_opt  ->  wp4t_format_eval_opt  (2x)
+  get_member_name  ->  wp4t_get_member_name  (19x)
+  pathways_report  ->  wp4t_pathways_report  (1x)
+  is_club_member  ->  wp4t_is_club_member  (4x)
+  pack_speakers  ->  wp4t_pack_speakers  (1x)
+  speech_intros  ->  wp4t_speech_intros  (1x)
+  agenda_note  ->  wp4t_agenda_note  (1x)
+  clean_role  ->  wp4t_clean_role  (5x)
+  tm_absence  ->  wp4t_tm_absence  (8x)
+  norole  ->  wp4t_norole  (3x)
+
+FILE: api.php
+  (33 renamed function(s) present, 89 total occurrence(s))
+  get_manuals_by_type_options  ->  wp4t_get_manuals_by_type_options  (2x)
+  get_speaker_array_by_field  ->  wp4t_get_speaker_array_by_field  (3x)
+  get_speech_progress_report  ->  wp4t_get_speech_progress_report  (1x)
+  tm_member_profile_retrieve  ->  wp4t_tm_member_profile_retrieve  (1x)
+  tm_attend_in_person_json  ->  wp4t_tm_attend_in_person_json  (1x)
+  awe_rest_user_options  ->  wp4t_awe_rest_user_options  (3x)
+  extract_speaker_array  ->  wp4t_extract_speaker_array  (1x)
+  fetch_evaluation_form  ->  wp4t_fetch_evaluation_form  (2x)
+  evaluation_form_url  ->  wp4t_evaluation_form_url  (2x)
+  get_manuals_by_type  ->  wp4t_get_manuals_by_type  (2x)
+  jsonBlockDataOutput  ->  wp4t_jsonBlockDataOutput  (1x)
+  awesome_open_roles  ->  wp4t_awesome_open_roles  (1x)
+  get_projects_array  ->  wp4t_get_projects_array  (4x)
+  get_speaking_track  ->  wp4t_get_speaking_track  (1x)
+  save_speaker_array  ->  wp4t_save_speaker_array  (1x)
+  speeches_by_manual  ->  wp4t_speeches_by_manual  (2x)
+  get_agenda_timing  ->  wp4t_get_agenda_timing  (1x)
+  get_speaker_array  ->  wp4t_get_speaker_array  (1x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (2x)
+  get_club_members  ->  wp4t_get_club_members  (5x)
+  get_project_text  ->  wp4t_get_project_text  (1x)
+  tm_absences_json  ->  wp4t_tm_absences_json  (1x)
+  agendanoterich2  ->  wp4t_agendanoterich2  (5x)
+  format_eval_opt  ->  wp4t_format_eval_opt  (2x)
+  get_member_name  ->  wp4t_get_member_name  (19x)
+  pathways_report  ->  wp4t_pathways_report  (1x)
+  is_club_member  ->  wp4t_is_club_member  (4x)
+  pack_speakers  ->  wp4t_pack_speakers  (1x)
+  speech_intros  ->  wp4t_speech_intros  (1x)
+  agenda_note  ->  wp4t_agenda_note  (1x)
+  clean_role  ->  wp4t_clean_role  (5x)
+  tm_absence  ->  wp4t_tm_absence  (8x)
+  norole  ->  wp4t_norole  (3x)
+
+FILE: application-form.php
+  (6 renamed function(s) present, 32 total occurrence(s))
+  tm_application_form_choice  ->  wp4t_tm_application_form_choice  (3x)
+  tm_application_form_hidden  ->  wp4t_tm_application_form_hidden  (4x)
+  tm_application_form_field  ->  wp4t_tm_application_form_field  (18x)
+  tm_application_form_radio  ->  wp4t_tm_application_form_radio  (5x)
+  tm_application_fee  ->  wp4t_tm_application_fee  (1x)
+  tm_privacy_prompt  ->  wp4t_tm_privacy_prompt  (1x)
+
+FILE: contest.php
+  (15 renamed function(s) present, 54 total occurrence(s))
+  check_contest_collaborators  ->  wp4t_check_contest_collaborators  (2x)
+  get_practice_contest_links  ->  wp4t_get_practice_contest_links  (2x)
+  contest_break_connection  ->  wp4t_contest_break_connection  (3x)
+  set_contest_parameters  ->  wp4t_set_contest_parameters  (1x)
+  contest_user_list_top  ->  wp4t_contest_user_list_top  (2x)
+  add_contest_userlink  ->  wp4t_add_contest_userlink  (7x)
+  contest_get_master  ->  wp4t_contest_get_master  (5x)
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown  (2x)
+  contest_get_edits  ->  wp4t_contest_get_edits  (4x)
+  judge_import_form  ->  wp4t_judge_import_form  (2x)
+  get_member_name  ->  wp4t_get_member_name  (7x)
+  tm_contest_sync  ->  wp4t_tm_contest_sync  (5x)
+  dashboard_vote  ->  wp4t_dashboard_vote  (5x)
+  track_roles_ui  ->  wp4t_track_roles_ui  (6x)
+  contest_demo  ->  wp4t_contest_demo  (1x)
+
+FILE: core.php
+  (184 renamed function(s) present, 857 total occurrence(s))
+  rsvpmaker_meta_update_from_template_tm  ->  wp4t_rsvpmaker_meta_update_from_template_tm  (2x)
+  awesome_dashboard_widget_function  ->  wp4t_awesome_dashboard_widget_function  (3x)
+  save_awesome_user_profile_fields  ->  wp4t_save_awesome_user_profile_fields  (1x)
+  awesome_role_activation_wrapper  ->  wp4t_awesome_role_activation_wrapper  (1x)
+  rsvpmaker_agenda_notifications  ->  wp4t_rsvpmaker_agenda_notifications  (4x)
+  tm_grant_privacy_permission_ui  ->  wp4t_tm_grant_privacy_permission_ui  (1x)
+  agenda_css_customization_form  ->  wp4t_agenda_css_customization_form  (3x)
+  awesome_add_dashboard_widgets  ->  wp4t_awesome_add_dashboard_widgets  (1x)
+  rsvp_yes_emails_filter_users  ->  wp4t_rsvp_yes_emails_filter_users  (2x)
+  awesome_user_profile_fields  ->  wp4t_awesome_user_profile_fields  (1x)
+  get_manuals_by_type_options  ->  wp4t_get_manuals_by_type_options  (1x)
+  member_application_settings  ->  wp4t_member_application_settings  (1x)
+  agenda_note_upgrade_helper  ->  wp4t_agenda_note_upgrade_helper  (3x)
+  editor_signup_notification  ->  wp4t_editor_signup_notification  (2x)
+  get_speaker_array_by_field  ->  wp4t_get_speaker_array_by_field  (3x)
+  agendanoterich2_timeblock  ->  wp4t_agendanoterich2_timeblock  (1x)
+  tm_random_available_check  ->  wp4t_tm_random_available_check  (1x)
+  agenda_add_editor_styles  ->  wp4t_agenda_add_editor_styles  (2x)
+  officers_limit_promotion  ->  wp4t_officers_limit_promotion  (2x)
+  tm_attend_in_person_json  ->  wp4t_tm_attend_in_person_json  (1x)
+  unpack_user_archive_data  ->  wp4t_unpack_user_archive_data  (3x)
+  accept_recommended_role  ->  wp4t_accept_recommended_role  (1x)
+  detect_default_password  ->  wp4t_detect_default_password  (1x)
+  email_with_without_role  ->  wp4t_email_with_without_role  (1x)
+  online_meeting_settings  ->  wp4t_online_meeting_settings  (1x)
+  speaker_details_history  ->  wp4t_speaker_details_history  (2x)
+  speech_intros_shortcode  ->  wp4t_speech_intros_shortcode  (2x)
+  display_time_stoplight  ->  wp4t_display_time_stoplight  (4x)
+  rsvpmaker4t_deactivate  ->  wp4t_rsvpmaker4t_deactivate  (2x)
+  speaker_details_agenda  ->  wp4t_speaker_details_agenda  (3x)
+  summarize_agenda_times  ->  wp4t_summarize_agenda_times  (2x)
+  tmlayout_role_iterator  ->  wp4t_tmlayout_role_iterator  (5x)
+  toolbar_link_to_agenda  ->  wp4t_toolbar_link_to_agenda  (1x)
+  add_from_template_url  ->  wp4t_add_from_template_url  (2x)
+  agenda_sidebar_editor  ->  wp4t_agenda_sidebar_editor  (1x)
+  awesome_contactmethod  ->  wp4t_awesome_contactmethod  (1x)
+  backup_speaker_notify  ->  wp4t_backup_speaker_notify  (1x)
+  extract_speaker_array  ->  wp4t_extract_speaker_array  (1x)
+  manager_author_editor  ->  wp4t_manager_author_editor  (2x)
+  rsvp_attend_in_person  ->  wp4t_rsvp_attend_in_person  (3x)
+  speaker_details_admin  ->  wp4t_speaker_details_admin  (1x)
+  speech_public_details  ->  wp4t_speech_public_details  (2x)
+  tm_in_person_checkbox  ->  wp4t_tm_in_person_checkbox  (5x)
+  tm_member_application  ->  wp4t_tm_member_application  (2x)
+  tmlayout_meeting_date  ->  wp4t_tmlayout_meeting_date  (4x)
+  agenda_timing_footer  ->  wp4t_agenda_timing_footer  (1x)
+  evaluation_form_link  ->  wp4t_evaluation_form_link  (6x)
+  get_role_assignments  ->  wp4t_get_role_assignments  (1x)
+  make_youtube_preview  ->  wp4t_make_youtube_preview  (6x)
+  members_only_jetpack  ->  wp4t_members_only_jetpack  (1x)
+  profile_photo_anchor  ->  wp4t_profile_photo_anchor  (2x)
+  tm_admin_page_bottom  ->  wp4t_tm_admin_page_bottom  (3x)
+  tmlayout_role_output  ->  wp4t_tmlayout_role_output  (3x)
+  agenda_note_convert  ->  wp4t_agenda_note_convert  (2x)
+  agenda_note_upgrade  ->  wp4t_agenda_note_upgrade  (2x)
+  awe_assign_dropdown  ->  wp4t_awe_assign_dropdown  (1x)
+  blogs_by_member_tag  ->  wp4t_blogs_by_member_tag  (7x)
+  evaluation_form_url  ->  wp4t_evaluation_form_url  (1x)
+  get_manuals_by_type  ->  wp4t_get_manuals_by_type  (4x)
+  get_manuals_options  ->  wp4t_get_manuals_options  (5x)
+  manual_type_options  ->  wp4t_manual_type_options  (3x)
+  new_agenda_template  ->  wp4t_new_agenda_template  (1x)
+  rsvp_to_member_auto  ->  wp4t_rsvp_to_member_auto  (3x)
+  signup_sheet_editor  ->  wp4t_signup_sheet_editor  (8x)
+  stoplight_shortcode  ->  wp4t_stoplight_shortcode  (2x)
+  tm_attend_in_person  ->  wp4t_tm_attend_in_person  (19x)
+  tm_in_person_update  ->  wp4t_tm_in_person_update  (4x)
+  tm_security_options  ->  wp4t_tm_security_options  (1x)
+  tmlayout_main_block  ->  wp4t_tmlayout_main_block  (1x)
+  tmlayout_post_title  ->  wp4t_tmlayout_post_title  (5x)
+  upcoming_open_roles  ->  wp4t_upcoming_open_roles  (1x)
+  add_awesome_member  ->  wp4t_add_awesome_member  (16x)
+  archive_users_init  ->  wp4t_archive_users_init  (1x)
+  club_member_mailto  ->  wp4t_club_member_mailto  (1x)
+  get_absences_array  ->  wp4t_get_absences_array  (5x)
+  get_projects_array  ->  wp4t_get_projects_array  (8x)
+  get_speaking_track  ->  wp4t_get_speaking_track  (2x)
+  my_progress_report  ->  wp4t_my_progress_report  (3x)
+  pick_random_member  ->  wp4t_pick_random_member  (3x)
+  save_speaker_array  ->  wp4t_save_speaker_array  (2x)
+  timeplanner_option  ->  wp4t_timeplanner_option  (3x)
+  tmlayout_club_name  ->  wp4t_tmlayout_club_name  (3x)
+  toolbar_add_member  ->  wp4t_toolbar_add_member  (1x)
+  tweak_agenda_times  ->  wp4t_tweak_agenda_times  (1x)
+  wp4_email_contacts  ->  wp4t_wp4_email_contacts  (3x)
+  wp4_format_contact  ->  wp4t_wp4_format_contact  (3x)
+  add_awesome_roles  ->  wp4t_add_awesome_roles  (7x)
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown  (21x)
+  check_first_login  ->  wp4t_check_first_login  (1x)
+  edit_signups_role  ->  wp4t_edit_signups_role  (5x)
+  edit_template_url  ->  wp4t_edit_template_url  (1x)
+  extract_fields_tm  ->  wp4t_extract_fields_tm  (1x)
+  fth_importer_docs  ->  wp4t_fth_importer_docs  (1x)
+  get_manuals_array  ->  wp4t_get_manuals_array  (2x)
+  get_speaker_array  ->  wp4t_get_speaker_array  (4x)
+  get_speech_points  ->  wp4t_get_speech_points  (1x)
+  minutes_post_type  ->  wp4t_minutes_post_type  (1x)
+  openings_for_date  ->  wp4t_openings_for_date  (2x)
+  speaker_evaluator  ->  wp4t_speaker_evaluator  (19x)
+  speech_intro_data  ->  wp4t_speech_intro_data  (3x)
+  tm_admin_page_top  ->  wp4t_tm_admin_page_top  (3x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (3x)
+  tm_privacy_prompt  ->  wp4t_tm_privacy_prompt  (6x)
+  tm_recommend_send  ->  wp4t_tm_recommend_send  (1x)
+  tm_security_setup  ->  wp4t_tm_security_setup  (5x)
+  tmlayout_tag_line  ->  wp4t_tmlayout_tag_line  (3x)
+  agenda_setup_url  ->  wp4t_agenda_setup_url  (2x)
+  decode_timeblock  ->  wp4t_decode_timeblock  (1x)
+  evaluation_links  ->  wp4t_evaluation_links  (13x)
+  get_club_members  ->  wp4t_get_club_members  (3x)
+  get_latest_visit  ->  wp4t_get_latest_visit  (2x)
+  get_project_text  ->  wp4t_get_project_text  (12x)
+  get_role_signups  ->  wp4t_get_role_signups  (2x)
+  get_user_by_tmid  ->  wp4t_get_user_by_tmid  (2x)
+  is_agenda_locked  ->  wp4t_is_agenda_locked  (2x)
+  last_filled_role  ->  wp4t_last_filled_role  (1x)
+  make_blog_member  ->  wp4t_make_blog_member  (4x)
+  profile_richtext  ->  wp4t_profile_richtext  (1x)
+  tm_absences_json  ->  wp4t_tm_absences_json  (1x)
+  tm_branded_image  ->  wp4t_tm_branded_image  (3x)
+  tm_get_histories  ->  wp4t_tm_get_histories  (1x)
+  tm_security_caps  ->  wp4t_tm_security_caps  (5x)
+  tmlayout_sidebar  ->  wp4t_tmlayout_sidebar  (3x)
+  type_from_manual  ->  wp4t_type_from_manual  (2x)
+  add_member_user  ->  wp4t_add_member_user  (3x)
+  admin_link_menu  ->  wp4t_admin_link_menu  (1x)
+  agendanoterich2  ->  wp4t_agendanoterich2  (118x)
+  awesome_members  ->  wp4t_awesome_members  (6x)
+  get_member_name  ->  wp4t_get_member_name  (23x)
+  get_project_key  ->  wp4t_get_project_key  (2x)
+  get_tm_security  ->  wp4t_get_tm_security  (5x)
+  member_not_user  ->  wp4t_member_not_user  (1x)
+  members_only_bp  ->  wp4t_members_only_bp  (2x)
+  oneclick_future  ->  wp4t_oneclick_future  (3x)
+  password_hurdle  ->  wp4t_password_hurdle  (3x)
+  role_count_time  ->  wp4t_role_count_time  (1x)
+  speaker_details  ->  wp4t_speaker_details  (21x)
+  speech_progress  ->  wp4t_speech_progress  (2x)
+  tm_sidebar_post  ->  wp4t_tm_sidebar_post  (1x)
+  tm_speech_title  ->  wp4t_tm_speech_title  (1x)
+  tm_youtube_tool  ->  wp4t_tm_youtube_tool  (6x)
+  awesome_rating  ->  wp4t_awesome_rating  (1x)
+  display_member  ->  wp4t_display_member  (3x)
+  is_club_member  ->  wp4t_is_club_member  (19x)
+  login_redirect  ->  wp4t_login_redirect  (10x)
+  print_contacts  ->  wp4t_print_contacts  (5x)
+  profile_prompt  ->  wp4t_profile_prompt  (1x)
+  recommend_hash  ->  wp4t_recommend_hash  (2x)
+  reminders_test  ->  wp4t_reminders_test  (1x)
+  rsvp_to_member  ->  wp4t_rsvp_to_member  (4x)
+  tm_role_member  ->  wp4t_tm_role_member  (1x)
+  tm_sync_fields  ->  wp4t_tm_sync_fields  (3x)
+  awesome_roles  ->  wp4t_awesome_roles  (1x)
+  editable_note  ->  wp4t_editable_note  (1x)
+  get_stoplight  ->  wp4t_get_stoplight  (6x)
+  is_edit_roles  ->  wp4t_is_edit_roles  (10x)
+  is_tm_officer  ->  wp4t_is_tm_officer  (1x)
+  pack_speakers  ->  wp4t_pack_speakers  (2x)
+  simplify_html  ->  wp4t_simplify_html  (3x)
+  speech_intros  ->  wp4t_speech_intros  (3x)
+  tmlayout_main  ->  wp4t_tmlayout_main  (6x)
+  awesome_menu  ->  wp4t_awesome_menu  (1x)
+  contest_demo  ->  wp4t_contest_demo  (2x)
+  edit_members  ->  wp4t_edit_members  (15x)
+  get_pathways  ->  wp4t_get_pathways  (1x)
+  members_only  ->  wp4t_members_only  (5x)
+  signup_sheet  ->  wp4t_signup_sheet  (3x)
+  tm_calc_time  ->  wp4t_tm_calc_time  (2x)
+  tm_goal_form  ->  wp4t_tm_goal_form  (1x)
+  tm_goal_save  ->  wp4t_tm_goal_save  (2x)
+  user_archive  ->  wp4t_user_archive  (2x)
+  agenda_note  ->  wp4t_agenda_note  (39x)
+  member_list  ->  wp4t_member_list  (1x)
+  name2fields  ->  wp4t_name2fields  (2x)
+  timeplanner  ->  wp4t_timeplanner  (3x)
+  clean_role  ->  wp4t_clean_role  (45x)
+  pack_roles  ->  wp4t_pack_roles  (2x)
+  themewords  ->  wp4t_themewords  (12x)
+  tm_absence  ->  wp4t_tm_absence  (23x)
+  awemailer  ->  wp4t_awemailer  (2x)
+  club_news  ->  wp4t_club_news  (8x)
+  role_post  ->  wp4t_role_post  (1x)
+  jstest  ->  wp4t_jstest  (3x)
+  norole  ->  wp4t_norole  (13x)
+
+FILE: email-backup.php
+  (22 renamed function(s) present, 57 total occurrence(s))
+  tm_grant_privacy_permission_ui  ->  wp4t_tm_grant_privacy_permission_ui  (2x)
+  email_with_without_role_test  ->  wp4t_email_with_without_role_test  (1x)
+  editor_signup_notification  ->  wp4t_editor_signup_notification  (1x)
+  email_with_without_role  ->  wp4t_email_with_without_role  (2x)
+  login_footer_tm_privacy  ->  wp4t_login_footer_tm_privacy  (2x)
+  backup_speaker_notify  ->  wp4t_backup_speaker_notify  (1x)
+  is_tm_privacy_pending  ->  wp4t_is_tm_privacy_pending  (3x)
+  show_role_blocks_only  ->  wp4t_show_role_blocks_only  (2x)
+  awesome_open_roles  ->  wp4t_awesome_open_roles  (1x)
+  club_member_mailto  ->  wp4t_club_member_mailto  (2x)
+  get_absences_array  ->  wp4t_get_absences_array  (2x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (1x)
+  tm_privacy_prompt  ->  wp4t_tm_privacy_prompt  (9x)
+  tm_recommend_send  ->  wp4t_tm_recommend_send  (1x)
+  get_club_members  ->  wp4t_get_club_members  (4x)
+  get_project_text  ->  wp4t_get_project_text  (3x)
+  speaker_details  ->  wp4t_speaker_details  (2x)
+  is_club_member  ->  wp4t_is_club_member  (1x)
+  recommend_hash  ->  wp4t_recommend_hash  (1x)
+  clean_role  ->  wp4t_clean_role  (2x)
+  awemailer  ->  wp4t_awemailer  (7x)
+  norole  ->  wp4t_norole  (7x)
+
+FILE: email-forwarders-and-groups.php
+  (8 renamed function(s) present, 24 total occurrence(s))
+  consolidated_forwarders_test  ->  wp4t_consolidated_forwarders_test  (3x)
+  rsvpemail_match_findaclub  ->  wp4t_rsvpemail_match_findaclub  (2x)
+  rsvpmaker_relay_bot_check  ->  wp4t_rsvpmaker_relay_bot_check  (2x)
+  get_club_member_emails  ->  wp4t_get_club_member_emails  (4x)
+  get_officer_slug_ids  ->  wp4t_get_officer_slug_ids  (7x)
+  title_abbrev_tester  ->  wp4t_title_abbrev_tester  (3x)
+  get_club_members  ->  wp4t_get_club_members  (2x)
+  unempty  ->  wp4t_unempty  (1x)
+
+FILE: email.php
+  (23 renamed function(s) present, 59 total occurrence(s))
+  tm_grant_privacy_permission_ui  ->  wp4t_tm_grant_privacy_permission_ui  (2x)
+  email_with_without_role_test  ->  wp4t_email_with_without_role_test  (1x)
+  editor_signup_notification  ->  wp4t_editor_signup_notification  (1x)
+  email_with_without_role  ->  wp4t_email_with_without_role  (2x)
+  login_footer_tm_privacy  ->  wp4t_login_footer_tm_privacy  (2x)
+  backup_speaker_notify  ->  wp4t_backup_speaker_notify  (1x)
+  is_tm_privacy_pending  ->  wp4t_is_tm_privacy_pending  (3x)
+  show_role_blocks_only  ->  wp4t_show_role_blocks_only  (2x)
+  awesome_open_roles  ->  wp4t_awesome_open_roles  (1x)
+  club_member_mailto  ->  wp4t_club_member_mailto  (2x)
+  get_absences_array  ->  wp4t_get_absences_array  (2x)
+  speech_intro_data  ->  wp4t_speech_intro_data  (1x)
+  tm_agenda_content  ->  wp4t_tm_agenda_content  (1x)
+  tm_privacy_prompt  ->  wp4t_tm_privacy_prompt  (9x)
+  tm_recommend_send  ->  wp4t_tm_recommend_send  (1x)
+  get_club_members  ->  wp4t_get_club_members  (4x)
+  get_project_text  ->  wp4t_get_project_text  (3x)
+  speaker_details  ->  wp4t_speaker_details  (2x)
+  is_club_member  ->  wp4t_is_club_member  (1x)
+  recommend_hash  ->  wp4t_recommend_hash  (1x)
+  clean_role  ->  wp4t_clean_role  (2x)
+  awemailer  ->  wp4t_awemailer  (8x)
+  norole  ->  wp4t_norole  (7x)
+
+FILE: email_agenda.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  awesome_open_roles  ->  wp4t_awesome_open_roles  (1x)
+
+FILE: enqueue.php
+  (5 renamed function(s) present, 9 total occurrence(s))
+  tm_welcome_screen_assets  ->  wp4t_tm_welcome_screen_assets  (1x)
+  get_manuals_options  ->  wp4t_get_manuals_options  (2x)
+  get_projects_array  ->  wp4t_get_projects_array  (4x)
+  my_progress_report  ->  wp4t_my_progress_report  (1x)
+  add_member_speech  ->  wp4t_add_member_speech  (1x)
+
+FILE: filters.php
+  (16 renamed function(s) present, 25 total occurrence(s))
+  rsvpmaker_agenda_notifications  ->  wp4t_rsvpmaker_agenda_notifications  (1x)
+  tm_grant_privacy_permission_ui  ->  wp4t_tm_grant_privacy_permission_ui  (1x)
+  agenda_sidebar_editor  ->  wp4t_agenda_sidebar_editor  (2x)
+  awesome_contactmethod  ->  wp4t_awesome_contactmethod  (1x)
+  get_get_to_attributes  ->  wp4t_get_get_to_attributes  (3x)
+  members_only_jetpack  ->  wp4t_members_only_jetpack  (1x)
+  member_only_excerpt  ->  wp4t_member_only_excerpt  (3x)
+  signup_sheet_editor  ->  wp4t_signup_sheet_editor  (1x)
+  tweak_agenda_times  ->  wp4t_tweak_agenda_times  (1x)
+  edit_signups_role  ->  wp4t_edit_signups_role  (1x)
+  tm_recommend_send  ->  wp4t_tm_recommend_send  (1x)
+  is_agenda_locked  ->  wp4t_is_agenda_locked  (1x)
+  get_tm_security  ->  wp4t_get_tm_security  (1x)
+  tm_sidebar_post  ->  wp4t_tm_sidebar_post  (1x)
+  is_club_member  ->  wp4t_is_club_member  (5x)
+  is_edit_roles  ->  wp4t_is_edit_roles  (1x)
+
+FILE: fse-navigation-block.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  awesome_members  ->  wp4t_awesome_members  (1x)
+
+FILE: fth-importer.php
+  (16 renamed function(s) present, 48 total occurrence(s))
+  fth_importer_insert_attachment_from_url  ->  wp4t_fth_importer_insert_attachment_from_url  (3x)
+  fth_importer_custom_sizes  ->  wp4t_fth_importer_custom_sizes  (2x)
+  fth_importer_docs_options  ->  wp4t_fth_importer_docs_options  (2x)
+  fth_importer_image_inline  ->  wp4t_fth_importer_image_inline  (1x)
+  get_tm_guest_registration  ->  wp4t_get_tm_guest_registration  (2x)
+  fth_importer_image_size  ->  wp4t_fth_importer_image_size  (5x)
+  fth_importer_docs_link  ->  wp4t_fth_importer_docs_link  (1x)
+  dfgd_category_picker  ->  wp4t_dfgd_category_picker  (1x)
+  fth_importer_image  ->  wp4t_fth_importer_image  (3x)
+  draftgd_imagesize  ->  wp4t_draftgd_imagesize  (2x)
+  fth_importer_docs  ->  wp4t_fth_importer_docs  (5x)
+  grab_fth_content  ->  wp4t_grab_fth_content  (3x)
+  agendanoterich2  ->  wp4t_agendanoterich2  (3x)
+  fth_importer_nq  ->  wp4t_fth_importer_nq  (3x)
+  editable_note  ->  wp4t_editable_note  (6x)
+  agenda_note  ->  wp4t_agenda_note  (6x)
+
+FILE: history.php
+  (20 renamed function(s) present, 58 total occurrence(s))
+  update_user_role_archive_all  ->  wp4t_update_user_role_archive_all  (1x)
+  add_speaker_details_history  ->  wp4t_add_speaker_details_history  (1x)
+  new_speaker_details_history  ->  wp4t_new_speaker_details_history  (1x)
+  update_user_role_archive  ->  wp4t_update_user_role_archive  (1x)
+  speaker_details_history  ->  wp4t_speaker_details_history  (1x)
+  make_tm_roledata_array  ->  wp4t_make_tm_roledata_array  (2x)
+  make_tm_usermeta_key  ->  wp4t_make_tm_usermeta_key  (1x)
+  get_manuals_options  ->  wp4t_get_manuals_options  (2x)
+  manual_type_options  ->  wp4t_manual_type_options  (1x)
+  get_projects_array  ->  wp4t_get_projects_array  (2x)
+  my_progress_report  ->  wp4t_my_progress_report  (1x)
+  refresh_tm_history  ->  wp4t_refresh_tm_history  (3x)
+  tm_history_lastdid  ->  wp4t_tm_history_lastdid  (3x)
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown  (5x)
+  get_club_members  ->  wp4t_get_club_members  (3x)
+  get_project_text  ->  wp4t_get_project_text  (4x)
+  get_member_name  ->  wp4t_get_member_name  (16x)
+  speaker_details  ->  wp4t_speaker_details  (6x)
+  clean_role  ->  wp4t_clean_role  (1x)
+  tm_export  ->  wp4t_tm_export  (3x)
+
+FILE: mce\placeholder.php
+  (2 renamed function(s) present, 3 total occurrence(s))
+  agenda_note  ->  wp4t_agenda_note  (2x)
+  themewords  ->  wp4t_themewords  (1x)
+
+FILE: mce_shortcode.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  agenda_note  ->  wp4t_agenda_note  (1x)
+
+FILE: projects_array.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  get_manuals_array  ->  wp4t_get_manuals_array  (1x)
+
+FILE: reports-fullscreen.php
+  (1 renamed function(s) present, 2 total occurrence(s))
+  cl_report  ->  wp4t_cl_report  (2x)
+
+FILE: setup-wizard.php
+  (9 renamed function(s) present, 24 total occurrence(s))
+  rsvpmaker_agenda_notifications  ->  wp4t_rsvpmaker_agenda_notifications  (1x)
+  member_application_settings  ->  wp4t_member_application_settings  (1x)
+  get_tm_guest_registration  ->  wp4t_get_tm_guest_registration  (1x)
+  agenda_template_editor  ->  wp4t_agenda_template_editor  (1x)
+  add_awesome_member  ->  wp4t_add_awesome_member  (1x)
+  fth_importer_docs  ->  wp4t_fth_importer_docs  (1x)
+  get_club_members  ->  wp4t_get_club_members  (1x)
+  agendanoterich2  ->  wp4t_agendanoterich2  (15x)
+  agenda_note  ->  wp4t_agenda_note  (2x)
+
+FILE: stripe_dues.php
+  (1 renamed function(s) present, 1 total occurrence(s))
+  get_club_members  ->  wp4t_get_club_members  (1x)
+
+FILE: timer.php
+  (6 renamed function(s) present, 14 total occurrence(s))
+  timer_display_time_stoplight  ->  wp4t_timer_display_time_stoplight  (4x)
+  timer_get_stoplight_options  ->  wp4t_timer_get_stoplight_options  (2x)
+  timer_get_background_image  ->  wp4t_timer_get_background_image  (4x)
+  get_club_members  ->  wp4t_get_club_members  (1x)
+  get_member_name  ->  wp4t_get_member_name  (1x)
+  refreshOrder  ->  wp4t_refreshOrder  (2x)
+
+FILE: tm-online-application.php
+  (20 renamed function(s) present, 69 total occurrence(s))
+  tm_application_checked_display  ->  wp4t_tm_application_checked_display  (2x)
+  member_application_approval  ->  wp4t_member_application_approval  (11x)
+  member_application_settings  ->  wp4t_member_application_settings  (5x)
+  tm_application_form_choice  ->  wp4t_tm_application_form_choice  (2x)
+  tm_application_form_hidden  ->  wp4t_tm_application_form_hidden  (1x)
+  check_application_payment  ->  wp4t_check_application_payment  (3x)
+  member_application_upload  ->  wp4t_member_application_upload  (4x)
+  tm_application_form_field  ->  wp4t_tm_application_form_field  (7x)
+  tm_application_form_radio  ->  wp4t_tm_application_form_radio  (1x)
+  tm_application_form_start  ->  wp4t_tm_application_form_start  (2x)
+  verification_by_officer  ->  wp4t_verification_by_officer  (3x)
+  tm_member_application  ->  wp4t_tm_member_application  (4x)
+  tm_application_menus  ->  wp4t_tm_application_menus  (2x)
+  tm_application_fee  ->  wp4t_tm_application_fee  (8x)
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown  (1x)
+  club_fee_schedule  ->  wp4t_club_fee_schedule  (6x)
+  get_member_name  ->  wp4t_get_member_name  (1x)
+  is_club_member  ->  wp4t_is_club_member  (1x)
+  tm_note_format  ->  wp4t_tm_note_format  (3x)
+  paydues_later  ->  wp4t_paydues_later  (2x)
+
+FILE: tm-reports.php
+  (88 renamed function(s) present, 353 total occurrence(s))
+  awesome_dashboard_widget_function  ->  wp4t_awesome_dashboard_widget_function  (1x)
+  tm_welcome_screen_remove_menus  ->  wp4t_tm_welcome_screen_remove_menus  (2x)
+  awesome_get_attendance_detail  ->  wp4t_awesome_get_attendance_detail  (2x)
+  update_user_role_archive_all  ->  wp4t_update_user_role_archive_all  (4x)
+  add_speaker_details_history  ->  wp4t_add_speaker_details_history  (2x)
+  member_application_approval  ->  wp4t_member_application_approval  (2x)
+  member_application_settings  ->  wp4t_member_application_settings  (3x)
+  new_speaker_details_history  ->  wp4t_new_speaker_details_history  (1x)
+  get_speech_progress_report  ->  wp4t_get_speech_progress_report  (1x)
+  tm_member_welcome_redirect  ->  wp4t_tm_member_welcome_redirect  (1x)
+  wp_ajax_remove_meta_speech  ->  wp4t_wp_ajax_remove_meta_speech  (3x)
+  tm_participation_overview  ->  wp4t_tm_participation_overview  (2x)
+  wp_ajax_edit_member_stats  ->  wp4t_wp_ajax_edit_member_stats  (3x)
+  make_tm_speechdata_array  ->  wp4t_make_tm_speechdata_array  (1x)
+  tm_welcome_screen_assets  ->  wp4t_tm_welcome_screen_assets  (1x)
+  update_user_role_archive  ->  wp4t_update_user_role_archive  (3x)
+  wp_ajax_delete_tm_detail  ->  wp4t_wp_ajax_delete_tm_detail  (3x)
+  tm_welcome_screen_pages  ->  wp4t_tm_welcome_screen_pages  (2x)
+  wp_ajax_absences_remove  ->  wp4t_wp_ajax_absences_remove  (3x)
+  wp_ajax_editor_absences  ->  wp4t_wp_ajax_editor_absences  (3x)
+  agenda_template_editor  ->  wp4t_agenda_template_editor  (3x)
+  awesome_get_attendance  ->  wp4t_awesome_get_attendance  (2x)
+  get_evaluator_postdata  ->  wp4t_get_evaluator_postdata  (1x)
+  make_tm_roledata_array  ->  wp4t_make_tm_roledata_array  (1x)
+  wp_ajax_increment_stat  ->  wp4t_wp_ajax_increment_stat  (3x)
+  wp_ajax_tm_edit_detail  ->  wp4t_wp_ajax_tm_edit_detail  (4x)
+  fetch_evaluation_form  ->  wp4t_fetch_evaluation_form  (2x)
+  get_advanced_projects  ->  wp4t_get_advanced_projects  (4x)
+  get_speech_role_count  ->  wp4t_get_speech_role_count  (1x)
+  increment_stat_button  ->  wp4t_increment_stat_button  (6x)
+  speaker_details_admin  ->  wp4t_speaker_details_admin  (1x)
+  tm_reports_disclaimer  ->  wp4t_tm_reports_disclaimer  (5x)
+  wp_ajax_editor_assign  ->  wp4t_wp_ajax_editor_assign  (3x)
+  pathways_project_map  ->  wp4t_pathways_project_map  (2x)
+  show_evaluation_form  ->  wp4t_show_evaluation_form  (1x)
+  speech_points_report  ->  wp4t_speech_points_report  (2x)
+  tm_admin_page_bottom  ->  wp4t_tm_admin_page_bottom  (17x)
+  get_latest_speeches  ->  wp4t_get_latest_speeches  (1x)
+  get_manuals_options  ->  wp4t_get_manuals_options  (3x)
+  get_treasurer_notes  ->  wp4t_get_treasurer_notes  (2x)
+  tm_oneclick_message  ->  wp4t_tm_oneclick_message  (2x)
+  add_awesome_member  ->  wp4t_add_awesome_member  (2x)
+  get_absences_array  ->  wp4t_get_absences_array  (1x)
+  get_projects_array  ->  wp4t_get_projects_array  (4x)
+  get_speaking_track  ->  wp4t_get_speaking_track  (2x)
+  is_requirement_met  ->  wp4t_is_requirement_met  (27x)
+  latest_manual_test  ->  wp4t_latest_manual_test  (3x)
+  my_progress_report  ->  wp4t_my_progress_report  (2x)
+  pathways_checklist  ->  wp4t_pathways_checklist  (7x)
+  speeches_by_manual  ->  wp4t_speeches_by_manual  (2x)
+  wp_ajax_add_speech  ->  wp4t_wp_ajax_add_speech  (3x)
+  add_member_speech  ->  wp4t_add_member_speech  (12x)
+  add_toolbar_items  ->  wp4t_add_toolbar_items  (2x)
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown  (10x)
+  awesome_get_stats  ->  wp4t_awesome_get_stats  (8x)
+  fth_importer_docs  ->  wp4t_fth_importer_docs  (2x)
+  get_manuals_array  ->  wp4t_get_manuals_array  (10x)
+  get_speech_points  ->  wp4t_get_speech_points  (1x)
+  tm_admin_page_top  ->  wp4t_tm_admin_page_top  (15x)
+  get_club_members  ->  wp4t_get_club_members  (9x)
+  get_latest_visit  ->  wp4t_get_latest_visit  (4x)
+  get_project_text  ->  wp4t_get_project_text  (9x)
+  get_user_by_tmid  ->  wp4t_get_user_by_tmid  (2x)
+  last_filled_role  ->  wp4t_last_filled_role  (1x)
+  tm_security_caps  ->  wp4t_tm_security_caps  (1x)
+  tm_select_member  ->  wp4t_tm_select_member  (3x)
+  add_member_user  ->  wp4t_add_member_user  (1x)
+  cl_project_gaps  ->  wp4t_cl_project_gaps  (1x)
+  get_member_name  ->  wp4t_get_member_name  (18x)
+  get_tm_security  ->  wp4t_get_tm_security  (2x)
+  pathways_report  ->  wp4t_pathways_report  (4x)
+  show_evaluation  ->  wp4t_show_evaluation  (5x)
+  speaker_details  ->  wp4t_speaker_details  (6x)
+  roledates_text  ->  wp4t_roledates_text  (3x)
+  tm_member_edit  ->  wp4t_tm_member_edit  (4x)
+  tm_sync_fields  ->  wp4t_tm_sync_fields  (1x)
+  clean_bullets  ->  wp4t_clean_bullets  (1x)
+  get_pathways  ->  wp4t_get_pathways  (1x)
+  get_tm_stats  ->  wp4t_get_tm_stats  (11x)
+  agenda_note  ->  wp4t_agenda_note  (1x)
+  cl_progress  ->  wp4t_cl_progress  (3x)
+  member_list  ->  wp4t_member_list  (16x)
+  clean_role  ->  wp4t_clean_role  (2x)
+  import_fth  ->  wp4t_import_fth  (4x)
+  tm_absence  ->  wp4t_tm_absence  (2x)
+  tm_barhtml  ->  wp4t_tm_barhtml  (3x)
+  cl_report  ->  wp4t_cl_report  (2x)
+  tm_export  ->  wp4t_tm_export  (11x)
+
+FILE: todo-list.php
+  (4 renamed function(s) present, 4 total occurrence(s))
+  member_application_settings  ->  wp4t_member_application_settings  (1x)
+  add_awesome_member  ->  wp4t_add_awesome_member  (1x)
+  fth_importer_docs  ->  wp4t_fth_importer_docs  (1x)
+  get_club_members  ->  wp4t_get_club_members  (1x)
+
+FILE: utility.php
+  (45 renamed function(s) present, 96 total occurrence(s))
+  agenda_rsvpmaker_email_custom_styles  ->  wp4t_agenda_rsvpmaker_email_custom_styles  (2x)
+  time_planner_minutes_select  ->  wp4t_time_planner_minutes_select  (1x)
+  get_speaker_array_by_field  ->  wp4t_get_speaker_array_by_field  (1x)
+  tm_member_profile_retrieve  ->  wp4t_tm_member_profile_retrieve  (3x)
+  extract_usermeta_key_data  ->  wp4t_extract_usermeta_key_data  (1x)
+  get_tm_guest_registration  ->  wp4t_get_tm_guest_registration  (1x)
+  tm_member_profile_display  ->  wp4t_tm_member_profile_display  (1x)
+  tm_random_available_check  ->  wp4t_tm_random_available_check  (1x)
+  make_tm_speechdata_array  ->  wp4t_make_tm_speechdata_array  (1x)
+  get_club_member_emails  ->  wp4t_get_club_member_emails  (1x)
+  make_tm_roledata_array  ->  wp4t_make_tm_roledata_array  (1x)
+  awe_rest_user_options  ->  wp4t_awe_rest_user_options  (1x)
+  get_get_to_attributes  ->  wp4t_get_get_to_attributes  (1x)
+  tm_member_application  ->  wp4t_tm_member_application  (1x)
+  add_joined_club_date  ->  wp4t_add_joined_club_date  (2x)
+  get_role_assignments  ->  wp4t_get_role_assignments  (1x)
+  make_tm_usermeta_key  ->  wp4t_make_tm_usermeta_key  (1x)
+  tm_admin_page_bottom  ->  wp4t_tm_admin_page_bottom  (2x)
+  awe_assign_dropdown  ->  wp4t_awe_assign_dropdown  (1x)
+  fix_cache_users_bug  ->  wp4t_fix_cache_users_bug  (2x)
+  jsonBlockDataOutput  ->  wp4t_jsonBlockDataOutput  (2x)
+  get_absences_array  ->  wp4t_get_absences_array  (3x)
+  refresh_tm_history  ->  wp4t_refresh_tm_history  (4x)
+  tm_history_lastdid  ->  wp4t_tm_history_lastdid  (1x)
+  wp4_format_contact  ->  wp4t_wp4_format_contact  (1x)
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown  (2x)
+  cache_assignments  ->  wp4t_cache_assignments  (1x)
+  get_agenda_timing  ->  wp4t_get_agenda_timing  (1x)
+  time_planner_2020  ->  wp4t_time_planner_2020  (3x)
+  tm_admin_page_top  ->  wp4t_tm_admin_page_top  (2x)
+  get_club_members  ->  wp4t_get_club_members  (3x)
+  get_project_text  ->  wp4t_get_project_text  (1x)
+  is_agenda_locked  ->  wp4t_is_agenda_locked  (1x)
+  tm_get_histories  ->  wp4t_tm_get_histories  (1x)
+  agendanoterich2  ->  wp4t_agendanoterich2  (3x)
+  get_member_name  ->  wp4t_get_member_name  (14x)
+  role_count_time  ->  wp4t_role_count_time  (1x)
+  is_club_member  ->  wp4t_is_club_member  (5x)
+  is_edit_roles  ->  wp4t_is_edit_roles  (1x)
+  is_tm_officer  ->  wp4t_is_tm_officer  (1x)
+  pack_speakers  ->  wp4t_pack_speakers  (1x)
+  clean_role  ->  wp4t_clean_role  (9x)
+  pack_roles  ->  wp4t_pack_roles  (1x)
+  tm_absence  ->  wp4t_tm_absence  (2x)
+  norole  ->  wp4t_norole  (6x)
+
+FILE: voting.php
+  (3 renamed function(s) present, 5 total occurrence(s))
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown  (1x)
+  get_club_members  ->  wp4t_get_club_members  (1x)
+  get_member_name  ->  wp4t_get_member_name  (3x)
+
+======================================================================
+SUMMARY
+======================================================================
+Files containing renamed functions:  49
+Total occurrences across all files:  2041
+
+======================================================================
+COMPLETE ALPHABETICAL LIST OF RENAMED FUNCTIONS
+======================================================================
+  accept_recommended_role  ->  wp4t_accept_recommended_role
+  add_awesome_member  ->  wp4t_add_awesome_member
+  add_awesome_roles  ->  wp4t_add_awesome_roles
+  add_contest_userlink  ->  wp4t_add_contest_userlink
+  add_from_template_url  ->  wp4t_add_from_template_url
+  add_joined_club_date  ->  wp4t_add_joined_club_date
+  add_member_speech  ->  wp4t_add_member_speech
+  add_member_user  ->  wp4t_add_member_user
+  add_speaker_details_history  ->  wp4t_add_speaker_details_history
+  add_toolbar_items  ->  wp4t_add_toolbar_items
+  admin_link_menu  ->  wp4t_admin_link_menu
+  agenda_add_editor_styles  ->  wp4t_agenda_add_editor_styles
+  agenda_block_type_metadata  ->  wp4t_agenda_block_type_metadata
+  agenda_css_customization_form  ->  wp4t_agenda_css_customization_form
+  agenda_layout_options  ->  wp4t_agenda_layout_options
+  agenda_note  ->  wp4t_agenda_note
+  agenda_note_convert  ->  wp4t_agenda_note_convert
+  agenda_note_upgrade  ->  wp4t_agenda_note_upgrade
+  agenda_note_upgrade_helper  ->  wp4t_agenda_note_upgrade_helper
+  agenda_rsvpmaker_email_custom_styles  ->  wp4t_agenda_rsvpmaker_email_custom_styles
+  agenda_setup_url  ->  wp4t_agenda_setup_url
+  agenda_sidebar_editor  ->  wp4t_agenda_sidebar_editor
+  agenda_template_editor  ->  wp4t_agenda_template_editor
+  agenda_timing_footer  ->  wp4t_agenda_timing_footer
+  agendanoterich2  ->  wp4t_agendanoterich2
+  agendanoterich2_timeblock  ->  wp4t_agendanoterich2_timeblock
+  archive_users_init  ->  wp4t_archive_users_init
+  awe_assign_dropdown  ->  wp4t_awe_assign_dropdown
+  awe_rest_user_options  ->  wp4t_awe_rest_user_options
+  awe_user_dropdown  ->  wp4t_awe_user_dropdown
+  awemailer  ->  wp4t_awemailer
+  awesome_add_dashboard_widgets  ->  wp4t_awesome_add_dashboard_widgets
+  awesome_contactmethod  ->  wp4t_awesome_contactmethod
+  awesome_dashboard_widget_function  ->  wp4t_awesome_dashboard_widget_function
+  awesome_get_attendance  ->  wp4t_awesome_get_attendance
+  awesome_get_attendance_detail  ->  wp4t_awesome_get_attendance_detail
+  awesome_get_stats  ->  wp4t_awesome_get_stats
+  awesome_members  ->  wp4t_awesome_members
+  awesome_menu  ->  wp4t_awesome_menu
+  awesome_open_roles  ->  wp4t_awesome_open_roles
+  awesome_rating  ->  wp4t_awesome_rating
+  awesome_role_activation_wrapper  ->  wp4t_awesome_role_activation_wrapper
+  awesome_roles  ->  wp4t_awesome_roles
+  awesome_user_profile_fields  ->  wp4t_awesome_user_profile_fields
+  backup_speaker_notify  ->  wp4t_backup_speaker_notify
+  blogs_by_member_tag  ->  wp4t_blogs_by_member_tag
+  cache_assignments  ->  wp4t_cache_assignments
+  check_application_payment  ->  wp4t_check_application_payment
+  check_contest_collaborators  ->  wp4t_check_contest_collaborators
+  check_first_login  ->  wp4t_check_first_login
+  cl_progress  ->  wp4t_cl_progress
+  cl_project_gaps  ->  wp4t_cl_project_gaps
+  cl_report  ->  wp4t_cl_report
+  clean_bullets  ->  wp4t_clean_bullets
+  clean_role  ->  wp4t_clean_role
+  club_fee_schedule  ->  wp4t_club_fee_schedule
+  club_member_mailto  ->  wp4t_club_member_mailto
+  club_news  ->  wp4t_club_news
+  consolidated_forwarders_test  ->  wp4t_consolidated_forwarders_test
+  contest_break_connection  ->  wp4t_contest_break_connection
+  contest_demo  ->  wp4t_contest_demo
+  contest_get_edits  ->  wp4t_contest_get_edits
+  contest_get_master  ->  wp4t_contest_get_master
+  contest_user_list_top  ->  wp4t_contest_user_list_top
+  dashboard_vote  ->  wp4t_dashboard_vote
+  decode_timeblock  ->  wp4t_decode_timeblock
+  detect_default_password  ->  wp4t_detect_default_password
+  dfgd_category_picker  ->  wp4t_dfgd_category_picker
+  display_member  ->  wp4t_display_member
+  display_time_stoplight  ->  wp4t_display_time_stoplight
+  draftgd_imagesize  ->  wp4t_draftgd_imagesize
+  dynamic_agenda_script  ->  wp4t_dynamic_agenda_script
+  edit_members  ->  wp4t_edit_members
+  edit_signups_role  ->  wp4t_edit_signups_role
+  edit_template_url  ->  wp4t_edit_template_url
+  editable_note  ->  wp4t_editable_note
+  editor_signup_notification  ->  wp4t_editor_signup_notification
+  email_with_without_role  ->  wp4t_email_with_without_role
+  email_with_without_role_test  ->  wp4t_email_with_without_role_test
+  evaluation_form_link  ->  wp4t_evaluation_form_link
+  evaluation_form_url  ->  wp4t_evaluation_form_url
+  evaluation_links  ->  wp4t_evaluation_links
+  extract_fields_tm  ->  wp4t_extract_fields_tm
+  extract_speaker_array  ->  wp4t_extract_speaker_array
+  extract_usermeta_key_data  ->  wp4t_extract_usermeta_key_data
+  fetch_evaluation_form  ->  wp4t_fetch_evaluation_form
+  fix_cache_users_bug  ->  wp4t_fix_cache_users_bug
+  format_eval_opt  ->  wp4t_format_eval_opt
+  fth_importer_custom_sizes  ->  wp4t_fth_importer_custom_sizes
+  fth_importer_docs  ->  wp4t_fth_importer_docs
+  fth_importer_docs_link  ->  wp4t_fth_importer_docs_link
+  fth_importer_docs_options  ->  wp4t_fth_importer_docs_options
+  fth_importer_image  ->  wp4t_fth_importer_image
+  fth_importer_image_inline  ->  wp4t_fth_importer_image_inline
+  fth_importer_image_size  ->  wp4t_fth_importer_image_size
+  fth_importer_insert_attachment_from_url  ->  wp4t_fth_importer_insert_attachment_from_url
+  fth_importer_nq  ->  wp4t_fth_importer_nq
+  get_absences_array  ->  wp4t_get_absences_array
+  get_advanced_projects  ->  wp4t_get_advanced_projects
+  get_agenda_timing  ->  wp4t_get_agenda_timing
+  get_club_member_emails  ->  wp4t_get_club_member_emails
+  get_club_members  ->  wp4t_get_club_members
+  get_dynamic_agenda_script_handle  ->  wp4t_get_dynamic_agenda_script_handle
+  get_evaluator_postdata  ->  wp4t_get_evaluator_postdata
+  get_get_to_attributes  ->  wp4t_get_get_to_attributes
+  get_latest_speeches  ->  wp4t_get_latest_speeches
+  get_latest_visit  ->  wp4t_get_latest_visit
+  get_manuals_array  ->  wp4t_get_manuals_array
+  get_manuals_by_type  ->  wp4t_get_manuals_by_type
+  get_manuals_by_type_options  ->  wp4t_get_manuals_by_type_options
+  get_manuals_options  ->  wp4t_get_manuals_options
+  get_member_name  ->  wp4t_get_member_name
+  get_officer_slug_ids  ->  wp4t_get_officer_slug_ids
+  get_pathways  ->  wp4t_get_pathways
+  get_practice_contest_links  ->  wp4t_get_practice_contest_links
+  get_project_key  ->  wp4t_get_project_key
+  get_project_text  ->  wp4t_get_project_text
+  get_projects_array  ->  wp4t_get_projects_array
+  get_role_assignments  ->  wp4t_get_role_assignments
+  get_role_signups  ->  wp4t_get_role_signups
+  get_speaker_array  ->  wp4t_get_speaker_array
+  get_speaker_array_by_field  ->  wp4t_get_speaker_array_by_field
+  get_speaking_track  ->  wp4t_get_speaking_track
+  get_speech_points  ->  wp4t_get_speech_points
+  get_speech_progress_report  ->  wp4t_get_speech_progress_report
+  get_speech_role_count  ->  wp4t_get_speech_role_count
+  get_stoplight  ->  wp4t_get_stoplight
+  get_tm_guest_registration  ->  wp4t_get_tm_guest_registration
+  get_tm_security  ->  wp4t_get_tm_security
+  get_tm_stats  ->  wp4t_get_tm_stats
+  get_treasurer_notes  ->  wp4t_get_treasurer_notes
+  get_user_by_tmid  ->  wp4t_get_user_by_tmid
+  grab_fth_content  ->  wp4t_grab_fth_content
+  import_fth  ->  wp4t_import_fth
+  increment_stat_button  ->  wp4t_increment_stat_button
+  is_agenda_locked  ->  wp4t_is_agenda_locked
+  is_club_member  ->  wp4t_is_club_member
+  is_edit_roles  ->  wp4t_is_edit_roles
+  is_requirement_met  ->  wp4t_is_requirement_met
+  is_tm_officer  ->  wp4t_is_tm_officer
+  is_tm_privacy_pending  ->  wp4t_is_tm_privacy_pending
+  jsonBlockDataOutput  ->  wp4t_jsonBlockDataOutput
+  jstest  ->  wp4t_jstest
+  judge_import_form  ->  wp4t_judge_import_form
+  last_filled_role  ->  wp4t_last_filled_role
+  latest_manual_test  ->  wp4t_latest_manual_test
+  login_footer_tm_privacy  ->  wp4t_login_footer_tm_privacy
+  login_redirect  ->  wp4t_login_redirect
+  make_blog_member  ->  wp4t_make_blog_member
+  make_tm_roledata_array  ->  wp4t_make_tm_roledata_array
+  make_tm_speechdata_array  ->  wp4t_make_tm_speechdata_array
+  make_tm_usermeta_key  ->  wp4t_make_tm_usermeta_key
+  make_youtube_preview  ->  wp4t_make_youtube_preview
+  manager_author_editor  ->  wp4t_manager_author_editor
+  manual_type_options  ->  wp4t_manual_type_options
+  member_application_approval  ->  wp4t_member_application_approval
+  member_application_settings  ->  wp4t_member_application_settings
+  member_application_upload  ->  wp4t_member_application_upload
+  member_list  ->  wp4t_member_list
+  member_not_user  ->  wp4t_member_not_user
+  member_only_excerpt  ->  wp4t_member_only_excerpt
+  members_only  ->  wp4t_members_only
+  members_only_bp  ->  wp4t_members_only_bp
+  members_only_jetpack  ->  wp4t_members_only_jetpack
+  minutes_post_type  ->  wp4t_minutes_post_type
+  my_progress_report  ->  wp4t_my_progress_report
+  name2fields  ->  wp4t_name2fields
+  new_agenda_template  ->  wp4t_new_agenda_template
+  new_speaker_details_history  ->  wp4t_new_speaker_details_history
+  norole  ->  wp4t_norole
+  officers_limit_promotion  ->  wp4t_officers_limit_promotion
+  oneclick_future  ->  wp4t_oneclick_future
+  online_meeting_settings  ->  wp4t_online_meeting_settings
+  openings_for_date  ->  wp4t_openings_for_date
+  pack_roles  ->  wp4t_pack_roles
+  pack_speakers  ->  wp4t_pack_speakers
+  password_hurdle  ->  wp4t_password_hurdle
+  pathways_checklist  ->  wp4t_pathways_checklist
+  pathways_project_map  ->  wp4t_pathways_project_map
+  pathways_report  ->  wp4t_pathways_report
+  paydues_later  ->  wp4t_paydues_later
+  pick_random_member  ->  wp4t_pick_random_member
+  print_contacts  ->  wp4t_print_contacts
+  profile_photo_anchor  ->  wp4t_profile_photo_anchor
+  profile_prompt  ->  wp4t_profile_prompt
+  profile_richtext  ->  wp4t_profile_richtext
+  recommend_hash  ->  wp4t_recommend_hash
+  refreshOrder  ->  wp4t_refreshOrder
+  refresh_tm_history  ->  wp4t_refresh_tm_history
+  reminders_test  ->  wp4t_reminders_test
+  role_count_time  ->  wp4t_role_count_time
+  role_post  ->  wp4t_role_post
+  roledates_text  ->  wp4t_roledates_text
+  rsvp_attend_in_person  ->  wp4t_rsvp_attend_in_person
+  rsvp_to_member  ->  wp4t_rsvp_to_member
+  rsvp_to_member_auto  ->  wp4t_rsvp_to_member_auto
+  rsvp_yes_emails_filter_users  ->  wp4t_rsvp_yes_emails_filter_users
+  rsvpemail_match_findaclub  ->  wp4t_rsvpemail_match_findaclub
+  rsvpmaker4t_deactivate  ->  wp4t_rsvpmaker4t_deactivate
+  rsvpmaker_agenda_notifications  ->  wp4t_rsvpmaker_agenda_notifications
+  rsvpmaker_meta_update_from_template_tm  ->  wp4t_rsvpmaker_meta_update_from_template_tm
+  rsvpmaker_relay_bot_check  ->  wp4t_rsvpmaker_relay_bot_check
+  save_awesome_user_profile_fields  ->  wp4t_save_awesome_user_profile_fields
+  save_speaker_array  ->  wp4t_save_speaker_array
+  set_contest_parameters  ->  wp4t_set_contest_parameters
+  show_evaluation  ->  wp4t_show_evaluation
+  show_evaluation_form  ->  wp4t_show_evaluation_form
+  show_role_blocks_only  ->  wp4t_show_role_blocks_only
+  signup_sheet  ->  wp4t_signup_sheet
+  signup_sheet_editor  ->  wp4t_signup_sheet_editor
+  simplify_html  ->  wp4t_simplify_html
+  speaker_details  ->  wp4t_speaker_details
+  speaker_details_admin  ->  wp4t_speaker_details_admin
+  speaker_details_agenda  ->  wp4t_speaker_details_agenda
+  speaker_details_history  ->  wp4t_speaker_details_history
+  speaker_evaluator  ->  wp4t_speaker_evaluator
+  speech_intro_data  ->  wp4t_speech_intro_data
+  speech_intros  ->  wp4t_speech_intros
+  speech_intros_shortcode  ->  wp4t_speech_intros_shortcode
+  speech_points_report  ->  wp4t_speech_points_report
+  speech_progress  ->  wp4t_speech_progress
+  speech_public_details  ->  wp4t_speech_public_details
+  speeches_by_manual  ->  wp4t_speeches_by_manual
+  stoplight_shortcode  ->  wp4t_stoplight_shortcode
+  summarize_agenda_times  ->  wp4t_summarize_agenda_times
+  themewords  ->  wp4t_themewords
+  time_planner_2020  ->  wp4t_time_planner_2020
+  time_planner_minutes_select  ->  wp4t_time_planner_minutes_select
+  timeplanner  ->  wp4t_timeplanner
+  timeplanner_option  ->  wp4t_timeplanner_option
+  timer_display_time_stoplight  ->  wp4t_timer_display_time_stoplight
+  timer_get_background_image  ->  wp4t_timer_get_background_image
+  timer_get_stoplight_options  ->  wp4t_timer_get_stoplight_options
+  title_abbrev_tester  ->  wp4t_title_abbrev_tester
+  tm_absence  ->  wp4t_tm_absence
+  tm_absences_json  ->  wp4t_tm_absences_json
+  tm_admin_page_bottom  ->  wp4t_tm_admin_page_bottom
+  tm_admin_page_top  ->  wp4t_tm_admin_page_top
+  tm_agenda_content  ->  wp4t_tm_agenda_content
+  tm_application_checked_display  ->  wp4t_tm_application_checked_display
+  tm_application_fee  ->  wp4t_tm_application_fee
+  tm_application_form_choice  ->  wp4t_tm_application_form_choice
+  tm_application_form_field  ->  wp4t_tm_application_form_field
+  tm_application_form_hidden  ->  wp4t_tm_application_form_hidden
+  tm_application_form_radio  ->  wp4t_tm_application_form_radio
+  tm_application_form_start  ->  wp4t_tm_application_form_start
+  tm_application_menus  ->  wp4t_tm_application_menus
+  tm_attend_in_person  ->  wp4t_tm_attend_in_person
+  tm_attend_in_person_json  ->  wp4t_tm_attend_in_person_json
+  tm_barhtml  ->  wp4t_tm_barhtml
+  tm_branded_image  ->  wp4t_tm_branded_image
+  tm_calc_time  ->  wp4t_tm_calc_time
+  tm_contest_sync  ->  wp4t_tm_contest_sync
+  tm_export  ->  wp4t_tm_export
+  tm_get_histories  ->  wp4t_tm_get_histories
+  tm_goal_form  ->  wp4t_tm_goal_form
+  tm_goal_save  ->  wp4t_tm_goal_save
+  tm_grant_privacy_permission_ui  ->  wp4t_tm_grant_privacy_permission_ui
+  tm_history_lastdid  ->  wp4t_tm_history_lastdid
+  tm_in_person_checkbox  ->  wp4t_tm_in_person_checkbox
+  tm_in_person_update  ->  wp4t_tm_in_person_update
+  tm_member_application  ->  wp4t_tm_member_application
+  tm_member_edit  ->  wp4t_tm_member_edit
+  tm_member_profile_display  ->  wp4t_tm_member_profile_display
+  tm_member_profile_retrieve  ->  wp4t_tm_member_profile_retrieve
+  tm_member_welcome_redirect  ->  wp4t_tm_member_welcome_redirect
+  tm_note_format  ->  wp4t_tm_note_format
+  tm_oneclick_message  ->  wp4t_tm_oneclick_message
+  tm_participation_overview  ->  wp4t_tm_participation_overview
+  tm_privacy_prompt  ->  wp4t_tm_privacy_prompt
+  tm_random_available_check  ->  wp4t_tm_random_available_check
+  tm_recommend_send  ->  wp4t_tm_recommend_send
+  tm_reports_disclaimer  ->  wp4t_tm_reports_disclaimer
+  tm_role_member  ->  wp4t_tm_role_member
+  tm_security_caps  ->  wp4t_tm_security_caps
+  tm_security_options  ->  wp4t_tm_security_options
+  tm_security_setup  ->  wp4t_tm_security_setup
+  tm_select_member  ->  wp4t_tm_select_member
+  tm_sidebar_post  ->  wp4t_tm_sidebar_post
+  tm_speech_title  ->  wp4t_tm_speech_title
+  tm_sync_fields  ->  wp4t_tm_sync_fields
+  tm_welcome_screen_assets  ->  wp4t_tm_welcome_screen_assets
+  tm_welcome_screen_pages  ->  wp4t_tm_welcome_screen_pages
+  tm_welcome_screen_remove_menus  ->  wp4t_tm_welcome_screen_remove_menus
+  tm_youtube_tool  ->  wp4t_tm_youtube_tool
+  tmlayout_club_name  ->  wp4t_tmlayout_club_name
+  tmlayout_main  ->  wp4t_tmlayout_main
+  tmlayout_main_block  ->  wp4t_tmlayout_main_block
+  tmlayout_meeting_date  ->  wp4t_tmlayout_meeting_date
+  tmlayout_post_title  ->  wp4t_tmlayout_post_title
+  tmlayout_role_iterator  ->  wp4t_tmlayout_role_iterator
+  tmlayout_role_output  ->  wp4t_tmlayout_role_output
+  tmlayout_sidebar  ->  wp4t_tmlayout_sidebar
+  tmlayout_tag_line  ->  wp4t_tmlayout_tag_line
+  toolbar_add_member  ->  wp4t_toolbar_add_member
+  toolbar_link_to_agenda  ->  wp4t_toolbar_link_to_agenda
+  track_roles_ui  ->  wp4t_track_roles_ui
+  tweak_agenda_times  ->  wp4t_tweak_agenda_times
+  type_from_manual  ->  wp4t_type_from_manual
+  unempty  ->  wp4t_unempty
+  unpack_user_archive_data  ->  wp4t_unpack_user_archive_data
+  upcoming_open_roles  ->  wp4t_upcoming_open_roles
+  update_user_role_archive  ->  wp4t_update_user_role_archive
+  update_user_role_archive_all  ->  wp4t_update_user_role_archive_all
+  user_archive  ->  wp4t_user_archive
+  verification_by_officer  ->  wp4t_verification_by_officer
+  wp4_email_contacts  ->  wp4t_wp4_email_contacts
+  wp4_format_contact  ->  wp4t_wp4_format_contact
+  wp_ajax_absences_remove  ->  wp4t_wp_ajax_absences_remove
+  wp_ajax_add_speech  ->  wp4t_wp_ajax_add_speech
+  wp_ajax_delete_tm_detail  ->  wp4t_wp_ajax_delete_tm_detail
+  wp_ajax_edit_member_stats  ->  wp4t_wp_ajax_edit_member_stats
+  wp_ajax_editor_absences  ->  wp4t_wp_ajax_editor_absences
+  wp_ajax_editor_assign  ->  wp4t_wp_ajax_editor_assign
+  wp_ajax_increment_stat  ->  wp4t_wp_ajax_increment_stat
+  wp_ajax_remove_meta_speech  ->  wp4t_wp_ajax_remove_meta_speech
+  wp_ajax_tm_edit_detail  ->  wp4t_wp_ajax_tm_edit_detail

@@ -76,19 +76,19 @@ echo ' ' . $date;
 ?>
 </h2>
 </td><td width="80">
-<?php echo tm_branded_image( 'toastmasters-75.png' ); ?>
+<?php echo wp4t_tm_branded_image( 'toastmasters-75.png' ); ?>
 <!-- img src="< ?php echo plugins_url('rsvpmaker-for-toastmasters/toastmasters-75.png'); ?>" width="75" height="65" / -->
 </td></tr>
 </table>
 <div id="agenda">
 <?php
-echo tm_agenda_content();
+echo wp4t_tm_agenda_content();
 ?>
 </div>
 </div>
 <?php
 // if(!isset($_GET["word_agenda"]))
-   // agenda_timing_footer($datestring);
+   // wp4t_agenda_timing_footer($datestring);
 if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['no_print'] ) ) {
 	echo '<script type="text/javascript">
 <!--

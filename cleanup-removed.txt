@@ -1,0 +1,251 @@
+Removed Obsolete Functions Report
+==================================
+Date: April 11, 2026
+Plugin: rsvpmaker-for-toastmasters
+
+Criteria: Functions with zero references in rsvpmaker-for-toastmasters,
+  wp4toastmasters, and toastmost-setup-subscription (including no
+  string-based hook/shortcode/callback registrations).
+
+======================================================================
+FILE: contest.php
+  Functions removed: 1
+
+  wp4t_set_contest_parameters
+    Signature: function wp4t_set_contest_parameters( $post_id, $contest ) {
+    Original lines 89-97 (9 lines removed)
+
+======================================================================
+FILE: core.php
+  Functions removed: 18
+
+  wp4toast_reminders
+    Signature: function wp4toast_reminders() {
+    Original lines 1117-1192 (76 lines removed)
+
+  wp4t_decode_timeblock
+    Signature: function wp4t_decode_timeblock( $matches ) {
+    Original lines 2583-2592 (10 lines removed)
+
+  wp4t_agendanoterich2_timeblock
+    Signature: function wp4t_agendanoterich2_timeblock( $matches ) {
+    Original lines 2593-2612 (20 lines removed)
+
+  wp4t_set_member_status
+    Signature: function wp4t_set_member_status( $member_id, $status, $status_expires ) {
+    Original lines 3051-3066 (16 lines removed)
+
+  wp4t_role_post
+    Signature: function wp4t_role_post() {
+    Original lines 3067-3478 (412 lines removed)
+
+  wp4t_online_meeting_settings
+    Signature: function wp4t_online_meeting_settings() {
+    Original lines 6034-6105 (72 lines removed)
+
+  wp4t_tm_security_options
+    Signature: function wp4t_tm_security_options( $label ) {
+    Original lines 8800-8847 (48 lines removed)
+
+  wp4t_extract_fields_tm
+    Signature: function wp4t_extract_fields_tm( $matches ) {
+    Original lines 11306-11347 (42 lines removed)
+
+  wp4t_upcoming_open_roles
+    Signature: function wp4t_upcoming_open_roles( $limit = 10 ) {
+    Original lines 13470-13535 (66 lines removed)
+
+  wp4t_detect_default_password
+    Signature: function wp4t_detect_default_password() {
+    Original lines 13984-14037 (54 lines removed)
+
+  wp4t_profile_prompt
+    Signature: function wp4t_profile_prompt() {
+    Original lines 14409-14492 (84 lines removed)
+
+  wp4t_awesome_rating
+    Signature: function wp4t_awesome_rating() {
+    Original lines 14493-14546 (54 lines removed)
+
+  toastmasters_sidebar_mce_css
+    Signature: function toastmasters_sidebar_mce_css( $mce_css ) {
+    Original lines 17970-17983 (14 lines removed)
+
+  wp4t_header
+    Signature: function wp4t_header( $default ) {
+    Original lines 18920-18925 (6 lines removed)
+
+  wp4t_admin_link_menu
+    Signature: function wp4t_admin_link_menu() {
+    Original lines 19952-20041 (90 lines removed)
+
+  wp4t_tm_goal_form
+    Signature: function wp4t_tm_goal_form() {
+    Original lines 23100-23217 (118 lines removed)
+
+  wp4t_tm_role_member
+    Signature: function wp4t_tm_role_member($atts) {
+    Original lines 24726-24737 (12 lines removed)
+
+  wp4t_tm_speech_title
+    Signature: function wp4t_tm_speech_title($atts) {
+    Original lines 24738-24747 (10 lines removed)
+
+======================================================================
+FILE: email-forwarders-and-groups.php
+  Functions removed: 5
+
+  wpt_get_club_email_lists
+    Signature: function wpt_get_club_email_lists($blog_id = 0) {
+    Original lines 518-530 (13 lines removed)
+
+  wpt_set_club_email_lists
+    Signature: function wpt_set_club_email_lists($lists, $blog_id = 0) {
+    Original lines 531-553 (23 lines removed)
+
+  get_wpt_email_handler_email_listvars
+    Signature: function get_wpt_email_handler_email_listvars($email) {
+    Original lines 611-620 (10 lines removed)
+
+  set_wpt_email_handler_email_listvars
+    Signature: function set_wpt_email_handler_email_listvars($email, $vars) {
+    Original lines 621-634 (14 lines removed)
+
+  wp4t_unempty
+    Signature: function wp4t_unempty ($slug) { return ($slug != 'empty'); }
+    Original lines 1182-1182 (1 lines removed)
+
+======================================================================
+FILE: enqueue.php
+  Functions removed: 1
+
+  wpt_fetch_report
+    Signature: function wpt_fetch_report( $report, $user_id ) {
+    Original lines 157-160 (4 lines removed)
+
+======================================================================
+FILE: fse-navigation-block.php
+  Functions removed: 1
+
+  wpt_add_menu_to_nav
+    Signature: function wpt_add_menu_to_nav($content, $menu_id) {
+    Original lines 62-62 (1 lines removed)
+
+======================================================================
+FILE: fth-importer.php
+  Functions removed: 3
+
+  wp4t_fth_importer_docs_link
+    Signature: function wp4t_fth_importer_docs_link($arg) {
+    Original lines 228-233 (6 lines removed)
+
+  wp4t_fth_importer_image_inline
+    Signature: function wp4t_fth_importer_image_inline($img) {
+    Original lines 234-258 (25 lines removed)
+
+  wp4t_dfgd_category_picker
+    Signature: function wp4t_dfgd_category_picker($pick = '') {
+    Original lines 653-664 (12 lines removed)
+
+======================================================================
+FILE: history.php
+  Functions removed: 1
+
+  wp4t_recent_history
+    Signature: function wp4t_recent_history($user_id) {
+    Original lines 508-519 (12 lines removed)
+
+======================================================================
+FILE: setup-wizard.php
+  Functions removed: 1
+
+  wpt_wizard_password
+    Signature: function wpt_wizard_password() {
+    Original lines 480-525 (46 lines removed)
+
+======================================================================
+FILE: tm-reports.php
+  Functions removed: 9
+
+  wp4t_get_latest_speeches
+    Signature: function wp4t_get_latest_speeches( $user_id, $myroles = array() ) {
+    Original lines 955-1046 (92 lines removed)
+
+  toastmaster_minutes_display
+    Signature: function toastmaster_minutes_display( $atts ) {
+    Original lines 1665-1698 (34 lines removed)
+
+  wp4t_get_speech_role_count
+    Signature: function wp4t_get_speech_role_count( $user_id, $check_history = true ) {
+    Original lines 1833-1908 (76 lines removed)
+
+  wp4t_cl_project_gaps
+    Signature: function wp4t_cl_project_gaps( $userdata ) {
+    Original lines 2563-2734 (172 lines removed)
+
+  wp4t_tm_member_welcome_redirect
+    Signature: function wp4t_tm_member_welcome_redirect() {
+    Original lines 3521-3546 (26 lines removed)
+
+  wp4t_show_evaluation_form
+    Signature: function wp4t_show_evaluation_form( $project, $speaker_id, $meeting_id, $demo = false ) {
+    Original lines 4584-4742 (159 lines removed)
+
+  wp4t_get_evaluator_postdata
+    Signature: function wp4t_get_evaluator_postdata() {
+    Original lines 4783-4787 (5 lines removed)
+
+  get_paid_owed
+    Signature: function get_paid_owed( $payment, $payment_date, $already_paid_until ) {
+    Original lines 6443-6469 (27 lines removed)
+
+  show_reverse
+    Signature: function show_reverse() {
+    Original lines 6470-6474 (5 lines removed)
+
+======================================================================
+FILE: utility.php
+  Functions removed: 9
+
+  wpt_get_member_emails
+    Signature: function wpt_get_member_emails() {
+    Original lines 2008-2033 (26 lines removed)
+
+  wp4t_unassigned_emails
+    Signature: function wp4t_unassigned_emails( $post_id = 0 ) {
+    Original lines 2036-2185 (150 lines removed)
+
+  wp4t_extract_usermeta_key_data
+    Signature: function wp4t_extract_usermeta_key_data( $key ) {
+    Original lines 3132-3165 (34 lines removed)
+
+  wp4t_cache_assignments
+    Signature: function wp4t_cache_assignments( $post_id, $refresh = false ) {
+    Original lines 3168-3229 (62 lines removed)
+
+  get_wpt_assignment
+    Signature: function get_wpt_assignment( $post_id, $key ) {
+    Original lines 3232-3257 (26 lines removed)
+
+  set_wpt_assignment
+    Signature: function set_wpt_assignment( $post_id, $key, $value, $update_cache = true ) {
+    Original lines 3260-3289 (30 lines removed)
+
+  wpt_get_last_login
+    Signature: function wpt_get_last_login( $user_id ) {
+    Original lines 3856-3877 (22 lines removed)
+
+  wpt_set_last_login
+    Signature: function wpt_set_last_login( $user_id ) {
+    Original lines 3880-3901 (22 lines removed)
+
+  wp4t_time_planner_minutes_select
+    Signature: function wp4t_time_planner_minutes_select( $index, $minutes ) {
+    Original lines 3952-3977 (26 lines removed)
+
+======================================================================
+SUMMARY
+======================================================================
+Total functions removed: 49
+Total lines removed:     2374
+

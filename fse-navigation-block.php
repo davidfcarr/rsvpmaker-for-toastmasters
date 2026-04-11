@@ -38,7 +38,7 @@ function wp4t_block_theme_menu() {
 	else {
 		$post = array(
 			'post_content' => '<!-- wp:shortcode -->
-			[awesome_members comment="This placeholder code displays the member listing"]
+			[wp4t_awesome_members comment="This placeholder code displays the member listing"]
 			<!-- /wp:shortcode -->',
 			'post_name'    => 'members',
 			'post_title'   => 'Members',
@@ -59,19 +59,10 @@ function wp4t_block_theme_menu() {
 	}
 return $menu_id;
 }
-function wpt_add_menu_to_nav($content, $menu_id) {
-preg_match('/<!-- wp:navigation (\{){0,1}/',$content,$match);
-if(empty($match[0]))
-	;
-elseif(empty($match[1]))
-	$content = str_replace('wp:navigation', 'wp:navigation {"ref":'.$menu_id.'}',$content);
-else
-	$content = str_replace('wp:navigation {', 'wp:navigation {"ref":'.$menu_id.',',$content);
-return $content;
-}
 function check_toastmasters_logo_header() {
-global $wpdb;
+	global $wpdb;
 $logo_id = get_option('site_logo');
+$tag = '';
 if($logo_id) {
 	$tag = get_custom_logo();
 }

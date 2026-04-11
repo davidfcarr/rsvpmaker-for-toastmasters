@@ -44,7 +44,7 @@ function wp4t_todolist($blog_id, $send = false) {
     {
         $todo['freetoasthost'] = 'Your home page should include content imported from your old FreeToastHost website, and you can see what other content was imported by visiting the Free Toast Host Import screen. That tool also gives you the option of importing agendas from an FTH website.';
         $label['freetoasthost'] = 'Free Toast Host Import Tool';
-        $link['freetoasthost'] = admin_url('admin.php?page=fth_importer_docs');
+        $link['freetoasthost'] = admin_url('admin.php?page=wp4t_fth_importer_docs');
         $help['freetoasthost'] = 'hhttps://www.wp4toastmasters.com/2024/09/10/new-freetoasthost-import-tool/';
     }
     else
@@ -74,7 +74,7 @@ function wp4t_todolist($blog_id, $send = false) {
         $todo['agenda_customized'] = $agendaprompt;
     }
     //metric here?
-    $members = get_club_members();
+    $members = wp4t_get_club_members();
     $member_count = sizeof($members);
     if($member_count > 1)
         $done['members'] = "You have created $member_count member accounts. The more the merrier! You can create more member accounts one at a time, or import your whole membership list (which can be downloaded from toastmasters.org)";
@@ -164,13 +164,13 @@ function wp4t_todolist($blog_id, $send = false) {
         $help['agenda_use'] = 'https://www.wp4toastmasters.com/knowledge-base/sign-up-for-a-role/';    
     }
     $label['members'] = 'Create member accounts';
-    $link['members'] = admin_url('users.php?page=add_awesome_member');
+    $link['members'] = admin_url('users.php?page=wp4t_add_awesome_member');
     $help['members'] = 'https://www.wp4toastmasters.com/knowledge-base/create-member-accounts/';
     $label['payments'] = 'Set up online payments';
     $link['payments'] = admin_url('options-general.php?page=rsvpmaker_settings');
     $help['payments'] = 'https://www.wp4toastmasters.com/knowledge-base/online-payments-for-dues-and-events/';
     $label['member_application'] = 'Set up the web-based member application and dues schedule';
-    $link['member_application'] = admin_url('options-general.php?page=member_application_settings');
+    $link['member_application'] = admin_url('options-general.php?page=wp4t_member_application_settings');
     $help['member_application'] = 'https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/';
     $label['confirmation'] = 'Edit RSVP confirmation message';
     $link['confirmation'] = admin_url( 'post.php?post=' . $rsvp_options['rsvp_confirm'] . '&action=edit' );

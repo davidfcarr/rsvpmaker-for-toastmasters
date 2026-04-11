@@ -7,7 +7,7 @@ function wp4t_paypal_application_payment($response,$get) {
 	global $wpdb;
 }
 $formdefaults = [];
-function tm_member_application( $atts ) {
+function wp4t_tm_member_application( $atts ) {
 	global $rsvp_options, $formdefaults, $wpdb;
 	$formdefaults = array(
 		'club_name'   => get_option( 'club_name' ),
@@ -20,11 +20,11 @@ function tm_member_application( $atts ) {
 		return; // let rsvpmaker show payment message
 	}
 	if ( isset( $_GET['paydues'] ) ) {
-		return paydues_later();
+		return wp4t_paydues_later();
 	}
 	global $post;
 	if ( empty( $_POST['user_email'] ) && empty($_GET['rsvp_id']) ) {
-		return tm_application_form_start( $atts );
+		return wp4t_tm_application_form_start( $atts );
 	}
 	if(!empty($_REQUEST['user_email']))
 		{
@@ -105,12 +105,12 @@ label {
 		}
 		$chosen_gateway = get_rsvpmaker_payment_gateway ();
 		$payprompt = '';
-		$vars['amount'] = get_post_meta( $post->ID, 'tm_application_fee', true );// fetch from page for form
-		if(empty($vars['amount']) && !empty($_POST['tm_application_fee']))
-			$vars['amount'] = sanitize_text_input($_POST['tm_application_fee']);
+		$vars['amount'] = get_post_meta( $post->ID, 'wp4t_tm_application_fee', true );// fetch from page for form
+		if(empty($vars['amount']) && !empty($_POST['wp4t_tm_application_fee']))
+			$vars['amount'] = sanitize_text_input($_POST['wp4t_tm_application_fee']);
 		if(empty($vars['amount']))
 			$payprompt .= '<p style="color:red">Error recording dues amount.</p>';		
-		update_post_meta( $post_id, 'tm_application_fee', $vars['amount'] );// record to app document
+		update_post_meta( $post_id, 'wp4t_tm_application_fee', $vars['amount'] );// record to app document
 		$until = get_post_meta( $post->ID, 'tm_application_until', true );// fetch from page for form
 		update_post_meta( $post_id, 'tm_application_until', $until );// record to app document
 		$vars['name']        = sanitize_text_field($_POST['first_name'] . ' ' . $_POST['last_name']);
@@ -130,8 +130,8 @@ label {
 		}
 		$mail['subject']  = 'PENDING ' . $newpost['post_title'];
 		$mail['html']     = '<p>Verify with officer signature <a href="';
-		$mail['html']    .= admin_url( 'admin.php?page=member_application_approval&app=' . $post_id );
-		$mail['html']    .= '">' . admin_url( 'admin.php?page=member_application_approval&app=' . $post_id ) . '</a></p>' . "\n\n";
+		$mail['html']    .= admin_url( 'admin.php?page=wp4t_member_application_approval&app=' . $post_id );
+		$mail['html']    .= '">' . admin_url( 'admin.php?page=wp4t_member_application_approval&app=' . $post_id ) . '</a></p>' . "\n\n";
 		$mail['html']    .= $output;
 		$mail['fromname'] = $vars['name'];
 		$mail['from']     = $vars['email'];
@@ -147,9 +147,9 @@ label {
 	}
 	return $payprompt . $output;
 }
-function paydues_later() {
+function wp4t_paydues_later() {
 	$id                  = (int) $_GET['paydues'];
-	$vars['amount']      = get_post_meta( $id, 'tm_application_fee', true );
+	$vars['amount']      = get_post_meta( $id, 'wp4t_tm_application_fee', true );
 	$vars['description'] = 'Toastmasters Dues Payment';
 	$vars['name']        = get_post_meta( $id, 'first_name', true ) . ' ' . get_post_meta( $id, 'last_name', true );
 	$vars['email']       = get_post_meta( $id, 'user_email', true );
@@ -157,8 +157,8 @@ function paydues_later() {
 	$payprompt           = rsvpmaker_stripe_form( $vars );
 	return sprintf( '<h2>Pay dues for %s</h2>', $vars['name'] ) . $payprompt;
 }
-add_shortcode( 'club_fee_schedule', 'club_fee_schedule' );
-function club_fee_schedule() {
+add_shortcode( 'wp4t_club_fee_schedule', 'wp4t_club_fee_schedule' );
+function wp4t_club_fee_schedule() {
 	$ti_dues             = get_option( 'ti_dues' );
 	$club_dues           = get_option( 'club_dues' );
 	$includes_renewal = get_option( 'includes_renewal' );
@@ -197,7 +197,7 @@ foreach($month_start_end as $i => $start_end) {
 	}
 	return $output;
 }
-function tm_application_fee() {
+function wp4t_tm_application_fee() {
 	global $post;
 	if ( isset( $_REQUEST['membership_type'] ))  {
 		$new     = ( strtolower($_REQUEST['membership_type']) == 'new' ) ? 25 : 0;
@@ -255,14 +255,14 @@ function tm_application_fee() {
 		$feetext .= sprintf( '<p>Total: <strong>%s</strong></p>', number_format( $fee, 2 ) );
 		echo wp_kses_post($feetext);
 		echo '<input type="hidden" name="monthindex" value="'.$monthindex.'">';
-		echo '<input type="hidden" name="tm_application_fee" value="'.$fee.'">';
-		update_post_meta( $post->ID, 'tm_application_fee', $fee );
+		echo '<input type="hidden" name="wp4t_tm_application_fee" value="'.$fee.'">';
+		update_post_meta( $post->ID, 'wp4t_tm_application_fee', $fee );
 		update_post_meta( $post->ID, 'tm_application_feetext', $feetext );
 	} else {
 		echo get_post_meta( $post->ID, 'tm_application_feetext', true );
 	}
 }
-function tm_application_form_start( $atts ) {
+function wp4t_tm_application_form_start( $atts ) {
 	global $wpdb, $current_user;
 	$pdf = ( isset( $atts['pdf'] ) ) ? $atts['pdf'] : 'https://toastmost.org/wp-content/uploads/2025/11/800-membership-application-ff.pdf';
 	ob_start();
@@ -313,8 +313,8 @@ label {
 <p>By submitting this online membership application, you agree to treat it as the legally binding equivalent of the standard Toastmasters International membership application, and you will be prompted to agree to all the same terms and conditions. If you prefer, you can download and sign the <a href="<?php echo esc_attr($pdf); ?>" target="_blank">PDF version</a>.</p>
 <form method="post" action="<?php echo get_permalink(); ?>">
 <p>Step 1: We need a little data to set up the application form and calculate the pro-rated dues (based on the month that you are joining). On the next screen, you will enter your personal data and electronically sign the application.</p>
-<p>Email address <?php tm_application_form_field( 'user_email' ); ?> (required)</p>
-<p>Application Type <?php tm_application_form_choice( 'membership_type', array( 'New', 'Dual', 'Transfer', 'Reinstated (break in membership)', 'Renewing (no break in membership)' ) ); ?></p>
+<p>Email address <?php wp4t_tm_application_form_field( 'user_email' ); ?> (required)</p>
+<p>Application Type <?php wp4t_tm_application_form_choice( 'membership_type', array( 'New', 'Dual', 'Transfer', 'Reinstated (break in membership)', 'Renewing (no break in membership)' ) ); ?></p>
 <?php
 
 	$ti_dues = get_option( 'ti_dues' );
@@ -356,7 +356,7 @@ $o .= '<option value="'.$i.':1:'.$end.'">'.$datestext.'</option>';
 <p><em>&quot;New&quot; means the member is new to Toastmasters (not just new to this club).</em></p>
 <p><em>"Transfer" means you are currently enrolled as a paying member of another club, which you wish to withdraw from and apply credit for your dues to our club.</em></p>
 <p id="transferprompt">If you are transferring from another club, please provide as much information as possible so we can look up your records. The <a href="https://www.toastmasters.org/Find-a-Club">Find a Club</a> feature of the toastmasters.org website can help you look up club numbers.</p>
-<p id="formerclubinfo"><label>Previous club name</label> <?php tm_application_form_field( 'previous_club_name' ); ?><br ><label>Previous club number</label><?php tm_application_form_field( 'previous_club_number' ); ?><br /> <label>Member number</label><?php tm_application_form_field( 'toastmasters_id' ); ?><br ><em><a target="_blank" id="find-member-id" href="https://toastmost.org/your-member-id/">Where to find this</a></em></p>
+<p id="formerclubinfo"><label>Previous club name</label> <?php wp4t_tm_application_form_field( 'previous_club_name' ); ?><br ><label>Previous club number</label><?php wp4t_tm_application_form_field( 'previous_club_number' ); ?><br /> <label>Member number</label><?php wp4t_tm_application_form_field( 'toastmasters_id' ); ?><br ><em><a target="_blank" id="find-member-id" href="https://toastmost.org/your-member-id/">Where to find this</a></em></p>
 <?php wp_nonce_field('application_email'); ?>
 <button>Next Screen</button>
 <?php rsvpmaker_nonce(); ?>
@@ -364,11 +364,11 @@ $o .= '<option value="'.$i.':1:'.$end.'">'.$datestext.'</option>';
 </form>
 <?php 
 echo '<h2>Membership Dues Schedule</h2>';
-echo club_fee_schedule();
+echo wp4t_club_fee_schedule();
 
 if(current_user_can('manage_options'))
 {
-	printf('<p><a href="%s">Edit dues and membership application settings</a></p>',admin_url('options-general.php?page=member_application_settings'));
+	printf('<p><a href="%s">Edit dues and membership application settings</a></p>',admin_url('options-general.php?page=wp4t_member_application_settings'));
 }
 
 $rsvps = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}rsvpmaker ORDER BY id DESC LIMIT 0, 50");
@@ -440,11 +440,11 @@ $('#membership_type').change(function(){
 	<?php
 	return ob_get_clean();
 }
-function tm_application_form_hidden( $slug ) {
+function wp4t_tm_application_form_hidden( $slug ) {
 	echo ' <strong>' . esc_html(stripslashes( $_REQUEST[ $slug ] )) . '</strong>';
 	printf( '<input type="hidden" name="%s" id="%s" value="%s" />', $slug, $slug, sanitize_text_field(stripslashes( $_REQUEST[ $slug ]) ) );
 }
-function tm_application_form_field( $slug ) {
+function wp4t_tm_application_form_field( $slug ) {
 	global $post, $formdefaults;
 	$value = '';
 	if ( isset( $_REQUEST[ $slug ] ) ) {
@@ -467,7 +467,7 @@ function tm_application_form_field( $slug ) {
 		printf( ' <input type="hidden" name="%s" id="%s" value="%s" /> <strong>%s</strong>', $slug, $slug, esc_attr($value), esc_html($value) );
 	}
 }
-function tm_application_form_choice( $slug, $choices ) {
+function wp4t_tm_application_form_choice( $slug, $choices ) {
 	global $post;
 	if ( isset( $_POST['first_name'] ) ) {
 		echo ' <strong>' . $_POST[ $slug ] . '</strong>';
@@ -479,14 +479,14 @@ function tm_application_form_choice( $slug, $choices ) {
 		echo '</select>';
 	}
 }
-function member_application_settings( $action = '' ) {
+function wp4t_member_application_settings( $action = '' ) {
 	rsvpmaker_admin_heading('Toastmasters Dues Schedule and Application Form',__FUNCTION__);
 	wpt_dues_navigation();
 	global $wpdb;
 	if ( empty( $action ) ) {
-		$action = admin_url( 'options-general.php?page=member_application_settings' );
+		$action = admin_url( 'options-general.php?page=wp4t_member_application_settings' );
 	}
-	$sql     = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
+	$sql     = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%wp4t_tm_member_application%' AND post_status='publish'";
 	$apppage = $wpdb->get_var( $sql );
 	if ( isset( $_POST['ti_dues'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		update_option( 'club_name', sanitize_text_field(stripslashes( $_POST['club_name'] ) ));
@@ -513,7 +513,7 @@ function member_application_settings( $action = '' ) {
 		if ( isset( $_POST['addpage'] ) ) {
 			$page['post_title']   = 'Application';
 			$page['post_content'] = '<!-- wp:shortcode -->
-    [tm_member_application]
+    [wp4t_tm_member_application]
     <!-- /wp:shortcode -->';
 			$page['post_status']  = 'publish';
 			$page['post_type']    = 'page';
@@ -674,8 +674,8 @@ printf('<p><a href="%s">%s</a></p>',admin_url('options-general.php?page=rsvpmake
 	rsvpmaker_nonce();
 	?>
 </form>
-	<?php echo club_fee_schedule(); ?>
-<p>To display this table on the website, use the shortcode [club_fee_schedule] as a placeholder in the text of a page or blog post.</p>
+	<?php echo wp4t_club_fee_schedule(); ?>
+<p>To display this table on the website, use the shortcode [wp4t_club_fee_schedule] as a placeholder in the text of a page or blog post.</p>
 <script>
 jQuery( document ).ready(
 	function($) {
@@ -691,7 +691,7 @@ jQuery( document ).ready(
 </script>
 	<?php
 }
-function verification_by_officer() {
+function wp4t_verification_by_officer() {
 	rsvpmaker_fix_timezone();
 	ob_start();
 	?>
@@ -699,15 +699,15 @@ function verification_by_officer() {
 <p>I confirm that a complete membership application, including the signatures of the new member and a club officer, is on file with the club and will be retained by the club.</p>
 <p>By my signature below, I certify that this individual has joined the Toastmasters club identified. As a club, we will ensure that this member receives proper orientation and mentoring.</p>
 <p>I acknowledge that my electronic signature on this document is legally equivalent to my handwritten signature.</p>
-<p><label>Club officer’s signature</label> <?php tm_application_form_field( 'officer_signature' ); ?> <br >
-<label>Date</label> <?php tm_application_form_field( 'officer_signature_date' ); ?>
+<p><label>Club officer’s signature</label> <?php wp4t_tm_application_form_field( 'officer_signature' ); ?> <br >
+<label>Date</label> <?php wp4t_tm_application_form_field( 'officer_signature_date' ); ?>
 </p>
 <!-- /wp:paragraph -->
 	<?php
 	wp_nonce_field('officer_signature');
 	return ob_get_clean();
 }
-function check_application_payment( $app_id ) {
+function wp4t_check_application_payment( $app_id ) {
 	global $wpdb;
 	$money = $wpdb->prefix.'rsvpmaker_money';
 	$row = $wpdb->get_row("select * from $money WHERE description LIKE 'Toastmasters Application $app_id%' ");
@@ -726,7 +726,7 @@ function check_application_payment( $app_id ) {
 	$key      = 'tmapplication' . $app_id;
 	$sql      = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='$key' ";
 	$paid     = $wpdb->get_row( $sql );
-	$sql      = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
+	$sql      = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%wp4t_tm_member_application%' AND post_status='publish'";
 	$app_page = $wpdb->get_var( $sql );
 	$paylink  = '';
 	if ( $app_page ) {
@@ -738,7 +738,7 @@ function check_application_payment( $app_id ) {
 	} else {
 			$email = strtolower( get_post_meta( $app_id, 'user_email', true ) );
 		if ( ! empty( $email ) ) {
-			$log = stripe_log_by_email( $email );
+			$log = rsvpmaker_stripe_log_by_email( $email );
 		}
 		if ( empty( $log ) ) {
 			return '<span style="color: red;">No online payment recorded.</span>' . $paylink;
@@ -747,11 +747,11 @@ function check_application_payment( $app_id ) {
 		}
 	}
 }
-function tm_note_format() {
+function wp4t_tm_note_format() {
 	global $current_user;
 	return '<p>Note: ' . stripslashes( $_POST['notes'] ) . ' <br /><small>(' . $current_user->user_email . ' ' . rsvpmaker_date( 'r' ) . ')</small></p>';
 }
-function member_application_approval() {
+function wp4t_member_application_approval() {
 rsvpmaker_admin_heading('Member Application Approval',__FUNCTION__);
 	echo '<style>
 label {
@@ -766,8 +766,8 @@ width: 150px;
 			wp_die('nonce error');
 		$app_id                 = (int) $_POST['app'];
 		$application            = get_post( $app_id );
-		$verification           = verification_by_officer();
-		$notes                  = ( empty( $_POST['notes'] ) ) ? '' : tm_note_format();
+		$verification           = wp4t_verification_by_officer();
+		$notes                  = ( empty( $_POST['notes'] ) ) ? '' : wp4t_tm_note_format();
 		$update['ID']           = $app_id;
 		$update['post_content'] = $application->post_content . $verification . $notes;
 		$return                 = wp_update_post( $update );
@@ -804,7 +804,7 @@ width: 150px;
 	} elseif ( ! empty( $_POST['notes'] ) ) {
 		$app_id                 = (int) $_POST['app'];
 		$application            = get_post( $app_id );
-		$notes                  = tm_note_format();
+		$notes                  = wp4t_tm_note_format();
 		$update['ID']           = $app_id;
 		$update['post_content'] = $application->post_content . $notes;
 		wp_update_post( $update );
@@ -838,7 +838,7 @@ width: 150px;
 	}
 	if ( isset( $_GET['app'] ) ) {
 		echo '<div style="background-color: #fff; padding: 10px; margin: 10px; border: thin solid #000;">';
-		printf( '<form action="%s" method="post"><input type="hidden" name="app" value="%s" />', admin_url( 'admin.php?page=member_application_approval' ), $_GET['app'] );
+		printf( '<form action="%s" method="post"><input type="hidden" name="app" value="%s" />', admin_url( 'admin.php?page=wp4t_member_application_approval' ), $_GET['app'] );
 		// $vars['tracking'] = 'tmapplication'.$post_id;
 		$app_id   = (int) $_GET['app'];
 		$approval = get_post_meta( $app_id, 'officer_signature', true );
@@ -847,8 +847,8 @@ width: 150px;
 			echo '<p>Notes</br><textarea style="width: 100%;" name="notes"></textarea></p>';
 			echo submit_button();
 		} else {
-			printf( '<p>%s</p>', check_application_payment( $app_id ) );
-			echo verification_by_officer();
+			printf( '<p>%s</p>', wp4t_check_application_payment( $app_id ) );
+			echo wp4t_verification_by_officer();
 			echo '<p>Notes</br><textarea style="width: 100%;" name="notes"></textarea></p>';
 			echo submit_button( 'Approve' );
 		}
@@ -885,9 +885,9 @@ width: 150px;
 	$results = $wpdb->get_results( 'SELECT ID, post_title, post_modified FROM ' . $wpdb->posts . ' WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") ORDER BY ID DESC' );
 	if ( $results ) {
 		if ( ! empty( $emailopt ) ) {
-			printf( '<form method="post" action="%s"><p>%s <select name="add_account">%s</select> <button>%s</button></p>%s</form>', admin_url( 'admin.php?page=member_application_approval' ), __( 'Create user account for', 'rsvpmaker-for-toastmasters' ), $emailopt, __( 'Add', 'rsvpmaker-for-toastmasters' ),rsvpmaker_nonce('return') );
+			printf( '<form method="post" action="%s"><p>%s <select name="add_account">%s</select> <button>%s</button></p>%s</form>', admin_url( 'admin.php?page=wp4t_member_application_approval' ), __( 'Create user account for', 'rsvpmaker-for-toastmasters' ), $emailopt, __( 'Add', 'rsvpmaker-for-toastmasters' ),rsvpmaker_nonce('return') );
 		}
-		echo '<form action="'.admin_url( 'admin.php?page=member_application_approval' ).'" method="post" style="border: thin solid #333; padding: 10px;">';
+		echo '<form action="'.admin_url( 'admin.php?page=wp4t_member_application_approval' ).'" method="post" style="border: thin solid #333; padding: 10px;">';
 		foreach ( $results as $post ) {
 			if ( $post->post_title == $last ) {
 				continue;
@@ -900,16 +900,16 @@ width: 150px;
 				$user_created = get_user_by('email', $email) ? __('User account created','rsvpmaker-for-toastmasters') : '<span style="color:red">'.__('No user account match for email','rsvpmaker-for-toastmasters').'</span>';
 				$verified = sprintf( '(Approved %s, %s)', get_post_meta( $post->ID, 'officer_signature_date', true ), $user_created );
 			} else {
-				$verified = check_application_payment( $post->ID );
+				$verified = wp4t_check_application_payment( $post->ID );
 			}
 			//echo esc_html($log);
-			printf( '<p><input type="checkbox" name="deletechecked[]" value="%d" /><a href="%s">%s</a> %s %s</p>', $post->ID, admin_url( 'admin.php?page=member_application_approval&app=' . $post->ID ), $post->post_title, $post->post_modified, $verified );
+			printf( '<p><input type="checkbox" name="deletechecked[]" value="%d" /><a href="%s">%s</a> %s %s</p>', $post->ID, admin_url( 'admin.php?page=wp4t_member_application_approval&app=' . $post->ID ), $post->post_title, $post->post_modified, $verified );
 		}
 		wp_nonce_field('delete_checked_action', 'delete_checked_nonce');
 		echo '<button>Delete Checked</button></form>';
 	}
 }
-function member_application_upload() {
+function wp4t_member_application_upload() {
 	if ( ! empty( $_POST ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$upload_overrides = array(
 			'test_form' => false,
@@ -944,7 +944,7 @@ function member_application_upload() {
 			add_post_meta( $post_id, 'last_name', $_POST['last_name'] );
 			add_post_meta( $post_id, 'user_email', $_POST['user_email'] );
 			add_post_meta( $post_id, 'toastmasters_id', $_POST['toastmasters_id'] );
-			printf( '<p><a href="%s">Application posted</a></p>', admin_url( 'admin.php?page=member_application_approval&app=' . $post_id ) );
+			printf( '<p><a href="%s">Application posted</a></p>', admin_url( 'admin.php?page=wp4t_member_application_approval&app=' . $post_id ) );
 			if ( ! empty( $_POST['approved'] ) ) {
 				echo '<p>Marking approved</p>';
 				global $current_user;
@@ -969,7 +969,7 @@ label {
 </style>
 <h1>Member Application Manual Upload</h1>
 <p>When you receive an application as a PDF or image file, you can upload it to be tracked along with applications submitted as HTML. Alternatively, you can provide a link to a file sharing service like Dropbox or Google Drive.</p>
-<form action="<?php echo admin_url( 'admin.php?page=member_application_upload' ); ?>" method="post" enctype="multipart/form-data">
+<form action="<?php echo admin_url( 'admin.php?page=wp4t_member_application_upload' ); ?>" method="post" enctype="multipart/form-data">
 <p><label>First name:</label> <input type="text" name="first_name"></p>
 <p><label>Last name:</label> <input type="text" name="last_name"></p>
 <p><label>Email:</label> <input type="text" name="user_email"></p>
@@ -983,12 +983,12 @@ label {
 </form>
 	<?php
 }
-function tm_application_menus() {
-	add_options_page( 'TM Application & Dues', 'TM Application & Dues', 'manage_options', 'member_application_settings', 'member_application_settings' );
-	add_menu_page( 'Review/Approve Applications', 'Review/Approve Applications', 'edit_users', 'member_application_approval', 'member_application_approval' );
-	add_submenu_page( 'member_application_approval', 'Add File or Link', 'Add File or Link', 'edit_users', 'member_application_upload', 'member_application_upload' );
+function wp4t_tm_application_menus() {
+	add_options_page( 'TM Application & Dues', 'TM Application & Dues', 'manage_options', 'wp4t_member_application_settings', 'wp4t_member_application_settings' );
+	add_menu_page( 'Review/Approve Applications', 'Review/Approve Applications', 'edit_users', 'wp4t_member_application_approval', 'wp4t_member_application_approval' );
+	add_submenu_page( 'wp4t_member_application_approval', 'Add File or Link', 'Add File or Link', 'edit_users', 'wp4t_member_application_upload', 'wp4t_member_application_upload' );
 }
-add_action( 'admin_menu', 'tm_application_menus' );
+add_action( 'admin_menu', 'wp4t_tm_application_menus' );
 add_shortcode('wp4t_dues_renewal','wp4t_dues_renewal');
 function wp4t_dues_renewal($atts) {
 	global $current_user;
@@ -1010,7 +1010,7 @@ function wp4t_dues_renewal($atts) {
 	}
 	else 
 		return '<p>Dues not set</p>';
-	if((is_user_logged_in() && is_club_member()) || isset($_GET['user_id'])) {
+	if((is_user_logged_in() && wp4t_is_club_member()) || isset($_GET['user_id'])) {
 		$user_id = 0;
 		if(isset($_GET['user_id']))
 		{
@@ -1021,7 +1021,7 @@ function wp4t_dues_renewal($atts) {
 		else
 			$user_id = $current_user->ID;
 		$user = get_userdata($user_id);
-		$vars['name']        = get_member_name($user_id);
+		$vars['name']        = wp4t_get_member_name($user_id);
 		$vars['email']       = $user->user_email;
 		$vars['description']    = $vars['name'].' Dues Renewal ('.$user_id.')';
 		$chosen_gateway = get_rsvpmaker_payment_gateway ();
@@ -1054,16 +1054,16 @@ function wp4t_dues_renewal($atts) {
 		$output .= '<p>'.__('<a href="'.$login.'">Login</a> or select your name from the member list','rsvpmaker-for-toastmasters').'</p>';
 	}
 	$r12 = ($renew12) ? '<div><input type="checkbox" name="renew12" value="1" '.( (isset($_GET['renew12'])) ? 'checked="checked"' : '' ).'> '.__('Option: renew for 12 months, not 6. Fee:','rsvpmaker-for-toastmasters'). ' $'.$renew12.'</div>' : '';
-	$output .= sprintf('<form method="get" action="%s" >%s %s %s <button>%s</button></form>',get_permalink(), __('Paying Dues For','rsvpmaker-for-toastmasters'),awe_user_dropdown('user_id',$user_id,true),$r12,__('Submit','rsvpmaker-for-toastmasters'));
+	$output .= sprintf('<form method="get" action="%s" >%s %s %s <button>%s</button></form>',get_permalink(), __('Paying Dues For','rsvpmaker-for-toastmasters'),wp4t_awe_user_dropdown('user_id',$user_id,true),$r12,__('Submit','rsvpmaker-for-toastmasters'));
 	return $output;
 }
-function tm_application_form_radio( $slug, $choices ) {
+function wp4t_tm_application_form_radio( $slug, $choices ) {
 	global $post;
 	$default = true;
 	if ( isset( $_POST['first_name'] ) ) {
 		$posted = sanitize_text_field($_POST[$slug]);
 		foreach ( $choices as $value => $choice ) {
-			$checked = tm_application_checked_display($value == $posted);
+			$checked = wp4t_tm_application_checked_display($value == $posted);
 			echo ' '.$checked .' '.$choice.' ';
 		}	
 	}
@@ -1075,7 +1075,7 @@ function tm_application_form_radio( $slug, $choices ) {
 		}	
 	}
 }
-function tm_application_checked_display($is_checked) {
+function wp4t_tm_application_checked_display($is_checked) {
 	if($is_checked)
 		return '&#11044;';
 	else

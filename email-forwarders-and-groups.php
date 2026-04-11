@@ -11,9 +11,9 @@ function wpt_email_menu () {
 }
 function wpt_email_handler_page () {
     echo '<h1>Toastmasters Email Forwarders, Groups &amp; Tools</h1>';
-    $status = rsvpmaker_relay_bot_check();
+    $status = wp4t_rsvpmaker_relay_bot_check();
     printf('<div style="float: right; width: 250px; margin-left: 25px; margin-right: 25px; padding: 5px; border: thin solid gray"><h3>Service Status</h3>%s</div>',$status);
-    $slug_ids = get_officer_slug_ids();
+    $slug_ids = wp4t_get_officer_slug_ids();
     if(!empty($slug_ids)) {
         $forwarder_info = '<p>Configured officer forwarding addresses include:';
         foreach($slug_ids as $slug => $id) {
@@ -206,7 +206,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             if(!$on)
                 continue;
             $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
-            $recipients = get_club_member_emails($blog_id);
+            $recipients = wp4t_get_club_member_emails($blog_id);
             $recipients = wpt_remove_unsubscribed($recipients, $unsubscribed);
             if(!empty($listvars['additional']))
             foreach($listvars['additional'] as $email) {
@@ -261,7 +261,7 @@ function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname,
             }
             continue;
         }
-        $slug_ids = get_officer_slug_ids($blog_id);
+        $slug_ids = wp4t_get_officer_slug_ids($blog_id);
         //$output .= sprintf("<p>Officer slug ids %s</p>",var_export($slug_ids, true));
         if(!empty(	$slug_ids [$slug]))
         {
@@ -515,42 +515,6 @@ if(isset($post->post_title)) {
 <?php
 wpt_delete_forwarding_transient();
 }
-function wpt_get_club_email_lists($blog_id = 0) {
-if(empty($blog_id))
-    $blog_id = get_current_blog_id();
-if(is_multisite())
-    switch_to_blog(1);
-$clubemails = get_option('toastmost_club_email_list');
-$officeremails = get_option('toastmost_officer_email_list');
-if(is_multisite())
-    restore_current_blog();
-$member = (empty($clubemails[$blog_id])) ? '' : $clubemails[$blog_id];
-$officer = (empty($officeremails[$blog_id])) ? '' : $officeremails[$blog_id];
-return array('member' => $member, 'officer' => $officer);
-}
-function wpt_set_club_email_lists($lists, $blog_id = 0) {
-    if(empty($blog_id))
-        $blog_id = get_current_blog_id();
-    if(is_multisite())
-        switch_to_blog(1);
-    $clubemails = get_option('toastmost_club_email_list');
-    $officeremails = get_option('toastmost_officer_email_list');
-    if(empty($lists['member']))
-        unset($clubemails[$blog_id]);
-    else
-        $clubemails[$blog_id] = $lists['member'];
-    if(empty($lists['officer']))
-        unset($officeremails[$blog_id]);
-    else
-        $officeremails[$blog_id] = $lists['officer'];
-    update_option('toastmost_club_email_list',$clubemail);
-    update_option('toastmost_officer_email_list',$officeremails);
-    if(is_multisite())
-        restore_current_blog();
-    $member = (empty($clubemails[$blog_id])) ? '' : $clubemails[$blog_id];
-    $officer = (empty($officermails[$blog_id])) ? '' : $officeremails[$blog_id];
-    return array('member' => $member, 'officer' => $officer);
-}
 add_action('wpt_wizard_post','wpt_email_handler_mailing_lists_wizard_post');
 function wpt_email_handler_mailing_lists_wizard_post() {
     if(isset($_POST['wpt_email_handler_mailing_lists'])) {
@@ -607,30 +571,6 @@ function wpt_email_handler_mailing_lists_wizard_next_steps() {
 add_action('group_email_admin_notice','wpt_email_handler_group_email_notice');
 function wpt_email_handler_group_email_notice() {
     printf('<div style="padding: 10px; border: thin solid red;"><p>Toastmasters use the <a href="%s">Club Email</a> screen instead.</p></div>',admin_url('admin.php?page=wpt_email_handler_club_email_list'));
-}
-function get_wpt_email_handler_email_listvars($email) {
-    if(is_multisite())
-        switch_to_blog(1);
-    $vars = get_option('listvars_'.$email);
-    if(empty($vars) || !is_array($vars))
-        $vars = array('whitelist' => array(),'blocked' => array(),'additional' => array());
-    if(is_multisite())
-        restore_current_blog();
-    return $vars;
-}
-function set_wpt_email_handler_email_listvars($email, $vars) {
-    if(is_multisite())
-        switch_to_blog(1);
-    foreach($vars as $index => $var)
-    {
-        preg_match_all ("/\b[A-z0-9][\w.-]*@[A-z0-9][\w\-\.]+\.[A-z0-9]{2,6}\b/", $var, $emails);
-        $vars[$index] = $emails[0];
-    }
-    update_option('listvars_'.$email,$vars);
-    if(is_multisite())
-        restore_current_blog();
-    return $vars;
-    wpt_delete_forwarding_transient();
 }
 function wpt_email_handler_club_email_list() {
     global $wpdb, $current_user;
@@ -906,7 +846,7 @@ function wpt_email_handler_forwarders() {
         foreach($wpt_email_handler_custom_forwarders as $femail => $earray) {
             $testrecipients[] = $femail;
         }
-        $slug_ids = get_officer_slug_ids();
+        $slug_ids = wp4t_get_officer_slug_ids();
         if(is_array($slug_ids)) {
             foreach($slug_ids as $slug => $ids) {
                 if(!empty($ids)) {
@@ -1143,7 +1083,7 @@ function wpt_officer_title_to_slug ($title) {
     $title = preg_replace('/[^a-z0-9]/','',$title);
     return $title;
 }
-function get_officer_slug_ids($blog_id = 0) {
+function wp4t_get_officer_slug_ids($blog_id = 0) {
     if($blog_id && is_multisite())
         switch_to_blog($blog_id);
     $wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
@@ -1179,9 +1119,8 @@ function get_officer_slug_ids($blog_id = 0) {
         restore_current_blog();
     return $slug_ids;
 }
-function unempty ($slug) { return ($slug != 'empty'); }
-add_shortcode('title_abbrev_tester','title_abbrev_tester');
-function title_abbrev_tester() {
+add_shortcode('wp4t_title_abbrev_tester','wp4t_title_abbrev_tester');
+function wp4t_title_abbrev_tester() {
 $output = '';
 $titles = array('President','VP of Education','VPE','VP of Public Relations','Vice President of Public Relations','VP of PR','Division B Director','Area 21 Director','Director Area 21','Logistics Manager','Chief Cook & Bottle Washer','District Director','Program Quality Director');
 foreach($titles as $title) {
@@ -1189,7 +1128,7 @@ foreach($titles as $title) {
 }
 return $output;
 }
-function rsvpmaker_relay_bot_check( ) {
+function wp4t_rsvpmaker_relay_bot_check( ) {
     global $wpdb;
     if(is_multisite())
         switch_to_blog(1);
@@ -1242,7 +1181,7 @@ function wpt_member_email_check() {
     
     $member_emails = [];
 
-    $members = get_club_members();
+    $members = wp4t_get_club_members();
     $output = '';
     foreach($members as $member) {
         if(empty($member->user_email)) {
@@ -1379,7 +1318,7 @@ if(!empty($finda_id)) {
 if($slug == 'members') {
     $on = is_multisite() ? get_blog_option($blog_id,'member_distribution_list') : get_option('member_distribution_list');
     if($on) {
-        $recipients = array_merge($recipients,get_club_member_emails($blog_id));
+        $recipients = array_merge($recipients,wp4t_get_club_member_emails($blog_id));
         $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
         if(!empty($listvars['additional']))
         foreach($listvars['additional'] as $email) {
@@ -1408,7 +1347,7 @@ if('officers' == $slug) {
     }
     }
 }
-$slug_ids = get_officer_slug_ids($blog_id);
+$slug_ids = wp4t_get_officer_slug_ids($blog_id);
 if(!empty(	$slug_ids [$slug]))
 {
     foreach($slug_ids[$slug] as $user_id) {
@@ -1479,7 +1418,7 @@ function wpt_slugs_to_recipients($recipients,$slug_and_id,$from,$addresses) {
             if(!$on)
                 return;
             $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
-            $mrecipients = get_club_member_emails($blog_id);
+            $mrecipients = wp4t_get_club_member_emails($blog_id);
             $recipients = array_merge($mrecipients,$recipients);
             if(!empty($listvars['additional']))
             foreach($listvars['additional'] as $email) {
@@ -1527,7 +1466,7 @@ function wpt_slugs_to_recipients($recipients,$slug_and_id,$from,$addresses) {
             if(is_array($forward_by_id))
                 $recipients = array_merge($forward_by_id,$recipients);
         }
-        $slug_ids = get_officer_slug_ids($blog_id);
+        $slug_ids = wp4t_get_officer_slug_ids($blog_id);
         if(!empty(	$slug_ids [$slug]))
         {
             foreach($slug_ids[$slug] as $user_id) {
@@ -1641,7 +1580,7 @@ function wpt_handle_autoresponder($slug_and_id,$forwarder,$emailobj) {
 }
 function wpt_get_consolidated_forwarders($blog_id, $subdomain, $domain) {
     $join = ($subdomain) ? '-' : '';
-    $slug_ids = get_officer_slug_ids($blog_id);
+    $slug_ids = wp4t_get_officer_slug_ids($blog_id);
     if($slug_ids) {
         foreach($slug_ids as $slug => $slug_id) {
         foreach($slug_id as $user_id) {
@@ -1696,7 +1635,7 @@ function wpt_get_consolidated_forwarders($blog_id, $subdomain, $domain) {
     if($members_on) {
         $listvars = (is_multisite() && $blog_id) ? get_blog_option($blog_id,'member_distribution_list_vars') : get_option('member_distribution_list_vars');
         $list_email = ($subdomain) ? $subdomain.'@'.$domain : "members@".$domain;
-        $recipients[$list_email] = get_club_member_emails($blog_id);
+        $recipients[$list_email] = wp4t_get_club_member_emails($blog_id);
         if(!empty($listvars['additional']))
         foreach($listvars['additional'] as $email) {
             $recipients[$list_email][] = $email;
@@ -1724,13 +1663,13 @@ function wpt_get_consolidated_forwarders($blog_id, $subdomain, $domain) {
     }
     return $recipients;
 }
-add_shortcode('consolidated_forwarders_test','consolidated_forwarders_test');
-function consolidated_forwarders_test() {
+add_shortcode('wp4t_consolidated_forwarders_test','wp4t_consolidated_forwarders_test');
+function wp4t_consolidated_forwarders_test() {
 $forwarders = wpt_get_consolidated_forwarders(109,'op','toastmost.org');
 return '<pre>'.var_export($forwarders,true).'</pre>';   
 }
-add_filter('rsvpmail_email_match','rsvpemail_match_findaclub',10,4);
-function rsvpemail_match_findaclub($to,$from,$breakdown,$emailobj) {
+add_filter('rsvpmail_email_match','wp4t_rsvpemail_match_findaclub',10,4);
+function wp4t_rsvpemail_match_findaclub($to,$from,$breakdown,$emailobj) {
     rsvpmaker_testlog('findaclub_to',$to);
     rsvpmaker_testlog('findaclub_breakdown',$breakdown);
     //preg_match('/[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-]+?\.[a-zA-Z_\-]{2,20}/',$emailobj->HtmlBody,$fcmatch);
@@ -1894,7 +1833,7 @@ function wpt_flattened_forwarders($site_id = 0, $inloop = false) {
             $forwarders[$forwarder][] = $target;
         }
     }
-        $members = get_club_members();
+        $members = wp4t_get_club_members();
         if(is_array($members)) {
             foreach($members as $member) {
                 if(!empty($member->user_email) && !strpos($member->user_email,'example.com')) {

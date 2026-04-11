@@ -22,8 +22,8 @@ if ( $_GET['tm_reports'] == 'toastmasters_reports' ) {
 	toastmasters_attendance();
 } elseif ( $_GET['tm_reports'] == 'toastmasters_cc' ) {
 	toastmasters_cc();
-} elseif ( $_GET['tm_reports'] == 'cl_report' ) {
-	cl_report();
+} elseif ( $_GET['tm_reports'] == 'wp4t_cl_report' ) {
+	wp4t_cl_report();
 } elseif ( $_GET['tm_reports'] == 'toastmasters_mentors' ) {
 	toastmasters_mentors();
 }

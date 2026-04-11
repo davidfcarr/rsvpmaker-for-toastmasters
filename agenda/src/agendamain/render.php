@@ -4,5 +4,5 @@
  */
 ?>
 <div <?php echo get_block_wrapper_attributes(); ?>>
-	<?php echo tmlayout_main_block(array()); ?>
+	<?php echo wp4t_tmlayout_main_block(array()); ?>
 </div>

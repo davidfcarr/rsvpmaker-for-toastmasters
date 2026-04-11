@@ -7,12 +7,12 @@ function wpt_dues_report () {
 		$until = $_POST['paid_until'];
 		$member_id = $_POST['member_id'];
 	}
-	$members = get_club_members ();
+	$members = wp4t_get_club_members ();
 	foreach($members as $member) {
 		$member = get_userdata($member->ID);
 		print_r($member);
 		echo '<br />';
-		$log = stripe_log_by_email ($member->user_email);
+		$log = rsvpmaker_stripe_log_by_email ($member->user_email);
 		echo $log;
 	}
 }

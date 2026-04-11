@@ -15,7 +15,7 @@
 </head>
 <body>
 <?php
-function agenda_layout_options() {
+function wp4t_agenda_layout_options() {
     global $post;
     if(!current_user_can('edit_others_rsvpmakers'))
         return;
@@ -110,7 +110,7 @@ if(!empty($custom))
 <div id="custom_css" style="display: none;">
 <h4>Custom CSS</h4>
 <form method="post" action="<?php echo $layoutlink; ?>">
-    <?php agenda_css_customization_form(); ?>
+    <?php wp4t_agenda_css_customization_form(); ?>
     <p><button>Update</button></p>
 </form>
 </div>
@@ -123,7 +123,7 @@ if(!empty($custom))
 <iframe width="100%;" height="3000px;" src="<?php echo $agendalink; ?>"></iframe>
 <?php
 }
-agenda_layout_options();
+wp4t_agenda_layout_options();
 ?>
 </body>
 </html>

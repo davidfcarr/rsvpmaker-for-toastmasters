@@ -3,17 +3,17 @@ global $post, $current_user, $wpdb;
 show_admin_bar( false );
 $is_timer      = false;
 $contest_timer = '';
-function timer_display_time_stoplight( $content, $name, $speechid ) {
+function wp4t_timer_display_time_stoplight( $content, $name, $speechid ) {
 	preg_match_all( '/\d{1,3}/', $content, $matches );
 		$output = '';
 	if ( ! empty( $matches ) ) {
 		$green   = array_shift( $matches[0] );
 		$red     = array_shift( $matches[0] );
-		$output .= timer_get_stoplight_options( $name, $green, $red, $speechid );
+		$output .= wp4t_timer_get_stoplight_options( $name, $green, $red, $speechid );
 	}
 		return $output;
 }
-function timer_get_background_image( $key ) {
+function wp4t_timer_get_background_image( $key ) {
 	global $wpdb;
 	$o       = '';
 	$results = $wpdb->get_results( "SELECT guid, post_title from $wpdb->posts where post_type='attachment' and post_title like '%$key%' " );
@@ -22,7 +22,7 @@ function timer_get_background_image( $key ) {
 	}
 	return $o;
 }
-function timer_get_stoplight_options( $name, $green, $red, $speechid = '' ) {
+function wp4t_timer_get_stoplight_options( $name, $green, $red, $speechid = '' ) {
 	if ( empty( $yellow ) ) {
 		$diff         = $red - $green;
 		$plus_minutes = ( $diff - $diff % 2 ) / 2;
@@ -185,7 +185,7 @@ if ( isset( $_GET['contest'] ) ) {
 <div id="order_status"></div>
 <script>
 jQuery(document).ready(function($) {
-function refreshOrder() {
+function wp4t_refreshOrder() {
 $('#score_status').html('Checking for contestant order ...');
 $.get( "<?php echo site_url( '/wp-json/wptcontest/v1/order/' . $post->ID ); ?>", function( data ) {
 console.log(data);
@@ -198,7 +198,7 @@ else
 });	
 }
 setInterval(function(){
-  refreshOrder();	
+  wp4t_refreshOrder();	
 }, 10000);
 	
 $('#track_role').on('change', function(){
@@ -221,7 +221,7 @@ $('#manual_contestants').hide();
 			$order = $contestants;
 		}
 		foreach ( $order as $index => $speakername ) {
-			$options .= timer_display_time_stoplight( $dt, $speakername, $index );
+			$options .= wp4t_timer_display_time_stoplight( $dt, $speakername, $index );
 		}
 	}
 } elseif ( $post->post_type == 'rsvpmaker' ) {
@@ -252,7 +252,7 @@ $('#manual_contestants').hide();
 			if ( empty( $dt ) ) {
 				$dt = '5 to 7';
 			}
-			$options .= timer_display_time_stoplight( $dt, $speakername, $i );
+			$options .= wp4t_timer_display_time_stoplight( $dt, $speakername, $i );
 		}
 	}
 	for ( $i = 1; $i <= $count; $i++ ) {
@@ -260,12 +260,12 @@ $('#manual_contestants').hide();
 		// echo ' id '.$member_id;
 		if ( $member_id ) {
 			if ( is_numeric( $member_id ) ) {
-				$speakername = get_member_name( $member_id );
+				$speakername = wp4t_get_member_name( $member_id );
 			} else {
 				$name = 'Guest: ' . $member_id;
 			}
 			// print_r($member);
-			$options .= timer_display_time_stoplight( '2 to 3', 'Evaluator: ' . $speakername, $i );
+			$options .= wp4t_timer_display_time_stoplight( '2 to 3', 'Evaluator: ' . $speakername, $i );
 		}
 	}
 }
@@ -392,21 +392,21 @@ printf(
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-green-1920x1080-c1.jpg">Green TM logo</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-green-1920x1080-c1.jpg">Green TM wordmark</option>
 %s</select></p>',
-	timer_get_background_image( 'green' )
+	wp4t_timer_get_background_image( 'green' )
 );
 printf(
 	'<p><select class="background-image-picker" id="bg-yellow"><option value="none">Yellow Image: None</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-yellow-1920x1080-c1.jpg">Yellow TM logo</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-yellow-1920x1080-c1_.jpg">Yellow TM wordmark</option>
 %s</select></p>',
-	timer_get_background_image( 'yellow' )
+	wp4t_timer_get_background_image( 'yellow' )
 );
 printf(
 	'<p><select class="background-image-picker" id="bg-red"><option value="none">Red Image: None</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-logo-bk-timer-red-1920x1080-c1.jpg">Red TM logo</option>
 <option value="https://wp4toastmasters.com/tmbranding/en-toastmasters-TA662D-toastmasters-zoom-virtual-wordmark-bk-timer-red-1920x1080-c1.jpg">Red TM wordmark</option>
 %s</select></p>',
-	timer_get_background_image( 'red' )
+	wp4t_timer_get_background_image( 'red' )
 );
 ?>
 <p><select class="background-image-picker" id="bg-default">
@@ -534,7 +534,7 @@ if ( ! empty( $_GET['embed'] ) && empty( $name ) ) {
 } else {
 	echo '<div id="jitsi"></div><input type="hidden" id="is_jitsi" value="1" >';
 }
-$users = get_club_members();
+$users = wp4t_get_club_members();
 foreach ( $users as $user ) {
 	$userdata = get_userdata( $user->ID );
 	$u[]      = $userdata->first_name . ' ' . $userdata->last_name;

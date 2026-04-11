@@ -11,38 +11,38 @@ if ( empty( $_POST['applicant_signature'] ) ) {
 <div id="toastmasters-application">
 <p><strong>TOASTMASTERS INTERNATIONAL MEMBERSHIP APPLICATION</strong></p>
 <div style="margin-left: 10px; width: 200px; float: right; padding: 5px; border: thin solid #000; font-size: small;">
-Application Type <?php tm_application_form_hidden( 'membership_type' ); ?>
+Application Type <?php wp4t_tm_application_form_hidden( 'membership_type' ); ?>
 <br /><em>If applicant is transferring from another club, please fill in the three lines below.</em>
-<br />Previous club name <?php tm_application_form_hidden( 'previous_club_name' ); ?><br >Previous club number<?php tm_application_form_hidden( 'previous_club_number' ); ?><br /> Member number<?php tm_application_form_hidden( 'toastmasters_id' ); ?>
+<br />Previous club name <?php wp4t_tm_application_form_hidden( 'previous_club_name' ); ?><br >Previous club number<?php wp4t_tm_application_form_hidden( 'previous_club_number' ); ?><br /> Member number<?php wp4t_tm_application_form_hidden( 'toastmasters_id' ); ?>
 </div>
 <p>To become a club member, please</p>
 <p>1. Completely fill out and sign the <strong>Membership Application</strong>.</p>
 <p>2. Provide payment.</p>
-<p>Do you need an assistive technology (such as a screen reader) to view educational materials <?php tm_application_form_choice( 'assistive_technology', array( 'No', 'Yes' ) ); ?></p>
+<p>Do you need an assistive technology (such as a screen reader) to view educational materials <?php wp4t_tm_application_form_choice( 'assistive_technology', array( 'No', 'Yes' ) ); ?></p>
 <p>MEMBERSHIP APPLICATION</p>
 <p><strong>Club Information</strong></p>
-<p><label>Club name</label> <?php tm_application_form_field( 'club_name' ); ?><br><label>Club number</label> <?php tm_application_form_field( 'club_number' ); ?><br><label>Club city</label> <?php tm_application_form_field( 'club_city' ); ?></p>
+<p><label>Club name</label> <?php wp4t_tm_application_form_field( 'club_name' ); ?><br><label>Club number</label> <?php wp4t_tm_application_form_field( 'club_number' ); ?><br><label>Club city</label> <?php wp4t_tm_application_form_field( 'club_city' ); ?></p>
 <p><strong>Applicant Information</strong></p>
-<p>Gender <?php tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Non-binary', 'Decline to respond' ) ); ?></p>
+<p>Gender <?php wp4t_tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Non-binary', 'Decline to respond' ) ); ?></p>
 <?php rsvphoney_ui(); ?>
-<div class="memberdata"><label>First name</label> <?php tm_application_form_field( 'first_name' ); ?></div>
-<div class="memberdata"><label>Middle name</label> <?php tm_application_form_field( 'middle_name' ); ?></div>
-<div class="memberdata"><label>Last name/Surname</label> <?php tm_application_form_field( 'last_name' ); ?></div>
+<div class="memberdata"><label>First name</label> <?php wp4t_tm_application_form_field( 'first_name' ); ?></div>
+<div class="memberdata"><label>Middle name</label> <?php wp4t_tm_application_form_field( 'middle_name' ); ?></div>
+<div class="memberdata"><label>Last name/Surname</label> <?php wp4t_tm_application_form_field( 'last_name' ); ?></div>
 <p>Any correspondence mailed to you will be sent to the following address:</p>
-<div class="memberdata"><label>Organization/In care of</label> <?php tm_application_form_field( 'address_organization' ); ?></div>
-<div class="memberdata"><label>Address line 1</label> <?php tm_application_form_field( 'address_line1' ); ?></div>
-<div class="memberdata"><label>Address line 2</label> <?php tm_application_form_field( 'address_line2' ); ?></div>
-<div class="memberdata"><label>City</label> <?php tm_application_form_field( 'address_city' ); ?></div>
-<div class="memberdata"><label>State or province</label> <?php tm_application_form_field( 'address_state' ); ?></div>
-<div class="memberdata"><label>Country</label> <?php tm_application_form_field( 'address_country' ); ?></div>
-<div class="memberdata"><label>Postal Code</label> <?php tm_application_form_field( 'address_postalcode' ); ?></div>
-<div class="memberdata"><label>Home phone number</label> <?php tm_application_form_field( 'home_phone' ); ?></div>
-<div class="memberdata"><label>Mobile phone number</label> <?php tm_application_form_field( 'mobile_phone' ); ?></div>
-<div class="memberdata"><label>Email address</label> <?php tm_application_form_field( 'user_email' ); ?></div>
+<div class="memberdata"><label>Organization/In care of</label> <?php wp4t_tm_application_form_field( 'address_organization' ); ?></div>
+<div class="memberdata"><label>Address line 1</label> <?php wp4t_tm_application_form_field( 'address_line1' ); ?></div>
+<div class="memberdata"><label>Address line 2</label> <?php wp4t_tm_application_form_field( 'address_line2' ); ?></div>
+<div class="memberdata"><label>City</label> <?php wp4t_tm_application_form_field( 'address_city' ); ?></div>
+<div class="memberdata"><label>State or province</label> <?php wp4t_tm_application_form_field( 'address_state' ); ?></div>
+<div class="memberdata"><label>Country</label> <?php wp4t_tm_application_form_field( 'address_country' ); ?></div>
+<div class="memberdata"><label>Postal Code</label> <?php wp4t_tm_application_form_field( 'address_postalcode' ); ?></div>
+<div class="memberdata"><label>Home phone number</label> <?php wp4t_tm_application_form_field( 'home_phone' ); ?></div>
+<div class="memberdata"><label>Mobile phone number</label> <?php wp4t_tm_application_form_field( 'mobile_phone' ); ?></div>
+<div class="memberdata"><label>Email address</label> <?php wp4t_tm_application_form_field( 'user_email' ); ?></div>
 <p><strong>Toastmasters International Dues and Fees</strong></p>
 <div style="padding: 5px; border: thin dotted #000;">
 <?php
-tm_application_fee();
+wp4t_tm_application_fee();
 ?>
 </div>
 <p>Dues and fees are payable in advance and are not refundable or transferable from one member to another.<br></p>
@@ -80,21 +80,21 @@ if ( isset( $_POST['sponsor'] ) ) {
 <li>That my information may be accessed and used by Toastmasters, its employees and agents, district officers and club officers.</li>
 <li>Maintain&nbsp;changes to my personal contact information to ensure it is accurate and current by updating my personal profile page located on the Toastmasters International website:&nbsp;<strong>www.toastmasters.org/login</strong>. I understand that the majority of the data requested in this application is necessary for administrative and planning purposes.</li>
 </ul>
-<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> <label class="small">Mail</label> <?php tm_application_form_radio( 'mail_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Email</label> <?php tm_application_form_radio( 'email_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Phone</label> <?php tm_application_form_radio( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
+<p>Occasionally we would like to contact you with details of services, educational updates, and organizational updates. If you consent to us contacting you for this purpose, please check the box below corresponding to acceptable contact methods:<br> <label class="small">Mail</label> <?php wp4t_tm_application_form_radio( 'mail_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Email</label> <?php wp4t_tm_application_form_radio( 'email_ok', array( 'Yes', 'No' ) ); ?> <br><label class="small">Phone</label> <?php wp4t_tm_application_form_radio( 'phone_ok', array( 'Yes', 'No' ) ); ?></p>
 <p>If you would rather not receive non-essential communications from us, please select "No" </p>
-<div class="memberdata"><?php tm_application_form_choice( 'opt_out', array( 'Yes, communication is welcome', 'No, I wish to opt out of non-esssential communications' ) ); ?></div>
+<div class="memberdata"><?php wp4t_tm_application_form_choice( 'opt_out', array( 'Yes, communication is welcome', 'No, I wish to opt out of non-esssential communications' ) ); ?></div>
 <p>For our full privacy policy, you may visit&nbsp;<strong><a target="_blank" href="https://www.toastmasters.org/footer/privacy-policy">www.toastmasters.org/footer/privacy-policy</a></strong>.</p>
 <p><strong>Club email and privacy settings</strong></p>
 <p>Do you grant the club permission to send you email communications such as meeting updates.</p>
-<div class="memberdata"><?php tm_application_form_radio( 'tm_privacy_prompt', array( '0' => 'Yes, permission granted', '2' => 'No, permission DENIED' ) ); ?> </div>
+<div class="memberdata"><?php wp4t_tm_application_form_radio( 'wp4t_tm_privacy_prompt', array( '0' => 'Yes, permission granted', '2' => 'No, permission DENIED' ) ); ?> </div>
 <p>Do you grant permission for your contact information to be shared with other members in the member directory.</p>
-<div class="memberdata"><?php tm_application_form_radio( 'tm_directory_blocked', array( '0' => 'Yes, permission granted', '1' => 'No, permission DENIED' ) ); ?> </div>
+<div class="memberdata"><?php wp4t_tm_application_form_radio( 'tm_directory_blocked', array( '0' => 'Yes, permission granted', '1' => 'No, permission DENIED' ) ); ?> </div>
 <p><strong>Verification of Applicant</strong></p>
 <p>By my signature below, I agree to the terms of A Toastmaster’s Promise and the Member’s Agreement and Release stated above, and certify that I am 18 years of age or older (in compliance with the Toastmasters Club Constitution for Clubs of Toastmasters International).</p>
 <p><em>I acknowledge that my electronic signature on this document is legally equivalent to my handwritten signature.</em> Type your name as the electronic signature.</p>
 <div class="memberdata"><label>Applicant’s signature</label>
-<?php tm_application_form_field( 'applicant_signature' ); ?></div>
-<div class="memberdata"><label>Date</label> <?php tm_application_form_field( 'applicant_signature_date' ); ?></div>
+<?php wp4t_tm_application_form_field( 'applicant_signature' ); ?></div>
+<div class="memberdata"><label>Date</label> <?php wp4t_tm_application_form_field( 'applicant_signature_date' ); ?></div>
 <?php
 rsvpmaker_nonce();
 if ( empty( $_POST['applicant_signature'] ) ) {

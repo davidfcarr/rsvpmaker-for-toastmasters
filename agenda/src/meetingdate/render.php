@@ -4,5 +4,5 @@
  */
 ?>
 <div <?php echo get_block_wrapper_attributes(); ?>><strong>
-	<?php esc_html_e( tmlayout_meeting_date() ); ?>
+	<?php esc_html_e( wp4t_tmlayout_meeting_date() ); ?>
 </strong></div>

@@ -3288,7 +3288,7 @@ $projects['Club Special Event Chair:CL10']  = __( 'Team Building: Club Special E
 $projects['Club Newsletter Editor:CL10']    = __( 'Team Building: Club Newsletter Editor', 'rsvpmaker-for-toastmasters' );
 $projects['Club Webmaster:CL10']            = __( 'Team Building: Club Webmaster', 'rsvpmaker-for-toastmasters' );
 $project_options = array();
-$manuals         = get_manuals_array();
+$manuals         = wp4t_get_manuals_array();
 foreach ( $manuals as $manual => $display_name ) {
 	foreach ( $projects as $index => $project ) {
 		if ( strpos( $index, $manual ) !== false ) {

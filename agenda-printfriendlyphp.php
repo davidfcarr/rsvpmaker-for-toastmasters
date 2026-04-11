@@ -113,7 +113,7 @@ if (class_exists('PrintFriendly_WordPress'))
 <div class="Section1">
 <?php
 if(isset($_GET['simple'])) {
-	$output = '<h2>'.tmlayout_meeting_date()."</h2>\n".tm_agenda_content();
+	$output = '<h2>'.wp4t_tmlayout_meeting_date()."</h2>\n".wp4t_tm_agenda_content();
 }
 else {
 	if ( function_exists( 'do_blocks' ) ) {

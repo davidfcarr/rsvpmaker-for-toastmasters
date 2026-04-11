@@ -5,7 +5,7 @@ Email routines
 add_action( 'wp4toast_reminders_cron', 'wp4toast_reminders_cron', 10, 1 );
 function wp4toast_reminders_cron( $meeting_hours ) {
 	wp_suspend_cache_addition(true);
-	email_with_without_role( $meeting_hours );
+	wp4t_email_with_without_role( $meeting_hours );
 	wp_suspend_cache_addition(false);
 	rsvp_memory_peak_limit(0.9,'wp4toast_reminders_cron');
 	return;
@@ -50,7 +50,7 @@ function wpt_notification_from($post_id) {
 	}
 	return $mail;
 }
-function email_with_without_role_test( $meeting_hours, $test = false ) {
+function wp4t_email_with_without_role_test( $meeting_hours, $test = false ) {
 	global $wpdb, $email_context, $post, $rsvp_options, $toast_roles;
 	$waspost       = $post;
 	$email_context = true;
@@ -118,7 +118,7 @@ function wpt_email_tod($meeting_hours = 0) {
 	}
 	$message = '<p>'.__( 'Here is the speaker lineup with the path, project, title, and introduction information they provided through the online form.', 'rsvpmaker-for-toastmasters' ).'<p>';
 	foreach ( $results as $row ) {
-		$message .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( speech_intro_data( $row->meta_value, $next->ID, $row->meta_key ) ) . '</div>'."\n";
+		$message .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( wp4t_speech_intro_data( $row->meta_value, $next->ID, $row->meta_key ) ) . '</div>'."\n";
 	}
 	$message .= '<p>'.sprintf(__( 'If the speakers post updates, you will be able to see them here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?print_agenda=1&no_print=1', get_permalink( $next->ID ) .'?intros=1').'</p>';
 	$message .= '<p>'.sprintf(__( 'You can view the full agenda here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?print_agenda=1&no_print=1', get_permalink( $next->ID ) .'?print_agenda=1&no_print=1').'</p>';
@@ -130,11 +130,11 @@ function wpt_email_tod($meeting_hours = 0) {
 			$mail['subject']  = $subject;
 			$mail['html']     = "<html>\n<body>\n" . wpautop( $message ) . "\n</body></html>";
 			if(isset($_GET['test_email']))
-				awemailer( $mail );
+				wp4t_awemailer( $mail );
 			printf('<p>tod %s vpe %s</p>',$todemail,$vpe_email);
 	}
 }
-function email_with_without_role( $meeting_hours, $test = false ) {
+function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	global $wpdb, $email_context, $post, $rsvp_options, $toast_roles;
 	$waspost       = $post;
 	$email_context = true;
@@ -166,15 +166,15 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 		}
 		update_post_meta( $post->ID, $dupkey, true );
 	}
-	$members   = get_club_members();
+	$members   = wp4t_get_club_members();
 	$templates = get_rsvpmaker_notification_templates();
 	$permalink = get_permalink( $next->ID );
-	$content   = do_shortcode( $templates['norole']['body'] );
-	$absences  = get_absences_array( $next->ID );
+	$content   = do_shortcode( $templates['wp4t_norole']['body'] );
+	$absences  = wp4t_get_absences_array( $next->ID );
 	$summary = 	empty(get_option('wpt_notification_summary_off'));
 	$reminders = array();
 	$absent    = array();
-	$norole    = array();
+	$wp4t_norole    = array();
 	foreach ( $members as $member ) {
 		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $next->ID . '  AND meta_value=' . $member->ID . " AND meta_key LIKE '_role%' ";
 		$role_results                    = $wpdb->get_results( $sql );
@@ -195,10 +195,10 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 					$manual                           = get_post_meta( $next->ID, '_manual' . $role_row->meta_key, true );
 					$title                            = get_post_meta( $next->ID, '_title' . $role_row->meta_key, true );
 					$project_key                      = get_post_meta( $next->ID, '_project' . $role_row->meta_key, true );
-					$project                          = ( $project_key ) ? get_project_text( $project_key ) : 'Please specify project';
+					$project                          = ( $project_key ) ? wp4t_get_project_text( $project_key ) : 'Please specify project';
 					$intro                            = get_post_meta( $next->ID, '_intro' . $role_row->meta_key, true );
-					$speaker_details = sprintf( '<p>Manual: %s<br />Project: %s<br />Title: %s<br />Intro: %s</p>', $manual, $project, $title, $intro );
-                    $reminder_body[$member->id] .= str_replace('[wpt_speech_details]',$speaker_details,str_replace('[wptrole]',$rt,wpautop($templates['Speaker']['body'])));
+					$wp4t_speaker_details = sprintf( '<p>Manual: %s<br />Project: %s<br />Title: %s<br />Intro: %s</p>', $manual, $project, $title, $intro );
+                    $reminder_body[$member->id] .= str_replace('[wpt_speech_details]',$wp4t_speaker_details,str_replace('[wptrole]',$rt,wpautop($templates['Speaker']['body'])));
                     $reminder_subject[ $member->ID ] .= str_replace('[wptrole]',$rt,$templates['Speaker']['subject']);
 				}
                 elseif(isset($templates[$role]['body'])) {
@@ -220,7 +220,7 @@ function email_with_without_role( $meeting_hours, $test = false ) {
             if($summary && !strpos($reminder_body[$member->id],'[wpt_open_roles]') && !strpos($reminder_body[$member->id],'[wp4t_assigned_open] '))
                 $reminder_body[$member->id] .= $content;
 		} else {
-			$norole[] = $member->user_email;
+			$wp4t_norole[] = $member->user_email;
 		}
 	}
 	$output = '';
@@ -249,22 +249,22 @@ function email_with_without_role( $meeting_hours, $test = false ) {
 			update_post_meta( $post->ID, 'reminder', $mail );	
 		}
 	}
-	if(!empty($norole)) {
+	if(!empty($wp4t_norole)) {
 		$mail['html'] = wpt_email_agenda_wrapper("<p>".__("You're not yet signed up for a role",'rsvpmaker-for-toastmasters')."</p>\n" . $content);
 		$mail['subject'] = 'Reminder: ' . $date . ' - ' . $next->post_title;
 		if($test) {
-			$output .= sprintf('<h2>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],implode(', ',$norole),$mail['html']);
+			$output .= sprintf('<h2>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],implode(', ',$wp4t_norole),$mail['html']);
 		}
 		else {
-			rsvpmaker_qemail($mail,$norole);
+			rsvpmaker_qemail($mail,$wp4t_norole);
 		}
 	}
 	if(!$test)
-		update_post_meta( $post->ID, '_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $norole ).rsvpmaker_date('r') );
+		update_post_meta( $post->ID, '_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $wp4t_norole ).rsvpmaker_date('r') );
 	$post = $waspost;
 	return $output;
 }
-function awemailer( $mail ) {
+function wp4t_awemailer( $mail ) {
 	global $rsvp_options;
 	if ( strpos( $mail['to'], 'example.com' ) ) {
 		return;
@@ -338,7 +338,7 @@ function toastmasters_rsvpmailer_rule( $content, $email, $message_type ) {
 	if ( ! $user ) {
 		return '';
 	}
-	if(get_user_meta($user->ID,'tm_privacy_prompt',true) == '2')
+	if(get_user_meta($user->ID,'wp4t_tm_privacy_prompt',true) == '2')
 		return 'deny';
 	return get_user_meta( $user->ID, 'email_rule_' . $message_type, true );
 }
@@ -358,7 +358,7 @@ function wp4t_intro_notification( $post_id, $actiontext, $user_id, $field = '', 
 		$manual        = get_post_meta( $post_id, '_manual' . $field, true );
 		$project_index = get_post_meta( $post_id, '_project' . $field, true );
 		if ( ! empty( $project_index ) ) {
-			$project = get_project_text( $project_index );
+			$project = wp4t_get_project_text( $project_index );
 			$manual .= ': ' . $project;
 		}
 		$title = get_post_meta( $post_id, '_title' . $field, true );
@@ -376,14 +376,14 @@ function wp4t_intro_notification( $post_id, $actiontext, $user_id, $field = '', 
 		$mail['to']        = $toastmaster_email;
 		$mail['from']      = $speaker->user_email;
 		$mail['fromname']  = $speaker->display_name;
-		awemailer( $mail );
+		wp4t_awemailer( $mail );
 	}
 }
-function editor_signup_notification( $post_id, $user_id, $role, $manual = '', $project = '', $title = '' ) {
+function wp4t_editor_signup_notification( $post_id, $user_id, $role, $manual = '', $project = '', $title = '' ) {
 	if ( is_admin() ) {
 		return; // don't do this on the reconcile screen
 	}
-	$role = clean_role( $role );
+	$role = wp4t_clean_role( $role );
 	global $current_user;
 	global $wpdb;
 	global $rsvp_options;
@@ -396,9 +396,9 @@ function editor_signup_notification( $post_id, $user_id, $role, $manual = '', $p
 		return;
 	}
 	if ( $project ) {
-		$project = get_project_text( $project );
+		$project = wp4t_get_project_text( $project );
 	}
-	$subject = $message = sprintf( __( 'Your role: %1$s for %2$s %3$s', 'rsvpmaker-for-toastmasters' ), clean_role( $role ), $meetingdate, get_bloginfo( 'name' ) );
+	$subject = $message = sprintf( __( 'Your role: %1$s for %2$s %3$s', 'rsvpmaker-for-toastmasters' ), wp4t_clean_role( $role ), $meetingdate, get_bloginfo( 'name' ) );
 		$message .= "\n\n";
 	if ( strpos( $role, 'peaker' ) ) {
 		$message .= sprintf(
@@ -434,9 +434,9 @@ Title: %s',
 		$mail['to']       = $speakerdata->user_email;
 		$mail['from']     = $current_user->user_email;
 		$mail['fromname'] = $current_user->display_name;
-		awemailer( $mail ); // notify member
+		wp4t_awemailer( $mail ); // notify member
 }
-function tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor_id ) {
+function wp4t_tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor_id ) {
 	global $wpdb;
 	global $rsvp_options;
 	$code = get_post_meta( $post_id, 'suggest_code', true );
@@ -455,7 +455,7 @@ function tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor
 		$msg      = sprintf( '<p>Toastmaster %s %s %s %s %s %s</p>', $user->first_name, $user->last_name, __( 'has recomended you for the role of', 'rsvpmaker-for-toastmasters' ), $neatname, __( 'for', 'rsvpmaker-for-toastmasters' ), $date );
 		$member   = get_userdata( $value );
 		$email    = $member->user_email;
-		$hash     = recommend_hash( $name, $value, $post_id );
+		$hash     = wp4t_recommend_hash( $name, $value, $post_id );
 		$url  = add_query_arg(
 			array(
 				'key'   => $name,
@@ -475,7 +475,7 @@ function tm_recommend_send( $name, $value, $permalink, $count, $post_id, $editor
 		$mail['cc']       = $user->user_email;
 		$mail['fromname'] = $user->first_name . ' ' . $user->last_name;
 		$mail['subject']  = 'You have been recommended for the role of ' . $neatname . ' on ' . $date;
-		awemailer( $mail );
+		wp4t_awemailer( $mail );
 		$msg = '<div style="background-color: #eee; border: thin solid #000; padding: 5px; margin-5px;">' . $msg . '<p><em>' . __( 'Recommendation sent by email to', 'rsvpmaker-for-toastmasters' ) . ' <b>' . $email . '</b></em></p></div>';
 		add_post_meta( $post_id, '_activity_editor', $user->first_name . ' ' . $user->last_name . ' recommended ' . $member->first_name . ' ' . $member->last_name . ' for ' . $neatname . ' on ' . $date . ', email sent to ' . $email );
 		update_option( '_tm_updates_logged', strtotime( '+ 2 minutes' ) );
@@ -493,16 +493,16 @@ ob_start();
 $header = ob_get_clean();
 return $header.$content.'<body></html>';
 }
-function awesome_open_roles( $post_id = null, $scheduled = false, $request_vars = array() ) {
+function wp4t_awesome_open_roles( $post_id = null, $scheduled = false, $request_vars = array() ) {
 	if ( ! isset( $_REQUEST['open_roles'] ) && ! $post_id && empty( $request_vars ) ) {
 		return;
 	}
-	if ( ! is_club_member() && empty( $request_vars )) {
+	if ( ! wp4t_is_club_member() && empty( $request_vars )) {
 		echo 'This function is only available to club members';
 		return;
 	}
-	if ( function_exists( 'email_content_minfilters' ) ) {
-		email_content_minfilters();
+	if ( function_exists( 'rsvpmaker_email_content_minfilters' ) ) {
+		rsvpmaker_email_content_minfilters();
 	} else {
 		global $wp_filter;
 		$corefilters = array( 'convert_chars', 'wpautop', 'wptexturize' );
@@ -520,7 +520,7 @@ function awesome_open_roles( $post_id = null, $scheduled = false, $request_vars 
 		$post = get_post($post_id);
 	}
 	the_post();
-	$content = tm_agenda_content();
+	$content = wp4t_tm_agenda_content();
 	$content = apply_filters( 'email_agenda', $content );
 	global $wpdb;
 	global $rsvp_options;
@@ -627,7 +627,7 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 		}
 		echo '</p>';		
 		} else {
-			echo awemailer( $mail );
+			echo wp4t_awemailer( $mail );
 		}
 		// output without form
 		$output = $header . $output . '</body></html>';
@@ -665,7 +665,7 @@ if ( isset( $emails ) && is_array( $emails ) ) {
 		document.getElementById("sendtest").checked = true;
 	}	
 	</script>
-	<p>Use the form below to send the agenda as shown below with a note and the subject line of your choice. Alternatively, you can use the '.club_member_mailto($subject, $shortmessage).' link to send to the members by BCC from your own email client.</p>
+	<p>Use the form below to send the agenda as shown below with a note and the subject line of your choice. Alternatively, you can use the '.wp4t_club_member_mailto($subject, $shortmessage).' link to send to the members by BCC from your own email client.</p>
 	<h3>' . __( 'Add a Note (optional)', 'rsvpmaker-for-toastmasters' ) . '</h3>
 	<p>' . __( 'Your note will be emailed along with the details shown below.','rsvpmaker-for-toastmasters').'</p><p>'.__('You can also change the subject line. For example, when emailing the agenda you may want to emphasize the roles you need filled or special plans for a meeting (such as a contest).', 'rsvpmaker-for-toastmasters' ) . '</p>
 	<form method="post" action="' . $permalink . 'email_agenda=1">
@@ -681,7 +681,7 @@ Send to <input type="radio" name="send" value="members" checked="checked" > ' . 
 	echo $output;
 	exit();
 }
-function backup_speaker_notify( $assigned, $post_id = null ) {
+function wp4t_backup_speaker_notify( $assigned, $post_id = null ) {
 	global $post;
 	global $wpdb;
 	global $rsvp_options;
@@ -718,22 +718,22 @@ function backup_speaker_notify( $assigned, $post_id = null ) {
 			$mail['to']       = $speakerdata->user_email;
 			$mail['from']     = $leader_email;
 			$mail['fromname'] = get_bloginfo( 'name' );
-			$result           = awemailer( $mail ); // notify speaker
+			$result           = wp4t_awemailer( $mail ); // notify speaker
 			$footer           = "\n\nThis is an automated message. Replies will be sent to " . $speakerdata->user_email;
 			$mail['html']     = "<html>\n<body>\n" . wpautop( $message . $footer ) . "\n</body></html>";
 			$mail['replyto']  = $speakerdata->user_email;
 			$mail['to']       = $leader_email;
 			$mail['from']     = $speakerdata->user_email;
 			$mail['fromname'] = $speakerdata->display_name;
-			$result           = awemailer( $mail ); // notify leader
+			$result           = wp4t_awemailer( $mail ); // notify leader
 }
-function is_tm_privacy_pending($id_or_email, $return_not_set = false) {
+function wp4t_is_tm_privacy_pending($id_or_email, $return_not_set = false) {
 	global $wpdb;
 	if(is_numeric($id_or_email)) {
-		$sql = "SELECT meta_value fROM $wpdb->usermeta WHERE user_id=$id_or_email AND meta_key='tm_privacy_prompt'";
+		$sql = "SELECT meta_value fROM $wpdb->usermeta WHERE user_id=$id_or_email AND meta_key='wp4t_tm_privacy_prompt'";
 	}
 	else { // by email
-		$sql = $wpdb->prepare("SELECT meta_value FROM $wpdb->users JOIN $wpdb->usermeta ON $wpdb->users.ID = $wpdb->usermeta.user_id WHERE user_email LIKE %s AND meta_key='tm_privacy_prompt'",$id_or_email);
+		$sql = $wpdb->prepare("SELECT meta_value FROM $wpdb->users JOIN $wpdb->usermeta ON $wpdb->users.ID = $wpdb->usermeta.user_id WHERE user_email LIKE %s AND meta_key='wp4t_tm_privacy_prompt'",$id_or_email);
 	}
 	//echo $sql;
 	$status = $wpdb->get_var($sql);
@@ -742,7 +742,7 @@ function is_tm_privacy_pending($id_or_email, $return_not_set = false) {
 	else
 		return $status;
 }
-function tm_privacy_prompt() {
+function wp4t_tm_privacy_prompt() {
 ?>
 <h1>User Privacy Preferences</h1>
 <p>Use this screen to see which users have given permission for club email and for their information to be included in the member directory. You can send a prompt to their email address asking them to grant permission. If their status is set to "permission pending" or "permission DENIED," any other Toastmasters email will be blocked from being sent to their address. The goal of these functions is to improve compliance with privacy regulations such as the EU's GDPR.</p>
@@ -751,15 +751,15 @@ function tm_privacy_prompt() {
 	$current_user;
 	if(isset($_POST['prompt'])) {
 		foreach($_POST['prompt'] as $id) {
-			update_user_meta($id,'tm_privacy_prompt',1);
+			update_user_meta($id,'wp4t_tm_privacy_prompt',1);
 			$user = get_userdata($id);
 			$message = sprintf("Please log into the website at %s to grant permission for the Toastmasters club to send you email, including club news and email notifications. There is also an option for you to DENY permission, although this may hinder our ability to communicate with you.",admin_url());
 			wp_mail($user->user_email,'Please set your preference for Toastmasters email privacy',$message);
 		}
 	}
-	$members = get_club_members();
+	$members = wp4t_get_club_members();
 	$permission_given = $permission_denied = array();
-	printf('<form method="post" action="%s"><p><input type="checkbox" id="checkAll"> %s</p>',admin_url('users.php?page=tm_privacy_prompt'),__('Check All','rsvpmaker-for-toastmasters'));
+	printf('<form method="post" action="%s"><p><input type="checkbox" id="checkAll"> %s</p>',admin_url('users.php?page=wp4t_tm_privacy_prompt'),__('Check All','rsvpmaker-for-toastmasters'));
 	foreach($members as $member) {
 		$capsemail = strtoupper($member->user_email);
 		/*
@@ -768,7 +768,7 @@ function tm_privacy_prompt() {
 			echo $capsemail .':' .$code;
 		}
 		*/
-		$pending = is_tm_privacy_pending($member->ID, true);
+		$pending = wp4t_is_tm_privacy_pending($member->ID, true);
 		$checkbox = sprintf('<input type="checkbox" name="prompt[]" value="%d"> Request permission ',$member->ID);
 		if($pending == '0') {
 			$permission_given[] = $member->display_name;
@@ -788,7 +788,7 @@ function tm_privacy_prompt() {
 	if(!empty($permission_given))
 		printf('<p>%s %s</p>',__('Permission given','rsvpmaker-for-toastmasters'),implode(', ',$permission_given));
 	if(!empty($permission_denied)) {
-		printf('<form method="post" action="%s">',admin_url('users.php?page=tm_privacy_prompt'));
+		printf('<form method="post" action="%s">',admin_url('users.php?page=wp4t_tm_privacy_prompt'));
 		printf('<p>%s %s</p>',__('Permission denied','rsvpmaker-for-toastmasters'),implode(', ',$permission_denied));
 		submit_button();
 		echo '</form>';
@@ -803,26 +803,26 @@ $("#checkAll").click(function(){
 </script>
 <?php
 }
-add_action('admin_notices', 'tm_grant_privacy_permission_ui',1);
-function tm_grant_privacy_permission_ui ($return = false, $profile_form = false, $userdata = NULL) {
+add_action('admin_notices', 'wp4t_tm_grant_privacy_permission_ui',1);
+function wp4t_tm_grant_privacy_permission_ui ($return = false, $profile_form = false, $userdata = NULL) {
 	return;
 if(!$return && (!empty($_GET['action']) || strpos($_SERVER['REQUEST_URI'],'post-new.php') ))
 global $current_user;
 if(!$userdata)
 	$userdata = $current_user;
 $output = '';
-$pending = is_tm_privacy_pending($userdata->ID);
+$pending = wp4t_is_tm_privacy_pending($userdata->ID);
 if($pending == '')
 	$pending = '1';
 	if(isset($_POST['tm_privacy_permission'])) {
 		$pending = sanitize_text_field($_POST['tm_privacy_permission']);
 		$value = intval($pending);
-		update_user_meta($userdata->ID,'tm_privacy_prompt',$value);
+		update_user_meta($userdata->ID,'wp4t_tm_privacy_prompt',$value);
 		update_user_meta($userdata->ID,'tm_directory_blocked',intval($_POST['tm_directory_blocked']));
 	}
 	if($profile_form || ($pending == '1'))
 	{
-	$current = get_user_meta($userdata->ID,'tm_privacy_prompt',true);
+	$current = get_user_meta($userdata->ID,'wp4t_tm_privacy_prompt',true);
 	if($return)
 		ob_start();
 	if(!$profile_form)
@@ -845,18 +845,18 @@ if($pending == '')
 		return ob_get_clean();
 	}
 }
-add_action('login_footer','login_footer_tm_privacy',1);
-function login_footer_tm_privacy() {
+add_action('login_footer','wp4t_login_footer_tm_privacy',1);
+function wp4t_login_footer_tm_privacy() {
 	global $current_user;
 	if(isset($_GET['action']) && ($_GET['action'] == 'resetpass') )
 	{
 		printf('<p style="text-align:center; border: thin solid red"><strong>%s</strong> %s</p>',__('IMPORTANT','rsvpmaker-for-toastmasters'),__('If you are a new member, please log in to set your email and privacy preference.','rsvpmaker-for-toastmasters'));
 	}
 }
-function club_member_mailto($subject = '', $body = '') {
+function wp4t_club_member_mailto($subject = '', $body = '') {
 	global $current_user;
 	$emails = array();
-	$members = get_club_members();
+	$members = wp4t_get_club_members();
 	foreach($members as $member) {
 		$emails[] = $member->user_email;
 	}
@@ -869,8 +869,8 @@ function club_member_mailto($subject = '', $body = '') {
 function wpt_get_norole_email($post_id) {
 	global $wpdb;
 	$emails    = array();
-	$absences  = get_absences_array( $post_id );
-	$members   = get_club_members();
+	$absences  = wp4t_get_absences_array( $post_id );
+	$members   = wp4t_get_club_members();
 	foreach ( $members as $member ) {
 		if(in_array( $member->ID, $absences ))
 			continue;
@@ -885,9 +885,9 @@ function wpt_get_norole_email($post_id) {
 	}
 	return $emails;
 }
-function show_role_blocks_only($block_content, $block) {
+function wp4t_show_role_blocks_only($block_content, $block) {
 	if(isset($_REQUEST['role_only']) && ('wp4toastmasters/role' != $block['blockName']))
 		return '';
 	return $block_content;
 }
-add_filter('render_block', 'show_role_blocks_only', 10, 2);
+add_filter('render_block', 'wp4t_show_role_blocks_only', 10, 2);

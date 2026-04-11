@@ -1,5 +1,5 @@
 <?php
-function grab_fth_content($s, $page = '') {
+function wp4t_grab_fth_content($s, $page = '') {
     global $site;
     $tidy = new \tidy;
     $s = preg_replace('/\/\/([A-Za-z0-9_\-]+.html)/',"/$1",$s);
@@ -82,7 +82,7 @@ function grab_fth_content($s, $page = '') {
         }
         elseif(strpos($line,'<img') !== false) {
             if(!strpos($line,'.ashx'))
-                $html .= preg_replace_callback('/<img[^>]+src="([^"]+)"[^>]*>/m','fth_importer_image', $line);
+                $html .= preg_replace_callback('/<img[^>]+src="([^"]+)"[^>]*>/m','wp4t_fth_importer_image', $line);
         }
         elseif(strpos($line,'<p') !== false) {
             $html .=  "<!-- wp:paragraph -->".$line."<!-- /wp:paragraph -->\n";
@@ -108,8 +108,8 @@ function grab_fth_content($s, $page = '') {
             $lines = explode("\n",$html);
             $first = array_shift($lines);
             $first .= "\n".array_shift($lines);
-            array_unshift($lines,$first,get_tm_guest_registration());
-            //array_unshift($lines,get_tm_guest_registration());     
+            array_unshift($lines,$first,wp4t_get_tm_guest_registration());
+            //array_unshift($lines,wp4t_get_tm_guest_registration());     
             $html = implode("\n",$lines);
             $html .= "\n".'<!-- wp:heading -->
             <h2 class="wp-block-heading">Club News</h2>
@@ -158,7 +158,7 @@ function grab_fth_content($s, $page = '') {
             continue;//not external links
         $text = $sidebar_links[2][$index];
         $new['post_title'] = $text;
-        $inner = grab_fth_content($url,$link);
+        $inner = wp4t_grab_fth_content($url,$link);
         if('/meetourmembers.html'== $link) {
             preg_match_all('/<img.*?>/',$inner,$matches);
             if(!empty($matches) && !empty($matches[0])) {
@@ -202,71 +202,40 @@ function grab_fth_content($s, $page = '') {
     }
     return $table;
 }
-add_shortcode('fth_importer_docs','fth_importer_docs');
-function draftgd_imagesize() {
-    $imgsize = fth_importer_image_size();
+add_shortcode('wp4t_fth_importer_docs','wp4t_fth_importer_docs');
+function wp4t_draftgd_imagesize() {
+    $imgsize = wp4t_fth_importer_image_size();
     add_image_size('max'.$imgsize,$imgsize,$imgsize);
 }
-add_action('after_setup_theme','draftgd_imagesize');
-add_filter( 'image_size_names_choose', 'fth_importer_custom_sizes' );
+add_action('after_setup_theme','wp4t_draftgd_imagesize');
+add_filter( 'image_size_names_choose', 'wp4t_fth_importer_custom_sizes' );
  
-function fth_importer_custom_sizes( $sizes ) {
-    $imgsize = fth_importer_image_size();
+function wp4t_fth_importer_custom_sizes( $sizes ) {
+    $imgsize = wp4t_fth_importer_image_size();
     return array_merge( $sizes, array(
         'max'.$imgsize => __( 'Max Width: '.$imgsize.'px' ),
     ) );
 }
-function fth_importer_nq() {
+function wp4t_fth_importer_nq() {
     global $post;
     if(isset($_GET['import_agenda'])) {
         wp_enqueue_script( 'wp-tinymce' );
         wp_enqueue_script( 'fth-importer', plugins_url( 'rsvpmaker-for-toastmasters/drafty.js' ), array('wp-tinymce'), '3.1', true );    
     }
 }
-add_action( 'wp_enqueue_scripts', 'fth_importer_nq', 10000 );
-add_action( 'admin_enqueue_scripts', 'fth_importer_nq' );
-function fth_importer_docs_link($arg) {
-    $link = $arg[0]; // without closing tag
-    if(!strpos($link,$_SERVER['SERVER_NAME']))
-        $link .= ' target="_blank"';
-    return $link;
-}
-function fth_importer_image_inline($img) {
+add_action( 'wp_enqueue_scripts', 'wp4t_fth_importer_nq', 10000 );
+add_action( 'admin_enqueue_scripts', 'wp4t_fth_importer_nq' );
+function wp4t_fth_importer_image($img) {
     global $imgcount, $download_images, $image_slug, $download_ok, $editor_format;
     $download_ok = true;
     $imgcount++;
     $src = is_array($img) ? $img[1] : $img;
     $src = preg_replace('/\?.+/','',$src);
-    $imgsize = fth_importer_image_size();
+    $imgsize = wp4t_fth_importer_image_size();
     $filename = array_pop(explode('/',$src));
     $image = '<img src="'.$src.'" alt=""/>';
     if($download_ok) {
-        $attach_id = fth_importer_insert_attachment_from_url( $src, $filename );
-        if($attach_id) {
-            $imgarr = wp_get_attachment_image_src($attach_id,'max'.$imgsize);
-            $url = $imgarr[0];
-            $imghtml = '<img src="'.$url.'" width="'.$imgarr[1].'" height="'.$imgarr[2].'" alt="" class="wp-image-'.$attach_id.'"'."/>";
-            return $imghtml;
-        }
-        else
-            printf('<p><strong>Error importing image %s</strong><br />%s</p>',esc_html($image_slug).'_'.$imgcount.'.png',$src);
-    }
-    else {
-        $download_images .= sprintf('<span style="display: inline-block; margin: 10px;"><a href="%s" download="%s.png" target="_blank">%s</a></span>',$match[1], $image_slug.'_'.$imgcount, $image);
-    }
-    return sprintf('<p>*** IMAGE %s GOES HERE ***</p>',$imgcount);
-}
-function fth_importer_image($img) {
-    global $imgcount, $download_images, $image_slug, $download_ok, $editor_format;
-    $download_ok = true;
-    $imgcount++;
-    $src = is_array($img) ? $img[1] : $img;
-    $src = preg_replace('/\?.+/','',$src);
-    $imgsize = fth_importer_image_size();
-    $filename = array_pop(explode('/',$src));
-    $image = '<img src="'.$src.'" alt=""/>';
-    if($download_ok) {
-        $attach_id = fth_importer_insert_attachment_from_url( $src, $filename );
+        $attach_id = wp4t_fth_importer_insert_attachment_from_url( $src, $filename );
         if($attach_id) {
             $imgarr = wp_get_attachment_image_src($attach_id,'max'.$imgsize);
             $url = $imgarr[0];
@@ -282,7 +251,7 @@ function fth_importer_image($img) {
     }
     return sprintf('<p>*** IMAGE %s GOES HERE ***</p>',$imgcount);
 }
-function fth_importer_docs_options() {
+function wp4t_fth_importer_docs_options() {
     if(isset($_POST['allowed_types']) && wp_verify_nonce( $_POST['drafty_field'], 'drafty' ) )
     {
         $types = get_post_types();
@@ -297,9 +266,9 @@ function fth_importer_docs_options() {
         update_option('docs_from_google_image_size',$imgsize);
     }
 }
-add_action('admin_init','fth_importer_docs_options');
-function fth_importer_docs($atts = array()) {
-    $action = admin_url('admin.php?page=fth_importer_docs');
+add_action('admin_init','wp4t_fth_importer_docs_options');
+function wp4t_fth_importer_docs($atts = array()) {
+    $action = admin_url('admin.php?page=wp4t_fth_importer_docs');
     $agenda_action = $action . '&import_agenda=1';
     $setup_wizard = sprintf(' Setup Wizard: <a href="%s">User Accounts</a> | <a href="%s">Next Steps</a>',admin_url('admin.php?page=wp4t_setup_wizard&setup_wizard=1'),admin_url('admin.php?page=wp4t_setup_wizard&setup_wizard=2'));
     
@@ -327,11 +296,11 @@ $url = '';
 if(isset($_POST['url'])){
     $url = sanitize_text_field($_POST['url']);
     update_option('freetoasthost',$url);
-    grab_fth_content($url);
+    wp4t_grab_fth_content($url);
 }
 if(isset($_POST['src'])){
     echo $src = sanitize_text_field($_POST['src']);
-    $code = fth_importer_image($src);
+    $code = wp4t_fth_importer_image($src);
     printf('<p>%s<br>%s</p>',$code,htmlentities($code));
 }
   if (!function_exists('is_plugin_active')) {
@@ -357,13 +326,13 @@ if(isset($_POST['src'])){
             $note = empty($_POST['note'][$index]) ? '' :esc_html($_POST['note'][$index]);
             $count = empty($_POST['item_count'][$index]) ? 1 : intval($_POST['item_count'][$index]);
             if('role' == $type)
-                $html = sprintf('<!-- wp:wp4toastmasters/role {"role":"%s","count":"%d","agenda_note":"%s","time_allowed":"%s"} /-->',$item,$count,$note,$time);
+                $html = sprintf('<!-- wp:wp4toastmasters/role {"role":"%s","count":"%d","wp4t_agenda_note":"%s","time_allowed":"%s"} /-->',$item,$count,$note,$time);
             elseif('skip' == $type)
                 continue;
-            elseif('editable_note' == $type)
+            elseif('wp4t_editable_note' == $type)
                 $html = sprintf('<!-- wp:wp4toastmasters/agendaedit {"editable":"%s","uid":"editable%d","time_allowed":"5"} /-->',$item,$index,$time);
             else
-                $html = sprintf('<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"%s","uid":"note%s"} --><p class="wp-block-wp4toastmasters-agendanoterich2">%s</p><!-- /wp:wp4toastmasters/agendanoterich2 -->',$time,$index,$item.' '.$note);
+                $html = sprintf('<!-- wp:wp4toastmasters/wp4t_agendanoterich2 {"time_allowed":"%s","uid":"note%s"} --><p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">%s</p><!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->',$time,$index,$item.' '.$note);
             //printf('<p>item: %s, type: %s, time: %s, note: %s</p>',$item,$type,$time,$note);
             //printf('<div>%s</div>',htmlentities($html));
             $agenda_content .= $html."\n";
@@ -472,25 +441,25 @@ if(isset($_POST['src'])){
                             $speaker_count++;
                             if(!$first_speaker)
                                 $first_speaker = $index;
-                            $inputs[$first_speaker] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /> Count <input type="text" name="item_count[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" checked /> Meeting Role <input type="radio" name="item_type[%d]" value="agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$first_speaker,$role,$first_speaker,$minutes[1] * $speaker_count,$first_speaker,$speaker_count,$first_speaker,$first_speaker,$first_speaker,$first_speaker);
+                            $inputs[$first_speaker] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /> Count <input type="text" name="item_count[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" checked /> Meeting Role <input type="radio" name="item_type[%d]" value="wp4t_agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="wp4t_editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$first_speaker,$role,$first_speaker,$minutes[1] * $speaker_count,$first_speaker,$speaker_count,$first_speaker,$first_speaker,$first_speaker,$first_speaker);
                         }
                         elseif($role == 'Evaluator') {
                             $evaluator_count++;
                             if(!$first_evaluator)
                                 $first_evaluator = $index;
-                            $inputs[$first_evaluator] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /> Count <input type="text" name="item_count[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" checked /> Meeting Role <input type="radio" name="item_type[%d]" value="agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$first_evaluator,$role,$first_evaluator,$minutes[1] * $evaluator_count,$first_evaluator,$evaluator_count,$first_evaluator,$first_evaluator,$first_evaluator,$first_evaluator);
+                            $inputs[$first_evaluator] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /> Count <input type="text" name="item_count[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" checked /> Meeting Role <input type="radio" name="item_type[%d]" value="wp4t_agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="wp4t_editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$first_evaluator,$role,$first_evaluator,$minutes[1] * $evaluator_count,$first_evaluator,$evaluator_count,$first_evaluator,$first_evaluator,$first_evaluator,$first_evaluator);
                         }
                         else {
-                            $inputs[$index] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" />Count <input type="text" name="item_count[%d]" value="1" /><br /><input type="radio" name="item_type[%d]" value="role" checked /> Meeting Role <input type="radio" name="item_type[%d]" value="agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$index,esc_attr($rolematch[1]),$index,$minutes[1],$index,$index,$index,$index,$index) . sprintf('<p><textarea cols="80" rows="3" name="note[%d]">%s</textarea></p>',$index,esc_html($note));
+                            $inputs[$index] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" />Count <input type="text" name="item_count[%d]" value="1" /><br /><input type="radio" name="item_type[%d]" value="role" checked /> Meeting Role <input type="radio" name="item_type[%d]" value="wp4t_agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="wp4t_editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$index,esc_attr($rolematch[1]),$index,$minutes[1],$index,$index,$index,$index,$index) . sprintf('<p><textarea cols="80" rows="3" name="note[%d]">%s</textarea></p>',$index,esc_html($note));
                         }
                     }
                 }
             }
             if($maybenote) {
                 if((strpos($rolematch[1],'Theme') !== false) || (strpos($rolematch[1],'Word of') !== false) || (strpos($rolematch[1],'Words of') !== false))
-                    $inputs[$index] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" /> Meeting Role <input type="radio" name="item_type[%d]" value="agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="editable_note" checked /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$index,esc_attr($rolematch[1]),$index,$minutes[1],$index,$index,$index,$index) . sprintf('<p><textarea cols="80" rows="3" name="note[%d]">%s</textarea></p>',$index,$note);
+                    $inputs[$index] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" /> Meeting Role <input type="radio" name="item_type[%d]" value="wp4t_agenda_note" /> Agenda Note <input type="radio" name="item_type[%d]" value="wp4t_editable_note" checked /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$index,esc_attr($rolematch[1]),$index,$minutes[1],$index,$index,$index,$index) . sprintf('<p><textarea cols="80" rows="3" name="note[%d]">%s</textarea></p>',$index,$note);
                 else
-                    $inputs[$index] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" /> Meeting Role <input type="radio" name="item_type[%d]" value="agenda_note" checked /> Agenda Note <input type="radio" name="item_type[%d]" value="editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$index,esc_attr($rolematch[1]),$index,$minutes[1],$index,$index,$index,$index) . sprintf('<p><textarea cols="80" rows="3" name="note[%d]">%s</textarea></p>',$index,$note);
+                    $inputs[$index] = sprintf('<p><input type="text" name="item[%d]" value="%s" /> Minutes <input type="text" name="item_time[%d]" value="%d" /><br /><input type="radio" name="item_type[%d]" value="role" /> Meeting Role <input type="radio" name="item_type[%d]" value="wp4t_agenda_note" checked /> Agenda Note <input type="radio" name="item_type[%d]" value="wp4t_editable_note" /> Editable Note <input type="radio" name="item_type[%d]" value="skip" /> Skip</p>',$index,esc_attr($rolematch[1]),$index,$minutes[1],$index,$index,$index,$index) . sprintf('<p><textarea cols="80" rows="3" name="note[%d]">%s</textarea></p>',$index,$note);
             }
         }
         echo implode("\n",$inputs);
@@ -585,17 +554,17 @@ else {
     }
     
     if(function_exists('toastmost_starter_club_homepage') && current_user_can('manage_network')) {
-        printf('<p style="margin-top: 100px;"><a href="%s">Reset</a></p>',admin_url('admin.php?page=fth_importer_docs&reset=1'));
+        printf('<p style="margin-top: 100px;"><a href="%s">Reset</a></p>',admin_url('admin.php?page=wp4t_fth_importer_docs&reset=1'));
     }
 }
-function fth_importer_image_size() {
+function wp4t_fth_importer_image_size() {
     $imgsize = get_option('docs_from_google_image_size');
     if(empty($imgsize))
         $imgsize = 512;
     return $imgsize;
 }
 // adapted from https://gist.github.com/m1r0/f22d5237ee93bcccb0d9
-function fth_importer_insert_attachment_from_url( $url, $file_name, $parent_post_id = null ) {
+function wp4t_fth_importer_insert_attachment_from_url( $url, $file_name, $parent_post_id = null ) {
     ob_start();
     global $wpdb;
     $sql = "SELECT ID from $wpdb->posts WHERE guid LIKE '%".$file_name."' ";
@@ -649,18 +618,6 @@ function fth_importer_insert_attachment_from_url( $url, $file_name, $parent_post
 	wp_update_attachment_metadata( $attach_id, $attach_data );
     ob_get_clean();
 	return $attach_id;
-}
-function dfgd_category_picker($pick = '') {
-    $o = '<option></option>';
-    $categories = get_categories( array(
-        'orderby' => 'name',
-        'parent'  => 0 // top level only
-    ) );
-    foreach($categories as $category) {
-        $s = ($pick == $category->term_id) ? ' selected="selected" ' : '';
-        $o .= sprintf('<option value="%s" %s>%s</option>',$category->term_id, $s, $category->name);
-    }
-    echo '<p>Primary Category: <select name="category">'.$o.'</select></p>';
 }
 if(isset($_GET['change_post_type']))
     add_action('admin_init','wpt_post_to_page');

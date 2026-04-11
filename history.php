@@ -3,21 +3,21 @@
 * Speech and role history
 */
 function wp4toastmasters_history() {
-    $nonce = wp_create_nonce( 'tm_export' );
+    $nonce = wp_create_nonce( 'wp4t_tm_export' );
 	$timelord = rsvpmaker_nonce('query');
-	$export_link = sprintf( '<a href="%s?page=%s&tm_export=%s&%s">Export Summary</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
-	$export_role = sprintf( '<a href="%s?page=%s&tm_export=%s&%s&role=1">Export Role Report</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
+	$export_link = sprintf( '<a href="%s?page=%s&wp4t_tm_export=%s&%s">Export Summary</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
+	$export_role = sprintf( '<a href="%s?page=%s&wp4t_tm_export=%s&%s&role=1">Export Role Report</a>', admin_url( 'admin.php' ), 'import_export', $nonce,$timelord );
     $sidebar = sprintf('<div>Export Options (Spreadsheet/CSV)<br>%s<br>%s</div>',$export_link,$export_role);
     wpt_rsvpmaker_admin_heading(__('Reports','rsvpmaker-for-toastmasters'),__FUNCTION__,'',$sidebar);
     $last_update_all = get_transient('tm_history_update_all');
     if(empty($_GET['rsvp_print']) && (empty($last_update_all) || isset($_GET['refresh_cache']))) {
-        update_user_role_archive_all();
+        wp4t_update_user_role_archive_all();
         set_transient('tm_history_update_all',time(),12 * HOUR_IN_SECONDS);
     }
     global $wpdb, $rsvp_options, $current_user, $page;
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
-    $members = get_club_members();
+    $members = wp4t_get_club_members();
 
 if(is_multisite()) {
     $history_cache_updated = isset($_GET['refresh_cache']) ? 0 : get_transient('tm_history_cache_updated');
@@ -68,7 +68,7 @@ if(is_multisite()) {
         $user_id = intval($_GET['user_id']);
     }
     else {
-        $user_id = ('my_progress_report' == $_GET['page']) ? $current_user->ID : 0;
+        $user_id = ('wp4t_my_progress_report' == $_GET['page']) ? $current_user->ID : 0;
     }
     if($user_id) 
         $where .= ' and user_id='.$user_id;
@@ -135,7 +135,7 @@ if(is_multisite()) {
             $sql = "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where ORDER BY datetime DESC ".$limitsql;
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
-                $temp = sprintf('<p><strong>%s</strong>, %s %s %s</p>',get_member_name($row->user_id),$row->role,rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
+                $temp = sprintf('<p><strong>%s</strong>, %s %s %s</p>',wp4t_get_member_name($row->user_id),$row->role,rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
                 $temp .= sprintf('<p class="speech_details">Title: <em>%s</em>, Path/Level: %s, Project: %s</p>',$row->title,$row->manual,$row->project);
                 $output .= $temp;
                 if(!empty($row->manual)) {
@@ -157,11 +157,12 @@ if(is_multisite()) {
             $where .= " AND role LIKE '%Speaker%' ";
             $sql = "SELECT  user_id, manual, count(manual) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, manual ORDER BY user_id, manual".$limitsql;
             $results = $wpdb->get_results($sql);
+            $msort = array();
             foreach($results as $row) {
                 $index = wp4t_name_index($row->user_id);
                 if(empty($msort[$index]))
                     $msort[$index] = '';
-                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s <strong>%s</strong></p>',get_member_name($row->user_id),$row->manual,$row->tally);
+                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s <strong>%s</strong></p>',wp4t_get_member_name($row->user_id),$row->manual,$row->tally);
             }
             ksort($msort);
             $output .= implode("\n",$msort);
@@ -176,7 +177,7 @@ if(is_multisite()) {
                 $index = wp4t_name_index($row->user_id);
                 if(empty($msort[$index]))
                     $msort[$index] = '';
-                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s %s</p>',get_member_name($row->user_id),$row->role,$row->tally);
+                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s %s</p>',wp4t_get_member_name($row->user_id),$row->role,$row->tally);
             }
             ksort($msort);
             $output .= implode("\n",$msort);
@@ -189,7 +190,7 @@ if(is_multisite()) {
             $sql = "SELECT  user_id, role, count(*) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, role ORDER BY tally DESC ".$limitsql;
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
-                $output .= sprintf('<p><strong>%s</strong>, %s %s</p>',get_member_name($row->user_id),$row->role,$row->tally);
+                $output .= sprintf('<p><strong>%s</strong>, %s %s</p>',wp4t_get_member_name($row->user_id),$row->role,$row->tally);
             }
         }
         elseif(isset($_GET['type']) && ($_GET['type'] == 'mostactive'))
@@ -199,7 +200,7 @@ if(is_multisite()) {
             $sql = "SELECT  user_id, count(role) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id ORDER BY count(role) DESC".$limitsql;
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
-                $output .= sprintf('<p><strong>%s</strong>, %s total roles</p>',get_member_name($row->user_id),$row->tally);
+                $output .= sprintf('<p><strong>%s</strong>, %s total roles</p>',wp4t_get_member_name($row->user_id),$row->tally);
             }
         }
         else {
@@ -209,7 +210,7 @@ if(is_multisite()) {
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
                 $role = str_replace('role ','',$row->role);
-                $output .= sprintf('<p><strong>%s</strong>, %s %s %s</p>',get_member_name($row->user_id),translate($role,'rsvpmaker-for-toastmasters'),rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
+                $output .= sprintf('<p><strong>%s</strong>, %s %s %s</p>',wp4t_get_member_name($row->user_id),translate($role,'rsvpmaker-for-toastmasters'),rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
                 if(strpos($row->role,'peaker'))
                     $output .= sprintf('<p class="speech_details">Title: <em>%s</em>, Path/Level: %s, Project: %s</p>',$row->title,$row->manual,$row->project);
             }    
@@ -233,7 +234,9 @@ if(is_multisite()) {
         <option value="all">%s</option>
         </select><br>
         <button>Filter</button>
-        </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'All Members'), $latestchecked, $speakerchecked, $pathchecked, $mostactivechecked, $countbyrolechecked, $countspeecheschecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );    
+        </form>',admin_url('admin.php'), wp4t_awe_user_dropdown('user_id',$user_id, true, 'All Members'), $latestchecked, $speakerchecked, $pathchecked, $mostactivechecked, $countbyrolechecked, $countspeecheschecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );    
+        if(!isset($_GET['refresh_cache']))
+        printf('<p>Missing records? <a href="%s">%s</a></p>',admin_url('admin.php?page=toastmasters_reports&refresh_cache=1'),__('Refresh','rsvpmaker-for-toastmasters') );
     }
     echo $output;
 }
@@ -253,7 +256,7 @@ function wp4toastmasters_history_edit() {
     if(isset($_POST['editor_assign'])) {
         foreach($_POST['editor_assign'] as $key => $value)
         {
-            $role = clean_role($key);
+            $role = wp4t_clean_role($key);
             $id = preg_replace('/[^0-9]/','',$key);
             echo "<p>Updating $role record $id</p>";
             $sql = "update $history_table SET user_id=$value WHERE id=$id";
@@ -262,7 +265,7 @@ function wp4toastmasters_history_edit() {
             {
                 $manual = sanitize_text_field($_POST['_manual'][$key]);
                 $project_key = sanitize_text_field($_POST['_project'][$key]);
-                $project = get_project_text($project_key);
+                $project = wp4t_get_project_text($project_key);
                 $title = sanitize_text_field(stripslashes($_POST['_title'][$key]));
                 $intro = wp_kses_post(stripslashes($_POST['_intro'][$key]));
                 $sql = $wpdb->prepare("UPDATE $speech_history_table SET manual=%s, project_key=%s, project=%s, title=%s, intro=%s WHERE history_id=%d",$manual,$project_key,$project,$title,$intro,$id);
@@ -288,10 +291,10 @@ function wp4toastmasters_history_edit() {
                     $field = '_role_'.str_replace(' ','_',$role).'_'.$row->id;
                     $detailsform = '';
                     if($role == 'Speaker') {
-                        $detailsform = speaker_details_history($row->post_id, $field, $row, $row->id );
+                        $detailsform = wp4t_speaker_details_history($row->post_id, $field, $row, $row->id );
                     }
-                    $awe_user_dropdown = awe_user_dropdown( $field, $row->user_id );
-                    printf('<div><h3>%s</h3><div> %s %s </div></div>',$role,$awe_user_dropdown,$detailsform);
+                    $wp4t_awe_user_dropdown = wp4t_awe_user_dropdown( $field, $row->user_id );
+                    printf('<div><h3>%s</h3><div> %s %s </div></div>',$role,$wp4t_awe_user_dropdown,$detailsform);
                 }    
             }
         }
@@ -299,7 +302,7 @@ function wp4toastmasters_history_edit() {
             echo '<h3>'.__('Confirm: Delete These Records?','rsvpmaker-for-toastmasters').'</h3>';
             foreach($delete as $history_id) {
                 $row = $wpdb->get_row("select * from $history_table WHERE id=$history_id");
-                printf('<p><input type="checkbox" name="confirmed_delete[]" value="%s" checked="checked"> %s %s %s</p>',$row->id,get_member_name($row->user_id),$row->role,$row->datetime);
+                printf('<p><input type="checkbox" name="confirmed_delete[]" value="%s" checked="checked"> %s %s %s</p>',$row->id,wp4t_get_member_name($row->user_id),$row->role,$row->datetime);
             }
         }
         printf('<p><button style="font-size: larger;">%s</button></p></form>',__('Submit Edits','rsvpmaker_for_toastmasters'));
@@ -314,7 +317,7 @@ function wp4toastmasters_history_edit() {
         $user_id = intval($_REQUEST['user_id']);
     else
         $user_id = 0;
-        $members = get_club_members();
+        $members = wp4t_get_club_members();
         foreach($members as $member)
             $and[] = 'user_id='.$member->ID;
         $where = 'WHERE 1 AND ('.implode(' OR ',$and).')';
@@ -374,7 +377,7 @@ function wp4toastmasters_history_edit() {
         $results = $wpdb->get_results($sql);
         foreach($results as $row) {
             $controls = sprintf('<input type="radio" name="select[%d]" value="edit:%s"> %s <input type="radio" name="select[%d]" value="delete:%s"> %s ',$row->id,$row->id,__('Edit','rsvpmaker-for-toastmasters'),$row->id,$row->id,__('Delete','rsvpmaker-for-toastmasters') );
-            $output .= sprintf('<p>%s<strong>%s</strong>, %s %s %s</p>',$controls,get_member_name($row->user_id),$row->role,rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
+            $output .= sprintf('<p>%s<strong>%s</strong>, %s %s %s</p>',$controls,wp4t_get_member_name($row->user_id),$row->role,rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
             if(strpos($row->role,'peaker'))
                 $output .= sprintf('<p class="speech_details">Title: <em>%s</em>, Path/Level: %s, Project: %s</p>',$row->title,$row->manual,$row->project);
         }
@@ -401,7 +404,7 @@ function wp4toastmasters_history_edit() {
     <option value="all">%s</option>
     </select><br>
     <button>Filter</button>
-    </form>',admin_url('admin.php'), awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since.'test', $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
+    </form>',admin_url('admin.php'), wp4t_awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since.'test', $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
     echo $output;
 $examined = array();
 $sql = "SELECT * from $history_table order by datetime DESC LIMIT 0, 30";
@@ -434,7 +437,11 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
     if(empty($domain))
 	    $domain = sanitize_text_field($_SERVER['SERVER_NAME']); 
     $role = str_replace( 'Contest_Speaker', 'Speaker', $role );
-    $role = trim( preg_replace( '/[^\sa-zA-Z]/', ' ', $role ) );
+    // Strip meta_key-style prefix (_role_/role_) and trailing slot number (_1, _2, etc.)
+    // Use anchored regex so role names containing 'role' (e.g. Controller) are not corrupted.
+    $role = preg_replace( '/^_?role[\s_]+/i', '', $role ); // remove _role_ / role_ / 'role ' prefix
+    $role = preg_replace( '/_?\d+$/', '', $role );          // remove trailing _1, _2, etc.
+    $role = trim( str_replace( '_', ' ', $role ) );          // underscores → spaces
     if(empty($role_count)) {
         if(!empty($increment))
         {
@@ -450,15 +457,28 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
     }
     if(empty($timestamp) && $post_id)
         $timestamp = get_rsvp_date($post_id);
-	$sql = $wpdb->prepare("SELECT id FROM $history_table WHERE domain=%s AND role=%s AND (rolecount=%s OR user_id=%s) AND datetime=%s",$domain,$role,$role_count,$user_id,$timestamp);
-	$id = $wpdb->get_var($sql);
-	if($id) {
-		$sql = $wpdb->prepare("UPDATE $history_table SET domain=%s, role=%s, rolecount=%s, datetime=%s, user_id=%d, post_id=%d, metadata=%s WHERE id=%d",$domain,$role,$role_count,$timestamp,$user_id,$post_id, serialize(make_tm_roledata_array( $function )),$id);
+    $sql = $wpdb->prepare("SELECT id, metadata FROM $history_table WHERE domain=%s AND role=%s AND (rolecount=%s OR user_id=%s) AND datetime=%s",$domain,$role,$role_count,$user_id,$timestamp);
+    $existing = $wpdb->get_row($sql);
+    $id = ( $existing && ! empty( $existing->id ) ) ? (int) $existing->id : 0;
+    if($id) {
+        $existing_meta = array();
+        if ( ! empty( $existing->metadata ) ) {
+            $decoded = maybe_unserialize( $existing->metadata );
+            if ( is_array( $decoded ) ) {
+                $existing_meta = $decoded;
+            }
+        }
+        $existing_function = isset( $existing_meta['function'] ) ? $existing_meta['function'] : '';
+        $manual_sources = array( 'toastmasters_reconcile', 'toastmasters_reconcile_manual_edit', 'wp4t_wp_ajax_tm_edit_detail' );
+        if ( ( 'wp4t_update_user_role_archive' === $function ) && in_array( $existing_function, $manual_sources, true ) ) {
+            return;
+        }
+		$sql = $wpdb->prepare("UPDATE $history_table SET domain=%s, role=%s, rolecount=%s, datetime=%s, user_id=%d, post_id=%d, metadata=%s WHERE id=%d",$domain,$role,$role_count,$timestamp,$user_id,$post_id, serialize(wp4t_make_tm_roledata_array( $function )),$id);
         $wpdb->query($sql);
     }
 	else
     {
-	$sql = $wpdb->prepare("INSERT INTO $history_table SET domain=%s, role=%s, rolecount=%s, datetime=%s, user_id=%d, post_id=%d, metadata=%s",$domain,$role,$role_count,$timestamp,$user_id,$post_id, serialize(make_tm_roledata_array( $function )));
+	$sql = $wpdb->prepare("INSERT INTO $history_table SET domain=%s, role=%s, rolecount=%s, datetime=%s, user_id=%d, post_id=%d, metadata=%s",$domain,$role,$role_count,$timestamp,$user_id,$post_id, serialize(wp4t_make_tm_roledata_array( $function )));
     do_action('wp4t_add_history_to_table',$user_id, $role, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $role_count, $was);
 	$success = $wpdb->query($sql);
     $id = ($success) ? $wpdb->insert_id : 0;
@@ -472,22 +492,24 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
         $intro = wp_kses_post(stripslashes($intro));
         // Check if there is already a speech record for this history_id
 		$speech_id = $wpdb->get_var("SELECT speech_id from $speech_history_table WHERE history_id=$id");
-		if($speech_id)
-			$sql = $wpdb->prepare("UPDATE $speech_history_table SET manual=%s, project_key=%s, project=%s, title=%s, intro=%s, history_id=%d WHERE speech_id=%d",$manual,$project_key,get_project_text($project_key),$title,$intro,$id,$speech_id);
-		else
-			$sql = $wpdb->prepare("INSERT INTO $speech_history_table SET manual=%s, project_key=%s, project=%s, title=%s, intro=%s, history_id=%d",$manual,$project_key,get_project_text($project_key),$title,$intro,$id);
+		if($speech_id) {
+            $sql = $wpdb->prepare("UPDATE $speech_history_table SET `manual`=%s, project_key=%s, project=%s, title=%s, intro=%s, history_id=%d WHERE speech_id=%d",$manual,$project_key,wp4t_get_project_text($project_key),$title,$intro,$id,$speech_id);
+		}
+		else {
+            $sql = $wpdb->prepare("INSERT INTO $speech_history_table (`manual`, project_key, project, title, intro, history_id) VALUES (%s, %s, %s, %s, %s, %d)",$manual,$project_key,wp4t_get_project_text($project_key),$title,$intro,$id);
+		}
         //printf("<p>Adding speech record: %s</p>",$sql);
-		$wpdb->query($sql);
+        $wpdb->query($sql);
 	}
 }
 function wp4t_delete_history($role, $timestamp, $post_id) {
 	global $wpdb;
-	$key      = make_tm_usermeta_key( $role, $timestamp, $post_id );
+	$key      = wp4t_make_tm_usermeta_key( $role, $timestamp, $post_id );
 	$sql = $wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE meta_key=%s", $key );
 	$wpdb->query( $sql );
 }
-function refresh_tm_history() {
-    if(defined('RSVPMAKER_DEBUG')) error_log('refresh_tm_history called');
+function wp4t_refresh_tm_history() {
+    if(defined('RSVPMAKER_DEBUG')) error_log('wp4t_refresh_tm_history called');
     wp_suspend_cache_addition(true);
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
@@ -499,23 +521,11 @@ function refresh_tm_history() {
         echo $sql = "SELECT id FROM $history_table WHERE post_id=$row->ID";
         $found = $wpdb->get_var($sql);
         if(!$found) {
-            update_user_role_archive( $row->ID, $row->date );
+            wp4t_update_user_role_archive( $row->ID, $row->date );
         }
     }
     wp_suspend_cache_addition(false);
-    if(defined('RSVPMAKER_DEBUG')) error_log('refresh_tm_history done');
-}
-function wp4t_recent_history($user_id) {
-    global $wpdb;
-    $history_table = $wpdb->base_prefix.'tm_history';
-    $sql = "SELECT * FROM $history_table WHERE user_id=$user_id ORDER BY datetime DESC LIMIT 0,3";
-    $results = $wpdb->get_results($sql);
-    $roles = array();
-    foreach($results as $row) {
-        if(!in_array($row->role,$roles))
-            $roles[] = $row->role;
-    }
-    return $roles;
+    if(defined('RSVPMAKER_DEBUG')) error_log('wp4t_refresh_tm_history done');
 }
 function wp4t_history_query($where_or_array = '') {
     global $wpdb;
@@ -541,29 +551,29 @@ function wp4t_history_query($where_or_array = '') {
     $sql = "SELECT $select FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where $groupby $orderby $limit";
     return $wpdb->get_results($sql);   
 } 
-function new_speaker_details_history($history_id, $manual, $project_key, $project_text, $title ) {
+function wp4t_new_speaker_details_history($history_id, $manual, $project_key, $project_text, $title ) {
 	if ( empty( $project_key ) ) {
 			$project_text = 'Choose Project';
 	}
 	if ( empty( $project_options ) ) {
 		$project_options  = sprintf( '<option value="%s">%s</option>', $project_key, $project_text );
-		$pa               = get_projects_array( 'options' );
+		$pa               = wp4t_get_projects_array( 'options' );
 		$project_options .= isset( $pa[ $manual ] ) ? $pa[ $manual ] : $pa['COMPETENT COMMUNICATION'];
 	}
-		$output = '<select class="speaker_details manual" name="_manual[' . $history_id . ']" id="_manual_' . $history_id . '"">' . get_manuals_options( $manual ) . '</select><br /><select class="speaker_details project" name="_project[' . $history_id . ']" id="_project_' . $history_id . '">' . $project_options . '</select> ';
-		$output .= '<div class="speech_title">Title: <input type="text" class="speaker_details title_text" id="title_text' . $history_id . '" name="_title[' . $history_id . ']" value="' . $title . '" /></div>';
+		$output = '<select class="wp4t_speaker_details manual" name="_manual[' . $history_id . ']" id="_manual_' . $history_id . '"">' . wp4t_get_manuals_options( $manual ) . '</select><br /><select class="wp4t_speaker_details project" name="_project[' . $history_id . ']" id="_project_' . $history_id . '">' . $project_options . '</select> ';
+		$output .= '<div class="speech_title">Title: <input type="text" class="wp4t_speaker_details title_text" id="title_text' . $history_id . '" name="_title[' . $history_id . ']" value="' . $title . '" /></div>';
 	$output = '<div class="speaker_details_form">'.$output.'</div>';
 	return $output;
 }
-function add_speaker_details_history($index) {
-    $type = manual_type_options( $index, '' );
+function wp4t_add_speaker_details_history($index) {
+    $type = wp4t_manual_type_options( $index, '' );
     $project_options  = '<option value="">Choose Project</option>';
-    $pa               = get_projects_array( 'options' );
+    $pa               = wp4t_get_projects_array( 'options' );
     $project_options .= $pa['Path Not Set Level 1 Mastering Fundamentals'];
     $output = '<div>
     <div>'.$type.'</div>
-    <select class="speaker_details manual" name="history_add_manual[' . $index . ']" id="_manual_' . $index . '"">' . get_manuals_options( '' ) . '</select><br /><select class="speaker_details project" name="history_add_project[' . $index . ']" id="_project_' . $index . '">' . $project_options . '</select> ';
-    $output .= '<div class="speech_title">Title: <input type="text" class="speaker_details title_text" id="title_text' . $index . '" name="history_add_title[' . $index . ']" value="" /></div>';
+    <select class="wp4t_speaker_details manual" name="history_add_manual[' . $index . ']" id="_manual_' . $index . '"">' . wp4t_get_manuals_options( '' ) . '</select><br /><select class="wp4t_speaker_details project" name="history_add_project[' . $index . ']" id="_project_' . $index . '">' . $project_options . '</select> ';
+    $output .= '<div class="speech_title">Title: <input type="text" class="wp4t_speaker_details title_text" id="title_text' . $index . '" name="history_add_title[' . $index . ']" value="" /></div>';
 	$output = '<div class="speaker_details_form">'.$output.'</div>';
 	return $output;
 }
@@ -597,7 +607,8 @@ function wpt_update_history_by_id($history_id, $user_id, $post_id, $was=0) {
     $history_table = $wpdb->base_prefix.'tm_history';
     $role = $wpdb->get_var("select role from $history_table where id=$history_id");
     if($user_id) {
-        $sql = "UPDATE $history_table set user_id=$user_id WHERE id=$history_id";
+        $metadata = serialize( wp4t_make_tm_roledata_array( 'toastmasters_reconcile_manual_edit' ) );
+        $sql = $wpdb->prepare( "UPDATE $history_table SET user_id=%d, metadata=%s WHERE id=%d", $user_id, $metadata, $history_id );
         do_action('wpt_update_history_by_id',$user_id, $role, $post_id, $was);
     }
     else {
@@ -608,15 +619,18 @@ function wpt_update_history_by_id($history_id, $user_id, $post_id, $was=0) {
 }
 function wpt_update_speech_history_by_id($history_id,$manual,$project_key,$title,$post_id,$user_id) {
     global $wpdb;
+    $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
     $current_record = $wpdb->get_row("select * from $speech_history_table where history_id=$history_id");
     if(!$current_record)
         return;
     if(($current_record->manual != $manual) || ($current_record->project_key != $project_key) || ($current_record->title != $title)) {
-        $project = get_project_text($project_key);
+        $project = wp4t_get_project_text($project_key);
         $sql = $wpdb->prepare("UPDATE $speech_history_table SET manual=%s, project_key=%s, title=%s, project=%s WHERE history_id=%d",$manual,$project_key,$title,$project,$history_id);
         do_action('wpt_update_speech_history_by_id',$manual,$project_key,$project,$title,$post_id,$user_id);
         $wpdb->query($sql);
+        $metadata = serialize( wp4t_make_tm_roledata_array( 'toastmasters_reconcile_manual_edit' ) );
+        $wpdb->query( $wpdb->prepare( "UPDATE $history_table SET metadata=%s WHERE id=%d", $metadata, $history_id ) );
     }
 }
 function wpt_minutes_from_history($history_post_id = '') {
@@ -666,7 +680,7 @@ function wpt_minutes_from_history($history_post_id = '') {
                 $role_holder[] = $record->user_id;
         }
         $meta_index = wp4t_fieldbase($record->role,$record->rolecount);
-        $name = get_member_name($record->user_id);
+        $name = wp4t_get_member_name($record->user_id);
         $allroles[$meta_index] = $name;
         if(!empty($record->title))
             $allroles[$meta_index] .= '<br>&quot;'.$record->title.'&quot;';
@@ -682,7 +696,7 @@ function wpt_minutes_from_history($history_post_id = '') {
         if(empty($roleline)) {
             $assigned = get_post_meta($history_post_id,$index,true);
             if(!empty($assigned) && (($assigned < '0') || !is_numeric($assigned)))
-                $roleline = sprintf('<em>Agenda shows %s</em>',get_member_name($assigned));
+                $roleline = sprintf('<em>Agenda shows %s</em>',wp4t_get_member_name($assigned));
         }
         $output .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", $role,$roleline);
         if(isset($agenda_order[$role]))
@@ -701,7 +715,7 @@ function wpt_minutes_from_history($history_post_id = '') {
 	}
 	if ( ! empty( $attended ) ) {
 		foreach ( $attended as $user_id ) {
-			$showed_up[] = get_member_name($user_id);
+			$showed_up[] = wp4t_get_member_name($user_id);
 		}
         $label = __('No role but marked present','rsvpmaker-for-toastmasters');
         $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", $label,implode(', ',$showed_up));
@@ -754,7 +768,7 @@ function wpt_minutes_from_history_draft() {
 }
 //new role logged
 function wp4t_add_history_to_table_log($user_id, $role, $timestamp, $post_id, $function, $manual,$project_key,$title,$intro, $domain, $role_count, $was) {
-    $name = get_member_name($user_id);
+    $name = wp4t_get_member_name($user_id);
     //$message = "Recorded for $name $role, $timestamp, $post_id, $function, $manual, $project_key, $title, $intro, $domain, role count $role_count, $was";
     //echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
     $short_message = "<strong>$name</strong>: $role $role_count";
@@ -762,33 +776,33 @@ function wp4t_add_history_to_table_log($user_id, $role, $timestamp, $post_id, $f
         echo '<div class="notice notice-success"><p>'.$short_message.'</p></div>';
 }
 function wpt_update_speech_history_by_id_log($manual,$project_key,$project,$title,$post_id,$user_id) {
-    $name = get_member_name($user_id);
+    $name = wp4t_get_member_name($user_id);
     $message = '<strong>Updated speech for '.$name."</strong>: $manual, $project, $title";
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
 }
 //changed from assigned to Open
 function wpt_remove_history_by_id_log($was, $role, $post_id) {
-    $name = get_member_name($was);
+    $name = wp4t_get_member_name($was);
     $message = '<strong>Removed '.$name."</strong>: $role";
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
 }
 //changed from one member to another
 function wpt_update_history_by_id_log($user_id, $role, $post_id, $was) {
-    $name = get_member_name($user_id);
-    $wasname = get_member_name($was);
+    $name = wp4t_get_member_name($user_id);
+    $wasname = wp4t_get_member_name($was);
     $message = "Changed <strong>$wasname to $name</strong>: $role";
     echo '<div class="notice notice-success"><p>'.$message.'</p></div>';
 }
-function tm_history_lastdid() {
+function wp4t_tm_history_lastdid() {
     global $wpdb;
-    $lastdid = get_transient('tm_history_lastdid');
+    $lastdid = get_transient('wp4t_tm_history_lastdid');
     if($lastdid)
         return $lastdid;
     $history_table = $wpdb->base_prefix.'tm_history';
     error_log("passed test SHOW TABLES LIKE '$history_table'; ");
 
     $m = [];
-    $members = get_club_members();
+    $members = wp4t_get_club_members();
     foreach($members as $member) {
         $m[] = $member->ID;
     }
@@ -809,7 +823,7 @@ function tm_history_lastdid() {
         if(!isset($lastdid[$key]))
             $lastdid[$key] = $row->datetime;
     }
-    set_transient('tm_history_lastdid', $lastdid, DAY_IN_SECONDS);
+    set_transient('wp4t_tm_history_lastdid', $lastdid, DAY_IN_SECONDS);
     $lastdid['lastdid'] = 'saved transient';
     return $lastdid;
 }

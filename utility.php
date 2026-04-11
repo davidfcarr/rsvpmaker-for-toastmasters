@@ -58,7 +58,7 @@ function wp4t_haverole($post_id) {
 
 
 
-		$haverole[$row->meta_value] = clean_role($row->meta_key); 
+		$haverole[$row->meta_value] = wp4t_clean_role($row->meta_key); 
 
 
 
@@ -90,7 +90,7 @@ function wp4t_last_held_role($user_id, $role, $include_ts = false) {
 
 
 
-		$lastdid = tm_history_lastdid();
+		$lastdid = wp4t_tm_history_lastdid();
 
 
 
@@ -122,7 +122,7 @@ function wp4t_last_held_role($user_id, $role, $include_ts = false) {
 
 
 
-function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel = 'Open' ) {
+function wp4t_awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel = 'Open' ) {
 
 
 
@@ -154,7 +154,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 
 
-		$absences = get_post_meta( $post->ID, 'tm_absence' );
+		$absences = get_post_meta( $post->ID, 'wp4t_tm_absence' );
 
 
 
@@ -166,7 +166,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 
 
-	if ( ! wp_next_scheduled( 'refresh_tm_history' ) ) {
+	if ( ! wp_next_scheduled( 'wp4t_refresh_tm_history' ) ) {
 
 
 
@@ -174,7 +174,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 
 
-		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'refresh_tm_history' );
+		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'wp4t_refresh_tm_history' );
 
 
 
@@ -378,7 +378,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 
 
-			$held = wp4t_last_held_role($member->ID, clean_role($role));
+			$held = wp4t_last_held_role($member->ID, wp4t_clean_role($role));
 
 
 
@@ -546,7 +546,7 @@ function awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel 
 
 
 
-function awe_rest_user_options( $role, $post_id ) {
+function wp4t_awe_rest_user_options( $role, $post_id ) {
 
 
 
@@ -566,7 +566,7 @@ function awe_rest_user_options( $role, $post_id ) {
 
 
 
-		$absences = get_post_meta( $post_id, 'tm_absence' );
+		$absences = get_post_meta( $post_id, 'wp4t_tm_absence' );
 
 
 
@@ -582,11 +582,11 @@ function awe_rest_user_options( $role, $post_id ) {
 
 
 
-	if ( ! wp_next_scheduled( 'refresh_tm_history' ) ) {
+	if ( ! wp_next_scheduled( 'wp4t_refresh_tm_history' ) ) {
 
 
 
-		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'refresh_tm_history' );
+		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'wp4t_refresh_tm_history' );
 
 
 
@@ -686,7 +686,7 @@ function awe_rest_user_options( $role, $post_id ) {
 
 
 
-			$held = wp4t_last_held_role($member->ID, clean_role($role));
+			$held = wp4t_last_held_role($member->ID, wp4t_clean_role($role));
 
 
 
@@ -770,11 +770,11 @@ return $options;
 
 
 
-function awe_assign_dropdown( $role, $random_assigned ) {
+function wp4t_awe_assign_dropdown( $role, $random_assigned ) {
 
 
 
-	return awe_user_dropdown( $role, $random_assigned, false, 'Open' );
+	return wp4t_awe_user_dropdown( $role, $random_assigned, false, 'Open' );
 
 
 
@@ -782,7 +782,7 @@ function awe_assign_dropdown( $role, $random_assigned ) {
 
 
 
-function clean_role( $role ) {
+function wp4t_clean_role( $role ) {
 
 
 
@@ -914,7 +914,7 @@ function wpt_get_club_officers_test() {
 
 	foreach($officers as $slug => $officer) {
 
-		echo '<p>'.$officer['title'].': '.get_member_name($officer['id']).'</p>';
+		echo '<p>'.$officer['title'].': '.wp4t_get_member_name($officer['id']).'</p>';
 
 	}
 	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
@@ -961,7 +961,7 @@ function wpt_get_club_officers() {
 
 
 
-function get_club_members( $blog_id = 0 ) {
+function wp4t_get_club_members( $blog_id = 0 ) {
 
 
 
@@ -1013,7 +1013,7 @@ function get_club_members( $blog_id = 0 ) {
 
 
 
-function get_club_member_emails( $blog_id = 0 ) {
+function wp4t_get_club_member_emails( $blog_id = 0 ) {
 
 
 
@@ -1313,7 +1313,7 @@ add_action( 'post_updated', 'wpt_multiple_blocks_same', 10, 3 );
 
 
 
-function role_count_time( $post_id, $atts ) {
+function wp4t_role_count_time( $post_id, $atts ) {
 
 
 
@@ -1417,7 +1417,7 @@ function role_count_time( $post_id, $atts ) {
 
 
 
-function get_role_assignments( $post_id, $atts ) {
+function wp4t_get_role_assignments( $post_id, $atts ) {
 
 
 
@@ -1449,7 +1449,7 @@ function get_role_assignments( $post_id, $atts ) {
 
 
 
-		pack_speakers( $count );
+		wp4t_pack_speakers( $count );
 
 
 
@@ -1457,7 +1457,7 @@ function get_role_assignments( $post_id, $atts ) {
 
 
 
-		pack_roles( $count, $field_base );
+		wp4t_pack_roles( $count, $field_base );
 
 
 
@@ -1513,7 +1513,7 @@ function get_role_assignments( $post_id, $atts ) {
 
 
 
-			$name = get_member_name( $assigned );
+			$name = wp4t_get_member_name( $assigned );
 
 
 
@@ -1561,7 +1561,7 @@ function get_role_assignments( $post_id, $atts ) {
 
 
 
-			$name = get_member_name( $assigned );
+			$name = wp4t_get_member_name( $assigned );
 
 
 
@@ -1601,7 +1601,7 @@ function get_role_assignments( $post_id, $atts ) {
 
 
 
-function get_member_name( $user_id, $credentials = true ) {
+function wp4t_get_member_name( $user_id, $credentials = true ) {
 
 
 
@@ -1753,7 +1753,7 @@ function get_member_name( $user_id, $credentials = true ) {
 
 
 
-	return apply_filters('get_member_name',$name, $user_id, $member);
+	return apply_filters('wp4t_get_member_name',$name, $user_id, $member);
 
 
 
@@ -1789,7 +1789,7 @@ function is_wp4t( $content = '' ) {
 
 
 
-	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) && ( strpos( $content, '[tm_member_application' ) === false ) ) {
+	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) && ( strpos( $content, '[wp4t_tm_member_application' ) === false ) ) {
 
 
 
@@ -1813,7 +1813,7 @@ function is_wp4t( $content = '' ) {
 
 
 
-function tm_admin_page_top( $headline, $sidebar = '' ) {
+function wp4t_tm_admin_page_top( $headline, $sidebar = '' ) {
 
 
 
@@ -1821,11 +1821,11 @@ function tm_admin_page_top( $headline, $sidebar = '' ) {
 
 
 
-	$hook = tm_admin_page_top(__('Headline','rsvpmaker-for-toastmasters'));
+	$hook = wp4t_tm_admin_page_top(__('Headline','rsvpmaker-for-toastmasters'));
 
 
 
-	tm_admin_page_bottom($hook);
+	wp4t_tm_admin_page_bottom($hook);
 
 
 
@@ -1893,7 +1893,7 @@ function tm_admin_page_top( $headline, $sidebar = '' ) {
 
 
 
-function tm_admin_page_bottom( $hook = '' ) {
+function wp4t_tm_admin_page_bottom( $hook = '' ) {
 
 
 
@@ -2005,183 +2005,7 @@ function wp4t_print_to_word($fname) {
 
 
 
-function wpt_get_member_emails() {
 
-
-
-	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
-
-
-
-	foreach ( $blogusers as $user ) {
-
-
-
-		$emails[ $user->ID ] = $user->user_email;
-
-
-
-	}
-
-
-
-	return $emails;
-
-
-
-}
-
-
-
-function wp4t_unassigned_emails( $post_id = 0 ) {
-
-
-
-	global $post;
-
-
-
-	if ( ! $post_id ) {
-
-
-
-		$post_id = $post->ID;
-
-
-
-	}
-
-
-
-	if ( empty( $post->ID ) ) {
-
-
-
-		$post = get_post( $post_id );
-
-
-
-	}
-
-
-
-	$roster = '';
-
-
-
-	$signup = get_post_custom( $post_id );
-
-
-
-	$data = wpt_blocks_to_data( $post->post_content );
-
-
-
-	foreach ( $data as $item ) {
-
-
-
-		if ( ! empty( $item['role'] ) ) {
-
-
-
-			$role = $item['role'];
-
-
-
-			$count = ( empty( $item['count'] ) ) ? 1 : (int) $item['count'];
-
-
-
-			for ( $i = 1; $i <= $count; $i++ ) {
-
-
-
-				$field = wp4t_fieldbase($role,i);
-
-
-
-				$roles[ $field ] = $role;
-
-
-
-			}
-
-
-
-		}
-
-
-
-	}
-
-
-
-	$has_assignment = $emails = array();
-
-
-
-	foreach ( $roles as $field => $role ) {
-
-
-
-		   $assigned = ( isset( $signup[ $field ][0] ) ) ? $signup[ $field ][0] : '';
-
-
-
-		if ( ! empty( $assigned ) ) {
-
-
-
-			$has_assignment[] = (int) $assigned;
-
-
-
-		}
-
-
-
-	}
-
-
-
-	$absences = get_absences_array( $post_id );
-
-
-
-	$has_assignment = array_merge( $has_assignment, $absences );
-
-
-
-	$users = get_users( 'blog_id=' . get_current_blog_id() );
-
-
-
-	foreach ( $users as $user ) {
-
-
-
-		if ( ! in_array( $user->ID, $has_assignment ) ) {
-
-
-
-			$emails[] = $user->user_email;
-
-
-
-		}
-
-
-
-	}
-
-
-
-	return $emails;
-
-
-
-}
 
 
 
@@ -2297,7 +2121,7 @@ function wp4t_unassigned_ids( $post_id = 0 ) {
 
 
 
-	$absences = get_absences_array( $post_id );
+	$absences = wp4t_get_absences_array( $post_id );
 
 
 
@@ -2337,7 +2161,7 @@ function wp4t_unassigned_ids( $post_id = 0 ) {
 
 
 
-function wp4_format_contact( $userdata, $name = true ) {
+function wp4t_wp4_format_contact( $userdata, $name = true ) {
 
 
 
@@ -2549,7 +2373,7 @@ function wp4t_emails() {
 
 
 
-function is_club_member($user_id = 0) {
+function wp4t_is_club_member($user_id = 0) {
 
 
 
@@ -2565,7 +2389,7 @@ function is_club_member($user_id = 0) {
 
 
 
-	return apply_filters( 'is_club_member', is_user_member_of_blog($user_id) );
+	return apply_filters( 'wp4t_is_club_member', is_user_member_of_blog($user_id) );
 
 
 
@@ -2593,7 +2417,7 @@ function wpt_blocks_to_data( $content, $include_backup = true, $aggregate = fals
 
 
 
-			if ( strpos( $block, 'agendanoterich2' ) ) {
+			if ( strpos( $block, 'wp4t_agendanoterich2' ) ) {
 
 
 
@@ -2821,7 +2645,7 @@ function wpt_blocks_to_data2( $content, $include_backup = true, $aggregate = fal
 
 
 
-			if ( strpos( $block, 'agendanoterich2' ) ) {
+			if ( strpos( $block, 'wp4t_agendanoterich2' ) ) {
 
 
 
@@ -3033,7 +2857,7 @@ function wpt_blocks_to_data2( $content, $include_backup = true, $aggregate = fal
 
 
 
-function make_tm_speechdata_array( $roledata, $manual, $project, $title, $intro ) {
+function wp4t_make_tm_speechdata_array( $roledata, $manual, $project, $title, $intro ) {
 
 
 
@@ -3061,7 +2885,7 @@ function make_tm_speechdata_array( $roledata, $manual, $project, $title, $intro 
 
 
 
-function make_tm_roledata_array( $function = '' ) {
+function wp4t_make_tm_roledata_array( $function = '' ) {
 
 
 
@@ -3093,7 +2917,7 @@ function make_tm_roledata_array( $function = '' ) {
 
 
 
-function make_tm_usermeta_key( $role, $event_timestamp, $post_id ) {
+function wp4t_make_tm_usermeta_key( $role, $event_timestamp, $post_id ) {
 
 
 
@@ -3129,163 +2953,11 @@ function make_tm_usermeta_key( $role, $event_timestamp, $post_id ) {
 
 
 
-function extract_usermeta_key_data( $key ) {
 
 
 
-	$parts = explode( '|', $key );
 
 
-
-	$data['role'] = $parts[1];
-
-
-
-	$data['timestamp'] = $parts[2];
-
-
-
-	$data['order'] = $parts[3];
-
-
-
-	$data['domain'] = $parts[4];
-
-
-
-	$data['post_id'] = $parts[5];
-
-
-
-	return $data;
-
-
-
-}
-
-
-
-function cache_assignments( $post_id, $refresh = false ) {
-
-
-
-	global $assign_cache;
-
-
-
-	if ( $refresh ) {
-
-
-
-		$assign_cache = array();
-
-
-
-	} else {
-
-
-
-		$assign_cache = get_transient( 'assign_cache' );
-
-
-
-	}
-
-
-
-	if ( empty( $assign_cache[ $post_id ] ) ) {
-
-
-
-		$sql = "SELECT * FROM $wpdb->postmeta WHERE post_id=$post_id AND meta_key LIKE '_role%' AMD meta_value > 0";
-
-
-
-		$results = $wpdb->get_results( $sql );
-
-
-
-		foreach ( $results as $row ) {
-
-
-
-			$assign_cache[ $post_id ][ $row->meta_key ] = $row->meta_value;
-
-
-
-		}
-
-
-
-		set_transient( 'assign_cache', $assign_cache, DAY_IN_SECONDS );
-
-
-
-	}
-
-
-
-}
-
-
-
-function get_wpt_assignment( $post_id, $key ) {
-
-
-
-	global $assign_cache;
-
-
-
-	if ( isset( $assign_cache[ $post_id ][ $key ] ) ) {
-
-
-
-		return $assign_cache[ $post_id ][ $key ];
-
-
-
-	}
-
-
-
-	return get_post_meta( $post_id, $key, true );
-
-
-
-}
-
-
-
-function set_wpt_assignment( $post_id, $key, $value, $update_cache = true ) {
-
-
-
-	global $assign_cache;
-
-
-
-	$assign_cache[ $post_id ][ $key ] = $value;
-
-
-
-	update_post_meta( $post_id, $key, $value );
-
-
-
-	if ( $update_cache ) { // unless we're told not to, update the cache transient
-
-
-
-		set_transient( 'assign_cache', $assign_cache, DAY_IN_SECONDS );
-
-
-
-	}
-
-
-
-}
 
 
 
@@ -3293,11 +2965,11 @@ function set_wpt_assignment( $post_id, $key, $value, $update_cache = true ) {
 
 
 
-add_action( 'add_user_to_blog', 'add_joined_club_date' );
+add_action( 'add_user_to_blog', 'wp4t_add_joined_club_date' );
 
 
 
-function add_joined_club_date( $user_id ) {
+function wp4t_add_joined_club_date( $user_id ) {
 
 
 
@@ -3309,7 +2981,7 @@ function add_joined_club_date( $user_id ) {
 
 
 
-function is_agenda_locked() {
+function wp4t_is_agenda_locked() {
 
 
 
@@ -3457,7 +3129,7 @@ function is_agenda_locked() {
 
 
 
-function get_agenda_timing( $post_id ) {
+function wp4t_get_agenda_timing( $post_id ) {
 
 
 
@@ -3601,7 +3273,7 @@ function get_agenda_timing( $post_id ) {
 
 
 
-function is_edit_roles() {
+function wp4t_is_edit_roles() {
 
 
 
@@ -3853,55 +3525,11 @@ function wpt_login_permalink( $id = 0, $permalink = '' ) {
 
 
 
-function wpt_get_last_login( $user_id ) {
 
 
 
-	global $rsvp_options;
 
-
-
-	$slug = ( is_plugin_active( 'wordfence/wordfence.php' ) ) ? 'wfls-last-login' : 'wpt-last-login';
-
-
-
-	$last = get_user_meta( $user_id, $slug, true );
-
-
-
-	return rsvpmaker_date( $rsvp_options['long_date'] . ' ' . rsvp_options['time_format'], $last );
-
-
-
-}
-
-
-
-function wpt_set_last_login( $user_id ) {
-
-
-
-	if ( is_plugin_active( 'wordfence/wordfence.php' ) ) {
-
-
-
-		return; // don't duplicate function
-
-
-
-	}
-
-
-
-	update_post_meta( $user_id, 'wpt-last-login', time() );
-
-
-
-}
-
-
-
-function is_tm_officer( $user_id = 0 ) {
+function wp4t_is_tm_officer( $user_id = 0 ) {
 
 
 
@@ -3945,39 +3573,13 @@ function is_tm_officer( $user_id = 0 ) {
 
 
 
-add_shortcode( 'time_planner_2020', 'time_planner_2020' );
+add_shortcode( 'wp4t_time_planner_2020', 'wp4t_time_planner_2020' );
 
 
 
-function time_planner_minutes_select( $index, $minutes ) {
 
 
-
-	$output = sprintf( '<select class="timeadjust" id="timeadjust%d" counter="%d">', $index, $index );
-
-
-
-	for ( $i = 0; $i < 61; $i++ ) {
-
-
-
-		$s = ( $i == $minutes ) ? ' selected="selected" ' : '';
-
-
-
-		$output .= sprintf( '<option %s value="%s">%s</option>', $s, $i, $i );
-
-
-
-	}
-
-
-
-}
-
-
-
-function time_planner_2020( $atts ) {
+function wp4t_time_planner_2020( $atts ) {
 
 
 
@@ -4229,7 +3831,7 @@ function wp4t_name_index($user) {
 
 
 
-		$name = get_member_name($user).$user;
+		$name = wp4t_get_member_name($user).$user;
 
 
 
@@ -4593,7 +4195,7 @@ function wptm_count_votes($post_id, $votingdata) {
 
 						elseif(is_int($voter) && $voter > 0)
 
-							$signatures[] = get_member_name($voter);
+							$signatures[] = wp4t_get_member_name($voter);
 
 					}
 
@@ -4755,7 +4357,7 @@ function wp4t_evaluation_link($atts) {
 
 
 
-		return sprintf('<a href="%s">%s</a>',$url,get_project_text($get['project']));
+		return sprintf('<a href="%s">%s</a>',$url,wp4t_get_project_text($get['project']));
 
 
 
@@ -5019,11 +4621,11 @@ $preview = (empty($thumbnail)) ? '' : sprintf('<br>Suggestion <img src="%s" styl
 
 
 
-add_filter('option_rsvpmaker_email_custom_styles','agenda_rsvpmaker_email_custom_styles');
+add_filter('option_rsvpmaker_email_custom_styles','wp4t_agenda_rsvpmaker_email_custom_styles');
 
 
 
-function agenda_rsvpmaker_email_custom_styles ($option) {
+function wp4t_agenda_rsvpmaker_email_custom_styles ($option) {
 
 
 
@@ -5155,7 +4757,7 @@ $hasrole  = array();
 
 
 
-$norole   = array();
+$wp4t_norole   = array();
 
 
 
@@ -5163,7 +4765,7 @@ $date     = get_rsvp_date( $post_id );
 
 
 
-$absences = get_absences_array( $post_id );
+$absences = wp4t_get_absences_array( $post_id );
 
 
 
@@ -5207,7 +4809,7 @@ foreach ( $users as $user ) {
 
 
 
-			$norole[$userdata->first_name . ' ' . $userdata->last_name] = $user->ID;
+			$wp4t_norole[$userdata->first_name . ' ' . $userdata->last_name] = $user->ID;
 
 
 
@@ -5219,7 +4821,7 @@ foreach ( $users as $user ) {
 
 
 
-			$norole[] = $userdata->first_name . ' ' . $userdata->last_name;
+			$wp4t_norole[] = $userdata->first_name . ' ' . $userdata->last_name;
 
 
 
@@ -5235,7 +4837,7 @@ if($return_ids)
 
 
 
-	ksort($norole);
+	ksort($wp4t_norole);
 
 
 
@@ -5243,11 +4845,11 @@ else
 
 
 
-	sort( $norole );
+	sort( $wp4t_norole );
 
 
 
-return $norole;
+return $wp4t_norole;
 
 
 
@@ -5255,11 +4857,11 @@ return $norole;
 
 
 
-add_action('pre_get_users','fix_cache_users_bug');
+add_action('pre_get_users','wp4t_fix_cache_users_bug');
 
 
 
-function fix_cache_users_bug($query = null) {
+function wp4t_fix_cache_users_bug($query = null) {
 
 
 
@@ -5279,7 +4881,7 @@ function fix_cache_users_bug($query = null) {
 
 
 
-function jsonBlockDataOutput($block, $post_id) {
+function wp4t_jsonBlockDataOutput($block, $post_id) {
 
 
 
@@ -5319,7 +4921,7 @@ function jsonBlockDataOutput($block, $post_id) {
 
 
 
-                $output .= jsonBlockDataOutput($innerblock,$post_id);
+                $output .= wp4t_jsonBlockDataOutput($innerblock,$post_id);
 
 
 
@@ -5355,7 +4957,7 @@ function jsonBlockDataOutput($block, $post_id) {
 
 
 
-function get_get_to_attributes ($evalme_mode = 'evaluation') {
+function wp4t_get_get_to_attributes ($evalme_mode = 'evaluation') {
 
 
 
@@ -5411,11 +5013,11 @@ function get_get_to_attributes ($evalme_mode = 'evaluation') {
 
 
 
-			$speakerdata = get_speaker_array_by_field($key,$member,$post->ID);
+			$speakerdata = wp4t_get_speaker_array_by_field($key,$member,$post->ID);
 
 
 
-			$speakerdata['name'] = get_member_name($member);
+			$speakerdata['name'] = wp4t_get_member_name($member);
 
 
 
@@ -5723,7 +5325,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 
 
 
-			$member = get_member_name($meta_value);
+			$member = wp4t_get_member_name($meta_value);
 
 
 
@@ -5735,7 +5337,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 
 
 
-					$actiontext = 'one-click signup: <strong>'.$member.'</strong>, '.clean_role($meta_key);
+					$actiontext = 'one-click signup: <strong>'.$member.'</strong>, '.wp4t_clean_role($meta_key);
 
 
 
@@ -5743,7 +5345,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 
 
 
-					$actiontext = $member.' assigned to '.clean_role($meta_key) .' (unauthenticated)';
+					$actiontext = $member.' assigned to '.wp4t_clean_role($meta_key) .' (unauthenticated)';
 
 
 
@@ -5759,7 +5361,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 
 
 
-			$actiontext = '<strong>'.get_member_name($current_user->ID).'</strong> signed up for '.clean_role($meta_key);
+			$actiontext = '<strong>'.wp4t_get_member_name($current_user->ID).'</strong> signed up for '.wp4t_clean_role($meta_key);
 
 
 
@@ -5775,7 +5377,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 
 
 
-				$actiontext = get_member_name($current_user->ID).' withdrew from '.clean_role($meta_key);
+				$actiontext = wp4t_get_member_name($current_user->ID).' withdrew from '.wp4t_clean_role($meta_key);
 
 
 
@@ -5783,7 +5385,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 
 
 
-				$actiontext = get_member_name($current_user->ID).' assigned <strong>'.get_member_name($meta_value).'</strong> to '.clean_role($meta_key);
+				$actiontext = wp4t_get_member_name($current_user->ID).' assigned <strong>'.wp4t_get_member_name($meta_value).'</strong> to '.wp4t_clean_role($meta_key);
 
 
 
@@ -5795,7 +5397,7 @@ function wpt_updated_postmeta($meta_id, $post_id, $meta_key, $meta_value) {
 
 
 
-		$actiontext .= ' (was '.get_member_name($was).')';
+		$actiontext .= ' (was '.wp4t_get_member_name($was).')';
 
 
 
@@ -5863,7 +5465,7 @@ function wpt_get_former_member_emails() {
 
 
 
-	$members = get_club_members();
+	$members = wp4t_get_club_members();
 
 
 
@@ -5923,7 +5525,7 @@ foreach($results as $row) {
 
 
 
-function get_tm_guest_registration() {
+function wp4t_get_tm_guest_registration() {
 
 
 
@@ -6031,7 +5633,7 @@ function get_tm_guest_registration() {
 
 
 
-function tm_random_available_check() {
+function wp4t_tm_random_available_check() {
 
 
 
@@ -6123,7 +5725,7 @@ function tm_random_available_check() {
 
 
 
-				$histories = tm_get_histories();
+				$histories = wp4t_tm_get_histories();
 
 
 
@@ -7133,7 +6735,7 @@ function wpt_exclude_agenda_functions() {
 
 
 
-function agendanoterich2($atts, $content) {
+function wp4t_agendanoterich2($atts, $content) {
 
 
 
@@ -7391,13 +6993,13 @@ function toastmasters_fix_agenda_attribute_type() {
 
 
 
-function tm_member_profile_display($attributes) {
+function wp4t_tm_member_profile_display($attributes) {
 
 	global $current_user;
 
 	extract($attributes); //identifier,showPicture,pictureSize,pictureShape,showEmail,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading
 
-	$response = tm_member_profile_retrieve($identifier, $attributes);
+	$response = wp4t_tm_member_profile_retrieve($identifier, $attributes);
 
 	if($pictureShape === 'rounded')
 
@@ -7415,7 +7017,7 @@ function tm_member_profile_display($attributes) {
 
 	$excludeFromContacts = ['ID', 'toastmasters_id', 'education_awards', 'public_profile', 'alias'];
 
-	$response = tm_member_profile_retrieve($identifier, $attributes);
+	$response = wp4t_tm_member_profile_retrieve($identifier, $attributes);
 
 	foreach($response['list'] as $profile) {
 		$id = $profile['ID'];
@@ -7508,7 +7110,7 @@ function tm_member_profile_display($attributes) {
 	}
 }
 
-function tm_member_profile_retrieve($identifier, $attributes) {
+function wp4t_tm_member_profile_retrieve($identifier, $attributes) {
 	$dp = wpt_domain_prefix(get_current_blog_id());
 	$response['profile'] = null;
 
@@ -7534,7 +7136,7 @@ function tm_member_profile_retrieve($identifier, $attributes) {
 
 	}
 
-	$members = get_club_members();
+	$members = wp4t_get_club_members();
 
 	foreach($officers as $key => $data) {
 
@@ -7679,11 +7281,11 @@ function wpt_public_profile($id,$contactmethods,$attributes, $is_officer = false
 	$public_email = !empty($data->public_email) || get_user_meta($id,'public_email',true);
 	$public_phone = !empty($data->public_phone) || get_user_meta($id,'public_phone',true);
 
-	if(!is_club_member() && !$public_profile) {
+	if(!wp4t_is_club_member() && !$public_profile) {
 
 		error_log('wpt_public_profile: user ' . $id . ' does not have a public profile and is not an officer, returning null '.var_export($data->public_profile,true) . ' '.var_export(get_user_meta($id,'public_profile',true), true).' '.var_export($data,true));
 
-		error_log('is_club_member '.var_export(is_club_member(), true));
+		error_log('wp4t_is_club_member '.var_export(wp4t_is_club_member(), true));
 
 		return null;
 

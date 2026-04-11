@@ -1,5 +1,5 @@
 <?php
-function add_contest_userlink( $user_id, $link, $post_id = 0 ) {
+function wp4t_add_contest_userlink( $user_id, $link, $post_id = 0 ) {
 	global $post;
 	if ( ! $post_id && isset( $post->ID ) ) {
 		$post_id = $post->ID;
@@ -86,22 +86,13 @@ function wpt_get_contest_default($role) {
 	$contest['Evaluation Contestant']           = '<option value="Evaluation Contest">Evaluation Contest</option>';
 	return (isset($contest[$role])) ? $contest[$role] : '';
 }
-function set_contest_parameters( $post_id, $contest ) {
-	global $current_user;
-	$contest_selection = wpt_get_contest_array();
-	$contest_timing    = wpt_get_contest_array( 'timing' );
-	update_post_meta( $post_id, 'toast_contest_name', $contest );
-	update_post_meta( $post_id, 'toast_contest_scoring', $contest_selection[ $contest ] );
-	update_post_meta( $post_id, 'toast_timing', $contest_timing[ $contest ] );
-	update_post_meta( $post_id, 'tm_contest_dashboard_users', array( $current_user->ID ) );
-}
 function toast_contest( $mode ) {
 	global $post, $rsvp_options;
 	$contest_name   = get_post_meta( $post->ID, 'toast_contest_name', true );
 	$dashboard_name = ( empty( $contest_name ) ) ? $post->post_title : $contest_name;
 	$date           = rsvpmaker_date( $rsvp_options['long_date'], get_rsvpmaker_timestamp( $post->ID ) );
 	$output         = '<div id="scoring">';
-	$practice       = get_practice_contest_links();
+	$practice       = wp4t_get_practice_contest_links();
 	$output        .= wpt_mycontests_links( $practice );
 	$related = 0;
 	if ( $mode == 'dashboard' ) {
@@ -226,7 +217,7 @@ function wpt_mycontests() {
 	$output = '<p>Contest links you have access to:</p><form method="post" action="'.$action.'">' . $output.'</form>';
 	return $output;
 }
-function contest_get_master($post_id) {
+function wp4t_contest_get_master($post_id) {
 	global $master;
 	if(!empty($master))
 		return $master;
@@ -250,7 +241,7 @@ function toast_related_contests($post_id) {
 	}
 	return $all_related;
 }
-function contest_get_edits($master) {
+function wp4t_contest_get_edits($master) {
 	global $post;
 	$edits = array($master);
 	$temp = get_post_meta($master,'contest_sync_to');
@@ -260,13 +251,13 @@ function contest_get_edits($master) {
 	}
 	else {
 		//check old method
-		$sync = get_post_meta( $post->ID, 'tm_contest_sync', true );
+		$sync = get_post_meta( $post->ID, 'wp4t_tm_contest_sync', true );
 		if(isset($sync['copy_to']) && $sync['copy_from'])
 			{
 				add_post_meta($sync['copy_from'],'contest_sync_to',$sync['copy_to']);
 				add_post_meta($sync['copy_to'],'contest_sync_from',$sync['copy_from']);
-				delete_post_meta( $sync['copy_from'], 'tm_contest_sync' );
-				delete_post_meta( $sync['copy_to'], 'tm_contest_sync' );
+				delete_post_meta( $sync['copy_from'], 'wp4t_tm_contest_sync' );
+				delete_post_meta( $sync['copy_to'], 'wp4t_tm_contest_sync' );
 				$edits[] = $sync['copy_to'];
 			}
 	}
@@ -276,7 +267,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	ob_start();
 	global $post, $wpdb;
 	global $current_user;
-	$master = contest_get_master($post->ID);
+	$master = wp4t_contest_get_master($post->ID);
 	$contest_name = get_post_meta( $post->ID, 'toast_contest_name', true );
 	if ( isset( $_POST['break_connection'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		delete_post_meta(intval($_POST['break_connection']),'contest_sync_to',$post->ID);
@@ -285,7 +276,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 	if ( isset( $_POST['dashboardvote'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		$id = sanitize_text_field($_POST['judge_id']);
 		update_post_meta( $post->ID, 'tm_scoring_vote' . $id, array_map('sanitize_text_field',$_POST['vote']) );
-		add_post_meta( $post->ID, 'dashboard_vote', $id );
+		add_post_meta( $post->ID, 'wp4t_dashboard_vote', $id );
 	}
 	$output     = '';
 	$votinglink = $actionlink = get_permalink( $post->ID );
@@ -342,7 +333,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			$data['post_status']  = 'publish';
 			$id                   = wp_insert_post( $data );
 			if ( ! empty( $contest_scoring ) ) {
-				add_contest_userlink( $current_user->ID, add_query_arg('scoring','dashboard',get_permalink($id)), $id );
+				wp4t_add_contest_userlink( $current_user->ID, add_query_arg('scoring','dashboard',get_permalink($id)), $id );
 				update_post_meta( $id, 'toast_contest_name', $scoring_index );
 				update_post_meta( $id, 'toast_contest_scoring', $contest_scoring );
 				update_post_meta( $id, 'toast_timing', $timing );
@@ -386,7 +377,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 			printf('<p>Record New contest scoring %s, %d</p>',var_export($contest_scoring,true),$post->ID);
 			update_post_meta( $post->ID, 'toast_timing', $timing );
 			update_post_meta( $post->ID, 'tm_contest_dashboard_users', $default_dashboard_users );
-			add_contest_userlink( $current_user->ID, add_query_arg('scoring','dashboard',get_permalink($post->ID)), $post->ID );
+			wp4t_add_contest_userlink( $current_user->ID, add_query_arg('scoring','dashboard',get_permalink($post->ID)), $post->ID );
 		}
 	} elseif ( ! empty( $_POST['scoring_label'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		foreach ( $_POST['scoring_label'] as $index => $label ) {
@@ -429,19 +420,19 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		$default_option = (isset($contest_defaults[0])) ? $contest_defaults[0]['option'] : '';
 		$default_role = (isset($contest_defaults[0])) ? $contest_defaults[0]['role'] : '';
 		$output  .= '<h1>Choose Contest</h1>' . sprintf('<form method="post" action="%s">
-	<div>Contest:<br /><select name="contest_scoring" class="contest_scoring">%s</select> %s</div>',$actionlink,$default_option.$options,track_roles_ui($default_role));
+	<div>Contest:<br /><select name="contest_scoring" class="contest_scoring">%s</select> %s</div>',$actionlink,$default_option.$options,wp4t_track_roles_ui($default_role));
 	$i = 2;
 	if(isset($contest_defaults) && (sizeof($contest_defaults) > 1)) {
 		array_shift($contest_defaults);
 		foreach($contest_defaults as $defaults)
 		{
-			$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$defaults['option'].$options,track_roles_ui($defaults['role'],'_more[]'));
+			$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$defaults['option'].$options,wp4t_track_roles_ui($defaults['role'],'_more[]'));
 			$i++;
 		}
 	}
 	$output .= '<p><a href="#morecontests" id="multicontest">+ Show options for multiple contests</a> (optionally, you can set the judges to be the same for all contests held on the same day)</p><div id="morecontests">';
 	for($i; $i < 6; $i++)
-		$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$options,track_roles_ui('','_more[]'));
+		$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$options,wp4t_track_roles_ui('','_more[]'));
 	$output .= '<p><input type="checkbox" name="syncwith1" value="checked" checked="checked" /> Use same list of judges and functionaries for all contests</p></div>';
 	$output .= sprintf('<p><input type="radio" name="ballot_no_password" value="0"  checked="checked" /> User password required for access to ballot, timer\'s report form</p>
 	<p><input type="radio" name="ballot_no_password" value="1"  /> No password. Ballots protected by coded links</p>
@@ -459,8 +450,8 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		return $output;
 	}
 	if ( true ) { // kludge
-		$master = contest_get_master($post->ID);
-		$edits = contest_get_edits($master);
+		$master = wp4t_contest_get_master($post->ID);
+		$edits = wp4t_contest_get_edits($master);
 		if ( ! empty( $_POST['copy_judges'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 			$copyfrom = (int) $_POST['copy_judges'];
 			$judges   = get_post_meta( $copyfrom, 'tm_scoring_judges', true );
@@ -474,7 +465,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 						'judge'   => $index,
 					);
 					$link = add_query_arg( $arg, get_permalink() );
-					add_contest_userlink( $judge_id, $link, $post->ID );
+					wp4t_add_contest_userlink( $judge_id, $link, $post->ID );
 				}
 			}
 		}
@@ -518,7 +509,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 				$user_id = (int) $user_id;
 				if ( $user_id && ! in_array( $user_id, $dashboard_users ) ) {
 					foreach($edits as $edit){
-						add_contest_userlink( $user_id, add_query_arg('scoring','dashboard',get_permalink($edit)), $edit );
+						wp4t_add_contest_userlink( $user_id, add_query_arg('scoring','dashboard',get_permalink($edit)), $edit );
 					}
 					$dashboard_users[] = $user_id;
 				}
@@ -584,7 +575,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 							),
 							get_permalink($edit)
 						);
-							add_contest_userlink( $judge_id, $link, $edit );
+							wp4t_add_contest_userlink( $judge_id, $link, $edit );
 					}
 					$judge[ $index ] = $judge_id;
 				}
@@ -625,8 +616,8 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		$contestants = toast_get_contestants( $post->ID );
 	}
 	$contests = toast_related_contests($post->ID);
-	$master = contest_get_master($post->ID);
-	$edits = contest_get_edits($master);
+	$master = wp4t_contest_get_master($post->ID);
+	$edits = wp4t_contest_get_edits($master);
 	$judges = get_post_meta( $master, 'tm_scoring_judges', true );
 	$timer_user = (int) get_post_meta( $master, 'contest_timer', true );
 	$dashboard_users = get_post_meta( $master, 'tm_contest_dashboard_users', true );
@@ -791,7 +782,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		<?php
 		$email_links = '';
 		foreach ( $judges as $key => $value ) {
-			$name = get_member_name( $value );
+			$name = wp4t_get_member_name( $value );
 			if ( is_numeric( $value ) ) {
 				$userdata = get_userdata( $value );
 				$username = $userdata->user_login;
@@ -839,8 +830,8 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 			// $email_links .= $links;
 			$email_links .= wpt_contest_emaillinks( $plainlinks, $key, 'judge', $value ); // value is user id or name
 			echo '</div>';
-			//sanitization occurs within dashboard_vote function
-			$dashboard_forms .= dashboard_vote( $contestants, $key, $name, $actionlink, $is_tiebreaker );
+			//sanitization occurs within wp4t_dashboard_vote function
+			$dashboard_forms .= wp4t_dashboard_vote( $contestants, $key, $name, $actionlink, $is_tiebreaker );
 		}
 		if ( $update_practice ) {
 			update_post_meta( $practice_contest, 'tm_scoring_judges', $practice_judges );
@@ -911,7 +902,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		}
 	} else {
 		if(!isset($timer_user)) $timer_user = 0;
-		$addtodrop   = contest_user_list_top( $judges, $timer_user, $dashboard_users );
+		$addtodrop   = wp4t_contest_user_list_top( $judges, $timer_user, $dashboard_users );
 		$genericdrop = wp_dropdown_users( array( 'echo' => false ) );
 		$genericdrop = preg_replace( '/<select[^>]+>/', '$0' . $addtodrop . '<optgroup label="All Users">', $genericdrop );
 		$genericdrop = str_replace( '</select>', '</optgroup></select>', $genericdrop );
@@ -934,7 +925,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 			?>
 	<form method="post" action="<?php echo esc_attr($actionlink); ?>" >
 			<?php
-			echo track_roles_ui( $track_role );
+			echo wp4t_track_roles_ui( $track_role );
 			?>
 <div id="role_track_status">
 			<?php
@@ -978,7 +969,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		if ( $is_locked ) {
 			echo 'Settings are locked';
 		} elseif ( $sync_from = get_post_meta($post->ID,'contest_sync_from',true) ) {
-			contest_break_connection($sync_from);
+			wp4t_contest_break_connection($sync_from);
 		} else {
 			$related = get_post_meta( $post->ID, '_contest_related', true );
 			?>
@@ -1000,7 +991,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 					}
 					if ( is_numeric( $value ) ) {
 						$user            = $value;
-						$name            = get_member_name( $value );
+						$name            = wp4t_get_member_name( $value );
 						$open            = 'Open';
 						$selected_option = sprintf( '<option value="%s">%s</option>', $user, $name );
 						printf( '<p><input type="hidden" name="judge[%s]" value="%s" /> %s<br /><input type="radio" name="tm_tiebreaker" value="%s" %s />Tiebreaker <input type="checkbox" name="remove_judge[]" value="%s" > Remove as judge</p>', $index, $user, $name, $index, $s, $index );
@@ -1038,8 +1029,8 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 					'email' => '',
 				);
 			}
-			$selected_option = ( empty( $timer_user ) ) ? '' : sprintf( '<option value="%s">%s</option>', $timer_user, get_member_name( $timer_user ) );
-			$drop            = str_replace( 'user', 'contest_timer_user', $genericdrop );// awe_user_dropdown ('judge['.$index.']', $user, true, $open);
+			$selected_option = ( empty( $timer_user ) ) ? '' : sprintf( '<option value="%s">%s</option>', $timer_user, wp4t_get_member_name( $timer_user ) );
+			$drop            = str_replace( 'user', 'contest_timer_user', $genericdrop );// wp4t_awe_user_dropdown ('judge['.$index.']', $user, true, $open);
 			if ( ! empty( $selected_option ) ) {
 				$drop = preg_replace( '/<select[^>]+>/', '$0' . $selected_option, $drop );
 			}
@@ -1081,7 +1072,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		<?php
 		echo '<h3>Backup Voting Forms</h3><p>If judges have problems with the online voting, you can record votes on their behalf.</p>';
 		echo '<div class="votingforms_tab">';
-		//sanitization occurs within dashboard_vote function
+		//sanitization occurs within wp4t_dashboard_vote function
 		echo $dashboard_forms . '</div>';
 		?>
 	</section>
@@ -1089,7 +1080,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 		<?php
 		//retrieved on judging screen
 		if ( $sync_from ) {
-			contest_break_connection($sync_from);
+			wp4t_contest_break_connection($sync_from);
 		} else {
 			?>
 	<form method="post" action="<?php echo esc_attr($actionlink); ?>" >
@@ -1113,8 +1104,8 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 			$dashlimit = sizeof( $dashboard_users ) + 5;
 			for ( $i = 0; $i < $dashlimit; $i++ ) {
 				$user            = empty( $dashboard_users[ $i ] ) ? 0 : $dashboard_users[ $i ];
-				$selected_option = ( ! $user ) ? '' : sprintf( '<option value="%s">%s</option>', $user, get_member_name( $user ) );
-				$drop            = str_replace( 'user', 'tm_scoring_dashboard_users[]', str_replace( "id='user'", '', $genericdrop ) );// awe_user_dropdown ('judge['.$index.']', $user, true, $open);
+				$selected_option = ( ! $user ) ? '' : sprintf( '<option value="%s">%s</option>', $user, wp4t_get_member_name( $user ) );
+				$drop            = str_replace( 'user', 'tm_scoring_dashboard_users[]', str_replace( "id='user'", '', $genericdrop ) );// wp4t_awe_user_dropdown ('judge['.$index.']', $user, true, $open);
 				if ( ! empty( $selected_option ) ) {
 					$drop = preg_replace( '/<select[^>]+>/', '$0' . $selected_option, $drop );
 				}
@@ -1149,7 +1140,7 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 	</div><!--end of sections--->
 </div>
 		<?php
-		judge_import_form( $actionlink );
+		wp4t_judge_import_form( $actionlink );
 	} //end test $is_locked
 	do_action( 'wpt_scoring_dashboard_bottom' );
 	?>
@@ -1348,7 +1339,7 @@ function toast_scoring_sheet() {
 				printf( '<p>You must <a href="%s">login</a> to access this judge\'s voting form. %d</p>', wp_login_url( sanitize_text_field($_SERVER['REQUEST_URI']) ), $post->ID);
 				return;
 			}
-			$judge_name = get_member_name( $judge_name );
+			$judge_name = wp4t_get_member_name( $judge_name );
 		}
 	} 
 	elseif($is_demo) {
@@ -1358,7 +1349,7 @@ function toast_scoring_sheet() {
 	} 
 	elseif ( is_user_logged_in() ) {
 		$id   = $judge_id = array_search( $current_user->ID, $judges );
-		$judge_name = $name = get_member_name( $judge_id );
+		$judge_name = $name = wp4t_get_member_name( $judge_id );
 		if ( ! $id ) {
 			echo '<div style="color: red;">Logged in user is not on the list of judges</div>';
 		}
@@ -1514,7 +1505,7 @@ else {
 }//end not demo
 	return ob_get_clean();
 }
-function dashboard_vote( $contestants, $id, $judge_name, $votinglink, $tiebreaker = false ) {
+function wp4t_dashboard_vote( $contestants, $id, $judge_name, $votinglink, $tiebreaker = false ) {
 	ob_start();
 	if ( $tiebreaker ) {
 		$judge_name = 'Tie Breaker';
@@ -1545,7 +1536,7 @@ function dashboard_vote( $contestants, $id, $judge_name, $votinglink, $tiebreake
 	<?php
 	return ob_get_clean();
 }
-function contest_demo( $atts ) {
+function wp4t_contest_demo( $atts ) {
 	global $post;
 	$output = '';
 	if ( isset( $atts['result'] ) ) {
@@ -1569,7 +1560,7 @@ function contest_demo( $atts ) {
 	return $output;
 }
 $myusers_indexed = array();
-function check_contest_collaborators() {
+function wp4t_check_contest_collaborators() {
 	global $wpdb, $current_user, $myusers_indexed;
 	$myusers = array();
 	$results = $wpdb->get_results( "SELECT * FROM $wpdb->postmeta WHERE meta_key='contest_user' AND meta_value='" . $current_user->ID . "' ORDER BY meta_id" );
@@ -1597,12 +1588,12 @@ function check_contest_collaborators() {
 	ksort( $myusers_indexed );
 	return $myusers_indexed;
 }
-function judge_import_form( $action ) {
+function wp4t_judge_import_form( $action ) {
 	global $post, $wpdb, $current_user;
 	if( get_post_meta($post->ID,'contest_sync_from',true) )
 		return;
 	$judges = get_post_meta( $post->ID, 'tm_scoring_judges', true );
-	if ( empty( $judges ) && check_contest_collaborators() ) {
+	if ( empty( $judges ) && wp4t_check_contest_collaborators() ) {
 		$opt     = '<option value="">Choose Previous Contest</option>';
 		$results = $wpdb->get_results( "SELECT * FROM $wpdb->posts JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id WHERE meta_key='tm_scoring_judges' AND post_status='publish' ORDER BY ID DESC" );
 		if ( $results ) {
@@ -1627,7 +1618,7 @@ function judge_import_form( $action ) {
 		}
 	}
 }
-function track_roles_ui( $track_role = '', $slug = '' ) {
+function wp4t_track_roles_ui( $track_role = '', $slug = '' ) {
 	global $post;
 	if ( strpos( $post->post_content, 'wp:wp4toastmasters' ) ) {
 		$data = wpt_blocks_to_data( $post->post_content );
@@ -1654,10 +1645,10 @@ function track_roles_ui( $track_role = '', $slug = '' ) {
 		return sprintf( '<p>Sync With Agenda Role for Contestants <br /><select id="track_role%s" name="track_role%s" >%s<option value="cancel">Cancel Selection</option></select></p>', $slug, $slug, $track_top . $track );
 	}
 }
-function tm_contest_sync( $sync = null ) {
+function wp4t_tm_contest_sync( $sync = null ) {
 	global $post;
 	if ( empty( $sync ) ) {
-		$sync = get_post_meta( $post->ID, 'tm_contest_sync', true );
+		$sync = get_post_meta( $post->ID, 'wp4t_tm_contest_sync', true );
 	}
 	if ( empty( $sync ) ) {
 		return;
@@ -1676,14 +1667,14 @@ function tm_contest_sync( $sync = null ) {
 					'judge'   => $index,
 				);
 				$link = add_query_arg( $arg, get_permalink( $copyto ) );
-				add_contest_userlink( $judge_id, $link, $copyto );
+				wp4t_add_contest_userlink( $judge_id, $link, $copyto );
 			}
 		}
 	}
 	update_post_meta( $copyto, 'tm_contest_dashboard_users', get_post_meta( $copyfrom, 'tm_contest_dashboard_users', true ) );
 	update_post_meta( $copyto, 'ballot_no_password', get_post_meta( $copyfrom, 'ballot_no_password', true ) );
 }
-function get_practice_contest_links() {
+function wp4t_get_practice_contest_links() {
 	global $current_user;
 	$practice_contest = get_option( 'tm_practice_contest' );
 	$timing           = '5 to 7';
@@ -1782,8 +1773,8 @@ function wpt_mycontests_links( $practice ) {
 	$mycontests = get_permalink() . '?scoring=mycontests';
 	$output     = '<div style="width: 300px;text-align: center; float: right; background-color: #FFFF99; padding: 5px;"><a href="' . $mycontests . '">My Contests</a>';
 	if ( isset( $practice['dashboard'] ) ) {
-		$master = contest_get_master($post->ID);
-		$edits = contest_get_edits($master);
+		$master = wp4t_contest_get_master($post->ID);
+		$edits = wp4t_contest_get_edits($master);
 		$all_related = toast_related_contests($post->ID);
 		if ( !empty($all_related) ) {
 			foreach($all_related as $index => $related) {
@@ -1861,7 +1852,7 @@ function wpt_contest_emaillinks( $links, $code, $role, $user_id ) {
 	echo '<div class="ballot_links_preview">' . $links . '</div>';
 	return ob_get_clean();
 }
-function contest_user_list_top( $judges, $timer_user, $dashboard_users ) {
+function wp4t_contest_user_list_top( $judges, $timer_user, $dashboard_users ) {
 	global $current_user, $wpdb, $post;
 	$team = get_user_meta( $current_user->ID, 'my_contest_team', true );
 	if ( empty( $team ) ) {
@@ -1916,7 +1907,7 @@ function contest_user_list_top( $judges, $timer_user, $dashboard_users ) {
 	}
 	$top = '<option value="">Open</open><optgroup label="My Contest Team">';
 	foreach ( $team as $id ) {
-		$name         = get_member_name( $id );
+		$name         = wp4t_get_member_name( $id );
 		$opt[ $name ] = sprintf( '<option value="%s">%s</option>', $id, $name );
 	}
 	ksort( $opt );
@@ -1927,7 +1918,7 @@ function contest_user_list_top( $judges, $timer_user, $dashboard_users ) {
 	}
 	return apply_filters( 'wpt_contest_user_dropdown', $top );
 }
-function contest_break_connection($sync_from) {
+function wp4t_contest_break_connection($sync_from) {
 $contest_name   = get_post_meta( $sync_from, 'toast_contest_name', true );
 $sync_link = add_query_arg('scoring','dashboard',get_permalink($sync_from));
 ?>
@@ -1996,7 +1987,7 @@ else {
 $output  .= '<h1>Choose One or More Contests</h1>' . sprintf('<form method="post" action="%s">',$actionlink);
 $i = 1;
 for($i; $i < 6; $i++) {
-	$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$options,track_roles_ui('','_more[]'));
+	$output .= sprintf('<div class="more">Contest #%s <select name="contest_scoring_more[]">%s</select> %s</div>',$i,$options,wp4t_track_roles_ui('','_more[]'));
 	$output .= '<p>Contestants (enter in order, one per line)<br /><textarea name="contestants[]"></textarea></p>';
 }
 $output .= sprintf('<button>Set</button></div>

@@ -1,3 +1,3 @@
 <?php
 global $post;
-awesome_open_roles( $post->ID );
+wp4t_awesome_open_roles( $post->ID );
