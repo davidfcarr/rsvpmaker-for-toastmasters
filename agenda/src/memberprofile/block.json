@@ -25,6 +25,14 @@
 			"type": "string",
 			"default": "square"
 		},
+		"nameFontSize": {
+			"type": "string",
+			"default": ""
+		},
+		"titleFontSize": {
+			"type": "string",
+			"default": ""
+		},
 		"showEmail": {
 			"type": "boolean",
 			"default": true

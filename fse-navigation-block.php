@@ -38,7 +38,7 @@ function wp4t_block_theme_menu() {
 	else {
 		$post = array(
 			'post_content' => '<!-- wp:shortcode -->
-			[wp4t_awesome_members comment="This placeholder code displays the member listing"]
+			[awesome_members comment="This placeholder code displays the member listing"]
 			<!-- /wp:shortcode -->',
 			'post_name'    => 'members',
 			'post_title'   => 'Members',

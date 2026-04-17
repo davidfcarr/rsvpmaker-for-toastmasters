@@ -157,6 +157,7 @@ function wp4t_paydues_later() {
 	$payprompt           = rsvpmaker_stripe_form( $vars );
 	return sprintf( '<h2>Pay dues for %s</h2>', $vars['name'] ) . $payprompt;
 }
+add_shortcode( 'club_fee_schedule', 'wp4t_club_fee_schedule' );
 add_shortcode( 'wp4t_club_fee_schedule', 'wp4t_club_fee_schedule' );
 function wp4t_club_fee_schedule() {
 	$ti_dues             = get_option( 'ti_dues' );
@@ -486,7 +487,7 @@ function wp4t_member_application_settings( $action = '' ) {
 	if ( empty( $action ) ) {
 		$action = admin_url( 'options-general.php?page=wp4t_member_application_settings' );
 	}
-	$sql     = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%wp4t_tm_member_application%' AND post_status='publish'";
+	$sql     = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
 	$apppage = $wpdb->get_var( $sql );
 	if ( isset( $_POST['ti_dues'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 		update_option( 'club_name', sanitize_text_field(stripslashes( $_POST['club_name'] ) ));
@@ -513,7 +514,7 @@ function wp4t_member_application_settings( $action = '' ) {
 		if ( isset( $_POST['addpage'] ) ) {
 			$page['post_title']   = 'Application';
 			$page['post_content'] = '<!-- wp:shortcode -->
-    [wp4t_tm_member_application]
+	[tm_member_application]
     <!-- /wp:shortcode -->';
 			$page['post_status']  = 'publish';
 			$page['post_type']    = 'page';
@@ -675,7 +676,7 @@ printf('<p><a href="%s">%s</a></p>',admin_url('options-general.php?page=rsvpmake
 	?>
 </form>
 	<?php echo wp4t_club_fee_schedule(); ?>
-<p>To display this table on the website, use the shortcode [wp4t_club_fee_schedule] as a placeholder in the text of a page or blog post.</p>
+<p>To display this table on the website, use the shortcode [club_fee_schedule] as a placeholder in the text of a page or blog post.</p>
 <script>
 jQuery( document ).ready(
 	function($) {
@@ -726,7 +727,7 @@ function wp4t_check_application_payment( $app_id ) {
 	$key      = 'tmapplication' . $app_id;
 	$sql      = "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key='$key' ";
 	$paid     = $wpdb->get_row( $sql );
-	$sql      = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%wp4t_tm_member_application%' AND post_status='publish'";
+	$sql      = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
 	$app_page = $wpdb->get_var( $sql );
 	$paylink  = '';
 	if ( $app_page ) {

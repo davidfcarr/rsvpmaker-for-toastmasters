@@ -7,39 +7,55 @@ function toastmasters_reports_menu() {
 	if(wp4t_is_district())
 		return;
 	global $current_user;
+	$menu_choices = get_user_meta($current_user->ID,'wp4t_menu_choices',true);
+	if(!is_array($menu_choices))
+		$menu_choices = [];
+
 	$security = wp4t_get_tm_security();
 	$beta     = get_option( 'wp4toastmasters_beta' );
 	add_menu_page( __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_screen', 'toastmasters_screen', 'dashicons-microphone', '2.01' );
 	add_submenu_page( 'toastmasters_screen', __( 'My Progress', 'rsvpmaker-for-toastmasters' ), __( 'My Progress', 'rsvpmaker-for-toastmasters' ), 'read', 'wp4t_my_progress_report', 'wp4toastmasters_history' );
-	add_submenu_page( 'toastmasters_screen', __( 'Evaluations', 'rsvpmaker-for-toastmasters' ), __( 'Evaluations', 'rsvpmaker-for-toastmasters' ), 'read', 'wp4t_evaluations', 'wp4t_evaluations' );
-	add_submenu_page( 'toastmasters_screen', __( 'Multi-Meeting Role Planner', 'rsvpmaker-for-toastmasters' ), __( 'Role Planner', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_planner', 'toastmasters_planner' );
-	add_submenu_page( 'toastmasters_screen', __( 'NEW: Member Signups and Suggestions', 'rsvpmaker-for-toastmasters' ), __( 'NEW: Member Signups and Suggestions', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_member_signups_suggestions_screen', 'wpt_member_signups_suggestions_screen' );
-	add_submenu_page( 'toastmasters_screen', __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_suggest_all_roles', 'wpt_suggest_all_roles' );
 	add_submenu_page( 'toastmasters_screen', __( 'Progress Reports (All Members)', 'rsvpmaker-for-toastmasters' ), __( 'Progress Reports (All Members)', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports', 'wp4toastmasters_history' );
-	add_submenu_page( 'toastmasters_screen', __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'wp4t_pathways_report', 'wp4t_pathways_report' );
-	add_submenu_page( 'toastmasters_screen', __( 'Pathways/BaseCamp checklist', 'rsvpmaker-for-toastmasters' ), __( 'Base Camp Checklist', 'rsvpmaker-for-toastmasters' ), 'read', 'wp4t_pathways_checklist', 'wp4t_pathways_checklist' );
-	add_submenu_page( 'toastmasters_screen', __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports_dashboard', 'toastmasters_reports_dashboard' );
+	add_submenu_page( 'toastmasters_screen', __( 'Evaluations', 'rsvpmaker-for-toastmasters' ), __( 'Evaluations', 'rsvpmaker-for-toastmasters' ), 'read', 'wp4t_evaluations', 'wp4t_evaluations' );
 	add_submenu_page( 'toastmasters_screen', __( 'Member List', 'rsvpmaker-for-toastmasters' ), __( 'Member List', 'rsvpmaker-for-toastmasters' ), 'view_contact_info', 'contacts_list', 'wp4t_member_list' );
-	add_submenu_page( 'toastmasters_screen', __( 'My Data', 'rsvpmaker-for-toastmasters' ), __( 'My Data', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_my_data', 'wpt_my_data' );
+	add_submenu_page( 'toastmasters_screen', __( 'Multi-Meeting Role Planner', 'rsvpmaker-for-toastmasters' ), __( 'Role Planner', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_planner', 'toastmasters_planner' );
 	add_submenu_page( 'toastmasters_screen', __("Enable Mobile App",'rsvpmaker-for-toastmasters'), __("Enable Mobile App",'rsvpmaker-for-toastmasters'), 'read', "wp4t_enable_mobile", "wp4t_enable_mobile" );
-	add_submenu_page( 'toastmasters_screen', __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), __( 'About WordPress for Toastmasters', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_support', 'toastmasters_support' );
+	add_submenu_page( 'toastmasters_screen', __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), __( 'Suggest All Roles', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_suggest_all_roles', 'wpt_suggest_all_roles' );
+	
+	$slug = 'wpt_member_signups_suggestions_screen';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
+		add_submenu_page( 'toastmasters_screen', __( 'Member Signups and Suggestions', 'rsvpmaker-for-toastmasters' ), __( 'Member Signups and Suggestions', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_member_signups_suggestions_screen', 'wpt_member_signups_suggestions_screen' );
+	$slug = 'wp4t_pathways_report';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
+		add_submenu_page( 'toastmasters_screen', __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), __( 'Pathways Progress', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'wp4t_pathways_report', 'wp4t_pathways_report' );
+	$slug = 'wp4t_pathways_checklist';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
+		add_submenu_page( 'toastmasters_screen', __( 'Pathways/BaseCamp checklist', 'rsvpmaker-for-toastmasters' ), __( 'Base Camp Checklist', 'rsvpmaker-for-toastmasters' ), 'read', 'wp4t_pathways_checklist', 'wp4t_pathways_checklist' );
+	$slug = 'toastmasters_reports_dashboard';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
+		add_submenu_page( 'toastmasters_screen', __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), __( 'Reports Dashboard', 'rsvpmaker-for-toastmasters' ), $security['view_reports'], 'toastmasters_reports_dashboard', 'toastmasters_reports_dashboard' );
+	//$slug = 'wpt_my_data';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
+		//add_submenu_page( 'toastmasters_screen', __( 'My Data', 'rsvpmaker-for-toastmasters' ), __( 'My Data', 'rsvpmaker-for-toastmasters' ), 'read', 'wpt_my_data', 'wpt_my_data' );
+	add_submenu_page( 'toastmasters_screen', __( 'About Toastmost', 'rsvpmaker-for-toastmasters' ), __( 'About Toastmost', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmasters_support', 'toastmasters_support' );	
+	add_submenu_page( 'toastmasters_screen', __( 'More', 'rsvpmaker-for-toastmasters' ), __( 'More', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmost_more', 'toastmost_more' );	
+	
 	add_menu_page( __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), __( 'TM Administration', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_admin_screen', 'toastmasters_admin_screen', 'dashicons-microphone', '2.02' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_agenda_template_editor', 'wp4t_agenda_template_editor' );
+	//add_submenu_page( 'toastmasters_admin_screen', __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), __( 'Agenda Template Editor', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_agenda_template_editor', 'wp4t_agenda_template_editor' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), __( 'Update Roles & Attendance', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_reconcile', 'toastmasters_reconcile' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_add_member_speech', 'wp4t_add_member_speech' );
+	//add_submenu_page( 'toastmasters_admin_screen', __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), __( 'Edit Records', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4toastmasters_history_edit', 'wp4toastmasters_history_edit' );
+	//add_submenu_page( 'toastmasters_admin_screen', __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), __( 'Add Speech', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_add_member_speech', 'wp4t_add_member_speech' );
+	$slug = 'toastmasters_mentors';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Mentors', 'rsvpmaker-for-toastmasters' ), __( 'Mentors', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_mentors', 'toastmasters_mentors' );
+	$slug = 'wpt_dues_report';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), __( 'Track Dues', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wpt_dues_report', 'wpt_dues_report' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_activity_log', 'toastmasters_activity_log' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'import_export', 'toastmasters_import_export' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_fth_importer_docs', 'wp4t_fth_importer_docs' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_member_application_approval', 'wp4t_member_application_approval' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_member_application_settings', 'wp4t_member_application_settings' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Role Descriptions Setup', 'rsvpmaker-for-toastmasters' ), __( 'Role Descriptions Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wpt_role_descriptions', 'wpt_role_descriptions' );
-	if(!is_toastmost_site())
-		add_submenu_page( 'toastmasters_admin_screen', __( 'Include on Toastmost Calendar?', 'rsvpmaker-for-toastmasters' ), __( 'Include on Toastmost Calendar?', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'include_toastmost_calendar', 'include_toastmost_calendar' );
+
+	$slug = 'toastmost_import_export';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmost_import_export', 'toastmost_import_export' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_fth_importer_docs', 'wp4t_fth_importer_docs' );
+
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_activity_log', 'toastmasters_activity_log' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'More', 'rsvpmaker-for-toastmasters' ), __( 'More', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmost_more', 'toastmost_more' );	
 	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ),'edit_users', 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
@@ -47,6 +63,38 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_member_votes', 'toastmasters_member_votes' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
+}
+
+function toastmost_more () {
+	if(isset($_POST['choices']) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		update_user_meta(get_current_user_id(),'wp4t_menu_choices',$_POST['choices']);
+	}
+	echo '<h1>'.__('More Menu Items','rsvpmaker-for-toastmasters').'</h1>';
+	printf('<form method="post" action="%s">',admin_url('admin.php?page=toastmost_more'));
+	rsvpmaker_nonce();
+	echo '<p>'.__('Check off any of the following menu items to add them to the Toastmasters menu. Uncheck to remove.','rsvpmaker-for-toastmasters').'</p>';
+	$choices = array(
+		'wpt_member_signups_suggestions_screen' => __('Member Signups and Suggestions','rsvpmaker-for-toastmasters'),
+		'wp4t_pathways_report' => __('Pathways Progress','rsvpmaker-for-toastmasters'),
+		'wp4t_pathways_checklist' => __('Pathways/BaseCamp checklist','rsvpmaker-for-toastmasters'),
+		'toastmasters_reports_dashboard' => __('Reports Dashboard','rsvpmaker-for-toastmasters'),
+		'wpt_my_data' => __('My Data','rsvpmaker-for-toastmasters'),
+	);
+	if(current_user_can('edit_users')) {
+		$choices['toastmasters_mentors'] = __('Mentors','rsvpmaker-for-toastmasters');
+		$choices['wpt_role_descriptions'] = __('Role Descriptions Setup','rsvpmaker-for-toastmasters');
+		$choices['wpt_dues_report'] = __('Track Dues','rsvpmaker-for-toastmasters');
+		$choices['toastmost_import_export'] = __('Import/Export','rsvpmaker-for-toastmasters');
+	}
+
+	$current = get_user_meta(get_current_user_id(),'wp4t_menu_choices',true);
+	if(!is_array($current))
+		$current = [];
+	foreach($choices as $slug => $label) {
+		printf('<p><label><input type="checkbox" name="choices[]" value="%s" %s> %s</label></p>',$slug,in_array($slug,$current) ? ' checked' : '',$label);
+	}
+	submit_button('Save Menu Choices');
+	echo '</form>';
 }
 
 add_shortcode('wpt_role_descriptions_listing', 'wpt_role_descriptions_listing');
@@ -469,12 +517,11 @@ echo '</form>';
 }
 function toastmasters_admin_help() {
 ?>
-<h1>Help for WordPress for Toastmasters Administrators</h1>
+<h1>Help for Toastmost Website Administrators</h1>
 <p>Consult the <a href="<?php echo admin_url('admin.php?page=wp4t_todolist_screen'); ?>">Todo List</a> for a prioritized list of common tasks, with links to documentation and tutorial resources as well as links to where you can turn on features such as online payments.</p>
-<p>The primary documentation is in the <a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">Knowledge Base on wp4toastmasters.com</a>.</p>
-<p>If you need more help, consider posting a question to the <a  target="_blank" href="https://www.facebook.com/groups/wp4toastmasters/">Facebook group for users of the software</a>.</p>
-<p>Or contact David F. Carr, DTM at <a target="_blank" href="mailto:david@wp4toastmasters.com?subject=WP for Toastmasters question (<?php echo $_SERVER['SERVER_NAME'] ?>)">david@wp4toastmasters.com.</a></p>
-<p>Volunteer help wanted: get in touch if you can help improve the documentation and training materials for this volunteer-led project. <a target="_blank" href="mailto:david@wp4toastmasters.com?subject=WP for Toastmasters documentation and raining">Volunteer</a></p>
+<p>The primary documentation is in the <a  target="_blank" href="https://toastmost.org/knowledge-base/">Knowledge Base on toastmost.org</a>.</p>
+<p>Contact Toastmost creator David F. Carr, DTM, at <a target="_blank" href="mailto:david@toastmost.org?subject=Toastmost question (<?php echo $_SERVER['SERVER_NAME'] ?>)">david@toastmost.org.</a></p>
+<p>Volunteer help wanted: get in touch if you can help improve the documentation and training materials for this volunteer-led project. <a target="_blank" href="mailto:david@toastmost.org?subject=Toastmost documentation and training">Volunteer</a></p>
 <?php
 }
 function toastmasters_admin_screen() {
@@ -4302,7 +4349,32 @@ function wp4t_evaluations( $demo = false ) {
 	</h2>
 	<div id="sections" class="toastmasters rsvpmaker" >
 	<section id="main">
-	<div style="width: 800px;" mode="evaluation_admin" id="react-agenda">Loading &#8230;</div>
+	<?php
+	$events = rsvpmaker_get_past_events( 50 );
+	if ( $events ) {
+		foreach ( $events as $event ) {
+			$sql = "SELECT meta_key, meta_value FROM $wpdb->postmeta WHERE post_id=" . $event->ID . " AND meta_key LIKE '_role_Speaker_%'";
+			$rows = $wpdb->get_results( $sql );
+			if ( $rows ) {
+				printf('<h3>%s</h3>', rsvpmaker_date( 'F jS, Y', $event->ts_start ) );
+				$keys = array();	
+				foreach ( $rows as $row ) {
+					if(!in_array($row->meta_key,$keys) && is_numeric($row->meta_value) && $row->meta_value > 0 ) {
+					$keys[] = $row->meta_key;
+					$role = $row->meta_key;
+					$name = wp4t_get_member_name( $row->meta_value );
+					$count = preg_replace('/[^0-9]/','',$role);
+					$title = get_post_meta( $event->ID, '_title' . $role, true );
+					$manual = get_post_meta( $event->ID, '_manual' . $role, true );
+					$project_key = get_post_meta( $event->ID, '_project' . $role, true );
+					$project = wp4t_get_project_text( $project_key );
+					printf( '<p><a href="%s">%s</a> %s <em>%s</em></p>', wp4t_evaluation_form_url( $row->meta_value, $event->ID ), $name, $project, $title );												
+					}
+				}
+			}
+		}
+	}
+	?>
 	</section>
 	<section class="rsvpmaker" id="myevaluations">
 			<?php

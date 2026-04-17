@@ -682,7 +682,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			$ts_start   = rsvpmaker_strtotime( $date );
 			$elapsed    = 0;
 			$time_array = array();
-			$pattern    = '|<!-- wp:wp4toastmasters/wp4t_agendanoterich2[^>]+>(.+)<!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->|sU';
+			$pattern    = '|<!-- wp:wp4toastmasters/agendanoterich2[^>]+>(.+)<!-- /wp:wp4toastmasters/agendanoterich2 -->|sU';
 			$pattern    = '/<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">(.+)/';
 			preg_match_all( $pattern, $post->post_content, $matches );
 			$notes       = $matches[1];
@@ -696,7 +696,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 				preg_match( $pattern, $line, $match );
 				if ( ! empty( $match[0] ) ) {
 					$data[] = (array) json_decode( $match[0] );
-				} elseif ( strpos( $line, '-- wp:wp4toastmasters/wp4t_agendanoterich2' ) || strpos( $line, '-- wp:wp4toastmasters/agendaedit' ) ) {
+				} elseif ( strpos( $line, '-- wp:wp4toastmasters/agendanoterich2' ) || strpos( $line, '-- wp:wp4toastmasters/agendaedit' ) ) {
 					$pattern = '/{.+}/';
 					preg_match( $pattern, $line, $match );
 					if ( ! empty( $match[0] ) ) {
@@ -789,7 +789,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 					$atts->count        = (int) $_POST['count'][ $index ];
 				}
 				$line = preg_replace( $pattern, json_encode( $atts ), $line );
-			} elseif ( strpos( $line, '-- wp:wp4toastmasters/wp4t_agendanoterich2' ) || strpos( $line, '-- wp:wp4toastmasters/agendaedit' ) ) {
+			} elseif ( strpos( $line, '-- wp:wp4toastmasters/agendanoterich2' ) || strpos( $line, '-- wp:wp4toastmasters/agendaedit' ) ) {
 				// if(!is_numeric(trim($_POST['time_allowed'][$block_count])))
 				// return new WP_REST_Response(array('error' => 'non-numeric data'), 200);
 				$pattern = '/{.+}/';
@@ -1245,9 +1245,7 @@ class Editable_Note extends WP_REST_Controller {
 	rsvpmaker_debug_log($_SERVER['SERVER_NAME'].' '.$_SERVER['REQUEST_URI'],'rsvpmaker_api');
 		global $wpdb, $current_user;
 		$post_id   = (int) $_POST['post_id'];
-		$note      = wp_kses_post( stripslashes($_POST['wp4t_agenda_note'][0]) );
-		$note = preg_replace('/style=[\'"][^"]+[\'"]/','', $note); //strip inline style
-		$note = preg_replace('/h[0-9][^>]*>/','p>', $note); //no headings
+		$note      = wpt_sanitize_user_html( stripslashes($_POST['wp4t_agenda_note'][0]) );
 		$label = sanitize_text_field( $_POST['agenda_note_label'][0] );
 		$result = update_post_meta($post_id,$label,$note);
 		$message = '<p style="border: medium solid green; padding: 5px;">Updated. <a href="'.get_permalink($post_id).'">Reload the page</a> if you need to make further revisions.</p>';
@@ -1377,7 +1375,7 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 		$agendadata['wpt_rest'] = wpt_rest_array();
 		$agendadata['post_id'] = $post_id;
 		$agendadata['editor'] = admin_url('post.php?action=edit&post='.$post_id);
-		$agendadata['request_evaluation'] = ($current_user->ID && wpt_user_is_speaker($current_user->ID,$post_id) ) ? add_query_arg('evalme',$current_user->ID,get_permalink()) : admin_url('admin.php?page=wp4t_evaluations&speaker='.$current_user->ID);
+		$agendadata['request_evaluation'] = wp4t_evaluation_form_url($current_user->ID, $post_id);
 		if($meetings) {
 			foreach($meetings as $meeting)
 			$agendadata['upcoming'][]= array('value' => $meeting->ID, 'permalink' => get_permalink($meeting->ID),'edit_link' => admin_url('wp-admin/post.php?post='.$meeting->ID.'&action=edit'),'label' => preg_replace('/ [0-9]{2}:[0-9]{2}:[0-9]{2}/','',$meeting->datetime) .' '.$meeting->post_title);
@@ -2080,8 +2078,7 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 				elseif('wp4toastmasters/agendaedit' == $block['blockName']) {
 					$editable['headline'] = $block['attrs']['editable'];
 					$text = get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
-					$editable['content'] = ($text) ? trim(html_entity_decode(strip_tags($text))) : '';
-					$editable['content'] = preg_replace( '/(style=("|\Z)(.*?)("|\Z))/', '', $editable['content'] );
+					$editable['content'] = ($text) ? wpt_sanitize_user_html($text) : '';
 					$editable['key'] = 'agenda_note_'.$block['attrs']['uid'];
 					$agenda['editable'][] = $editable;
 				}

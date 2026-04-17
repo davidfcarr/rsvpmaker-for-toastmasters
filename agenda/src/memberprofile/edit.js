@@ -6,7 +6,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { useRsvpmakerRest } from '../useRsvpmakerRest.js';
 import './editor.scss';
 
-export default function Edit({ attributes, attributes: { identifier,showPicture,pictureSize,pictureShape,showEmail,showEmailAlias,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading }, setAttributes, isSelected, className, clientId }) {
+export default function Edit({ attributes, attributes: { identifier,showPicture,pictureSize,pictureShape,nameFontSize,titleFontSize,showEmail,showEmailAlias,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading }, setAttributes, isSelected, className, clientId }) {
 const [options, setOptions] = useState([]);
 const [list, setList] = useState([]);
 const [profile, setProfile] = useState(null);
@@ -184,8 +184,8 @@ const renderMemberProfile = (member, keyPrefix = 'member') => {
 		<div key={keyPrefix} >
 			<div style={{ textAlign: centerHeading ? 'center' : 'left' }}>
 			{showPicture ? <div><img src={member?.avatar ?? ''} alt={member?.display_name ?? ''} style={{ borderRadius: rounding }} /></div> : null}
-			<h2>{member?.display_name ?? ''}{showEdAwards && member?.education_awards ? `, ${member.education_awards}` : ''}</h2>
-			<h3>{member?.title ?? ''}</h3>
+			<h2 style={{ fontSize: nameFontSize }}>{member?.display_name ?? ''}{showEdAwards && member?.education_awards ? `, ${member.education_awards}` : ''}</h2>
+			<h3 style={{ fontSize: titleFontSize }}>{member?.title ?? ''}</h3>
 			{showEmailAlias && member?.alias ? <p><a href={`mailto:${member.alias}`}>{member.alias}</a></p> : null}
 			</div>
 			{showBio && member?.description ? <p dangerouslySetInnerHTML={{ __html: member.description.replace(/\n/g, '<br />') }} /> : null}
@@ -268,6 +268,26 @@ return (
 						setAttributes( { pictureShape } );
 				} }
 					options={ [{label: 'Square', value: 'square'}, {label: 'Rounded Corners', value: 'rounded'}, {label: 'Circle', value: 'circle'}] }	
+	/>
+	<SelectControl	
+					label={ __( 'Font Size for Name', 'rsvpmaker-for-toastmasters' ) }
+	
+					value={ nameFontSize }
+	
+					onChange={ ( nameFontSize ) => {
+						setAttributes( { nameFontSize } );
+				} }
+					options={ [{label: 'H2 default', value: ''}, {label: 'Small', value: '1.2rem'}, {label: 'Medium', value: '1.5rem'}, {label: 'Large', value: '2rem'}, {label: 'Extra Large', value: '2.5rem'}] }	
+	/>
+	<SelectControl	
+					label={ __( 'Font Size for Title', 'rsvpmaker-for-toastmasters' ) }
+	
+					value={ titleFontSize }
+	
+					onChange={ ( titleFontSize ) => {
+						setAttributes( { titleFontSize } );
+				} }
+					options={ [{label: 'H3 default', value: ''}, {label: 'Small', value: '1.1rem'}, {label: 'Medium', value: '1.3rem'}, {label: 'Large', value: '1.5rem'}, {label: 'Extra Large', value: '2rem'}] }	
 	/>
 	<ToggleControl
 		label={ __( 'Show bio', 'rsvpmaker-for-toastmasters' ) }

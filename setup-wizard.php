@@ -110,18 +110,18 @@ p {
 			}
 			if ( $_POST['break'] == 'before' ) 
 			{
-			$agenda_content .= '<!-- wp:wp4toastmasters/wp4t_agendanoterich2 {"time_allowed":' . $time_break . ',"uid":"note1534625016726"} -->
+			$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":' . $time_break . ',"uid":"note1534625016726"} -->
     <p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">' . $time_break . ' minute break</p>
-    <!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->' . "\n\n";
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 			}
 			$numberspeakers = (int) $_POST['numberspeakers'];
 			if ( $numberspeakers ) {
 				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Speaker","count":' . $numberspeakers . ',"time_allowed":' . ( round( $numberspeakers * 7.5 ) ) . ',"padding_time":0} /-->' . "\n\n";
 			}
 			if ( $_POST['break'] == 'afterspeakers' ) {
-			$agenda_content .= '<!-- wp:wp4toastmasters/wp4t_agendanoterich2 {"time_allowed":' . $time_break . ',"uid":"note1534625016726"} -->
+			$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":' . $time_break . ',"uid":"note1534625016726"} -->
     <p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">' . $time_break . ' minute break</p>
-    <!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->' . "\n\n";
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 			}
 			if ( $_POST['tabletopics'] == 'after' ) {
 				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":1,"time_allowed":' . (int) $_POST['time_tt'] . ',"padding_time":0} /-->' . "\n\n";
@@ -131,15 +131,15 @@ p {
 				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Evaluator","count":' . $numberspeakers . ',"time_allowed":' . ( $numberspeakers * 3 ) . '} /-->' . "\n\n";
 			}
 			if ( $_POST['break'] == 'afterevaluators' ) {
-				$agenda_content .= '<!-- wp:wp4toastmasters/wp4t_agendanoterich2 {"time_allowed":' . $time_break . ',"uid":"note1534625016726"} -->
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":' . $time_break . ',"uid":"note1534625016726"} -->
     <p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">' . $time_break . ' minute break</p>
-    <!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->' . "\n\n";
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 			}
 			if ( ! empty( $_POST['reports'] ) ) {
 				$content = sanitize_text_field(stripslashes( $_POST['reports'] ) );
-				$agenda_content .= '<!-- wp:wp4toastmasters/wp4t_agendanoterich2 {"time_allowed":' . $time_ge . ',"uid":"note1534625016726"} -->
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":' . $time_ge . ',"uid":"note1534625016726"} -->
     <p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">' . $content . '</p>
-    <!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->' . "\n\n";
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 			}
 			if ( $_POST['tabletopics'] == 'end' ) {
 				$agenda_content .= '<!-- wp:wp4toastmasters/role {"role":"Topics Master","count":1,"time_allowed":' . (int) $_POST['time_tt'] . ',"padding_time":0} /-->' . "\n\n";
@@ -147,9 +147,9 @@ p {
 			if ( ! empty( $_POST['closing'] ) ) {
  
 				$content = sanitize_text_field(stripslashes( $_POST['closing'] ) );
-				$agenda_content .= '<!-- wp:wp4toastmasters/wp4t_agendanoterich2 {"time_allowed":' . $time_closing . ',"uid":"note1534625016726"} -->
+				$agenda_content .= '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":' . $time_closing . ',"uid":"note1534625016726"} -->
     <p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">' . $content . '</p>
-    <!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->' . "\n\n";
+    <!-- /wp:wp4toastmasters/agendanoterich2 -->' . "\n\n";
 			}
 			$agenda_content .= '<!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
 <div class="wp-block-wp4toastmasters-milestone"><p maxtime="x">Meeting Ends</p></div>

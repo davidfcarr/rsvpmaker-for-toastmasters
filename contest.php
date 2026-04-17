@@ -359,7 +359,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 		}
 		$post = $backup;
 	}
-	if(isset($_GET['snycfrom'])) {
+	if(isset($_GET['snycfrom'])) {	
 		update_post_meta($post->ID,'contest_sync_from',intval($_GET['snycfrom']));
 		add_post_meta(intval($_GET['snycfrom']),'contest_sync_to',$post->ID);
 		$judges   = get_post_meta( intval($_GET['snycfrom']), 'tm_scoring_judges', true );

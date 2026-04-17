@@ -332,7 +332,7 @@ if(isset($_POST['src'])){
             elseif('wp4t_editable_note' == $type)
                 $html = sprintf('<!-- wp:wp4toastmasters/agendaedit {"editable":"%s","uid":"editable%d","time_allowed":"5"} /-->',$item,$index,$time);
             else
-                $html = sprintf('<!-- wp:wp4toastmasters/wp4t_agendanoterich2 {"time_allowed":"%s","uid":"note%s"} --><p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">%s</p><!-- /wp:wp4toastmasters/wp4t_agendanoterich2 -->',$time,$index,$item.' '.$note);
+                $html = sprintf('<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"%s","uid":"note%s"} --><p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">%s</p><!-- /wp:wp4toastmasters/agendanoterich2 -->',$time,$index,$item.' '.$note);
             //printf('<p>item: %s, type: %s, time: %s, note: %s</p>',$item,$type,$time,$note);
             //printf('<div>%s</div>',htmlentities($html));
             $agenda_content .= $html."\n";

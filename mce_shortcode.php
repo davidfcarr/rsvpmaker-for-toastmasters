@@ -9,7 +9,7 @@ class GWP_agenda_note_shortcode {
 	 *
 	 * @var string
 	 */
-	public $shortcode_tag = 'wp4t_agenda_note';
+	public $shortcode_tag = 'agenda_note';
 	/**
 	 * __construct
 	 * class constructor will set the needed filter and action hooks

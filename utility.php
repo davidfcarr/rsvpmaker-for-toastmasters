@@ -1788,8 +1788,7 @@ function is_wp4t( $content = '' ) {
 	}
 
 
-
-	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) && ( strpos( $content, '[wp4t_tm_member_application' ) === false ) ) {
+	if ( ( strpos( $content, '[toastmaster' ) === false ) && ( strpos( $content, 'wp:wp4toastmasters/' ) === false ) && ( strpos( $content, '[tm_member_application' ) === false )  ) {
 
 
 
@@ -6995,9 +6994,13 @@ function toastmasters_fix_agenda_attribute_type() {
 
 function wp4t_tm_member_profile_display($attributes) {
 
-	global $current_user;
+	global $current_user, $profiles_shown;
 
-	extract($attributes); //identifier,showPicture,pictureSize,pictureShape,showEmail,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading
+	extract($attributes); //identifier,showPicture,pictureSize,pictureShape,nameFontSize,titleFontSize,showEmail,showEmailAlias,showBio,joinedClub,joinedTm,showLinks,showEdAwards,centerHeading
+
+	if(empty($profiles_shown))
+		$profiles_shown = [];
+	$profiles_shown[] = $identifier;
 
 	$response = wp4t_tm_member_profile_retrieve($identifier, $attributes);
 
@@ -7037,11 +7040,11 @@ function wp4t_tm_member_profile_display($attributes) {
 
 		}
 
-		echo '<h2>'.$profile['display_name'].($showEdAwards && !empty($profile['education_awards']) ? ', '.$profile['education_awards'] : '').'</h2>';
+		echo '<h2 style="font-size:'.esc_attr($nameFontSize).'">'.$profile['display_name'].($showEdAwards && !empty($profile['education_awards']) ? ', '.$profile['education_awards'] : '').'</h2>';
 
 		if(!empty($profile['title']))
 
-			echo '<h3>'.$profile['title'].'</h3>';
+			echo '<h3 style="font-size:'.esc_attr($titleFontSize).'">'.$profile['title'].'</h3>';
 
 		if(!empty($profile['alias']) && $showEmailAlias)
 			{
@@ -7108,6 +7111,8 @@ function wp4t_tm_member_profile_display($attributes) {
 		printf('<div class="contactdetails">Based on Your Editing Rights: <a href="%s">%s</a> | <a href="%s">%s</a></div>', admin_url('user-edit.php?user_id=' . $profile['ID']), esc_html(__('Edit Profile','rsvpmaker-for-toastmasters')), admin_url('user-edit.php?user_id=' . $profile['ID'] . '#simple-local-avatar-section'), esc_html(__('Edit Profile Picture','rsvpmaker-for-toastmasters')));
 		}
 	}
+
+	isset($_GET['debug']) && printf('<pre>%s</pre>', print_r($profiles_shown, true));
 }
 
 function wp4t_tm_member_profile_retrieve($identifier, $attributes) {
@@ -7399,5 +7404,24 @@ register_block_pattern(
 
 }
 
+add_filter( 'pre_user_description', 'wpt_sanitize_user_html' );
+function wpt_sanitize_user_html( $description ) {
+	$allowed = array(
+		'p'      => array(),
+		'ul'      => array(),
+		'li'      => array(),
+		'ol'      => array(),
+		'br'     => array(),
+		'strong' => array(),
+		'b'      => array(),
+		'em'     => array(),
+		'i'      => array(),
+		'a'      => array(
+			'href'   => true,
+			'target' => true,
+			'rel'    => true,
+		),
+	);
 
-
+	return wp_kses( $description, $allowed );
+}
