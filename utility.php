@@ -5826,13 +5826,11 @@ function wp4t_tm_random_available_check() {
 
 				}
 
-
-
 				$userdata = get_userdata( $user->ID );
 
 
 
-				// if($userdata->hidden_profile)
+				//if($userdata->hidden_profile)
 
 
 
@@ -7020,8 +7018,6 @@ function wp4t_tm_member_profile_display($attributes) {
 
 	$excludeFromContacts = ['ID', 'toastmasters_id', 'education_awards', 'public_profile', 'alias'];
 
-	$response = wp4t_tm_member_profile_retrieve($identifier, $attributes);
-
 	foreach($response['list'] as $profile) {
 		$id = $profile['ID'];
 		global $profiles_shown;
@@ -7286,7 +7282,7 @@ function wpt_public_profile($id,$contactmethods,$attributes, $is_officer = false
 	$public_email = !empty($data->public_email) || get_user_meta($id,'public_email',true);
 	$public_phone = !empty($data->public_phone) || get_user_meta($id,'public_phone',true);
 
-	if(!wp4t_is_club_member() && !$public_profile) {
+	if(!wp4t_is_club_member() && !$public_profile && !$is_officer) {
 
 		error_log('wpt_public_profile: user ' . $id . ' does not have a public profile and is not an officer, returning null '.var_export($data->public_profile,true) . ' '.var_export(get_user_meta($id,'public_profile',true), true).' '.var_export($data,true));
 

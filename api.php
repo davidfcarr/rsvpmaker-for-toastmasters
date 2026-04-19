@@ -1567,7 +1567,7 @@ class WP4T_Mobile_Code extends WP_REST_Controller {
 <p>Once you have set your password, you can also change the name associated with your account at <a href="' . site_url() . '/wp-admin/profile.php">' . site_url() . '/wp-admin/profile.php</a></p>
 <p>Setting a website password is not required to test the mobile app but will allow you to test the website agenda management tools using the demo.toastmost.org website.</p>
 ';
-				$message .= '<p>' . __( 'For a basic orientation to the website setup, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>', 'rsvpmaker-for-toastmasters' ) . '</p>';
+				//$message .= '<p>' . __( 'For a basic orientation to the website setup, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>', 'rsvpmaker-for-toastmasters' ) . '</p>';
 			}
 			}
 			if($user) {

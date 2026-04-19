@@ -354,10 +354,6 @@ function wp4t_awesome_dashboard_widget_function() {
 
 	?>
 
-<p><a href="<?php echo admin_url('admin.php?page=wp4t_enable_mobile');?>"><?php echo __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ) ?></a></p>
-
-<p><img decoding="async" data-attachment-id="18653" data-permalink="https://toastmost.org/2025/03/15/toastmost-phone-screenshot/image/" data-orig-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1033%2C1022&amp;ssl=1" data-orig-size="1033,1022" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-medium-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=300%2C297&amp;ssl=1" data-large-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1024%2C1013&amp;ssl=1" src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" data-src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" alt="" class="wp-image-18653 ls-is-cached lazyloaded" style="width:450px"></p>
-
 <p><?php echo sprintf( __( 'You are viewing the private members-only area of the website. For a basic orientation, see the <a href="%s">welcome page</a>.', 'rsvpmaker-for-toastmasters' ), admin_url( 'index.php?page=toastmasters_welcome' ) ); ?>
 
 <br /></p>
@@ -770,7 +766,7 @@ function toastmasters_admin_widget() {
 
 	}
 
-	printf( '<p>Your access level: Publish blog posts <strong>%s</strong>, Edit posts and pages <strong>%s</strong>, Publish events <strong>%s</strong>, Edit events <strong>%s</strong>, Create/edit user accounts <strong>%s</strong>.</p><p>Administrators: %s <a href="https://www.wp4toastmasters.com/knowledge-base/administrators/" target="_blank">Security roles explained</a></p>', $publish_posts, $edit_others_posts, $publish_rsvpmaker, $edit_others_rsvpmakers, $edit_users, implode( ', ', $administrators ) );
+	printf( '<p>Your access level: Publish blog posts <strong>%s</strong>, Edit posts and pages <strong>%s</strong>, Publish events <strong>%s</strong>, Edit events <strong>%s</strong>, Create/edit user accounts <strong>%s</strong>.</p><p>Administrators: %s <a href="https://toastmost.org/knowledge-base/security-roles/" target="_blank">Security roles explained</a></p>', $publish_posts, $edit_others_posts, $publish_rsvpmaker, $edit_others_rsvpmakers, $edit_users, implode( ', ', $administrators ) );
 
 	if ( current_user_can( 'edit_others_pages' ) ) {
 
@@ -965,7 +961,7 @@ else {
 	}
 
 	global $submenu;
-
+	if(!empty($submenu['wpt_email_handler_page']))
 	foreach ($submenu['wpt_email_handler_page'] as $index => $item) {
 
 		if($index) 
@@ -1034,37 +1030,12 @@ function wp4t_awesome_add_dashboard_widgets() {
 
 	$wp_meta_boxes['dashboard']['normal']['core'] = $sorted_dashboard;
 
-	if (current_user_can('edit_others_rsvpmakers'))  /*( current_user_can( 'edit_others_rsvpmakers' ) ) || current_user_can( 'add_members' ) )*/ {
+	if (current_user_can('edit_others_rsvpmakers') && current_user_can('edit_others_posts')) {
 
 		$wp_meta_boxes['dashboard']['side']['core'] = array();//remove default widgets
 
 		wp_add_dashboard_widget( 'toastmasters_admin_widget', 'Club Website Administration', 'toastmasters_admin_widget', null, null, 'side','core' );
-
-		/*
-
-		wp_add_dashboard_widget( 'toastmasters_admin_widget', 'Club Website Administration', 'toastmasters_admin_widget' );
-
-		$side_dashboard        = $wp_meta_boxes['dashboard']['side']['core'];
-
-		$normal_dashboard      = $wp_meta_boxes['dashboard']['normal']['core'];
-
-		$sidebar_widget_backup = array(
-
-			'toastmasters_admin_widget' =>
-
-			$normal_dashboard['toastmasters_admin_widget'],
-
-		);
-
-		unset( $wp_meta_boxes['dashboard']['normal']['core']['toastmasters_admin_widget'] );
-
-		$wp_meta_boxes['dashboard']['side']['core'] = array_merge( $sidebar_widget_backup, $side_dashboard );
-
-		*/
-
 	}
-
-	//mail('david@carrcommunications.com','dashboard meta_boxes',var_export($wp_meta_boxes['dashboard'],true));
 
 }
 
@@ -10669,7 +10640,7 @@ function wp4t_make_blog_member( $user_id, $blog_id = 0, $role = 'subscriber' ) {
 
 		<p>Your password is the same for all the sites listed above.</p>';
 
-		$message .= '<p>' . __( 'For a basic orientation to the website setup we are using, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>', 'rsvpmaker-for-toastmasters' ) . '</p>';
+		//$message .= '<p>' . __( 'For a basic orientation to the website setup we are using, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>', 'rsvpmaker-for-toastmasters' ) . '</p>';
 
 			$admin_email      = get_bloginfo( 'admin_email' );
 
@@ -10899,7 +10870,7 @@ class Toastmasters_Member {
 
 		
 
-		$message    .= '<p>' . __( 'For a basic orientation to the website setup we are using, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>', 'rsvpmaker-for-toastmasters' ) . '</p>';
+		//$message    .= '<p>' . __( 'For a basic orientation to the website setup we are using, see the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>', 'rsvpmaker-for-toastmasters' ) . '</p>';
 
 		$message    .= '<p>' . __( 'Note that your club website user name and password are <em>not</em> the same as the credentials you will use on toastmasters.org (the website of Toastmasters International) to access Pathways educational materials.', 'rsvpmaker-for-toastmasters' ) . '</p>';
 
@@ -13126,12 +13097,6 @@ function wp4t_print_contacts( $cron = false ) {
 }
 
 function wp4t_awesome_user_profile_fields( $user ) {
-
-	//wp4t_tm_grant_privacy_permission_ui (false, true, $user);
-
-	if(wp4t_is_district())
-
-		return;
 
 	$profile_blocked = get_user_meta( $user->ID, 'tm_directory_blocked', true );
 	$public_profile = get_user_meta( $user->ID, 'public_profile', true );
@@ -17077,11 +17042,15 @@ function show_wpt_promo( $atts = array() ) {
 
 	?>
 
-<div style="background-color: #fff; padding: 10px;"><p>Learn more about <a href="https://wp4toastmasters.com" target="_blank">WordPress for Toastmasters</a>. This open source software project was created by <a target="_blank" href="https://davidfcarr.com">David F. Carr, DTM</a>, and receives no financial or logistical support from Toastmasters International. The Toastmasters-branded themes available through Toastmost.org have been reviewed for conformance to Toastmasters branding requirements.</p>
+<div style="background-color: #fff; padding: 10px;"><p>Learn more about <a href="https://toastmost.org" target="_blank">Toastmost.org</a>, the WordPress for Toastmasters project. This open source software project was created by <a target="_blank" href="https://davidfcarr.com">David F. Carr, DTM</a>, and receives no financial or logistical support from Toastmasters International. The Toastmasters-branded themes available through Toastmost.org have been reviewed for conformance to Toastmasters branding requirements.</p>
 
 	<p>Thanks to the volunteers, donors, and toastmost.org subscribers who lend their support.</p>
 
 <p>The <a href="https://toastmost.org">Toastmost.org</a> club website hosting service is operated by <a href="https://carrcommunications.com">Carr Communications Inc.</a>, offering convenient low-cost access to the software. The software and related business arrangements have been reviewed by Toastmasters International for conformance to their brand guidelines.</p>
+
+<p><a href="<?php echo admin_url('admin.php?page=wp4t_enable_mobile');?>"><?php echo __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ) ?></a></p>
+
+<p><img decoding="async" data-attachment-id="18653" data-permalink="https://toastmost.org/2025/03/15/toastmost-phone-screenshot/image/" data-orig-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1033%2C1022&amp;ssl=1" data-orig-size="1033,1022" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-medium-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=300%2C297&amp;ssl=1" data-large-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1024%2C1013&amp;ssl=1" src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" data-src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" alt="" class="wp-image-18653 ls-is-cached lazyloaded" style="width: 300px"></p>
 
 </div>
 
@@ -17143,6 +17112,29 @@ function rsvptoast_admin_notice() {
 
 	global $rsvp_options;
 
+	$welcome_notice_shown = (isset($_GET['welcome_reset'])) ? 0 : intval(get_user_meta($current_user->ID,'welcome_notice_shown',true));
+	if(strtotime($current_user->user_registered) > strtotime('-90 day') && $welcome_notice_shown < 5) {
+		$noticecontent = '<h1>Welcome, Toastmaster</h1><p>This website uses a version of the WordPress web publishing software that is customized for Toastmasters purposes, courtesy of <a href="https://toastmost.org">Toastmost.org</a>.</p>';
+		if(current_user_can('manage_options')) {
+		$noticecontent .= '<p>As a new website administrator, you may want to check out the <a target="_blank" href="https://toastmost.org/knowledge-base/">knowledge base</a> for tips on how to use your account and get the most out of the website.</p>';
+		}
+		$noticecontent .= '<p>From this behind-the-scenes dashboard, you can customze your <a href="'.admin_url('profile.php').'">member profile</a> (name, email, bio blurb, profile picture).</p>';
+		$meetings = future_toastmaster_meetings();
+		if(!empty($meetings)) {
+		$noticecontent .= '<p style="font-size: large;"><strong>Sign up:</strong> See the <a href="'.admin_url().'#awesome_dashboard_widget">main dashboard screen</a> for a listing of upcoming meetings for which you can sign up for roles.</p>';
+		}
+		$noticecontent .= '<p>To exit to the public website, see the Visit Site link under the site title on the black menu bar at the top of the screen.</p><p><img width="300" src="'.plugins_url('images/visit-site-link-dashboard.png',__FILE__).'"/></p>';
+
+	printf('<div class="notice notice-info">%s</div>',$noticecontent);
+	update_user_meta($current_user->ID,'welcome_notice_shown',$welcome_notice_shown + 1);
+	if(!current_user_can('manage_options')) {
+		return;//don't show any other notices to non-admins until they've seen the welcome notice a few times.
+	}
+	if(current_user_can('manage_options') && !$welcome_notice_shown) {
+		return;//don't show any other notices to admins first time
+	}
+	}
+
 	if(isset($_GET['remove_problem']) && rsvpmaker_verify_nonce()) {
 
 		rsvpmail_remove_problem(sanitize_text_field($_GET['remove_problem']));
@@ -17157,7 +17149,7 @@ function rsvptoast_admin_notice() {
 
 		$block = strpos($problem,'block') ? 'You may need to "whitelist" email from this domain with your email provider' : '';
 
-		echo '<div class="notice notice-info"><p>Email delivery issue, <span style="color:red;">' . $problem . ' </span> '.$block.' (<a href="'.$fix.'">Re-enable email delivery</a>)</p></div>';
+		echo '<div class="notice notice-info is-dismissible"><p>Email delivery issue, <span style="color:red;">' . $problem . ' </span> '.$block.' (<a href="'.$fix.'">Re-enable email delivery</a>)</p></div>';
 
 	}
 
@@ -21766,7 +21758,7 @@ function wpt_voting_tool_link() {
 
 	$permalink                            = get_permalink( $post->ID );
 
-	return sprintf( '<a href="%s">%s</a> - <a href="https://www.wp4toastmasters.com/knowledge-base/how-to-use-the-vote-counters-tool/">%s</a>', add_query_arg('voting',1,$permalink), __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ), __( 'Tutorial', 'rsvpmaker-for-toastmasters' ) );
+	return sprintf( '<a href="%s">%s</a> - <a href="https://toastmost.org/knowledge-base/how-to-use-the-vote-counters-tool-website-and-mobile-app-versions/">%s</a>', add_query_arg('voting',1,$permalink), __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ), __( 'Tutorial', 'rsvpmaker-for-toastmasters' ) );
 
 }
 

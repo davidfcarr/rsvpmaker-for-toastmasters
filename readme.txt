@@ -5,7 +5,7 @@ Tags: toastmasters
 Requires PHP: 5.6
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 6.7.4
+Stable tag: 6.7.5
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 This Toastmasters-specific extension to the RSVPMaker events plugin adds role signups and member performance tracking.
@@ -17,7 +17,7 @@ As an alternative to other club web software options that include a custom conte
 Part of a broader WordPress for Toastmasters solution, this plugin lets members sign up for roles on the website. Meeting organizers can also assign members to roles. In addition, club leaders can track member participation and performance through the administrator's dashboard.
 Dues collection and dues tracking are enabled through integration with the Stripe and PayPal online payment services. When enrolling new members, you can have them fill out a web-based version of the application form and pay dues as part of that process.
 The related [Toastmasters-branded WordPress themes](https://www.wp4toastmasters.com/2023/12/10/new-more-flexible-wordpress-for-toastmasters-design-tools-for-2024/), available on Toastmost or to [download](https://www.wp4toastmasters.com/2023/12/10/new-more-flexible-wordpress-for-toastmasters-design-tools-for-2024/) and use on other web hosting, make it easy to meet Toastmasters International branding guidelines, adding the logo and the required legal disclaimers and integrating official brand colors into the WordPress editor.
-For documentation and tips on more effective Toastmasters web and social media marketing, see [WP4Toastmasters.com](https://wp4toastmasters.com/ "WordPress for Toastmasters"). Managed hosting for the WordPress for Toastmasters solution is available at [Toastmost.org](https://toastmost.org). Join the [Toastmost and WordPress for Toastmasters Users group on Facebook](https://www.facebook.com/groups/wp4toastmasters/).
+For documentation and tips on more effective Toastmasters web and social media marketing, see the [Toastmost knowledge base](https://toastmost.org/knowledge-base/ "Toastmost knowledge base"). Managed hosting for the WordPress for Toastmasters solution is available at [Toastmost.org](https://toastmost.org). Join the [Toastmost and WordPress for Toastmasters Users group on Facebook](https://www.facebook.com/groups/wp4toastmasters/).
 RSVPMaker for Toastmasters is an extension of [RSVPMaker](https://wordpress.org/plugins/rsvpmaker/), a general purpose event scheduling and RSVP tracking plugin. This means you can also use your website to manage other types of events, beyond club meetings, such as open house or training events. RSVPMaker can be configured to allow you to accept online payments via PayPal or Stripe. [Documentation at RSVPMaker.com](https://rsvpmaker.com)
 Developers who would like to contribute to this project can find the code on GitHub
 [RSVPMaker](https://github.com/davidfcarr/rsvpmaker)

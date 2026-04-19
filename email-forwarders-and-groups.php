@@ -41,7 +41,7 @@ function wpt_email_handler_page () {
         printf('<p>Status: member list %s officer list %s</p>',$member_status,$officer_status);
         echo '<h2>Using your own domain</h2>';
         if(wpt_is_own_domain()) {
-            echo '<p>If this site is <strong>not</strong> hosted as part of the Toastmost service, the site administrator must configure a default email forwarder to send messages not associated with any other mailbox to an account the server is configured to check. Contact david@wp4toastmasters.com for assistance as this feature is not completely documented yet.</p>';
+            echo '<p>If this site is <strong>not</strong> hosted as part of the Toastmost service, the site administrator must configure a default email forwarder to send messages not associated with any other mailbox to an account the server is configured to check. Contact david@toastmost.org for assistance as this feature is not completely documented yet.</p>';
         }
         else {
             printf('<p>If you register your own domain to use with this website, you can use email addresses such as members@clubawesome.org (without the prefix).</p>');

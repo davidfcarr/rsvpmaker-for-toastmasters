@@ -53,6 +53,7 @@ function wp4t_init_actions() {
 
 add_action( 'widgets_init', 'wptoast_widgets' );
 add_action( 'wp_enqueue_scripts', 'toastmasters_css_js' );
+add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 add_action( 'pre_get_posts', 'toast_modify_query_exclude_category' );
 add_action( 'admin_menu', 'wp4t_tm_security_setup', 1 );
 add_action( 'admin_bar_menu', 'wp4t_toolbar_add_member', 999 );
@@ -75,5 +76,5 @@ add_action( 'edit_user_profile_update', 'wp4t_save_awesome_user_profile_fields' 
 add_action( 'user_new_form', 'wp4t_member_not_user' );
 add_action( 'rsvpmaker_datebox_message', 'toastmasters_datebox_message' );
 add_action( 'bp_profile_header_meta', 'display_toastmasters_profile' );
-add_action( 'admin_head', 'wp4t_profile_richtext' );
+//add_action( 'admin_head', 'wp4t_profile_richtext' );
 add_action( 'admin_init', 'wp4t_cron_nudge_setup' );

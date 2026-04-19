@@ -55,10 +55,9 @@ function toastmasters_reports_menu() {
 
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_activity_log', 'toastmasters_activity_log' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
-	add_submenu_page( 'toastmasters_admin_screen', __( 'More', 'rsvpmaker-for-toastmasters' ), __( 'More', 'rsvpmaker-for-toastmasters' ), 'read', 'toastmost_more', 'toastmost_more' );	
+	add_submenu_page( 'toastmasters_admin_screen', __( 'More', 'rsvpmaker-for-toastmasters' ), __( 'More', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmost_more', 'toastmost_more' );	
 	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ),'edit_users', 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
-	add_action( 'admin_enqueue_scripts', 'toastmasters_css_js' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_member_votes', 'toastmasters_member_votes' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
@@ -3254,11 +3253,11 @@ function toastmasters_welcome() {
 	  
 	</ul>
 	</li>
-	<li>Checking out the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>, which indludes a demo video.</li>
+	<!--li>Checking out the <a href="http://wp4toastmasters.com/new-member-guide-to-wordpress-for-toastmasters/">New Member Guide to WordPress for Toastmasters</a>, which indludes a demo video.</li -->
 	</ul>
 	</section><!-- end #TO DO -->
 	<section class="rsvpmaker"  id="credits">
-	<p>WordPress for Toastmasters is a volunteer project derived from customizations originally created by David F. Carr for <a href="http://www.clubawesome.org">Club Awesome Toastmasters</a> in Coral Springs, Florida and supported by <a href="http://www.carrcommunications.com">Carr Communications Inc</a>.</p>
+	<p>Toastmost is a volunteer project derived from customizations originally created by David F. Carr for <a href="http://www.clubawesome.org">Club Awesome Toastmasters</a> in Coral Springs, Florida and supported by <a href="http://www.carrcommunications.com">Carr Communications Inc</a>.</p>
 	<p>Many improvements have been (and continue to be) suggested by the members of Club Awesome and by Toastmasters around the world who see the potential of this project.</p>
 	<p>Some particularly important supporters include:
 	<br />Lois Margolin
@@ -3292,7 +3291,7 @@ function toastmasters_support() {
 	show_wpt_promo();
 	?>
 <h2>How You Can Help</h2>
-<p>Ideas for improvements are always welcome. Help with documentation and training materials would be appreciated, particularly from those with a training or technical writing background. Write to <a href="mailto:david@wp4toastmasters.com?subject=WordPress for Toastmasters">david@wp4toastmasters.com</a>.</p>
+<p>Ideas for improvements are always welcome. Help with documentation and training materials would be appreciated, particularly from those with a training or technical writing background. Write to <a href="mailto:david@toastmost.org?subject=WordPress for Toastmasters">david@toastmost.org</a>.</p>
 <p>The underlying software is available as open source code, meaning web developers and designers can contribute their own improvements. See the <a href="https://wordpress.org/plugins/rsvpmaker/">RSVPMaker</a> and <a href="https://wordpress.org/plugins/rsvpmaker-for-toastmasters/">RSVPMaker for Toastmasters</a> plugins and the <a href="https://wordpress.org/themes/lectern/">Lectern</a> theme in the WordPress.org repository and on <a href="https://github.com/davidfcarr">Github</a>.</p>
 <p>&quot;Like&quot; the <a href="https://www.facebook.com/wp4toastmasters">WordPress for Toastmasters Facebook page</a> and join the <a href="https://www.facebook.com/groups/wp4toastmasters">Toastmost and WordPress for Toastmasters Users</a>  Facebook group.</p>
 <!-- Begin MailChimp Signup Form -->
@@ -3576,7 +3575,7 @@ function toastmasters_import_export() {
 	printf( '<p>%s <a href="%s">%s</a></p>', __( 'If you want to import or sync a member spreadsheet from toastmasters.org, see the', 'rsvpmaker-for-toastmasters' ), admin_url( 'users.php?page=wp4t_add_awesome_member#import' ), __( 'Add Members page', 'rsvpmaker-for-toastmasters' ) );
 ?>
 <h2>Importing Data from Free Toast Host or easySpeak</h2>
-<p>If you want to importing data from one of the other club website platforms, contact <a href="mailto:david@wp4toastmasters.com">david@wp4toastmasters.com</a> to volunteer for a software beta test program.</p>
+<p>If you want to importing data from one of the other club website platforms, contact <a href="mailto:david@toastmost.org">david@toastmost.org</a> to volunteer for a software beta test program.</p>
 <?php
 return;//disabled for now
 ?>

@@ -464,7 +464,7 @@ function wpt_setup_wizard_3() {
 			$mail['html'] = $message . "\n\n" . '<p>For how-to documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>.</p>';
 			$mail['subject'] = 'Next steps after completing the Toastmasters setup wizard';
 			$mail['to'] = $current_user->user_email;
-			$mail['from'] = 'david@wp4toastmasters.com';
+			$mail['from'] = 'david@toastmost.org';
 			$mail['fromname'] = 'WordPress for Toastmasters setup wizard';
 			rsvpmailer( $mail );
 			echo 'sending next steps by email';

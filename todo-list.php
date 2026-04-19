@@ -228,11 +228,11 @@ function wp4t_todolist($blog_id, $send = false) {
     }
     //$output .= var_export($done,true);
     $output .= '<h2>Need More Help?</h2><p>See the <a href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a> and <a href="https://www.wp4toastmasters.com/video-course/">Video Course</a>.
-    Or write to <a href="mailto:david@wp4toastmasters.com?subject=Todo page query">david@wp4toastmasters.com</a>.</p>
+    Or write to <a href="mailto:david@toastmost.org?subject=Todo page query">david@toastmost.org</a>.</p>
     <p>There is also a <a href="https://www.facebook.com/groups/wp4toastmasters">Facebook group</a> where users of the software and the Toastmost service can compare notes and give feedback.</p>';
     $output .= '<h2>Volunteer Help</h2><p>The WordPress for Toastmasters project is looking for volunteers to help with documentation and training materials.
     If you have web programming or design skills, this is open source software for which your contributions are welcome. 
-    Write to <a href="mailto:david@wp4toastmasters.com?subject=Todo page volunteer">david@wp4toastmasters.com</a>.</p>';
+    Write to <a href="mailto:david@toastmost.org?subject=Todo page volunteer">david@toastmost.org</a>.</p>';
     if(isset($_GET['cancel_reminder'])) {
         wp_clear_scheduled_hook('wp4t_todolist_cron', array($blog_id, true) );
     }
@@ -242,7 +242,7 @@ function wp4t_todolist($blog_id, $send = false) {
     if($send) {
         $mail['html'] = "<p>This email is intended to nudge you toward fleshing out your Toastmost website and taking full advantage of it. You can find the same list on the administrative dashboard under TM Administration.</p>\n".$output;
         $mail['subject'] = 'Toastmost.org todo list for '.get_bloginfo('name');
-        $mail['from'] = 'david@wp4toastmasters.com';
+        $mail['from'] = 'david@toastmost.org';
         $mail['fromname'] = 'Toastmost.org';
         $blogusers = get_users( array( 'role__in' => array( 'administrator', 'manager' ), 'blog_id' => $blog_id ) );
         foreach ( $blogusers as $user ) {
