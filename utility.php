@@ -4956,25 +4956,15 @@ function wp4t_jsonBlockDataOutput($block, $post_id) {
 
 
 
-function wp4t_get_get_to_attributes ($evalme_mode = 'evaluation') {
-
-
+function wp4t_get_to_attributes ($evalme_mode = 'evaluation') {
 
 	global $post, $wpdb;
 
-
-
 	if(empty($_GET))
-
-
 
 		return ' mode="" ';
 
-
-
 	$output = '';
-
-
 
 	foreach($_GET as $key => $value) {
 
@@ -4994,15 +4984,9 @@ function wp4t_get_get_to_attributes ($evalme_mode = 'evaluation') {
 
 	if(isset($_GET['evalme'])) {
 
-
-
 		$output .= ' mode="'.$evalme_mode.'" ';
 
-
-
 		$member = intval($_GET['evalme']);
-
-
 
 		$key = $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key LIKE '_role_Speaker%' and meta_value=".$member." AND post_id=$post->ID ");
 

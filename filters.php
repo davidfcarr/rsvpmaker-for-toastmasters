@@ -135,7 +135,7 @@ add_filter( 'the_content', function ( $content ) {
 	$reactdiv ='';
 	$promo = '';
 	if('rsvpmaker_template' == $post->post_type)
-		return '<div  id="react-agenda" '.wp4t_get_get_to_attributes().' >Loading ...</div>';
+		return '<div  id="react-agenda" '.wp4t_get_to_attributes().' >Loading ...</div>';
 	if(isset($_GET['meetingvote']) && $post->post_type == 'tmminutes') {
 		return '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
 	}
@@ -172,13 +172,16 @@ add_filter( 'the_content', function ( $content ) {
 	} 
 	elseif(isset($_GET['evalme']) && (!is_user_logged_in() || !wp4t_is_club_member())) {
 		if(!is_user_logged_in()) {
-			$link = sprintf('<p>If you have a password, please <a href="%s">log in</a></p>',wp_login_url(get_permalink().'?evalme='.$_GET['evalme']));
+			$link = sprintf('<p>If you are a member with a password, please <a href="%s">log in</a></p>',wp_login_url(get_permalink().'?evalme='.$_GET['evalme']));
 		}
-		$link .= '<div  id="react-agenda" '.wp4t_get_get_to_attributes('evaluation_guest').' >Loading ...</div>';
+		$link .= '<div  id="react-agenda" '.wp4t_get_to_attributes('evaluation_guest').' >Loading ...</div>';
 		return $link;
 	}
 	elseif(isset($_GET['meetingvote'])) {
-		$link .= '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
+		if(wp4t_is_club_member())
+			$link .= '<div id="react-agenda" mode="voting" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
+		else
+			$link .= '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post->ID.'" >Loading ...</div>';
 		return $link;
 	}
 	elseif ( ! wp4t_is_club_member() && ! current_user_can('manage_network') ) {
@@ -209,7 +212,7 @@ add_filter( 'the_content', function ( $content ) {
 			else
 				$revert_default = get_option('toast_revert_default');
 			if((current_user_can('manage_network') || wp4t_is_club_member()) && !isset($_GET['revert']) && !$revert_default) {
-				$reactdiv = '<div id="react-agenda" '.wp4t_get_get_to_attributes().' >Loading ...</div>';
+				$reactdiv = '<div id="react-agenda" '.wp4t_get_to_attributes().' >Loading ...</div>';
 				$parts = explode('<!-- wp:wp4toastmasters',$content);
 				$content = '';
 				if(!empty($parts[0]))

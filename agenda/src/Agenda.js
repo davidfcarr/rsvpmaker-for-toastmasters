@@ -162,6 +162,10 @@ export default function Agenda(props) {
             if (props.isTemplate) {
                 modeoptions.push({ label: mytranslate('Organize', data), value: 'reorganize' });
                 modeoptions.push({ label: mytranslate('Template/Settings', data), value: 'settings' });
+            } 
+            else if (props.isGuest) {
+                modeoptions.push({ label: mytranslate('Evaluation', data), value: 'evaluation' });
+                modeoptions.push({ label: mytranslate('Voting', data), value: 'voting' });
             } else {
                 modeoptions.push({ label: mytranslate('Sign Up', data), value: 'signup' });
                 if (user_can('edit_post') || user_can('organize_agenda') || user_can('edit_signups')) {
@@ -272,7 +276,7 @@ export default function Agenda(props) {
                     {date.toLocaleDateString('en-US', dateoptions)}{' '}
                     {data.is_template && <span>({mytranslate('Template', data)})</span>}
                 </h4>
-                <ModeControl makeNotification={makeNotification} isTemplate={false !== data.is_template} post_id={data.post_id} />
+                <ModeControl makeNotification={makeNotification} isTemplate={false !== data.is_template} isGuest={!data.is_club_member} post_id={data.post_id} />
                 {!Array.isArray(data.blocksdata) && <p>{mytranslate('Error loading agenda', data)} (<a href={window.location.href + '?revert=1'}>{mytranslate('try alternate version', data)}</a>).</p>}
                 {('assign' == mode) && <div className="assignment" note="workaround for alignment issue"></div>}
                 {Array.isArray(data.blocksdata) && data.blocksdata.map((block, blockindex) => {

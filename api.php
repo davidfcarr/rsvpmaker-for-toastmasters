@@ -1341,6 +1341,7 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 		$meetings = [];
 	$agendadata['current_user_id'] = ($current_user->ID && (wp4t_is_club_member($current_user->ID)) || current_user_can('manage_network')) ? $current_user->ID : false;
 	$agendadata['is_user_logged_in'] = is_user_logged_in(); // true for logged in users who are not members
+	$agendadata['is_club_member'] = wp4t_is_club_member($current_user->ID);
 	$agendadata['current_user_name'] = ($current_user->ID) ? wp4t_get_member_name($current_user->ID) : '';
 	$agendadata['newSignupDefault'] = (bool) get_option('wp4t_newSignupDefault');
 	$agendadata['admin_url'] = admin_url();

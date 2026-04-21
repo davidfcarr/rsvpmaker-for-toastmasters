@@ -504,7 +504,7 @@ FILE: filters.php
   tm_grant_privacy_permission_ui  ->  wp4t_tm_grant_privacy_permission_ui  (1x)
   agenda_sidebar_editor  ->  wp4t_agenda_sidebar_editor  (2x)
   awesome_contactmethod  ->  wp4t_awesome_contactmethod  (1x)
-  get_get_to_attributes  ->  wp4t_get_get_to_attributes  (3x)
+  get_get_to_attributes  ->  wp4t_get_to_attributes  (3x)
   members_only_jetpack  ->  wp4t_members_only_jetpack  (1x)
   member_only_excerpt  ->  wp4t_member_only_excerpt  (3x)
   signup_sheet_editor  ->  wp4t_signup_sheet_editor  (1x)
@@ -740,7 +740,7 @@ FILE: utility.php
   get_club_member_emails  ->  wp4t_get_club_member_emails  (1x)
   make_tm_roledata_array  ->  wp4t_make_tm_roledata_array  (1x)
   awe_rest_user_options  ->  wp4t_awe_rest_user_options  (1x)
-  get_get_to_attributes  ->  wp4t_get_get_to_attributes  (1x)
+  get_get_to_attributes  ->  wp4t_get_to_attributes  (1x)
   tm_member_application  ->  wp4t_tm_member_application  (1x)
   add_joined_club_date  ->  wp4t_add_joined_club_date  (2x)
   get_role_assignments  ->  wp4t_get_role_assignments  (1x)
@@ -893,7 +893,7 @@ COMPLETE ALPHABETICAL LIST OF RENAMED FUNCTIONS
   get_club_members  ->  wp4t_get_club_members
   get_dynamic_agenda_script_handle  ->  wp4t_get_dynamic_agenda_script_handle
   get_evaluator_postdata  ->  wp4t_get_evaluator_postdata
-  get_get_to_attributes  ->  wp4t_get_get_to_attributes
+  get_get_to_attributes  ->  wp4t_get_to_attributes
   get_latest_speeches  ->  wp4t_get_latest_speeches
   get_latest_visit  ->  wp4t_get_latest_visit
   get_manuals_array  ->  wp4t_get_manuals_array
