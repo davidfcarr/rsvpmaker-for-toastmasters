@@ -416,7 +416,7 @@ function toast_scoring_dashboard( $related = 0, $practice = array() ) {
 				$contest_defaults[] = array('role' => $role, 'option' => $default_option);
 			}
 		}			
-		$output  .= '<p>Use this dashboard to pick a contest, add your list of contestants and judges, and generate personalized links to a page where each judge can score contestants and enter their votes.</p><p>As the judges vote, you will see their votes appear on the dashboard within seconds. If you have the Timer and Tiebreaking Judge record their work online, their input can also be factored in to show if any contestants were disqualified or how any ties were broken.</p><p><a href="https://www.wp4toastmasters.com/knowledge-base/contest-setup/" target="_blank">Step-By-Step Directions</a></p>';
+		$output  .= '<p>Use this dashboard to pick a contest, add your list of contestants and judges, and generate personalized links to a page where each judge can score contestants and enter their votes.</p><p>As the judges vote, you will see their votes appear on the dashboard within seconds. If you have the Timer and Tiebreaking Judge record their work online, their input can also be factored in to show if any contestants were disqualified or how any ties were broken.</p><p><a href="https://toastmost.org/knowledge-base/contest-setup/" target="_blank">Step-By-Step Directions</a></p>';
 		$default_option = (isset($contest_defaults[0])) ? $contest_defaults[0]['option'] : '';
 		$default_role = (isset($contest_defaults[0])) ? $contest_defaults[0]['role'] : '';
 		$output  .= '<h1>Choose Contest</h1>' . sprintf('<form method="post" action="%s">
@@ -825,8 +825,8 @@ $output .= '<div id="custom_contest"><h1>Custom Contest</h1>' . sprintf(	'<form 
 			);
 			$links .= sprintf( '<p>%s <a target="_blank" href="%s">%s</a></p>', 'Practice Contest Ballot for ' . esc_html($name), esc_attr($v), esc_html($v) );
 			$plainlinks .= "Practice Ballot\n".$v."\n\n";
-			$links .= '<p>See this <a href="https://www.wp4toastmasters.com/knowledge-base/digital-ballot-for-toastmasters-contests/">tutorial</a> on how the digital ballot works.</a>';
-			$plainlinks .= "Tutorial\nhttps://www.wp4toastmasters.com/knowledge-base/digital-ballot-for-toastmasters-contests/\n\n";
+			$links .= '<p>See this <a href="https://toastmost.org/knowledge-base/digital-ballot-for-toastmasters-contests/">tutorial</a> on how the digital ballot works.</a>';
+			$plainlinks .= "Tutorial\nhttps://toastmost.org/knowledge-base/digital-ballot-for-toastmasters-contests/\n\n";
 			// $email_links .= $links;
 			$email_links .= wpt_contest_emaillinks( $plainlinks, $key, 'judge', $value ); // value is user id or name
 			echo '</div>';
@@ -1789,7 +1789,7 @@ function wpt_mycontests_links( $practice ) {
 	}
 	$output .= sprintf( '<div><a href="%s" target="_blank">Practice Contest Ballot</a></div>', esc_attr($practice['judge']) );
 	$output .= apply_filters( 'my_contests_help', '' );
-	$output .= '<div><a  target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/category/contests/">Help</a></div>';
+	$output .= '<div><a  target="_blank" href="https://toastmost.org/knowledge-base/category/contests/">Help</a></div>';
 	$output .= '</div>';
 	return $output;
 }

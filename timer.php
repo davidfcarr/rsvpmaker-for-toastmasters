@@ -464,7 +464,7 @@ printf(
 <option value="#800080">Purple </option>
 <option value="#9370DB">MediumPurple </option>
 </select></p>
-<blockquote><a href="https://www.wp4toastmasters.com/knowledge-base/online-timer-tool/" target="_blank">Instructions</a></blockquote>
+<blockquote><a href="https://toastmost.org/knowledge-base/online-timer-tool/" target="_blank">Instructions</a></blockquote>
 <?php if(current_user_can(('edit_posts'))) {
 ?>
 <form action="<?php echo rest_url('rsvptm/v1/timerimage'); ?>" method="post" enctype="multipart/form-data" class="newcolor">

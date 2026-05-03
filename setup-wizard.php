@@ -435,12 +435,12 @@ function wpt_setup_wizard_3() {
 </ul>
 <h3>Further Enhancements</h3>
 <ul>
-	<li>Open your primary <a href="<?php echo admin_url( 'admin.php?page=wp4t_agenda_template_editor' ); ?>">agenda template in the new template editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/organize-agenda-tool/">Learn How</a></li>
+	<li>Open your primary <a href="<?php echo admin_url( 'admin.php?page=wp4t_agenda_template_editor' ); ?>">agenda template in the new template editor</a>. Learn how to add, edit, and rearrange the widgets representing roles on the agenda and notes. You can use the template to update all your other events to match. <a target="_blank" href="https://toastmost.org/knowledge-base/organize-agenda-tool/">Learn How</a></li>
 	<li><strong>Meeting online?</strong> <a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $rsvp_options['rsvp_confirm'] . '&action=edit' ); ?>">Edit the confirmation message for guest registrations</a> to include the details about how to access your online meetings.</li>
 	<?php
 	if(wp_is_block_theme())	{
 		?>
-		<li>Tweak the menu, layout, colors and other design elements with the <a target="_blank" href="<?php echo admin_url( 'site-editor.php' ); ?>">Site Editor</a>. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/block-theme/">Learn How</a></li>
+		<li>Tweak the menu, layout, colors and other design elements with the <a target="_blank" href="<?php echo admin_url( 'site-editor.php' ); ?>">Site Editor</a>. <a target="_blank" href="https://toastmost.org/knowledge-base/editing-the-design-and-content-of-your-wordpress-website/">Learn How</a></li>
 		<?php
 	}
 	else {
@@ -449,9 +449,9 @@ function wpt_setup_wizard_3() {
 		<?php
 	}
 	?>
-	<li>Set up the <a target="_blank" href="<?php echo admin_url( 'options-general.php?page=wp4t_member_application_settings' ); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/">Learn How</a></li>
-	<li>Learn to <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/where-to-find-things-administration-menus/">navigate the admin menus</a>. Where to find the various options, other than through this setup wizard.</li>
-	<li>Explore the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a> for additional options.</li>
+	<li>Set up the <a target="_blank" href="<?php echo admin_url( 'options-general.php?page=wp4t_member_application_settings' ); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://toastmost.org/knowledge-base/web-based-membership-application/">Learn How</a></li>
+	<li>Learn to <a target="_blank" href="https://toastmost.org/knowledge-base/where-to-find-things-administration-menus/">navigate the admin menus</a>. Where to find the various options, other than through this setup wizard.</li>
+	<li>Explore the <a target="_blank" href="https://toastmost.org/knowledge-base/">WordPress for Toastmasters knowledge base</a> for additional options.</li>
 	</ul>
 	<?php do_action( 'wpt_wizard_screen_3' ); ?>
 </div>
@@ -461,7 +461,7 @@ function wpt_setup_wizard_3() {
 		global $current_user;
 		$wpt_next_steps = get_user_meta( $current_user->ID, 'wpt_next_steps', true );
 		if ( ! $wpt_next_steps ) {
-			$mail['html'] = $message . "\n\n" . '<p>For how-to documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>.</p>';
+			$mail['html'] = $message . "\n\n" . '<p>For how-to documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://toastmost.org/knowledge-base/">knowledge base section</a>.</p>';
 			$mail['subject'] = 'Next steps after completing the Toastmasters setup wizard';
 			$mail['to'] = $current_user->user_email;
 			$mail['from'] = 'david@toastmost.org';
@@ -473,8 +473,8 @@ function wpt_setup_wizard_3() {
 	}
 	?>
 <h2>Documentation</h2>
-<p>For more complete documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/">knowledge base section</a>. The article embedded below explains one of the fundamental concepts you need to understand for working with either marketing content or agendas.</p>
-<iframe src="https://www.wp4toastmasters.com/knowledge-base/editing-pages-posts-and-meeting-agendas/" width="100%;" height="5000"></iframe>
+<p>For more complete documentation, see <a target="_blank" href="https://wp4toastmasters.com">wp4toastmasters.com</a>, particularly the <a target="_blank" href="https://toastmost.org/knowledge-base/">knowledge base section</a>. The article embedded below explains one of the fundamental concepts you need to understand for working with either marketing content or agendas.</p>
+<iframe src="https://toastmost.org/knowledge-base/editing-pages-posts-and-meeting-agendas/" width="100%;" height="5000"></iframe>
 	<?php
 }
 function wpt_wizard_check_member( $user ) {

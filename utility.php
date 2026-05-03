@@ -4432,7 +4432,7 @@ function wpt_rsvpmaker_admin_heading_help($content,$function='',$tag='') {
 
 
 
-		$content .= '<p><a href="https://www.wp4toastmasters.com/knowledge-base/create-update-events-based-on-template/">Templates for Toastmasters Meetings</a></p>';
+		$content .= '<p><a href="https://toastmost.org/knowledge-base/updating-your-meeting-event-template-and-future-meetings/">Templates for Toastmasters Meetings</a></p>';
 
 
 

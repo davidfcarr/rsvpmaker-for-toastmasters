@@ -3227,7 +3227,7 @@ function toastmasters_welcome() {
 		?>
 <!-- admins see -->
 <h3>For Administrators and Editors</h3>
-	<p>Everyone sees the message above the first time they visit the administrator's dashboard. If you will be responsible for editing the site and/or managing agendas, you should also review documentation in the <a href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a>.</p>
+	<p>Everyone sees the message above the first time they visit the administrator's dashboard. If you will be responsible for editing the site and/or managing agendas, you should also review documentation in the <a href="https://toastmost.org/knowledge-base/">WordPress for Toastmasters knowledge base</a>.</p>
 	<p>The two main content types in WordPress are pages and posts (blog posts), where pages hold content of more permanent interest included on your site menu and blog posts are news or feature articles.</p>
 	<p>You can edit any page of your site by clicking Pages on this dashboard, then the edit link under the name of the page. To add a new page, click the Add New submenu item under Pages.</p>
 	<p>You can edit any blog post by clicking Posts on this dashboard, then the edit link under the name of the post. To add a new blog post, click the Add New submenu item under Posts.</p>
@@ -6050,7 +6050,7 @@ function wpt_dues_report() {
 	$stripe_on = ( empty( $keys ) || empty( $keys['pk'] ) ) ? false : true;
 	$ti_dues   = get_option( 'ti_dues' );
 	if ( empty( $stripe_on ) || empty( $ti_dues ) ) {
-		printf( '<div class="notice notice-info"><p>If you set up Stripe online payments for dues renewals and specify your dues schedule as part of the <a href="https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/" target="_blank">online application form setup</a>. You can specify those settings on the <strong>Dues and Application</strong> tab, below.</p></div>' );
+		printf( '<div class="notice notice-info"><p>If you set up Stripe online payments for dues renewals and specify your dues schedule as part of the <a href="https://toastmost.org/knowledge-base/web-based-membership-application/" target="_blank">online application form setup</a>. You can specify those settings on the <strong>Dues and Application</strong> tab, below.</p></div>' );
 	}
 	$action    = admin_url( 'admin.php?page=wpt_dues_report' );
 	$norenew        = 'no_renew_' . get_current_blog_id();

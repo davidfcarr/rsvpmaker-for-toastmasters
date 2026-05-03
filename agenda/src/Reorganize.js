@@ -488,7 +488,7 @@ function selectMove(source,destination) {
 
                       </div>
 
-                      {showDetails && 'wp4toastmasters/help' == block.blockName && <p>See the knowledge base article <a href="https://www.wp4toastmasters.com/knowledge-base/organize-agenda-tool/">Organize Agenda Tool</a> for video and written instructions.</p>}
+                      {showDetails && 'wp4toastmasters/help' == block.blockName && <p>See the knowledge base article <a href="https://toastmost.org/knowledge-base/organize-agenda-tool/">Organize Agenda Tool</a> for video and written instructions.</p>}
 
                       {showDetails && 'wp4toastmasters/speaker-evaluator' == block.blockName && <div><p>Displays Speaker-Evaluator Matches in a table on the printable and email versions of the agenda.</p><RadioControl label="Columns" selected={block.attrs?.columns} options={[{'label': '2 columns','value': '2'},{'label': 'Separate columns for Speaker, Path, Project, Title','value': '5'}]} onChange={(value) => { updateBlockAttrs(blockindex, { columns: value }); } } /></div>}
 

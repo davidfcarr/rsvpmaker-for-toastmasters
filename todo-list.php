@@ -147,48 +147,48 @@ function wp4t_todolist($blog_id, $send = false) {
         $done['member_application'] = 'You have set up the online application. Revisit this settings page if you need to update the dues schedule or other settings';
     $label['wizard'] = 'Setup Wizard';
     $link['wizard'] = admin_url('admin.php?page=wp4t_setup_wizard');
-    $help['wizard'] = 'https://www.wp4toastmasters.com/knowledge-base/setup-wizard/';
+    $help['wizard'] = 'https://toastmost.org/knowledge-base/setup-wizard/';
     $label['homepage'] = 'Edit Home Page';
     $link['homepage'] = admin_url('post.php?action=edit&post='.$home);
-    $help['homepage'] = 'https://www.wp4toastmasters.com/knowledge-base/how-to-add-wordpress-blocks-content-types/';
+    $help['homepage'] = 'https://toastmost.org/knowledge-base/how-to-add-wordpress-blocks-content-types/';
     $label['make_public'] = 'Make Site Public';
     $link['make_public'] = admin_url('admin.php?page=wp4toastmasters_settings');
-    $help['make_public'] = 'https://www.wp4toastmasters.com/knowledge-base/toastmasters-settings/';
+    $help['make_public'] = 'https://toastmost.org/knowledge-base/toastmasters-settings/';
     $label['agenda_customized'] = 'Edit Agenda';
     $link['agenda_customized'] = admin_url('post.php?action=edit&post='.$template);
-    $help['agenda_customized'] = 'https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/';
+    $help['agenda_customized'] = 'https://toastmost.org/knowledge-base/updating-your-meeting-event-template-and-future-meetings/';
     $next = next_toastmaster_meeting();
     if(!empty($next)) {
         $label['agenda_use'] = 'Sign up for roles or assign them to other members.';
         $link['agenda_use'] = get_permalink($next->ID);
-        $help['agenda_use'] = 'https://www.wp4toastmasters.com/knowledge-base/sign-up-for-a-role/';    
+        $help['agenda_use'] = 'https://toastmost.org/knowledge-base/meeting-role-signup-tools-web-email-and-mobile-app/';    
     }
     $label['members'] = 'Create member accounts';
     $link['members'] = admin_url('users.php?page=wp4t_add_awesome_member');
-    $help['members'] = 'https://www.wp4toastmasters.com/knowledge-base/create-member-accounts/';
+    $help['members'] = 'https://toastmost.org/knowledge-base/create-accounts-by-importing-the-club-central-membership-roster/';
     $label['payments'] = 'Set up online payments';
     $link['payments'] = admin_url('options-general.php?page=rsvpmaker_settings');
-    $help['payments'] = 'https://www.wp4toastmasters.com/knowledge-base/online-payments-for-dues-and-events/';
+    $help['payments'] = 'https://toastmost.org/knowledge-base/online-payment-for-dues-and-events/';
     $label['member_application'] = 'Set up the web-based member application and dues schedule';
     $link['member_application'] = admin_url('options-general.php?page=wp4t_member_application_settings');
-    $help['member_application'] = 'https://www.wp4toastmasters.com/knowledge-base/web-based-toastmasters-membership-application/';
+    $help['member_application'] = 'https://toastmost.org/knowledge-base/web-based-membership-application/';
     $label['confirmation'] = 'Edit RSVP confirmation message';
     $link['confirmation'] = admin_url( 'post.php?post=' . $rsvp_options['rsvp_confirm'] . '&action=edit' );
     $help['confirmation'] = 'https://rsvpmaker.com/knowledge-base/confirmation-and-reminder-messages/?seq_no=2';
     if(function_exists('toastmost_club_email_list')) {
         $label['lists'] = 'Member and officer email lists';
         $link['lists'] = admin_url( 'admin.php?page=toastmost_club_email_list' );
-        $help['lists'] = 'https://www.wp4toastmasters.com/knowledge-base/member-and-officer-email-lists-toastmost/';
+        $help['lists'] = 'https://toastmost.org/knowledge-base/member-and-officer-email-lists/';
         $done['lists'] = 'Set up private email discussion lists. Members can send a message to all other members, and officers can send a message to all other officers. By default, only messages from an email associated with the member profile will be shared with the group. You can whitelist or block additional addresses.';
     
         $label['forwarding'] = 'Email forwarding addresses';
         $link['forwarding'] = admin_url( 'admin.php?page=toastmost_forwarders' );
-        $help['forwarding'] = 'https://www.wp4toastmasters.com/knowledge-base/email-forwarders/';
+        $help['forwarding'] = 'https://toastmost.org/knowledge-base/email-forwarders/';
         $done['forwarding'] = 'Configure email forwarders, in addition to those provided by default for officer roles.';
         
         $label['findaclub'] = 'Handle Find-a-Club and other notifications from toastmasters.org';
         $link['findaclub'] = admin_url( 'admin.php?page=findaclub' );
-        $help['findaclub'] = 'https://www.wp4toastmasters.com/knowledge-base/notification-tools-for-find-a-club-basecamp-and-other-toastmasters-org-notifications/';
+        $help['findaclub'] = 'https://toastmost.org/knowledge-base/notification-tools-for-find-a-club-basecamp-and-other-toastmasters-org-notifications/';
         $done['findaclub'] = 'You can choose to set up an auto-response message for prospective member inquiries relayed through the Find-a-Club search on toastmasters.org. Forward Basecamp notifications and other notifications from toastmasters.org to the appropriate officers.';
     }
     //else mailing list setup for stanalone?
@@ -227,7 +227,7 @@ function wp4t_todolist($blog_id, $send = false) {
         }
     }
     //$output .= var_export($done,true);
-    $output .= '<h2>Need More Help?</h2><p>See the <a href="https://www.wp4toastmasters.com/knowledge-base/">WordPress for Toastmasters knowledge base</a> and <a href="https://www.wp4toastmasters.com/video-course/">Video Course</a>.
+    $output .= '<h2>Need More Help?</h2><p>See the <a href="https://toastmost.org/knowledge-base/">WordPress for Toastmasters knowledge base</a> and <a href="https://www.wp4toastmasters.com/video-course/">Video Course</a>.
     Or write to <a href="mailto:david@toastmost.org?subject=Todo page query">david@toastmost.org</a>.</p>
     <p>There is also a <a href="https://www.facebook.com/groups/wp4toastmasters">Facebook group</a> where users of the software and the Toastmost service can compare notes and give feedback.</p>';
     $output .= '<h2>Volunteer Help</h2><p>The WordPress for Toastmasters project is looking for volunteers to help with documentation and training materials.
