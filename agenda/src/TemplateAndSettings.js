@@ -1,18 +1,14 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {useState, useEffect} from "react"
 import apiClient, { setupNonceInterceptor } from './http-common.js';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 import {useMutation, useQueryClient} from 'react-query';
 import { ToggleControl } from '@wordpress/components';
 import {SelectCtrl} from './Ctrl.js'
-import {EventDateTime} from './EventDateTime.js';
-import {TemplateSchedule} from './TemplateSchedule.js';
-import { rsvpMetaData, initRSVPMetaMutate } from "./rsvpmaker-api.js";
 
 export function TemplateAndSettings (props) {
     const {data, user_can, setPostId, makeNotification} = props;
     const [allowOrganizeAgenda, setAllowOrganizeAgenda] = useState(data.subscribers_can_organize_agenda);
     const [allowEditSignups, setAllowEditsignups] = useState(data.subscribers_can_edit_signups);
-    const [newSignupDefault, setNewSignupDefault] = useState(data.newSignupDefault);
     const [templateToEdit, setTemplateToEdit] = useState(data.is_template ? data.post_id: data.has_template);
     const [newtemplate, setNewTemplate] = useState(0);
     const rsvpmaker_rest = useRsvpmakerRest();
@@ -22,33 +18,6 @@ export function TemplateAndSettings (props) {
             setupNonceInterceptor(rsvpmaker_rest.nonce);
         }
     }, [rsvpmaker_rest?.nonce]);
-
-    const {data:mdata,isLoading:metaIsLoading,isError:metaIsError} = rsvpMetaData(data.post_id);
-    if(metaIsError)
-        return <p>Error loading event metadata</p>
-    if(metaIsLoading) 
-        console.log('metadata is loading');
-    else if (!mdata.data) {
-        makeNotification('error loading event metadata');
-        const metadata = null;
-    }
-    else {
-        const metadata = mdata.data;
-        console.log('metadata',metadata);
-    }
-    const {mutate:metaMutate} = initRSVPMetaMutate(data.post_id,makeNotification);
-
-    let templates = data.upcoming.filter((item) => {if(item.label.indexOf('emplate') > 0) { return true }});
-    templates.push({'value':0,'label':'Choose Template'});
-
-    function currentlyEditing() {
-        let response = 'an event without a template';
-        if(data.has_template)
-            response = 'an event based on a template';
-        else if (data.is_template)
-            response = 'a template';
-        return response;
-    }
 
     const queryClient = useQueryClient();
 
@@ -85,6 +54,18 @@ const permissionsMutation = useMutation(
         },
     }
 );
+
+    let templates = data.upcoming.filter((item) => {if(item.label.indexOf('emplate') > 0) { return true }});
+    templates.push({'value':0,'label':'Choose Template'});
+
+    function currentlyEditing() {
+        let response = 'an event without a template';
+        if(data.has_template)
+            response = 'an event based on a template';
+        else if (data.is_template)
+            response = 'a template';
+        return response;
+    }
 
 const loading_icon = document.getElementById('loading-icon');
 if(loading_icon)

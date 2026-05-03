@@ -1,22 +1,23 @@
-import React from "react"
 import {useQuery,useMutation, useQueryClient} from 'react-query';
 import axios from "axios";
-import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 
-const rsvpmakerClient = () => {
-    const wpt_rest = useRsvpmakerRest();
-    return axios.create({
-  baseURL: '/wp-json/rsvpmaker/v1/',
-  headers: {
-    "Content-type": "application/json",
-    'X-WP-Nonce': wpt_rest.nonce,
-  }
+const rsvpmakerClient = axios.create({
+    baseURL: '/wp-json/rsvpmaker/v1/',
+    headers: {
+        "Content-type": "application/json",
+    }
 });
+
+function setNonceHeader(nonce) {
+        if (nonce) {
+                rsvpmakerClient.defaults.headers['X-WP-Nonce'] = nonce;
+        }
 }
 
-export function rsvpMetaData(post_id) {
+export function rsvpMetaData(post_id, nonce = null) {
+        setNonceHeader(nonce);
     function fetchMeta(queryobj) {
-        return rsvpmakerClient().get('json_meta?post_id='+post_id);
+                return rsvpmakerClient.get('json_meta?post_id='+post_id);
     }
     return useQuery(['rsvp-meta',post_id], fetchMeta, { enabled: true, retry: 2, onSuccess, onError, refetchInterval: 50000 });
 }
@@ -28,12 +29,13 @@ console.log('error downloading rsvp data',e);
 }
 
 async function updateRSVPMeta (changes) {
+    setNonceHeader(changes?.nonce);
     return await rsvpmakerClient.post('json_meta?post_id='+changes.post_id, changes);
 }
 
-export function initRSVPMetaMutate(post_id,makeNotification) {
+export function initRSVPMetaMutate(post_id,makeNotification,nonce = null) {
     const queryClient = useQueryClient();
-    return useMutation(updateRSVPMeta, {
+    return useMutation((changes) => updateRSVPMeta({ ...changes, post_id, nonce }), {
         onMutate: async (changes) => {
             await queryClient.cancelQueries(['rsvp-meta',post_id]);
             const previousValue = queryClient.getQueryData(['rsvp-meta',post_id]);

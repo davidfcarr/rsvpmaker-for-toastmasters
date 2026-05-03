@@ -1,23 +1,12 @@
 import React from "react"
 
-import ReactDOM from "react-dom"
 import { createRoot } from 'react-dom/client';
-
-import { ReactQueryDevtools } from 'react-query/devtools'
 
 import { QueryClient, QueryClientProvider } from "react-query";
 
 const queryClient = new QueryClient();
 
-import Agenda from "./Agenda";
-
-import {EvalWrapper} from "./EvalWrapper";
-
-import ReorgWrapper from "./ReorgWrapper";
-
-import Voting from "./Voting";
-
-window.addEventListener('load', function(event) {
+window.addEventListener('load', async function(event) {
 
     try {
 
@@ -27,17 +16,18 @@ window.addEventListener('load', function(event) {
     let mode_init = currentdoc.getAttribute('mode');
 
     const evaluation = {'ID':'','name':'','project':'','manual':'','title':''};
+    const post_id = currentdoc.getAttribute('post_id');
 
     const evalme = currentdoc.getAttribute('evalme');
     console.log('mode_init',mode_init);
 
     if('meeting_vote' == mode_init) {
         console.log('load voting tool');
-        const post_id = currentdoc.getAttribute('post_id');
         const rsvpsection = document.getElementById('rsvpsection');
         if(rsvpsection) {
             rsvpsection.remove();
         }
+        const { default: Voting } = await import('./Voting.js');
         const root = createRoot(currentdoc); // createRoot(container!) if you use TypeScript
         root.render(<React.StrictMode>
         <QueryClientProvider client={queryClient}>
@@ -69,58 +59,58 @@ window.addEventListener('load', function(event) {
     if(('evaluation_demo' == mode_init) || ('evaluation_admin' == mode_init) || ('evaluation_guest' == mode_init))
 
     {
+        const { EvalWrapper } = await import('./EvalWrapper.js');
+        const root = createRoot(document.getElementById('react-agenda'));
 
-        ReactDOM.render(
+        root.render(
 
             <React.StrictMode>
 
                 <QueryClientProvider client={queryClient}>
 
-                    <EvalWrapper mode_init={mode_init} evaluation={evaluation} />
+                    <EvalWrapper mode_init={mode_init} evaluation={evaluation} post_id={post_id} />
 
                 </QueryClientProvider>
 
-          </React.StrictMode>,
-
-                document.getElementById('react-agenda'));        
+          </React.StrictMode>);        
 
     }
 
     else if('settings_admin' == mode_init)
 
     {
+        const { default: ReorgWrapper } = await import('./ReorgWrapper.js');
+        const root = createRoot(document.getElementById('react-agenda'));
 
-        ReactDOM.render(
+        root.render(
 
             <React.StrictMode>
 
                 <QueryClientProvider client={queryClient}>
 
-                    <ReorgWrapper />
+                    <ReorgWrapper  post_id={post_id} />
 
                 </QueryClientProvider>
 
-          </React.StrictMode>,
-
-                document.getElementById('react-agenda'));        
+          </React.StrictMode>);        
 
     }
 
     else {
+        const { default: Agenda } = await import('./Agenda.js');
+        const root = createRoot(document.getElementById('react-agenda'));
 
-        ReactDOM.render(
+        root.render(
 
             <React.StrictMode>
 
                 <QueryClientProvider client={queryClient}>
 
-                    <Agenda mode_init={mode_init} evaluation={evaluation} />
+                    <Agenda mode_init={mode_init} evaluation={evaluation} post_id={post_id} />
 
                 </QueryClientProvider>
 
-          </React.StrictMode>,
-
-                document.getElementById('react-agenda'));        
+          </React.StrictMode>);        
 
     }
 

@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef} from "react"
+import {useState} from "react"
 
 import { ToggleControl } from '@wordpress/components';
 
@@ -8,7 +8,7 @@ import {Inserter} from "./Inserter.js";
 
 import {Up, Down} from './icons.js';
 
-import {updateAgenda,copyToTemplate} from './queries.js';
+import {updateAgenda} from './queries.js';
 
 import {SelectCtrl, NumberCtrl} from './Ctrl.js'
 
@@ -17,10 +17,30 @@ export default function ReorgWidget(props) {
     const {data, post_id, makeNotification, block, blockindex, setMode, setShowControls} = props;
 
     const [sync,setSync] = useState(true);
-    const [showall,setShowall] = useState(false);
-
     const {mutate:agendaMutate} = updateAgenda(post_id, makeNotification,Inserter);
-    const {mutate:copyToMutate} = copyToTemplate(post_id, data.has_template);
+
+    function commitAgenda(blocksdata, extra = {}) {
+        agendaMutate({ ...data, ...extra, blocksdata });
+    }
+
+    function updateBlockAttrs(targetBlockIndex, attrsPatch) {
+        if (!Array.isArray(data.blocksdata)) {
+            return;
+        }
+        const nextBlocks = data.blocksdata.map((b, idx) => {
+            if (idx !== targetBlockIndex) {
+                return b;
+            }
+            return {
+                ...b,
+                attrs: {
+                    ...(b.attrs || {}),
+                    ...attrsPatch,
+                },
+            };
+        });
+        commitAgenda(nextBlocks);
+    }
 
     let movechoices = [{'label':'Where to?','value':''},{'label':'Move to Top','value':'top'}];
 
@@ -120,27 +140,25 @@ export default function ReorgWidget(props) {
 
             newposition = moveableBlocks[foundindex + 2];
 
+        const nextBlocks = Array.isArray(data.blocksdata) ? [...data.blocksdata] : [];
+
         if(direction == 'delete') {
 
-            data.blocksdata.splice(blockindex,1);
+            nextBlocks.splice(blockindex,1);
 
         }
 
         else {
 
-            let currentblock = data.blocksdata[blockindex];
+            let currentblock = nextBlocks[blockindex];
 
-            data.blocksdata[blockindex] = {'blockName':null};
+            nextBlocks[blockindex] = {'blockName':null};
 
-            data.blocksdata.splice(newposition,0,currentblock);
+            nextBlocks.splice(newposition,0,currentblock);
 
         }
 
-        
-
-        data.changed = 'blocks';
-
-        agendaMutate(data);
+        commitAgenda(nextBlocks, { changed: 'blocks' });
 
     }
 
@@ -168,9 +186,7 @@ export default function ReorgWidget(props) {
 
         );
 
-        data.blocksdata = newblocks;
-
-        agendaMutate(data);
+        commitAgenda(newblocks);
 
     }
 
@@ -200,9 +216,7 @@ export default function ReorgWidget(props) {
 
         );
 
-        data.blocksdata = newblocks;
-
-        agendaMutate(data);
+        commitAgenda(newblocks);
 
     }
 
@@ -268,7 +282,7 @@ function selectMove(source,destination) {
 
         items.push(myblock);
 
-    agendaMutate({...data,blocksdata: items});
+    commitAgenda(items);
 
 }
 
@@ -280,24 +294,24 @@ function selectMove(source,destination) {
 
             return blocksdata;
 
-        blocksdata.forEach((block,blockindex) => {
-
-            if('Evaluator' == block.attrs.role) {
-
-                blocksdata[blockindex].attrs.count = count;
-
-                blocksdata[blockindex].attrs.time_allowed = count * 3;    
-
+        return blocksdata.map((block) => {
+            if (block?.attrs?.role !== 'Evaluator') {
+                return block;
             }
-
-        } );
-
-        return blocksdata;
+            return {
+                ...block,
+                attrs: {
+                    ...block.attrs,
+                    count,
+                    time_allowed: count * 3,
+                },
+            };
+        });
 
     }    
 
     function CopyToTemplateButton () {
-        return <button class="tmsmallbutton" onClick={() => {data.copyToTemplate = true; agendaMutate(data)} }>Apply to All</button>
+        return <button className="tmsmallbutton" onClick={() => {agendaMutate({ ...data, copyToTemplate: true });} }>Apply to All</button>
     }
 
     let summary = (block.innerHTML) ? block.innerHTML.replace(/<[^>]+>/,'').trim() : '';
@@ -317,7 +331,7 @@ function selectMove(source,destination) {
              <>
                 {'wp4toastmasters/role' == block.blockName && (
                 <div>
-                <p className="tmflexrow"><div className="tmflex30"><NumberCtrl label={'Signup Slots ('+roleslug+')'} min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.count = value; if(['Speaker','Evaluator'].includes(block.attrs.role)) { data.blocksdata[blockindex].attrs.time_allowed = calcTimeAllowed(block.attrs); data.blocksdata = syncToEvaluator(data.blocksdata,value); } agendaMutate(data); }} /></div><div className="tmflex30"><NumberCtrl label={"Time Allowed ("+roleslug+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.padding_time = value; agendaMutate(data);}} /></div>}</p>
+                <p className="tmflexrow"><div className="tmflex30"><NumberCtrl label={'Signup Slots ('+roleslug+')'} min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { value = Math.abs(parseInt(value)); const baseBlocks = Array.isArray(data.blocksdata) ? data.blocksdata.map((b, idx) => idx === blockindex ? { ...b, attrs: { ...(b.attrs || {}), count: value, time_allowed: ['Speaker','Evaluator'].includes(block.attrs.role) ? calcTimeAllowed({ ...block.attrs, count: value }) : (b.attrs?.time_allowed) } } : b) : []; const syncedBlocks = ['Speaker','Evaluator'].includes(block.attrs.role) ? syncToEvaluator(baseBlocks, value) : baseBlocks; commitAgenda(syncedBlocks); }} /></div><div className="tmflex30"><NumberCtrl label={"Time Allowed ("+roleslug+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { value = Math.abs(parseInt(value)); updateBlockAttrs(blockindex, { time_allowed: value }); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {value = Math.abs(parseInt(value)); updateBlockAttrs(blockindex, { padding_time: value });}} /></div>}</p>
                 {('Speaker' == block.attrs.role) && 
 (<div>
 
@@ -341,11 +355,11 @@ onChange={ () => {setSync(!sync);}} /></p>
             </div>)}
             {'wp4toastmasters/agendaedit' == block.blockName && (
                 <div>
-                <p><NumberCtrl label={"Time Allowed (" +block.attrs.editable+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => {value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></p>
+                <p><NumberCtrl label={"Time Allowed (" +block.attrs.editable+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => {value = Math.abs(parseInt(value)); updateBlockAttrs(blockindex, { time_allowed: value }); }} /></p>
             </div>)}
             {'wp4toastmasters/agendanoterich2' == block.blockName && (
                 <div>
-                <p><NumberCtrl label={"Time Allowed ("+summary+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></p>
+                <p><NumberCtrl label={"Time Allowed ("+summary+")"} value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { value = Math.abs(parseInt(value)); updateBlockAttrs(blockindex, { time_allowed: value }); }} /></p>
             </div>)}
             <div className="tmflexrow"><div><button className="blockmove" onClick={() => { moveBlock(blockindex, 'up') } }><Up /></button></div><div><button className="blockmove" onClick={() => { moveBlock(blockindex, 'down') } }><Down /></button></div><div><SelectCtrl label="Move" options={choicesForBlock} onChange={(value) => selectMove(blockindex,value)} /></div></div>
             <div><DeleteButton makeNotification={makeNotification} blockindex={blockindex} moveBlock={moveBlock} post_id={post_id} /> {data.has_template && <>Copy to template and future agendas: <CopyToTemplateButton /></>} </div>                

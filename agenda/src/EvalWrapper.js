@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from "react"
-import EvaluationTool from "./EvaluationTool.js";
+import React, {useState, useEffect, Suspense} from "react"
+const EvaluationTool = React.lazy(() => import('./EvaluationTool.js'));
 import {useBlocks, useMemberEvaluation} from './queries.js';
 import { SanitizedHTML } from './SanitizedHTML.js';
 
@@ -67,7 +67,9 @@ if(isLoading)
         return(
             <div className="agendawrapper">
             <ModeControl />
-            <EvaluationTool mode={mode} scrolltoId={scrolltoId} makeNotification={makeNotification} data={data} evaluate={evaluate} setEvaluate={setEvaluate} /> 
+            <Suspense fallback={<p>Loading ...</p>}>
+                <EvaluationTool mode={mode} scrolltoId={scrolltoId} makeNotification={makeNotification} data={data} evaluate={evaluate} setEvaluate={setEvaluate} />
+            </Suspense>
             </div>
         );
 }

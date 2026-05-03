@@ -410,7 +410,7 @@ function wpt_suggest_role($postdata) {
 	}
 	$url = add_query_arg(array('oneclick' => $nonce,'role' => rawurlencode($role),'member' => $member_id,'by'=>$current_user->ID),get_permalink($post_id)).'#oneclick';
 	$link = sprintf('<a href="%s" style="display:block; width: 150px; text-align: center; text-decoration: none; background-color: black; color: white; border: thin solid gray; font-weight:bold; font-size:large; padding: 5px; margin: 15px;">%s</a>', $url, __('Take Role','rsvpmaker-for-toastmasters') );
-	$absence = add_query_arg(array('oneclick' => $nonce,'role' => 'absent','e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
+	$absence = add_query_arg(array('oneclick' => $nonce,'role' => 'absent','nominated_for'=>rawurlencode($role),'e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
 	$link .= '<p>Or let us know if you will not be able to attend.</p>'.sprintf('<a style="width: 150px; text-align: center; text-decoration: none; font-weight: bold; display: block; background-color: red; color: #FFFFFF; padding: 10px; margin: 15px;" href="%s#oneclick">Will Not Attend</a>',$absence);
 	$templates = get_rsvpmaker_notification_templates();
 	$template = $templates['suggest'];

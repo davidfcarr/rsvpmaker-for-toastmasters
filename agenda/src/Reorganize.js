@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {useState} from "react"
 
 import { TextControl, ToggleControl, RadioControl } from '@wordpress/components';
 
@@ -20,10 +20,9 @@ import {EditableNote} from './EditableNote.js';
 
 import {Up, Down, DownUp} from './icons.js';
 
-import {updateAgenda,copyToTemplate} from './queries.js';
+import {updateAgenda} from './queries.js';
 
 import {SelectCtrl, NumberCtrl} from './Ctrl.js'
-import simplifyPastedHtml from "./simplifyPastedHtml.js";
 
 export default function Reorganize(props) {
 
@@ -35,8 +34,29 @@ export default function Reorganize(props) {
 
 
     const {mutate:agendaMutate} = updateAgenda(post_id, makeNotification,Inserter);
-    const {mutate:copyToMutate} = copyToTemplate(post_id, data.has_template);
 
+    function commitAgenda(blocksdata, extra = {}) {
+        agendaMutate({ ...data, ...extra, blocksdata });
+    }
+
+    function updateBlockAttrs(targetBlockIndex, attrsPatch) {
+        if (!Array.isArray(data.blocksdata)) {
+            return;
+        }
+        const nextBlocks = data.blocksdata.map((b, idx) => {
+            if (idx !== targetBlockIndex) {
+                return b;
+            }
+            return {
+                ...b,
+                attrs: {
+                    ...(b.attrs || {}),
+                    ...attrsPatch,
+                },
+            };
+        });
+        commitAgenda(nextBlocks);
+    }
     if('reorganize' != mode)
 
         return null;
@@ -101,27 +121,25 @@ export default function Reorganize(props) {
 
             newposition = moveableBlocks[foundindex + 2];
 
+        const nextBlocks = Array.isArray(data.blocksdata) ? [...data.blocksdata] : [];
+
         if(direction == 'delete') {
 
-            data.blocksdata.splice(blockindex,1);
+            nextBlocks.splice(blockindex,1);
 
         }
 
         else {
 
-            let currentblock = data.blocksdata[blockindex];
+            let currentblock = nextBlocks[blockindex];
 
-            data.blocksdata[blockindex] = {'blockName':null};
+            nextBlocks[blockindex] = {'blockName':null};
 
-            data.blocksdata.splice(newposition,0,currentblock);
+            nextBlocks.splice(newposition,0,currentblock);
 
         }
 
-        
-
-        data.changed = 'blocks';
-
-        agendaMutate(data);
+        commitAgenda(nextBlocks, { changed: 'blocks' });
 
     }
 
@@ -149,9 +167,7 @@ export default function Reorganize(props) {
 
         );
 
-        data.blocksdata = newblocks;
-
-        agendaMutate(data);
+        commitAgenda(newblocks);
 
     }
 
@@ -183,9 +199,7 @@ export default function Reorganize(props) {
 
         );
 
-        data.blocksdata = newblocks;
-
-        agendaMutate(data);
+        commitAgenda(newblocks);
 
     }
 
@@ -249,7 +263,7 @@ function onDragEnd(result) {
 
         items.push(myblock);
 
-    agendaMutate({...data,blocksdata: items});
+    commitAgenda(items);
 
 }
 
@@ -303,39 +317,38 @@ function selectMove(source,destination) {
 
         items.push(myblock);
 
-    agendaMutate({...data,blocksdata: items});
+    commitAgenda(items);
 
 }
 
 
 
-    let date = new Date(data.datetime);
+    const baseDate = new Date(data.datetime);
 
     const dateoptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
-    const localedate = date.toLocaleDateString('en-US',dateoptions);
+    const localedate = baseDate.toLocaleDateString('en-US',dateoptions);
 
     let endtime = '';
+    let timeCursor = new Date(data.datetime);
+    const blocksWithDateStrings = (data.blocksdata && Array.isArray(data.blocksdata))
+        ? data.blocksdata.map((block) => {
+            let datestring = timeCursor.toLocaleTimeString('en-US',{'hour': "2-digit", 'minute': "2-digit",'hour12':true});
+            if(block?.attrs?.time_allowed) {
+                timeCursor.setMilliseconds(timeCursor.getMilliseconds() + (parseInt(block.attrs.time_allowed) * 60000) );
 
-    if(data.blocksdata && Array.isArray(data.blocksdata))
+                if(block.attrs.padding_time)
 
-    data.blocksdata.map((block, blockindex) => {
+                    timeCursor.setMilliseconds(timeCursor.getMilliseconds() + (parseInt(block.attrs.padding_time) * 60000) );
 
-        data.blocksdata[blockindex].datestring = date.toLocaleTimeString('en-US',{'hour': "2-digit", 'minute': "2-digit",'hour12':true});
+                endtime = timeCursor.toLocaleTimeString('en-US',{hour: "2-digit", minute: "2-digit",hour12:true});
 
-        if(block?.attrs?.time_allowed) {
+                datestring = datestring.concat( ' to '+ endtime );
 
-            date.setMilliseconds(date.getMilliseconds() + (parseInt(block.attrs.time_allowed) * 60000) );
-
-            if(block.attrs.padding_time)
-
-                date.setMilliseconds(date.getMilliseconds() + (parseInt(block.attrs.padding_time) * 60000) );
-
-            endtime = date.toLocaleTimeString('en-US',{hour: "2-digit", minute: "2-digit",hour12:true});
-
-            data.blocksdata[blockindex].datestring = data.blocksdata[blockindex].datestring.concat( ' to '+ endtime );
-
-        }});
+            }
+            return { ...block, datestring };
+        })
+        : [];
 
 
 
@@ -355,19 +368,19 @@ function selectMove(source,destination) {
 
             return blocksdata;
 
-        blocksdata.forEach((block,blockindex) => {
-
-            if('Evaluator' == block.attrs.role) {
-
-                blocksdata[blockindex].attrs.count = count;
-
-                blocksdata[blockindex].attrs.time_allowed = count * 3;    
-
+        return blocksdata.map((block) => {
+            if (block?.attrs?.role !== 'Evaluator') {
+                return block;
             }
-
-        } );
-
-        return blocksdata;
+            return {
+                ...block,
+                attrs: {
+                    ...block.attrs,
+                    count,
+                    time_allowed: count * 3,
+                },
+            };
+        });
 
     }    
 
@@ -381,7 +394,7 @@ function selectMove(source,destination) {
 
     
 
-    {data.blocksdata&& Array.isArray(data.blocksdata) && data.blocksdata.map((block, blockindex) => {
+    {blocksWithDateStrings && blocksWithDateStrings.map((block, blockindex) => {
 
         if(!block.blockName)
 
@@ -408,7 +421,7 @@ function selectMove(source,destination) {
     })}
 
     function CopyToTemplateButton () {
-        return <button class="tmsmallbutton" onClick={() => {data.copyToTemplate = true; agendaMutate(data)} }>Apply to All</button>
+        return <button className="tmsmallbutton" onClick={() => {agendaMutate({ ...data, copyToTemplate: true });} }>Apply to All</button>
     }
 
     return (
@@ -425,7 +438,7 @@ function selectMove(source,destination) {
 
             <ModeControl note={'Based on time allotted, meeting will end at '+endtime} makeNotification={makeNotification} isTemplate={(false !== data.is_template)} post_id={data.post_id} />
 
-            {data.blocksdata && Array.isArray(data.blocksdata) && data.blocksdata.map((block, blockindex) => {
+            {blocksWithDateStrings && blocksWithDateStrings.map((block, blockindex) => {
 
                 if(!block.blockName)
 
@@ -477,7 +490,7 @@ function selectMove(source,destination) {
 
                       {showDetails && 'wp4toastmasters/help' == block.blockName && <p>See the knowledge base article <a href="https://www.wp4toastmasters.com/knowledge-base/organize-agenda-tool/">Organize Agenda Tool</a> for video and written instructions.</p>}
 
-                      {showDetails && 'wp4toastmasters/speaker-evaluator' == block.blockName && <div><p>Displays Speaker-Evaluator Matches in a table on the printable and email versions of the agenda.</p><RadioControl label="Columns" selected={block.attrs?.columns} options={[{'label': '2 columns','value': '2'},{'label': 'Separate columns for Speaker, Path, Project, Title','value': '5'}]} onChange={(value) => {data.blocksdata[blockindex].attrs.columns = value; agendaMutate(data)} } /></div>}
+                      {showDetails && 'wp4toastmasters/speaker-evaluator' == block.blockName && <div><p>Displays Speaker-Evaluator Matches in a table on the printable and email versions of the agenda.</p><RadioControl label="Columns" selected={block.attrs?.columns} options={[{'label': '2 columns','value': '2'},{'label': 'Separate columns for Speaker, Path, Project, Title','value': '5'}]} onChange={(value) => { updateBlockAttrs(blockindex, { columns: value }); } } /></div>}
 
                     {showDetails && 'wp4toastmasters/role' == block.blockName && (<div>
 
@@ -489,9 +502,9 @@ function selectMove(source,destination) {
 
                             <SpeakerTimeCount block={block}  makeNotification={makeNotification} data={data} />
 
-                    <div className="tmflexrow"><div className="tmflex30"><NumberCtrl label="Signup Slots" min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { value = Math.abs(parseInt(value)); data.blocksdata[blockindex].attrs.count = value; if(['Speaker','Evaluator'].includes(block.attrs.role)) { data.blocksdata[blockindex].attrs.time_allowed = calcTimeAllowed(block.attrs); data.blocksdata = syncToEvaluator(data.blocksdata,value); } agendaMutate(data); }} /></div><div className="tmflex30"><NumberCtrl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {data.blocksdata[blockindex].attrs.padding_time = value; agendaMutate(data);}} /></div>}</div>
+                    <div className="tmflexrow"><div className="tmflex30"><NumberCtrl label="Signup Slots" min="1" value={(block.attrs.count) ? block.attrs.count : 1} onChange={ (value) => { value = Math.abs(parseInt(value)); const baseBlocks = Array.isArray(data.blocksdata) ? data.blocksdata.map((b, idx) => idx === blockindex ? { ...b, attrs: { ...(b.attrs || {}), count: value, time_allowed: ['Speaker','Evaluator'].includes(block.attrs.role) ? calcTimeAllowed({ ...block.attrs, count: value }) : (b.attrs?.time_allowed) } } : b) : []; const syncedBlocks = ['Speaker','Evaluator'].includes(block.attrs.role) ? syncToEvaluator(baseBlocks, value) : baseBlocks; commitAgenda(syncedBlocks); }} /></div><div className="tmflex30"><NumberCtrl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : calcTimeAllowed(block.attrs)} onChange={ (value) => { updateBlockAttrs(blockindex, { time_allowed: value }); }} /></div> {('Speaker' == block.attrs.role) && <div className="tmflex30"><NumberCtrl label="Padding Time" min="0" value={block.attrs.padding_time} onChange={(value) => {updateBlockAttrs(blockindex, { padding_time: value });}} /></div>}</div>
 
-                    <TextControl label="Note About Role (optional)" value={block.attrs.agenda_note} onChange={ (value) => { data.blocksdata[blockindex].attrs.agenda_note = value; agendaMutate(data); } } />
+                    <TextControl label="Note About Role (optional)" value={block.attrs.agenda_note} onChange={ (value) => { updateBlockAttrs(blockindex, { agenda_note: value }); } } />
 
                     {('Speaker' == block.attrs.role) && 
 
@@ -531,7 +544,7 @@ function selectMove(source,destination) {
 
             checked={ block.attrs.backup }
 
-            onChange={ () => {data.blocksdata[blockindex].attrs.backup = !block.attrs.backup; agendaMutate(data);}} /></p>
+            onChange={ () => {updateBlockAttrs(blockindex, { backup: !block.attrs.backup });}} /></p>
 
             <SpeakerTimeCount block={block} makeNotification={makeNotification} data={data} />
 
@@ -553,7 +566,7 @@ function selectMove(source,destination) {
 
             checked={ block.attrs.show_on_agenda }
 
-            onChange={ () => {data.blocksdata[blockindex].attrs.show_on_agenda = !block.attrs.show_on_agenda; agendaMutate(data);}} />
+            onChange={ () => {updateBlockAttrs(blockindex, { show_on_agenda: !block.attrs.show_on_agenda });}} />
 
             </div>)}
 
@@ -565,7 +578,7 @@ function selectMove(source,destination) {
 
                     {showDetails && (editThis != blockindex) && <div><ToggleControl label="Edit" checked={editThis == blockindex} onChange={() => {if(editThis == blockindex) setEditThis(-1); else setEditThis(blockindex); }} /> <SanitizedHTML innerHTML={block.attrs.edithtml} /></div>}
 
-                    <div className="tmflexrow"><div className="tmflex30"><NumberCtrl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : 0} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div></div>
+                    <div className="tmflexrow"><div className="tmflex30"><NumberCtrl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : 0} onChange={ (value) => { updateBlockAttrs(blockindex, { time_allowed: value }); }} /></div></div>
 
                     </div>
 
@@ -579,7 +592,7 @@ function selectMove(source,destination) {
 
                     {showDetails && (editThis != blockindex) && <><ToggleControl label="Edit" checked={editThis == blockindex} onChange={() => {if(editThis == blockindex) setEditThis(-1); else setEditThis(blockindex); }} /><SanitizedHTML innerHTML={block.innerHTML} /></>}
 
-                    <div className="tmflexrow"><div className="tmflex30"><NumberCtrl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : 0} onChange={ (value) => { data.blocksdata[blockindex].attrs.time_allowed = value; agendaMutate(data); }} /></div></div>
+                    <div className="tmflexrow"><div className="tmflex30"><NumberCtrl label="Time Allowed" value={(block.attrs?.time_allowed) ? block.attrs?.time_allowed : 0} onChange={ (value) => { updateBlockAttrs(blockindex, { time_allowed: value }); }} /></div></div>
 
                     </div>
 

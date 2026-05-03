@@ -303,7 +303,20 @@ function wp4t_tm_application_form_start( $atts ) {
 					}
 				}	
 		}
-	?>
+
+if(empty($email))
+	$email = '';
+if(!empty($_COOKIE) && current_user_can('manage_options'))
+	{
+	foreach($_COOKIE as $key => $value) {
+		if(strpos($key,'rsvp_for') === 0)
+			{
+				$email = $wpdb->get_var($wpdb->prepare("SELECT email FROM {$wpdb->prefix}rsvpmaker WHERE id = %d",$value));
+			}
+		}
+	}
+
+?>
 <style>
 label {
 	display: inline-block;
@@ -314,7 +327,7 @@ label {
 <p>By submitting this online membership application, you agree to treat it as the legally binding equivalent of the standard Toastmasters International membership application, and you will be prompted to agree to all the same terms and conditions. If you prefer, you can download and sign the <a href="<?php echo esc_attr($pdf); ?>" target="_blank">PDF version</a>.</p>
 <form method="post" action="<?php echo get_permalink(); ?>">
 <p>Step 1: We need a little data to set up the application form and calculate the pro-rated dues (based on the month that you are joining). On the next screen, you will enter your personal data and electronically sign the application.</p>
-<p>Email address <?php wp4t_tm_application_form_field( 'user_email' ); ?> (required)</p>
+<p>Email address <?php wp4t_tm_application_form_field( 'user_email', $email ); ?> (required)</p>
 <p>Application Type <?php wp4t_tm_application_form_choice( 'membership_type', array( 'New', 'Dual', 'Transfer', 'Reinstated (break in membership)', 'Renewing (no break in membership)' ) ); ?></p>
 <?php
 
@@ -352,6 +365,7 @@ $datestext = $start_end['start'].' to '.$end.' (+ 6 months)';
 $o .= '<option value="'.$i.':1:'.$end.'">'.$datestext.'</option>';
 }
 }
+
 ?>
 <p>Membership Term: <select name="duesperiod"><?php echo $o ?></select></p>
 <p><em>&quot;New&quot; means the member is new to Toastmasters (not just new to this club).</em></p>
@@ -359,8 +373,9 @@ $o .= '<option value="'.$i.':1:'.$end.'">'.$datestext.'</option>';
 <p id="transferprompt">If you are transferring from another club, please provide as much information as possible so we can look up your records. The <a href="https://www.toastmasters.org/Find-a-Club">Find a Club</a> feature of the toastmasters.org website can help you look up club numbers.</p>
 <p id="formerclubinfo"><label>Previous club name</label> <?php wp4t_tm_application_form_field( 'previous_club_name' ); ?><br ><label>Previous club number</label><?php wp4t_tm_application_form_field( 'previous_club_number' ); ?><br /> <label>Member number</label><?php wp4t_tm_application_form_field( 'toastmasters_id' ); ?><br ><em><a target="_blank" id="find-member-id" href="https://toastmost.org/your-member-id/">Where to find this</a></em></p>
 <?php wp_nonce_field('application_email'); ?>
+<input type="hidden" name="application_form_init" value="1">
 <button>Next Screen</button>
-<?php rsvpmaker_nonce(); ?>
+<?php rsvpmaker_nonce();?>
 </div>
 </form>
 <?php 
@@ -445,9 +460,9 @@ function wp4t_tm_application_form_hidden( $slug ) {
 	echo ' <strong>' . esc_html(stripslashes( $_REQUEST[ $slug ] )) . '</strong>';
 	printf( '<input type="hidden" name="%s" id="%s" value="%s" />', $slug, $slug, sanitize_text_field(stripslashes( $_REQUEST[ $slug ]) ) );
 }
-function wp4t_tm_application_form_field( $slug ) {
+function wp4t_tm_application_form_field( $slug, $defaultvalue = '' ) {
+	$value = $defaultvalue ? $defaultvalue : '';
 	global $post, $formdefaults;
-	$value = '';
 	if ( isset( $_REQUEST[ $slug ] ) ) {
 		$value = stripslashes( sanitize_text_field($_REQUEST[ $slug ]) );
 	}
@@ -460,7 +475,7 @@ function wp4t_tm_application_form_field( $slug ) {
 		{
 			$value = sanitize_text_field($_GET['rsvp_email']);
 		}
-	if(empty($value))
+	if(empty($value) || !empty($defaultvalue) || isset($_POST['application_form_init']))
 	{
 		printf( ' <input type="text" name="%s" id="%s" value="%s" />', $slug, $slug, esc_attr($value) );
 	}

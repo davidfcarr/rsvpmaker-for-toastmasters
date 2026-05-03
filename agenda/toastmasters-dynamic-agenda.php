@@ -43,6 +43,32 @@ function get_wpt_blocks() {
 
 add_filter('block_type_metadata_settings','wp4t_agenda_block_type_metadata',10,2);
 
+add_filter('allowed_block_types_all','wp4t_restrict_layout_blocks_for_agenda_content',20,2);
+
+function wp4t_restrict_layout_blocks_for_agenda_content($allowed_block_types, $editor_context) {
+	$post = !empty($editor_context->post) ? $editor_context->post : null;
+	if(!$post || empty($post->post_content)) {
+		return $allowed_block_types;
+	}
+
+	if(false === strpos($post->post_content, 'wp:wp4toastmasters/')) {
+		return $allowed_block_types;
+	}
+
+	$restricted = array('core/group','core/columns');
+
+	if(true === $allowed_block_types) {
+		$all = WP_Block_Type_Registry::get_instance()->get_all_registered();
+		$allowed_block_types = array_keys($all);
+	}
+
+	if(!is_array($allowed_block_types)) {
+		return $allowed_block_types;
+	}
+
+	return array_values(array_diff($allowed_block_types, $restricted));
+}
+
 function wp4t_agenda_block_type_metadata($metadata) {
 	global $post, $current_user;
 	if(!empty($metadata['view_script_handles']) && in_array('wp4toastmasters-toastmasters-dynamic-agenda-view-script',$metadata['view_script_handles'])) {

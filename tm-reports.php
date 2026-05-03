@@ -123,12 +123,23 @@ function wpt_role_descriptions_listing() {
 	}
 
 	foreach($role_pages as $roleslug => $page_id) {
-		$output .= sprintf('<p><a href="%s">%s</a> | <a href="%s">Print</a></p>',get_permalink($page_id), $toast_roles[$roleslug] ?? $roleslug, get_permalink($page_id).'?print_this=1');
+		$editlink = (current_user_can('edit_posts')) ? sprintf(' | <a href="%s">%s</a>', admin_url('post.php?action=edit&post='.$page_id), __('Edit', 'rsvpmaker-for-toastmasters')) : '';
+		$output .= sprintf('<p><a href="%s">%s</a> | <a href="%s">Print</a>%s</p>',get_permalink($page_id), $toast_roles[$roleslug] ?? $roleslug, get_permalink($page_id).'?print_this=1', $editlink);
 	}
 	$output .= sprintf('<p><a href="%s">%s</a> | <a href="%s">%s</a> | <a href="%s">%s</a></p>',get_permalink().'?all=1', __('View All', 'rsvpmaker-for-toastmasters'), get_permalink($role_page_listing).'?all=1&print_this=1', __('Print All', 'rsvpmaker-for-toastmasters'), get_permalink().'?all=1&eachpage=1&print_this=1&no_title=1', __('Print 1 Role Per Page', 'rsvpmaker-for-toastmasters') );
 	if(current_user_can('manage_options'))
 		$output .= sprintf('<p><a href="%s">%s</a></p>',admin_url('admin.php?page=wpt_role_descriptions'), __('Role List & Descriptions Setup', 'rsvpmaker-for-toastmasters'));
 	return $output;
+}
+
+add_filter('the_content', 'wpt_role_descriptions_listing_content');
+
+function wpt_role_descriptions_listing_content($content) {
+	global $post;
+	if(!isset($_GET['print_this']) && $post->post_parent == get_option('wp4t_role_pages_listing')) {
+		$content .= sprintf('<p><a href="%s">%s</a></p>',add_query_arg('print_this', '1', get_permalink()), __('Print', 'rsvpmaker-for-toastmasters'));
+	}
+	return $content;
 }
 
 function wpt_role_descriptions() {
@@ -6648,7 +6659,7 @@ function wp4t_tm_oneclick_message($post_id,$role,$nonce,$shortdate,$suggest_all_
 		}
 	$oneclick = add_query_arg(array('oneclick' => $nonce,'role' => $role,'e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
 	$oneclick = sprintf('<a style="width: 150px; text-align: center; text-decoration: none; font-weight: bold; display: block; background-color: #004165; color: #FFFFFF; padding: 10px;" href="%s#oneclick">Accept Role</a>',$oneclick);
-	$absence = add_query_arg(array('oneclick' => $nonce,'role' => 'absent','e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
+	$absence = add_query_arg(array('oneclick' => $nonce,'role' => 'absent','nominated_for'=>rawurlencode($role),'e' => '*|EMAIL|*','mode' => 'suggestall','by'=>$current_user->ID),get_permalink($post_id));
 	$absence = sprintf('<a style="width: 150px; text-align: center; text-decoration: none; font-weight: bold; display: block; background-color: red; color: #FFFFFF; padding: 10px;" href="%s#oneclick">Will Not Attend</a>',$absence);
 	$message = str_replace('[yesbutton]',$oneclick,str_replace('[role]',$role,str_replace('[shortdate]',$shortdate,$suggest_all_message)));
 	$message = str_replace('[absencebutton]',$absence,$message);

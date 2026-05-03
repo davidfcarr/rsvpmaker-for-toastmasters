@@ -1,30 +1,30 @@
 import React, { useState, useEffect, Suspense } from "react";
 import mytranslate from './mytranslate'
 
-import { SelectCtrl, NumberCtrl } from './Ctrl.js';
+import { SelectCtrl } from './Ctrl.js';
 import RoleBlock from "./RoleBlock.js";
 import { SpeakerTimeCount } from "./SpeakerTimeCount.js";
 
 const EvaluationTool = React.lazy(() => import('./EvaluationTool.js'));
-import { TemplateAndSettings } from "./TemplateAndSettings.js";
+const TemplateAndSettings = React.lazy(() =>
+    import('./TemplateAndSettings.js').then((module) => ({ default: module.TemplateAndSettings }))
+);
 import { SanitizedHTML } from "./SanitizedHTML.js";
 import { EditorAgendaNote } from './EditorAgendaNote.js';
 import { EditableNote } from './EditableNote.js';
 import { SignupNote } from './SignupNote.js';
-import Reorganize from './Reorganize';
+const Reorganize = React.lazy(() => import('./Reorganize.js'));
 import ReorgWidget from './ReorgWidget';
 import { Inserter } from "./Inserter.js";
 import { Absence } from './Absence.js';
 import { Hybrid } from './Hybrid.js';
-import Voting from './Voting.js';
+const Voting = React.lazy(() => import('./Voting.js'));
 import { useBlocks, updateAgenda } from './queries.js';
-import { useCollapse } from 'react-collapsed';
-import { Icon, chevronUp, chevronDown, edit } from '@wordpress/icons';
+import { Icon, edit } from '@wordpress/icons';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
-import apiClient, { setupNonceInterceptor } from './http-common.js';
+import { setupNonceInterceptor } from './http-common.js';
 
 export default function Agenda(props) {
-    let initialPost = 0;
 
     const wpt_rest = useRsvpmakerRest();
     const rsvpmaker_rest = useRsvpmakerRest();
@@ -35,14 +35,7 @@ export default function Agenda(props) {
         }
     }, [rsvpmaker_rest?.nonce]);
 
-    if ('rsvpmaker' == wpt_rest.post_type) {
-        initialPost = wpt_rest.post_id;
-    } else {
-        initialPost = new URL(document.location).searchParams.get('post_id');
-        if (!initialPost) initialPost = 0;
-    }
-
-    const [post_id, setPostId] = useState(initialPost);
+    const [post_id, setPostId] = useState(props.post_id ? props.post_id : 0);
     const [current_user_id, setCurrentUserId] = useState(0);
     const [mode, setMode] = useState((props.mode_init) ? props.mode_init : 'signup');
     const [showDetails, setshowDetails] = useState('all');
@@ -96,8 +89,29 @@ export default function Agenda(props) {
         if ('react-agenda' != scrollTo) setScrollTo('react-agenda');
     }, [mode]);
 
-    try {
-        const { isLoading, isFetching, isSuccess, isError, data: axiosdata, error, refetch } = useBlocks(post_id);
+    const { isLoading, isFetching, isSuccess, isError, data: axiosdata, error, refetch } = useBlocks(post_id);
+    const data = axiosdata?.data;
+
+        useEffect(() => {
+            if (!data) return;
+            if (!post_id && data.post_id) {
+                setPostId(data.post_id);
+            }
+        }, [data, post_id]);
+
+        useEffect(() => {
+            if (!data) return;
+            if (!['evaluation', 'voting'].includes(mode) && !data.is_club_member) {
+                setMode('evaluation');
+            }
+        }, [data, mode]);
+
+        useEffect(() => {
+            if (!data) return;
+            if (!current_user_id && typeof data.current_user_id !== 'undefined') {
+                setCurrentUserId(data.current_user_id);
+            }
+        }, [data, current_user_id]);
 
         if (isError)
             return (
@@ -119,13 +133,12 @@ export default function Agenda(props) {
 
         if (isLoading) return <p>Loading...</p>;
 
-        if (!axiosdata.data.current_user_id)
-            return <p>You must be logged in as a member of this website to see the signup form.</p>;
+        //if (!axiosdata.data.current_user_id)
+            //return <p>You must be logged in as a member of this website to see the signup form.</p>;
 
         if (axiosdata) {
             const { permissions } = axiosdata?.data;
         }
-        const data = axiosdata.data;
 
         function calcTimeAllowed(attrs) {
             let time_allowed = 0;
@@ -179,7 +192,6 @@ export default function Agenda(props) {
                 if (user_can('edit_post'))
                     modeoptions.push({ label: mytranslate('Settings', data), value: 'settings' });
             }
-
             return (
                 <div id="fixed-mode-control">
                         {notification && notification.message && <div className="mode-control-notification">{notification.message}</div>}
@@ -219,18 +231,15 @@ export default function Agenda(props) {
         let date = new Date(data.datetime);
         const dateoptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         let datestring = '';
-
-        if (!post_id)
-            setPostId(data.post_id);
-
-        if (!current_user_id)
-            setCurrentUserId(data.current_user_id);
+        const isGuestUser = (!data.is_user_logged_in || !data.is_club_member);
 
         if ('settings' == mode) {
             return (
                 <div className="agendawrapper">
-                    <ModeControl isTemplate={(false !== data.is_template)} post_id={data.post_id} />
-                    <TemplateAndSettings makeNotification={makeNotification} setPostId={setPostId} user_can={user_can} data={data} />
+                    <ModeControl isTemplate={(false !== data.is_template)} isGuest={isGuestUser} post_id={data.post_id} />
+                    <Suspense fallback={<h1>Loading ...</h1>}>
+                        <TemplateAndSettings makeNotification={makeNotification} setPostId={setPostId} user_can={user_can} data={data} />
+                    </Suspense>
                 </div>
             );
         }
@@ -238,7 +247,7 @@ export default function Agenda(props) {
         if ('evaluation' == mode) {
             return (
                 <div className="agendawrapper">
-                    <ModeControl />
+                    <ModeControl isTemplate={(false !== data.is_template)} isGuest={isGuestUser} post_id={data.post_id} />
                     <Suspense fallback={<h1>Loading ...</h1>}>
                         <EvaluationTool scrolltoId={scrolltoId} makeNotification={makeNotification} data={data} evaluate={evaluate} setEvaluate={setEvaluate} />
                     </Suspense>
@@ -249,7 +258,7 @@ export default function Agenda(props) {
         if ('voting' == mode) {
             return (
                 <div className="agendawrapper">
-                    <ModeControl />
+                    <ModeControl isTemplate={(false !== data.is_template)} isGuest={isGuestUser} post_id={data.post_id} />
                     <Suspense fallback={<h1>Loading ...</h1>}>
                         <Voting post_id={post_id} data={data} />
                     </Suspense>
@@ -260,7 +269,7 @@ export default function Agenda(props) {
         if ('reorganize' == mode)
             return <Suspense fallback={<h1>Loading ...</h1>}><Reorganize data={data} mode={mode} setMode={setMode} post_id={post_id} makeNotification={makeNotification} ModeControl={ModeControl} showDetails={showDetails} setshowDetails={setshowDetails} setScrollTo={setScrollTo} setEvaluate={setEvaluate} setPostId={setPostId} /></Suspense>;
 
-        return (
+    return (
             <div className="agendawrapper" id={'agendawrapper' + post_id}>
                 {'suggest' == mode && (
                     <p>
@@ -271,12 +280,12 @@ export default function Agenda(props) {
                         {mytranslate('tool for sending suggestions in a batch.', data)}
                     </p>
                 )}
-                <>{('rsvpmaker' != wpt_rest.post_type) && <SelectCtrl label="Choose Event" value={post_id} options={data.upcoming} onChange={(value) => { setPostId(parseInt(value)); makeNotification(mytranslate('Date changed, please wait for the date to change ...', data)); queryClient.invalidateQueries(['blocks-data', post_id]); refetch(); }} />}</>
+                <>{('rsvpmaker' != wpt_rest.post_type) && <SelectCtrl label="Choose Event" value={post_id} options={data.upcoming} onChange={(value) => { setPostId(parseInt(value)); makeNotification(mytranslate('Date changed, please wait for the date to change ...', data)); refetch(); }} />}</>
                 <h4>
                     {date.toLocaleDateString('en-US', dateoptions)}{' '}
                     {data.is_template && <span>({mytranslate('Template', data)})</span>}
                 </h4>
-                <ModeControl makeNotification={makeNotification} isTemplate={false !== data.is_template} isGuest={!data.is_club_member} post_id={data.post_id} />
+                <ModeControl makeNotification={makeNotification} isTemplate={false !== data.is_template} isGuest={isGuestUser} post_id={data.post_id} />
                 {!Array.isArray(data.blocksdata) && <p>{mytranslate('Error loading agenda', data)} (<a href={window.location.href + '?revert=1'}>{mytranslate('try alternate version', data)}</a>).</p>}
                 {('assign' == mode) && <div className="assignment" note="workaround for alignment issue"></div>}
                 {Array.isArray(data.blocksdata) && data.blocksdata.map((block, blockindex) => {
@@ -449,13 +458,4 @@ export default function Agenda(props) {
                 <div><button onClick={refetch}>Refresh</button></div>
             </div>
         );
-    } catch (error) {
-        console.log('Error loading agenda', error);
-        return (
-            <p>
-                Error loading agenda
-                <a href={window.location.href + '?revert=1'}>try alternate version</a>
-            </p>
-        );
-    }
 }

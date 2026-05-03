@@ -37,7 +37,7 @@ export default function Edit(props) {
 {isSelected && <div>
     <p>You can alter the structure of your Toastmasters agenda in the editor or using the <a href="https://www.wp4toastmasters.com/knowledge-base/organize-agenda-tool/">Organize tab</a> displayed when you view the meeting agenda on the front end of the website (which you may find easier).</p>
     <p>The WordPress for Toastmasters system represents meeting agendas as a series of content blocks that you work with within the same editor used for blog posts and web pages. Although it can include standard content blocks (paragraphs, headings, images), you primarily work with <strong>Role</strong> blocks and a <strong>Note</strong> blocks (the "stage directions" of your meetings). <strong>Event Templates</strong> define an abstract model of a "typical" meeting, contest, or other event, but you can use the same techniques to modify a specific event (for example, to change the number and order of roles for a given meeting).</p>
-    <p>For details, see the <a target="_blank" href="https://www.wp4toastmasters.com/knowledge-base/toastmasters-meeting-templates-and-meeting-events/">Knowledge Base articles</a> on the WordPress for Toastmasters website.</p>
+    <p>For details, see the <a target="_blank" href="https://toastmost.org/knowledge-base/toastmasters-meeting-templates-and-meeting-events/">Knowledge Base articles</a>.</p>
     <p>This special help tips block will not appear on the website or your agenda. You can delete it or leave it here to refer back to later. <em>Click anywhere outside of this box to close it.</em></p>
 </div>
 }

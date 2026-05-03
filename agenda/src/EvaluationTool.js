@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import mytranslate from './mytranslate'
 import { TextControl } from '@wordpress/components';
 import { SelectCtrl } from './Ctrl.js';
 import { SanitizedHTML } from './SanitizedHTML.js';
 import { useEvaluation, initSendEvaluation } from './queries.js';
-import { EvaluationProjectChooser } from "./EvaluationProjectChooser.js";
-import { EvaluationPrompt } from "./EvaluationPrompt.js";
-import { Yoodli } from './icons.js';
-import clipboard from 'clipboardy';
-import { isError } from "react-query";
+const EvaluationProjectChooser = React.lazy(() =>
+    import('./EvaluationProjectChooser.js').then((module) => ({ default: module.EvaluationProjectChooser }))
+);
+const EvaluationPrompt = React.lazy(() =>
+    import('./EvaluationPrompt.js').then((module) => ({ default: module.EvaluationPrompt }))
+);
 
 export default function EvaluationTool(props) {
     const { makeNotification, data, evaluate, setEvaluate, scrolltoId, mode } = props;
@@ -17,7 +18,6 @@ export default function EvaluationTool(props) {
     if (isError)
         return <p>{mytranslate('Error loading evaluation data', data)}</p>;
 
-    const [path, setPath] = useState('Path Not Set');
     const [manual, setManual] = useState((evaluate && evaluate.manual) ? evaluate.manual : '');
     const [title, setTitle] = useState((evaluate && evaluate.title) ? evaluate.title : '');
     const [name, setName] = useState((evaluate && evaluate.name) ? evaluate.name : '');
@@ -102,6 +102,8 @@ export default function EvaluationTool(props) {
     }
 
     let openslots = [];
+    const prompts = Array.isArray(form.prompts) ? form.prompts : [];
+    const secondLanguagePrompts = Array.isArray(form.second_language) ? form.second_language : [];
 
     function copyEvaluation() {
         const blobInput = new Blob([sent], { type: 'text/html' });
@@ -134,30 +136,33 @@ export default function EvaluationTool(props) {
             <h3>{mytranslate('Get Feedback', data)}</h3>
             {data.current_user_id && <p>{mytranslate('To request an evaluation, share this link', data)}<br /><a href={data.request_evaluation}>{data.request_evaluation}</a> {data.request_evaluation.indexOf('admin') > 0 && <span>({mytranslate('login required', data)})</span>}<br /></p>}
             {data.current_user_id == false && <p>{mytranslate('Toastmost users can request an evaluation from a fellow Toastmaster using this system.', data)}</p>}
-            <div id="YoodliPromo"><Yoodli /></div>
             <h3>{mytranslate('Give Feedback', data)}</h3>
             <p>{mytranslate('To give an evaluation, use the form below. When both the evaluator and the speaker have user accounts, the completed evaluation will be sent by email and archived on the member dashboard.', data)}</p>
             {!name && (!mode || 'evaluation_demo' != mode) && <SelectCtrl source="Member or Guest" value={JSON.stringify(evaluate)} options={assignment_options} onChange={(value) => { if ('guest' == value) { setName('guest'); return; } const newevaluate = JSON.parse(value); setTitle(newevaluate.title); setProject(newevaluate.project); setEvaluate(newevaluate); }} />}
-            {(name || (mode && 'evaluation_demo' == mode)) && <TextControl label={mytranslate('Speaker Name', data)} value={name} onChange={(value) => { if (!value) { setName(' '); return; }; setName(value); setEvaluate((prev) => {
-                prev.ID = value;
-                prev.name = value;
-                return prev;
-            }); }} />}
-            {!data.current_user_name && <TextControl label={mytranslate('Evaluator Name', data)} value={evaluatorName} onChange={(value) => { setEvaluatorName(value) }} />}
-            {(('evaluation_guest' == mode) && !data.is_user_logged_in) && <TextControl label={mytranslate('Evaluator Email', data)} value={evaluatorEmail} onChange={(value) => { setEvaluatorEmail(value) }} />}
-            <EvaluationProjectChooser manual={manual} project={project} title={title} setManual={setManual} setProject={setProject} setTitle={setTitle} setEvaluate={setEvaluate} makeNotification={makeNotification} />
+            {(name || (mode && 'evaluation_demo' == mode)) && <TextControl label={mytranslate('Speaker Name', data)} value={name} onChange={(value) => { if (!value) { setName(' '); return; }; setName(value); setEvaluate((prev) => ({
+                ...prev,
+                ID: value,
+                name: value,
+            })); }} />}
+            {!data.is_club_member && <TextControl label={mytranslate('Evaluator Name', data)} value={evaluatorName} onChange={(value) => { setEvaluatorName(value) }} />}
+            {(!data.is_user_logged_in || !data.is_club_member ) && <TextControl label={mytranslate('Evaluator Email', data)} value={evaluatorEmail} onChange={(value) => { setEvaluatorEmail(value) }} />}
+            <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}>
+                <EvaluationProjectChooser manual={manual} project={project} title={title} setManual={setManual} setProject={setProject} setTitle={setTitle} setEvaluate={setEvaluate} makeNotification={makeNotification} />
+            </Suspense>
             <SanitizedHTML innerHTML={form.intro} />
-            {form.prompts.map((item, index) => {
+            <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}>
+            {prompts.map((item, index) => {
                 if (!(responses[index] || notes[index]))
                     openslots.push(index);
                 return <div><EvaluationPrompt promptindex={index} response={responses[index]} note={notes[index]} setResponses={setResponses} setNotes={setNotes} item={item} /></div>
             })}
-            {secondLanguagePrompt && form.second_language.map((item, slindex) => {
-                let index = slindex + form.prompts.length;
+            {secondLanguagePrompt && secondLanguagePrompts.map((item, slindex) => {
+                let index = slindex + prompts.length;
                 if (!(responses[index] || notes[index]))
                     openslots.push(index);
                 return <div><EvaluationPrompt promptindex={index} response={responses[index]} note={notes[index]} setResponses={setResponses} setNotes={setNotes} item={item} /></div>
             })}
+            </Suspense>
             {openslots.length > 0 && <p><em>{openslots.length} {mytranslate('prompts have not been answered', data)}</em></p>}
             {form.second_language_requested && <p><em>{mytranslate('The last four speaking-in-a-second-language prompts were requested by the speaker.', data)}</em></p>}
             {!form.second_language_requested && !secondLanguagePrompt && <p><input type="checkbox" onClick={() => { setSecondLanguagePrompt(true); }} /> {mytranslate('Add prompts for those speaking in a second language', data)}</p>}

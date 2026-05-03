@@ -8637,11 +8637,29 @@ elseif('absent' == $role) {
 		$mail['from'] = $user->user_email;
 
 		$mail['subject'] = $user->display_name.' will be ABSENT '.$date;
+		if(isset($_GET['nominated_for']))
+		{
+			$role = rawurldecode($_GET['nominated_for']);
+			$mail['subject'] .= ' (nominated for: '.$role.')';
+		}
+			$dates = [];
 
-		$mail['html'] = '<p>'.$user->display_name.' response to role suggestion: ABSENT</p>';
+			foreach($_GET['abs'] as $abs) {
+
+				$event = get_rsvpmaker_event($abs);
+
+				$dates[] = rsvpmaker_date($rsvp_options['short_date'],$event->ts_start);
+
+			}
+
+			if(!empty($dates))
+
+				$mail['subject'] .= ' and also '.implode(', ',$dates);
+
+
+		$mail['html'] = '<p>'.$user->display_name.' will be ABSENT</p>';
 
 		rsvpmailer($mail);
-
 	}
 
 	$output .= wp4t_oneclick_future($user_id);
@@ -8649,8 +8667,6 @@ elseif('absent' == $role) {
 	$output .= sprintf('<p>Want first pick of roles for future meetings? <a href="%s">Sign up for multiple meetings</a> in advance.</p>',admin_url('admin.php?page=toastmasters_planner'));
 
 	$output .= sprintf('<p><a href="%s">Exit one-click signup mode</a> to see the regular agenda signup sheet.</p><div style="height: 1000px; "></div>',get_permalink());
-
-	
 
 	return $output;
 
@@ -13758,8 +13774,6 @@ add_action( 'template_redirect', 'wp4t_redirect' );
 function wp4t_redirect() {
 
 		global $post;
-
-		
 
 		if ( isset( $_REQUEST['tm_reports'] ) ) {
 
@@ -21692,7 +21706,7 @@ function wpt_tod() {
 
 	}
 
-	$toastmaster = get_post_meta( $post->ID, '_Toastmaster_of_the_Day_1', true );
+	$toastmaster = get_post_meta( $post->ID, '_role_Toastmaster_of_the_Day_1', true );
 
 	if ( $toastmaster ) {
 

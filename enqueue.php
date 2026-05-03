@@ -29,7 +29,6 @@ function toastmasters_tabs($hastabs) {
 	return $hastabs;
 }
 function toastmasters_css_js() {
-	error_log('enqueueing toastmasters css and js '.sanitize_text_field($_SERVER['REQUEST_URI']));
 	if(is_network_admin())
 		return;
 	global $post, $current_user;
@@ -100,9 +99,6 @@ function toastmasters_css_js() {
 		wp_enqueue_editor();
 		wp_register_script( 'wp4t-profile-description-editor', plugins_url( 'rsvpmaker-for-toastmasters/profile-description-editor.js' ), array( 'jquery', 'editor' ), $version, true );
 		wp_enqueue_script( 'wp4t-profile-description-editor' );
-	}
-	else {
-		error_log('not loading profile editor script because not on profile page '.sanitize_text_field($_SERVER['REQUEST_URI']));
 	}
 
 	if ( isset( $_REQUEST['page'] ) && ( $_REQUEST['page'] == 'wp4t_setup_wizard' ) ) {

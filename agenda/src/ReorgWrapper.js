@@ -1,8 +1,10 @@
 import React, {useState, useEffect, Suspense} from "react"
 import { RadioControl } from '@wordpress/components';
 import {SelectCtrl} from './Ctrl.js'
-import {TemplateAndSettings} from "./TemplateAndSettings.js";
-import Reorganize from './Reorganize';
+const TemplateAndSettings = React.lazy(() =>
+    import('./TemplateAndSettings.js').then((module) => ({ default: module.TemplateAndSettings }))
+);
+const Reorganize = React.lazy(() => import('./Reorganize.js'));
 import {SanitizedHTML} from './SanitizedHTML';
 import {useBlocks} from './queries.js';
 
@@ -112,7 +114,9 @@ if('settings' == mode)
     {
         return(
             <div className="agendawrapper">
-            <TemplateAndSettings makeNotification={makeNotification} setPostId={setPostId} user_can={user_can} data={data} />
+            <Suspense fallback={<p>Loading ...</p>}>
+                <TemplateAndSettings makeNotification={makeNotification} setPostId={setPostId} user_can={user_can} data={data} />
+            </Suspense>
             <ModeControl />
             </div>
         );
@@ -120,7 +124,9 @@ if('settings' == mode)
 
     if('reorganize' == mode)
         return (<div>
-            <Reorganize data={data} mode={mode} setMode={setMode} post_id={post_id} makeNotification={makeNotification} ModeControl={ModeControl} showDetails={showDetails} setshowDetails={setshowDetails} setScrollTo={setScrollTo} />
+            <Suspense fallback={<p>Loading ...</p>}>
+                <Reorganize data={data} mode={mode} setMode={setMode} post_id={post_id} makeNotification={makeNotification} ModeControl={ModeControl} showDetails={showDetails} setshowDetails={setshowDetails} setScrollTo={setScrollTo} />
+            </Suspense>
             </div>)
     else
         return (

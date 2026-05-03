@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {useState, useEffect} from "react"
 import { TextControl } from '@wordpress/components';
 import {SelectCtrl} from './Ctrl.js'
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
@@ -9,20 +9,25 @@ export function EvaluationProjectChooser(props) {
     const {project,manual,title,setEvaluate,setManual,setProject,setTitle,makeNotification} = props;
     const wpt_rest = useRsvpmakerRest();
 
-    useEffect( () => {
-        fetch(wpt_rest.url + 'rsvptm/v1/paths_and_projects', {headers: {'X-WP-Nonce': wpt_rest.nonce}})
-        .then((response) => response.json())
-        .then((data) => {
-            if(data.paths) {
-                setChoices(data);
-            } 
-        },[]);
-
-        if(props.project)
-        {
-            startFromProject(props.project);
+    useEffect(() => {
+        if (!wpt_rest?.url || !wpt_rest?.nonce) {
+            return;
         }
-    },[]);
+
+        fetch(wpt_rest.url + 'rsvptm/v1/paths_and_projects', {headers: {'X-WP-Nonce': wpt_rest.nonce}})
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.paths) {
+                    setChoices(data);
+                }
+            });
+    }, [wpt_rest?.url, wpt_rest?.nonce]);
+
+    useEffect(() => {
+        if (project) {
+            startFromProject(project);
+        }
+    }, [project]);
 
     function startFromProject(project) {
         let manual = project.replace(/([\s0-9]+)$/,'');
@@ -40,15 +45,15 @@ export function EvaluationProjectChooser(props) {
         <>
         <div><SelectCtrl source="paths" options={choices['paths']} value={path} label="Path" onChange={(value) => setPath(value)} /></div>
         <div><SelectCtrl source="manuals" options={choices['manuals'][path]} value={manual} label="Level" onChange={(value) => {setManual(value)}} /></div>
-        <div><SelectCtrl source="projects" options={(choices['projects'][manual]) ? choices['projects'][manual] : [{'value':'',label:'Set Path and Level to See Projects'}] } value={project} label="Project" onChange={(value) => { setProject(value); setEvaluate((prev) =>{
-            prev.manual = manual;
-            prev.project = value;
-            return prev;
-        }); makeNotification('Loading evaluation form ...'); } } /></div>
-        <p><strong>Title</strong> <TextControl value={title} onChange={(value) => {setTitle(value);setEvaluate((prev) =>{
-            prev.title = value;
-            return prev;
-        });}} /></p>
+        <div><SelectCtrl source="projects" options={(choices['projects'][manual]) ? choices['projects'][manual] : [{'value':'',label:'Set Path and Level to See Projects'}] } value={project} label="Project" onChange={(value) => { setProject(value); setEvaluate((prev) => ({
+            ...prev,
+            manual,
+            project: value,
+        })); makeNotification('Loading evaluation form ...'); } } /></div>
+        <p><strong>Title</strong> <TextControl value={title} onChange={(value) => {setTitle(value);setEvaluate((prev) => ({
+            ...prev,
+            title: value,
+        }));}} /></p>
         </>
     )
 }

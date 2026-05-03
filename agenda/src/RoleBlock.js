@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { TextControl } from '@wordpress/components';
 import mytranslate from './mytranslate'
 import { SelectCtrl } from './Ctrl.js';
-import ProjectChooser from "./ProjectChooser.js";
-import OtherRoleTitle from "./OtherRoleTitle.js";
-import Suggest from "./Suggest.js";
+const ProjectChooser = React.lazy(() => import('./ProjectChooser.js'));
+const OtherRoleTitle = React.lazy(() => import('./OtherRoleTitle.js'));
+const Suggest = React.lazy(() => import('./Suggest.js'));
 import { Up, Down, Top, Close } from './icons.js';
 import apiClient, { setupNonceInterceptor } from './http-common.js';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 import { useMutation, useQueryClient } from 'react-query';
-import { updatePreference } from "./queries.js";
 import { Icon, plusCircle, chevronRight, cancelCircleFilled, edit, tool } from '@wordpress/icons';
 
 export default function RoleBlock(props) {
@@ -31,9 +30,8 @@ export default function RoleBlock(props) {
     //console.log('RoleBlock titlePrompt', titlePrompt );
 
     const queryClient = useQueryClient();
-    const { current_user_id, current_user_name, request_evaluation } = agendadata;
+    const { current_user_id, current_user_name } = agendadata;
     const [guests, setGuests] = useState([].fill('', 0, attrs.count));
-    const { mutate: mutatePreference } = updatePreference(makeNotification);
 
     if (!attrs.role)
         return null;
@@ -46,9 +44,7 @@ export default function RoleBlock(props) {
         return answer;
     }
 
-    let roletagbase = '_role_' + attrs.role.replaceAll(/[^A-Za-z]/g, '_') + '_';
-    const [viewTop, setViewTop] = useState('');
-    let roles = [];
+    const roletagbase = '_role_' + attrs.role.replaceAll(/[^A-Za-z]/g, '_') + '_';
     var start = (attrs.start) ? parseInt(attrs.start) : 1;
     if (!start)
         start = 1;
@@ -271,14 +267,14 @@ export default function RoleBlock(props) {
                                 }); updateAssignment({
                                     'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'wasopen': true
                                 })
-                            }} ><span class="agenda-tooltip-text">{mytranslate('Take Role', data)}</span><Icon icon={plusCircle} /></button>}
+                            }} ><span className="agenda-tooltip-text">{mytranslate('Take Role', data)}</span><Icon icon={plusCircle} /></button>}
                             {isMe && <button onClick={function (event) {
                                 let a = ('Speaker' == role) ? {
                                     'ID': 0, 'name': '', 'role': role, 'blockindex': blockindex, 'roleindex': roleindex, 'start': start, 'count': count, 'intro': '', 'title': '', 'manual': '', 'project': '', 'maxtime': 7, 'display_time': '5 - 7 minutes'
                                 } : {
                                     'ID': 0, 'name': '', 'role': role, 'blockindex': blockindex, 'roleindex': roleindex, 'start': start, 'count': count
                                 }; updateAssignment(a)
-                            }} className="agenda-tooltip" ><span class="agenda-tooltip-text">{mytranslate('Cancel', data)}</span><Icon icon={cancelCircleFilled} /></button>}
+                            }} className="agenda-tooltip" ><span className="agenda-tooltip-text">{mytranslate('Cancel', data)}</span><Icon icon={cancelCircleFilled} /></button>}
                             {(isOpen || isMe) && <button className="agenda-tooltip" onClick={() => {
                                 if (isMe) {
                                     let a = ('Speaker' == role) ? {
@@ -287,16 +283,16 @@ export default function RoleBlock(props) {
                                         'ID': 0, 'name': '', 'role': role, 'blockindex': blockindex, 'roleindex': roleindex, 'start': start, 'count': count
                                     }; updateAssignment(a)
                                 } setScrollTo(id); setMode('suggest')
-                            }} ><span class="agenda-tooltip-text">{mytranslate('Suggest', data)}</span><Icon icon={chevronRight} /></button>}
-                            {(user_can('edit_post') || user_can('organize_agenda') || user_can('edit_signups')) && <button className="agenda-tooltip" onClick={() => { setItemMode({ item: roleindex, mode: 'edit' }) }}><span class="agenda-tooltip-text">{mytranslate('Edit', data)}</span><Icon icon={edit} /></button>}
-                            {(user_can('edit_post') || user_can('organize_agenda')) && <button className="agenda-tooltip" onClick={() => { setShowControls(blockindex) }}><span class="agenda-tooltip-text">{mytranslate('Organize', data)}</span><Icon icon={tool} /></button>}
+                            }} ><span className="agenda-tooltip-text">{mytranslate('Suggest', data)}</span><Icon icon={chevronRight} /></button>}
+                            {(user_can('edit_post') || user_can('organize_agenda') || user_can('edit_signups')) && <button className="agenda-tooltip" onClick={() => { setItemMode({ item: roleindex, mode: 'edit' }) }}><span className="agenda-tooltip-text">{mytranslate('Edit', data)}</span><Icon icon={edit} /></button>}
+                            {(user_can('edit_post') || user_can('organize_agenda')) && <button className="agenda-tooltip" onClick={() => { setShowControls(blockindex) }}><span className="agenda-tooltip-text">{mytranslate('Organize', data)}</span><Icon icon={tool} /></button>}
                         </div>
                         <h3 className="role-label">
                              {assignment.avatar && <div style={{float:'left',marginRight:'10px'}}><img src={assignment.avatar} className="tm_avatar" alt={assignment.name} /></div>} {role_label} {shownumber} {assignment.name}
                         </h3>
                     </div>
                     {attrs.agenda_note && <p><em>{attrs.agenda_note}</em></p>}
-                    <>{'suggest' == mode && (isMe || isOpen) && <Suggest memberoptions={memberoptions} roletag={roletagbase + (roleindex + 1)} post_id={props.post_id} current_user_id={current_user_id} />}</>
+                    <>{'suggest' == mode && (isMe || isOpen) && <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}><Suggest memberoptions={memberoptions} roletag={roletagbase + (roleindex + 1)} post_id={props.post_id} current_user_id={current_user_id} /></Suspense>}</>
                     <>{('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex)) && <SelectCtrl label={mytranslate('Select Member', data)} value={assignment.ID} options={memberoptions} onChange={(id) => {
                         if ('Speaker' == role) updateAssignment({
                             'ID': id, 'name': getMemberName(id), 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'manual': '', 'title': '', 'project': '', 'intro': '', 'maxtime': 7, 'display_time': '5 - 7 minutes'
@@ -311,8 +307,8 @@ export default function RoleBlock(props) {
                             'ID': guests[roleindex], 'name': guests[roleindex] + ' (guest)', 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count
                         }); let newguests = [...guests]; newguests[roleindex] = ''; setGuests(newguests);
                     }} >{mytranslate('Add', data)}</button></div></div>}</>
-                    <>{'suggest' != mode && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && ((assignment.ID > 0) || (typeof assignment.ID == 'string' && assignment.ID != '')) && role.includes('Speaker') && (role.includes('Backup') == false) && showDetails && <ProjectChooser key={'projectchooser-' + blockindex + '-' + roleindex + '-' + assignment.ID} attrs={attrs} assignment={assignment} project={assignment.project} title={assignment.title} intro={assignment.intro} manual={assignment.manual} maxtime={assignment.maxtime} display_time={assignment.display_time} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
-                    <>{titlePrompt && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && showDetails && <OtherRoleTitle role={role} attrs={attrs} assignment={assignment} title={assignment.title} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} />}</>
+                    <>{'suggest' != mode && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && ((assignment.ID > 0) || (typeof assignment.ID == 'string' && assignment.ID != '')) && role.includes('Speaker') && (role.includes('Backup') == false) && showDetails && <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}><ProjectChooser key={'projectchooser-' + blockindex + '-' + roleindex + '-' + assignment.ID} attrs={attrs} assignment={assignment} project={assignment.project} title={assignment.title} intro={assignment.intro} manual={assignment.manual} maxtime={assignment.maxtime} display_time={assignment.display_time} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} /></Suspense>}</>
+                    <>{titlePrompt && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && showDetails && <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}><OtherRoleTitle role={role} attrs={attrs} assignment={assignment} title={assignment.title} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} /></Suspense>}</>
                     <>{!!('edit' == mode) && assignments.length > 1 && <MoveButtons assignments={assignments} roleindex={roleindex} filledslots={filledslots} openslots={openslots} attrs={attrs} shownumber={shownumber} />}</>
                     {assignment.ID > 0 && 'Speaker' == attrs.role && <div className="evaluation-request"><a href={assignment.evaluation_link} onClick={(e) => { e.preventDefault(); setEvaluate(assignment); setMode('evaluation') }} >{mytranslate('Evaluation Form', data)}</a> <span style={{ fontSize: '10px' }}>({mytranslate('copy-paste text below to share', data)})</span><br /><textarea rows="3" style={{ fontSize: '8px' }} value={mytranslate('Evaluation link for ', data) + assignment.name + '\n' + assignment.evaluation_link} /></div>}
                 </div>)

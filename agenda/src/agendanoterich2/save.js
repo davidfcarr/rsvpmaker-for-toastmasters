@@ -1,12 +1,4 @@
-/**
- * React hook that is used to mark the block wrapper element.
- * It provides all the necessary props like the class name.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
- */
-import { useBlockProps } from '@wordpress/block-editor';
 import { RichText } from '@wordpress/block-editor';
-import { use } from 'react';
 
 /**
  * The save function defines the way in which the different attributes should
@@ -18,5 +10,5 @@ import { use } from 'react';
  * @return {WPElement} Element to render.
  */
 export default function save({ attributes, className }) {
-	return <RichText.Content tagName="p" value={ attributes.content } {...useBlockProps.save()}/>;
+	return <RichText.Content tagName="p" className="wp-block-wp4toastmasters-wp4t_agendanoterich2" value={ attributes.content } />;
 }
