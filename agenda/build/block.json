@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "wp4toastmasters/toastmasters-dynamic-agenda",
   "version": "0.1.0",
-  "title": "Toastmasters Dynamic Agenda",
+  "title": "TM Dynamic Agenda",
   "category": "toastmasters",
   "icon": "groups",
   "description": "Add to the top of an agenda template for the new role signup experience",

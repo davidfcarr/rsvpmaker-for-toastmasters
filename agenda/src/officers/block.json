@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/officers",
 	"version": "0.1.0",
-	"title": "Toastmasters Officers List",
+	"title": "TM Officers List",
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Officers list for agenda layout.",

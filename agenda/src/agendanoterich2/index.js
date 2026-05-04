@@ -4,6 +4,7 @@
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 import { registerBlockType } from '@wordpress/blocks';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -21,12 +22,36 @@ import Edit from './edit';
 import save from './save';
 import metadata from './block.json';
 
+function excerptFirstThreeWords(text, stripHtml = false) {
+	if (!text) {
+		return '';
+	}
+
+	const source = stripHtml ? text.replace(/<[^>]*>/g, ' ') : text;
+	const normalized = source.replace(/\s+/g, ' ').trim();
+	if (!normalized) {
+		return '';
+	}
+
+	const words = normalized.split(' ');
+	const excerpt = words.slice(0, 3).join(' ');
+	return words.length > 3 ? `${excerpt}...` : excerpt;
+}
+
 /**
  * Every block starts by registering a new block type definition.
  *
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 registerBlockType( metadata.name, {
+	__experimentalLabel: ( attributes ) => {
+		const excerpt = excerptFirstThreeWords(attributes?.content || '', true);
+		if (!excerpt) {
+			return __('TM Agenda Note', 'rsvpmaker-for-toastmasters');
+		}
+		return `${__('TM Agenda Note', 'rsvpmaker-for-toastmasters')}: ${excerpt}`;
+	},
+
 	/**
 	 * @see ./edit.js
 	 */

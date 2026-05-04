@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/role",
 	"version": "0.1.0",
-	"title": "Toastmasters Agenda Role",
+	"title": "TM Agenda Role",
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Role to be assigned and displayed on the agenda.",

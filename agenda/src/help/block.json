@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/help",
 	"version": "0.1.0",
-	"title": "Toastmasters Help",
+	"title": "TM Help",
 	"keywords": [ "help", "toastmasters" ],
 	"category": "toastmasters",
 	"icon": "groups",

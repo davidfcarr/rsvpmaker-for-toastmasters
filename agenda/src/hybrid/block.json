@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/hybrid",
 	"version": "0.1.0",
-	"title": "Toastmasters Hybrid Meeting",
+	"title": "TM Hybrid Meeting",
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Ask whether members will be attending in person.",

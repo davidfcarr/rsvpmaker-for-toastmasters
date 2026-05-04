@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/duesrenewal",
 	"version": "0.1.0",
-	"title": "Toastmasters Dues Renewal",
+	"title": "TM Dues Renewal",
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Payment form for dues renewal.",

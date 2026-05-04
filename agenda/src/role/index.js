@@ -4,6 +4,7 @@
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 import { registerBlockType } from '@wordpress/blocks';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -27,6 +28,17 @@ import metadata from './block.json';
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 registerBlockType( metadata.name, {
+	__experimentalLabel: ( attributes ) => {
+		const role = attributes?.custom_role?.trim() || attributes?.role?.trim();
+		if ( ! role ) {
+			return __( 'TM Agenda Role', 'rsvpmaker-for-toastmasters' );
+		}
+
+		const count = Number( attributes?.count || 0 );
+		const suffix = count > 1 ? ` (${ count })` : '';
+		return `${ __( 'TM Agenda Role', 'rsvpmaker-for-toastmasters' ) }: ${ role }${ suffix }`;
+	},
+
 	/**
 	 * @see ./edit.js
 	 */

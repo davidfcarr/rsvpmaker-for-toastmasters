@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/newestmembers",
 	"version": "0.1.0",
-	"title": "Toastmasters Newest Members",
+	"title": "TM Newest Members",
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Newest members in the club.",

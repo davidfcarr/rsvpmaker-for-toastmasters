@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/meetingdate",
 	"version": "0.1.0",
-	"title": "Meeting Date (Toastmasters agenda layout)",
+	"title": "Meeting Date (TM agenda layout)",
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Meeting date for agenda layout.",

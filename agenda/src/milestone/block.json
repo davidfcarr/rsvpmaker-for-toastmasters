@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/milestone",
 	"version": "0.1.0",
-	"title": "Toastmasters Agenda Milestone",
+	"title": "TM Agenda Milestone",
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Milestone such as the end of the meeting, displayed with time",

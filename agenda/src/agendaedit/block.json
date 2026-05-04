@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/agendaedit",
 	"version": "0.1.0",
-	"title": "Toastmasters Editable Agenda Note",
+	"title": "TM Editable Agenda Note",
 	"category": "toastmasters",
 	"icon": "groups",
 	"postTypes": [
