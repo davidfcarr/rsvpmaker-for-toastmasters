@@ -24201,22 +24201,31 @@ add_filter( 'nocache_headers', function() {
 
 add_filter('block_categories_all','toastmasters_agenda_category',10,2);
 
-function toastmasters_agenda_category($categories, $post) {
+function toastmasters_agenda_category($categories, $editor_context) {
+	$post_type = '';
+	if ( ! empty( $editor_context->post_type ) ) {
+		$post_type = $editor_context->post_type;
+	} elseif ( ! empty( $editor_context->post ) && ! empty( $editor_context->post->post_type ) ) {
+		$post_type = $editor_context->post->post_type;
+	}
 
-	if(!empty($post->post_type) && in_array($post->post_type,['rsvpmaker','rsvpmaker_template'])) {
+	$existing_slugs = wp_list_pluck( $categories, 'slug' );
+	if ( in_array( 'toastmasters', $existing_slugs, true ) ) {
+		return $categories;
+	}
 
-		array_unshift( $categories, array(
+	$toastmasters_category = array(
+		'slug'  => 'toastmasters',
+		'title' => 'Toastmasters',
+	);
 
-			'slug'	=> 'toastmasters',
-
-			'title' => 'Toastmasters'
-
-		) );
-
+	if ( in_array( $post_type, array( 'rsvpmaker', 'rsvpmaker_template', 'tmminutes' ), true ) ) {
+		array_unshift( $categories, $toastmasters_category );
+	} else {
+		$categories[] = $toastmasters_category;
 	}
 
 	return $categories;
-
 }
 
 function wp4t_get_member_status( $member_id ) {

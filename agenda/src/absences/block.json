@@ -6,7 +6,10 @@
 	"title": "Toastmasters Absences",
 	"category": "toastmasters",
 	"icon": "groups",
-	"description": "Invite members to record planned absences.",
+	"postTypes": [
+		"rsvpmaker", "rsvpmaker_template"
+	],
+		"description": "Invite members to record planned absences.",
 	"keywords": [
 		"toastmasters",
 		"agenda",

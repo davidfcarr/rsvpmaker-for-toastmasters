@@ -12,6 +12,9 @@
 		"agenda",
 		"role"
 	],
+	"postTypes": [
+		"rsvpmaker", "rsvpmaker_template"
+	],
 	"attributes": {
 		"role": {
 			"type": "string",

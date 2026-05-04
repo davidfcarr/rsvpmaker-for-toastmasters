@@ -45,17 +45,49 @@ add_filter('block_type_metadata_settings','wp4t_agenda_block_type_metadata',10,2
 
 add_filter('allowed_block_types_all','wp4t_restrict_layout_blocks_for_agenda_content',20,2);
 
+function wp4t_block_declares_post_types( $block_json_path ) {
+	if ( ! file_exists( $block_json_path ) ) {
+		return false;
+	}
+
+	$metadata = array();
+	if ( function_exists( 'wp_json_file_decode' ) ) {
+		$metadata = wp_json_file_decode( $block_json_path, array( 'associative' => true ) );
+	} else {
+		$raw = @file_get_contents( $block_json_path );
+		if ( false !== $raw ) {
+			$metadata = json_decode( $raw, true );
+		}
+	}
+
+	return ( is_array( $metadata ) && ! empty( $metadata['postTypes'] ) && is_array( $metadata['postTypes'] ) );
+}
+
+function wp4t_get_event_only_blocks() {
+	$event_only = array();
+	if ( wp4t_block_declares_post_types( __DIR__ . '/build/block.json' ) ) {
+		$event_only[] = 'wp4toastmasters/toastmasters-dynamic-agenda';
+	}
+
+	foreach ( array_keys( get_wpt_blocks() ) as $slug ) {
+		if ( wp4t_block_declares_post_types( __DIR__ . '/build/' . $slug . '/block.json' ) ) {
+			$event_only[] = 'wp4toastmasters/' . $slug;
+		}
+	}
+
+	return array_values( array_unique( $event_only ) );
+}
+
+function wp4t_is_agenda_editor_post( $post ) {
+	if ( ! $post || empty( $post->post_type ) ) {
+		return false;
+	}
+
+	return in_array( $post->post_type, array( 'rsvpmaker', 'rsvpmaker_template' ), true );
+}
+
 function wp4t_restrict_layout_blocks_for_agenda_content($allowed_block_types, $editor_context) {
 	$post = !empty($editor_context->post) ? $editor_context->post : null;
-	if(!$post || empty($post->post_content)) {
-		return $allowed_block_types;
-	}
-
-	if(false === strpos($post->post_content, 'wp:wp4toastmasters/')) {
-		return $allowed_block_types;
-	}
-
-	$restricted = array('core/group','core/columns');
 
 	if(true === $allowed_block_types) {
 		$all = WP_Block_Type_Registry::get_instance()->get_all_registered();
@@ -65,6 +97,25 @@ function wp4t_restrict_layout_blocks_for_agenda_content($allowed_block_types, $e
 	if(!is_array($allowed_block_types)) {
 		return $allowed_block_types;
 	}
+
+	if(!wp4t_is_agenda_editor_post($post)) {
+		$event_only = wp4t_get_event_only_blocks();
+		if ( empty( $event_only ) ) {
+			return $allowed_block_types;
+		}
+
+		return array_values(array_diff($allowed_block_types, $event_only));
+	}
+
+	if(!$post || empty($post->post_content)) {
+		return $allowed_block_types;
+	}
+
+	if(false === strpos($post->post_content, 'wp:wp4toastmasters/')) {
+		return $allowed_block_types;
+	}
+
+	$restricted = array('core/group','core/columns');
 
 	return array_values(array_diff($allowed_block_types, $restricted));
 }

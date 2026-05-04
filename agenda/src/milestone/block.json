@@ -7,6 +7,9 @@
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Milestone such as the end of the meeting, displayed with time",
+	"postTypes": [
+		"rsvpmaker", "rsvpmaker_template"
+	],
 	"keywords": [
 		"toastmasters",
 		"agenda",

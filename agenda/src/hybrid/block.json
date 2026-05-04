@@ -7,6 +7,9 @@
 	"category": "toastmasters",
 	"icon": "groups",
 	"description": "Ask whether members will be attending in person.",
+	"postTypes": [
+		"rsvpmaker", "rsvpmaker_template"
+	],
 	"keywords": [
 		"toastmasters",
 		"agenda",

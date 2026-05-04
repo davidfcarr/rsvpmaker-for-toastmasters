@@ -6,6 +6,9 @@
 	"title": "Agenda RSVP List",
 	"category": "toastmasters",
 	"icon": "groups",
+	"postTypes": [
+		"rsvpmaker", "rsvpmaker_template"
+	],
 	"description": "Show the RSVP list for an event on the agenda.",
 	"supports": {
 		"html": false

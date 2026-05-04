@@ -6,6 +6,9 @@
 	"title": "Toastmasters Agenda Note",
 	"category": "toastmasters",
 	"icon": "groups",
+	"postTypes": [
+		"rsvpmaker", "rsvpmaker_template"
+	],
 	"description": "Displays \"stage directions\" for the organization of your meetings. You can set the time allowed for an activity (5-minute break, for example).",
 	"keywords": [
 		"toastmasters",

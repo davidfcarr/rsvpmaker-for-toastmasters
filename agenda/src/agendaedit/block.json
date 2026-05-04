@@ -6,6 +6,9 @@
 	"title": "Toastmasters Editable Agenda Note",
 	"category": "toastmasters",
 	"icon": "groups",
+	"postTypes": [
+		"rsvpmaker", "rsvpmaker_template"
+	],
 	"description": "A note that can be edited by a meeting organizer on the signup form. Used for things that change from meeting to meeting, such as Meeting Theme. Does not require editing rights.",
 	"keywords": [
 		"toastmasters",
