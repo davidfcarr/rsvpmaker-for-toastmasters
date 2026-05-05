@@ -740,6 +740,223 @@ echo '<p>'.wp4t_club_member_mailto().'</p>';
 
 }
 
+function wp4t_get_or_create_welcome_message_id() {
+	$option_name = 'wp4toastmasters_welcome_message';
+	$welcome_id = absint( get_option( $option_name ) );
+
+	if ( $welcome_id ) {
+		$welcome_post = get_post( $welcome_id );
+		if ( $welcome_post && 'trash' !== $welcome_post->post_status ) {
+			update_post_meta( $welcome_id, 'wp4t_system_page', 'welcome_message' );
+			return $welcome_id;
+		}
+	}
+
+	$existing = get_posts(
+		array(
+			'post_type' => 'page',
+			'post_status' => array( 'private', 'publish', 'draft', 'pending', 'future' ),
+			'numberposts' => 1,
+			'orderby' => 'ID',
+			'order' => 'DESC',
+			'fields' => 'ids',
+			'meta_key' => 'wp4t_system_page',
+			'meta_value' => 'welcome_message',
+		)
+	);
+
+	if ( ! empty( $existing[0] ) ) {
+		$welcome_id = absint( $existing[0] );
+		update_option( $option_name, $welcome_id, false );
+		return $welcome_id;
+	}
+
+	$welcome_title = 'Welcome to ' . get_option( 'blogname' );
+	$existing_by_title = get_posts(
+		array(
+			'post_type' => 'page',
+			'post_status' => array( 'private', 'publish', 'draft', 'pending', 'future' ),
+			'numberposts' => 1,
+			'orderby' => 'ID',
+			'order' => 'DESC',
+			'fields' => 'ids',
+			'title' => $welcome_title,
+		)
+	);
+
+	if ( ! empty( $existing_by_title[0] ) ) {
+		$welcome_id = absint( $existing_by_title[0] );
+		update_post_meta( $welcome_id, 'wp4t_system_page', 'welcome_message' );
+		update_option( $option_name, $welcome_id, false );
+		return $welcome_id;
+	}
+
+	$new_welcome_id = wp_insert_post(
+		array(
+			'post_title' => $welcome_title,
+			'post_type' => 'page',
+			'post_status' => 'private',
+		),
+		true
+	);
+
+	if ( is_wp_error( $new_welcome_id ) || ! $new_welcome_id ) {
+		return 0;
+	}
+
+	$new_welcome_id = absint( $new_welcome_id );
+	update_post_meta( $new_welcome_id, 'wp4t_system_page', 'welcome_message' );
+	update_option( $option_name, $new_welcome_id, false );
+
+	return $new_welcome_id;
+}
+
+function wp4t_default_incoming_officer_effective_date() {
+	$timezone   = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+	$now        = new DateTimeImmutable( 'now', $timezone );
+	$year       = (int) $now->format( 'Y' );
+	$july_first = new DateTimeImmutable( $year . '-07-01 00:00:00', $timezone );
+
+	if ( $now->getTimestamp() <= $july_first->getTimestamp() ) {
+		return $july_first->format( 'Y-m-d' );
+	}
+
+	return ( new DateTimeImmutable( ( $year + 1 ) . '-01-01 00:00:00', $timezone ) )->format( 'Y-m-d' );
+}
+
+function wp4t_officer_index_template() {
+	$officer_titles = get_option( 'wp4toastmasters_officer_titles', array() );
+
+	if ( ! is_array( $officer_titles ) ) {
+		return array();
+	}
+
+	$template = array();
+
+	foreach ( $officer_titles as $index => $title ) {
+		if ( empty( $title ) ) {
+			break;
+		}
+
+		$template[ (int) $index ] = 0;
+	}
+
+	return $template;
+}
+
+function wp4t_normalize_officer_id_list( $officer_ids, $index_template = array() ) {
+	$normalized = is_array( $index_template ) ? $index_template : array();
+
+	if ( ! is_array( $officer_ids ) ) {
+		ksort( $normalized, SORT_NUMERIC );
+		return $normalized;
+	}
+
+	foreach ( $officer_ids as $index => $officer_id ) {
+		$index = (int) $index;
+
+		if ( ! empty( $index_template ) && ! array_key_exists( $index, $index_template ) ) {
+			continue;
+		}
+
+		$normalized[ $index ] = absint( $officer_id );
+	}
+
+	ksort( $normalized, SORT_NUMERIC );
+
+	return $normalized;
+}
+
+function wp4t_incoming_officer_effective_timestamp( $effective_date ) {
+	if ( empty( $effective_date ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $effective_date ) ) {
+		return 0;
+	}
+
+	$timezone = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+	$date     = DateTimeImmutable::createFromFormat( 'Y-m-d H:i:s', $effective_date . ' 00:00:00', $timezone );
+
+	if ( false === $date ) {
+		return 0;
+	}
+
+	return $date->getTimestamp();
+}
+
+function wp4t_sanitize_incoming_officer_effective_date( $effective_date ) {
+	$effective_date = sanitize_text_field( $effective_date );
+
+	if ( ! wp4t_incoming_officer_effective_timestamp( $effective_date ) ) {
+		return wp4t_default_incoming_officer_effective_date();
+	}
+
+	return $effective_date;
+}
+
+function wp4t_schedule_incoming_officers_transition( $incoming_officer_ids, $effective_date ) {
+	wp_clear_scheduled_hook( 'wp4t_activate_incoming_officers' );
+
+	$has_incoming = false;
+
+	foreach ( $incoming_officer_ids as $officer_id ) {
+		if ( ! empty( $officer_id ) ) {
+			$has_incoming = true;
+			break;
+		}
+	}
+
+	if ( ! $has_incoming ) {
+		return;
+	}
+
+	$timestamp = wp4t_incoming_officer_effective_timestamp( $effective_date );
+
+	if ( ! $timestamp ) {
+		$timestamp = wp4t_incoming_officer_effective_timestamp( wp4t_default_incoming_officer_effective_date() );
+	}
+
+	$now = current_time( 'timestamp' );
+
+	if ( $timestamp <= $now ) {
+		$timestamp = $now + MINUTE_IN_SECONDS;
+	}
+
+	wp_schedule_single_event( $timestamp, 'wp4t_activate_incoming_officers' );
+}
+
+function wp4t_sanitize_incoming_officer_ids( $incoming_officer_ids ) {
+	$incoming_officer_ids = wp4t_normalize_officer_id_list( $incoming_officer_ids, wp4t_officer_index_template() );
+	$effective_date       = wp4t_default_incoming_officer_effective_date();
+
+	if ( isset( $_POST['wp4toastmasters_incoming_officer_effective_date'] ) ) {
+		$effective_date = wp4t_sanitize_incoming_officer_effective_date( sanitize_text_field( wp_unslash( $_POST['wp4toastmasters_incoming_officer_effective_date'] ) ) );
+	}
+
+	wp4t_schedule_incoming_officers_transition( $incoming_officer_ids, $effective_date );
+
+	return $incoming_officer_ids;
+}
+
+function wp4t_activate_incoming_officers() {
+	$incoming_officer_ids = wp4t_normalize_officer_id_list( get_option( 'wp4toastmasters_incoming_officer_ids', array() ), wp4t_officer_index_template() );
+	$has_incoming         = false;
+
+	foreach ( $incoming_officer_ids as $officer_id ) {
+		if ( ! empty( $officer_id ) ) {
+			$has_incoming = true;
+			break;
+		}
+	}
+
+	if ( $has_incoming ) {
+		update_option( 'wp4toastmasters_officer_ids', $incoming_officer_ids, false );
+	}
+
+	update_option( 'wp4toastmasters_incoming_officer_ids', array(), false );
+	update_option( 'wp4toastmasters_incoming_officer_effective_date', '', false );
+}
+
+add_action( 'wp4t_activate_incoming_officers', 'wp4t_activate_incoming_officers' );
+
 function toastmasters_admin_widget() {
 
 	global $rsvp_options, $menu;
@@ -799,7 +1016,6 @@ function toastmasters_admin_widget() {
 	 <li><a href="post-new.php">Add New</a> - new blog post (club news or article)</li>
 
 </ul>
-
 <p><strong><a href="edit.php?post_type=rsvpmaker">RSVP Events</a></strong> - list of event posts</p>
 
 <ul>
@@ -878,35 +1094,15 @@ else {
 
 		<?php
 
-		$wp4toastmasters_welcome_message = get_option( 'wp4toastmasters_welcome_message' );
+		$wp4toastmasters_welcome_message = wp4t_get_or_create_welcome_message_id();
+		$wpost = ( $wp4toastmasters_welcome_message ) ? get_post( $wp4toastmasters_welcome_message ) : false;
+		$is_blank = ( $wpost && $wpost->post_content ) ? '' : '(blank)';
 
-		if ( $wp4toastmasters_welcome_message && ( $wpost = get_post( $wp4toastmasters_welcome_message ) ) ) {
-
-			$is_blank = ( $wpost->post_content ) ? '' : '(blank)';
-
+		if ( $wp4toastmasters_welcome_message ) {
+			printf( '%s - edit new member welcome message %s', rsvpmaker_edit_link( $wp4toastmasters_welcome_message, '', true ), $is_blank );
 		} else {
-
-			$wp4toastmasters_welcome_message = wp_insert_post(
-
-				array(
-
-					'post_title'  => 'Welcome to ' . get_option( 'blogname' ),
-
-					'post_type'   => 'page',
-
-					'post_status' => 'private',
-
-				)
-
-			);
-
-			update_option( 'wp4toastmasters_welcome_message', $wp4toastmasters_welcome_message, false );
-
-			$is_blank = '(blank)';
-
+			echo 'Unable to create welcome message document.';
 		}
-
-		printf( '%s - edit new member welcome message %s', rsvpmaker_edit_link( $wp4toastmasters_welcome_message, '', true ), $is_blank );
 
 		?>
 
@@ -4001,8 +4197,6 @@ function wp4toastmasters_settings() {
 
 	wpt_flattened_forwarders();//new forwarding rules
 
-
-
 	?>
 
 <div class="wrap">
@@ -4011,19 +4205,21 @@ function wp4toastmasters_settings() {
 
 	<h2 class="nav-tab-wrapper rsvpmaker-nav-tab-wrapper">
 
-	  <a class="nav-tab <?php if(empty($_REQUEST['tab'])) echo 'nav-tab-active'; ?>" href="#basic">Basic Settings</a>
+	  <a class="nav-tab <?php if(empty($_REQUEST['tab'])) echo 'nav-tab-active'; ?>" href="#officers-access">Officers & Basic Settings</a>
+
+	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'notifications-agenda' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#notifications-agenda">Notifications and Agenda</a>
+
+	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'application' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#application">Application & Dues</a>
 
 	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'security' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#security">Security</a>
 
 	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'rules' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#rules">Rules</a>
 
-	  <a class="nav-tab <?php if(!empty($_REQUEST['tab']) && 'notifications' == $_REQUEST['tab'] ) echo 'nav-tab-active'; ?>" href="#notifications">Notifications</a>
-
 	</h2>
 
 	<div id="sections" class="toastmasters-admin rsvpmaker" >
 
-	<section class="toastmasters-admin" id="basic">
+	<section class="toastmasters-admin" id="officers-access">
 
 	<div class="toastmasters-see-also">
 
@@ -4151,6 +4347,10 @@ submit_button('Switch to District');
 
 	$wp4toastmasters_officer_slugs = get_option( 'wp4toastmasters_officer_slugs' );
 
+	$wp4toastmasters_incoming_officer_ids = get_option( 'wp4toastmasters_incoming_officer_ids', array() );
+
+	$wp4toastmasters_incoming_officer_effective_date = get_option( 'wp4toastmasters_incoming_officer_effective_date' );
+
 	if ( ! is_array( $wp4toastmasters_officer_titles ) ) {
 		$wp4toastmasters_officer_titles = array( __( 'President', 'rsvpmaker-for-toastmasters' ), __( 'VP of Education', 'rsvpmaker-for-toastmasters' ), __( 'VP of Membership', 'rsvpmaker-for-toastmasters' ), __( 'VP of Public Relations', 'rsvpmaker-for-toastmasters' ), __( 'Secretary', 'rsvpmaker-for-toastmasters' ), __( 'Treasurer', 'rsvpmaker-for-toastmasters' ), __( 'Sgt. at Arms', 'rsvpmaker-for-toastmasters' ), __( 'Immediate Past President', 'rsvpmaker-for-toastmasters' ) );
 		$wp4toastmasters_officer_ids = array(0, 0, 0, 0, 0, 0, 0, 0);
@@ -4162,6 +4362,16 @@ submit_button('Switch to District');
 			$wp4toastmasters_officer_slugs[$index] = wpt_officer_title_to_slug($title);
 		}
 		update_option( 'wp4toastmasters_officer_slugs', $wp4toastmasters_officer_slugs );
+	}
+
+	if ( ! is_array( $wp4toastmasters_incoming_officer_ids ) ) {
+		$wp4toastmasters_incoming_officer_ids = array();
+	}
+
+	$has_current_officers = ! empty( array_filter( wp4t_normalize_officer_id_list( $wp4toastmasters_officer_ids ) ) );
+
+	if ( empty( $wp4toastmasters_incoming_officer_effective_date ) ) {
+		$wp4toastmasters_incoming_officer_effective_date = wp4t_default_incoming_officer_effective_date();
 	}
 
 	$wp4toastmasters_member_message  = get_option( 'wp4toastmasters_member_message' );
@@ -4188,7 +4398,7 @@ submit_button('Switch to District');
 
 	$wp4toastmasters_agenda_layout   = get_option( 'wp4toastmasters_agenda_layout' );
 
-	$wp4toastmasters_welcome_message = get_option( 'wp4toastmasters_welcome_message' );
+	$wp4toastmasters_welcome_message = wp4t_get_or_create_welcome_message_id();
 
 	$tm_signup_count                 = get_option( 'tm_signup_count' );
 
@@ -4386,7 +4596,37 @@ submit_button('Switch to District');
 
 	?>
 
-<p><input type="checkbox" name="make_manager" value="1"><?php _e( 'Grant all officers Manager security status (able to edit website content, agendas, and user accounts.)', 'rsvpmaker-for-toastmasters' ); ?>.</p>
+	<?php if ( $has_current_officers ) { ?>
+
+<h3><?php _e( 'Incoming Officers', 'rsvpmaker-for-toastmasters' ); ?></h3>
+
+<p><?php _e( 'If you have elected new officers, you have the option of designating a list of incoming officers to take office automatically on the effective date shown below.', 'rsvpmaker-for-toastmasters' ); ?></p>
+
+<p style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;"><label for="wp4toastmasters_incoming_officer_effective_date" style="display: inline-block; width: 12rem; font-weight: 600;"><?php _e( 'Effective Date', 'rsvpmaker-for-toastmasters' ); ?></label>
+
+<input type="date" id="wp4toastmasters_incoming_officer_effective_date" name="wp4toastmasters_incoming_officer_effective_date" value="<?php echo esc_attr( $wp4toastmasters_incoming_officer_effective_date ); ?>" /></p>
+
+	<?php
+
+	foreach ( $wp4toastmasters_officer_titles as $index => $title ) {
+
+		if ( empty( $title ) ) {
+
+			break;
+
+		}
+
+		$incoming_officer = isset( $wp4toastmasters_incoming_officer_ids[ $index ] ) ? absint( $wp4toastmasters_incoming_officer_ids[ $index ] ) : 0;
+		$dropdown         = wp4t_awe_user_dropdown( 'wp4toastmasters_incoming_officer_ids[' . $index . ']', $incoming_officer, true );
+
+		printf( '<p style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;"><span style="display: inline-block; width: 12rem; font-weight: 600;">%s</span>%s</p>', esc_html( $title ), $dropdown );
+	}
+
+	?>
+
+	<?php } ?>
+
+<p><input type="checkbox" name="make_manager" value="1"><?php _e( 'Make current and incoming officers managers.', 'rsvpmaker-for-toastmasters' ); ?></p>
 
 <p><?php _e( 'Officers will be listed at the top of the members page and can also be displayed on the agenda', 'rsvpmaker-for-toastmasters' ); ?>.</p>
 
@@ -4566,6 +4806,8 @@ submit_button('Switch to District');
 
 	}
 
+	submit_button( __( 'Save Officers & Access', 'rsvpmaker-for-toastmasters' ) );
+
 	$contributor_notification = get_option( 'wpt_contributor_notification' );
 
 	if ( empty( $contributor_notification ) ) {
@@ -4573,6 +4815,14 @@ submit_button('Switch to District');
 		$contributor_notification = get_option( 'admin_email' );
 
 	}
+
+	?>
+
+</section>
+
+<section class="toastmasters-admin" id="notifications-agenda">
+
+<?php
 
 	echo '<h3>Contributor Notifications</h3><p>' . __( 'Users assigned the Contributor role may submit blog posts for publication, but they must be approved by an author or editor. Who should be notified when contributor posts are submitted for review?', 'rsvpmaker-for-toastmasters' ) . '<p>';
 
@@ -5194,33 +5444,16 @@ Sidebar Items Font <input class="fontcontrol" type="number" name="wp4toastmaster
 
 	<?php
 
-	if ( $wp4toastmasters_welcome_message && ( $wpost = get_post( $wp4toastmasters_welcome_message ) ) ) {
+	$wpost = ( $wp4toastmasters_welcome_message ) ? get_post( $wp4toastmasters_welcome_message ) : false;
+	$is_blank = ( $wpost && $wpost->post_content ) ? '' : '(blank)';
 
-		$is_blank = ( $wpost->post_content ) ? '' : '(blank)';
-
+	if ( $wp4toastmasters_welcome_message ) {
+		printf( '<p>Edit %s %s</p>', rsvpmaker_edit_link( $wp4toastmasters_welcome_message, '', true ), $is_blank );
+		if(empty($is_blank))
+		echo '<p>Preview:</p><div style="border: medium solid #555; padding: 10px;">'.do_blocks($wpost->post_content).'</div>';
 	} else {
-
-		$wp4toastmasters_welcome_message = wp_insert_post(
-
-			array(
-
-				'post_title'  => 'Welcome to ' . get_option( 'blogname' ),
-
-				'post_type'   => 'page',
-
-				'post_status' => 'private',
-
-			)
-
-		);
-
-		update_option( 'wp4toastmasters_welcome_message', $wp4toastmasters_welcome_message, false );
-
-		$is_blank = '(blank)';
-
+		echo '<p>Unable to create welcome message document.</p>';
 	}
-
-	printf( '<p>Edit %s %s</p>', rsvpmaker_edit_link( $wp4toastmasters_welcome_message, '', true ), $is_blank );
 
 	?>
 
@@ -5264,23 +5497,7 @@ rsvpmaker_nonce(); ?>
 
 </form>
 
-</section>
-
-<section class="toastmasters-admin"  id="security">
-
-	<?php wp4t_tm_security_caps(); ?>
-
-</section>
-
-<section class="toastmasters-admin"  id="rules">
-
-<p><em>Optional rules for how your club operates.</em></p>
-
-	<?php toastmasters_rule_setting(); ?>
-
-</section>
-
-<section class="toastmasters-admin" id="notifications">
+<h3><?php _e( 'Email Notifications of Role Signups', 'rsvpmaker-for-toastmasters' ); ?></h3>
 
 <?php
 
@@ -5308,7 +5525,7 @@ $titles = get_option('wpt_notification_titles');
 
 printf('<form method="post" action="%s">',admin_url('options-general.php?page=wp4toastmasters_settings'));
 
-echo '<input type="hidden" name="tab" value="notifications">';
+echo '<input type="hidden" name="tab" value="notifications-agenda">';
 
 $wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
 
@@ -5365,6 +5582,28 @@ rsvpmaker_nonce();
 </form>
 
 </section>
+
+<section class="toastmasters-admin" id="application">
+
+	<?php wp4t_member_application_settings( admin_url( 'options-general.php?page=wp4toastmasters_settings&tab=application' ), true ); ?>
+
+</section>
+
+<section class="toastmasters-admin"  id="security">
+
+	<?php wp4t_tm_security_caps(); ?>
+
+</section>
+
+<section class="toastmasters-admin"  id="rules">
+
+<p><em>Optional rules for how your club operates.</em></p>
+
+	<?php toastmasters_rule_setting(); ?>
+
+</section>
+
+
 
 </div>
 
@@ -5639,6 +5878,18 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_titles' );
 
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_ids' );
+
+	register_setting(
+		'wp4toastmasters-settings-group',
+		'wp4toastmasters_incoming_officer_ids',
+		array( 'sanitize_callback' => 'wp4t_sanitize_incoming_officer_ids' )
+	);
+
+	register_setting(
+		'wp4toastmasters-settings-group',
+		'wp4toastmasters_incoming_officer_effective_date',
+		array( 'sanitize_callback' => 'wp4t_sanitize_incoming_officer_effective_date' )
+	);
 
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_slugs' );
 
@@ -14320,8 +14571,17 @@ function wp4t_awesome_role_activation_wrapper() {
 	}
 
 	if ( isset( $_POST['make_manager'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
+		$manager_ids = array();
 
-		foreach($_POST['wp4toastmasters_officer_ids'] as $id) {
+		if ( isset( $_POST['wp4toastmasters_officer_ids'] ) ) {
+			$manager_ids = array_merge( $manager_ids, wp4t_normalize_officer_id_list( wp_unslash( $_POST['wp4toastmasters_officer_ids'] ) ) );
+		}
+
+		if ( isset( $_POST['wp4toastmasters_incoming_officer_ids'] ) ) {
+			$manager_ids = array_merge( $manager_ids, wp4t_normalize_officer_id_list( wp_unslash( $_POST['wp4toastmasters_incoming_officer_ids'] ) ) );
+		}
+
+		foreach ( array_unique( $manager_ids ) as $id ) {
 
 			$id = intval($id);
 

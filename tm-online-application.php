@@ -162,6 +162,9 @@ add_shortcode( 'wp4t_club_fee_schedule', 'wp4t_club_fee_schedule' );
 function wp4t_club_fee_schedule() {
 	$ti_dues             = get_option( 'ti_dues' );
 	$club_dues           = get_option( 'club_dues' );
+	if ( empty( $club_dues ) || ! is_array( $club_dues ) ) {
+		$club_dues = array_fill( 0, 12, 0 );
+	}
 	$includes_renewal = get_option( 'includes_renewal' );
 	if ( empty( $includes_renewal ) ) {
 		$includes_renewal = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
@@ -187,9 +190,11 @@ foreach($month_start_end as $i => $start_end) {
 		$output .= '<style>.feeschedule th {text-align: center; font-size:11px} .feeschedule td {text-align: center; min-width: 100px; border: 1px solid #ccc;}</style>';
 		$output .= sprintf( '<table class="feeschedule"><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>', __( 'Month', 'rsvpmaker-for-toastmasters' ), __( 'TI Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club Dues', 'rsvpmaker-for-toastmasters' ), __( 'Club New Member', 'rsvpmaker-for-toastmasters' ), __( 'Total', 'rsvpmaker-for-toastmasters' ), __( '+ $25 New Member Fee', 'rsvpmaker-for-toastmasters' ) );
 		foreach ( $datestext as $index => $month ) {
-			$total   = number_format( $ti_dues[ $index ] + $club_dues[ $index ] + $club_new_member_fee, 2 );
+			$ti_due = isset( $ti_dues[ $index ] ) ? (float) $ti_dues[ $index ] : 0;
+			$club_due = isset( $club_dues[ $index ] ) ? (float) $club_dues[ $index ] : 0;
+			$total   = number_format( $ti_due + $club_due + $club_new_member_fee, 2 );
 			$new     = number_format( $total + 25, 2 );
-			$output .= sprintf( '<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $month, number_format( $ti_dues[ $index ], 2 ), number_format( $club_dues[ $index ], 2 ), $club_new_member_fee, $total, $new );
+			$output .= sprintf( '<tr><th>%s</th><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>', $month, number_format( $ti_due, 2 ), number_format( $club_due, 2 ), $club_new_member_fee, $total, $new );
 		}
 		$output .= '</table>';
 	}
@@ -384,7 +389,7 @@ echo wp4t_club_fee_schedule();
 
 if(current_user_can('manage_options'))
 {
-	printf('<p><a href="%s">Edit dues and membership application settings</a></p>',admin_url('options-general.php?page=wp4t_member_application_settings'));
+	printf('<p><a href="%s">Edit dues and membership application settings</a></p>',admin_url('options-general.php?page=wp4toastmasters_settings&tab=application'));
 }
 
 $rsvps = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}rsvpmaker ORDER BY id DESC LIMIT 0, 50");
@@ -495,12 +500,18 @@ function wp4t_tm_application_form_choice( $slug, $choices ) {
 		echo '</select>';
 	}
 }
-function wp4t_member_application_settings( $action = '' ) {
-	rsvpmaker_admin_heading('Toastmasters Dues Schedule and Application Form',__FUNCTION__);
-	wpt_dues_navigation();
+function wp4t_member_application_settings( $action = '', $embedded = false ) {
+	if ( ! $embedded ) {
+		rsvpmaker_admin_heading('Toastmasters Dues Schedule and Application Form',__FUNCTION__);
+		wpt_dues_navigation();
+	}
 	global $wpdb;
 	if ( empty( $action ) ) {
-		$action = admin_url( 'options-general.php?page=wp4t_member_application_settings' );
+		if ( $embedded ) {
+			$action = admin_url( 'options-general.php?page=wp4toastmasters_settings&tab=application' );
+		} else {
+			$action = admin_url( 'options-general.php?page=wp4toastmasters_settings&tab=application' );
+		}
 	}
 	$sql     = "SELECT ID FROM $wpdb->posts WHERE post_content LIKE '%tm_member_application%' AND post_status='publish'";
 	$apppage = $wpdb->get_var( $sql );
@@ -510,7 +521,16 @@ function wp4t_member_application_settings( $action = '' ) {
 		update_option( 'club_city', sanitize_text_field(stripslashes( $_POST['club_city'] ) ) );
 		update_option( 'ti_dues', array_map('sanitize_text_field',$_POST['ti_dues']) );
 		update_option( 'club_dues', array_map('sanitize_text_field',$_POST['club_dues']) );
-		update_option( 'includes_renewal', array_map('sanitize_text_field',$_POST['includes_renewal']) );
+		$includes_renewal = array_fill( 0, 12, '0' );
+		if ( isset( $_POST['includes_renewal'] ) && is_array( $_POST['includes_renewal'] ) ) {
+			foreach ( $_POST['includes_renewal'] as $month_index => $value ) {
+				$month_index = (int) $month_index;
+				if ( $month_index >= 0 && $month_index < 12 ) {
+					$includes_renewal[ $month_index ] = sanitize_text_field( $value );
+				}
+			}
+		}
+		update_option( 'includes_renewal', $includes_renewal );
 		update_option( 'club_new_member_fee', sanitize_text_field($_POST['club_new_member_fee']) );
 		update_option( 'tm_application_notifications', sanitize_text_field($_POST['tm_application_notifications']) );
 		if(isset($_POST['ti_show_extended_dues']))
@@ -573,6 +593,10 @@ function wp4t_member_application_settings( $action = '' ) {
 	}
 	$notifications = get_option( 'tm_application_notifications' );
 	$titles = get_option( 'tm_application_titles' );
+	$club_name = get_option( 'club_name' );
+	if ( empty( $club_name ) ) {
+		$club_name = get_bloginfo( 'name' );
+	}
 	if(empty($titles))
 		$titles = array();
 	if ( empty( $notifications ) ) {
@@ -582,7 +606,10 @@ function wp4t_member_application_settings( $action = '' ) {
 	?>
 <form action="<?php echo esc_attr($action); ?>" method="post">
 <input type="hidden" name="active" value="settings" />
-<p><strong>Club Name:</strong><br /><input type="text" name="club_name" value="<?php echo esc_attr(get_option( 'club_name' )); ?>" /> </p>
+<?php if ( $embedded ) { ?>
+<input type="hidden" name="tab" value="application" />
+<?php } ?>
+<p><strong>Club Name:</strong><br /><input type="text" name="club_name" value="<?php echo esc_attr( $club_name ); ?>" /> </p>
 <p><strong>Club Number:</strong><br /><input type="text" name="club_number" value="<?php echo esc_attr(get_option( 'club_number' )); ?>" /> </p>
 <p><strong>Club City:</strong><br /><input type="text" name="club_city" value="<?php echo esc_attr(get_option( 'club_city' )); ?>" /> </p>
 <table>
@@ -1000,7 +1027,6 @@ label {
 	<?php
 }
 function wp4t_tm_application_menus() {
-	add_options_page( 'TM Application & Dues', 'TM Application & Dues', 'manage_options', 'wp4t_member_application_settings', 'wp4t_member_application_settings' );
 	add_menu_page( 'Review/Approve Applications', 'Review/Approve Applications', 'edit_users', 'wp4t_member_application_approval', 'wp4t_member_application_approval' );
 	add_submenu_page( 'wp4t_member_application_approval', 'Add File or Link', 'Add File or Link', 'edit_users', 'wp4t_member_application_upload', 'wp4t_member_application_upload' );
 }

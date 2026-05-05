@@ -449,7 +449,7 @@ function wpt_setup_wizard_3() {
 		<?php
 	}
 	?>
-	<li>Set up the <a target="_blank" href="<?php echo admin_url( 'options-general.php?page=wp4t_member_application_settings' ); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://toastmost.org/knowledge-base/web-based-membership-application/">Learn How</a></li>
+	<li>Set up the <a target="_blank" href="<?php echo admin_url( 'options-general.php?page=wp4toastmasters_settings&tab=application' ); ?>">online membership application</a> and online dues payment. <a target="_blank" href="https://toastmost.org/knowledge-base/web-based-membership-application/">Learn How</a></li>
 	<li>Learn to <a target="_blank" href="https://toastmost.org/knowledge-base/where-to-find-things-administration-menus/">navigate the admin menus</a>. Where to find the various options, other than through this setup wizard.</li>
 	<li>Explore the <a target="_blank" href="https://toastmost.org/knowledge-base/">WordPress for Toastmasters knowledge base</a> for additional options.</li>
 	</ul>

@@ -170,7 +170,7 @@ function wp4t_todolist($blog_id, $send = false) {
     $link['payments'] = admin_url('options-general.php?page=rsvpmaker_settings');
     $help['payments'] = 'https://toastmost.org/knowledge-base/online-payment-for-dues-and-events/';
     $label['member_application'] = 'Set up the web-based member application and dues schedule';
-    $link['member_application'] = admin_url('options-general.php?page=wp4t_member_application_settings');
+    $link['member_application'] = admin_url('options-general.php?page=wp4toastmasters_settings&tab=application');
     $help['member_application'] = 'https://toastmost.org/knowledge-base/web-based-membership-application/';
     $label['confirmation'] = 'Edit RSVP confirmation message';
     $link['confirmation'] = admin_url( 'post.php?post=' . $rsvp_options['rsvp_confirm'] . '&action=edit' );
