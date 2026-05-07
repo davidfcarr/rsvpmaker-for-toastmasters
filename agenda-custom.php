@@ -62,7 +62,7 @@ if ( !isset($_GET['showintros']) && !isset($_GET['simple']) && !isset($_GET['wor
 <legend><strong><?php _e( 'Will not print', 'rsvpmaker-for-toastmasters' ); ?></strong></legend>
 <p style="font-size: 15px;"><?php
  if(!get_option( 'wp4toastmasters_intros_on_agenda' ) )
-	printf( '<a href="%s?showintros=show" target="_blank">%s</a> | ', get_permalink(), __( 'Show Speech Introductions on Agenda', 'rsvpmaker-for-toastmasters' ) );
+	printf( '<a href="%s?print_agenda=1&no_print=1&showintros=show">%s</a> | ', get_permalink(), __( 'Show Speech Introductions on Agenda', 'rsvpmaker-for-toastmasters' ) );
 ?>
 <a href="<?php echo get_permalink(); ?>?intros=show" target="_blank"><?php _e( 'Show Speech Introductions (New Tab)', 'rsvpmaker-for-toastmasters' ); ?></a><br />
 <em><?php _e( 'Note: content shown above will not be included on the printed agenda.', 'rsvpmaker-for-toastmasters' ); ?></em></p>

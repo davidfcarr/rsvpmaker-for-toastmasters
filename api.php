@@ -1955,8 +1955,10 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 			$memberlist[] = array('name'=>$name,'ID'=>$member->ID);
 		}
 		$memberlist[] = array('name' => 'Open', 'ID' => 0);
-		$memberlist[] = array('name' => 'Not Available', 'ID' => -1);
-		$memberlist[] = array('name' => 'To Be Announced', 'ID' => -2);
+		$memberlist[] = array('name' =>  wp4t_get_member_name(-1), 'ID' => -1);
+		$memberlist[] = array('name' =>  wp4t_get_member_name(-2), 'ID' => -2);
+		$memberlist[] = array('name' => wp4t_get_member_name(-3), 'ID' => -3);
+		$memberlist[] = array('name' => wp4t_get_member_name(-4), 'ID' => -4);
 		if(!empty($post_id)) {
 			$names = [];
 			$sql = "SELECT first, last from ".$wpdb->prefix."rsvpmaker WHERE event=$post_id";

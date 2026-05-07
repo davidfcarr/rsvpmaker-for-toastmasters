@@ -103,11 +103,13 @@ function wpt_role_descriptions_listing() {
 	wp4t_role_array(); //initialize roles, including custom roles added by users
 	ksort($toast_roles);
 	$role_pages = get_option('wp4t_role_pages',[]);
-	if(isset($_GET['all'])) {
+	if(isset($_GET['roles']) && is_array($_GET['roles'])) {
 		$css = isset($_GET['eachpage']) ? 'break-after: page;' : 'break-inside: avoid;';
 		$count = 1;
 		$size = count($role_pages);
 		foreach($role_pages as $roleslug => $page_id) {
+			if(!in_array($roleslug, $_GET['roles']))
+				continue;
 			$page = get_post($page_id);
 			if($size == $count)
 				$css = '';
@@ -122,11 +124,13 @@ function wpt_role_descriptions_listing() {
 		return $output;
 	}
 
+	$output .= sprintf('<form method="get" action="%s" target="_blank"><input type="hidden" name="print_this" value="1"><input type="hidden" name="no_title" value="1">',get_permalink());
 	foreach($role_pages as $roleslug => $page_id) {
 		$editlink = (current_user_can('edit_posts')) ? sprintf(' | <a href="%s">%s</a>', admin_url('post.php?action=edit&post='.$page_id), __('Edit', 'rsvpmaker-for-toastmasters')) : '';
-		$output .= sprintf('<p><a href="%s">%s</a> | <a href="%s">Print</a>%s</p>',get_permalink($page_id), $toast_roles[$roleslug] ?? $roleslug, get_permalink($page_id).'?print_this=1', $editlink);
+		$output .= sprintf('<p><input type="checkbox" name="roles[]" value="%s" checked="checked" /> <a href="%s">%s</a> | <a href="%s">Print</a>%s</p>', $roleslug, get_permalink($page_id), $toast_roles[$roleslug] ?? $roleslug, get_permalink($page_id).'?print_this=1', $editlink);
 	}
-	$output .= sprintf('<p><a href="%s">%s</a> | <a href="%s">%s</a> | <a href="%s">%s</a></p>',get_permalink().'?all=1', __('View All', 'rsvpmaker-for-toastmasters'), get_permalink($role_page_listing).'?all=1&print_this=1', __('Print All', 'rsvpmaker-for-toastmasters'), get_permalink().'?all=1&eachpage=1&print_this=1&no_title=1', __('Print 1 Role Per Page', 'rsvpmaker-for-toastmasters') );
+	$output .= sprintf('<p><a href="%s">%s</a></p>',get_permalink().'?all=1', __('View All', 'rsvpmaker-for-toastmasters'));
+	$output .= sprintf('<p><input type="checkbox" name="eachpage" value="1" checked="checked"> One Role Per Page </p><p><input type="submit" value="%s"></p></form>', __('Format Selected for Printing', 'rsvpmaker-for-toastmasters'));
 	if(current_user_can('manage_options'))
 		$output .= sprintf('<p><a href="%s">%s</a></p>',admin_url('admin.php?page=wpt_role_descriptions'), __('Role List & Descriptions Setup', 'rsvpmaker-for-toastmasters'));
 	return $output;
@@ -136,7 +140,10 @@ add_filter('the_content', 'wpt_role_descriptions_listing_content');
 
 function wpt_role_descriptions_listing_content($content) {
 	global $post;
-	if(!isset($_GET['print_this']) && $post->post_parent == get_option('wp4t_role_pages_listing')) {
+	$role_page_listing = get_option('wp4t_role_pages_listing');
+	if(!$role_page_listing)
+		return $content;
+	if(!isset($_GET['print_this']) && $post->post_parent == $role_page_listing) {
 		$content .= sprintf('<p><a href="%s">%s</a></p>',add_query_arg('print_this', '1', get_permalink()), __('Print', 'rsvpmaker-for-toastmasters'));
 	}
 	return $content;

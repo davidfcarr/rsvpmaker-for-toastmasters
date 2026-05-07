@@ -599,36 +599,15 @@ function wp4t_awe_rest_user_options( $role, $post_id ) {
 
 
 	$options[] = array('label' => 'Guest', 'name' => 'Guest', 'value' => 'Guest');
-
-
-
 	$options[] = array('label' => 'Not Available', 'name' => 'Not Available', 'value' => -1);
-
-
-
 	$options[] = array('label' => 'To Be Announced', 'name' => 'To Be Announced', 'value' => -2);
-
-
-
 	$reserved_role_label = get_option( 'wpt_reserved_role_label' );
-
-
-
 	if ( empty( $reserved_role_label ) ) {
-
-
-
 		$reserved_role_label = 'Ask VPE';
-
-
-
 	}
 
-
-
 	$options[] = array('label' => $reserved_role_label, 'name' => $reserved_role_label, 'value' => -3);
-
-
+	$options[] = array('label' => __('Round Robin','rsvpmaker-for-toastmasters'), 'name' => __('Round Robin','rsvpmaker-for-toastmasters'), 'value' => -4);
 
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 
@@ -1666,8 +1645,9 @@ function wp4t_get_member_name( $user_id, $credentials = true ) {
 
 
 	}
-
-
+	if($user_id == -4) {
+		return __('Round Robin','rsvpmaker-for-toastmasters');
+	}
 
 	if ( is_numeric( $user_id ) ) {
 
