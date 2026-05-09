@@ -1,4 +1,4 @@
-import { RichText } from '@wordpress/block-editor';
+import { RichText, useBlockProps } from '@wordpress/block-editor';
 
 /**
  * The save function defines the way in which the different attributes should
@@ -10,5 +10,5 @@ import { RichText } from '@wordpress/block-editor';
  * @return {WPElement} Element to render.
  */
 export default function save({ attributes, className }) {
-	return <RichText.Content tagName="p" className="wp-block-wp4toastmasters-wp4t_agendanoterich2" value={ attributes.content } />;
+	return <RichText.Content tagName="p" value={ attributes.content } { ...useBlockProps.save() } />;
 }

@@ -19,7 +19,7 @@ import { useBlockProps } from '@wordpress/block-editor';
 export default function save({ attributes: { label } }) {
 	return (
 <div { ...useBlockProps.save() }>
-<p maxtime="x">{label}</p>
+<p>{label}</p>
 </div>
 	)
 }

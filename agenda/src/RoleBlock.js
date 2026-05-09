@@ -1,11 +1,11 @@
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { TextControl } from '@wordpress/components';
 import mytranslate from './mytranslate'
 import { SelectCtrl } from './Ctrl.js';
 const ProjectChooser = React.lazy(() => import('./ProjectChooser.js'));
 const OtherRoleTitle = React.lazy(() => import('./OtherRoleTitle.js'));
 const Suggest = React.lazy(() => import('./Suggest.js'));
-import { Up, Down, Top, Close } from './icons.js';
+import { Up, Down, Top, Close, Move } from './icons.js';
 import apiClient, { setupNonceInterceptor } from './http-common.js';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 import { useMutation, useQueryClient } from 'react-query';
@@ -32,6 +32,12 @@ export default function RoleBlock(props) {
     const queryClient = useQueryClient();
     const { current_user_id, current_user_name } = agendadata;
     const [guests, setGuests] = useState([].fill('', 0, attrs.count));
+    const [draggedRoleIndex, setDraggedRoleIndex] = useState(null);
+    const [dropRoleIndex, setDropRoleIndex] = useState(null);
+    const autoScrollIntervalRef = useRef(null);
+    const autoScrollDirectionRef = useRef(0);
+    const urlParams = new URLSearchParams(window.location.search || '');
+    const assignmentDebugSuffix = urlParams.get('agenda_debug') ? '?agenda_debug=1' : '';
 
     if (!attrs.role)
         return null;
@@ -66,8 +72,20 @@ export default function RoleBlock(props) {
         }
     }
 
+    function normalizeSpeakerAssignment(assignment = {}) {
+        return {
+            ...assignment,
+            manual: assignment?.manual ?? '',
+            title: assignment?.title ?? '',
+            project: assignment?.project ?? '',
+            intro: assignment?.intro ?? '',
+            maxtime: assignment?.maxtime ?? 7,
+            display_time: assignment?.display_time ?? '5 - 7 minutes',
+        };
+    }
+
     const assignmentMutation = useMutation(
-        async (assignment) => { return await apiClient.post("json_assignment_post", assignment) },
+        async (assignment) => { return await apiClient.post("json_assignment_post" + assignmentDebugSuffix, assignment) },
         {
             onMutate: async (assignment) => {
                 await queryClient.cancelQueries(['blocks-data', post_id]);
@@ -111,7 +129,7 @@ export default function RoleBlock(props) {
     );
 
     const multiAssignmentMutation = useMutation(
-        async (multi) => { return await apiClient.post("json_multi_assignment_post", multi) },
+        async (multi) => { return await apiClient.post("json_multi_assignment_post" + assignmentDebugSuffix, multi) },
         {
             onMutate: async (multi) => {
                 await queryClient.cancelQueries(['blocks-data', post_id]);
@@ -158,20 +176,22 @@ export default function RoleBlock(props) {
     }
 
     function moveItem(roleindex, newindex) {
-        let myassignment = assignments[roleindex];
-        myassignment.role = attrs.role;
+        const myassignment = { ...assignments[roleindex], role: attrs.role };
         let newassignments = [];
         assignments.forEach((prevassignment, previndex) => {
-            prevassignment.role = attrs.role;
+            const normalized = { ...prevassignment, role: attrs.role };
             if ((previndex == newindex) && (newindex < roleindex)) {
                 newassignments.push(myassignment); //insert before
-                newassignments.push(prevassignment);
+                newassignments.push(normalized);
             } else if ((previndex == newindex) && (newindex > roleindex)) {
-                newassignments.push(prevassignment);
+                newassignments.push(normalized);
                 newassignments.push(myassignment); //insert after
             } else if (previndex != roleindex) // skip spot my assignment previously occupied
-                newassignments.push(prevassignment);
+                newassignments.push(normalized);
         });
+        if (attrs.role && attrs.role.includes('Speaker')) {
+            newassignments = newassignments.map((a) => normalizeSpeakerAssignment(a));
+        }
         updateAssignment(newassignments, blockindex, start, count);
         scrolltoId('block' + blockindex);
     }
@@ -180,15 +200,134 @@ export default function RoleBlock(props) {
         let newassignments = [];
         let removed = [];
         assignments.forEach((prevassignment, previndex) => {
-            prevassignment.role = attrs.role;
-            if ((prevassignment.ID != 0) && (prevassignment.ID != "0")) {
-                newassignments.push(prevassignment);
+            const normalized = { ...prevassignment, role: attrs.role };
+            if ((normalized.ID != 0) && (normalized.ID != "0")) {
+                newassignments.push(normalized);
             } else {
-                removed.push(prevassignment);
+                removed.push(normalized);
             }
         });
         removed.forEach((r) => { newassignments.push(r); });
+        if (attrs.role && attrs.role.includes('Speaker')) {
+            newassignments = newassignments.map((a) => normalizeSpeakerAssignment(a));
+        }
         updateAssignment(newassignments, blockindex, start, count);
+    }
+
+    function handleAssignmentDragStart(event, roleindex) {
+        if ('edit' != mode)
+            return;
+        setDraggedRoleIndex(roleindex);
+        setDropRoleIndex(roleindex);
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', String(roleindex));
+    }
+
+    function stopAutoScroll() {
+        if (autoScrollIntervalRef.current) {
+            clearInterval(autoScrollIntervalRef.current);
+            autoScrollIntervalRef.current = null;
+        }
+        autoScrollDirectionRef.current = 0;
+    }
+
+    function startAutoScroll(direction) {
+        if (autoScrollDirectionRef.current === direction && autoScrollIntervalRef.current)
+            return;
+        stopAutoScroll();
+        autoScrollDirectionRef.current = direction;
+        autoScrollIntervalRef.current = setInterval(() => {
+            window.scrollBy(0, direction * 18);
+        }, 16);
+    }
+
+    function updateAutoScrollFromClientY(clientY) {
+        if (draggedRoleIndex === null) {
+            stopAutoScroll();
+            return;
+        }
+        const edgeThreshold = 100;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        if (clientY < edgeThreshold) {
+            startAutoScroll(-1);
+        } else if (clientY > (viewportHeight - edgeThreshold)) {
+            startAutoScroll(1);
+        } else {
+            stopAutoScroll();
+        }
+    }
+
+    function handleAssignmentDragOver(event, roleindex) {
+        if ('edit' != mode || draggedRoleIndex === null)
+            return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        updateAutoScrollFromClientY(event.clientY);
+        if (roleindex !== dropRoleIndex) {
+            setDropRoleIndex(roleindex);
+        }
+    }
+
+    function handleAssignmentDrop(event, roleindex) {
+        if ('edit' != mode)
+            return;
+        event.preventDefault();
+        event.stopPropagation();
+        stopAutoScroll();
+        const sourceIndex = (draggedRoleIndex === null)
+            ? parseInt(event.dataTransfer.getData('text/plain'), 10)
+            : draggedRoleIndex;
+        if (Number.isNaN(sourceIndex) || sourceIndex === roleindex) {
+            setDraggedRoleIndex(null);
+            setDropRoleIndex(null);
+            return;
+        }
+        let destinationIndex = sourceIndex < roleindex ? roleindex - 1 : roleindex;
+        if (destinationIndex < 0)
+            destinationIndex = 0;
+        if (destinationIndex !== sourceIndex)
+            moveItem(sourceIndex, destinationIndex);
+        setDraggedRoleIndex(null);
+        setDropRoleIndex(null);
+    }
+
+    function handleAssignmentDropAtEnd(event) {
+        if ('edit' != mode)
+            return;
+        event.preventDefault();
+        event.stopPropagation();
+        stopAutoScroll();
+        const sourceIndex = (draggedRoleIndex === null)
+            ? parseInt(event.dataTransfer.getData('text/plain'), 10)
+            : draggedRoleIndex;
+        const destinationIndex = assignments.length - 1;
+        if (Number.isNaN(sourceIndex) || sourceIndex === destinationIndex) {
+            setDraggedRoleIndex(null);
+            setDropRoleIndex(null);
+            return;
+        }
+        moveItem(sourceIndex, destinationIndex);
+        setDraggedRoleIndex(null);
+        setDropRoleIndex(null);
+    }
+
+    useEffect(() => {
+        if (draggedRoleIndex === null)
+            return;
+        function handleWindowDragOver(event) {
+            updateAutoScrollFromClientY(event.clientY);
+        }
+        window.addEventListener('dragover', handleWindowDragOver);
+        return () => {
+            window.removeEventListener('dragover', handleWindowDragOver);
+            stopAutoScroll();
+        };
+    }, [draggedRoleIndex]);
+
+    function handleAssignmentDragEnd() {
+        stopAutoScroll();
+        setDraggedRoleIndex(null);
+        setDropRoleIndex(null);
     }
 
     function getMemberName(id) {
@@ -196,32 +335,6 @@ export default function RoleBlock(props) {
         return m?.value;
     }
 
-    function MoveButtons(props) {
-        const { assignments, roleindex, filledslots, openslots, attrs, shownumber } = props;
-        let showclose = false;
-        if (filledslots.length > 0 && openslots.length > 0) {
-            if (filledslots[filledslots.length - 1] > openslots[0]) {
-                showclose = true;
-            }
-        }
-        return (
-            <p>
-                <span className="moveup">{assignments.length > 1 && roleindex > 0 && <>
-                    <button className="tmform" onClick={() => { moveItem(roleindex, 0) }}>
-                        <Top type={attrs.role + ' ' + shownumber} />
-                    </button>
-                    <button className="tmform" onClick={() => { moveItem(roleindex, roleindex - 1) }}>
-                        <Up type={attrs.role + ' ' + shownumber} />
-                    </button>
-                </>}</span>
-                <span className="movedown">{assignments.length > 1 && roleindex < (assignments.length - 1) && attrs.role.search('Backup') < 0 &&
-                    <button className="tmform" onClick={() => { moveItem(roleindex, roleindex + 1) }}>
-                        <Down type={attrs.role + ' ' + shownumber} />
-                    </button>}</span>
-                <span className="closegaps">{showclose && <button className="tmform" onClick={removeBlanks}><Close /></button>}</span>
-            </p>
-        )
-    }
 
     return (
         <>
@@ -257,16 +370,37 @@ export default function RoleBlock(props) {
 
                 let isMe = current_user_id == assignment.ID;
                 let isOpen = (0 == assignment.ID) || (assignment.ID == '0') || (assignment.ID == '');
+                let showclose = false;
+                if (filledslots.length > 0 && openslots.length > 0) {
+                    if (filledslots[filledslots.length - 1] > openslots[0]) showclose = true;
+                }
 
-                return (<div id={id} key={id}>
+                const showDropZoneAbove = draggedRoleIndex !== null && dropRoleIndex === roleindex && draggedRoleIndex !== roleindex;
+                return (<div id={id} key={id}
+                    onDragOver={(event) => handleAssignmentDragOver(event, roleindex)}
+                    onDrop={(event) => handleAssignmentDrop(event, roleindex)}>
+                    {showDropZoneAbove && <div style={{
+                        marginBottom: '4px',
+                        padding: '10px',
+                        textAlign: 'center',
+                        backgroundColor: '#bbb',
+                        border: '2px dashed #999',
+                        color: '#666',
+                        borderRadius: '4px',
+                        fontSize: '0.9em'
+                    }}>{mytranslate('Drop here', data)}</div>}
                     <div className="roleheader">
                         <div className="role-buttons">
                             {isOpen && <button className="agenda-tooltip" onClick={function (event) {
-                                if ('Speaker' == role) updateAssignment({
-                                    'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'maxtime': 7, 'display_time': '5 - 7 minutes', 'wasopen': true
-                                }); updateAssignment({
-                                    'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'wasopen': true
-                                })
+                                if ('Speaker' == role) {
+                                    updateAssignment({
+                                        'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'manual': '', 'title': '', 'project': '', 'intro': '', 'maxtime': 7, 'display_time': '5 - 7 minutes', 'wasopen': true
+                                    });
+                                } else {
+                                    updateAssignment({
+                                        'ID': current_user_id, 'name': current_user_name, 'role': role, 'roleindex': roleindex, 'blockindex': blockindex, 'start': start, 'count': count, 'wasopen': true
+                                    });
+                                }
                             }} ><span className="agenda-tooltip-text">{mytranslate('Take Role', data)}</span><Icon icon={plusCircle} /></button>}
                             {isMe && <button onClick={function (event) {
                                 let a = ('Speaker' == role) ? {
@@ -286,6 +420,20 @@ export default function RoleBlock(props) {
                             }} ><span className="agenda-tooltip-text">{mytranslate('Suggest', data)}</span><Icon icon={chevronRight} /></button>}
                             {(user_can('edit_post') || user_can('organize_agenda') || user_can('edit_signups')) && <button className="agenda-tooltip" onClick={() => { setItemMode({ item: roleindex, mode: 'edit' }) }}><span className="agenda-tooltip-text">{mytranslate('Edit', data)}</span><Icon icon={edit} /></button>}
                             {(user_can('edit_post') || user_can('organize_agenda')) && <button className="agenda-tooltip" onClick={() => { setShowControls(blockindex) }}><span className="agenda-tooltip-text">{mytranslate('Organize', data)}</span><Icon icon={tool} /></button>}
+                        </div>
+                        <div className="role-buttons">
+                            {('edit' == mode) && assignments.length > 1 && roleindex > 0 && <button className="agenda-tooltip" onClick={() => { moveItem(roleindex, 0) }}><span className="agenda-tooltip-text">{mytranslate('Move to Top', data)}</span><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px'}}><Top type={attrs.role + ' ' + shownumber} /></span></button>}
+                            {('edit' == mode) && assignments.length > 1 && roleindex > 0 && <button className="agenda-tooltip" onClick={() => { moveItem(roleindex, roleindex - 1) }}><span className="agenda-tooltip-text">{mytranslate('Move Up', data)}</span><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px'}}><Up type={attrs.role + ' ' + shownumber} /></span></button>}
+                            {('edit' == mode) && assignments.length > 1 && roleindex < (assignments.length - 1) && attrs.role.search('Backup') < 0 && <button className="agenda-tooltip" onClick={() => { moveItem(roleindex, roleindex + 1) }}><span className="agenda-tooltip-text">{mytranslate('Move Down', data)}</span><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px'}}><Down type={attrs.role + ' ' + shownumber} /></span></button>}
+                            {('edit' == mode) && showclose && <button className="agenda-tooltip" onClick={removeBlanks}><span className="agenda-tooltip-text">{mytranslate('Close Gaps', data)}</span><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px'}}><Close /></span></button>}
+                            {('edit' == mode) && assignments.length > 1 && <button
+                                className="agenda-tooltip"
+                                draggable={true}
+                                onDragStart={(event) => handleAssignmentDragStart(event, roleindex)}
+                                onDragEnd={handleAssignmentDragEnd}
+                                style={{ cursor: 'grab' }}
+                                title={mytranslate('Drag to reorder', data)}
+                            ><span className="agenda-tooltip-text">{mytranslate('Drag to reorder', data)}</span><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px'}}><Move /></span></button>}
                         </div>
                         <h3 className="role-label">
                              {assignment.avatar && <div style={{float:'left',marginRight:'10px'}}><img src={assignment.avatar} className="tm_avatar" alt={assignment.name} /></div>} {role_label} {shownumber} {assignment.name}
@@ -309,10 +457,24 @@ export default function RoleBlock(props) {
                     }} >{mytranslate('Add', data)}</button></div></div>}</>
                     <>{'suggest' != mode && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && ((assignment.ID > 0) || (typeof assignment.ID == 'string' && assignment.ID != '')) && role.includes('Speaker') && (role.includes('Backup') == false) && showDetails && <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}><ProjectChooser key={'projectchooser-' + blockindex + '-' + roleindex + '-' + assignment.ID} attrs={attrs} assignment={assignment} project={assignment.project} title={assignment.title} intro={assignment.intro} manual={assignment.manual} maxtime={assignment.maxtime} display_time={assignment.display_time} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} /></Suspense>}</>
                     <>{titlePrompt && ('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex) || (current_user_id == assignment.ID)) && showDetails && <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}><OtherRoleTitle role={role} attrs={attrs} assignment={assignment} title={assignment.title} updateAssignment={updateAssignment} roleindex={roleindex} blockindex={blockindex} /></Suspense>}</>
-                    <>{!!('edit' == mode) && assignments.length > 1 && <MoveButtons assignments={assignments} roleindex={roleindex} filledslots={filledslots} openslots={openslots} attrs={attrs} shownumber={shownumber} />}</>
+
                     {assignment.ID > 0 && 'Speaker' == attrs.role && <div className="evaluation-request"><a href={assignment.evaluation_link} onClick={(e) => { e.preventDefault(); setEvaluate(assignment); setMode('evaluation') }} >{mytranslate('Evaluation Form', data)}</a> <span style={{ fontSize: '10px' }}>({mytranslate('copy-paste text below to share', data)})</span><br /><textarea rows="3" style={{ fontSize: '8px' }} value={mytranslate('Evaluation link for ', data) + assignment.name + '\n' + assignment.evaluation_link} /></div>}
                 </div>)
             })}
+            {('edit' == mode) && assignments && Array.isArray(assignments) && assignments.length > 1 && draggedRoleIndex !== null && <div
+                onDragOver={(event) => handleAssignmentDragOver(event, assignments.length)}
+                onDrop={handleAssignmentDropAtEnd}
+                style={{
+                    marginTop: '4px',
+                    padding: '10px',
+                    textAlign: 'center',
+                    backgroundColor: (dropRoleIndex === assignments.length) ? '#bbb' : '#e0e0e0',
+                    border: '2px dashed #999',
+                    color: '#666',
+                    borderRadius: '4px',
+                    fontSize: '0.9em'
+                }}
+            >{mytranslate('Drop here', data)}</div>}
         </>
     );
 }

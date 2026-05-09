@@ -61,4 +61,17 @@ registerBlockType( metadata.name, {
 	 * @see ./save.js
 	 */
 	save,
+
+	deprecated: [
+		{
+			save( { attributes } ) {
+				return <p className="wp-block-wp4toastmasters-wp4t_agendanoterich2">{ attributes.content }</p>;
+			},
+		},
+		{
+			save( { attributes } ) {
+				return <p>{ attributes.content }</p>;
+			},
+		},
+	],
 } );

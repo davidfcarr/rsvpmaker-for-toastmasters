@@ -4861,76 +4861,113 @@ function wp4t_fix_cache_users_bug($query = null) {
 
 
 function wp4t_jsonBlockDataOutput($block, $post_id) {
+	if ( empty( $block ) ) {
+		return;
+	}
 
+	if ( ! function_exists( 'wp4t_normalize_note_innerhtml' ) ) {
+		function wp4t_normalize_note_innerhtml( $inner_html, $class_name ) {
+			$inner_html = trim( (string) $inner_html );
+			if ( '' === $inner_html ) {
+				return '';
+			}
 
+			$is_nested_paragraph = preg_match( '/^<p\b[^>]*>.*<p\b/is', $inner_html );
+			if ( $is_nested_paragraph ) {
+				$parts = array();
+				if ( preg_match_all( '/<p\b[^>]*>(.*?)<\/p>/is', $inner_html, $matches ) ) {
+					foreach ( $matches[1] as $part ) {
+						$part = trim( $part );
+						if ( '' !== $part ) {
+							$parts[] = $part;
+						}
+					}
+				}
 
-    if(empty($block))
+				if ( ! empty( $parts ) ) {
+					return sprintf(
+						'<p class="%s">%s</p>',
+						esc_attr( $class_name ),
+						implode( '<br /><br />', $parts )
+					);
+				}
+			}
 
+			$is_single_paragraph = preg_match( '/^<p\b/i', $inner_html )
+				&& preg_match( '/<\/p>\s*$/i', $inner_html )
+				&& ( 1 === preg_match_all( '/<p\b/i', $inner_html ) );
 
+			if ( $is_single_paragraph ) {
+				return preg_replace(
+					'/^<p\b[^>]*>/i',
+					sprintf( '<p class="%s">', esc_attr( $class_name ) ),
+					$inner_html,
+					1
+				);
+			}
 
-        return;
+			return $inner_html;
+		}
+	}
 
+	$block_name = empty( $block->blockName ) ? '' : $block->blockName;
+	if ( in_array( $block_name, array( 'wp4toastmasters/agendanoterich2', 'wp4toastmasters/signupnote' ), true ) ) {
+		$class_name = ( 'wp4toastmasters/agendanoterich2' === $block_name )
+			? 'wp-block-wp4toastmasters-agendanoterich2'
+			: 'wp-block-wp4toastmasters-signupnote';
 
+		if ( ! empty( $block->innerHTML ) && is_string( $block->innerHTML ) ) {
+			$block->innerHTML = wp4t_normalize_note_innerhtml( $block->innerHTML, $class_name );
+		} elseif ( ! empty( $block->attrs ) && ! empty( $block->attrs->content ) ) {
+			$block->innerHTML = sprintf(
+				'<p class="%s">%s</p>',
+				esc_attr( $class_name ),
+				wp_kses_post( (string) $block->attrs->content )
+			);
+		}
+	}
 
-    $attrs = ($block->attrs) ? json_encode($block->attrs) : '';
+	if ( 'wp4toastmasters/milestone' === $block_name ) {
+		$label = '';
+		if ( ! empty( $block->attrs ) && isset( $block->attrs->label ) ) {
+			$label = (string) $block->attrs->label;
+		}
 
+		$block->innerHTML = sprintf(
+			'<div class="wp-block-wp4toastmasters-milestone"><p>%s</p></div>',
+			esc_html( $label )
+		);
+	}
 
+	$attrs = ($block->attrs) ? json_encode($block->attrs) : '';
 
 	if(!empty($block->innerHTML) || (!empty($block->innerBlocks) && sizeof($block->innerBlocks)) ) {
 
+		$output = sprintf('<!-- wp:%s %s -->',$block->blockName,$attrs)."\n";
 
-
-        $output = sprintf('<!-- wp:%s %s -->',$block->blockName,$attrs)."\n";
-
-
-
-        if(!empty($block->innerHTML))
-
-
+		if(!empty($block->innerHTML))
 
 			$output .= $block->innerHTML."\n";
 
+		if(!empty($block->innerBlocks) && is_array($block->innerBlocks) && sizeof($block->innerBlocks)) {
 
+			foreach($block->innerBlocks as $innerblock) {
 
-        if(!empty($block->innerBlocks) && is_array($block->innerBlocks) && sizeof($block->innerBlocks)) {
+				$output .= wp4t_jsonBlockDataOutput($innerblock,$post_id);
 
+			}
 
+		}
 
-            foreach($block->innerBlocks as $innerblock) {
+		$output .= sprintf('<!-- /wp:%s -->',$block->blockName)."\n\n";
 
+	}
 
+	else
 
-                $output .= wp4t_jsonBlockDataOutput($innerblock,$post_id);
+		$output = sprintf('<!-- wp:%s %s /-->',$block->blockName,$attrs)."\n\n";
 
-
-
-            }
-
-
-
-        }
-
-
-
-        $output .= sprintf('<!-- /wp:%s -->',$block->blockName)."\n\n";    
-
-
-
-    }
-
-
-
-    else 
-
-
-
-        $output = sprintf('<!-- wp:%s %s /-->',$block->blockName,$attrs)."\n\n";
-
-
-
-    return $output;
-
-
+	return $output;
 
 }
 

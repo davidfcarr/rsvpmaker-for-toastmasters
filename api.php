@@ -2223,6 +2223,7 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 		$data = json_decode($json);
 		$output = '';
 		$post_id = $data->post_id;
+		$agenda_debug = ! empty( $_REQUEST['agenda_debug'] );
 		$post_type = get_post_type($post_id);
 		if(('rsvpmaker' != $post_type) && ('rsvpmaker_template' != $post_type))
 			return new WP_REST_Response(['status'=>'This function only works with event content'],401);
@@ -2230,9 +2231,33 @@ class WP4TUpdateAgenda extends WP_REST_Controller {
 			if(!current_user_can('edit_post',$post_id) && !current_user_can('organize_agenda'))
 				return new WP_REST_Response(['status'=>'user is not allowed to update this document'],401);
 		}
+		if ( $agenda_debug ) {
+			rsvpmaker_debug_log(
+				sprintf( 'update_agenda start post_id=%d blocks=%d', (int) $post_id, count( (array) $data->blocksdata ) ),
+				'rsvpmaker_api'
+			);
+		}
 		foreach($data->blocksdata as $index => $block) {
-			if($block->blockName)
+			if($block->blockName) {
+				if ( $agenda_debug && in_array( $block->blockName, array( 'wp4toastmasters/agendanoterich2', 'wp4toastmasters/signupnote', 'wp4toastmasters/milestone' ), true ) ) {
+					$snippet = '';
+					if ( ! empty( $block->innerHTML ) ) {
+						$snippet = preg_replace( '/\s+/', ' ', (string) $block->innerHTML );
+						$snippet = substr( $snippet, 0, 180 );
+					}
+					rsvpmaker_debug_log(
+						sprintf( 'update_agenda block[%d] %s html=%s', (int) $index, $block->blockName, $snippet ),
+						'rsvpmaker_api'
+					);
+				}
 				$output .= wp4t_jsonBlockDataOutput($block, $post_id);
+			}
+		}
+		if ( $agenda_debug ) {
+			rsvpmaker_debug_log(
+				sprintf( 'update_agenda serialized post_id=%d output_length=%d', (int) $post_id, strlen( $output ) ),
+				'rsvpmaker_api'
+			);
 		}
 		$updated['ID'] = $post_id;
 		$updated['post_content'] = $output;
@@ -2362,6 +2387,8 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 		global $current_user;
 		$json = file_get_contents('php://input');
 		$data = json_decode($json);
+		$agenda_debug = ! empty( $_GET['agenda_debug'] );
+		$debug = array();
 		$post_id = $data->post_id;
 		$blockindex = $data->blockindex;
 		$roleindex = $data->roleindex;
@@ -2379,6 +2406,28 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 		$updated = $item = (array) $data;
 		if(!empty($item['intro']))
 			$item['intro'] = str_replace('&nbsp;','',preg_replace( '/style=".+"/', '', $item['intro'] ));
+		$speech_fields = array( 'manual', 'title', 'project', 'intro', 'maxtime', 'display_time' );
+		$has_explicit_speech_payload = false;
+		foreach ( $speech_fields as $speech_field ) {
+			if ( array_key_exists( $speech_field, $item ) ) {
+				$has_explicit_speech_payload = true;
+				break;
+			}
+		}
+		$slot_key = $keybase . ( $roleindex + $start );
+		$existing_assignee = (string) get_post_meta( $post_id, $slot_key, true );
+		$incoming_assignee = isset( $item['ID'] ) ? (string) $item['ID'] : '';
+		$assignee_changed = ( '' !== $incoming_assignee ) && ( $incoming_assignee !== $existing_assignee );
+		if ( $agenda_debug ) {
+			$debug['post_id'] = (int) $post_id;
+			$debug['slot_key'] = $slot_key;
+			$debug['role'] = $role;
+			$debug['existing_assignee'] = $existing_assignee;
+			$debug['incoming_assignee'] = $incoming_assignee;
+			$debug['assignee_changed'] = $assignee_changed;
+			$debug['has_explicit_speech_payload'] = $has_explicit_speech_payload;
+			$debug['speech_field_actions'] = array();
+		}
 		$status = 'updated post id '.$post_id.' count: '.$count;
 		$updated['name'] = $name;
 		$control = ['role','blockindex','roleindex','name','post_id','start','count'];
@@ -2391,6 +2440,19 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 				$key = $keybase.($roleindex+$start);
 			else
 				$key = '_'.$type.$keybase.($roleindex+$start);
+			if ( strpos( $role, 'Speaker' ) !== false && in_array( $type, $speech_fields, true ) ) {
+				$field_action = 'keep';
+				if ( '' === $incoming_assignee || ( $assignee_changed && ! $has_explicit_speech_payload ) ) {
+					$value = '';
+					$field_action = ( '' === $incoming_assignee ) ? 'clear-empty-assignee' : 'clear-assignee-changed-no-speech-payload';
+				}
+				if ( $agenda_debug ) {
+					$debug['speech_field_actions'][] = array(
+						'field'  => $type,
+						'action' => $field_action,
+					);
+				}
+			}
 			//$updated[$type] = $value;
 			if(($type == "ID") && $wasopen && !empty($value)) {
 				$was = get_post_meta($post_id,$key,true);
@@ -2417,6 +2479,9 @@ class WptJsonAssignmentPost extends WP_REST_Controller {
 		$agendadata['status'] = $status;
 		$agendadata['prompt'] = ($user_id == $current_user->ID);
 		$agendadata['role'] = $role;
+		if ( $agenda_debug ) {
+			$agendadata['assignment_debug'] = $debug;
+		}
 		return new WP_REST_Response($agendadata,
 			200
 		);
@@ -2445,12 +2510,16 @@ class WptJsonMultiAssignmentPost extends WP_REST_Controller {
 	rsvpmaker_debug_log($_SERVER['SERVER_NAME'].' '.$_SERVER['REQUEST_URI'],'rsvpmaker_api');
 		$json = file_get_contents('php://input');
 		$data = json_decode($json);
+		$agenda_debug = ! empty( $_GET['agenda_debug'] );
 		$blockindex = $data->blockindex;
 		$assignments = $data->assignments;
 		$start = $data->start;
+		$status = '';
 		$updated['status'] = 'updated ';
 		$updated['assignments'] = [];
+		$debug = array();
 		foreach($assignments as $roleindex => $assignment) {
+			$original_roleindex = $roleindex;
 			$post_id = $assignment->post_id;
 			$user_id = $assignment->ID;
 			$role = $assignment->role;
@@ -2461,11 +2530,43 @@ class WptJsonMultiAssignmentPost extends WP_REST_Controller {
 			}
 			$name = wp4t_get_member_name($user_id);
 			$keybase = wp4t_fieldbase($role).'_';
-			$item = (array) $data;
+			$item = (array) $assignment;
 			$item['name'] = $name;
 			array_push($updated['assignments'],$item);
 			$control = ['role','blockindex','roleindex','name','post_id','count'];
-			$item = (array) $assignment;
+			$speech_fields = array( 'manual', 'title', 'project', 'intro', 'maxtime', 'display_time' );
+			$has_explicit_speech_payload = false;
+			foreach ( $speech_fields as $speech_field ) {
+				if ( array_key_exists( $speech_field, $item ) ) {
+					$has_explicit_speech_payload = true;
+					break;
+				}
+			}
+			if ( strpos( $role, 'Speaker' ) !== false ) {
+				foreach ( $speech_fields as $speech_field ) {
+					if ( ! array_key_exists( $speech_field, $item ) ) {
+						$item[ $speech_field ] = '';
+					}
+				}
+			}
+			$slot_key = $keybase . ( $roleindex + $start );
+			$existing_assignee = (string) get_post_meta( $post_id, $slot_key, true );
+			$incoming_assignee = array_key_exists( 'ID', $item ) ? (string) $item['ID'] : '';
+			$assignee_changed = ( '' !== $incoming_assignee ) && ( $incoming_assignee !== $existing_assignee );
+			$slot_debug = null;
+			if ( $agenda_debug ) {
+				$slot_debug = array(
+					'index' => (int) $original_roleindex,
+					'post_id' => (int) $post_id,
+					'role' => $role,
+					'slot_key' => $slot_key,
+					'existing_assignee' => $existing_assignee,
+					'incoming_assignee' => $incoming_assignee,
+					'assignee_changed' => $assignee_changed,
+					'has_explicit_speech_payload' => $has_explicit_speech_payload,
+					'speech_field_actions' => array(),
+				);
+			}
 			foreach($item as $type => $value) {
 				if(empty($type) || in_array($type,$control))
 					continue;
@@ -2473,15 +2574,34 @@ class WptJsonMultiAssignmentPost extends WP_REST_Controller {
 					$key = $keybase.($roleindex+$start);
 				else
 					$key = '_'.$type.$keybase.($roleindex+$start);
+				if ( strpos( $role, 'Speaker' ) !== false && in_array( $type, $speech_fields, true ) ) {
+					$field_action = 'keep';
+					if ( '' === $incoming_assignee || ( $assignee_changed && ! $has_explicit_speech_payload ) ) {
+						$value = '';
+						$field_action = ( '' === $incoming_assignee ) ? 'clear-empty-assignee' : 'clear-assignee-changed-no-speech-payload';
+					}
+					if ( $agenda_debug && is_array( $slot_debug ) ) {
+						$slot_debug['speech_field_actions'][] = array(
+							'field' => $type,
+							'action' => $field_action,
+						);
+					}
+				}
 				$updated[$roleindex][$type] = $value;
 				update_post_meta($post_id,$key,$value);
 				$updated['status'] .= ' ' .$post_id.' '.$key.' = '.$value;	
 				$status .=  ' ' .$post_id.' '.$key.' = '.$value;	
 		}
+			if ( $agenda_debug && is_array( $slot_debug ) ) {
+				$debug[] = $slot_debug;
+			}
 	
 		}
 		$agendadata = wpt_get_agendadata($post_id);
 		$agendadata['status'] = $status;
+		if ( $agenda_debug ) {
+			$agendadata['assignment_debug'] = $debug;
+		}
 		return new WP_REST_Response($agendadata,
 			200
 		);

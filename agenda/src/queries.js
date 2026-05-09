@@ -86,7 +86,10 @@ export function initChangeBlockAttribute(post_id,blockindex) {
 
 async function updateAgendaPost (agenda) {
 
-    return await apiClient.post('update_agenda?_locale=user', agenda);
+    const urlParams = new URLSearchParams(window.location.search || '');
+    const debugSuffix = urlParams.get('agenda_debug') ? '&agenda_debug=1' : '';
+
+    return await apiClient.post('update_agenda?_locale=user'+debugSuffix, agenda);
 
 }
 

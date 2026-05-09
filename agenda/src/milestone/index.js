@@ -36,4 +36,16 @@ registerBlockType( metadata.name, {
 	 * @see ./save.js
 	 */
 	save,
+
+	deprecated: [
+		{
+			save( { attributes: { label } } ) {
+				return (
+					<div className="wp-block-wp4toastmasters-milestone">
+						<p maxtime="x">{ label }</p>
+					</div>
+				);
+			},
+		},
+	],
 } );

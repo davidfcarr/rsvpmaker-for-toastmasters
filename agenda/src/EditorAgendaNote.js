@@ -7,10 +7,40 @@ export function EditorAgendaNote(props) {
   const editorRef = useRef(null);
   const {block, blockindex, replaceBlock,data} = props;
 
+  function normalizeToSingleParagraph(html) {
+    const parser = new DOMParser();
+    const sourceDoc = parser.parseFromString(html || '', 'text/html');
+    const paragraphs = Array.from(sourceDoc.body.querySelectorAll('p'));
+
+    if (!paragraphs.length) {
+      const fallback = sourceDoc.body.innerHTML ? sourceDoc.body.innerHTML.trim() : '';
+      return fallback ? `<p>${fallback}</p>` : '<p></p>';
+    }
+
+    const merged = paragraphs
+      .map((paragraph) => paragraph.innerHTML.trim())
+      .filter((part) => part !== '')
+      .join('<br><br>');
+
+    return `<p>${merged}</p>`;
+  }
+
   function save() {
       const currentContent = editorRef.current ? editorRef.current.getContent() : '';
-      block.innerHTML = simplifyPastedHtml(currentContent);
-      replaceBlock(blockindex, block);
+    const simplified = simplifyPastedHtml(currentContent);
+    const normalized = normalizeToSingleParagraph(simplified);
+    const content = normalized.replace(/^<p[^>]*>/i, '').replace(/<\/p>\s*$/i, '');
+
+    const nextBlock = {
+      ...block,
+      innerHTML: normalized,
+      attrs: {
+        ...(block?.attrs || {}),
+        content,
+      },
+    };
+
+    replaceBlock(blockindex, nextBlock);
   }
 
   return (
