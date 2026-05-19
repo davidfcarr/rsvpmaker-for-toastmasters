@@ -18,6 +18,6 @@ import { useBlockProps } from '@wordpress/block-editor';
  */
 export default function save() {
 	return (
-<hr { ...useBlockProps.save() } style={{ display: 'none' }} />
+		<hr { ...useBlockProps.save() } />
 	)
 }

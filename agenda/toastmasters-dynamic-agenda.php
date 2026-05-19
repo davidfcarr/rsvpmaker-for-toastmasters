@@ -153,7 +153,12 @@ function wp4t_dynamic_agenda_script() {
 		wp_set_script_translations($script_handle, 'rsvpmaker-for-toastmasters', $plugin_dir . 'translations');
 		wp_set_script_translations($script_handle.'-2', 'rsvpmaker-for-toastmasters', $plugin_dir . 'translations');
 		wp_localize_script( $script_handle, 'wpt_rest',wpt_rest_array());
-		wp_enqueue_style(wp4t_get_dynamic_agenda_script_handle('style'),'',['forms','common']);
+		$style_handle = wp4t_get_dynamic_agenda_script_handle('style');
+		wp_enqueue_style($style_handle,'',['forms','common']);
+		wp_add_inline_style(
+			$style_handle,
+			'.agendawrapper .role-buttons>button>svg,.agendawrapper button.agenda-tooltip>svg,.agendawrapper .role-buttons svg path,.agendawrapper button.agenda-tooltip svg path{display:block!important;visibility:visible!important;opacity:1!important;fill:currentColor!important;stroke:none!important}.agendawrapper .role-buttons,.agendawrapper .role-buttons button{display:flex!important;align-items:center!important;gap:8px!important}'
+		);
 		rsvpmaker_enqueue_block_store();
 	}
 	if(isset($_GET['transdebug']))

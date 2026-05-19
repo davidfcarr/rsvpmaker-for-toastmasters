@@ -48,6 +48,7 @@ export default function Agenda(props) {
 
     function scrolltoId(id) {
         if (!id) return;
+        if (window?.location?.hash === '#rsvpnow') return;
         var access = document.getElementById(id);
         if (!access) {
             console.log('Scroll to ID could not find element' + ' ' + id);

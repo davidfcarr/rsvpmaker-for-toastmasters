@@ -122,7 +122,9 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	$output = '';
 	$waspost       = $post;
 	$role_pages = get_option('wp4t_role_pages',[]);
-	$output .= var_export($role_pages,true);
+	if ( ! is_array( $role_pages ) ) {
+		$role_pages = array();
+	}
 
 	$email_context = true;
 	if ( empty( $meeting_hours ) ) {
@@ -145,40 +147,78 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	$t      = (!empty($next->ts_start)) ? (int) $next->ts_start : get_rsvpmaker_timestamp( $next->ID );
 	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
 	$post   = $next;
+	$dupkey = '';
 	if(!$test)
 	{
 		$dupkey = 'email_reminder_' . $meeting_hours;
 		if ( get_post_meta( $post->ID, $dupkey, true ) ) {
 			return; // don't do more than once
 		}
-		update_post_meta( $post->ID, $dupkey, true );
 	}
 	$members   = wp4t_get_club_members();
 	$templates = get_rsvpmaker_notification_templates();
 	$permalink = get_permalink( $next->ID );
 	$content   = do_shortcode( $templates['wp4t_norole']['body'] );
 	$absences  = wp4t_get_absences_array( $next->ID );
+	$log = array(
+		'meeting_hours' => $meeting_hours,
+		'post_id' => (int) $next->ID,
+		'test_mode' => (bool) $test,
+		'started' => rsvpmaker_date( 'r' ),
+		'members_total' => is_array( $members ) ? count( $members ) : 0,
+		'with_roles' => 0,
+		'without_roles' => 0,
+		'absent' => 0,
+		'reminder_recipients' => 0,
+		'send_ok' => 0,
+		'send_fail' => 0,
+		'send_fail_detail' => array(),
+		'role_link_found' => 0,
+		'role_link_missing' => 0,
+		'norole_recipient_count' => 0,
+		'norole_send' => '',
+	);
 	$summary = 	empty(get_option('wpt_notification_summary_off'));
 	$reminders = array();
 	$absent    = array();
 	$wp4t_norole    = array();
 	foreach ( $members as $member ) {
-		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $next->ID . '  AND meta_value=' . $member->ID . " AND meta_key LIKE '_role%' ";
+		$member_id = isset( $member->ID ) ? (int) $member->ID : 0;
+		if ( ! $member_id || empty( $member->user_email ) ) {
+			continue;
+		}
+		$sql                             = "SELECT * FROM `$wpdb->postmeta` where post_id=" . $next->ID . '  AND meta_value=' . $member_id . " AND meta_key LIKE '_role%' ";
 		$role_results                    = $wpdb->get_results( $sql );
 		$roles                           = array();
-		$reminder_details[ $member->ID ] = '';
-        $reminder_body[ $member->ID ] = '';
-        $reminder_subject[ $member->ID ] = '';
-		if ( in_array( $member->ID, $absences ) ) {
+		$reminder_details[ $member_id ] = '';
+	        $reminder_body[ $member_id ] = '';
+	        $reminder_subject[ $member_id ] = '';
+		if ( in_array( $member_id, $absences ) ) {
+			$log['absent']++;
 			$absent[] = $member->user_email;
 		} elseif ( $role_results ) {
+			$log['with_roles']++;
 			foreach ( $role_results as $index => $role_row ) {
 				$role    = trim( preg_replace( '/[^A-Za-z]/', ' ', $role_row->meta_key ) );
 				$role = str_replace('role ','',$role);
-				$description_page = (isset($role_pages[$role])) ? sprintf(' <a href="%s">%s</a>', get_permalink($role_pages[$role]), __('Role Description','rsvpmaker-for-toastmasters')) : '';
+				$role_page_id = isset( $role_pages[ $role ] ) ? (int) $role_pages[ $role ] : 0;
+				if ( ! $role_page_id ) {
+					foreach ( $role_pages as $role_key => $page_id ) {
+						if ( sanitize_title( $role_key ) === sanitize_title( $role ) ) {
+							$role_page_id = (int) $page_id;
+							break;
+						}
+					}
+				}
+				$description_page = $role_page_id ? sprintf( ' <a href="%s">%s</a>', esc_url( get_permalink( $role_page_id ) ), __( 'Role Description', 'rsvpmaker-for-toastmasters' ) ) : '';
+				if ( $description_page ) {
+					$log['role_link_found']++;
+				} else {
+					$log['role_link_missing']++;
+				}
 				$rt = wp4t_role($role);
 				if(sizeof($role_results) > 1)
-					$reminder_body[$member->id] .= '<h1>'.$rt.'</h1>';
+					$reminder_body[$member_id] .= '<h1>'.$rt.'</h1>';
 				$roles[] = $rt;
 				if ( $role == 'Speaker' ) {
 					$manual                           = get_post_meta( $next->ID, '_manual' . $role_row->meta_key, true );
@@ -187,27 +227,28 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 					$project                          = ( $project_key ) ? wp4t_get_project_text( $project_key ) : 'Please specify project';
 					$intro                            = get_post_meta( $next->ID, '_intro' . $role_row->meta_key, true );
 					$wp4t_speaker_details = sprintf( '<p>Manual: %s<br />Project: %s<br />Title: %s<br />Intro: %s</p>', $manual, $project, $title, $intro );
-                    $reminder_body[$member->id] .= str_replace('[wpt_speech_details]',$wp4t_speaker_details,str_replace('[wptrole]',$rt.$description_page,wpautop($templates['Speaker']['body'])));
-                    $reminder_subject[ $member->ID ] .= str_replace('[wptrole]',$rt,$templates['Speaker']['subject']);
+	                    $reminder_body[$member_id] .= str_replace('[wpt_speech_details]',$wp4t_speaker_details,str_replace('[wptrole]',$rt.$description_page,wpautop($templates['Speaker']['body'])));
+	                    $reminder_subject[ $member_id ] .= str_replace('[wptrole]',$rt,$templates['Speaker']['subject']);
 				}
                 elseif(isset($templates[$role]['body'])) {
-                    $reminder_body[$member->id] .= str_replace('[wptrole]',$rt.$description_page,wpautop($templates[$role]['body']));
-                    $reminder_subject[ $member->ID ] .= str_replace('[wptrole]',$rt,$templates[$role]['subject']);
+	                    $reminder_body[$member_id] .= str_replace('[wptrole]',$rt.$description_page,wpautop($templates[$role]['body']));
+	                    $reminder_subject[ $member_id ] .= str_replace('[wptrole]',$rt,$templates[$role]['subject']);
                 }
                 else {
-                    $reminder_body[$member->id] .= str_replace('[wptrole]',$rt.$description_page,wpautop($templates['role_reminder']['body']));
-                    $reminder_subject[ $member->ID ] .= str_replace('[wptrole]',$rt,$templates['role_reminder']['subject']);
+	                    $reminder_body[$member_id] .= str_replace('[wptrole]',$rt.$description_page,wpautop($templates['role_reminder']['body']));
+	                    $reminder_subject[ $member_id ] .= str_replace('[wptrole]',$rt,$templates['role_reminder']['subject']);
                 }
 			}
-			$reminders[ $member->ID ]      = $member->user_email;
+			$reminders[ $member_id ]      = $member->user_email;
             if(sizeof($roles) > 1) {
 				// member has multiple roles
                 $multirole = implode(', ',$roles);
-                $reminder_subject[ $member->ID ] = str_replace('[wptrole]',$multirole,$templates['role_reminder']['subject']);
+	                $reminder_subject[ $member_id ] = str_replace('[wptrole]',$multirole,$templates['role_reminder']['subject']);
             } 
-            if($summary && !strpos($reminder_body[$member->id],'[wpt_open_roles]') && !strpos($reminder_body[$member->id],'[wp4t_assigned_open] '))
-                $reminder_body[$member->id] .= $content;
+	            if($summary && strpos($reminder_body[$member_id],'[wpt_open_roles]') === false && strpos($reminder_body[$member_id],'[wp4t_assigned_open] ') === false)
+	                $reminder_body[$member_id] .= $content;
 		} else {
+			$log['without_roles']++;
 			$wp4t_norole[] = $member->user_email;
 		}
 	}
@@ -215,6 +256,7 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	$output = '<pre>'.var_export($toast_roles,true).'</pre>';
 	$mail = wpt_notification_from($next->ID);
 	foreach ( $reminders as $index => $email ) {
+		$log['reminder_recipients']++;
 		$mail['to']      = ( $test ) ? $mail['from'] : $email;
 		$testtext        = ( $test ) ? "<p>$email</p>" : '';
 		$mail['from'] = wpt_format_email_forwarder('vpe');
@@ -230,27 +272,163 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 			$role = array_shift($reminder_roles[ $index ]);
 		if($test) {
 			$output .= sprintf('<h3>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],$mail['to'],$mail['html']);
+			$log['send_ok']++;
 		}
 		else {
 			$result          = rsvpmaker_qemail( $mail, array($mail['to']) );
+			if ( is_wp_error( $result ) ) {
+				$log['send_fail']++;
+				$log['send_fail_detail'][] = array(
+					'email' => $mail['to'],
+					'error' => $result->get_error_message(),
+				);
+			} elseif ( false === $result ) {
+				$log['send_fail']++;
+				$log['send_fail_detail'][] = array(
+					'email' => $mail['to'],
+					'error' => 'rsvpmaker_qemail returned false',
+				);
+			} else {
+				$log['send_ok']++;
+			}
 			update_post_meta( $post->ID, 'reminder', $mail );	
 		}
 	}
+	$log['norole_recipient_count'] = count( $wp4t_norole );
 	if(!empty($wp4t_norole)) {
 		$mail['html'] = wpt_email_agenda_wrapper("<p>".__("You're not yet signed up for a role",'rsvpmaker-for-toastmasters')."</p>\n" . $content);
 		$mail['subject'] = 'Reminder: ' . $date . ' - ' . $next->post_title;
 		if($test) {
 			$output .= sprintf('<h2>Subject: %s</h3><p><strong>To:</strong> %s</p>%s',$mail['subject'],implode(', ',$wp4t_norole),$mail['html']);
+			$log['norole_send'] = 'test_preview_only';
 		}
 		else {
-			rsvpmaker_qemail($mail,$wp4t_norole);
+			$norole_result = rsvpmaker_qemail($mail,$wp4t_norole);
+			if ( is_wp_error( $norole_result ) ) {
+				$log['norole_send'] = 'error: ' . $norole_result->get_error_message();
+			} elseif ( false === $norole_result ) {
+				$log['norole_send'] = 'error: rsvpmaker_qemail returned false';
+			} else {
+				$log['norole_send'] = 'ok';
+			}
 		}
 	}
+	elseif ( $test ) {
+		$log['norole_send'] = 'test_preview_only_no_recipients';
+	} else {
+		$log['norole_send'] = 'no_recipients';
+	}
+	$log['finished'] = rsvpmaker_date( 'r' );
+	if(!$test)
+		update_post_meta( $post->ID, $dupkey, true );
 	if(!$test)
 		update_post_meta( $post->ID, '_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $wp4t_norole ).rsvpmaker_date('r') );
+	update_post_meta( $post->ID, '_reminder_email_log', $log );
 	$post = $waspost;
 	return $output;
 }
+
+function wp4t_reminder_log_report( $post_id = 0 ) {
+	$post_id = (int) $post_id;
+	if ( ! $post_id ) {
+		global $post;
+		if ( ! empty( $post->ID ) ) {
+			$post_id = (int) $post->ID;
+		}
+	}
+	if ( ! $post_id ) {
+		return '<p>No post ID specified.</p>';
+	}
+	$log = get_post_meta( $post_id, '_reminder_email_log', true );
+	if ( empty( $log ) || ! is_array( $log ) ) {
+		return '<p>No reminder log found.</p>';
+	}
+
+	$summary_rows = array(
+		'Post ID' => $log['post_id'] ?? $post_id,
+		'Meeting Hours' => $log['meeting_hours'] ?? '',
+		'Test Mode' => ! empty( $log['test_mode'] ) ? 'yes' : 'no',
+		'Started' => $log['started'] ?? '',
+		'Finished' => $log['finished'] ?? '',
+		'Members Total' => $log['members_total'] ?? 0,
+		'With Roles' => $log['with_roles'] ?? 0,
+		'Without Roles' => $log['without_roles'] ?? 0,
+		'Absent' => $log['absent'] ?? 0,
+		'Reminder Recipients' => $log['reminder_recipients'] ?? 0,
+		'Send OK' => $log['send_ok'] ?? 0,
+		'Send Fail' => $log['send_fail'] ?? 0,
+		'Role Links Found' => $log['role_link_found'] ?? 0,
+		'Role Links Missing' => $log['role_link_missing'] ?? 0,
+		'No-Role Recipients' => $log['norole_recipient_count'] ?? 0,
+		'No-Role Send' => $log['norole_send'] ?? '',
+	);
+
+	$out = '<h3>Reminder Email Log</h3><table class="widefat striped"><tbody>';
+	foreach ( $summary_rows as $label => $value ) {
+		$out .= sprintf(
+			'<tr><th scope="row" style="width:240px;">%s</th><td>%s</td></tr>',
+			esc_html( $label ),
+			esc_html( (string) $value )
+		);
+	}
+	$out .= '</tbody></table>';
+
+	if ( ! empty( $log['send_fail_detail'] ) && is_array( $log['send_fail_detail'] ) ) {
+		$out .= '<h4>Send Fail Detail</h4><table class="widefat striped"><thead><tr><th>Email</th><th>Error</th></tr></thead><tbody>';
+		foreach ( $log['send_fail_detail'] as $item ) {
+			$out .= sprintf(
+				'<tr><td>%s</td><td>%s</td></tr>',
+				esc_html( $item['email'] ?? '' ),
+				esc_html( $item['error'] ?? '' )
+			);
+		}
+		$out .= '</tbody></table>';
+	}
+
+	return $out;
+}
+
+function wp4t_reminder_log_admin_screen() {
+	if ( ! current_user_can( 'edit_users' ) ) {
+		wp_die( esc_html__( 'You do not have permission to view this page.', 'rsvpmaker-for-toastmasters' ) );
+	}
+	$show_count = ( isset( $_REQUEST['show'] ) && (int) $_REQUEST['show'] === 5 ) ? 5 : 1;
+	$meetings = past_toastmaster_meetings( $show_count );
+	echo '<div class="wrap">';
+	echo '<h1>' . esc_html__( 'Reminder Email Log', 'rsvpmaker-for-toastmasters' ) . '</h1>';
+	echo '<p>';
+	printf(
+		'<a class="button%s" href="%s">%s</a> <a class="button%s" href="%s">%s</a>',
+		( 1 === $show_count ) ? ' button-primary' : '',
+		esc_url( admin_url( 'admin.php?page=wp4t_reminder_email_log&show=1' ) ),
+		esc_html__( 'Last Meeting', 'rsvpmaker-for-toastmasters' ),
+		( 5 === $show_count ) ? ' button-primary' : '',
+		esc_url( admin_url( 'admin.php?page=wp4t_reminder_email_log&show=5' ) ),
+		esc_html__( 'Last 5 Meetings', 'rsvpmaker-for-toastmasters' )
+	);
+	echo '</p>';
+
+	if ( empty( $meetings ) || ! is_array( $meetings ) ) {
+		echo '<p>' . esc_html__( 'No past meeting events found.', 'rsvpmaker-for-toastmasters' ) . '</p>';
+		echo '</div>';
+		return;
+	}
+
+	foreach ( $meetings as $meeting ) {
+		$meeting_id = ! empty( $meeting->ID ) ? (int) $meeting->ID : 0;
+		if ( ! $meeting_id ) {
+			continue;
+		}
+		echo '<hr />';
+		echo '<h2>' . esc_html( get_the_title( $meeting_id ) ) . '</h2>';
+		if ( ! empty( $meeting->date ) ) {
+			echo '<p><strong>' . esc_html__( 'Date:', 'rsvpmaker-for-toastmasters' ) . '</strong> ' . esc_html( $meeting->date ) . '</p>';
+		}
+		echo wp4t_reminder_log_report( $meeting_id );
+	}
+	echo '</div>';
+}
+
 function wp4t_awemailer( $mail ) {
 	global $rsvp_options;
 	if ( strpos( $mail['to'], 'example.com' ) ) {

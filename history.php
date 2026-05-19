@@ -2,6 +2,116 @@
 /*
 * Speech and role history
 */
+function wp4t_history_filter_state( $where, $user_id = 0, $date_filter_on_by_default = true ) {
+    global $wpdb;
+
+    $filters      = array();
+    $allchecked   = '';
+    $notallchecked = '';
+    $datechecked  = '';
+    $nodatechecked = '';
+    $domain       = sanitize_text_field( $_SERVER['SERVER_NAME'] );
+    $date         = date( 'Y-m-d', strtotime( '-1 year' ) );
+
+    if ( isset( $_GET['limit'] ) ) {
+        $limit = sanitize_text_field( $_GET['limit'] );
+        if ( 'all' === $limit ) {
+            $limitsql = '';
+        } else {
+            $limit = absint( $limit );
+            if ( empty( $limit ) ) {
+                $limit = 100;
+            }
+            $limit    = min( 500, $limit );
+            $limitsql = ' LIMIT 0,' . $limit;
+        }
+    } else {
+        $limit    = 100;
+        $limitsql = ' LIMIT 0,' . $limit;
+    }
+
+    if ( empty( $_GET['all'] ) ) {
+        $notallchecked = ' checked="checked" ';
+        $where        .= $wpdb->prepare( ' AND domain=%s ', $domain );
+        $filters[]     = 'for all member clubs on this website';
+    } else {
+        $allchecked = ' checked="checked" ';
+        $filters[]  = 'for clubs on this website';
+    }
+
+    if ( $user_id ) {
+        $where     .= ' AND user_id=' . absint( $user_id ) . ' ';
+        $filters[]  = 'filtered by user';
+    }
+
+    if ( $date_filter_on_by_default ) {
+        if ( ! isset( $_GET['datefilter'] ) || ( ! empty( $_GET['datefilter'] ) && ! empty( $_GET['since'] ) ) ) {
+            $datechecked = ' checked="checked" ';
+            if ( ! empty( $_GET['since'] ) ) {
+                $requested_since = sanitize_text_field( $_GET['since'] );
+                if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $requested_since ) ) {
+                    $date = $requested_since;
+                }
+            }
+            $where .= $wpdb->prepare( ' AND datetime > %s ', $date );
+            $filters[] = ' more recent than ' . $date;
+        } else {
+            $nodatechecked = ' checked="checked" ';
+            $filters[] = 'not filtered by date';
+        }
+    } else {
+        if ( ! empty( $_GET['datefilter'] ) && ! empty( $_GET['since'] ) ) {
+            $datechecked = ' checked="checked" ';
+            $requested_since = sanitize_text_field( $_GET['since'] );
+            if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $requested_since ) ) {
+                $date = $requested_since;
+            }
+            $where .= $wpdb->prepare( ' AND datetime > %s ', $date );
+            $filters[] = ' more recent than ' . $date;
+        } else {
+            $nodatechecked = ' checked="checked" ';
+            $filters[] = 'not filtered by date';
+        }
+    }
+
+    $since = ! empty( $_GET['since'] ) ? sanitize_text_field( $_GET['since'] ) : $date;
+
+    return array(
+        'where'          => $where,
+        'filters'        => $filters,
+        'allchecked'     => $allchecked,
+        'notallchecked'  => $notallchecked,
+        'datechecked'    => $datechecked,
+        'nodatechecked'  => $nodatechecked,
+        'limit'          => $limit,
+        'limitsql'       => $limitsql,
+        'date'           => $date,
+        'since'          => $since,
+    );
+}
+
+
+function wp4t_history_report_sql( $report_type, $history_table, $speech_history_table, $where, $limitsql ) {
+    if ( empty( $report_type ) ) {
+        $report_type = 'latest';
+    }
+
+    switch ( $report_type ) {
+        case 'path':
+            return "SELECT user_id, manual, count(manual) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, manual ORDER BY user_id, manual" . $limitsql;
+        case 'countbyrole':
+            return "SELECT user_id, role, count(*) as tally, GROUP_CONCAT(DISTINCT DATE(datetime) ORDER BY DATE(datetime) DESC SEPARATOR ', ') as dates FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, role ORDER BY user_id, role " . $limitsql;
+        case 'countspeeches':
+            return "SELECT user_id, role, count(*) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, role ORDER BY tally DESC " . $limitsql;
+        case 'mostactive':
+            return "SELECT user_id, count(role) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id ORDER BY count(role) DESC" . $limitsql;
+        case 'speaker':
+        case 'latest':
+        default:
+            return "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where ORDER BY datetime DESC " . $limitsql;
+    }
+}
+
 function wp4toastmasters_history() {
     $nonce = wp_create_nonce( 'wp4t_tm_export' );
 	$timelord = rsvpmaker_nonce('query');
@@ -70,69 +180,29 @@ if(is_multisite()) {
     else {
         $user_id = ('wp4t_my_progress_report' == $_GET['page']) ? $current_user->ID : 0;
     }
-    if($user_id) 
-        $where .= ' and user_id='.$user_id;
-
-        $allchecked = '';
-        $notallchecked = '';
-        $datechecked = '';
-        $nodatechecked = '';
         $speakerchecked = '';
         $pathchecked = '';
         $countbyrolechecked = '';
         $countspeecheschecked = '';
         $mostactivechecked = '';
         $latestchecked = '';
-        if(isset($_GET['limit'])) {
-            $limit = sanitize_text_field($_GET['limit']);
-            if($limit == 'all')
-                $limitsql = '';
-            else
-               $limitsql = ' LIMIT 0,'.$limit; 
-        }
-        else
-            {
-                $limit = 100;
-                $limitsql = ' LIMIT 0,'.$limit; 
-            }
-        if(empty($_GET['all']))
-            {
-                $notallchecked = ' checked="checked" ';
-                $where .= " AND domain='".$_SERVER['SERVER_NAME']."' ";
-                $filters[] = 'for all member clubs on this website';
-            }
-        else
-        {
-            $allchecked = ' checked="checked" ';
-            $filters[] = 'for clubs on this website';
-        }
-        if($user_id) {
-            $where .= " AND user_id=" . $user_id. ' ';
-            $filters[] = 'filtered by user';
-        }
-        if(!isset($_GET['datefilter'])) {
-            $datechecked = ' checked="checked" ';
-            $date = date('Y-m-d', strtotime('-1 year'));
-            $where .= sprintf(" AND datetime > '%s' ",$date);
-            $filters[] = ' more recent than '.$date;
-        }
-        elseif(!empty($_GET['datefilter']) && !empty($_GET['since']))
-        {
-            $datechecked = ' checked="checked" ';
-            $date = sanitize_text_field($_GET['since']);
-            $where .= sprintf(" AND datetime > '%s' ",$date);
-            $filters[] = ' more recent than '.$date;
-        }
-        else {
-            $nodatechecked = ' checked="checked" ';
-            $filters[] = 'not filtered by date';
-        }
+
+        $filter_state = wp4t_history_filter_state( $where, $user_id, true );
+        $where        = $filter_state['where'];
+        $filters      = $filter_state['filters'];
+        $allchecked   = $filter_state['allchecked'];
+        $notallchecked = $filter_state['notallchecked'];
+        $datechecked  = $filter_state['datechecked'];
+        $nodatechecked = $filter_state['nodatechecked'];
+        $limit        = $filter_state['limit'];
+        $limitsql     = $filter_state['limitsql'];
+        $date         = $filter_state['date'];
         if(isset($_GET['type']) && ($_GET['type'] == 'speaker'))
         {
             $speakerchecked = ' checked="checked" ';
             $where .= " AND role LIKE '%Speaker%' ";
             $filters[] = 'speaker roles only';
-            $sql = "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where ORDER BY datetime DESC ".$limitsql;
+            $sql = wp4t_history_report_sql( 'speaker', $history_table, $speech_history_table, $where, $limitsql );
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
                 $temp = sprintf('<p><strong>%s</strong>, %s %s %s</p>',wp4t_get_member_name($row->user_id),$row->role,rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($row->datetime)), $row->domain);
@@ -155,7 +225,7 @@ if(is_multisite()) {
             $pathchecked = 'checked="checked"';
             $filters[] = 'speech by path';
             $where .= " AND role LIKE '%Speaker%' ";
-            $sql = "SELECT  user_id, manual, count(manual) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, manual ORDER BY user_id, manual".$limitsql;
+            $sql = wp4t_history_report_sql( 'path', $history_table, $speech_history_table, $where, $limitsql );
             $results = $wpdb->get_results($sql);
             $msort = array();
             foreach($results as $row) {
@@ -171,13 +241,13 @@ if(is_multisite()) {
         {
             $countbyrolechecked = ' checked="checked" ';
             $filters[] = 'count by member, by role';
-            $sql = "SELECT  user_id, role, count(*) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, role ORDER BY user_id, role ".$limitsql;
+            $sql = wp4t_history_report_sql( 'countbyrole', $history_table, $speech_history_table, $where, $limitsql );
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
                 $index = wp4t_name_index($row->user_id);
                 if(empty($msort[$index]))
                     $msort[$index] = '';
-                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s %s</p>',wp4t_get_member_name($row->user_id),$row->role,$row->tally);
+                $msort[$index] .= sprintf('<p><strong>%s</strong>, %s %s (%s)</p>',wp4t_get_member_name($row->user_id),$row->role,$row->tally,$row->dates);
             }
             ksort($msort);
             $output .= implode("\n",$msort);
@@ -187,7 +257,7 @@ if(is_multisite()) {
             $countspeecheschecked = ' checked="checked" ';
             $filters[] = 'count speeches';
             $where .= " AND role = 'speaker' ";
-            $sql = "SELECT  user_id, role, count(*) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id, role ORDER BY tally DESC ".$limitsql;
+            $sql = wp4t_history_report_sql( 'countspeeches', $history_table, $speech_history_table, $where, $limitsql );
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
                 $output .= sprintf('<p><strong>%s</strong>, %s %s</p>',wp4t_get_member_name($row->user_id),$row->role,$row->tally);
@@ -197,7 +267,7 @@ if(is_multisite()) {
         {
             $mostactivechecked = ' checked="checked" ';
             $filters[] = 'count by most active';
-            $sql = "SELECT  user_id, count(role) as tally FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where GROUP BY user_id ORDER BY count(role) DESC".$limitsql;
+            $sql = wp4t_history_report_sql( 'mostactive', $history_table, $speech_history_table, $where, $limitsql );
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
                 $output .= sprintf('<p><strong>%s</strong>, %s total roles</p>',wp4t_get_member_name($row->user_id),$row->tally);
@@ -206,7 +276,7 @@ if(is_multisite()) {
         else {
             $latestchecked = ' checked="checked" ';
             $filters[] = '100 most recent';
-            $sql = "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id $where ORDER BY datetime DESC ".$limitsql;
+            $sql = wp4t_history_report_sql( 'latest', $history_table, $speech_history_table, $where, $limitsql );
             $results = $wpdb->get_results($sql);
             foreach($results as $row) {
                 $role = str_replace('role ','',$row->role);
@@ -215,7 +285,7 @@ if(is_multisite()) {
                     $output .= sprintf('<p class="speech_details">Title: <em>%s</em>, Path/Level: %s, Project: %s</p>',$row->title,$row->manual,$row->project);
             }    
         }
-    $since = (empty($_GET['since'])) ?  $date : sanitize_text_field($_GET['since']);
+    $since = $filter_state['since'];
     if(empty($_GET['rsvp_print'])) {
         printf("<p>Active filters: %s</p>",implode(', ',$filters));
         printf('<form method="get" action="%s">
@@ -248,8 +318,12 @@ function wp4toastmasters_history_edit() {
     if(isset($_POST['confirmed_delete'])) {
         foreach($_POST['confirmed_delete'] as $id)
         {
-            $wpdb->query("delete from $history_table WHERE id=$id");
-            $wpdb->query("delete from $speech_history_table WHERE history_id=$id");
+            $id = absint( $id );
+            if ( ! $id ) {
+                continue;
+            }
+            $wpdb->query( $wpdb->prepare( "DELETE FROM $history_table WHERE id=%d", $id ) );
+            $wpdb->query( $wpdb->prepare( "DELETE FROM $speech_history_table WHERE history_id=%d", $id ) );
             echo "<p>Deleted: $id</p>";
         }
     }
@@ -257,9 +331,10 @@ function wp4toastmasters_history_edit() {
         foreach($_POST['editor_assign'] as $key => $value)
         {
             $role = wp4t_clean_role($key);
-            $id = preg_replace('/[^0-9]/','',$key);
+            $id = absint( preg_replace('/[^0-9]/','',$key) );
+            $value = absint( $value );
             echo "<p>Updating $role record $id</p>";
-            $sql = "update $history_table SET user_id=$value WHERE id=$id";
+            $sql = $wpdb->prepare( "UPDATE $history_table SET user_id=%d WHERE id=%d", $value, $id );
             $wpdb->query($sql);
             if('Speaker' == $role)
             {
@@ -285,23 +360,29 @@ function wp4toastmasters_history_edit() {
         printf('<h3>Form Starts Here</h3><form method="post" action="%s">',admin_url('admin.php?page=wp4toastmasters_history_edit'));
         if(!empty($edit)) {
             foreach($edit as $history_id) {
-                foreach($edit as $history_id) {
-                    $row = $wpdb->get_row("select * from $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id WHERE id=$history_id");
-                    $role = $row->role;
-                    $field = '_role_'.str_replace(' ','_',$role).'_'.$row->id;
-                    $detailsform = '';
-                    if($role == 'Speaker') {
-                        $detailsform = wp4t_speaker_details_history($row->post_id, $field, $row, $row->id );
-                    }
-                    $wp4t_awe_user_dropdown = wp4t_awe_user_dropdown( $field, $row->user_id );
-                    printf('<div><h3>%s</h3><div> %s %s </div></div>',$role,$wp4t_awe_user_dropdown,$detailsform);
-                }    
+                $history_id = absint( $history_id );
+                $row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id WHERE id=%d", $history_id ) );
+                if ( ! $row ) {
+                    continue;
+                }
+                $role = $row->role;
+                $field = '_role_'.str_replace(' ','_',$role).'_'.$row->id;
+                $detailsform = '';
+                if($role == 'Speaker') {
+                    $detailsform = wp4t_speaker_details_history($row->post_id, $field, $row, $row->id );
+                }
+                $wp4t_awe_user_dropdown = wp4t_awe_user_dropdown( $field, $row->user_id );
+                printf('<div><h3>%s</h3><div> %s %s </div></div>',$role,$wp4t_awe_user_dropdown,$detailsform);
             }
         }
         if(!empty($delete)) {
             echo '<h3>'.__('Confirm: Delete These Records?','rsvpmaker-for-toastmasters').'</h3>';
             foreach($delete as $history_id) {
-                $row = $wpdb->get_row("select * from $history_table WHERE id=$history_id");
+                $history_id = absint( $history_id );
+                $row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $history_table WHERE id=%d", $history_id ) );
+                if ( ! $row ) {
+                    continue;
+                }
                 printf('<p><input type="checkbox" name="confirmed_delete[]" value="%s" checked="checked"> %s %s %s</p>',$row->id,wp4t_get_member_name($row->user_id),$row->role,$row->datetime);
             }
         }
@@ -327,44 +408,16 @@ function wp4toastmasters_history_edit() {
         $nodatechecked = '';
         $speakerchecked = '';
         $latestchecked = '';
-        if(isset($_GET['limit'])) {
-            $limit = sanitize_text_field($_GET['limit']);
-            if($limit == 'all')
-                $limitsql = '';
-            else
-               $limitsql = ' LIMIT 0,'.$limit; 
-        }
-        else
-            {
-                $limit = 100;
-                $limitsql = ' LIMIT 0,'.$limit; 
-            }
-        if(empty($_GET['all']))
-            {
-                $notallchecked = ' checked="checked" ';
-                $where .= " AND domain='".$_SERVER['SERVER_NAME']."' ";
-                $filters[] = 'for all member clubs on this website';
-            }
-        else
-        {
-            $allchecked = ' checked="checked" ';
-            $filters[] = 'for clubs on this website';
-        }
-        if($user_id) {
-            $where .= " AND user_id=" . $user_id. ' ';
-            $filters[] = 'filtered by user';
-        }
-        if(!empty($_GET['datefilter']) && !empty($_GET['since']))
-        {
-            $datechecked = ' checked="checked" ';
-            $date = sanitize_text_field($_GET['since']);
-            $where .= sprintf(" AND datetime > '%s' ",$date);
-            $filters[] = ' more recent than '.$date;
-        }
-        else {
-            $nodatechecked = ' checked="checked" ';
-            $filters[] = 'not filtered by date';
-        }
+        $filter_state = wp4t_history_filter_state( $where, $user_id, false );
+        $where        = $filter_state['where'];
+        $filters      = $filter_state['filters'];
+        $allchecked   = $filter_state['allchecked'];
+        $notallchecked = $filter_state['notallchecked'];
+        $datechecked  = $filter_state['datechecked'];
+        $nodatechecked = $filter_state['nodatechecked'];
+        $limit        = $filter_state['limit'];
+        $limitsql     = $filter_state['limitsql'];
+        $date         = $filter_state['date'];
         if(isset($_GET['type']) && ($_GET['type'] == 'speaker'))
         {
             $speakerchecked = ' checked="checked" ';
@@ -386,7 +439,7 @@ function wp4toastmasters_history_edit() {
     <div style="position: fixed; top: 50%; right: 0; width: 200px; padding: 50px; background-color: #fff; border-radius: 10px; ">
     <p>Pick records to edit or delete and click Select.</p>
     <button style="font-size: larger;">'.__('Select','rsvpmaker-for-toastmasters').'</button></div></form>';
-    $since = (empty($_GET['since'])) ?  $date : sanitize_text_field($_GET['since']);
+    $since = $filter_state['since'];
     printf("<p>Active filters: %s</p>",implode(', ',$filters));
     printf('<form method="get" action="%s">
     <p>%s</p>
@@ -404,29 +457,8 @@ function wp4toastmasters_history_edit() {
     <option value="all">%s</option>
     </select><br>
     <button>Filter</button>
-    </form>',admin_url('admin.php'), wp4t_awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since.'test', $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
+    </form>',admin_url('admin.php'), wp4t_awe_user_dropdown('user_id',$user_id, true, 'Overview'), $latestchecked, $speakerchecked, $notallchecked, $allchecked, $nodatechecked, $datechecked, $since, $limit, $limit, __('No limit','rsvpmaker-for-toastmasters') );
     echo $output;
-$examined = array();
-$sql = "SELECT * from $history_table order by datetime DESC LIMIT 0, 30";
-$results = $wpdb->get_results($sql);
-foreach($results as $row) {
-    if(in_array($row->id,$examined))
-        continue;
-    $examined[] = $row->id;
-    $sql = $wpdb->prepare("SELECT * FROM $history_table WHERE role=%s AND datetime=%s AND domain=%s AND id != %d",$row->role, $row->datetime,$row->domain,$row->ID);
-    $dres = $wpdb->get_results($sql);
-    if(sizeof($dres))
-    {
-    //printf('<p>%s %s %s %s %s</p>',$row->role, $row->rolecount, $row->user_id, $row->datetime, $row->domain);
-    foreach($dres as $drow) {
-        if(in_array($drow->id,$examined))
-            continue;
-        $examined[] = $drow->id;
-        //echo 'possible duplicate';
-        printf('<p><em>Duplicate?</em> %s %s %s %s %s</p>',$drow->role, $drow->rolecount, $drow->user_id, $drow->datetime, $drow->domain);
-    }
-    }
-}
 }
 function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $function, $manual = '',$project_key='',$title='',$intro='', $domain='', $role_count = 0, $was = 0) {
     //echo "<p> $user_id, $role, $timestamp, $post_id, $function, $manual, $project_key, $title, $intro, $domain, role count $role_count, $was </p>";	
@@ -469,6 +501,7 @@ function wp4t_record_history_to_table($user_id, $role, $timestamp, $post_id, $fu
             }
         }
         $existing_function = isset( $existing_meta['function'] ) ? $existing_meta['function'] : '';
+        // Preserve manual corrections from reconcile/editor flows when an automated resync runs.
         $manual_sources = array( 'toastmasters_reconcile', 'toastmasters_reconcile_manual_edit', 'wp4t_wp_ajax_tm_edit_detail' );
         if ( ( 'wp4t_update_user_role_archive' === $function ) && in_array( $existing_function, $manual_sources, true ) ) {
             return;
@@ -513,19 +546,75 @@ function wp4t_refresh_tm_history() {
     wp_suspend_cache_addition(true);
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
-    $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
 	$events_table = $wpdb->prefix . 'rsvpmaker_event';
+    // Backfill recent published agendas into history tables for reporting.
     $sql = "SELECT * FROM $wpdb->posts JOIN $events_table ON $wpdb->posts.ID=$events_table.event WHERE post_content LIKE '%wp:wp4toastmasters%' AND post_status='publish' AND date < NOW() ORDER BY date DESC LIMIT 0, 5";
     $results = $wpdb->get_results($sql);
     foreach($results as $row) {
-        echo $sql = "SELECT id FROM $history_table WHERE post_id=$row->ID";
+        $sql = "SELECT id FROM $history_table WHERE post_id=$row->ID";
         $found = $wpdb->get_var($sql);
         if(!$found) {
             wp4t_update_user_role_archive( $row->ID, $row->date );
         }
     }
+    wp4t_cleanup_old_role_block_agendas();
     wp_suspend_cache_addition(false);
     if(defined('RSVPMAKER_DEBUG')) error_log('wp4t_refresh_tm_history done');
+}
+
+function wp4t_cleanup_old_role_block_agendas() {
+    global $wpdb;
+
+    $events_table = $wpdb->prefix . 'rsvpmaker_event';
+    $months       = (int) apply_filters( 'wp4t_old_agenda_cleanup_months', 3 );
+    $batch_size   = (int) apply_filters( 'wp4t_old_agenda_cleanup_batch_size', 100 );
+    $months       = max( 1, $months );
+    $batch_size   = max( 1, $batch_size );
+
+    $cutoff = gmdate( 'Y-m-d H:i:s', strtotime( '-' . $months . ' months' ) );
+    $like   = '%' . $wpdb->esc_like( 'wp:wp4toastmasters/role' ) . '%';
+
+    // LEFT JOIN so posts with no events-table row are still caught via post_date fallback.
+    $sql = $wpdb->prepare(
+        "SELECT p.ID
+        FROM $wpdb->posts p
+        LEFT JOIN $events_table e ON p.ID = e.event
+        WHERE p.post_type = 'rsvpmaker'
+        AND p.post_status IN ('publish','private','draft','pending','trash')
+        AND COALESCE(e.date, p.post_date) < %s
+        AND p.post_content LIKE %s
+        ORDER BY COALESCE(e.date, p.post_date) ASC
+        LIMIT %d",
+        $cutoff,
+        $like,
+        $batch_size
+    );
+
+    $deleted = 0;
+
+    $restore_delete_hook = has_action( 'before_delete_post', 'rsvpmaker_delete_entries' );
+    if ( false !== $restore_delete_hook ) {
+        remove_action( 'before_delete_post', 'rsvpmaker_delete_entries', 10 );
+    }
+
+    // Loop until no qualifying posts remain (handles large backlogs).
+    do {
+        $post_ids = $wpdb->get_col( $sql );
+        foreach ( $post_ids as $post_id ) {
+            $post_id = (int) $post_id;
+            if ( $post_id && wp_delete_post( $post_id, true ) ) {
+                $deleted++;
+            }
+        }
+    } while ( count( $post_ids ) === $batch_size );
+
+    if ( false !== $restore_delete_hook ) {
+        add_action( 'before_delete_post', 'rsvpmaker_delete_entries', 10, 1 );
+    }
+
+    error_log( 'wp4t_cleanup_old_role_block_agendas deleted: ' . $deleted );
+
+    return $deleted;
 }
 function wp4t_history_query($where_or_array = '') {
     global $wpdb;
@@ -599,20 +688,27 @@ function wpt_get_history_by_meeting($date) {
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
     $domain = sanitize_text_field($_SERVER['SERVER_NAME']);
-    $results = $wpdb->get_results("SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id WHERE datetime='$date' AND domain='$domain' ");
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id = $speech_history_table.history_id WHERE datetime=%s AND domain=%s",
+            $date,
+            $domain
+        )
+    );
     return $results;
 }
 function wpt_update_history_by_id($history_id, $user_id, $post_id, $was=0) {
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
-    $role = $wpdb->get_var("select role from $history_table where id=$history_id");
+    $history_id = absint( $history_id );
+    $role = $wpdb->get_var( $wpdb->prepare( "SELECT role FROM $history_table WHERE id=%d", $history_id ) );
     if($user_id) {
         $metadata = serialize( wp4t_make_tm_roledata_array( 'toastmasters_reconcile_manual_edit' ) );
         $sql = $wpdb->prepare( "UPDATE $history_table SET user_id=%d, metadata=%s WHERE id=%d", $user_id, $metadata, $history_id );
         do_action('wpt_update_history_by_id',$user_id, $role, $post_id, $was);
     }
     else {
-        $sql = "DELETE FROM $history_table WHERE id=$history_id";
+        $sql = $wpdb->prepare( "DELETE FROM $history_table WHERE id=%d", $history_id );
         do_action('wpt_remove_history_by_id',$was, $role, $post_id);
     }
     $wpdb->query($sql);
@@ -621,7 +717,8 @@ function wpt_update_speech_history_by_id($history_id,$manual,$project_key,$title
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
-    $current_record = $wpdb->get_row("select * from $speech_history_table where history_id=$history_id");
+    $history_id = absint( $history_id );
+    $current_record = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $speech_history_table WHERE history_id=%d", $history_id ) );
     if(!$current_record)
         return;
     if(($current_record->manual != $manual) || ($current_record->project_key != $project_key) || ($current_record->title != $title)) {
@@ -664,7 +761,8 @@ function wpt_minutes_from_history($history_post_id = '') {
     $additions = '';
     $attended = $role_holder = $present = array();
     $content = '';
-    $sql = "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id=$speech_history_table.history_id where post_id=$history_post_id AND domain='".$_SERVER["SERVER_NAME"]."' ";
+    $domain = sanitize_text_field( $_SERVER['SERVER_NAME'] );
+    $sql = $wpdb->prepare( "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id=$speech_history_table.history_id WHERE post_id=%d AND domain=%s", $history_post_id, $domain );
     //$content .= '<p>'.$sql.'</p>';
     $history_records = $wpdb->get_results($sql);
     //$content .= '<p>$history_records '.var_export($history_records,true).'</p>';
@@ -799,7 +897,6 @@ function wp4t_tm_history_lastdid() {
     if($lastdid)
         return $lastdid;
     $history_table = $wpdb->base_prefix.'tm_history';
-    error_log("passed test SHOW TABLES LIKE '$history_table'; ");
 
     $m = [];
     $members = wp4t_get_club_members();
@@ -807,14 +904,14 @@ function wp4t_tm_history_lastdid() {
         $m[] = $member->ID;
     }
     $sql = "SELECT * FROM $history_table WHERE user_id IN (".implode(',',$m).") AND datetime > DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 YEAR) ORDER BY datetime";
-    error_log("Wrap this query with try / catch $sql, set show errors false");
     try {
-    $wpdb->show_errors(false);
-    $results = $wpdb->get_results($sql);
+        $wpdb->show_errors(false);
+        $results = $wpdb->get_results($sql);
+        $wpdb->show_errors(true);
     } catch (Exception $e) {
-        //handle unexplained glitch with this query in Playground (new installs also?)
-        error_log($e->getMessage());
+        // Some environments can throw on history-table reads before setup is complete.
         $results = [];
+        $wpdb->show_errors(true);
     }
     $output = '';
     $lastdid = array();
@@ -824,6 +921,5 @@ function wp4t_tm_history_lastdid() {
             $lastdid[$key] = $row->datetime;
     }
     set_transient('wp4t_tm_history_lastdid', $lastdid, DAY_IN_SECONDS);
-    $lastdid['lastdid'] = 'saved transient';
     return $lastdid;
 }

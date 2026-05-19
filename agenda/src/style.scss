@@ -4,6 +4,88 @@
  *
  * Replace them with your own styles or remove the file completely.
  */
+
+/* Keep sizing predictable without resetting every property (which can break icon rendering) */
+.agendawrapper,
+.agendawrapper *,
+.agendawrapper *:before,
+.agendawrapper *:after {
+	box-sizing: border-box !important;
+}
+
+/* Protect all buttons within agenda */
+.agendawrapper button,
+.agendawrapper input[type="button"],
+.agendawrapper input[type="submit"],
+.role-buttons button,
+button.agenda-tooltip {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	height: auto !important;
+	min-height: auto !important;
+	width: auto !important;
+	min-width: auto !important;
+	padding: 2px 6px !important;
+	margin: 2px !important;
+	font-size: 11px !important;
+	line-height: 1.5 !important;
+	border-radius: 2px !important;
+	border: thin solid #ccc !important;
+	background-color: #f0f0f0 !important;
+	color: #333 !important;
+	text-decoration: none !important;
+	white-space: nowrap !important;
+	flex-shrink: 0 !important;
+	cursor: pointer !important;
+	transition: background-color 0.2s ease !important;
+}
+
+.agendawrapper button:hover,
+.agendawrapper input[type="button"]:hover,
+.agendawrapper input[type="submit"]:hover,
+.role-buttons button:hover,
+button.agenda-tooltip:hover {
+	background-color: #e0e0e0 !important;
+}
+
+/* Keep action icons visible when themes (for example Elementor) target global svg */
+.agendawrapper .role-buttons svg,
+.agendawrapper button.agenda-tooltip svg,
+
+.agendawrapper .role-buttons .dashicon svg,
+.agendawrapper button.agenda-tooltip .dashicon svg {
+	display: block !important;
+	width: 18px !important;
+	height: 18px !important;
+	min-width: 18px !important;
+	min-height: 18px !important;
+	vertical-align: middle !important;
+	flex: 0 0 18px !important;
+	color: currentColor !important;
+	fill: currentColor !important;
+}
+
+.agendawrapper .role-buttons .dashicon,
+.agendawrapper button.agenda-tooltip .dashicon {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	line-height: 1 !important;
+}
+
+.agendawrapper .role-buttons > button.agenda-tooltip > svg,
+.agendawrapper .role-buttons > button > svg,
+.agendawrapper button.agenda-tooltip > svg,
+.agendawrapper button.agenda-tooltip svg path,
+.agendawrapper .role-buttons svg path {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	fill: currentColor !important;
+	stroke: none !important;
+	vector-effect: non-scaling-stroke !important;
+}
  
 .wp-block-create-block-toastmasters-dynamic-agenda {
 	background-color: #21759b;
@@ -45,8 +127,12 @@
 }
 
 .agendawrapper {
-	padding: 10px;
-	margin-bottom: 200px;
+	padding: 10px !important;
+	margin-bottom: 200px !important;
+}
+
+.agendawrapper * {
+	box-sizing: border-box !important;
 }
 .agendawrapper a {
 	color: blue;
@@ -55,38 +141,39 @@
 	color: blue;	
 }
 button.tmform {
-	display: inline-block;
-	margin-right: 15px;
-	margin-bottom: 5px;
-	padding: 10px;
-	vertical-align: middle;
+	display: inline-block !important;
+	margin-right: 15px !important;
+	margin-bottom: 5px !important;
+	padding: 10px !important;
+	vertical-align: middle !important;
+	background-color: #004165 !important;
+	color: #fff !important;
+	font-weight: bold !important;
+	border-radius: 10% !important;
+	border: thin solid #444165 !important;
+}
+
 .reorganize-role-controls {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 12px !important;
 }
 
 .reorganize-role-controls > * {
-	width: 100%;
-}
-	background-color: #004165;
-	color: #fff;
-	font-weight: bold;
-	border-radius: 10%;
-	border: thin solid #444165;
+	width: 100% !important;
 }
 
 button.tmsmallbutton {
-	display: inline-block;
-	margin-right: 5px;
-	margin-bottom: 2px;
-	padding: 3px;
-	vertical-align: middle;
-	background-color: #004165;
-	color: #fff;
-	font-weight: bold;
-	border-radius: 10%;
-	border: thin solid #444165;
+	display: inline-block !important;
+	margin-right: 5px !important;
+	margin-bottom: 2px !important;
+	padding: 3px !important;
+	vertical-align: middle !important;
+	background-color: #004165 !important;
+	color: #fff !important;
+	font-weight: bold !important;
+	border-radius: 10% !important;
+	border: thin solid #444165 !important;
 }
 
 .evaluation-link {
@@ -94,15 +181,20 @@ button.tmsmallbutton {
 	float: right;
 }
 .roleheader {
-	display: flex;
-	flex-basis: 0;
-	flex-grow: 1;
-	gap: 10px;
-	align-items: center;
+	display: flex !important;
+	flex-basis: 0 !important;
+	flex-grow: 1 !important;
+	gap: 10px !important;
+	align-items: center !important;
+	flex-wrap: wrap !important;
 }
 
 .role-buttons {
-	width: 160px;
+	display: flex !important;
+	flex-wrap: wrap !important;
+	gap: 8px !important;
+	align-items: center !important;
+	width: auto !important;
 }
 
 button.tmform:hover, button.tmsmallbutton:hover {
@@ -118,16 +210,16 @@ button.tmform:hover, button.tmsmallbutton:hover {
 }
 
 button.blockmove {
-	display: inline-block;
-	margin-right: 15px;
-	margin-bottom: 5px;
-	padding: 10px;
-	vertical-align: middle;
-	background-color: #7C2128;
-	color: #fff;
-	font-weight: bold;
-	border-radius: 10%;
-	border: thin solid #444165;
+	display: inline-block !important;
+	margin-right: 15px !important;
+	margin-bottom: 5px !important;
+	padding: 10px !important;
+	vertical-align: middle !important;
+	background-color: #7C2128 !important;
+	color: #fff !important;
+	font-weight: bold !important;
+	border-radius: 10% !important;
+	border: thin solid #444165 !important;
 }
 
 button.blockmove:hover {
@@ -136,57 +228,58 @@ button.blockmove:hover {
 }
 
 .tmflexrow {
-	display: flex;
-	gap: 20px;
-	align-items: top;
+	display: flex !important;
+	gap: 20px !important;
+	align-items: top !important;
 }
 .tmflex30 {
-	width: 30%;
+	width: 30% !important;
 }
 //.tmflex50 {
 	//width: 45%;
 //}
 .rb {
-	padding: 5px;
-	margin: 5px;
-	border: medium solid #aaa;
-	border-radius: 5px;
-	background-color: #fff;
-	color: #000;
+	padding: 5px !important;
+	margin: 5px !important;
+	border: medium solid #aaa !important;
+	border-radius: 5px !important;
+	background-color: #fff !important;
+	color: #000 !important;
 }
 .rb:hover {
-	border: medium solid #000;
+	border: medium solid #000 !important;
 }
 .radio-mode .components-flex {
-	flex-flow: row;
+	flex-flow: row !important;
 }
 #fixed-mode-control {
-	color: #000;
-	background-color: #fff;
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	padding: 15px;
-	background-color: #fff;
-	border-top: thick solid #7C2128;
-	width: 100%;
-	opacity: 1;
-	z-index: 200;
+	color: #000 !important;
+	background-color: #fff !important;
+	position: fixed !important;
+	bottom: 0 !important;
+	left: 0 !important;
+	padding: 15px !important;
+	border-top: thick solid #7C2128 !important;
+	width: 100% !important;
+	opacity: 1 !important;
+	z-index: 200 !important;
 }
 .mode-control-notification {
-	color: #fff;
-	font-size: 18px;
-	background-color: #7C2128;
-	width: 100%;
-	text-align: center;
+	color: #fff !important;
+	font-size: 18px !important;
+	background-color: #7C2128 !important;
+	width: 100% !important;
+	text-align: center !important;
+	padding: 10px !important;
+	margin: 0 !important;
 }
 
 .mode-centered {
 	/* Center content */
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center; /* Horizontally center */
-	align-items: center;    /* Vertically center */
+	display: flex !important;
+	flex-wrap: wrap !important;
+	justify-content: center !important; /* Horizontally center */
+	align-items: center !important;    /* Vertically center */
 }
 
 #fixed-mode-control .radio-mode {
@@ -202,59 +295,68 @@ font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 font-size: 14px;
 }	
 .agendawrapper h1 {
-	font-size: 26px;
-	font-weight: bold;
+	font-size: 26px !important;
+	font-weight: bold !important;
+	margin: 1em 0 0.5em 0 !important;
 }
 .agendawrapper h2 {
-	font-size: 22px;
-	font-weight: bold;
+	font-size: 22px !important;
+	font-weight: bold !important;
+	margin: 0.8em 0 0.4em 0 !important;
 }
 .agendawrapper h3 {
-	font-size: 18px;
-	font-weight: bold;
+	font-size: 18px !important;
+	font-weight: bold !important;
+	margin: 0.6em 0 0.3em 0 !important;
 }
 .agendawrapper h4 {
-	font-size: 16px;
-	font-weight: bold;
+	font-size: 16px !important;
+	font-weight: bold !important;
+	margin: 0.5em 0 0.25em 0 !important;
 }
 .agendawrapper input, .agendawrapper textarea, .agendawrapper select, .agendawrapper option, .components-select-control__input, .wp-core-ui select {
-color: #222;
-background-color: #fff;
+	color: #222 !important;
+	background-color: #fff !important;
+	padding: 4px 8px !important;
+	border: 1px solid #ccc !important;
+	border-radius: 3px !important;
+	font-size: 14px !important;
+	line-height: 1.5 !important;
 }
 
 .bigplus {
-	font-size:large;
-	font-weight: bolder;
+	font-size:large !important;
+	font-weight: bolder !important;
 }
 
 .reorgblock {
-	display: flex;
+	display: flex !important;
 }
 .reorgcolumn {
-	width: 50px;
+	width: 50px !important;
 	/*height: 100%;*/
-	display: flex;
-	align-self: stretch;
-	border-left: thin solid  #7C2128;
-	border-top: thin solid  #7C2128;
-	border-bottom: thin solid  #7C2128;
-	padding-left: 5px;
+	display: flex !important;
+	align-self: stretch !important;
+	border-left: thin solid  #7C2128 !important;
+	border-top: thin solid  #7C2128 !important;
+	border-bottom: thin solid  #7C2128 !important;
+	padding-left: 5px !important;
 }
 .reorganize {
-	flex: 1;
+	flex: 1 !important;
 	/*height: 100%;*/
 }
 
 .reorgupdown {
-	align-self: center;
+	align-self: center !important;
 }
 .block {
-	margin-bottom: 5px;
+	margin-bottom: 5px !important;
 }
 .insertroleform {
-	margin-top: 20px;
-	border: medium solid #7C2128;
-	padding: 5px;
+	margin-top: 20px !important;
+	border: medium solid #7C2128 !important;
+	padding: 5px !important;
 }
 
 .suggestion-preview {
@@ -272,16 +374,16 @@ background-color: #fff;
 	float: right;
 }
 .reorgdrag {
-	border: medium solid #7C2128;
-	padding: 5px;
-	margin-bottom: 5px;
+	border: medium solid #7C2128 !important;
+	padding: 5px !important;
+	margin-bottom: 5px !important;
 }
 .radio-inserter {
-	border: medium solid #7C2128;
-	border-radius: 5px;
-	padding: 10px;
-	margin-bottom: 10px;
-	flex-flow: row;
+	border: medium solid #7C2128 !important;
+	border-radius: 5px !important;
+	padding: 10px !important;
+	margin-bottom: 10px !important;
+	flex-flow: row !important;
 }
 .showtoggle {
 	width: 150px;
@@ -298,7 +400,7 @@ margin-right: -25px;
 min-height: 150px;
 }
 .template-schedule, .event-schedule {
-	display: flex;
+	display: flex !important;
 }
 .frequency, .days {
 	padding-right: 20px;
@@ -350,47 +452,58 @@ min-height: 150px;
 }
 
 .bottomButton {
-	display: inline-block;
-	min-width: 80px;
-	margin: 2px;
+	display: inline-block !important;
+	min-width: 80px !important;
+	margin: 2px !important;
+	padding: 8px 12px !important;
+	height: auto !important;
 }
 
 .blackButton {
-	background-color: #000;
-	color: #fff;
+	background-color: #000 !important;
+	color: #fff !important;
 }
 
 .agenda-tooltip {
-	position: relative;
-	display: inline-block;
+	position: relative !important;
+	display: inline-block !important;
 }
   
 .agenda-tooltip-text {
-	visibility: hidden;
-	width: 120px;
-	background-color: black;
-	color: #fff;
-	text-align: center;
-	padding: 5px 0;
-	border-radius: 6px;
-	position: absolute;
-	z-index: 1;
-	bottom: 125%;
-	left: 50%;
-	margin-left: -60px;
-	opacity: 0;
-	transition: opacity 0.3s;
+	visibility: hidden !important;
+	width: 120px !important;
+	background-color: black !important;
+	color: #fff !important;
+	text-align: center !important;
+	padding: 5px 0 !important;
+	border-radius: 6px !important;
+	position: absolute !important;
+	z-index: 1 !important;
+	bottom: 125% !important;
+	left: 50% !important;
+	margin-left: -60px !important;
+	opacity: 0 !important;
+	transition: opacity 0.3s !important;
 }
   
 .agenda-tooltip:hover .agenda-tooltip-text {
-	visibility: visible;
-	opacity: 1;
+	visibility: visible !important;
+	opacity: 1 !important;
 }
 
 .role-buttons button, button.agenda-tooltip  {
-	background-color: lightgray;
-	padding: 2px;
-	border-radius: 2px;
+	background-color: lightgray !important;
+	padding: 2px !important;
+	border-radius: 2px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	height: auto !important;
+	min-height: auto !important;
+	width: auto !important;
+	min-width: auto !important;
+	flex-shrink: 0 !important;
+	white-space: nowrap !important;
 }
 
 .reorganize-shell {
@@ -402,22 +515,22 @@ min-height: 150px;
 	--reorg-ink: #1f2430;
 	--reorg-accent: #0f5c78;
 	--reorg-accent-soft: #dbeef6;
-	display: block;
-	box-sizing: border-box;
-	width: 100%;
-	max-width: 1700px;
-	margin-left: auto;
-	margin-right: auto;
-	padding-left: 8px;
-	padding-right: 8px;
+	display: block !important;
+	box-sizing: border-box !important;
+	width: 100% !important;
+	max-width: 1700px !important;
+	margin-left: auto !important;
+	margin-right: auto !important;
+	padding-left: 8px !important;
+	padding-right: 8px !important;
 }
 
 .reorganize-shell__header {
-	display: flex;
-	justify-content: space-between;
-	gap: 24px;
-	align-items: flex-start;
-	margin-bottom: 24px;
+	display: flex !important;
+	justify-content: space-between !important;
+	gap: 24px !important;
+	align-items: flex-start !important;
+	margin-bottom: 24px !important;
 }
 
 .reorganize-shell__mode-control {
@@ -426,10 +539,10 @@ min-height: 150px;
 }
 
 .reorganize-editor-shell {
-	display: grid;
-	grid-template-columns: minmax(0, 2.35fr) minmax(260px, 0.8fr);
-	gap: 24px;
-	align-items: start;
+	display: grid !important;
+	grid-template-columns: minmax(0, 2.35fr) minmax(260px, 0.8fr) !important;
+	gap: 24px !important;
+	align-items: start !important;
 }
 
 .reorganize-inline-inspector {
@@ -443,21 +556,21 @@ min-height: 150px;
 }
 
 .reorganize-editor-canvas {
-	background: linear-gradient(180deg, #f8efe2 0%, #f7f4ed 100%);
-	border: 1px solid var(--reorg-border);
-	border-radius: 18px;
-	padding: 18px;
-	box-shadow: 0 18px 45px rgba(31, 36, 48, 0.08);
+	background: linear-gradient(180deg, #f8efe2 0%, #f7f4ed 100%) !important;
+	border: 1px solid var(--reorg-border) !important;
+	border-radius: 18px !important;
+	padding: 18px !important;
+	box-shadow: 0 18px 45px rgba(31, 36, 48, 0.08) !important;
 }
 
 .reorganize-editor-sidebar {
-	position: sticky;
-	top: 18px;
-	background: var(--reorg-surface-strong);
-	border: 1px solid var(--reorg-border);
-	border-radius: 18px;
-	padding: 18px;
-	box-shadow: 0 14px 38px rgba(31, 36, 48, 0.08);
+	position: sticky !important;
+	top: 18px !important;
+	background: var(--reorg-surface-strong) !important;
+	border: 1px solid var(--reorg-border) !important;
+	border-radius: 18px !important;
+	padding: 18px !important;
+	box-shadow: 0 14px 38px rgba(31, 36, 48, 0.08) !important;
 }
 
 .reorganize-editor-sidebar select {
@@ -754,30 +867,30 @@ min-height: 150px;
 @media screen and (max-width: 1000px) {
 	.reorganize-shell__header,
 	.reorganize-editor-shell {
-		display: block;
+		display: block !important;
 	}
 
 	.reorganize-shell__mode-control,
 	.reorganize-editor-sidebar {
-		margin-top: 20px;
-		position: static;
+		margin-top: 20px !important;
+		position: static !important;
 	}
 
 	.reorganize-shell {
-		padding-left: 4px;
-		padding-right: 4px;
+		padding-left: 4px !important;
+		padding-right: 4px !important;
 	}
 }
 
 @media screen and (max-width: 1280px) {
 	.reorganize-shell__header,
 	.reorganize-editor-shell {
-		display: block;
+		display: block !important;
 	}
 
 	.reorganize-shell__mode-control,
 	.reorganize-editor-sidebar {
-		margin-top: 20px;
-		position: static;
+		margin-top: 20px !important;
+		position: static !important;
 	}
 }

@@ -1,7 +1,13 @@
 <?php
-function wp4t_block_theme_menu() {
+function wp4t_block_theme_menu($owner = 0) {
 	global $wpdb, $current_user;
-	$menu_id = $wpdb->get_var("SELECT ID from $wpdb->posts WHERE post_type='wp_navigation' and post_status='publish' ORDER BY ID DESC");
+	if(!$owner)
+		$owner = $current_user->ID;
+	if ( function_exists( 'rsvptoast_get_primary_navigation_id' ) ) {
+		$menu_id = (int) rsvptoast_get_primary_navigation_id();
+	} else {
+		$menu_id = 0;
+	}
 	if(!$menu_id)
 	{
 	$link_format = '<!-- wp:navigation-link {"label":"%s","type":"page","id":%d,"url":"%s","kind":"post-type","isTopLevelLink":true} /-->'."\n\n";
@@ -27,7 +33,7 @@ function wp4t_block_theme_menu() {
 			'post_title'   => 'Calendar',
 			'post_status'  => 'publish',
 			'post_type'    => 'page',
-			'post_author'  => $current_user->ID,
+			'post_author'  => $owner,
 			'ping_status'  => 'closed',
 		);
 		$calendar_id = wp_insert_post( $post );
@@ -44,23 +50,26 @@ function wp4t_block_theme_menu() {
 			'post_title'   => 'Members',
 			'post_status'  => 'publish',
 			'post_type'    => 'page',
-			'post_author'  => $current_user->ID,
+			'post_author'  => $owner,
 			'ping_status'  => 'closed',
 		);
 		$members_id = wp_insert_post( $post );
 		$menu['post_content'] .= sprintf($link_format,__('Members','rsvpmaker-for-toastmasters'),$members_id,get_permalink($members_id));
 	}
 	$menu['post_content'] .= '<!-- wp:navigation-link {"label":"Dashboard","url":"'.admin_url().'","kind":"custom","isTopLevelLink":true} /-->';
-	$menu['post_title'] = 'Toastmasters Navigation';
+	$menu['post_title'] = 'Primary Menu';
+	$menu['post_name'] = 'primary-menu';
 	$menu['post_status'] = 'publish';
 	$menu['post_type'] = 'wp_navigation';
-	$menu['post_author'] = $current_user->ID;
+	$menu['post_author'] = $owner;
 	$menu_id = wp_insert_post($menu);
+	if ( $menu_id && ! is_wp_error( $menu_id ) && function_exists( 'rsvptoast_set_primary_navigation_id' ) ) {
+		rsvptoast_set_primary_navigation_id( (int) $menu_id );
+	}
 	}
 return $menu_id;
 }
-function check_toastmasters_logo_header() {
-	global $wpdb;
+function check_toastmasters_logo_header($owner = 0) {
 $logo_id = get_option('site_logo');
 $tag = '';
 if($logo_id) {
@@ -71,8 +80,12 @@ if(!$logo_id || !strpos($tag,$_SERVER['SERVER_NAME'])) {
 	$logo_id = media_sideload_image('https://toastmost.org/tmbranding/toastmasters-75.png', 0, 'copy of Toastmasters logo','id' );
 	update_option('site_logo',$logo_id);
 }
-$nav_menu_id = $wpdb->get_var("select ID from $wpdb->posts WHERE post_type='wp_navigation' AND post_status='publish' ");
+	if ( function_exists( 'rsvptoast_get_primary_navigation_id' ) ) {
+		$nav_menu_id = (int) rsvptoast_get_primary_navigation_id();
+	} else {
+		$nav_menu_id = 0;
+	}
 if(!$nav_menu_id)
-	$nav_menu_id = wp4t_block_theme_menu();
+	$nav_menu_id = wp4t_block_theme_menu($owner);
 }
 add_action('admin_init','check_toastmasters_logo_header');

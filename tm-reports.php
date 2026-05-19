@@ -47,6 +47,7 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), __( 'Review & Approve Member Applications', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_member_application_approval', 'wp4t_member_application_approval' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), __( 'Member Application & Dues Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_member_application_settings', 'wp4t_member_application_settings' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Role Descriptions Setup', 'rsvpmaker-for-toastmasters' ), __( 'Role Descriptions Setup', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wpt_role_descriptions', 'wpt_role_descriptions' );
+	add_submenu_page( 'toastmasters_admin_screen', __( 'Reminder Email Log', 'rsvpmaker-for-toastmasters' ), __( 'Reminder Email Log', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_reminder_email_log', 'wp4t_reminder_log_admin_screen' );
 
 	$slug = 'toastmost_import_export';if(in_array($slug, $menu_choices) || strpos($_SERVER['REQUEST_URI'],$slug) !== false  || strpos($_SERVER['REQUEST_URI'],'toastmost_') !== false)
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmost_import_export', 'toastmost_import_export' );

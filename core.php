@@ -31,25 +31,25 @@ function wp4t_minutes_post_type() {
 
         'not_found_in_trash'    => __( 'No minutes found in Trash.', 'rsvpmaker-for-toastmasters' ),
 
-        'featured_image'        => _x( 'Minutes Cover Image', 'Overrides the “Featured Image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'featured_image'        => _x( 'Minutes Cover Image', 'Overrides the ΓÇ£Featured ImageΓÇ¥ phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
 
-        'set_featured_image'    => _x( 'Set cover image', 'Overrides the “Set featured image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'set_featured_image'    => _x( 'Set cover image', 'Overrides the ΓÇ£Set featured imageΓÇ¥ phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
 
-        'remove_featured_image' => _x( 'Remove cover image', 'Overrides the “Remove featured image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'remove_featured_image' => _x( 'Remove cover image', 'Overrides the ΓÇ£Remove featured imageΓÇ¥ phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
 
-        'use_featured_image'    => _x( 'Use as cover image', 'Overrides the “Use as featured image” phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
+        'use_featured_image'    => _x( 'Use as cover image', 'Overrides the ΓÇ£Use as featured imageΓÇ¥ phrase for this post type. Added in 4.3', 'rsvpmaker-for-toastmasters' ),
 
-        'archives'              => _x( 'Minutes archives', 'The post type archive label used in nav menus. Default “Post Archives”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'archives'              => _x( 'Minutes archives', 'The post type archive label used in nav menus. Default ΓÇ£Post ArchivesΓÇ¥. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
 
-        'insert_into_item'      => _x( 'Insert into minutes item', 'Overrides the “Insert into post”/”Insert into page” phrase (used when inserting media into a post). Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'insert_into_item'      => _x( 'Insert into minutes item', 'Overrides the ΓÇ£Insert into postΓÇ¥/ΓÇ¥Insert into pageΓÇ¥ phrase (used when inserting media into a post). Added in 4.4', 'rsvpmaker-for-toastmasters' ),
 
-        'uploaded_to_this_item' => _x( 'Uploaded to this minutes item', 'Overrides the “Uploaded to this post”/”Uploaded to this page” phrase (used when viewing media attached to a post). Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'uploaded_to_this_item' => _x( 'Uploaded to this minutes item', 'Overrides the ΓÇ£Uploaded to this postΓÇ¥/ΓÇ¥Uploaded to this pageΓÇ¥ phrase (used when viewing media attached to a post). Added in 4.4', 'rsvpmaker-for-toastmasters' ),
 
-        'filter_items_list'     => _x( 'Filter minutes list', 'Screen reader text for the filter links heading on the post type listing screen. Default “Filter posts list”/”Filter pages list”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'filter_items_list'     => _x( 'Filter minutes list', 'Screen reader text for the filter links heading on the post type listing screen. Default ΓÇ£Filter posts listΓÇ¥/ΓÇ¥Filter pages listΓÇ¥. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
 
-        'items_list_navigation' => _x( 'Minutes list navigation', 'Screen reader text for the pagination heading on the post type listing screen. Default “Posts list navigation”/”Pages list navigation”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'items_list_navigation' => _x( 'Minutes list navigation', 'Screen reader text for the pagination heading on the post type listing screen. Default ΓÇ£Posts list navigationΓÇ¥/ΓÇ¥Pages list navigationΓÇ¥. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
 
-        'items_list'            => _x( 'Minutes list', 'Screen reader text for the items list heading on the post type listing screen. Default “Posts list”/”Pages list”. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
+        'items_list'            => _x( 'Minutes list', 'Screen reader text for the items list heading on the post type listing screen. Default ΓÇ£Posts listΓÇ¥/ΓÇ¥Pages listΓÇ¥. Added in 4.4', 'rsvpmaker-for-toastmasters' ),
 
     );     
 
@@ -8807,6 +8807,9 @@ if(isset($_REQUEST['e'])) {
 
 	$user = get_user_by('email',$email);
 
+	if(!$user)
+		return '<p>Security error.</p>';
+
 	$user_id = $user->ID;	
 
 }
@@ -13223,7 +13226,7 @@ function toastmasters_planner() {
 
 					$o .= sprintf( '<option value="%s">%s (currently assigned)</option>', $assigned_role, wp4t_clean_role( $assigned_role ) );
 
-				$prompt = '✓';//assigned, no specific prompt
+				$prompt = 'âœ“';//assigned, no specific prompt
 
 				if ( strpos( $assigned_role, 'Speaker' ) && ! get_post_meta( $date->ID, '_project' . $assigned_role, true ) ) {
 
@@ -15098,18 +15101,19 @@ function toastmasters_datebox_message() {
 function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 	global $wpdb, $rsvp_options;
+	$rsvp_options['rsvp_on'] = 1;
 
 	$sql = "SELECT ID FROM `$wpdb->posts` WHERE post_type='rsvpmaker_template' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish' ORDER BY `ID` DESC ";
 
 	if ( $id = $wpdb->get_var( $sql ) ) {
+
+		wp4t_contest_templates ();
 
 		return;
 
 	}
 
 	$default = '<!-- wp:wp4toastmasters/help /-->
-
-
 
 <!-- wp:wp4toastmasters/signupnote -->
 
@@ -15121,7 +15125,7 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 <!-- wp:wp4toastmasters/agendaprivacy -->
 
-<hr class="wp-block-wp4toastmasters-agendaprivacy" style="display:none"/>
+<hr class="wp-block-wp4toastmasters-agendaprivacy"/>
 
 <!-- /wp:wp4toastmasters/agendaprivacy -->
 
@@ -15217,6 +15221,8 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 		'post_title'   => 'Toastmasters Meeting',
 
+		'post_excerpt' => 'Guests are always welcome at our club. Our mission is to provide a supportive, positive environment for members to develop communication and leadership skills, leading to greater self-confidence and personal growth.',
+
 		'post_status'  => 'publish',
 
 		'post_type'    => 'rsvpmaker_template',
@@ -15291,8 +15297,6 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 		rsvpmaker_auto_renew_project($templateID,false);
 
-		$rsvp_options['rsvp_on'] = 1;
-
 		update_option('RSVPMAKER_Options',$rsvp_options);
 
 	}
@@ -15302,16 +15306,36 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 }
 
 function wp4t_contest_templates () {
-
+error_log('start wp4t_contest_templates');
 $v = 4;
+$contest_template_titles = array(
+	'Contest',
+	'International Speech Contest',
+	'Humorous Speech Contest',
+	'Table Topics Contest',
+	'Evaluation Contest',
+	'Tall Tales Contest',
+);
 
-$version = (int) get_option('wpt_contest_templates_version');
+$version_option = get_option('wpt_contest_templates_version', false);
+$version = is_numeric($version_option) ? (int) $version_option : 0;
 
-if($version >= $v)
+global $wpdb;
 
+$placeholders = implode(',', array_fill(0, count($contest_template_titles), '%s'));
+$contest_count = (int) $wpdb->get_var(
+	$wpdb->prepare(
+		"SELECT COUNT(*) FROM $wpdb->posts WHERE post_type='rsvpmaker_template' AND post_status='publish' AND post_title IN ($placeholders)",
+		$contest_template_titles
+	)
+);
+
+if($version >= $v && $contest_count > 0) {
+	error_log('abort wp4t_contest_templates '.$version);
 	return $version;
+}
 
-global $wpdb, $current_user;
+global $current_user;
 
 $contest_templates['Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
@@ -15323,7 +15347,7 @@ $contest_templates['Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
 <!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces the Contest Master.</p>
+<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
 
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -15373,7 +15397,7 @@ $contest_templates['International Speech Contest'] = '<!-- wp:wp4toastmasters/he
 
 <!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces the Contest Master.</p>
+<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
 
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -15415,7 +15439,7 @@ $contest_templates['Humorous Speech Contest'] = '<!-- wp:wp4toastmasters/help /-
 
 <!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces the Contest Master.</p>
+<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
 
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -15457,7 +15481,7 @@ $contest_templates['Tall Tales Speech Contest'] = '<!-- wp:wp4toastmasters/help 
 
 <!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces the Contest Master.</p>
+<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
 
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -15499,7 +15523,7 @@ $contest_templates['Table Topics Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
 <!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces the Contest Master.</p>
+<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
 
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -15541,7 +15565,7 @@ $contest_templates['Evaluation Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
 <!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces the Contest Master.</p>
+<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
 
 <!-- /wp:wp4toastmasters/agendanoterich2 -->
 
@@ -15616,6 +15640,8 @@ foreach($contest_templates as $title => $default) {
 	);
 
 	$templateID = wp_insert_post( $post );
+
+	error_log('inserted template '.$title.': '.$templateID);
 
 	if ( $parent_id = wp_is_post_revision( $templateID ) ) {
 
@@ -18119,8 +18145,6 @@ function get_toast_templates() {
 
 }
 
-// make lectern default to Toastmasters branding
-
 function rsvptoast_pages( $user_id ) {
 
 	$pages = get_pages();
@@ -18131,13 +18155,15 @@ function rsvptoast_pages( $user_id ) {
 
 	}
 
+	if(in_array('Calendar', $titles) && in_array('Members', $titles) && in_array('Contact Us', $titles)) {
+
+		return;//essential pages already exist, so skip
+
+	}
+
 	$post = array(
 
-		'post_content' => '<!-- wp:shortcode -->
-
-		[awesome_members comment="This placeholder code displays the member listing"]
-
-		<!-- /wp:shortcode -->',
+		'post_content' => wptm_register_member_listing_markup(),
 
 		'post_name'    => 'members',
 
@@ -18207,186 +18233,381 @@ function rsvptoast_pages( $user_id ) {
 
 	}
 
-	$name    = 'Primary Menu';
+	$name            = 'Primary Menu';
+	$navigation_slug = 'primary-menu';
 
-	$menu_id = wp_create_nav_menu( $name );
+	if ( ! post_type_exists( 'wp_navigation' ) ) {
+		return;
+	}
 
-	$menu    = get_term_by( 'name', $name, 'nav_menu' );
+	$navigation_post_id = rsvptoast_get_primary_navigation_id();
 
-	$blog_id = get_option( 'page_for_posts' );
+	if ( $navigation_post_id ) {
+		rsvptoast_set_header_navigation_ref( $navigation_post_id );
+		return;
+	}
 
-	$home_id = get_option( 'page_on_front' );
+	$blog_id      = (int) get_option( 'page_for_posts' );
+	$home_id      = (int) get_option( 'page_on_front' );
+	$calendar_obj = get_page_by_path( 'calendar' );
+	$members_obj  = get_page_by_path( 'members' );
+	$contact_obj  = get_page_by_path( 'contact-us' );
+
+	$calendar_id = $calendar_obj ? (int) $calendar_obj->ID : 0;
+	$members_id  = $members_obj ? (int) $members_obj->ID : 0;
+	$contact_id  = $contact_obj ? (int) $contact_obj->ID : 0;
+
+	$blocks = array();
 
 	if ( $home_id ) {
-
-		$args = array(
-
-			'menu-item-object-id' => $home_id,
-
-			'menu-item-title'     => __( 'Welcome' ),
-
-			'menu-item-classes'   => 'welcome',
-
-			'menu-item-object'    => 'page',
-
-			'menu-item-type'      => 'post_type',
-
-			'menu-item-status'    => 'publish',
-
+		$blocks[] = serialize_block(
+			array(
+				'blockName'    => 'core/navigation-link',
+				'attrs'        => array(
+					'label'     => __( 'Welcome' ),
+					'type'      => 'page',
+					'id'        => $home_id,
+					'kind'      => 'post-type',
+					'className' => 'welcome',
+				),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			)
 		);
-
 	} else {
-
-		$args = array(
-
-			'menu-item-title'   => __( 'Welcome' ),
-
-			'menu-item-classes' => 'welcome',
-
-			'menu-item-url'     => '/',
-
-			'menu-item-status'  => 'publish',
-
+		$blocks[] = serialize_block(
+			array(
+				'blockName'    => 'core/navigation-link',
+				'attrs'        => array(
+					'label'     => __( 'Welcome' ),
+					'type'      => 'custom',
+					'url'       => home_url( '/' ),
+					'kind'      => 'custom',
+					'className' => 'welcome',
+				),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			)
 		);
-
 	}
-
-	wp_update_nav_menu_item( $menu->term_id, 0, $args );
 
 	if ( $blog_id ) {
-
-		wp_update_nav_menu_item(
-
-			$menu->term_id,
-
-			0,
-
+		$blocks[] = serialize_block(
 			array(
-
-				'menu-item-object-id' => $blog_id,
-
-				'menu-item-title'     => __( 'Blog' ),
-
-				'menu-item-classes'   => 'blog',
-
-				'menu-item-object'    => 'page',
-
-				'menu-item-type'      => 'post_type',
-
-				'menu-item-status'    => 'publish',
-
+				'blockName'    => 'core/navigation-link',
+				'attrs'        => array(
+					'label'     => __( 'Blog' ),
+					'type'      => 'page',
+					'id'        => $blog_id,
+					'kind'      => 'post-type',
+					'className' => 'blog',
+				),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
 			)
-
 		);
-
 	}
 
-	wp_update_nav_menu_item(
+	if ( $calendar_id ) {
+		$blocks[] = serialize_block(
+			array(
+				'blockName'    => 'core/navigation-link',
+				'attrs'        => array(
+					'label'     => __( 'Calendar' ),
+					'type'      => 'page',
+					'id'        => $calendar_id,
+					'kind'      => 'post-type',
+					'className' => 'calendar',
+				),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			)
+		);
+	}
 
-		$menu->term_id,
+	if ( $members_id ) {
+		$blocks[] = serialize_block(
+			array(
+				'blockName'    => 'core/navigation-link',
+				'attrs'        => array(
+					'label'     => __( 'Members' ),
+					'type'      => 'page',
+					'id'        => $members_id,
+					'kind'      => 'post-type',
+					'className' => 'members',
+				),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			)
+		);
+	}
 
-		0,
+	if ( $contact_id ) {
+		$blocks[] = serialize_block(
+			array(
+				'blockName'    => 'core/navigation-link',
+				'attrs'        => array(
+					'label'     => __( 'Contact Us' ),
+					'type'      => 'page',
+					'id'        => $contact_id,
+					'kind'      => 'post-type',
+					'className' => 'contact-us',
+				),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			)
+		);
+	}
 
+	$blocks[] = serialize_block(
 		array(
-
-			'menu-item-object-id' => $calendar,
-
-			'menu-item-title'     => __( 'Calendar' ),
-
-			'menu-item-classes'   => 'calendar',
-
-			'menu-item-object'    => 'page',
-
-			'menu-item-type'      => 'post_type',
-
-			'menu-item-status'    => 'publish',
-
+			'blockName'    => 'core/navigation-link',
+			'attrs'        => array(
+				'label'     => __( 'Login' ),
+				'type'      => 'custom',
+				'url'       => '#tmlogin',
+				'kind'      => 'custom',
+				'className' => 'tm',
+			),
+			'innerBlocks'  => array(),
+			'innerHTML'    => '',
+			'innerContent' => array(),
 		)
-
 	);
 
-	wp_update_nav_menu_item(
-
-		$menu->term_id,
-
-		0,
-
+	$navigation_post_id = wp_insert_post(
 		array(
-
-			'menu-item-object-id' => $members,
-
-			'menu-item-title'     => __( 'Members' ),
-
-			'menu-item-classes'   => 'members',
-
-			'menu-item-object'    => 'page',
-
-			'menu-item-type'      => 'post_type',
-
-			'menu-item-status'    => 'publish',
-
+			'post_title'   => $name,
+			'post_name'    => $navigation_slug,
+			'post_status'  => 'publish',
+			'post_type'    => 'wp_navigation',
+			'post_author'  => $user_id,
+			'post_content' => implode( "\n", $blocks ),
 		)
-
 	);
 
-	wp_update_nav_menu_item(
+	if ( $navigation_post_id && ! is_wp_error( $navigation_post_id ) ) {
+		rsvptoast_set_primary_navigation_id( (int) $navigation_post_id );
+		rsvptoast_set_header_navigation_ref( (int) $navigation_post_id );
+	}
 
-		$menu->term_id,
 
-		0,
+}
 
+function rsvptoast_set_primary_navigation_id( $navigation_post_id ) {
+
+	$navigation_post_id = (int) $navigation_post_id;
+
+	if ( $navigation_post_id > 0 ) {
+		update_option( 'rsvptoast_primary_navigation_id', $navigation_post_id );
+	}
+}
+
+function rsvptoast_navigation_has_page_list_block( $navigation_post ) {
+
+	if ( empty( $navigation_post ) || empty( $navigation_post->post_content ) ) {
+		return false;
+	}
+
+	if ( function_exists( 'has_block' ) ) {
+		if ( has_block( 'core/page-list', $navigation_post ) || has_block( 'core/page-list-item', $navigation_post ) ) {
+			return true;
+		}
+	}
+
+	$post_content = (string) $navigation_post->post_content;
+
+	if ( false !== strpos( $post_content, '<!-- wp:page-list' ) || false !== strpos( $post_content, '<!-- wp:core/page-list' ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+function rsvptoast_navigation_has_explicit_links( $navigation_post ) {
+
+	if ( empty( $navigation_post ) || empty( $navigation_post->post_content ) ) {
+		return false;
+	}
+
+	if ( function_exists( 'has_block' ) && has_block( 'core/navigation-link', $navigation_post ) ) {
+		return true;
+	}
+
+	$post_content = (string) $navigation_post->post_content;
+
+	if ( false !== strpos( $post_content, '<!-- wp:navigation-link' ) || false !== strpos( $post_content, '<!-- wp:core/navigation-link' ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+function rsvptoast_is_valid_primary_navigation( $navigation_post ) {
+
+	if ( empty( $navigation_post ) || empty( $navigation_post->post_content ) ) {
+		return false;
+	}
+
+	if ( rsvptoast_navigation_has_page_list_block( $navigation_post ) ) {
+		return false;
+	}
+
+	if ( ! rsvptoast_navigation_has_explicit_links( $navigation_post ) ) {
+		return false;
+	}
+
+	return true;
+}
+
+function rsvptoast_get_primary_navigation_id() {
+
+	if ( ! post_type_exists( 'wp_navigation' ) ) {
+		return 0;
+	}
+
+	$stored_navigation_id = (int) get_option( 'rsvptoast_primary_navigation_id' );
+
+	if ( $stored_navigation_id > 0 ) {
+		$stored_navigation = get_post( $stored_navigation_id );
+
+		if ( $stored_navigation && 'wp_navigation' === $stored_navigation->post_type && 'trash' !== $stored_navigation->post_status && rsvptoast_is_valid_primary_navigation( $stored_navigation ) ) {
+			return $stored_navigation_id;
+		}
+	}
+
+	$navigation_slug     = 'primary-menu';
+	$existing_navigation = get_page_by_path( $navigation_slug, OBJECT, 'wp_navigation' );
+
+	if ( $existing_navigation && ! empty( $existing_navigation->ID ) && rsvptoast_is_valid_primary_navigation( $existing_navigation ) ) {
+		$navigation_post_id = (int) $existing_navigation->ID;
+		rsvptoast_set_primary_navigation_id( $navigation_post_id );
+		return $navigation_post_id;
+	}
+
+	$published_navigation = get_posts(
 		array(
-
-			'menu-item-object-id' => $contact,
-
-			'menu-item-title'     => __( 'Contact Us' ),
-
-			'menu-item-classes'   => 'contact-us',
-
-			'menu-item-object'    => 'page',
-
-			'menu-item-type'      => 'post_type',
-
-			'menu-item-status'    => 'publish',
-
+			'post_type'      => 'wp_navigation',
+			'post_status'    => 'publish',
+			'posts_per_page' => 20,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+			'fields'         => 'ids',
 		)
-
 	);
 
-	wp_update_nav_menu_item(
+	if ( ! empty( $published_navigation ) ) {
+		foreach ( $published_navigation as $navigation_candidate_id ) {
+			$navigation_post_id = (int) $navigation_candidate_id;
 
-		$menu->term_id,
+			if ( $navigation_post_id <= 0 ) {
+				continue;
+			}
 
-		0,
+			$navigation_candidate = get_post( $navigation_post_id );
 
-		array(
+			if ( ! $navigation_candidate || ! rsvptoast_is_valid_primary_navigation( $navigation_candidate ) ) {
+				continue;
+			}
 
-			'menu-item-title'   => __( 'Login' ),
+			rsvptoast_set_primary_navigation_id( $navigation_post_id );
+			return $navigation_post_id;
+		}
+	}
 
-			'menu-item-classes' => 'tm',
+	return 0;
+}
 
-			'menu-item-url'     => '#tmlogin',
+function rsvptoast_set_header_navigation_ref( $navigation_post_id ) {
 
-			'menu-item-status'  => 'publish',
+	if ( ! $navigation_post_id || ! post_type_exists( 'wp_template_part' ) ) {
+		return;
+	}
 
-		)
+	$header_parts = array();
 
-	);
+	if ( taxonomy_exists( 'wp_template_part_area' ) ) {
+		$header_parts = get_posts(
+			array(
+				'post_type'      => 'wp_template_part',
+				'post_status'    => array( 'publish', 'draft' ),
+				'posts_per_page' => 20,
+				'tax_query'      => array(
+					array(
+						'taxonomy' => 'wp_template_part_area',
+						'field'    => 'slug',
+						'terms'    => array( 'header' ),
+					),
+				),
+			)
+		);
+	}
 
-	// you add as many items as you need with wp_update_nav_menu_item()
+	if ( empty( $header_parts ) ) {
+		$header_parts = get_posts(
+			array(
+				'post_type'      => 'wp_template_part',
+				'post_status'    => array( 'publish', 'draft' ),
+				'posts_per_page' => 20,
+				's'              => 'header',
+			)
+		);
+	}
 
-	// then you set the wanted theme  location
+	if ( empty( $header_parts ) ) {
+		return;
+	}
 
-	$locations                 = get_theme_mod( 'nav_menu_locations' );
+	foreach ( $header_parts as $header_part ) {
+		$blocks = parse_blocks( $header_part->post_content );
 
-	$locations['primary-menu'] = $menu->term_id;
+		if ( empty( $blocks ) ) {
+			continue;
+		}
 
-	$locations['primary']      = $menu->term_id;
+		$updated = false;
+		rsvptoast_set_navigation_ref_recursive( $blocks, $navigation_post_id, $updated );
 
-	$locations['menu-1']       = $menu->term_id;
+		if ( ! $updated ) {
+			continue;
+		}
 
-	set_theme_mod( 'nav_menu_locations', $locations );
+		wp_update_post(
+			array(
+				'ID'           => $header_part->ID,
+				'post_content' => serialize_blocks( $blocks ),
+			)
+		);
 
+		return;
+	}
+}
+
+function rsvptoast_set_navigation_ref_recursive( &$blocks, $navigation_post_id, &$updated ) {
+
+	foreach ( $blocks as &$block ) {
+		if ( $updated ) {
+			return;
+		}
+
+		if ( isset( $block['blockName'] ) && 'core/navigation' === $block['blockName'] ) {
+			if ( empty( $block['attrs']['ref'] ) ) {
+				$block['attrs']['ref'] = (int) $navigation_post_id;
+				$updated               = true;
+			}
+			return;
+		}
+
+		if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+			rsvptoast_set_navigation_ref_recursive( $block['innerBlocks'], $navigation_post_id, $updated );
+		}
+	}
 }
 
 function wp4t_get_manuals_by_type_options( $type ) {

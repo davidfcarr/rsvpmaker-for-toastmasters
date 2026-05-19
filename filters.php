@@ -248,8 +248,15 @@ add_filter( 'the_content', function ( $content ) {
 	}
 	if(isset($_GET['edit_roles_new'])) 
 		$link .= '<input type="hidden" id="edit_roles_new" value="1" >';
-	if(wp4t_hour_past($post->ID) && current_user_can( 'edit_member_stats' )) 
+	if(wp4t_hour_past($post->ID)) {
+	if(current_user_can( 'edit_member_stats' )) {
 		$link .= sprintf('<h3>%s - <a href="%s">%s</a></h3>',__('Role data archived','rsvpmaker-for-toastmasters'),admin_url('admin.php?page=toastmasters_reconcile&post_id='.$post->ID),__('Edit','rsvpmaker-for-toastmasters'));
+	}
+	else {
+		$link .= sprintf('<h3>%s</h3>',__('Role data archived','rsvpmaker-for-toastmasters'));
+	}
+	return $link;
+	} 
 			
 	return $output . $link . $promo . $reactdiv . $content.'<div><a style="color:#5A808D; background-color:#fff;" href="?revert=1">Old signup form</a><p style="font-size: 10px; font-style: italic; line-height: 10.3px;color:#5A808D; background-color:#fff;">Click here if the form fails to load or something goes wrong.</p></div>';
 }

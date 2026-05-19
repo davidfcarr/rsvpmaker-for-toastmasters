@@ -85,7 +85,7 @@ p {
 <!-- /wp:wp4toastmasters/signupnote -->
 
 <!-- wp:wp4toastmasters/agendaprivacy -->
-<hr class="wp-block-wp4toastmasters-agendaprivacy" style="display:none"/>
+<hr class="wp-block-wp4toastmasters-agendaprivacy"/>
 <!-- /wp:wp4toastmasters/agendaprivacy -->' . "\n\n";
 			$time_open = (int) $_POST['time_open'];
 			$time_tod = (int) $_POST['time_tod'];
