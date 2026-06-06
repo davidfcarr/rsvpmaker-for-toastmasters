@@ -14,6 +14,32 @@ function wp4t_tm_welcome_screen_assets( $hook ) {
 		);
 	}
 }
+
+add_action( 'enqueue_block_editor_assets', 'wp4t_tmminutes_visibility_editor_assets' );
+function wp4t_tmminutes_visibility_editor_assets() {
+	if ( ! function_exists( 'get_current_screen' ) ) {
+		return;
+	}
+
+	$screen = get_current_screen();
+	if ( ! $screen || empty( $screen->post_type ) || ( 'tmminutes' !== $screen->post_type ) ) {
+		return;
+	}
+
+	if ( method_exists( $screen, 'is_block_editor' ) && ! $screen->is_block_editor() ) {
+		return;
+	}
+
+	$ver = '6.8.2';
+	wp_enqueue_script(
+		'wp4t-tmminutes-visibility',
+		plugins_url( 'tmminutes-visibility.js', __FILE__ ),
+		array( 'wp-components', 'wp-data', 'wp-edit-post', 'wp-element', 'wp-i18n', 'wp-plugins' ),
+		$ver,
+		true
+	);
+	wp_set_script_translations( 'wp4t-tmminutes-visibility', 'rsvpmaker-for-toastmasters', plugin_dir_path( __FILE__ ) . 'translations' );
+}
 function wpt_is_evaluation_demo() {
 	return apply_filters('wpt_is_evaluation_demo',false);
 }

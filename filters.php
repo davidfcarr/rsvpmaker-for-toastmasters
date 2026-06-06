@@ -331,16 +331,37 @@ add_filter( 'the_content', function ( $content ) {
 	if ( ! in_category( 'members-only' ) && ! has_term( 'members-only', 'rsvpmaker-type' ) && (empty($post->post_type) || $post->post_type != 'tmminutes') ) {
 		return $content;
 	}
+	if ( 'tmminutes' === $post->post_type ) {
+		if ( ! wpt_tmminutes_user_can_view( $post ) ) {
+			return wpt_tmminutes_denial_message( $post );
+		}
+	}
 	if('tmminutes' == $post->post_type) {
 		//termids
 		$terms = wp_get_post_terms( $post->ID, array( 'minutes-type' ) );
 		if($terms) {
+			$term_links = array();
 			$content .= '<p>Minutes type: ';
 			foreach ( $terms as $term ) :
 				$term_links[] = sprintf('<a href="%s">%s</a>',get_term_link($term->term_id),$term->name);
 			endforeach;
 			$content .= implode(', ',$term_links).'</p>';
 		}
+	}
+	if ( 'tmminutes' === $post->post_type ) {
+		if ( isset($_GET['print']) ) {
+			return $content;
+		}
+
+		if ( 'editors' === wpt_tmminutes_get_visibility( $post->ID ) ) {
+			return $content . '<div style="width: 100%; background-color: #ddd;">' . __( 'Note: This document is only visible to editors.', 'rsvpmaker-for-toastmasters' ) . '</div>';
+		}
+
+		if ( 'default' === wpt_tmminutes_get_visibility( $post->ID ) ) {
+			return $content . '<div style="width: 100%; background-color: #ddd;">' . __( 'Note: This is member-only content (login required)', 'rsvpmaker-for-toastmasters' ) . '</div>';
+		}
+
+		return $content;
 	}
 	if ( ! wp4t_is_club_member() ) {
 		return '<div style="width: 100%; background-color: #ddd;">' . __( 'To view this content, you must be logged with a member account.', 'rsvpmaker-for-toastmasters' ) . '</div>' . sprintf( '<div id="member_only_login"><a href="%s">' . __( 'Login to View', 'rsvpmaker-for-toastmasters' ) . '</a></div>', site_url( '/wp-login.php?redirect_to=' . urlencode( get_permalink() ) ) );		
@@ -365,6 +386,10 @@ add_filter( 'login_message', function ( $message ) {
 add_filter( 'the_excerpt', 'wp4t_member_only_excerpt' );
 add_filter( 'get_the_excerpt', 'wp4t_member_only_excerpt' );
 function wp4t_member_only_excerpt( $excerpt ) {
+	global $post;
+	if ( ! empty( $post->post_type ) && ( 'tmminutes' === $post->post_type ) ) {
+		return wpt_tmminutes_user_can_view( $post ) ? $excerpt : wp_strip_all_tags( wpt_tmminutes_denial_message( $post ) );
+	}
 	if ( ! in_category( 'members-only' ) && ! has_term( 'members-only', 'rsvpmaker-type' ) ) {
 		return $excerpt;
 	}

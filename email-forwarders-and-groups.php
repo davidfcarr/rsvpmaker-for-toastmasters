@@ -1182,6 +1182,7 @@ function wpt_member_email_check() {
     $member_emails = [];
 
     $members = wp4t_get_club_members();
+    $postmark = rsvpmaker_postmark_is_active();
     $output = '';
     foreach($members as $member) {
         if(empty($member->user_email)) {
@@ -1198,6 +1199,9 @@ function wpt_member_email_check() {
             $problem .= ' blocks group email and forwarding';
         }
         $status = (empty($problem)) ? '<span style="color:green; font-weight: bold;">OK</span>' : '<span style="color:red; font-weight: bold;">'.$problem.'</span>';
+        if($postmark) {
+            $status .= ' <a href="'.admin_url('edit.php?post_type=rsvpemail&page=rsvpmaker_postmark_show_sent_log&pm_subject=&pm_status=all&pm_recipient='.$member->user_email).'">Delivery log</a>';
+        }
         $output .= '<p>'.$member->display_name.' '.$member->user_email.' '.$status.'</p>';
     }
 

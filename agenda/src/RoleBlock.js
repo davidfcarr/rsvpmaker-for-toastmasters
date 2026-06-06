@@ -436,7 +436,7 @@ export default function RoleBlock(props) {
                             ><span className="agenda-tooltip-text">{mytranslate('Drag to reorder', data)}</span><span style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px'}}><Move /></span></button>}
                         </div>
                         <h3 className="role-label">
-                             {assignment.avatar && <div style={{float:'left',marginRight:'10px'}}><img src={assignment.avatar} className="tm_avatar" alt={assignment.name} /></div>} {role_label} {shownumber} {assignment.name}
+                             {assignment.avatar && <div style={{float:'left',marginRight:'10px'}}><img src={assignment.avatar} className="tm_avatar" alt={assignment.name} /></div>} {role_label} {shownumber} {assignment.name} {assignment.suggestion && <span className="suggestion">{assignment.suggestion}</span>}
                         </h3>
                     </div>
                     {attrs.agenda_note && <p><em>{attrs.agenda_note}</em></p>}

@@ -1,4 +1,109 @@
 <?php
+function wpt_tmminutes_sanitize_visibility( $visibility ) {
+	$visibility = is_string( $visibility ) ? strtolower( trim( $visibility ) ) : 'default';
+	$allowed = array( 'default', 'public', 'editors' );
+	if ( ! in_array( $visibility, $allowed, true ) ) {
+		return 'default';
+	}
+
+	return $visibility;
+}
+
+function wpt_tmminutes_get_visibility( $post_id ) {
+	$visibility = get_post_meta( $post_id, 'tm_visibility', true );
+
+	return wpt_tmminutes_sanitize_visibility( $visibility );
+}
+
+function wpt_tmminutes_user_can_view( $post = null ) {
+	$post = get_post( $post );
+	if ( ! $post || ( 'tmminutes' !== $post->post_type ) ) {
+		return true;
+	}
+
+	$visibility = wpt_tmminutes_get_visibility( $post->ID );
+	if ( 'public' === $visibility ) {
+		return true;
+	}
+
+	if ( 'editors' === $visibility ) {
+		return current_user_can( 'edit_pages' );
+	}
+
+	return wp4t_is_club_member();
+}
+
+function wpt_tmminutes_denial_message( $post = null ) {
+	$post = get_post( $post );
+	if ( ! $post || ( 'tmminutes' !== $post->post_type ) ) {
+		return '';
+	}
+
+	$visibility = wpt_tmminutes_get_visibility( $post->ID );
+	if ( 'public' === $visibility ) {
+		return '';
+	}
+
+	if ( 'editors' === $visibility ) {
+		$message = is_user_logged_in()
+			? __( 'To view this content, you must have editor access.', 'rsvpmaker-for-toastmasters' )
+			: __( 'To view this content, you must log in with editor access.', 'rsvpmaker-for-toastmasters' );
+	} else {
+		$message = __( 'To view this content, you must be logged with a member account.', 'rsvpmaker-for-toastmasters' );
+	}
+
+	$login = is_user_logged_in()
+		? ''
+		: sprintf( '<div id="member_only_login"><a href="%s">%s</a></div>', esc_url( site_url( '/wp-login.php?redirect_to=' . urlencode( get_permalink( $post ) ) ) ), esc_html__( 'Login to View', 'rsvpmaker-for-toastmasters' ) );
+
+	return '<div style="width: 100%; background-color: #ddd;">' . esc_html( $message ) . '</div>' . $login;
+}
+
+add_filter( 'request', 'wpt_tmminutes_request_fallback', 9 );
+function wpt_tmminutes_request_fallback( $query_vars ) {
+	if ( is_admin() ) {
+		return $query_vars;
+	}
+
+	if ( ! empty( $query_vars['post_type'] ) && ( 'tmminutes' === $query_vars['post_type'] ) ) {
+		return $query_vars;
+	}
+
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+	$path        = trim( (string) wp_parse_url( $request_uri, PHP_URL_PATH ), '/' );
+	if ( empty( $path ) || ! preg_match( '#(^|/)tm-minutes/([^/]+)/?$#', $path, $matches ) ) {
+		return $query_vars;
+	}
+
+	$query_vars['post_type'] = 'tmminutes';
+	$query_vars['name']      = sanitize_title( $matches[2] );
+	unset( $query_vars['pagename'], $query_vars['error'], $query_vars['attachment'] );
+
+	return $query_vars;
+}
+
+add_filter( 'redirect_canonical', 'wpt_tmminutes_prevent_wrong_canonical', 10, 2 );
+function wpt_tmminutes_prevent_wrong_canonical( $redirect_url, $requested_url ) {
+	if ( is_admin() ) {
+		return $redirect_url;
+	}
+
+	$path = trim( (string) wp_parse_url( $requested_url, PHP_URL_PATH ), '/' );
+	if ( empty( $path ) || ( false === strpos( $path, 'tm-minutes/' ) ) ) {
+		return $redirect_url;
+	}
+
+	if ( is_singular() && ( 'tmminutes' !== get_post_type() ) ) {
+		return false;
+	}
+
+	if ( is_404() ) {
+		return false;
+	}
+
+	return $redirect_url;
+}
+
 function wp4t_minutes_post_type() {
 
     $labels = array(
@@ -79,7 +184,7 @@ function wp4t_minutes_post_type() {
 
         'menu_position'      => 3,
 
-        'supports'           => array( 'title', 'editor', 'author', 'thumbnail' ),
+		'supports'           => array( 'title', 'editor', 'author', 'thumbnail', 'custom-fields' ),
 
         'taxonomies'         => array( 'minutes-type' ),
 
@@ -91,6 +196,24 @@ function wp4t_minutes_post_type() {
 
 
     register_post_type( 'tmminutes', $args );
+
+	register_post_meta(
+		'tmminutes',
+		'tm_visibility',
+		array(
+			'single'            => true,
+			'type'              => 'string',
+			'default'           => 'default',
+			'sanitize_callback' => 'wpt_tmminutes_sanitize_visibility',
+			'show_in_rest'      => array(
+				'schema' => array(
+					'type'    => 'string',
+					'enum'    => array( 'default', 'public', 'editors' ),
+					'default' => 'default',
+				),
+			),
+		)
+	);
 
 		// Add new taxonomy, make it hierarchical (like categories)
 

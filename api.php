@@ -446,7 +446,7 @@ function wpt_suggest_role($postdata) {
 		$mail['html'] .= (1 == (int) $_POST['ccme']) ? '<p>'.__('Sent to member','rsvpmaker-for_toastmasters').'</p>' : '<p>'.__('Sent ONLY to you','rsvpmaker-for_toastmasters').'</p>';
 		rsvpmailer($mail);
 	}
-	add_post_meta($post_id,'_suggest'.$roletag,$member_id);
+	update_post_meta($post_id,'_suggest'.$roletag,__('Unconfirmed suggestion: ','rsvpmaker-for-toastmasters').$member->display_name.' '.rsvpmaker_date('M j g:i a T'),true);
 	return '<p>From: '.$current_user->display_name.'<br>To: '.$member->display_name.'</p>'.$msg;
 }
 class WPTM_Reports extends WP_REST_Controller {
@@ -1462,8 +1462,10 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 						$assignment = array('post_id'=>$post_id);
 						//$assignment['ID'] = get_post_meta($post_id,$key, true);
 						$assignment['ID'] = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
+						$assignment['suggestion'] = '';
 						if(empty($assignment['ID'])) {
 							$assignment['name'] = '';
+							$assignment['suggestion'] = get_post_meta($post_id,'_suggest'.$key, true);
 						}
 						elseif(is_numeric($assignment['ID'])) {
 							$assignment['name'] = wp4t_get_member_name($assignment['ID']);
@@ -2049,8 +2051,10 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 						$key = wp4t_fieldbase($role,$i);
 						$assignment = array('post_id'=>$post_id,'assignment_key'=>$key,'role'=>$role,'role_display'=>$role_display);
 						$assignment['ID'] = get_post_meta($post_id,$key, true);
+						$assignment['suggestion'] = '';
 						if(empty($assignment['ID'])) {
 							$assignment['name'] = '';
+							$assignment['suggestion'] = get_post_meta($post_id,'_suggest'.$key, true);
 						}
 						elseif(is_numeric($assignment['ID'])) {
 							$assignment['name'] = wp4t_get_member_name($assignment['ID']);
