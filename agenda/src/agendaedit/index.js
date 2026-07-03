@@ -4,6 +4,7 @@
  * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
  */
 import { registerBlockType } from '@wordpress/blocks';
+import { createBlock } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -61,4 +62,22 @@ registerBlockType( metadata.name, {
 	 * @see ./save.js
 	 */
 	save,
+
+	transforms: {
+		from: [
+			{
+				type: 'block',
+				blocks: [ 'wp4toastmasters/agendanoterich2' ],
+				transform: ( attributes ) => {
+					return createBlock(metadata.name, {
+						uid: attributes?.uid || '',
+						time_allowed: attributes?.time_allowed || 0,
+						editable: '',
+						inline: 0,
+						defaultContent: attributes?.content || '',
+					});
+				},
+			},
+		],
+	},
 } );

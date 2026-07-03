@@ -40,12 +40,14 @@ export default function EvaluationTool(props) {
     }, [sent, form]);
 
     function onSuccess(e) {
+        const basePrompts = Array.isArray(e?.data?.form) ? e.data.form : [];
+        const secondLanguage = Array.isArray(e?.data?.second_language) ? e.data.second_language : [];
         if (e.data.second_language_requested > 0) {
             console.log('adding second language prompts', e.data);
-            setForm({ 'prompts': e.data.form.concat(e.data.second_language), 'intro': e.data.intro, 'second_language_requested': true });
+            setForm({ 'prompts': basePrompts.concat(secondLanguage), 'intro': e?.data?.intro, 'second_language_requested': true });
         } else {
             console.log('no second language prompts', e.data);
-            setForm({ 'prompts': e.data.form, 'intro': e.data.intro, 'second_language_requested': false, 'second_language': e.data.second_language });
+            setForm({ 'prompts': basePrompts, 'intro': e?.data?.intro, 'second_language_requested': false, 'second_language': secondLanguage });
         }
     }
 
@@ -54,10 +56,11 @@ export default function EvaluationTool(props) {
 
     let assignment_options = [{ 'value': '', 'label': 'Choose Speaker' }, { 'value': 'guest', 'label': 'Enter Guest Name' }];
     console.log('evaluation dashboard data', data.blocksdata);
-    if (data.blocksdata)
-        data.blocksdata.forEach((block) => {
-            if (block.attrs && block.attrs.role && 'Speaker' == block.attrs.role && block.assignments && Array.isArray(block.assignments)) {
-                block.assignments.forEach((assignment) => {
+    const blocksdata = Array.isArray(data?.blocksdata) ? data.blocksdata : [];
+    blocksdata.forEach((block) => {
+            const assignments = Array.isArray(block?.assignments) ? block.assignments : [];
+            if (block?.attrs?.role && 'Speaker' == block.attrs.role && assignments.length) {
+                assignments.forEach((assignment) => {
                     if (window.location.href.indexOf('speaker=') > 0) {
                         const speakerparam = window.location.href.match(/speaker=([0-9]+)/);
                         const speaker_id = (speakerparam && speakerparam[1]) ? speakerparam[1] : '';
@@ -72,11 +75,12 @@ export default function EvaluationTool(props) {
                 if (evaluate.ID > 0)
                     assignment_options.push({ 'value': JSON.stringify(evaluate), 'label': evaluate.name });
                 if ((window.location.href.indexOf('showprev') > 0) || (window.location.href.indexOf('wp4t_evaluations') > 0)) {
-                    if (Array.isArray(evaldata.data.previous_speeches) && evaldata.data.previous_speeches.length) {
-                        evaldata.data.previous_speeches.forEach(
+                    const previousSpeeches = Array.isArray(evaldata?.data?.previous_speeches) ? evaldata.data.previous_speeches : [];
+                    if (previousSpeeches.length) {
+                        previousSpeeches.forEach(
                             (speech) => { assignment_options.push({ 'value': JSON.stringify(speech.value), 'label': speech.label }) }
                         );
-                        assignment_options = assignment_options.concat(evaldata.data.previous_speeches);
+                        assignment_options = assignment_options.concat(previousSpeeches);
                     }
                 }
                 if (Array.isArray(block.memberoptions) && block.memberoptions.length)
@@ -91,7 +95,7 @@ export default function EvaluationTool(props) {
         });
 
     if (assignment_options.length < 4)
-        data.allmembers.forEach((opt) => { assignment_options.push(opt) });
+        (Array.isArray(data?.allmembers) ? data.allmembers : []).forEach((opt) => { assignment_options.push(opt) });
 
     console.log('evaluation assignment options', assignment_options);
 

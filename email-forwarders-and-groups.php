@@ -66,6 +66,28 @@ function wpt_email_handler_page () {
         echo $forwarder_info;
     }
 }
+
+add_action('rsvpmaker_postmark_autoreply','wpt_postmark_autoreply',10,3);
+
+function wpt_postmark_autoreply($emailObj, $blog_id, $from) {
+            if(strpos($emailObj->Subject,'prospective member') && strpos($emailObj->From,'toastmasters.org'))
+            {
+                preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$emailObj->HtmlBody,$fcmatches);
+ 
+                foreach($fcmatches[0] as $email) {
+                    if(strpos($email,'toastmasters.org') || strpos($email,'@toastmost.org') || (strcasecmp($email, $forwarder) == 0))
+                        continue;
+                    $contact = $email;
+                }
+                wpt_email_handler_autoresponder ($contact, $from, $blog_id);
+                $sent = true;
+            }
+            else {
+                error_log('no match for '.$blog_id.' '.$from.' '.var_export($emailObj->Subject, true));
+            }
+    // Your function implementation here
+}
+
 function wpt_email_handler_automation($qpost, $to, $from, $toaddress, $fromname, $toarray, $ccarray) {
     update_blog_option(1,'wpt_email_handler', $to);
     echo '<h1>wpt_email_handler_automation triggered</h1>';
@@ -347,26 +369,29 @@ function wpt_email_handler_bcc ($qpost, $recipients, $from, $fromname = '', $blo
     return var_export($mail, true);
 }
 function wpt_email_handler_autoresponder ($email, $from, $blog_id = 1,$function = '') {
+    error_log("wpt_email_handler_autoresponder ($email, $from, $blog_id)");
     global $wpdb, $autoreplyto;
     if(empty($email))
         return;
     if(!empty($autoreplyto) && is_array($autoreplyto) && in_array($email,$autoreplyto))
         return; // don't do twice
     $ffpage = ($blog_id == 1) ? get_option('findafriend_page') : get_blog_option($blog_id,'findafriend_page');
+    error_log('ffpage '.$ffpage);
     if($ffpage)
         $messagepost = ($blog_id == 1) ? get_post($ffpage) : get_blog_post($blog_id, $ffpage);
-    if(empty($messagepost))
+    if(empty($messagepost)) {
+        error_log('no messagepost for '.$ffpage);
         return;
+    }
+    error_log('ffpage '.$ffpage);
+    error_log('messagepost '.htmlentities(var_export($messagepost, true)));
     $mail['subject'] = $messagepost->post_title;
     $mail['html'] = $messagepost->post_content;
     if($function)
         $mail['html'] .= '<p>Function '.$function.'</p>';
     $mail['from'] = ($blog_id == 1) ? get_option('findafriend_email') : get_blog_option($blog_id,'findafriend_email');
-    if(strpos($from,'toastmasters.org') || strpos($from,'carrcommunications.com')) {
-        //send for real
-        $mail['to'] = $email;
-        rsvpmailer($mail);
-   }
+    $mail['to'] = $email;
+    rsvpmailer($mail);
     $autoreplyto[] = $email;
     $mail2 = $mail;
     $mail2['to'] = (is_multisite()) ? get_blog_option($blog_id,'admin_email') : get_option('admin_email');
@@ -919,6 +944,12 @@ foreach($local_forwarders as $forwarder => $targets) {
 }
 
 if(current_user_can('manage_network') && isset($_GET['debug'])) {
+
+$all_forwarders = wpt_all_flattened_forwarders();
+echo '<pre> all forwarders:';
+print_r($all_forwarders);
+echo 'end all forwarders</pre>';
+
 $clubemails = get_blog_option(1,'toastmost_club_email_list');
 if(!$clubemails)
     $clubemails = array();
@@ -1837,6 +1868,8 @@ function wpt_flattened_forwarders($site_id = 0, $inloop = false) {
             $forwarders[$forwarder][] = $target;
         }
     }
+
+        /*
         $members = wp4t_get_club_members();
         if(is_array($members)) {
             foreach($members as $member) {
@@ -1846,16 +1879,11 @@ function wpt_flattened_forwarders($site_id = 0, $inloop = false) {
                 }
             }
         }
-	update_option('flattened_forwarders',$forwarders);
-	if(!$inloop && is_multisite()) {
-		if(get_current_blog_id() != 1) {
-            $all = get_blog_option(1,'all_flattened_forwarders'); //reset so it will be rebuilt
-            if(empty($all))
-                $all = array();
-            $all = array_merge($all,$forwarders);
-            update_blog_option(1,'all_flattened_forwarders',$all);
-		}
-	}
+        */
+    if($site_id)
+        update_blog_option($site_id,'flattened_forwarders',$forwarders);
+    else
+	    update_option('flattened_forwarders',$forwarders);
 	return $forwarders;
 }
 
@@ -1872,17 +1900,33 @@ function wpt_flattened_email_change_run() {
 
 function wpt_all_flattened_forwarders() {
     if(is_multisite()) {
-        $forwarders = isset($_GET['reset']) ? null : get_blog_option(1,'all_flattened_forwarders');
+        switch_to_blog(1);
+        $forwarders = isset($_GET['reset']) ? null : get_transient('all_flattened_forwarders');
+        if(!is_array($forwarders))
+             $forwarders = array();
         if(empty($forwarders)) {
-            $forwarders = array();
+            $forwarders = wpt_flattened_forwarders(1, true);//whether or not it's public
             $sites = get_sites(array('public' => 1, 'limit' => 1000, 'number' => 1000));
             foreach($sites as $site) {
+                if($site->blog_id == 1)
+                    continue;
                 $local_forwarders = wpt_flattened_forwarders($site->blog_id, true);
+                if(isset($_GET['debug'])) {
+                printf('<p>checking site %s</p><pre>',$site->blog_id);
+                print_r($local_forwarders);
+                echo '</pre>';
+                }
                 $forwarders = array_merge($forwarders,$local_forwarders);
+                if(isset($_GET['debug'])) {
+                echo '<pre> forwarders after merge'."\n";
+                print_r($forwarders);
+                echo '</pre>';                    
+                }
                 if(isset($_GET['debug']))
                     printf('<p><strong>added %s forwarders from %s</strong></p><pre>%s</pre>',sizeof($local_forwarders),$site->domain,var_export($local_forwarders,true));
             }
-            update_blog_option(1,'all_flattened_forwarders',$forwarders);
+            set_transient('all_flattened_forwarders',$forwarders, HOUR_IN_SECONDS);
+            restore_current_blog();
         }
     }
     else 

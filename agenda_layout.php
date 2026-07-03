@@ -24,10 +24,11 @@ function wp4t_agenda_layout_options() {
     $layoutlink = add_query_arg(array('agenda_layout'=>1),$permalink);
     $layout = wp4toastmasters_agenda_layout_check( );
     $version = get_option('wpt_layout_version');
+    $args = ['sidebar_officers' => true, 'sidebar' => true];
     if('2026' != $version) {
         echo '<p style="color:red;">Updating to layout for 2026.</p>';
         $up['ID'] = $layout;
-        $up['post_content'] = wpt_custom_layout_default(true,true);
+        $up['post_content'] = wpt_custom_layout_default($args);
         wp_update_post($up);
     }
 
@@ -56,13 +57,16 @@ function wp4t_agenda_layout_options() {
         $l = $_POST['change_layout'];
         if('default'==$l) {
             $up['ID'] = $layout;
-            $up['post_content'] = wpt_custom_layout_default(true,true);
+            $args = ['sidebar_officers' => true, 'sidebar' => true];
         }
         elseif('nosidebar' == $l) {
             $up['ID'] = $layout;
-            $up['post_content'] = wpt_custom_layout_default(false,false);
+            $args = ['sidebar_officers' => false, 'sidebar' => false];
         }
+        if(!empty($_POST['voting_qr']))
+            $args['voting_qr'] = true;
         if(!empty($up)) {
+            $up['post_content'] = wpt_custom_layout_default($args);
             wp_update_post($up);
         }
         else
@@ -88,8 +92,9 @@ Sidebar Items Font <input class="fontcontrol" type="number" name="side" value="<
 <button>Update</button>
 </form>
 <form method="post" action="<?php echo $layoutlink; ?>">
-Layout Template <input type="radio" name="change_layout" value="default" checked="checked" /> Default (reset) <input type="radio" name="change_layout" value="nosidebar" /> No Sidebar 
-<button>Update</button>
+Layout Template <input type="radio" name="change_layout" value="default" checked="checked" /> Default (reset) <input type="radio" name="change_layout" value="nosidebar" /> No Sidebar <br />
+<input type="checkbox" name="voting_qr" value="1" /> Include QR Code for digital voting tool<br />
+<button>Update Layout</button>
 <?php if(current_user_can('manage_options')) { printf('<p><a href="%s">Update Officers List</a></p>',admin_url('options-general.php?page=wp4toastmasters_settings#officers')); } else echo '<p>Update officers list on the Settings -> Toastmasters screen (requires website administrator access)</p>'; ?>
 <p><a href="<?php echo $layout_edit; ?>">Advanced: open layout document in the WordPress editor</a></p>
 </form>

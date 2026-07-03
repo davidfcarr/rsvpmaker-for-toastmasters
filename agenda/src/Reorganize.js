@@ -712,7 +712,7 @@ export default function Reorganize(props) {
                             onChange={() => setEditThis(editThis === blockindex ? -1 : blockindex)}
                         />
                         {editThis === blockindex ? (
-                            <EditableNote makeNotification={makeNotification} mode={mode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} />
+                            <EditableNote makeNotification={makeNotification} mode={mode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} isTemplate={!!data.is_template} />
                         ) : (
                             <SanitizedHTML innerHTML={block.attrs.edithtml || block.edithtml || ''} />
                         )}

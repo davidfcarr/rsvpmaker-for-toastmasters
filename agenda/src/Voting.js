@@ -238,7 +238,7 @@ export default function Voting({post_id}) {
                     return (<div key={'contest'+cindex}>
                         <p style={styles.h2}>{c}</p>
                         {currentBallot.contestants.length ? <p>{mytranslate('Vote for',votingdata)}:</p> : null}
-                        {currentBallot.contestants.map((contestant,index) => {return <div key={'contestant'+index}><p><button style={{backgroundColor: 'black',padding:'10px'}} onClick={() => {const vote = {'vote':contestant,'key':c,identifier:identifier,post_id:currentBallot.post_id ? currentBallot.post_id : post_id,signature:(currentBallot.signature_required) ? votingdata.current_user_name : ''}; console.log('vote',vote); sendVotingUpdate(vote);} }><span style={styles.buttonText}>✔ {mytranslate('Vote',votingdata)}</span></button> {contestant}</p></div>})}
+                        {currentBallot.contestants.map((contestant,index) => {return <div key={'contestant'+index}><p><button style={{backgroundColor: 'black',padding:'10px'}} onClick={() => {const vote = {'vote':contestant,'key':c,identifier:identifier,post_id:currentBallot.post_id ? currentBallot.post_id : post_id,signature:(currentBallot.signature_required) ? votingdata.current_user_name : ''}; console.log('vote',vote); sendVotingUpdate(vote);} }><span style={styles.buttonText}>{mytranslate('Vote for',votingdata)}</span></button> {contestant}</p></div>})}
                         {currentBallot.signature_required ? <p style={{style:'italic'}}>{mytranslate('Vote will be recorded as signed by',votingdata)+' '+votingdata.current_user_name}</p> : null}
                     </div>)
                 }

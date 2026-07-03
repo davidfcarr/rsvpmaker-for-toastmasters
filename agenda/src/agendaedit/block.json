@@ -3,19 +3,23 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/agendaedit",
 	"version": "0.1.0",
-	"title": "TM Editable Agenda Note",
+	"title": "TM Agenda Note",
 	"category": "toastmasters",
 	"icon": "groups",
 	"postTypes": [
 		"rsvpmaker", "rsvpmaker_template"
 	],
-	"description": "A note that can be edited by a meeting organizer on the signup form. Used for things that change from meeting to meeting, such as Meeting Theme. Does not require editing rights.",
+	"description": "A note that describes an activity, the 'stage directions' of your meeting. You can assign default text and (optionally) the number of minutes allowed for the activity. The text of the note can also be edited on the front end by a meeting organizer.",
 	"keywords": [
 		"toastmasters",
 		"agenda",
 		"editable"
 	],
 	"attributes": {
+		"defaultContent": {
+			"type": "string",
+			"default": ""
+		},
 		"uid": {
 			"type": "string",
 			"default": ""

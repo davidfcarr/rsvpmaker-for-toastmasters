@@ -469,7 +469,7 @@ function wp4t_awesome_dashboard_widget_function() {
 
 	$wp4toastmasters_member_message = get_option( 'wp4toastmasters_member_message' );
 
-	if ( ! empty( $wp4toastmasters_member_message ) ) {
+	if ( ! empty( $wp4toastmasters_member_message ) && strpos( $wp4toastmasters_member_message, '<p' ) === false ) {
 
 		$wp4toastmasters_member_message = wpautop( $wp4toastmasters_member_message );
 
@@ -695,7 +695,7 @@ echo '<p>'.wp4t_club_member_mailto().'</p>';
 
 		$wp4toastmasters_officer_message = get_option( 'wp4toastmasters_officer_message' );
 
-		if ( ! empty( $wp4toastmasters_officer_message ) ) {
+		if ( ! empty( $wp4toastmasters_officer_message ) && strpos( $wp4toastmasters_officer_message, '<p' ) === false ) {
 
 			$wp4toastmasters_officer_message = wpautop( $wp4toastmasters_officer_message );
 
@@ -1616,6 +1616,39 @@ function wp4t_editable_note( $atts ) {
 
 }
 
+function wp4t_decode_editable_note_content( $content ) {
+
+	$content = (string) $content;
+
+	if ( '' === trim( $content ) ) {
+
+		return '';
+
+	}
+
+	$replacements = array(
+		'\\u003c' => '<',
+		'\\u003e' => '>',
+		'\\u0026' => '&',
+		'\\u0022' => '"',
+		"\\u0027" => "'",
+		'\\u000a' => "\n",
+		'\\u000d' => "\r",
+		'u003c' => '<',
+		'u003e' => '>',
+		'u0026' => '&',
+		'u0022' => '"',
+		"u0027" => "'",
+		'u000a' => "\n",
+		'u000d' => "\r",
+	);
+
+	$content = str_replace( array_keys( $replacements ), array_values( $replacements ), $content );
+
+	return $content;
+
+}
+
 function wp4t_agenda_note( $atts, $content = '' ) {
 
 	if ( isset( $_GET['convert'] ) ) {
@@ -1690,7 +1723,7 @@ function wp4t_agenda_note( $atts, $content = '' ) {
 
 	}
 
-	if ( ! empty( $atts['editable'] ) ) {
+	if ( ! empty( $atts['editable'] ) || isset( $atts['uid'] ) || ! empty( $atts['defaultContent'] ) ) {
 
 		if ( isset( $atts['uid'] ) ) {
 
@@ -1704,11 +1737,23 @@ function wp4t_agenda_note( $atts, $content = '' ) {
 
 			}
 
+			if ( ! empty( $editable ) ) {
+
+				$editable = wp4t_decode_editable_note_content( $editable );
+
+			}
+
 		} else {
 
 			$editid   = 'agenda_note_' . $atts['editable'];
 
 			$editable = trim( get_post_meta( $post->ID, 'agenda_note_' . $atts['editable'], true ) );
+
+			if ( ! empty( $editable ) ) {
+
+				$editable = wp4t_decode_editable_note_content( $editable );
+
+			}
 
 		}
 
@@ -1746,19 +1791,43 @@ function wp4t_agenda_note( $atts, $content = '' ) {
 
 		$timeblock = ( $maxtime ) ? '<span class="time_allowed" maxtime="' . $maxtime . '"></span>' : '<span class="notime"></span>';
 
+		if ( empty( $editable ) && ! empty( $atts['defaultContent'] ) ) {
+
+			$editable = wp_kses_post( wp4t_decode_editable_note_content( $atts['defaultContent'] ) );
+
+		}
+
 		if ( ! empty( $editable ) ) {
 
 			$editable = wpautop( $editable );
 
 		}
 
+		$editable_heading = isset( $atts['editable'] ) ? trim( (string) $atts['editable'] ) : '';
+
 		if ( ! empty( $atts['inline'] ) ) {
 
-			$content .= '<p id="' . $slug . '" class="editable_content">' . $timeblock . '<strong>' . $atts['editable'] . '</strong> ' . $editable . '</p>' . $edit_editable;
+			if ( '' !== $editable_heading ) {
+
+				$content .= '<p id="' . $slug . '" class="editable_content">' . $timeblock . '<strong>' . esc_html( $editable_heading ) . '</strong> ' . $editable . '</p>' . $edit_editable;
+
+			} else {
+
+				$content .= '<p id="' . $slug . '" class="editable_content">' . $timeblock . $editable . '</p>' . $edit_editable;
+
+			}
 
 		} else {
 
-			$content .= $timeblock . '<h3 id="' . $slug . '">' . $atts['editable'] . '</h3><p class="editable_content">' . $editable . '</p>' . $edit_editable;
+			if ( '' !== $editable_heading ) {
+
+				$content .= $timeblock . '<h3 id="' . $slug . '">' . esc_html( $editable_heading ) . '</h3><p class="editable_content">' . $editable . '</p>' . $edit_editable;
+
+			} else {
+
+				$content .= $timeblock . '<p id="' . $slug . '" class="editable_content">' . $editable . '</p>' . $edit_editable;
+
+			}
 
 		}
 
@@ -3086,9 +3155,9 @@ function wp4t_tm_agenda_content($post_id = 0) {
 				$content .= '</div>';
 			}
 
-			if(!empty($attrs['wp4t_agenda_note']))
+			if(!empty($attrs['agenda_note']) && $roleindex == ($count - 1))
 
-				$content .= '<div><em>'.wp_kses_post($attrs['wp4t_agenda_note']).'</em></div>';
+				$content .= '<div><em>'.wp_kses_post(wp_unslash($attrs['agenda_note'])).'</em></div>';
 
 			if('Speaker' == $role) {
 
@@ -3103,7 +3172,7 @@ function wp4t_tm_agenda_content($post_id = 0) {
 		elseif('wp4toastmasters/agendaedit' == $block["blockName"]) {
 
 			if(!isset($_REQUEST['role_only'])) {
-
+				if(!empty($attrs['editable']))
 				$content .= sprintf('<h3>%s</h3>',$attrs['editable']);
 
 				if(!empty($block['edithtml']))
@@ -3804,8 +3873,6 @@ function wp4t_extended_list() {
 
 	printf('<p>%s</p>',implode(',',$emails));
 
-
-
 	echo '<p><em>' . __( 'This list includes inactive members and gives you the option of reactivating their accounts', 'rsvpmaker-for-toastmasters' ) . '</em></p>';
 
 	echo '<p><a href="'.admin_url('users.php?page=wp4t_extended_list&sort=newest').'">Sort Newest to Oldest Records</a> | <a href="'.admin_url('users.php?page=wp4t_extended_list&sort=oldest').'">Sort Oldest to Newest Records</a></p>';
@@ -4018,7 +4085,7 @@ foreach($results as $row) {
 
 	$checked = (isset($_GET['make_user_member']) && ($row->id == $_GET['make_user_member']) ) ? ' checked="checked" ' : '';
 
-	printf('<tr><td class="check-column">&nbsp;<input name="former[]" type="checkbox" %s class="subscriber" value="%d"></td><td>%s <span class="reactivate"><a href="%s">%s</a></td><td>%s</td><td>%s</td></tr>', $checked ,$row->id, $name, admin_url('users.php?page=wp4t_extended_list&make_user_member='.$row->id), __('Reactivate','rsvpmaker-for_toastmasters'), $row->email, implode('<br>',$phones));
+	printf('<tr><td class="check-column">&nbsp;<input name="former[]" type="checkbox" %s class="subscriber" value="%d"></td><td>%s <a href="mailto:%s">%s</a></td><td>%s</td><td>%s</td></tr>', $checked ,$row->id, $name, $row->email, __('Reactivate','rsvpmaker-for_toastmasters'), $row->email, implode('<br>',$phones));
 
 }
 
@@ -4464,25 +4531,27 @@ submit_button('Switch to District');
 
 	settings_fields( 'wp4toastmasters-settings-group' );
 
-	$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids' );
+	$wp4toastmasters_officer_ids    = get_option( 'wp4toastmasters_officer_ids', [] );
 
-	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles' );
+	$wp4toastmasters_officer_titles = get_option( 'wp4toastmasters_officer_titles', [] );
 
-	$wp4toastmasters_officer_slugs = get_option( 'wp4toastmasters_officer_slugs' );
+	$wp4toastmasters_officer_slugs = get_option( 'wp4toastmasters_officer_slugs', [] );
 
-	$wp4toastmasters_incoming_officer_ids = get_option( 'wp4toastmasters_incoming_officer_ids', array() );
+	$wp4toastmasters_incoming_officer_ids = get_option( 'wp4toastmasters_incoming_officer_ids', [] );
 
 	$wp4toastmasters_incoming_officer_effective_date = get_option( 'wp4toastmasters_incoming_officer_effective_date' );
 
-	if ( ! is_array( $wp4toastmasters_officer_titles ) ) {
+	if ( empty( $wp4toastmasters_officer_titles ) ) {
 		$wp4toastmasters_officer_titles = array( __( 'President', 'rsvpmaker-for-toastmasters' ), __( 'VP of Education', 'rsvpmaker-for-toastmasters' ), __( 'VP of Membership', 'rsvpmaker-for-toastmasters' ), __( 'VP of Public Relations', 'rsvpmaker-for-toastmasters' ), __( 'Secretary', 'rsvpmaker-for-toastmasters' ), __( 'Treasurer', 'rsvpmaker-for-toastmasters' ), __( 'Sgt. at Arms', 'rsvpmaker-for-toastmasters' ), __( 'Immediate Past President', 'rsvpmaker-for-toastmasters' ) );
 		$wp4toastmasters_officer_ids = array(0, 0, 0, 0, 0, 0, 0, 0);
 		$wp4toastmasters_officer_slugs = array( 'president', 'vpe', 'vpm', 'vpr', 'secretary', 'treasurer', 'saa', 'ipp' );
 	}
 
-	if(sizeof($wp4toastmasters_officer_slugs) != sizeof($wp4toastmasters_officer_titles)) {
+	if(!is_array($wp4toastmasters_officer_slugs) || sizeof($wp4toastmasters_officer_slugs) != sizeof($wp4toastmasters_officer_titles)) {
 		foreach($wp4toastmasters_officer_titles as $index => $title) {
+			if(!empty($title) && empty($wp4toastmasters_officer_slugs[$index])) {
 			$wp4toastmasters_officer_slugs[$index] = wpt_officer_title_to_slug($title);
+			}
 		}
 		update_option( 'wp4toastmasters_officer_slugs', $wp4toastmasters_officer_slugs );
 	}
@@ -4686,34 +4755,35 @@ submit_button('Switch to District');
     $root_domain = wpt_get_site_domain(1);
 
     $domain = wpt_get_site_domain();
+	
+	$newindex = 0;
 
 	printf('<p>With email forwarding configured, addresses like %s / %s will forward messages to the officer\'s registered email account.</p>',wpt_format_email_forwarder('President'),wpt_format_email_forwarder('vpe'));
 
 	foreach ( $wp4toastmasters_officer_titles as $index => $title ) {
 
 		if ( empty( $title ) ) {
-
-			break;
-
+			continue;
 		}
 
 		$current_officer = (isset($wp4toastmasters_officer_ids[ $index ])) ? $wp4toastmasters_officer_ids[ $index ] : 0;
 
 		$title_slug = (isset($wp4toastmasters_officer_slugs[$index])) ? $wp4toastmasters_officer_slugs[$index] : wpt_officer_title_to_slug ($title); 
 
-		$dropdown = wp4t_awe_user_dropdown( 'wp4toastmasters_officer_ids[' . $index . ']', $current_officer, true );
+		$dropdown = wp4t_awe_user_dropdown( 'wp4toastmasters_officer_ids[' . $newindex . ']', $current_officer, true );
 
-		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="%s" /> %s <input type="text" name="wp4toastmasters_officer_slugs[%s]" value="%s" /></p>', $index, $title, $dropdown, $index, $title_slug );
+		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="%s" /> %s <input type="text" name="wp4toastmasters_officer_slugs[%s]" value="%s" /></p>', $newindex, $title, $dropdown, $newindex, $title_slug );
+		$newindex++;
 
 	}
 
-	$limit = $index + 3;
+	$limit = $newindex + 3;
 
-	for ( $index = $index; $index < $limit; $index++ ) {
+	for ( $index = $newindex; $index < $limit; $index++ ) {
 
 		$dropdown = wp4t_awe_user_dropdown( 'wp4toastmasters_officer_ids[' . $index . ']', 0, true );
 
-		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="" /> %s <input type="text" name="wp4toastmasters_officer_slug[%s]" value="" /></p>', $index, $dropdown, $index );
+		printf( '<p><input type="text" name="wp4toastmasters_officer_titles[%s]" value="" /> %s <input type="text" name="wp4toastmasters_officer_slugs[%s]" value="" /></p>', $index, $dropdown, $index );
 
 	}
 
@@ -5246,6 +5316,8 @@ $eval_reminder = (int) get_option('wpt_evaluation_reminder');
 </p>
 
 <p>See also <a href="edit.php?post_type=rsvpemail&amp;page=rsvpmaker_notification_templates">Email Notification/Reminder Templates</a></p>
+
+<p><strong>Message for Calendar Reminder</strong><br />Links to the signup page and agenda will be included automatically. You can add content such as a Zoom link for online or hybrid meetings.<br /><textarea name="wpt_ical_message" rows="5" cols="80" class="mce"><?php echo wp_kses_post( get_option( 'wpt_ical_message' ) ); ?></textarea></p>
 
 <h3><?php _e( 'Agenda Formatting', 'rsvpmaker-for-toastmasters' ); ?></h3>
 
@@ -6002,6 +6074,8 @@ function register_wp4toastmasters_settings() {
 
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_ids' );
 
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_slugs' );
+
 	register_setting(
 		'wp4toastmasters-settings-group',
 		'wp4toastmasters_incoming_officer_ids',
@@ -6014,13 +6088,17 @@ function register_wp4toastmasters_settings() {
 		array( 'sanitize_callback' => 'wp4t_sanitize_incoming_officer_effective_date' )
 	);
 
-	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_slugs' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_login_message', array( 'sanitize_callback' => function( $input ) {
+		return wp_kses_post( wp_unslash( $input ) );
+	} )  );
 
-	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_login_message' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_member_message', array( 'sanitize_callback' => function( $input ) {
+		return wp_kses_post( wp_unslash( $input ) );
+	} )  );
 
-	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_member_message' );
-
-	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_message' );
+	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_message', array( 'sanitize_callback' => function( $input ) {
+		return wp_kses_post( wp_unslash( $input ) );
+	} )  );
 
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_disable_email' );
 
@@ -6079,6 +6157,9 @@ function register_wp4toastmasters_settings() {
 	register_setting( 'wp4toastmasters-settings-group', 'wpt_evaluation_reminder' );
 
 	register_setting( 'wp4toastmasters-settings-group', 'wp4t_avatar_in_agenda' );
+	register_setting( 'wp4toastmasters-settings-group', 'wpt_ical_message', array( 'sanitize_callback' => function( $input ) {
+		return wp_kses_post( wp_unslash( $input ) );
+	} ) );
 
 	if ( isset( $_POST['wp4toast_reminder'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 
@@ -6654,13 +6735,13 @@ em {font-style: italic; }
 
 @page {
 
-    margin: 0; /* Removes all margins, including space for browser headers/footers */
+    margin: 0.5cm; /* Removes all margins, including space for browser headers/footers */
+  }
+body {
+
+	margin: 0; /* Removes the default margin set by the browser */
 
   }
-
-  /* Optional: Add custom margins or padding to the body or content wrapper */
-
-  body {margin: 2%; }
 
 }
 
@@ -8252,15 +8333,22 @@ function wp4t_stoplight_shortcode( $atts ) {
 
 }
 
-function wpt_custom_layout_default($sidebar_officers = false, $sidebar = true) {
+function wpt_custom_layout_default($args = ['sidebar_officers' => false, 'sidebar' => true]) {
 
 update_option('wpt_layout_version','2026');
 
-$officers_content = ($sidebar_officers) ? '<!-- wp:wp4toastmasters/officers /-->' : '';
+$sidebar_content = (!empty($args['sidebar_officers'])) ? '<!-- wp:wp4toastmasters/officers /-->' : '';
+if(!empty($args['voting_qr'])) {
+	if(!empty($sidebar_content))
+		$sidebar_content .= "\n\n";
+	$sidebar_content .= '<!-- wp:paragraph -->
+<p><strong>Digital Voting Tool: </strong>If the vote counter uses the digital voting tool, you can scan this QR Code with your phone to open the ballot.</p>
+<!-- /wp:paragraph -->
 
+<!-- wp:rsvpmaker/qr {"queryString":"?meetingvote=1"} /-->';
+}
 
-
-if($sidebar)
+if(!empty($args['sidebar']))
 
 return '<!-- wp:columns {"className":"layout2026"} -->
 
@@ -8268,17 +8356,13 @@ return '<!-- wp:columns {"className":"layout2026"} -->
 
 <div class="wp-block-column" style="flex-basis:33.33%"><!-- wp:site-logo {"width":80} /-->
 
-
-
 <!-- wp:paragraph -->
 
 <p><strong>Club Mission: </strong>We provide a supportive and positive learning experience in which members are empowered to develop communication and leadership skills, resulting in greater self-confidence and personal growth.</p>
 
 <!-- /wp:paragraph -->
 
-
-
-'.$officers_content.'</div>
+'.$sidebar_content.'</div>
 
 <!-- /wp:column -->
 
@@ -8358,7 +8442,7 @@ function wp4toastmasters_agenda_layout_check( $sidebar_officers = false ) {
 
 		$layout['post_title']   = 'Agenda Layout';
 
-		$layout['post_content'] = wpt_custom_layout_default($sidebar_officers);
+		$layout['post_content'] = wpt_custom_layout_default(['sidebar_officers' => $sidebar_officers, 'sidebar' => true] );
 
 		$layout['post_author']  = $current_user->ID;
 
@@ -13497,7 +13581,7 @@ function wp4t_awesome_user_profile_fields( $user ) {
 	$public_phone   = get_user_meta( $user->ID, 'public_phone', true );
 	?>
 
-<table class="form-table">
+<table class="form-table" id="tm_profile_fields">
 
 <tr>
 
@@ -15221,120 +15305,82 @@ function toastmasters_datebox_message() {
 
 }
 
-function wp4toast_template( $user_id = 1, $autorenew = false ) {
+add_shortcode( 'wp4toast_template_tester', 'wp4toast_template_tester' );
+
+function wp4toast_template_tester() {
+
+
+	return '<pre>'.wp4toast_template().'</pre>';
+
+}
+
+function wp4toast_template( $user_id = 1, $autorenew = false, $blog_id = 0 ) {
 
 	global $wpdb, $rsvp_options;
 	$rsvp_options['rsvp_on'] = 1;
+	$debug = '';
 
 	$sql = "SELECT ID FROM `$wpdb->posts` WHERE post_type='rsvpmaker_template' AND (post_content LIKE '%[toastmaster%' OR post_content LIKE '%wp:wp4toastmasters%') AND post_status='publish' ORDER BY `ID` DESC ";
+	$debug .= 'wp4toast_template check sql '.$sql."\n";
+	if($blog_id)
+		$debug .= 'blog id '.$blog_id."\n";
 
 	if ( $id = $wpdb->get_var( $sql ) ) {
-
+		$debug .= 'template already exists '.$id."\n";
+		error_log($debug);
 		wp4t_contest_templates ();
-
-		return;
-
+		return '<p>Template already installed</p>';
 	}
 
 	$default = '<!-- wp:wp4toastmasters/help /-->
 
 <!-- wp:wp4toastmasters/signupnote -->
-
 <p class="wp-block-wp4toastmasters-signupnote">Guests are always welcome at our club. Scroll to the bottom of the page for the guest registration form.</p>
-
 <!-- /wp:wp4toastmasters/signupnote -->
 
-
-
 <!-- wp:wp4toastmasters/agendaprivacy -->
-
 <hr class="wp-block-wp4toastmasters-agendaprivacy"/>
-
 <!-- /wp:wp4toastmasters/agendaprivacy -->
-
-
 
 <!-- wp:wp4toastmasters/agendaedit {"uid":"editable16181528933590.29714489144034184","time_allowed":3,"editable":"Welcome and Introductions"} /-->
 
-
-
 <!-- wp:wp4toastmasters/role {"role":"Toastmaster of the Day"} /-->
 
-
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note17727398557420.22279318486908772","time_allowed":3} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Toastmaster of the Day introduces the team of members taking supporting roles.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note17727398557420.22279318486908772","time_allowed":"3","editable":"","defaultContent":"Toastmaster of the Day introduces the team of members taking supporting roles."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Ah Counter"} /-->
 
-
-
 <!-- wp:wp4toastmasters/role {"role":"Timer"} /-->
-
-
 
 <!-- wp:wp4toastmasters/role {"role":"Vote Counter"} /-->
 
-
-
 <!-- wp:wp4toastmasters/role {"role":"Grammarian"} /-->
-
-
 
 <!-- wp:wp4toastmasters/role {"role":"Topics Master","time_allowed":10} /-->
 
-
-
-<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":25,"padding_time":1,"backup":1} /-->
-
-
+<!-- wp:wp4toastmasters/role {"role":"Speaker","count":3,"time_allowed":25,"padding_time":1} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"General Evaluator"} /-->
 
-
-
 <!-- wp:wp4toastmasters/role {"role":"Evaluator","count":3,"time_allowed":9} /-->
 
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note31972","time_allowed":"5","editable":"","defaultContent":"General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting."} /-->
 
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note21837","time_allowed":"1","editable":"","defaultContent":"Toastmaster of the Day presents the awards."} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note31972","time_allowed":5} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">General Evaluator asks for reports from the Grammarian, Ah Counter, and Body Language Monitor. General Evaluator gives an overall assessment of the meeting.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note21837","time_allowed":1} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Toastmaster of the Day presents the awards.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note30722","time_allowed":3} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President wraps up the meeting. VPE lines up volunteers for future meetings.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note30722","time_allowed":"3","editable":"","defaultContent":"President wraps up the meeting. VPE lines up volunteers for future meetings."} /-->
 
 <!-- wp:wp4toastmasters/milestone {"label":"Meeting Ends"} -->
-
-<div class="wp-block-wp4toastmasters-milestone"><p maxtime="x">Meeting Ends</p></div>
-
+<div class="wp-block-wp4toastmasters-milestone"><p>Meeting Ends</p></div>
 <!-- /wp:wp4toastmasters/milestone -->
 
+<!-- wp:wp4toastmasters/absences /-->
 
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->';
 
-<!-- wp:wp4toastmasters/absences /-->';
+	$default = wpt_upgrade_legacy_agenda_note_content( $default );
 
 	$post       = array(
 
@@ -15364,7 +15410,10 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 	}
 
-	$sked = get_option( 'initial_sked' );
+	$debug .= 'templateID '.$templateID."\n";
+
+	$sked = ($blog_id) ? get_blog_option( $blog_id, 'initial_sked' ) : get_option( 'initial_sked' );
+	$debug .= 'wp4toast template sked '.print_r($sked,true)."\n";
 
 	if ( isset( $_POST['sked'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
 
@@ -15385,22 +15434,27 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 	} elseif ( $sked ) {
 
 		$template = $sked;
+		$debug .= "initial sked applied\n";
 
 	} else {
 
-		$template['week'] = 0;
+		$template['week'][] = 0;
 
-		$template['dow'] = 9;
+		$template['dow'][] = 9;
 
 		$template['hour']    = 19;
 
 		$template['minutes'] = '00';
 
-		$template['week']    = 0;
-
 	}
 
-	rsvpmaker_new_template_schedule( $templateID, $template );
+	if ( function_exists( 'rsvpmaker_new_template_schedule' ) ) {
+		$newsked = rsvpmaker_new_template_schedule( $templateID, $template );
+		$debug .= 'newsked '.print_r($newsked,true)."\n";
+	} else {
+		$newsked = null;
+		$debug .= "newsked skipped: rsvpmaker_new_template_schedule unavailable\n";
+	}
 
 	update_option( 'default_toastmasters_template', $templateID );
 
@@ -15414,7 +15468,7 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 	update_option( 'default_toastmasters_template', $templateID );
 
-	if($autorenew) {
+	if($autorenew && function_exists( 'rsvpmaker_auto_renew_project' )) {
 
 		update_post_meta($templateID,'_rsvp_on',1);
 
@@ -15426,11 +15480,14 @@ function wp4toast_template( $user_id = 1, $autorenew = false ) {
 
 	wp4t_contest_templates ();
 
+	error_log($debug);
+
+	return $debug.'<p>End of template processing</p>';
 }
 
 function wp4t_contest_templates () {
 error_log('start wp4t_contest_templates');
-$v = 4;
+$v = 5;
 $contest_template_titles = array(
 	'Contest',
 	'International Speech Contest',
@@ -15462,17 +15519,9 @@ global $current_user;
 
 $contest_templates['Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note5474","editable":"","defaultContent":"Sgt. at Arms calls the meeting to the order."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9971","editable":"","defaultContent":"President or Presiding Officer introduces the Contest Master."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Contest Master","count":"1","wp4t_agenda_note":"Delivers opening remarks","time_allowed":"5"} /-->
 
@@ -15492,37 +15541,17 @@ $contest_templates['Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Table Topics Contestant","count":"6","time_allowed":"18"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note16295494558540.26410404771729024"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295494558540.26410404771729024","time_allowed":"10","editable":"","defaultContent":"Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants.</p>
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note15913","time_allowed":"10","editable":"","defaultContent":"Awards Ceremony"} /-->
 
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note15913"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Awards Ceremony</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9646"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Announcements and conclusion.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->';
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9646","editable":"","defaultContent":"Announcements and conclusion."} /-->';
 
 $contest_templates['International Speech Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note5474","editable":"","defaultContent":"Sgt. at Arms calls the meeting to the order."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9971","editable":"","defaultContent":"President or Presiding Officer introduces the Contest Master."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Contest Master","count":"1","wp4t_agenda_note":"Delivers opening remarks","time_allowed":"5"} /-->
 
@@ -15534,37 +15563,17 @@ $contest_templates['International Speech Contest'] = '<!-- wp:wp4toastmasters/he
 
 <!-- wp:wp4toastmasters/role {"role":"International Contest Speaker","count":"6","time_allowed":"48"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note16295494558540.26410404771729024"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295494558540.26410404771729024","time_allowed":"10","editable":"","defaultContent":"Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants.</p>
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note15913","time_allowed":"10","editable":"","defaultContent":"Awards Ceremony"} /-->
 
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note15913"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Awards Ceremony</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9646"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Announcements and conclusion.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->';
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9646","editable":"","defaultContent":"Announcements and conclusion."} /-->';
 
 $contest_templates['Humorous Speech Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note5474","editable":"","defaultContent":"Sgt. at Arms calls the meeting to the order."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9971","editable":"","defaultContent":"President or Presiding Officer introduces the Contest Master."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Contest Master","count":"1","wp4t_agenda_note":"Delivers opening remarks","time_allowed":"5"} /-->
 
@@ -15576,37 +15585,17 @@ $contest_templates['Humorous Speech Contest'] = '<!-- wp:wp4toastmasters/help /-
 
 <!-- wp:wp4toastmasters/role {"role":"Humorous Contest Speaker","count":"6","time_allowed":"48"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note16295494558540.26410404771729024"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295494558540.26410404771729024","time_allowed":"10","editable":"","defaultContent":"Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants.</p>
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note15913","time_allowed":"10","editable":"","defaultContent":"Awards Ceremony"} /-->
 
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note15913"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Awards Ceremony</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9646"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Announcements and conclusion.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->';
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9646","editable":"","defaultContent":"Announcements and conclusion."} /-->';
 
 $contest_templates['Tall Tales Speech Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note5474","editable":"","defaultContent":"Sgt. at Arms calls the meeting to the order."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9971","editable":"","defaultContent":"President or Presiding Officer introduces the Contest Master."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Contest Master","count":"1","wp4t_agenda_note":"Delivers opening remarks","time_allowed":"5"} /-->
 
@@ -15618,37 +15607,17 @@ $contest_templates['Tall Tales Speech Contest'] = '<!-- wp:wp4toastmasters/help 
 
 <!-- wp:wp4toastmasters/role {"role":"Tall Tales Contest Speaker","count":"6","time_allowed":"48"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note16295494558540.26410404771729024"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295494558540.26410404771729024","time_allowed":"10","editable":"","defaultContent":"Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants.</p>
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note15913","time_allowed":"10","editable":"","defaultContent":"Awards Ceremony"} /-->
 
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note15913"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Awards Ceremony</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9646"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Announcements and conclusion.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->';
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9646","editable":"","defaultContent":"Announcements and conclusion."} /-->';
 
 $contest_templates['Table Topics Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note5474","editable":"","defaultContent":"Sgt. at Arms calls the meeting to the order."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9971","editable":"","defaultContent":"President or Presiding Officer introduces the Contest Master."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Contest Master","count":"1","wp4t_agenda_note":"Delivers opening remarks","time_allowed":"5"} /-->
 
@@ -15660,37 +15629,17 @@ $contest_templates['Table Topics Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Table Topics Contestant","count":"6","time_allowed":"18"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note16295494558540.26410404771729024"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295494558540.26410404771729024","time_allowed":"10","editable":"","defaultContent":"Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants.</p>
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note15913","time_allowed":"10","editable":"","defaultContent":"Awards Ceremony"} /-->
 
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note15913"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Awards Ceremony</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9646"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Announcements and conclusion.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->';
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9646","editable":"","defaultContent":"Announcements and conclusion."} /-->';
 
 $contest_templates['Evaluation Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note5474"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note5474","editable":"","defaultContent":"Sgt. at Arms calls the meeting to the order."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Sgt. at Arms calls the meeting to the order.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9971"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">President or Presiding Officer introduces theÂ Contest Master.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9971","editable":"","defaultContent":"President or Presiding Officer introduces the Contest Master."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Contest Master","count":"1","wp4t_agenda_note":"Delivers opening remarks","time_allowed":"5"} /-->
 
@@ -15700,39 +15649,21 @@ $contest_templates['Evaluation Contest'] = '<!-- wp:wp4toastmasters/help /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Ballot Counter","count":"2"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note16295488898690.6030916952992875"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295488898690.6030916952992875","time_allowed":"10","editable":"","defaultContent":"The Contest Master introduces the Test Speaker, who delivers a 5-7 minute speech."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">The Contest Master introduces the Test Speaker, who delivers a 5-7 minute speech.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"5","uid":"note16295492510330.21824611896692914"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">The contestants leave the room to prepare their notes.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295492510330.21824611896692914","time_allowed":"5","editable":"","defaultContent":"The contestants leave the room to prepare their notes."} /-->
 
 <!-- wp:wp4toastmasters/role {"role":"Evaluation Contestant","count":"6","time_allowed":"24"} /-->
 
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note16295494558540.26410404771729024"} -->
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note16295494558540.26410404771729024","time_allowed":"10","editable":"","defaultContent":"Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants."} /-->
 
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Ballot counters collect the votes of the judges and report back when the ballot counting is finished. During this time, the Contest Master may interview the contestants.</p>
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note15913","time_allowed":"10","editable":"","defaultContent":"Awards Ceremony"} /-->
 
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"10","uid":"note15913"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Awards Ceremony</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->
-
-<!-- wp:wp4toastmasters/agendanoterich2 {"uid":"note9646"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">Announcements and conclusion.</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->';
+<!-- wp:wp4toastmasters/agendaedit {"uid":"note9646","editable":"","defaultContent":"Announcements and conclusion."} /-->';
 
 foreach($contest_templates as $title => $default) {
+
+	$default = wpt_upgrade_legacy_agenda_note_content( $default );
 
 	$sql = $wpdb->prepare("select ID from $wpdb->posts join $wpdb->postmeta ON $wpdb->posts.ID=$wpdb->postmeta.post_id where meta_key='_sked_Varies' and post_title=%s ",$title);
 
@@ -15776,9 +15707,11 @@ foreach($contest_templates as $title => $default) {
 
 	$template['minutes'] = '00';
 
-	$template['week']    = 0;
+		$template['week']    = 0;
 
-	rsvpmaker_new_template_schedule( $templateID, $template );
+		if ( function_exists( 'rsvpmaker_new_template_schedule' ) ) {
+			rsvpmaker_new_template_schedule( $templateID, $template );
+		}
 
 }
 
@@ -15832,7 +15765,9 @@ function wp4t_new_agenda_template() {
 
 	$template['dayofweek'] = 1;
 
-	rsvpmaker_new_template_schedule( $templateID, $template );
+	if ( function_exists( 'rsvpmaker_new_template_schedule' ) ) {
+		rsvpmaker_new_template_schedule( $templateID, $template );
+	}
 
 	header( 'Location: ' . admin_url( 'edit.php?post_type=rsvpmaker&page=agenda_setup&post_id=' . $templateID ) );
 
@@ -16009,6 +15944,25 @@ function wp4t_archive_users_init() {
 register_activation_hook( __FILE__, 'toast_activate' );
 
 function wp4t_toolbar_link_to_agenda( $wp_admin_bar ) {
+	$args  = array(
+		'id'    => 'tm_profile_options',
+		'parent' => 'my-account',
+		'title' => 'Toastmasters Profile Options',
+		'href'  => admin_url( 'profile.php#tm_profile_fields' ),
+		'meta'  => array( 'class' => 'tm_profile_fields' ),
+	);
+	$wp_admin_bar->add_node( $args );
+
+	if ( function_exists( 'get_simple_local_avatar' ) ) {
+	$args  = array(
+		'id'    => 'user_profile_photo',
+		'parent' => 'my-account',
+		'title' => 'Change Profile Photo',
+		'href'  => admin_url( 'profile.php#simple-local-avatar-section' ),
+		'meta'  => array( 'class' => 'profile-photo-avatar' ),
+	);
+	$wp_admin_bar->add_node( $args );
+	}
 
 	global $post;
 
@@ -21306,7 +21260,7 @@ function wpt_agenda_layout_change () {
 
 		else {
 
-			$update['post_content'] = wpt_custom_layout_default(true);
+			$update['post_content'] = wpt_custom_layout_default();
 
 		}
 
@@ -23149,12 +23103,9 @@ function wp4t_agenda_note_convert( $atts, $content ) {
 		}
 
 		$u = rand();
+		$default_content = trim( strip_tags( $content ) );
 
-		return '<!-- wp:wp4toastmasters/agendanoterich2 {"time_allowed":"' . $atts['time_allowed'] . '","uid":"note' . $u . '"} -->
-
-<p class="wp-block-wp4toastmasters-wp4t_agendanoterich2">' . trim( strip_tags( $content ) ) . '</p>
-
-<!-- /wp:wp4toastmasters/agendanoterich2 -->';
+		return '<!-- wp:wp4toastmasters/agendaedit {"time_allowed":"' . $atts['time_allowed'] . '","uid":"note' . $u . '","editable":"","defaultContent":' . wp_json_encode( $default_content ) . '} /-->';
 
 	}
 
@@ -23313,6 +23264,230 @@ function wp4t_agenda_note_upgrade() {
 	}
 
 }
+
+function wpt_agenda_bulk_upgrade_candidates_count() {
+	global $wpdb;
+
+	return (int) $wpdb->get_var(
+		"SELECT COUNT(*) FROM $wpdb->posts
+		WHERE post_type IN ('rsvpmaker','rsvpmaker_template')
+		AND post_status NOT IN ('auto-draft','trash','inherit')
+		AND post_content LIKE '%wp:wp4toastmasters/agendanoterich2%'"
+	);
+}
+
+function wpt_agendaedit_default_content_from_agendanoterich2_block( $block ) {
+	$default_content = '';
+
+	if ( ! empty( $block['attrs']['content'] ) ) {
+		$default_content = (string) $block['attrs']['content'];
+	} elseif ( ! empty( $block['innerHTML'] ) ) {
+		$default_content = trim( (string) $block['innerHTML'] );
+	} elseif ( ! empty( $block['innerContent'] ) && is_array( $block['innerContent'] ) ) {
+		$default_content = trim(
+			implode(
+				'',
+				array_filter(
+					$block['innerContent'],
+					function ( $item ) {
+						return is_string( $item );
+					}
+				)
+			)
+		);
+	}
+
+	if ( preg_match( '/^\s*<p\b[^>]*>(.*)<\/p>\s*$/is', $default_content, $matches ) && ( 1 === preg_match_all( '/<p\b/i', $default_content ) ) ) {
+		$default_content = trim( $matches[1] );
+	}
+
+	return wp_kses_post( $default_content );
+}
+
+function wpt_upgrade_agendanoterich2_blocks_recursive( $blocks, &$block_count = 0, &$changed = false ) {
+	if ( empty( $blocks ) || ! is_array( $blocks ) ) {
+		return $blocks;
+	}
+
+	foreach ( $blocks as $index => $block ) {
+		if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+			$blocks[ $index ]['innerBlocks'] = wpt_upgrade_agendanoterich2_blocks_recursive( $block['innerBlocks'], $block_count, $changed );
+		}
+
+		if ( empty( $block['blockName'] ) || ( 'wp4toastmasters/agendanoterich2' !== $block['blockName'] ) ) {
+			continue;
+		}
+
+		$uid = ! empty( $block['attrs']['uid'] ) ? (string) $block['attrs']['uid'] : 'note' . wp_rand( 1000, 99999999 );
+		$time_allowed = isset( $block['attrs']['time_allowed'] ) ? absint( $block['attrs']['time_allowed'] ) : 0;
+		$default_content = wpt_agendaedit_default_content_from_agendanoterich2_block( $block );
+
+		$blocks[ $index ] = array(
+			'blockName' => 'wp4toastmasters/agendaedit',
+			'attrs' => array(
+				'uid' => $uid,
+				'time_allowed' => $time_allowed,
+				'editable' => '',
+				'inline' => 0,
+				'defaultContent' => $default_content,
+			),
+			'innerBlocks' => array(),
+			'innerHTML' => '',
+			'innerContent' => array(),
+		);
+
+		$block_count++;
+		$changed = true;
+	}
+
+	return $blocks;
+}
+
+function wpt_upgrade_agendanoterich2_content( $content ) {
+	if ( empty( $content ) || ! is_string( $content ) || ( false === strpos( $content, 'wp:wp4toastmasters/agendanoterich2' ) ) ) {
+		return $content;
+	}
+
+	$blocks = parse_blocks( $content );
+	$changed = false;
+	$block_count = 0;
+	$blocks = wpt_upgrade_agendanoterich2_blocks_recursive( $blocks, $block_count, $changed );
+
+	if ( ! $changed ) {
+		return $content;
+	}
+
+	return serialize_blocks( $blocks );
+}
+
+function wpt_upgrade_legacy_agenda_note_content( $content ) {
+	return wpt_upgrade_agendanoterich2_content( $content );
+}
+
+function wpt_bulk_upgrade_agendas_from_agendanoterich2() {
+	global $wpdb;
+
+	$post_ids = $wpdb->get_col(
+		"SELECT ID FROM $wpdb->posts
+		WHERE post_type IN ('rsvpmaker','rsvpmaker_template')
+		AND post_status NOT IN ('auto-draft','trash','inherit')
+		AND post_content LIKE '%wp:wp4toastmasters/agendanoterich2%'"
+	);
+
+	if ( empty( $post_ids ) ) {
+		return array(
+			'candidates' => 0,
+			'updated_posts' => 0,
+			'upgraded_blocks' => 0,
+		);
+	}
+
+	$updated_posts = 0;
+	$upgraded_blocks = 0;
+
+	foreach ( $post_ids as $post_id ) {
+		$post_id = (int) $post_id;
+		$content = get_post_field( 'post_content', $post_id );
+		if ( empty( $content ) || ( false === strpos( $content, 'wp:wp4toastmasters/agendanoterich2' ) ) ) {
+			continue;
+		}
+
+		$blocks = parse_blocks( $content );
+		$changed = false;
+		$block_count = 0;
+		$blocks = wpt_upgrade_agendanoterich2_blocks_recursive( $blocks, $block_count, $changed );
+
+		if ( ! $changed ) {
+			continue;
+		}
+
+		$new_content = serialize_blocks( $blocks );
+		if ( $new_content === $content ) {
+			continue;
+		}
+
+		$updated = wp_update_post(
+			array(
+				'ID' => $post_id,
+				'post_content' => wp_slash( $new_content ),
+			),
+			true
+		);
+
+		if ( ! is_wp_error( $updated ) ) {
+			$updated_posts++;
+			$upgraded_blocks += $block_count;
+		}
+	}
+
+	return array(
+		'candidates' => count( $post_ids ),
+		'updated_posts' => $updated_posts,
+		'upgraded_blocks' => $upgraded_blocks,
+	);
+}
+
+function wpt_handle_bulk_agenda_upgrade_request() {
+	if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	if ( empty( $_GET['wpt_bulk_upgrade_agendas'] ) ) {
+		return;
+	}
+
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wpt_bulk_upgrade_agendas' ) ) {
+		return;
+	}
+
+	$results = wpt_bulk_upgrade_agendas_from_agendanoterich2();
+
+	wp_safe_redirect(
+		add_query_arg(
+			array(
+				'wpt_bulk_upgrade_done' => 1,
+				'updated_posts' => (int) $results['updated_posts'],
+				'upgraded_blocks' => (int) $results['upgraded_blocks'],
+			),
+			admin_url( 'index.php' )
+		)
+	);
+	exit;
+}
+
+add_action( 'admin_init', 'wpt_handle_bulk_agenda_upgrade_request' );
+
+function wpt_bulk_agenda_upgrade_notice() {
+	if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	global $pagenow;
+	if ( 'index.php' !== $pagenow ) {
+		return;
+	}
+
+	if ( ! empty( $_GET['wpt_bulk_upgrade_done'] ) ) {
+		$updated_posts = isset( $_GET['updated_posts'] ) ? absint( $_GET['updated_posts'] ) : 0;
+		$upgraded_blocks = isset( $_GET['upgraded_blocks'] ) ? absint( $_GET['upgraded_blocks'] ) : 0;
+		echo '<div class="notice notice-success is-dismissible"><p>' . sprintf( __( 'Agenda upgrade complete: %1$d documents updated, %2$d blocks migrated to <a target="_blank" href="https://toastmost.org/2026/07/02/new-agenda-note-editor-block/">new Agenda Note format</a>.', 'rsvpmaker-for-toastmasters' ), $updated_posts, $upgraded_blocks ) . '</p></div>';
+		return;
+	}
+
+	$candidates = wpt_agenda_bulk_upgrade_candidates_count();
+	if ( $candidates < 1 ) {
+		return;
+	}
+
+	$url = wp_nonce_url(
+		add_query_arg( 'wpt_bulk_upgrade_agendas', 1, admin_url( 'index.php' ) ),
+		'wpt_bulk_upgrade_agendas'
+	);
+
+	echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'Agenda upgrade recommended', 'rsvpmaker-for-toastmasters' ) . ':</strong> ' . sprintf( esc_html__( '%d rsvpmaker or template documents use the old format for Agenda notes. Upgrade them in one click.', 'rsvpmaker-for-toastmasters' ), $candidates ) . '</p><p><a class="button button-primary" href="' . esc_url( $url ) . '">' . esc_html__( 'Upgrade Agendas Now', 'rsvpmaker-for-toastmasters' ) . '</a></p></div>';
+}
+
+add_action( 'admin_notices', 'wpt_bulk_agenda_upgrade_notice' );
 
 register_deactivation_hook( __FILE__, 'wptoast_deactivation' );
 
@@ -23692,21 +23867,32 @@ if ( ! wp_is_json_request() ) {
 }
 
 add_action( 'wp_head', 'wpt_richtext' );
+add_action( 'admin_head', 'wpt_richtext' );
 
 function wpt_richtext() {
 
 	global $post;
 
-	if ( empty( $post->post_content ) ) {
+	if(is_admin()) {
+		if(!isset($_GET['page']) || (!strpos($_GET['page'],'toastmasters') && !strpos($_GET['page'],'wp4t')  && !strpos($_GET['page'],'wpt') ) ) {
 
-		return;
+			return;
 
+		}
 	}
+	else
+		{
+		if ( empty( $post->post_content ) ) {
 
-	if ( ! strpos( $post->post_content, 'wp:wp4toastmasters' ) && ! strpos( $post->post_content, 'agenda_role' ) ) {
+			return;
 
-		return;
+		}
 
+		if ( ! strpos( $post->post_content, 'wp:wp4toastmasters' ) && ! strpos( $post->post_content, 'agenda_role' ) ) {
+
+			return;
+
+		}
 	}
 
 	echo '<script>

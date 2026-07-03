@@ -913,6 +913,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			if(sizeof($meetings))
 				$post_id = $meetings[0]->ID;
 		}
+		$votingdata['published_ballots'] = get_post_meta($post_id,'published_ballots',true);
+		if(!is_array($votingdata['published_ballots']))
+			$votingdata['published_ballots'] = array();
 	if(!empty($_GET['mobile'])) {
 		$identifier = sanitize_text_field($_GET['mobile']);
 		$json = file_get_contents('php://input');
@@ -981,6 +984,15 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		}
 		if(isset($data) && isset($data->close_ballot) && user_can($authorized,'edit_others_posts')) {
 			toastmasters_close_ballot($data->close_ballot);
+		}
+		if(isset($data) && isset($data->ballot)) {
+			$ballot_array = (array) $data->ballot;
+			foreach($ballot_array as $b => $params) {
+				if($params->status == 'publish' && !in_array($b,$votingdata['published_ballots'])) {
+					$votingdata['published_ballots'][] = $b;
+				}
+			}
+			update_post_meta($post_id,'published_ballots',$votingdata['published_ballots']);
 		}
 		if(isset($data) && isset($data->ballot) && $authorized) {
 			$ballot_array = (array) $data->ballot;
@@ -1439,8 +1451,21 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 			if(!empty($block['attrs']['custom_role']))
 				$agendadata['blocksdata'][$index]['attrs']['role'] = $block['attrs']['custom_role'];
 			$agendadata['blocksdata'][$index]['DnDid'] = 'dnd'.$index;
-			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid']))
-				$agendadata['blocksdata'][$index]['edithtml'] = empty($all_assignments['agenda_note_'.$block['attrs']['uid']]) ? '' : $all_assignments['agenda_note_'.$block['attrs']['uid']];// get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
+			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid'])) {
+				$editable_meta = empty($all_assignments['agenda_note_'.$block['attrs']['uid']]) ? '' : $all_assignments['agenda_note_'.$block['attrs']['uid']];
+				$default_content = empty($block['attrs']['defaultContent']) ? '' : $block['attrs']['defaultContent'];
+
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$default_content = wp4t_decode_editable_note_content( $default_content );
+				}
+
+				if ( empty( $editable_meta ) ) {
+					$editable_meta = wp_kses_post( $default_content );
+				}
+
+				$agendadata['blocksdata'][$index]['attrs']['defaultContent'] = wp_kses_post( $default_content );
+				$agendadata['blocksdata'][$index]['edithtml'] = $editable_meta;
+			}
 			elseif(isset($block['attrs']) && isset($block['attrs']['role']))
 				{
 					$agendadata['blocksdata'][$index]['memberoptions'] = wp4t_awe_rest_user_options($block['attrs']['role'],$post_id);
@@ -2085,6 +2110,12 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 				elseif('wp4toastmasters/agendaedit' == $block['blockName']) {
 					$editable['headline'] = $block['attrs']['editable'];
 					$text = get_post_meta($post_id,'agenda_note_'.$block['attrs']['uid'],true);
+					if ( empty( $text ) && ! empty( $block['attrs']['defaultContent'] ) ) {
+						$text = $block['attrs']['defaultContent'];
+						if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+							$text = wp4t_decode_editable_note_content( $text );
+						}
+					}
 					$editable['content'] = ($text) ? wpt_sanitize_user_html($text) : '';
 					$editable['key'] = 'agenda_note_'.$block['attrs']['uid'];
 					$agenda['editable'][] = $editable;

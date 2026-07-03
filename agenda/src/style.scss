@@ -32,8 +32,8 @@ button.agenda-tooltip {
 	line-height: 1.5 !important;
 	border-radius: 2px !important;
 	border: thin solid #ccc !important;
-	background-color: #f0f0f0 !important;
-	color: #333 !important;
+	background-color: #f0f0f0;
+	color: #333;
 	text-decoration: none !important;
 	white-space: nowrap !important;
 	flex-shrink: 0 !important;
@@ -46,7 +46,7 @@ button.agenda-tooltip {
 .agendawrapper input[type="submit"]:hover,
 .role-buttons button:hover,
 button.agenda-tooltip:hover {
-	background-color: #e0e0e0 !important;
+	background-color: #555 !important;
 }
 
 /* Keep action icons visible when themes (for example Elementor) target global svg */

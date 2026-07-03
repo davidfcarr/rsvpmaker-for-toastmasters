@@ -22,7 +22,7 @@ if ( isset( $_GET['word_agenda'] ) ) {
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title><?php wp_title( '|', true, 'right' ); ?></title>
+<title>Agenda: <?php wp_title( '|', true, 'right' ); ?></title>
 <style>
 <?php 
 	echo wpt_default_agenda_css();
@@ -51,10 +51,53 @@ legend {
 .wp-block-wp4toastmasters-rsvplist, .eachrole {
 	page-break-inside: avoid;
 }
+dialog {
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Dims the rest of the webpage while the modal is open */
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.dialog-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+#related-page-link {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+#close-dialog-btn {
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
 </style>
 </head>
 <body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['no_print'])) echo ' id="show" '; ?> >
 <?php
+if(isset($_GET['show_voting_qr'])) {
+	echo rsvpmaker_qr([
+		'url' => get_permalink().'?meetingvote=1',
+		'pixel' => 20,
+	]);
+}
+$intros_link = get_permalink().'?intros=show';
 if ( !isset($_GET['showintros']) && !isset($_GET['simple']) && !isset($_GET['word_agenda'])) {
 	?>
 <div class="noPrint" style="text-align:center;margin:10px;">
@@ -64,7 +107,7 @@ if ( !isset($_GET['showintros']) && !isset($_GET['simple']) && !isset($_GET['wor
  if(!get_option( 'wp4toastmasters_intros_on_agenda' ) )
 	printf( '<a href="%s?print_agenda=1&no_print=1&showintros=show">%s</a> | ', get_permalink(), __( 'Show Speech Introductions on Agenda', 'rsvpmaker-for-toastmasters' ) );
 ?>
-<a href="<?php echo get_permalink(); ?>?intros=show" target="_blank"><?php _e( 'Show Speech Introductions (New Tab)', 'rsvpmaker-for-toastmasters' ); ?></a><br />
+<a href="<?php echo $intros_link; ?>" target="_blank"><?php _e( 'Show Speech Introductions (New Tab)', 'rsvpmaker-for-toastmasters' ); ?></a><br />
 <em><?php _e( 'Note: content shown above will not be included on the printed agenda.', 'rsvpmaker-for-toastmasters' ); ?></em></p>
 </fieldset>
 </div>
@@ -97,6 +140,47 @@ window.print();
 //-->
 </script>
 ';
+}
+if ( !isset($_GET['showintros']) && !isset($_GET['simple']) && !isset($_GET['word_agenda'])) {
+?>
+<dialog id="print-suggestion-dialog">
+  <h3>Related Document Available</h3>
+  <p>Would you also like to view or print the Speech Introductions?</p>
+  
+  <div class="dialog-actions">
+    <a id="related-page-link" href="<?php echo $intros_link; ?>" rel="noopener">
+      Speech Introductions
+    </a>
+    <button id="close-dialog-btn" type="button">No Thanks</button>
+  </div>
+</dialog>
+<script type="text/javascript">
+window.addEventListener('afterprint', (event) => {
+  // This runs AFTER the print dialog closes (whether they clicked Print or Cancel)
+  console.log('afterprint event detected');
+  showRelatedPagePrompt();
+});
+
+function showRelatedPagePrompt() {
+console.log('Showing related page prompt');
+const printDialog = document.getElementById('print-suggestion-dialog');
+const closeBtn = document.getElementById('close-dialog-btn');
+const relatedLink = document.getElementById('related-page-link');
+
+printDialog.showModal(); 
+
+// 2. Close the dialog if they click "Maybe Later"
+closeBtn.addEventListener('click', () => {
+  printDialog.close();
+});
+
+// 3. Optional: Close the dialog if they click the link
+relatedLink.addEventListener('click', () => {
+  printDialog.close();
+});
+}
+</script>
+<?php
 }
 ?>
 </body>

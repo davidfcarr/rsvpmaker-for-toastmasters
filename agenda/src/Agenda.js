@@ -337,7 +337,7 @@ export default function Agenda(props) {
                             return (
                                 <div key={'block' + blockindex} id={'block' + blockindex} className="block">
                                     <div><strong>{datestring}</strong></div>
-                                    <EditableNote makeNotification={makeNotification} mode={notemode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} />
+                                    <EditableNote makeNotification={makeNotification} mode={notemode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} isTemplate={!!data.is_template} />
                                     {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} setShowControls={setShowControls} />}
                                     {showControls != blockindex && user_can('organize_agenda') && <button className="agenda-tooltip" onClick={() => { setShowControls(blockindex) }}><span className="agenda-tooltip-text">{mytranslate('Edit/Organize', data)}</span><Icon icon={edit} /></button>}
                                 </div>
@@ -400,7 +400,7 @@ export default function Agenda(props) {
                             return (
                                 <div key={'block' + blockindex} id={'block' + blockindex} className="block">
                                     <div><strong>{datestring}</strong></div>
-                                    <EditableNote makeNotification={makeNotification} mode={mode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} />
+                                    <EditableNote makeNotification={makeNotification} mode={mode} block={block} blockindex={blockindex} uid={block.attrs.uid} post_id={post_id} isTemplate={!!data.is_template} />
                                     {showControls == blockindex && user_can('organize_agenda') && <ReorgWidget block={block} blockindex={blockindex} data={data} post_id={post_id} makeNotification={makeNotification} setMode={setMode} setShowControls={setShowControls} />}
                                     {showControls != blockindex && user_can('organize_agenda') && <button className="agenda-tooltip" onClick={() => { setShowControls(blockindex) }}><span className="agenda-tooltip-text">{mytranslate('Edit/Organize', data)}</span><Icon icon={edit} /></button>}
                                 </div>

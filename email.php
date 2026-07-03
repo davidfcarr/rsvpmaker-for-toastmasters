@@ -5,6 +5,7 @@ Email routines
 add_action( 'wp4toast_reminders_cron', 'wp4toast_reminders_cron', 10, 1 );
 function wp4toast_reminders_cron( $meeting_hours ) {
 	wp_suspend_cache_addition(true);
+	error_log('wp4toast_reminders_cron: ' . $meeting_hours);
 	wp4t_email_with_without_role( $meeting_hours );
 	wp_suspend_cache_addition(false);
 	rsvp_memory_peak_limit(0.9,'wp4toast_reminders_cron');
@@ -148,18 +149,41 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	$date   = rsvpmaker_date( $rsvp_options['short_date'], $t );
 	$post   = $next;
 	$dupkey = '';
+	$mail['from'] = wpt_format_email_forwarder('info');
+	$mail['fromname'] = get_bloginfo( 'name' );
 	if(!$test)
 	{
-		$dupkey = 'email_reminder_' . $meeting_hours;
+		$dupkey = 'rsvpemail_reminder_' . $meeting_hours;
 		if ( get_post_meta( $post->ID, $dupkey, true ) ) {
 			return; // don't do more than once
 		}
 	}
 	$members   = wp4t_get_club_members();
+	if(get_post_meta($next->ID,'_nomeeting',true)) {
+		if(!get_post_meta($next->ID,'_nomeeting_notice_sent',true)) {
+			$mail['subject'] = $next->post_title . ' - ' . $date;
+			$mail['html'] = do_blocks($next->post_content);
+			foreach($members as $member) {
+				if(empty($member->user_email))
+					continue;
+				$mail['to'] = $member->user_email;
+				rsvpmailer( $mail );
+			}
+			update_post_meta($next->ID,'_nomeeting_notice_sent',true);
+		}
+		return;
+	}
+	$toast_roles['Toastmaster_of_the_Day'] = 'Toastmaster of the Day';
 	$templates = get_rsvpmaker_notification_templates();
 	$permalink = get_permalink( $next->ID );
 	$content   = do_shortcode( $templates['wp4t_norole']['body'] );
 	$absences  = wp4t_get_absences_array( $next->ID );
+	$ical_sent = get_post_meta( $next->ID, '_ical_sent', true );
+	if(empty($ical_sent))
+		update_post_meta( $next->ID, '_ical_sent', true );
+	$ical_message = sprintf( __( "<p>Here is the agenda for the meeting on %s</p>.\n\n<p>%s <a href=\"%s\">%s</a></p>\n\n<p>View agenda: <a href=\"%s\">%s</a></p>\n\n", 'rsvpmaker-for-toastmasters' ), $date, __( 'Sign up', 'rsvpmaker-for-toastmasters' ), $permalink, $permalink, $permalink.'?print_agenda=1&no_print=1', $permalink.'?print_agenda=1&no_print=1' );
+	$ical_message .= get_option('wpt_ical_message');
+
 	$log = array(
 		'meeting_hours' => $meeting_hours,
 		'post_id' => (int) $next->ID,
@@ -254,12 +278,15 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	}
 	if(isset($_GET['debug']))
 	$output = '<pre>'.var_export($toast_roles,true).'</pre>';
-	$mail = wpt_notification_from($next->ID);
 	foreach ( $reminders as $index => $email ) {
+		//if('david@carrcommunications.com' != $email)
+			//continue;
 		$log['reminder_recipients']++;
 		$mail['to']      = ( $test ) ? $mail['from'] : $email;
 		$testtext        = ( $test ) ? "<p>$email</p>" : '';
-		$mail['from'] = wpt_format_email_forwarder('vpe');
+		if(empty($ical_sent))
+			$mail["ical"] = rsvpmaker_to_ical_email ($next->ID, $mail["from"], $mail['to'], $ical_message);
+		error_log('ical agenda reminder: ' . $mail['ical']);
         $mail['html'] = str_replace('[wpt_open_roles]',$content,$reminder_body[$index]);
         $mail['html'] = str_replace('[rsvpdate]',$date,$mail['html']);
         $mail['html'] = str_replace('[rsvptitle]',$next->post_title,$mail['html']);
@@ -275,7 +302,7 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 			$log['send_ok']++;
 		}
 		else {
-			$result          = rsvpmaker_qemail( $mail, array($mail['to']) );
+			$result = rsvpmailer($mail);
 			if ( is_wp_error( $result ) ) {
 				$log['send_fail']++;
 				$log['send_fail_detail'][] = array(
@@ -286,7 +313,7 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 				$log['send_fail']++;
 				$log['send_fail_detail'][] = array(
 					'email' => $mail['to'],
-					'error' => 'rsvpmaker_qemail returned false',
+					'error' => 'rsvpmailer returned false',
 				);
 			} else {
 				$log['send_ok']++;
@@ -294,6 +321,7 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 			update_post_meta( $post->ID, 'reminder', $mail );	
 		}
 	}
+	//return;
 	$log['norole_recipient_count'] = count( $wp4t_norole );
 	if(!empty($wp4t_norole)) {
 		$mail['html'] = wpt_email_agenda_wrapper("<p>".__("You're not yet signed up for a role",'rsvpmaker-for-toastmasters')."</p>\n" . $content);
@@ -303,13 +331,11 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 			$log['norole_send'] = 'test_preview_only';
 		}
 		else {
-			$norole_result = rsvpmaker_qemail($mail,$wp4t_norole);
-			if ( is_wp_error( $norole_result ) ) {
-				$log['norole_send'] = 'error: ' . $norole_result->get_error_message();
-			} elseif ( false === $norole_result ) {
-				$log['norole_send'] = 'error: rsvpmaker_qemail returned false';
-			} else {
-				$log['norole_send'] = 'ok';
+			foreach($wp4t_norole as $index => $email) {
+				$mail['to'] = $email;
+				if(empty($ical_sent))
+					$mail["ical"] = rsvpmaker_to_ical_email ($next->ID, $mail['from'], $email, $ical_message);
+				$result = rsvpmailer( $mail );
 			}
 		}
 	}
@@ -324,6 +350,7 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	if(!$test)
 		update_post_meta( $post->ID, '_reminder_email', 'Role reminders ' . implode( ',', $reminders ) . ' prompt: ' . implode( ',', $wp4t_norole ).rsvpmaker_date('r') );
 	update_post_meta( $post->ID, '_reminder_email_log', $log );
+	error_log('wp4t_email_with_without_role: ' . print_r($log,true));
 	$post = $waspost;
 	return $output;
 }
