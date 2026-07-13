@@ -21,6 +21,10 @@ import Edit from './edit';
 import save from './save';
 import metadata from './block.json';
 
+const migrateLegacyMilestone = ( attributes ) => ( {
+	label: attributes?.label || metadata.attributes?.label?.default || 'Meeting ends',
+} );
+
 /**
  * Every block starts by registering a new block type definition.
  *
@@ -39,6 +43,49 @@ registerBlockType( metadata.name, {
 
 	deprecated: [
 		{
+			attributes: {
+				label: {
+					type: 'string',
+					source: 'html',
+					selector: 'p',
+				},
+				legacyMaxTime: {
+					type: 'string',
+					source: 'attribute',
+					selector: 'p',
+					attribute: 'maxtime',
+				},
+			},
+			migrate: migrateLegacyMilestone,
+			save( { attributes: { label, legacyMaxTime } } ) {
+				return (
+					<div className="wp-block-wp4toastmasters-milestone">
+						<p maxtime={ legacyMaxTime || 'x' }>{ label }</p>
+					</div>
+				);
+			},
+		},
+		{
+			attributes: {
+				label: {
+					type: 'string',
+					source: 'html',
+					selector: 'p',
+				},
+				legacyMaxTime: {
+					type: 'string',
+					source: 'attribute',
+					selector: 'p',
+					attribute: 'maxtime',
+				},
+			},
+			migrate: migrateLegacyMilestone,
+			save( { attributes: { label, legacyMaxTime } } ) {
+				return <p maxtime={ legacyMaxTime || 'x' }>{ label }</p>;
+			},
+		},
+		{
+			migrate: migrateLegacyMilestone,
 			save( { attributes: { label } } ) {
 				return (
 					<div className="wp-block-wp4toastmasters-milestone">

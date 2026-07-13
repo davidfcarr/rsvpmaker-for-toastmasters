@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2.
 msgid ""
 msgstr ""
-"Project-Id-Version: RSVPMaker for Toastmasters 6.7.6\n"
+"Project-Id-Version: RSVPMaker for Toastmasters 6.8.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rsvpmaker-for-toastmasters\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-04T01:22:15+00:00\n"
+"POT-Creation-Date: 2026-07-06T22:23:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rsvpmaker-for-toastmasters\n"
@@ -39,20 +39,20 @@ msgstr ""
 msgid "http://www.carrcommunications.com"
 msgstr ""
 
-#: agenda-custom.php:62
+#: agenda-custom.php:105
 msgid "Will not print"
 msgstr ""
 
-#: agenda-custom.php:65
-#: core.php:4979
+#: agenda-custom.php:108
+#: core.php:5424
 msgid "Show Speech Introductions on Agenda"
 msgstr ""
 
-#: agenda-custom.php:67
+#: agenda-custom.php:110
 msgid "Show Speech Introductions (New Tab)"
 msgstr ""
 
-#: agenda-custom.php:68
+#: agenda-custom.php:111
 #: agenda.php:38
 msgid "Note: content shown above will not be included on the printed agenda."
 msgstr ""
@@ -75,2301 +75,2361 @@ msgid "Show Intros (New Tab)"
 msgstr ""
 
 #: api.php:412
-#: core.php:2236
-#: core.php:2254
-#: core.php:2266
-#: core.php:2276
-#: utility.php:5937
+#: core.php:2624
+#: core.php:2642
+#: core.php:2654
+#: core.php:2664
+#: utility.php:5921
 msgid "Take Role"
 msgstr ""
 
-#: api.php:1705
-#: core.php:12933
-#: core.php:22245
+#: api.php:449
+msgid "Unconfirmed suggestion: "
+msgstr ""
+
+#: api.php:1732
+#: core.php:13394
+#: core.php:22808
 #: utility.php:373
-#: utility.php:681
-#: utility.php:6109
+#: utility.php:660
+#: utility.php:6093
 msgid "Planned Absence"
 msgstr ""
 
-#: api.php:1930
+#: api.php:1957
 msgid "Check this report against your Pathways Base Camp records."
 msgstr ""
 
-#: api.php:1933
+#: api.php:1960
 msgid "No speech records found."
 msgstr ""
 
-#: api.php:2139
+#: api.php:2176
 msgid "Select Role"
 msgstr ""
 
-#: api.php:2140
-#: enqueue.php:145
+#: api.php:2177
+#: enqueue.php:171
 msgid "Custom Role"
 msgstr ""
 
 #: contest.php:291
 #: contest.php:1358
-#: core.php:11547
-#: core.php:11809
-#: utility.php:3407
+#: core.php:12008
+#: core.php:12270
+#: utility.php:3383
 msgid "Login"
 msgstr ""
 
-#: core.php:6
+#: core.php:49
+msgid "To view this content, you must have editor access."
+msgstr ""
+
+#: core.php:50
+msgid "To view this content, you must log in with editor access."
+msgstr ""
+
+#: core.php:52
+#: filters.php:367
+msgid "To view this content, you must be logged with a member account."
+msgstr ""
+
+#: core.php:57
+#: filters.php:367
+msgid "Login to View"
+msgstr ""
+
+#: core.php:111
 msgctxt "Post type general name"
 msgid "Minutes"
 msgstr ""
 
-#: core.php:8
+#: core.php:113
 msgctxt "Post type singular name"
 msgid "Minutes Item"
 msgstr ""
 
-#: core.php:10
+#: core.php:115
 msgctxt "Admin Menu text"
 msgid "TM Minutes"
 msgstr ""
 
-#: core.php:12
+#: core.php:117
 msgctxt "Add New on Toolbar"
 msgid "Minutes"
 msgstr ""
 
-#: core.php:14
+#: core.php:119
 msgid "Add New"
 msgstr ""
 
-#: core.php:16
+#: core.php:121
 msgid "Add New Minutes"
 msgstr ""
 
-#: core.php:18
+#: core.php:123
 msgid "New Minutes"
 msgstr ""
 
-#: core.php:20
+#: core.php:125
 msgid "Edit Minutes"
 msgstr ""
 
-#: core.php:22
+#: core.php:127
 msgid "View Minutes"
 msgstr ""
 
-#: core.php:24
+#: core.php:129
 msgid "All Minutes"
 msgstr ""
 
-#: core.php:26
+#: core.php:131
 msgid "Search Minutes"
 msgstr ""
 
-#: core.php:28
+#: core.php:133
 msgid "Parent Minutes:"
 msgstr ""
 
-#: core.php:30
+#: core.php:135
 msgid "No minutes found."
 msgstr ""
 
-#: core.php:32
+#: core.php:137
 msgid "No minutes found in Trash."
 msgstr ""
 
-#: core.php:34
-msgctxt "Overrides the “Featured Image” phrase for this post type. Added in 4.3"
+#: core.php:139
+msgctxt "Overrides the ΓÇ£Featured ImageΓÇ¥ phrase for this post type. Added in 4.3"
 msgid "Minutes Cover Image"
 msgstr ""
 
-#: core.php:36
-msgctxt "Overrides the “Set featured image” phrase for this post type. Added in 4.3"
+#: core.php:141
+msgctxt "Overrides the ΓÇ£Set featured imageΓÇ¥ phrase for this post type. Added in 4.3"
 msgid "Set cover image"
 msgstr ""
 
-#: core.php:38
-msgctxt "Overrides the “Remove featured image” phrase for this post type. Added in 4.3"
+#: core.php:143
+msgctxt "Overrides the ΓÇ£Remove featured imageΓÇ¥ phrase for this post type. Added in 4.3"
 msgid "Remove cover image"
 msgstr ""
 
-#: core.php:40
-msgctxt "Overrides the “Use as featured image” phrase for this post type. Added in 4.3"
+#: core.php:145
+msgctxt "Overrides the ΓÇ£Use as featured imageΓÇ¥ phrase for this post type. Added in 4.3"
 msgid "Use as cover image"
 msgstr ""
 
-#: core.php:42
-msgctxt "The post type archive label used in nav menus. Default “Post Archives”. Added in 4.4"
+#: core.php:147
+msgctxt "The post type archive label used in nav menus. Default ΓÇ£Post ArchivesΓÇ¥. Added in 4.4"
 msgid "Minutes archives"
 msgstr ""
 
-#: core.php:44
-msgctxt "Overrides the “Insert into post”/”Insert into page” phrase (used when inserting media into a post). Added in 4.4"
+#: core.php:149
+msgctxt "Overrides the ΓÇ£Insert into postΓÇ¥/ΓÇ¥Insert into pageΓÇ¥ phrase (used when inserting media into a post). Added in 4.4"
 msgid "Insert into minutes item"
 msgstr ""
 
-#: core.php:46
-msgctxt "Overrides the “Uploaded to this post”/”Uploaded to this page” phrase (used when viewing media attached to a post). Added in 4.4"
+#: core.php:151
+msgctxt "Overrides the ΓÇ£Uploaded to this postΓÇ¥/ΓÇ¥Uploaded to this pageΓÇ¥ phrase (used when viewing media attached to a post). Added in 4.4"
 msgid "Uploaded to this minutes item"
 msgstr ""
 
-#: core.php:48
-msgctxt "Screen reader text for the filter links heading on the post type listing screen. Default “Filter posts list”/”Filter pages list”. Added in 4.4"
+#: core.php:153
+msgctxt "Screen reader text for the filter links heading on the post type listing screen. Default ΓÇ£Filter posts listΓÇ¥/ΓÇ¥Filter pages listΓÇ¥. Added in 4.4"
 msgid "Filter minutes list"
 msgstr ""
 
-#: core.php:50
-msgctxt "Screen reader text for the pagination heading on the post type listing screen. Default “Posts list navigation”/”Pages list navigation”. Added in 4.4"
+#: core.php:155
+msgctxt "Screen reader text for the pagination heading on the post type listing screen. Default ΓÇ£Posts list navigationΓÇ¥/ΓÇ¥Pages list navigationΓÇ¥. Added in 4.4"
 msgid "Minutes list navigation"
 msgstr ""
 
-#: core.php:52
-msgctxt "Screen reader text for the items list heading on the post type listing screen. Default “Posts list”/”Pages list”. Added in 4.4"
+#: core.php:157
+msgctxt "Screen reader text for the items list heading on the post type listing screen. Default ΓÇ£Posts listΓÇ¥/ΓÇ¥Pages listΓÇ¥. Added in 4.4"
 msgid "Minutes list"
 msgstr ""
 
-#: core.php:235
+#: core.php:358
 msgid "Open"
 msgstr ""
 
-#: core.php:275
+#: core.php:398
 msgid "Title"
 msgstr ""
 
-#: core.php:281
-#: core.php:1646
+#: core.php:404
+#: core.php:2034
 msgid "Introduction"
 msgstr ""
 
-#: core.php:331
-#: core.php:17230
+#: core.php:454
+#: core.php:17593
 #, php-format
 msgid "The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker is installed but must be activated. <a href=\"%s#name\">Activate now</a>"
 msgstr ""
 
-#: core.php:335
-#: core.php:17234
+#: core.php:458
+#: core.php:17597
 #, php-format
 msgid "The RSVPMaker plugin is required for all Toastmasters functions. RSVPMaker must be installed and activated. <a href=\"%s\">Install now</a>"
 msgstr ""
 
-#: core.php:357
+#: core.php:480
 #, php-format
 msgid "You are viewing the private members-only area of the website. For a basic orientation, see the <a href=\"%s\">welcome page</a>."
 msgstr ""
 
-#: core.php:463
+#: core.php:586
 msgid "Print Signup Sheet"
 msgstr ""
 
-#: core.php:469
+#: core.php:592
 #: filters.php:117
 msgid "Edit Signups (multiple weeks)"
 msgstr ""
 
-#: core.php:477
+#: core.php:600
 msgid "Sign up for roles on multiple dates using the Role Planner"
 msgstr ""
 
-#: core.php:487
+#: core.php:610
 msgid "Upcoming Roles"
 msgstr ""
 
-#: core.php:497
+#: core.php:620
 msgid "Edit My Member Profile"
 msgstr ""
 
-#: core.php:505
+#: core.php:628
 msgid "Print Contacts List"
 msgstr ""
 
-#: core.php:509
+#: core.php:632
 msgid "Home Page"
 msgstr ""
 
-#: core.php:523
-#: core.php:537
-#: core.php:549
-#: core.php:555
+#: core.php:646
+#: core.php:660
+#: core.php:672
+#: core.php:678
 msgid "Email all members"
 msgstr ""
 
-#: core.php:523
-#: core.php:537
-#: core.php:543
-#: core.php:549
-#: core.php:555
+#: core.php:646
+#: core.php:660
+#: core.php:666
+#: core.php:672
+#: core.php:678
 msgid "for club business or social invitations, no spam please"
 msgstr ""
 
-#: core.php:529
+#: core.php:652
 msgid "Private email list for officers"
 msgstr ""
 
-#: core.php:543
+#: core.php:666
 msgid "Officers email list"
 msgstr ""
 
-#: core.php:555
+#: core.php:678
 msgid "Mailing list"
 msgstr ""
 
-#: core.php:569
+#: core.php:692
 #: tm-reports.php:17
 msgid "My Progress"
 msgstr ""
 
-#: core.php:587
+#: core.php:710
 msgid "Administration"
 msgstr ""
 
-#: core.php:589
-#: core.php:3966
-#: core.php:10047
+#: core.php:712
+#: core.php:4352
+#: core.php:10508
 msgid "Add Members"
 msgstr ""
 
-#: core.php:593
-#: core.php:3968
+#: core.php:716
+#: core.php:4354
 msgid "Edit Members"
 msgstr ""
 
-#: core.php:597
+#: core.php:720
 msgid "Guests/Former Members"
 msgstr ""
 
-#: core.php:623
+#: core.php:746
 msgid "You have no published events based on your club meeting template"
 msgstr ""
 
-#: core.php:629
+#: core.php:752
 msgid "Future events scheduled"
 msgstr ""
 
-#: core.php:635
+#: core.php:758
 msgid "Event Templates"
 msgstr ""
 
-#: core.php:647
+#: core.php:770
 msgid "Add Events (based on template)"
 msgstr ""
 
-#: core.php:647
+#: core.php:770
 msgid "Agenda Setup (drag-and-drop editor)"
 msgstr ""
 
-#: core.php:679
+#: core.php:802
 msgid "Member Files"
 msgstr ""
 
-#: core.php:683
+#: core.php:806
 msgid "This listing shows all files uploaded to the website, with the exception of images. As an editor or officer, you can hide any of these that should not be displayed to your members."
 msgstr ""
 
-#: core.php:721
+#: core.php:844
 msgid "Show This"
 msgstr ""
 
-#: core.php:725
+#: core.php:848
 msgid "Hide This"
 msgstr ""
 
-#: core.php:729
-#: filters.php:252
-#: history.php:379
-#: tm-reports.php:126
-#: tm-reports.php:2463
-#: utility.php:5945
+#: core.php:852
+#: filters.php:253
+#: history.php:432
+#: tm-reports.php:130
+#: tm-reports.php:2471
+#: utility.php:5929
 msgid "Edit"
 msgstr ""
 
-#: core.php:855
+#: core.php:1194
 msgid "Agenda Layout Editor (Advanced)"
 msgstr ""
 
-#: core.php:1144
-#: email.php:549
+#: core.php:1463
+#: email.php:754
 msgid "Open Roles"
 msgstr ""
 
-#: core.php:1164
+#: core.php:1483
 msgid "View agenda and sign up at"
 msgstr ""
 
-#: core.php:1164
-#: email.php:558
+#: core.php:1483
+#: email.php:763
 msgid "Forgot your password?"
 msgstr ""
 
-#: core.php:1164
-#: email.php:558
+#: core.php:1483
+#: email.php:763
 msgid "Reset your password here"
 msgstr ""
 
-#: core.php:1190
+#: core.php:1509
 msgid "Calendar page created"
 msgstr ""
 
-#: core.php:1196
-#: core.php:1210
+#: core.php:1515
+#: core.php:1529
 msgid "To Do: Create a Calendar page including the shortcode/placeholder"
 msgstr ""
 
-#: core.php:1204
+#: core.php:1523
 msgid "Member page created"
 msgstr ""
 
-#: core.php:1234
+#: core.php:1553
 msgid "Templates created"
 msgstr ""
 
-#: core.php:1240
-#: core.php:1276
+#: core.php:1559
+#: core.php:1595
 msgid "To Do"
 msgstr ""
 
-#: core.php:1240
+#: core.php:1559
 msgid "Create an event template for your regular meetings"
 msgstr ""
 
-#: core.php:1254
+#: core.php:1573
 msgid "Members imported"
 msgstr ""
 
-#: core.php:1260
+#: core.php:1579
 msgid "To Do: Import members. Current members:"
 msgstr ""
 
-#: core.php:1260
+#: core.php:1579
 msgid "See add members screen"
 msgstr ""
 
-#: core.php:1270
+#: core.php:1589
 msgid "Officer list recorded"
 msgstr ""
 
-#: core.php:1276
+#: core.php:1595
 msgid "Record list of officers on settings screen"
 msgstr ""
 
-#: core.php:1574
+#: core.php:1962
 msgid "member name not found"
 msgstr ""
 
-#: core.php:2030
+#: core.php:2418
 msgid "Drag and drop assignments into the desired agenda order"
 msgstr ""
 
-#: core.php:2166
-#: core.php:2202
+#: core.php:2554
+#: core.php:2590
 msgid "Suggested assignment (unconfirmed)"
 msgstr ""
 
-#: core.php:2166
-#: core.php:2202
-#: tm-reports.php:1786
-#: tm-reports.php:2145
+#: core.php:2554
+#: core.php:2590
+#: tm-reports.php:1794
+#: tm-reports.php:2153
 msgid "Last attended"
 msgstr ""
 
-#: core.php:2166
-#: core.php:2202
+#: core.php:2554
+#: core.php:2590
 msgid "Last filled role"
 msgstr ""
 
-#: core.php:2178
-#: core.php:2364
+#: core.php:2566
+#: core.php:2752
 msgid "Apply to all upcoming meetings"
 msgstr ""
 
-#: core.php:2180
-#: core.php:2368
+#: core.php:2568
+#: core.php:2756
 msgid "Or guest"
 msgstr ""
 
-#: core.php:2210
+#: core.php:2598
 msgid "Add a personal note (optional)"
 msgstr ""
 
-#: core.php:2218
+#: core.php:2606
 msgid "Take Role button appears here"
 msgstr ""
 
-#: core.php:2236
-#: core.php:2246
+#: core.php:2624
+#: core.php:2634
 msgid "Based on the points system we use, you are at"
 msgstr ""
 
-#: core.php:2246
+#: core.php:2634
 msgid "Please sign up for other supporting roles (if not for this meeting, then soon) to balance out your participation in the club."
 msgstr ""
 
-#: core.php:2294
+#: core.php:2682
 msgid "Update Role"
 msgstr ""
 
-#: core.php:2352
-#: agenda/build/5692.js:1
+#: core.php:2740
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:138
 msgid "Remove Me"
 msgstr ""
 
-#: core.php:2378
-#: core.php:2382
-#: core.php:17598
-#: core.php:22245
-#: core.php:23580
-#: tm-online-application.php:1073
+#: core.php:2766
+#: core.php:2770
+#: core.php:17961
+#: core.php:22808
+#: core.php:24375
+#: tm-online-application.php:1099
 msgid "Submit"
 msgstr ""
 
-#: core.php:2834
+#: core.php:3222
 msgid "Officers"
 msgstr ""
 
-#: core.php:2862
+#: core.php:3250
 msgid "Officers list not yet set"
 msgstr ""
 
-#: core.php:3036
-#: core.php:3052
-#: core.php:3174
+#: core.php:3424
+#: core.php:3440
+#: core.php:3562
 msgid "Select Manual/Path to See Options"
 msgstr ""
 
-#: core.php:3048
+#: core.php:3436
 msgid "Select Project"
 msgstr ""
 
-#: core.php:3266
+#: core.php:3654
 msgid "Time reserved for this speech"
 msgstr ""
 
-#: core.php:3266
+#: core.php:3654
 msgid "minutes."
 msgstr ""
 
-#: core.php:3286
+#: core.php:3674
 msgid "evaluation form"
 msgstr ""
 
-#: core.php:3310
+#: core.php:3698
 msgid "Progress Report for"
 msgstr ""
 
-#: core.php:3316
+#: core.php:3704
 msgid "Progress Report for You"
 msgstr ""
 
-#: core.php:3320
-#: tm-reports.php:647
-#: tm-reports.php:656
-#: tm-reports.php:748
-#: tm-reports.php:758
-#: tm-reports.php:1098
-#: tm-reports.php:1570
-#: tm-reports.php:3087
+#: core.php:3708
+#: tm-reports.php:655
+#: tm-reports.php:664
+#: tm-reports.php:756
+#: tm-reports.php:766
+#: tm-reports.php:1106
+#: tm-reports.php:1578
+#: tm-reports.php:3095
 msgid "Get"
 msgstr ""
 
-#: core.php:3322
+#: core.php:3710
 msgid "Speeches"
 msgstr ""
 
-#: core.php:3362
+#: core.php:3750
 msgid "Other Roles"
 msgstr ""
 
-#: core.php:3422
+#: core.php:3810
 msgid "user"
 msgstr ""
 
-#: core.php:3482
-#: core.php:3972
+#: core.php:3870
+#: core.php:4358
 msgid "Former Members"
 msgstr ""
 
-#: core.php:3490
+#: core.php:3876
 msgid "This list includes inactive members and gives you the option of reactivating their accounts"
 msgstr ""
 
-#: core.php:3732
+#: core.php:4118
 msgid "Edit Member"
 msgstr ""
 
-#: core.php:3806
-#: core.php:9787
-#: core.php:10339
-#: core.php:19520
-#: core.php:21019
-#: core.php:21325
-#: core.php:21337
-#: core.php:21559
-#: core.php:21571
-#: core.php:21625
-#: core.php:21637
-#: core.php:21679
-#: core.php:21691
-#: core.php:21725
-#: core.php:21737
-#: email-forwarders-and-groups.php:1743
-#: email-forwarders-and-groups.php:1750
-#: tm-reports.php:3164
-#: tm-reports.php:3170
-#: utility.php:2219
+#: core.php:4192
+#: core.php:10248
+#: core.php:10800
+#: core.php:20083
+#: core.php:21582
+#: core.php:21888
+#: core.php:21900
+#: core.php:22122
+#: core.php:22134
+#: core.php:22188
+#: core.php:22200
+#: core.php:22242
+#: core.php:22254
+#: core.php:22288
+#: core.php:22300
+#: email-forwarders-and-groups.php:1778
+#: email-forwarders-and-groups.php:1785
+#: tm-reports.php:3172
+#: tm-reports.php:3178
+#: utility.php:2195
 msgid "Email"
 msgstr ""
 
-#: core.php:3814
-#: core.php:10347
-#: core.php:21019
+#: core.php:4200
+#: core.php:10808
+#: core.php:21582
 msgid "First Name"
 msgstr ""
 
-#: core.php:3822
-#: core.php:10355
-#: core.php:21019
+#: core.php:4208
+#: core.php:10816
+#: core.php:21582
 msgid "Last Name"
 msgstr ""
 
-#: core.php:3830
-#: core.php:9677
-#: core.php:10363
-#: core.php:21319
-#: core.php:21553
-#: core.php:21619
-#: core.php:21673
-#: core.php:21719
-#: email-forwarders-and-groups.php:1740
-#: tm-reports.php:3161
-#: utility.php:2207
+#: core.php:4216
+#: core.php:10138
+#: core.php:10824
+#: core.php:21882
+#: core.php:22116
+#: core.php:22182
+#: core.php:22236
+#: core.php:22282
+#: email-forwarders-and-groups.php:1775
+#: tm-reports.php:3169
+#: utility.php:2183
 msgid "Home Phone"
 msgstr ""
 
-#: core.php:3838
-#: core.php:9679
-#: core.php:10371
-#: core.php:21321
-#: core.php:21555
-#: core.php:21621
-#: core.php:21675
-#: core.php:21721
-#: email-forwarders-and-groups.php:1741
-#: tm-reports.php:3162
-#: utility.php:2211
+#: core.php:4224
+#: core.php:10140
+#: core.php:10832
+#: core.php:21884
+#: core.php:22118
+#: core.php:22184
+#: core.php:22238
+#: core.php:22284
+#: email-forwarders-and-groups.php:1776
+#: tm-reports.php:3170
+#: utility.php:2187
 msgid "Work Phone"
 msgstr ""
 
-#: core.php:3846
-#: core.php:9681
-#: core.php:10379
-#: core.php:21323
-#: core.php:21557
-#: core.php:21623
-#: core.php:21677
-#: core.php:21723
-#: email-forwarders-and-groups.php:1742
-#: tm-reports.php:3163
-#: utility.php:2215
+#: core.php:4232
+#: core.php:10142
+#: core.php:10840
+#: core.php:21886
+#: core.php:22120
+#: core.php:22186
+#: core.php:22240
+#: core.php:22286
+#: email-forwarders-and-groups.php:1777
+#: tm-reports.php:3171
+#: utility.php:2191
 msgid "Mobile Phone"
 msgstr ""
 
-#: core.php:3854
-#: core.php:10387
+#: core.php:4240
+#: core.php:10848
 msgid "Toastmasters ID #"
 msgstr ""
 
-#: core.php:3862
+#: core.php:4248
 msgid "Education Awards"
 msgstr ""
 
-#: core.php:3866
+#: core.php:4252
 msgid "Use the abbreviations"
 msgstr ""
 
-#: core.php:3888
-#: core.php:14784
-#: core.php:19280
-#: tm-reports.php:2754
+#: core.php:4274
+#: core.php:15254
+#: core.php:19843
+#: tm-reports.php:2762
 msgid "Member"
 msgstr ""
 
-#: core.php:3900
+#: core.php:4286
 msgid "User Role"
 msgstr ""
 
-#: core.php:3916
-#: tm-reports.php:720
-#: tm-reports.php:739
-#: tm-reports.php:2497
+#: core.php:4302
+#: tm-reports.php:728
+#: tm-reports.php:747
+#: tm-reports.php:2505
 #: agenda/build/2746.js:1
 #: agenda/src/OtherRoleTitle.js:21
 msgid "Save"
 msgstr ""
 
-#: core.php:3962
+#: core.php:4348
 msgid "Agenda Timing"
 msgstr ""
 
-#: core.php:3970
+#: core.php:4356
 msgid "RSVP List to Members"
 msgstr ""
 
-#: core.php:3988
+#: core.php:4374
 msgid "YouTube Toastmasters"
 msgstr ""
 
-#: core.php:3990
+#: core.php:4376
 msgid "Privacy Preferences"
 msgstr ""
 
-#: core.php:4010
-#: tm-reports.php:57
-#: utility.php:6005
+#: core.php:4394
+#: tm-reports.php:58
+#: utility.php:5989
 msgid "Settings"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "President"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "VP of Education"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "VP of Membership"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "VP of Public Relations"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "Secretary"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
-#: tm-online-application.php:646
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
+#: tm-online-application.php:673
 msgid "Treasurer"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "Sgt. at Arms"
 msgstr ""
 
-#: core.php:4155
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: core.php:4545
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "Immediate Past President"
 msgstr ""
 
-#: core.php:4199
+#: core.php:4601
 msgid "Make the Website Public"
 msgstr ""
 
-#: core.php:4211
+#: core.php:4613
 msgid "Yes, this website is open for business!"
 msgstr ""
 
-#: core.php:4223
+#: core.php:4625
 msgid "No, I am still testing, so I don't want this site indexed by Google or other search engines"
 msgstr ""
 
-#: core.php:4225
+#: core.php:4627
 msgid "Enable Email Functions"
 msgstr ""
 
-#: core.php:4237
+#: core.php:4639
 msgid "Yes, the email list is active"
 msgstr ""
 
-#: core.php:4249
+#: core.php:4651
 msgid "No, do not sent automated email from the website"
 msgstr ""
 
-#: core.php:4251
+#: core.php:4653
 msgid "Sync With WP4Toastmasters.com"
 msgstr ""
 
-#: core.php:4263
+#: core.php:4665
 msgid "Yes, sync member speech and role data with other sites"
 msgstr ""
 
-#: core.php:4275
+#: core.php:4677
 msgid "No, do not share data outside of this website"
 msgstr ""
 
-#: core.php:4277
+#: core.php:4679
 msgid "Reset sync count"
 msgstr ""
 
-#: core.php:4285
+#: core.php:4687
 msgid "Timezone not set - defaults to UTC 0 (UK time). Scroll to the top of the list for U.S. timezones"
 msgstr ""
 
-#: core.php:4323
+#: core.php:4725
 msgid "Timezone"
 msgstr ""
 
-#: core.php:4349
-#: utility.php:7134
+#: core.php:4751
+#: utility.php:7118
 msgid "Officers List"
 msgstr ""
 
-#: core.php:4389
-msgid "Grant all officers Manager security status (able to edit website content, agendas, and user accounts.)"
+#: core.php:4794
+msgid "Incoming Officers"
 msgstr ""
 
-#: core.php:4391
+#: core.php:4796
+msgid "If you have elected new officers, you have the option of designating a list of incoming officers to take office automatically on the effective date shown below."
+msgstr ""
+
+#: core.php:4798
+msgid "Effective Date"
+msgstr ""
+
+#: core.php:4822
+msgid "Make current and incoming officers managers."
+msgstr ""
+
+#: core.php:4824
 msgid "Officers will be listed at the top of the members page and can also be displayed on the agenda"
 msgstr ""
 
-#: core.php:4393
+#: core.php:4826
 msgid "You may also want to appoint a backup administrator (who will have full rights to administer the site) and one or more site managers (who have editing rights and can also add and edit member records). Be judicious in awarding these additional responsibilities."
 msgstr ""
 
-#: core.php:4435
-#: core.php:4461
-#: core.php:4787
-#: core.php:4799
-#: core.php:4853
-#: core.php:5073
+#: core.php:4868
+#: core.php:4894
+#: core.php:5230
+#: core.php:5242
+#: core.php:5296
+#: core.php:5518
 msgid "None"
 msgstr ""
 
-#: core.php:4451
+#: core.php:4884
 msgid "Make Administrator"
 msgstr ""
 
-#: core.php:4481
+#: core.php:4914
 msgid "Make Manager"
 msgstr ""
 
-#: core.php:4537
+#: core.php:4970
 msgid "Remove administrator"
 msgstr ""
 
-#: core.php:4537
-#: core.php:4555
+#: core.php:4970
+#: core.php:4988
 msgid "No change"
 msgstr ""
 
-#: core.php:4555
+#: core.php:4988
 msgid "Make primary administrator"
 msgstr ""
 
-#: core.php:4577
+#: core.php:5002
+msgid "Save Officers & Access"
+msgstr ""
+
+#: core.php:5020
 msgid "Users assigned the Contributor role may submit blog posts for publication, but they must be approved by an author or editor. Who should be notified when contributor posts are submitted for review?"
 msgstr ""
 
-#: core.php:4579
+#: core.php:5022
 msgid "One or more email addresses, separated by commas. If you do not want these notifications, enter \"none\""
 msgstr ""
 
-#: core.php:4585
+#: core.php:5028
 msgid "Message for Login Page"
 msgstr ""
 
-#: core.php:4589
+#: core.php:5032
 msgid "Message To Members on Dashboard"
 msgstr ""
 
-#: core.php:4593
+#: core.php:5036
 msgid "Message To Officers on Dashboard"
 msgstr ""
 
-#: core.php:4613
+#: core.php:5056
 msgid "Reserved Role Label"
 msgstr ""
 
-#: core.php:4617
-#: tm-reports.php:506
+#: core.php:5060
+#: tm-reports.php:514
 msgid "Custom Roles"
 msgstr ""
 
-#: core.php:4649
+#: core.php:5092
 msgid "Include Time/Timezone on Agenda Email"
 msgstr ""
 
-#: core.php:4661
-#: core.php:4937
-#: core.php:4965
-#: core.php:4993
-#: core.php:5023
-#: core.php:5153
-#: core.php:13133
-#: core.php:13142
-#: core.php:13150
-#: core.php:13158
-#: core.php:19230
-#: core.php:19300
-#: core.php:20243
-#: tm-reports.php:7006
+#: core.php:5104
+#: core.php:5382
+#: core.php:5410
+#: core.php:5438
+#: core.php:5468
+#: core.php:5598
+#: core.php:13594
+#: core.php:13603
+#: core.php:13611
+#: core.php:13619
+#: core.php:19793
+#: core.php:19863
+#: core.php:20806
+#: tm-reports.php:7014
 msgid "Yes"
 msgstr ""
 
-#: core.php:4671
-#: core.php:4949
-#: core.php:4977
-#: core.php:5005
-#: core.php:5035
-#: core.php:5153
-#: core.php:13137
-#: core.php:13146
-#: core.php:13154
-#: core.php:13162
-#: core.php:19230
-#: core.php:19300
-#: core.php:20253
-#: tm-reports.php:7006
+#: core.php:5114
+#: core.php:5394
+#: core.php:5422
+#: core.php:5450
+#: core.php:5480
+#: core.php:5598
+#: core.php:13598
+#: core.php:13607
+#: core.php:13615
+#: core.php:13623
+#: core.php:19793
+#: core.php:19863
+#: core.php:20816
+#: tm-reports.php:7014
 msgid "No"
 msgstr ""
 
-#: core.php:4773
+#: core.php:5216
 msgid "Email Reminders"
 msgstr ""
 
-#: core.php:4783
+#: core.php:5226
 msgid "Reminder"
 msgstr ""
 
-#: core.php:4795
+#: core.php:5238
 msgid "Reminder #2"
 msgstr ""
 
-#: core.php:4849
+#: core.php:5292
 msgid "Send Speech Introductions to Toastmaster of the Day"
 msgstr ""
 
-#: core.php:4877
+#: core.php:5322
 msgid "Agenda Formatting"
 msgstr ""
 
-#: core.php:4879
+#: core.php:5324
 #: filters.php:90
 msgid "Agenda Layout"
 msgstr ""
 
-#: core.php:4889
+#: core.php:5334
 msgid "Edit Custom Agenda Layout"
 msgstr ""
 
-#: core.php:4889
+#: core.php:5334
 msgid "Reset to Default"
 msgstr ""
 
-#: core.php:4919
+#: core.php:5364
 msgid "Agenda CSS Customization"
 msgstr ""
 
-#: core.php:4923
+#: core.php:5368
 msgid "Show Stoplight (green/yellow/red) times"
 msgstr ""
 
-#: core.php:4951
+#: core.php:5396
 msgid "Show Estimated Times Next to Roles and Notes"
 msgstr ""
 
-#: core.php:5007
+#: core.php:5452
 msgid "Show Profile Pictures on Agenda"
 msgstr ""
 
-#: core.php:5037
+#: core.php:5482
 #: filters.php:117
 #: filters.php:119
 msgid "Signup Sheet"
 msgstr ""
 
-#: core.php:5039
+#: core.php:5484
 msgid "Future Meetings Displayed"
 msgstr ""
 
-#: core.php:5063
+#: core.php:5508
 msgid "Random Assignment"
 msgstr ""
 
-#: core.php:5093
+#: core.php:5538
 msgid "Enable &quot;Suggest Assignments&quot; mode"
 msgstr ""
 
-#: core.php:5119
+#: core.php:5564
 msgid "Avoid selecting members who have"
 msgstr ""
 
-#: core.php:5119
+#: core.php:5564
 msgid "not attended in more than"
 msgstr ""
 
-#: core.php:5127
+#: core.php:5572
 msgid "or who have filled the same role within"
 msgstr ""
 
-#: core.php:5131
+#: core.php:5576
 msgid "Note: If you use the random assignment of members to roles, you may wish to have the software favor members who have attended the club recently but have not filled the same role within the last few weeks. This works best after your club has built up some history recording meetings in the software. Recommended reasonable settings: members who have attended more recently than 56 days (2 months) but have not filled the same role in the last 14 days."
 msgstr ""
 
-#: core.php:5133
+#: core.php:5578
 msgid "Legacy Manuals"
 msgstr ""
 
-#: core.php:5153
+#: core.php:5598
 msgid "Show manuals from the legacy educational program (pre-Pathways) on speech signup drop-down list."
 msgstr ""
 
-#: core.php:5157
+#: core.php:5602
 msgid "Automatically Lock Agenda"
 msgstr ""
 
-#: core.php:5193
+#: core.php:5638
 msgid "New Member Welcome Message"
 msgstr ""
 
-#: core.php:5229
+#: core.php:5657
 msgid "Beta Software"
 msgstr ""
 
-#: core.php:5243
+#: core.php:5671
 msgid "Yes, enable beta test features"
 msgstr ""
 
-#: core.php:5255
+#: core.php:5683
 msgid "No, do not turn on beta features"
 msgstr ""
 
-#: core.php:5315
+#: core.php:5695
+msgid "Email Notifications of Role Signups"
+msgstr ""
+
+#: core.php:5727
 msgid "Who gets email notifications of role signups?"
 msgstr ""
 
-#: core.php:5319
+#: core.php:5731
 msgid "Meeting Leader (Toastmaster of the Day or Contest Master)"
 msgstr ""
 
-#: core.php:5337
+#: core.php:5749
 msgid "member id / email not set"
 msgstr ""
 
-#: core.php:5347
-#: core.php:5995
+#: core.php:5759
+#: core.php:6450
 msgid "Education"
 msgstr ""
 
-#: core.php:5357
+#: core.php:5769
 msgid "Additional email addresses"
 msgstr ""
 
-#: core.php:5569
+#: core.php:6003
 msgid "Examples"
 msgstr ""
 
-#: core.php:5569
+#: core.php:6003
 msgid "change the font for all text"
 msgstr ""
 
-#: core.php:5571
+#: core.php:6005
 msgid "change the font of the actual agenda but not the sidebar content"
 msgstr ""
 
-#: core.php:5573
+#: core.php:6007
 msgid "change the font for the agenda sidebar only"
 msgstr ""
 
-#: core.php:5575
+#: core.php:6009
 msgid "add a dotted black line to the left of sidebar"
 msgstr ""
 
-#: core.php:5977
-#: core.php:6009
+#: core.php:6432
+#: core.php:6464
 msgid "Speech introductions for"
 msgstr ""
 
-#: core.php:8957
+#: core.php:9418
 msgid "Signup"
 msgstr ""
 
-#: core.php:8961
-#: tm-reports.php:563
+#: core.php:9422
+#: tm-reports.php:571
 msgid "Edit Signups"
 msgstr ""
 
-#: core.php:8963
+#: core.php:9424
 msgid "Organize"
 msgstr ""
 
-#: core.php:8967
+#: core.php:9428
 msgid "Agenda Print"
 msgstr ""
 
-#: core.php:8971
+#: core.php:9432
 msgid "Agenda Email"
 msgstr ""
 
-#: core.php:8975
+#: core.php:9436
 msgid "Agenda Show"
 msgstr ""
 
-#: core.php:8979
+#: core.php:9440
 #: filters.php:48
 msgid "Show with Introductions"
 msgstr ""
 
-#: core.php:8983
+#: core.php:9444
 #: filters.php:50
 msgid "Agenda with Contacts"
 msgstr ""
 
-#: core.php:8985
-#: core.php:13362
+#: core.php:9446
+#: core.php:13823
 #: filters.php:51
 msgid "Speech Introductions"
 msgstr ""
 
-#: core.php:8987
+#: core.php:9448
 msgid "NEW Vote Counter's Tool"
 msgstr ""
 
-#: core.php:8991
+#: core.php:9452
 msgid "RSVP Report"
 msgstr ""
 
-#: core.php:9429
+#: core.php:9890
 msgid "End"
 msgstr ""
 
-#: core.php:9571
+#: core.php:10032
 msgid "Contact details such as phone numbers and email are only displayed when you are logged into the website (and should only be used for Toastmasters business)"
 msgstr ""
 
-#: core.php:9575
-#: core.php:17256
+#: core.php:10036
+#: core.php:17619
 msgid "Related"
 msgstr ""
 
-#: core.php:9575
+#: core.php:10036
 msgid "Print Contact List"
 msgstr ""
 
-#: core.php:9581
+#: core.php:10042
 msgid "These members have chosen to create public profiles. For an expanded listing, members may"
 msgstr ""
 
-#: core.php:9581
-#: tm-reports.php:6658
+#: core.php:10042
+#: tm-reports.php:6666
 msgid "login"
 msgstr ""
 
-#: core.php:9631
+#: core.php:10092
 msgid "Email All"
 msgstr ""
 
-#: core.php:9637
+#: core.php:10098
 msgid "Email Officers"
 msgstr ""
 
-#: core.php:9641
+#: core.php:10102
 msgid "Email addresses and other contact information provided for Toastmasters business only."
 msgstr ""
 
-#: core.php:9685
+#: core.php:10146
 msgid "Facebook"
 msgstr ""
 
-#: core.php:9687
+#: core.php:10148
 msgid "X (Formerly Twitter)"
 msgstr ""
 
-#: core.php:9689
+#: core.php:10150
 msgid "LinkedIn"
 msgstr ""
 
-#: core.php:9691
+#: core.php:10152
 msgid "Bluesky"
 msgstr ""
 
-#: core.php:9693
+#: core.php:10154
 msgid "Business Website"
 msgstr ""
 
-#: core.php:9695
+#: core.php:10156
 msgid "Other Email"
 msgstr ""
 
-#: core.php:9793
-#: core.php:19524
+#: core.php:10254
+#: core.php:20087
 msgid "About Me"
 msgstr ""
 
-#: core.php:9799
+#: core.php:10260
 msgid "BuddyPress Profile"
 msgstr ""
 
-#: core.php:9807
-#: core.php:9811
+#: core.php:10268
+#: core.php:10272
 msgid "Joined Club"
 msgstr ""
 
-#: core.php:9817
+#: core.php:10278
 msgid "Joined Toastmasters"
 msgstr ""
 
-#: core.php:9825
-#: core.php:9831
+#: core.php:10286
+#: core.php:10292
 msgid "Set Your Profile Picture"
 msgstr ""
 
-#: core.php:9835
+#: core.php:10296
 msgid "Edit Your Profile"
 msgstr ""
 
-#: core.php:10111
+#: core.php:10572
 msgid "added to website"
 msgstr ""
 
-#: core.php:10297
+#: core.php:10758
 msgid "Added user"
 msgstr ""
 
-#: core.php:10301
+#: core.php:10762
 msgid "No user record found for"
 msgstr ""
 
-#: core.php:10315
+#: core.php:10776
 msgid "Create a website user account for a new member. The only required fields are name and email address."
 msgstr ""
 
-#: core.php:10325
+#: core.php:10786
 msgid "Username"
 msgstr ""
 
-#: core.php:10329
+#: core.php:10790
 msgid "Hint: try the part of the email before the @ sign. If you leave this blank, a username will be assigned based on first and last name."
 msgstr ""
 
-#: core.php:10331
+#: core.php:10792
 msgid "If a member does not have an email address, or shares an email address with someone else, leave the email field blank. Since WordPress requires an email address, a nonworking address will be assigned in the format firstnamelastname@example.com (example.com is an Internet domain name reserved for examples and tests)."
 msgstr ""
 
-#: core.php:10397
+#: core.php:10858
 msgid "Add Member (Step 1 of 2)"
 msgstr ""
 
-#: core.php:10409
+#: core.php:10870
 msgid "Add member to site by email"
 msgstr ""
 
-#: core.php:10417
+#: core.php:10878
 msgid "Add By Email"
 msgstr ""
 
-#: core.php:10431
+#: core.php:10892
 msgid "Batch Import From Toastmasters.org spreadsheet"
 msgstr ""
 
-#: core.php:10433
+#: core.php:10894
 msgid "If you download the member spreadsheet from the Membership Management section of Club Central toastmasters.org, you can import it here to create or update member records. The import function will also help you remove inactive members (select the Check for Missing Members checkbox)."
 msgstr ""
 
-#: core.php:10435
+#: core.php:10896
 msgid "Download the membership list from Club Central"
 msgstr ""
 
-#: core.php:10439
+#: core.php:10900
 msgid "Select file to upload"
 msgstr ""
 
-#: core.php:10441
+#: core.php:10902
 msgid "If you do not have access to Club Central, you can use the same method after putting member names and email addresses in this spreadsheet: "
 msgstr ""
 
-#: core.php:10443
+#: core.php:10904
 msgid "Check for missing members. If you post a complete list of current members, this checkbox triggers a check of which website users are NOT currently on the toastmasters.org list and gives you an option to delete them. Information about members deleted from your active list will be retained on the Former Members screen in case you have the opportunity to reactivate them."
 msgstr ""
 
-#: core.php:10485
+#: core.php:10946
 msgid "Import"
 msgstr ""
 
-#: core.php:10517
+#: core.php:10978
 msgid "Send"
 msgstr ""
 
-#: core.php:10747
+#: core.php:11208
 msgid "added to this site"
 msgstr ""
 
-#: core.php:10753
+#: core.php:11214
 msgid "adding Toastmasters ID"
 msgstr ""
 
-#: core.php:10761
+#: core.php:11222
 msgid "educational awards updated"
 msgstr ""
 
-#: core.php:10833
+#: core.php:11294
 msgid "registration error"
 msgstr ""
 
-#: core.php:10891
+#: core.php:11352
 msgid "Note that your club website user name and password are <em>not</em> the same as the credentials you will use on toastmasters.org (the website of Toastmasters International) to access Pathways educational materials."
 msgstr ""
 
-#: core.php:10923
+#: core.php:11384
 msgid "Email notification disabled"
 msgstr ""
 
-#: core.php:10955
+#: core.php:11416
 msgid "Emailing notifications disabled"
 msgstr ""
 
-#: core.php:10959
+#: core.php:11420
 msgid "Emailing to"
 msgstr ""
 
-#: core.php:11097
+#: core.php:11558
 msgid "Error: invalid email address"
 msgstr ""
 
-#: core.php:11251
+#: core.php:11712
 msgid "The members below don't show up on the current list. Check those who should be deleted."
 msgstr ""
 
-#: core.php:11283
+#: core.php:11744
 msgid "Confirm Add Member(s)"
 msgstr ""
 
-#: core.php:11473
-#: core.php:11735
+#: core.php:11934
+#: core.php:12196
 msgid "Login/Sign Up"
 msgstr ""
 
-#: core.php:11491
-#: core.php:11753
+#: core.php:11952
+#: core.php:12214
 msgid "Member sign up for roles"
 msgstr ""
 
-#: core.php:11513
-#: core.php:11775
+#: core.php:11974
+#: core.php:12236
 msgid "Show More"
 msgstr ""
 
-#: core.php:11521
-#: core.php:11783
+#: core.php:11982
+#: core.php:12244
 msgid "Your membership"
 msgstr ""
 
-#: core.php:11525
-#: core.php:11787
+#: core.php:11986
+#: core.php:12248
 msgid "Edit Member Profile"
 msgstr ""
 
-#: core.php:11527
-#: core.php:11789
+#: core.php:11988
+#: core.php:12250
 msgid "Member Dashboard"
 msgstr ""
 
-#: core.php:11531
-#: core.php:11541
-#: core.php:11793
-#: core.php:11803
+#: core.php:11992
+#: core.php:12002
+#: core.php:12254
+#: core.php:12264
 msgid "Change Profile Photo"
 msgstr ""
 
-#: core.php:11539
-#: core.php:11801
+#: core.php:12000
+#: core.php:12262
 msgid "Post to Social Profile"
 msgstr ""
 
-#: core.php:11559
-#: core.php:11821
+#: core.php:12020
+#: core.php:12282
 msgid "Activity"
 msgstr ""
 
-#: core.php:11625
-#: core.php:15888
+#: core.php:12086
+#: core.php:16251
 msgid "Title:"
 msgstr ""
 
-#: core.php:11627
+#: core.php:12088
 msgid "Number to Show:"
 msgstr ""
 
-#: core.php:11629
+#: core.php:12090
 msgid "Show More Link After:"
 msgstr ""
 
-#: core.php:11631
+#: core.php:12092
 msgid "Show Member Activity Log:"
 msgstr ""
 
-#: core.php:11653
+#: core.php:12114
 msgid "Date Format:"
 msgstr ""
 
-#: core.php:11653
+#: core.php:12114
 msgid "PHP <a target=\"_blank\" href=\"http://us2.php.net/manual/en/function.date.php\">date</a> format string"
 msgstr ""
 
-#: core.php:11913
+#: core.php:12374
 msgid "accepted the role"
 msgstr ""
 
-#: core.php:12759
-#: core.php:12901
-#: core.php:22453
+#: core.php:13220
+#: core.php:13362
+#: core.php:23016
 msgid "signed up for"
 msgstr ""
 
-#: core.php:12813
+#: core.php:13274
 msgid "withdrawn:"
 msgstr ""
 
-#: core.php:12825
+#: core.php:13286
 #: tm-reports.php:21
 msgid "Multi-Meeting Role Planner"
 msgstr ""
 
-#: core.php:12877
+#: core.php:13338
 msgid "withdrawn"
 msgstr ""
 
-#: core.php:12909
+#: core.php:13370
 msgid "signed up for roles on"
 msgstr ""
 
-#: core.php:13127
+#: core.php:13588
 msgid "Profile Visibility"
 msgstr ""
 
-#: core.php:13182
+#: core.php:13643
 msgid "Check to HIDE profile from member listings. Use to hide accounts used for administration that do not represent member accounts."
 msgstr ""
 
-#: core.php:13196
+#: core.php:13657
 msgid "Email Notifications"
 msgstr ""
 
-#: core.php:13230
+#: core.php:13691
 msgid "Removing block on"
 msgstr ""
 
-#: core.php:13240
+#: core.php:13701
 msgid "Does not change unsubscribed status on MailChimp."
 msgstr ""
 
-#: core.php:13248
+#: core.php:13709
 msgid "Notifications are BLOCKED for"
 msgstr ""
 
-#: core.php:13252
+#: core.php:13713
 msgid "Notifications are being sent to"
 msgstr ""
 
-#: core.php:13262
+#: core.php:13723
 msgid "Evaluation Preference"
 msgstr ""
 
-#: core.php:13982
-#: core.php:14018
+#: core.php:14443
+#: core.php:14479
 msgid "Theme/Words"
 msgstr ""
 
-#: core.php:14614
+#: core.php:15084
 msgid "Planned Absences"
 msgstr ""
 
-#: core.php:14626
+#: core.php:15096
 msgid "Meeting Roster"
 msgstr ""
 
-#: core.php:14700
+#: core.php:15170
 msgid "List of Members Without an Assignment"
 msgstr ""
 
-#: core.php:14760
+#: core.php:15230
 msgid "YouTube Replay"
 msgstr ""
 
-#: core.php:14834
+#: core.php:15304
 msgid "For a regular Toastmasters meeting, do not worry about the parameters below. You may use this RSVP functionality to schedule other sorts of events (for example, training or open house events.)"
 msgstr ""
 
-#: core.php:15660
+#: core.php:16023
 msgid "Members only content"
 msgstr ""
 
-#: core.php:15676
+#: core.php:16039
 msgid "Your site&#8217;s most recent members-only posts."
 msgstr ""
 
-#: core.php:15680
+#: core.php:16043
 msgid "Members Posts"
 msgstr ""
 
-#: core.php:15724
+#: core.php:16087
 msgid "Members Only Posts"
 msgstr ""
 
-#: core.php:15892
+#: core.php:16255
 msgid "Number of posts to show:"
 msgstr ""
 
-#: core.php:15898
+#: core.php:16261
 msgid "Display post date?"
 msgstr ""
 
-#: core.php:16090
+#: core.php:16453
 msgid "Your site&#8217;s most recent public blog posts."
 msgstr ""
 
-#: core.php:16094
+#: core.php:16457
 msgid "Club News Posts"
 msgstr ""
 
-#: core.php:16138
-#: core.php:16660
+#: core.php:16501
+#: core.php:17023
 msgid "Club News"
 msgstr ""
 
-#: core.php:16340
+#: core.php:16703
 msgid "Newest Members of Club."
 msgstr ""
 
-#: core.php:16344
-#: core.php:16382
+#: core.php:16707
+#: core.php:16745
 msgid "Newest Members"
 msgstr ""
 
-#: core.php:16907
+#: core.php:17270
 msgid "Sidebar Content"
 msgstr ""
 
-#: core.php:16911
+#: core.php:17274
 msgid "Use this space for dues reminders, previews of upcoming events and other supporting information."
 msgstr ""
 
-#: core.php:16941
-#: core.php:16951
+#: core.php:17304
+#: core.php:17314
 msgid "Apply edit to"
 msgstr ""
 
-#: core.php:16941
-#: core.php:16951
-#: core.php:16955
+#: core.php:17304
+#: core.php:17314
+#: core.php:17318
 msgid "This event only"
 msgstr ""
 
-#: core.php:16941
-#: core.php:16947
-#: core.php:16951
+#: core.php:17304
+#: core.php:17310
+#: core.php:17314
 msgid "Template (default for future events)"
 msgstr ""
 
-#: core.php:16947
-#: core.php:16955
+#: core.php:17310
+#: core.php:17318
 msgid "Will be applied to"
 msgstr ""
 
-#: core.php:17005
+#: core.php:17368
 msgid "Include officer listing"
 msgstr ""
 
-#: core.php:17065
+#: core.php:17428
 #: filters.php:203
 #: filters.php:208
 msgid "NEW: Try the Mobile App!"
 msgstr ""
 
-#: core.php:17262
+#: core.php:17625
 msgid "Agenda Timing: Template"
 msgstr ""
 
-#: core.php:17268
+#: core.php:17631
 msgid "Edit/Agenda Setup"
 msgstr ""
 
-#: core.php:17272
+#: core.php:17635
 #: filters.php:193
 #: filters.php:197
 msgid "View Agenda"
 msgstr ""
 
-#: core.php:17274
+#: core.php:17637
 msgid "View Signup Form"
 msgstr ""
 
-#: core.php:17550
-#: fse-navigation-block.php:17
+#: core.php:17913
+#: fse-navigation-block.php:23
 msgid "Blog"
 msgstr ""
 
-#: core.php:17570
+#: core.php:17933
 msgid "Edit welcome page"
 msgstr ""
 
-#: core.php:17638
+#: core.php:18001
 msgid "Meeting role reminders need to be reset."
 msgstr ""
 
-#: core.php:17644
+#: core.php:18007
 msgid "You have not yet set the officers list for your club."
 msgstr ""
 
-#: core.php:17652
+#: core.php:18015
 msgid "This site is not being indexed by search engines."
 msgstr ""
 
-#: core.php:17652
+#: core.php:18015
 msgid "Make the site public?"
 msgstr ""
 
-#: core.php:17660
+#: core.php:18023
 msgid "Toastmasters-specific functions for sending email (such as sending a welcome message and password to a new member) are currently disabled."
 msgstr ""
 
-#: core.php:17662
+#: core.php:18025
 msgid "Enable email?"
 msgstr ""
 
-#: core.php:17670
+#: core.php:18033
 msgid "Make sure to set the correct timezone for your site so scheduling functions will work properly."
 msgstr ""
 
-#: core.php:17676
+#: core.php:18039
 #, php-format
 msgid "Visit the <a href=\"%s\">Toastmasters Settings</a> screen"
 msgstr ""
 
-#: core.php:17688
+#: core.php:18051
 #, php-format
 msgid "<a href=\"%s\">Add club members</a> as website users. You can import your whole roster, using the spreadsheet from toastmasters.org's Club Central. Or selectively add a few members to help you with testing."
 msgstr ""
 
-#: core.php:17698
+#: core.php:18061
 #, php-format
 msgid "The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. WP User Avatar is installed but must be activated. <a href=\"%s#name\">Activate now</a> or <a href=\"%s\">No thanks</a>"
 msgstr ""
 
-#: core.php:17704
+#: core.php:18067
 #, php-format
 msgid "The Simple Local Avatars plugin is recommended for allowing members to add a profile picture. <a href=\"%s\">Install now</a> or <a href=\"%s\">No thanks</a>"
 msgstr ""
 
-#: core.php:17722
+#: core.php:18085
 #, php-format
 msgid "No meetings currently published. Add based on template (standard schedule and roles):</p><ul>%s</ul>"
 msgstr ""
 
-#: core.php:17728
+#: core.php:18091
 #, php-format
 msgid "meetings currently published. Add more based on template (standard schedule and roles):</p><ul>%s</ul>"
 msgstr ""
 
-#: core.php:17738
+#: core.php:18101
 #, php-format
 msgid "You can choose to allow the member data on the Progress Reports screen to sync with other websites that use this software. See <a target=\"_blank\" href=\"https://wp4toastmasters.com/2017/05/13/sync-member-progress-report-data/\">blog post</a>.</p><p>Choose whether this should be on our off: <a href=\"%s\">Toastmasters Settings.</a>"
 msgstr ""
 
-#: core.php:18154
-#: core.php:18434
+#: core.php:18712
+#: core.php:18992
 msgid "Path Not Set Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18158
-#: core.php:18436
-#: core.php:18554
+#: core.php:18716
+#: core.php:18994
+#: core.php:19112
 msgid "Dynamic Leadership Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18160
-#: core.php:18438
-#: core.php:18556
+#: core.php:18718
+#: core.php:18996
+#: core.php:19114
 msgid "Dynamic Leadership Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18162
-#: core.php:18440
-#: core.php:18558
+#: core.php:18720
+#: core.php:18998
+#: core.php:19116
 msgid "Dynamic Leadership Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18164
-#: core.php:18442
-#: core.php:18560
+#: core.php:18722
+#: core.php:19000
+#: core.php:19118
 msgid "Dynamic Leadership Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18166
-#: core.php:18444
-#: core.php:18562
+#: core.php:18724
+#: core.php:19002
+#: core.php:19120
 msgid "Dynamic Leadership Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18172
-#: core.php:18446
-#: core.php:18564
+#: core.php:18730
+#: core.php:19004
+#: core.php:19122
 msgid "Effective Coaching Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18174
-#: core.php:18448
-#: core.php:18566
+#: core.php:18732
+#: core.php:19006
+#: core.php:19124
 msgid "Effective Coaching Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18176
-#: core.php:18450
-#: core.php:18568
+#: core.php:18734
+#: core.php:19008
+#: core.php:19126
 msgid "Effective Coaching Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18178
-#: core.php:18452
-#: core.php:18570
+#: core.php:18736
+#: core.php:19010
+#: core.php:19128
 msgid "Effective Coaching Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18180
-#: core.php:18454
-#: core.php:18572
+#: core.php:18738
+#: core.php:19012
+#: core.php:19130
 msgid "Effective Coaching Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18186
-#: core.php:18456
-#: core.php:18574
+#: core.php:18744
+#: core.php:19014
+#: core.php:19132
 msgid "Engaging Humor Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18188
-#: core.php:18458
-#: core.php:18576
+#: core.php:18746
+#: core.php:19016
+#: core.php:19134
 msgid "Engaging Humor Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18190
-#: core.php:18460
-#: core.php:18578
+#: core.php:18748
+#: core.php:19018
+#: core.php:19136
 msgid "Engaging Humor Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18192
-#: core.php:18462
-#: core.php:18580
+#: core.php:18750
+#: core.php:19020
+#: core.php:19138
 msgid "Engaging Humor Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18194
-#: core.php:18464
-#: core.php:18582
+#: core.php:18752
+#: core.php:19022
+#: core.php:19140
 msgid "Engaging Humor Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18200
-#: core.php:18466
-#: core.php:18584
+#: core.php:18758
+#: core.php:19024
+#: core.php:19142
 msgid "Innovative Planning Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18202
-#: core.php:18468
-#: core.php:18586
+#: core.php:18760
+#: core.php:19026
+#: core.php:19144
 msgid "Innovative Planning Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18204
-#: core.php:18470
-#: core.php:18588
+#: core.php:18762
+#: core.php:19028
+#: core.php:19146
 msgid "Innovative Planning Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18206
-#: core.php:18472
-#: core.php:18590
+#: core.php:18764
+#: core.php:19030
+#: core.php:19148
 msgid "Innovative Planning Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18208
-#: core.php:18474
-#: core.php:18592
+#: core.php:18766
+#: core.php:19032
+#: core.php:19150
 msgid "Innovative Planning Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18214
-#: core.php:18476
-#: core.php:18594
+#: core.php:18772
+#: core.php:19034
+#: core.php:19152
 msgid "Leadership Development Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18216
-#: core.php:18478
-#: core.php:18596
+#: core.php:18774
+#: core.php:19036
+#: core.php:19154
 msgid "Leadership Development Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18218
-#: core.php:18480
-#: core.php:18598
+#: core.php:18776
+#: core.php:19038
+#: core.php:19156
 msgid "Leadership Development Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18220
-#: core.php:18482
-#: core.php:18600
+#: core.php:18778
+#: core.php:19040
+#: core.php:19158
 msgid "Leadership Development Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18222
-#: core.php:18484
-#: core.php:18602
+#: core.php:18780
+#: core.php:19042
+#: core.php:19160
 msgid "Leadership Development Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18228
-#: core.php:18486
-#: core.php:18604
+#: core.php:18786
+#: core.php:19044
+#: core.php:19162
 msgid "Motivational Strategies Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18230
-#: core.php:18488
-#: core.php:18606
+#: core.php:18788
+#: core.php:19046
+#: core.php:19164
 msgid "Motivational Strategies Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18232
-#: core.php:18490
-#: core.php:18608
+#: core.php:18790
+#: core.php:19048
+#: core.php:19166
 msgid "Motivational Strategies Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18234
-#: core.php:18492
-#: core.php:18610
+#: core.php:18792
+#: core.php:19050
+#: core.php:19168
 msgid "Motivational Strategies Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18236
-#: core.php:18494
-#: core.php:18612
+#: core.php:18794
+#: core.php:19052
+#: core.php:19170
 msgid "Motivational Strategies Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18242
-#: core.php:18496
-#: core.php:18614
+#: core.php:18800
+#: core.php:19054
+#: core.php:19172
 msgid "Persuasive Influence Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18244
-#: core.php:18498
-#: core.php:18616
+#: core.php:18802
+#: core.php:19056
+#: core.php:19174
 msgid "Persuasive Influence Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18246
-#: core.php:18500
-#: core.php:18618
+#: core.php:18804
+#: core.php:19058
+#: core.php:19176
 msgid "Persuasive Influence Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18248
-#: core.php:18502
-#: core.php:18620
+#: core.php:18806
+#: core.php:19060
+#: core.php:19178
 msgid "Persuasive Influence Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18250
-#: core.php:18504
-#: core.php:18622
+#: core.php:18808
+#: core.php:19062
+#: core.php:19180
 msgid "Persuasive Influence Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18254
-#: core.php:18506
-#: core.php:18624
+#: core.php:18812
+#: core.php:19064
+#: core.php:19182
 msgid "Presentation Mastery Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18256
-#: core.php:18508
-#: core.php:18626
+#: core.php:18814
+#: core.php:19066
+#: core.php:19184
 msgid "Presentation Mastery Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18258
-#: core.php:18510
-#: core.php:18628
+#: core.php:18816
+#: core.php:19068
+#: core.php:19186
 msgid "Presentation Mastery Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18260
-#: core.php:18512
-#: core.php:18630
+#: core.php:18818
+#: core.php:19070
+#: core.php:19188
 msgid "Presentation Mastery Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18262
-#: core.php:18514
-#: core.php:18632
+#: core.php:18820
+#: core.php:19072
+#: core.php:19190
 msgid "Presentation Mastery Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18268
-#: core.php:18516
-#: core.php:18634
+#: core.php:18826
+#: core.php:19074
+#: core.php:19192
 msgid "Strategic Relationships Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18270
-#: core.php:18518
-#: core.php:18636
+#: core.php:18828
+#: core.php:19076
+#: core.php:19194
 msgid "Strategic Relationships Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18272
-#: core.php:18520
-#: core.php:18638
+#: core.php:18830
+#: core.php:19078
+#: core.php:19196
 msgid "Strategic Relationships Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18274
-#: core.php:18522
-#: core.php:18640
+#: core.php:18832
+#: core.php:19080
+#: core.php:19198
 msgid "Strategic Relationships Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18276
-#: core.php:18524
-#: core.php:18642
+#: core.php:18834
+#: core.php:19082
+#: core.php:19200
 msgid "Strategic Relationships Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18282
-#: core.php:18526
-#: core.php:18644
+#: core.php:18840
+#: core.php:19084
+#: core.php:19202
 msgid "Team Collaboration Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18284
-#: core.php:18528
-#: core.php:18646
+#: core.php:18842
+#: core.php:19086
+#: core.php:19204
 msgid "Team Collaboration Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18286
-#: core.php:18530
-#: core.php:18648
+#: core.php:18844
+#: core.php:19088
+#: core.php:19206
 msgid "Team Collaboration Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18288
-#: core.php:18532
-#: core.php:18650
+#: core.php:18846
+#: core.php:19090
+#: core.php:19208
 msgid "Team Collaboration Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18290
-#: core.php:18534
-#: core.php:18652
+#: core.php:18848
+#: core.php:19092
+#: core.php:19210
 msgid "Team Collaboration Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18296
-#: core.php:18536
-#: core.php:18654
+#: core.php:18854
+#: core.php:19094
+#: core.php:19212
 msgid "Visionary Communication Level 1 Mastering Fundamentals"
 msgstr ""
 
-#: core.php:18298
-#: core.php:18538
-#: core.php:18656
+#: core.php:18856
+#: core.php:19096
+#: core.php:19214
 msgid "Visionary Communication Level 2 Learning Your Style"
 msgstr ""
 
-#: core.php:18300
-#: core.php:18540
-#: core.php:18658
+#: core.php:18858
+#: core.php:19098
+#: core.php:19216
 msgid "Visionary Communication Level 3 Increasing Knowledge"
 msgstr ""
 
-#: core.php:18302
-#: core.php:18542
-#: core.php:18660
+#: core.php:18860
+#: core.php:19100
+#: core.php:19218
 msgid "Visionary Communication Level 4 Building Skills"
 msgstr ""
 
-#: core.php:18304
-#: core.php:18544
-#: core.php:18662
+#: core.php:18862
+#: core.php:19102
+#: core.php:19220
 msgid "Visionary Communication Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18308
-#: core.php:18430
+#: core.php:18866
+#: core.php:18988
 msgid "Pathways 360 Level 5 Demonstrating Expertise"
 msgstr ""
 
-#: core.php:18310
-#: core.php:18432
+#: core.php:18868
+#: core.php:18990
 msgid "Pathways Mentor Program Level 1 Educational Program"
 msgstr ""
 
-#: core.php:18312
-#: core.php:18398
+#: core.php:18870
+#: core.php:18956
 msgid "Other Manual or Non Manual Speech"
 msgstr ""
 
-#: core.php:18322
-#: core.php:18382
-#: tm-reports.php:2573
-#: tm-reports.php:2979
+#: core.php:18880
+#: core.php:18940
+#: tm-reports.php:2581
+#: tm-reports.php:2987
 msgid "COMPETENT COMMUNICATION"
 msgstr ""
 
-#: core.php:18324
-#: core.php:18384
+#: core.php:18882
+#: core.php:18942
 msgid "ADVANCED MANUAL TBD"
 msgstr ""
 
-#: core.php:18326
-#: core.php:18386
+#: core.php:18884
+#: core.php:18944
 msgid "COMMUNICATING ON VIDEO"
 msgstr ""
 
-#: core.php:18328
-#: core.php:18388
+#: core.php:18886
+#: core.php:18946
 msgid "FACILITATING DISCUSSION"
 msgstr ""
 
-#: core.php:18334
-#: core.php:18394
+#: core.php:18892
+#: core.php:18952
 msgid "INTERPERSONAL COMMUNICATIONS"
 msgstr ""
 
-#: core.php:18336
-#: core.php:18396
+#: core.php:18894
+#: core.php:18954
 msgid "INTERPRETIVE READING"
 msgstr ""
 
-#: core.php:18338
-#: core.php:18400
+#: core.php:18896
+#: core.php:18958
 msgid "PERSUASIVE SPEAKING"
 msgstr ""
 
-#: core.php:18340
-#: core.php:18402
+#: core.php:18898
+#: core.php:18960
 msgid "PUBLIC RELATIONS"
 msgstr ""
 
-#: core.php:18342
-#: core.php:18404
+#: core.php:18900
+#: core.php:18962
 msgid "SPEAKING TO INFORM"
 msgstr ""
 
-#: core.php:18344
-#: core.php:18406
+#: core.php:18902
+#: core.php:18964
 msgid "SPECIAL OCCASION SPEECHES"
 msgstr ""
 
-#: core.php:18346
-#: core.php:18408
+#: core.php:18904
+#: core.php:18966
 msgid "SPECIALTY SPEECHES"
 msgstr ""
 
-#: core.php:18348
-#: core.php:18410
+#: core.php:18906
+#: core.php:18968
 msgid "SPEECHES BY MANAGEMENT"
 msgstr ""
 
-#: core.php:18350
-#: core.php:18412
+#: core.php:18908
+#: core.php:18970
 msgid "STORYTELLING"
 msgstr ""
 
-#: core.php:18352
-#: core.php:18414
+#: core.php:18910
+#: core.php:18972
 msgid "TECHNICAL PRESENTATIONS"
 msgstr ""
 
-#: core.php:18354
-#: core.php:18416
+#: core.php:18912
+#: core.php:18974
 msgid "THE DISCUSSION LEADER"
 msgstr ""
 
-#: core.php:18356
-#: core.php:18418
+#: core.php:18914
+#: core.php:18976
 msgid "THE ENTERTAINING SPEAKER"
 msgstr ""
 
-#: core.php:18358
-#: core.php:18420
+#: core.php:18916
+#: core.php:18978
 msgid "THE PROFESSIONAL SALESPERSON"
 msgstr ""
 
-#: core.php:18360
-#: core.php:18422
+#: core.php:18918
+#: core.php:18980
 msgid "THE PROFESSIONAL SPEAKER"
 msgstr ""
 
-#: core.php:18362
-#: core.php:18424
-#: tm-reports.php:1866
+#: core.php:18920
+#: core.php:18982
+#: tm-reports.php:1874
 msgid "BETTER SPEAKER SERIES"
 msgstr ""
 
-#: core.php:18364
-#: core.php:18426
-#: tm-reports.php:1867
-#: tm-reports.php:1908
+#: core.php:18922
+#: core.php:18984
+#: tm-reports.php:1875
+#: tm-reports.php:1916
 msgid "SUCCESSFUL CLUB SERIES"
 msgstr ""
 
-#: core.php:18366
-#: core.php:18428
-#: tm-reports.php:1909
+#: core.php:18924
+#: core.php:18986
+#: tm-reports.php:1917
 msgid "LEADERSHIP EXCELLENCE SERIES"
 msgstr ""
 
-#: core.php:18380
+#: core.php:18938
 msgid "Select Manual/Path"
 msgstr ""
 
-#: core.php:19458
+#: core.php:20021
 msgid "Contact details such as phone numbers and email are displayed only for logged in members (and should only be used for Toastmasters business)"
 msgstr ""
 
-#: core.php:19532
+#: core.php:20095
 msgid "Edit my Toastmasters profile"
 msgstr ""
 
-#: core.php:19733
+#: core.php:20296
 msgid "All Blog Tags"
 msgstr ""
 
-#: core.php:19761
+#: core.php:20324
 msgid "This tool was designed to capture a listing of videos you have uploaded to YouTube and use them as the basis of a blog post (categorized as members-only by default) and / or an email to distribute to your members."
 msgstr ""
 
-#: core.php:19765
+#: core.php:20328
 msgid "YouTube video links can be associated with either a single speaker or the meeting date (for example, a Zoom recording of the whole meeting)."
 msgstr ""
 
-#: core.php:19767
+#: core.php:20330
 msgid "Documentation"
 msgstr ""
 
-#: core.php:19859
+#: core.php:20422
 msgid "Video"
 msgstr ""
 
-#: core.php:19921
+#: core.php:20484
 msgid "Edit blog post"
 msgstr ""
 
-#: core.php:19927
+#: core.php:20490
 msgid "View blog post"
 msgstr ""
 
-#: core.php:19939
+#: core.php:20502
 msgid "Edit email"
 msgstr ""
 
-#: core.php:19941
+#: core.php:20504
 msgid "Preview/send email"
 msgstr ""
 
-#: core.php:20087
+#: core.php:20650
 msgid "Project:"
 msgstr ""
 
-#: core.php:20135
+#: core.php:20698
 msgid "Policy to include in email"
 msgstr ""
 
-#: core.php:20173
+#: core.php:20736
 msgid "Draft blog post"
 msgstr ""
 
-#: core.php:20187
+#: core.php:20750
 msgid "Publish blog post"
 msgstr ""
 
-#: core.php:20201
+#: core.php:20764
 msgid "Draft post (members only)"
 msgstr ""
 
-#: core.php:20215
+#: core.php:20778
 msgid "Publish post (members only)"
 msgstr ""
 
-#: core.php:20229
+#: core.php:20792
 msgid "No blog post"
 msgstr ""
 
-#: core.php:20233
+#: core.php:20796
 msgid "Email message"
 msgstr ""
 
-#: core.php:20445
+#: core.php:21008
 msgid "This is an agenda layout. CSS coding can be customized below."
 msgstr ""
 
-#: core.php:20491
+#: core.php:21054
 msgid "Stoplight display, green-yellow-red times"
 msgstr ""
 
-#: core.php:20501
+#: core.php:21064
 msgid "Bold role label"
 msgstr ""
 
-#: core.php:20519
+#: core.php:21082
 msgid "Indented items"
 msgstr ""
 
-#: core.php:20537
+#: core.php:21100
 msgid "Formatting for notes displayed below roles."
 msgstr ""
 
-#: core.php:20555
+#: core.php:21118
 msgid "Agenda role list items (by default, we do not show bullet points)"
 msgstr ""
 
-#: core.php:20827
+#: core.php:21390
 msgid "<p>Sidebar text not set</p>"
 msgstr ""
 
-#: core.php:20943
+#: core.php:21506
 msgid "RSVP List to Member"
 msgstr ""
 
-#: core.php:21167
-#: core.php:21175
-#: core.php:21177
-#: core.php:21183
-#: core.php:21185
-#: core.php:21191
-#: core.php:21193
-#: core.php:21199
-#: core.php:21201
-#: core.php:21207
-#: core.php:21209
+#: core.php:21730
+#: core.php:21738
+#: core.php:21740
+#: core.php:21746
+#: core.php:21748
+#: core.php:21754
+#: core.php:21756
+#: core.php:21762
+#: core.php:21764
+#: core.php:21770
+#: core.php:21772
 msgid "Your role"
 msgstr ""
 
-#: core.php:21185
+#: core.php:21748
 msgid "If for any reason you cannot speak as scheduled, please post an update to the agenda"
 msgstr ""
 
-#: core.php:21215
+#: core.php:21778
 msgid "Meeting Reminder"
 msgstr ""
 
-#: core.php:21223
+#: core.php:21786
 msgid "Nominating you for"
 msgstr ""
 
-#: core.php:21225
+#: core.php:21788
 msgid "To confirm"
 msgstr ""
 
-#: core.php:21225
+#: core.php:21788
 msgid "no password required with these buttons"
 msgstr ""
 
-#: core.php:21665
+#: core.php:22228
 msgid "General Evaluator not yet assigned"
 msgstr ""
 
-#: core.php:21743
+#: core.php:22306
 msgid "Toastmasters of the Day not yet assigned"
 msgstr ""
 
-#: core.php:21763
+#: core.php:22326
 #: filters.php:44
-#: utility.php:5985
+#: utility.php:5969
 msgid "Agenda"
 msgstr ""
 
-#: core.php:21775
+#: core.php:22338
 #: filters.php:59
-#: utility.php:6009
+#: utility.php:5993
 msgid "Vote Counter's Tool"
 msgstr ""
 
-#: core.php:21775
+#: core.php:22338
 msgid "Tutorial"
 msgstr ""
 
-#: core.php:22225
+#: core.php:22788
 msgid "Just this meeting"
 msgstr ""
 
-#: core.php:22229
+#: core.php:22792
 msgid "Just the next meeting"
 msgstr ""
 
-#: core.php:22241
+#: core.php:22804
 msgid "Cancel My Absence"
 msgstr ""
 
-#: core.php:22249
+#: core.php:22812
 msgid "Use this to mark yourself or another member unavailable for one more meetings."
 msgstr ""
 
-#: core.php:22387
+#: core.php:22950
 msgid "Role data associated with this event has now been archived and cannot be updated through the front end of the website."
 msgstr ""
 
-#: core.php:22503
+#: core.php:23066
 msgid "withdrawn: "
 msgstr ""
 
-#: core.php:23570
+#: core.php:23478
+#, php-format
+msgid "Agenda upgrade complete: %1$d documents updated, %2$d blocks migrated to <a target=\"_blank\" href=\"https://toastmost.org/2026/07/02/new-agenda-note-editor-block/\">new Agenda Note format</a>."
+msgstr ""
+
+#: core.php:23492
+msgid "Agenda upgrade recommended"
+msgstr ""
+
+#: core.php:23492
+#, php-format
+msgid "%d rsvpmaker or template documents use the old format for Agenda notes. Upgrade them in one click."
+msgstr ""
+
+#: core.php:23492
+msgid "Upgrade Agendas Now"
+msgstr ""
+
+#: core.php:24365
 msgid "In person attendance"
 msgstr ""
 
-#: core.php:23578
+#: core.php:24373
 msgid "Add another_member"
 msgstr ""
 
-#: core.php:23580
-#: core.php:23730
-#: core.php:23796
+#: core.php:24375
+#: core.php:24525
+#: core.php:24591
 msgid "I plan to attend in person"
 msgstr ""
 
-#: core.php:23620
-#: core.php:23624
-#: core.php:23804
+#: core.php:24415
+#: core.php:24419
+#: core.php:24599
 msgid "In-person attendees"
 msgstr ""
 
-#: core.php:23624
+#: core.php:24419
 msgid "Remove Checked"
 msgstr ""
 
-#: core.php:23730
+#: core.php:24525
 msgid "In-person attendance so far:"
 msgstr ""
 
-#: core.php:23826
+#: core.php:24621
 msgid "Easy Online Meeting Signup"
 msgstr ""
 
-#: core.php:24238
+#: core.php:25033
 msgid "expires"
 msgstr ""
 
@@ -2381,183 +2441,225 @@ msgstr ""
 msgid "TM Email"
 msgstr ""
 
-#: email-forwarders-and-groups.php:380
+#: email-forwarders-and-groups.php:405
 msgid "Find a Club / General Notifications Setup"
 msgstr ""
 
-#: email-forwarders-and-groups.php:605
+#: email-forwarders-and-groups.php:630
 msgid "Email List Setup"
 msgstr ""
 
-#: email.php:91
+#: email.php:92
 msgid "Here is the speaker lineup with the path, project, title, and introduction information they provided through the online form."
-msgstr ""
-
-#: email.php:95
-#, php-format
-msgid "If the speakers post updates, you will be able to see them here: <a href=\"%s\">%s</a>."
 msgstr ""
 
 #: email.php:96
 #, php-format
+msgid "If the speakers post updates, you will be able to see them here: <a href=\"%s\">%s</a>."
+msgstr ""
+
+#: email.php:97
+#, php-format
 msgid "You can view the full agenda here: <a href=\"%s\">%s</a>."
 msgstr ""
 
-#: email.php:99
+#: email.php:100
 #, php-format
 msgid "Speakers and Introductions for %s %s"
 msgstr ""
 
-#: email.php:178
+#: email.php:184
+#, php-format
+msgid ""
+"<p>Here is the agenda for the meeting on %s</p>.\n"
+"\n"
+"<p>%s <a href=\"%s\">%s</a></p>\n"
+"\n"
+"<p>View agenda: <a href=\"%s\">%s</a></p>\n"
+"\n"
+""
+msgstr ""
+
+#: email.php:184
+msgid "Sign up"
+msgstr ""
+
+#: email.php:237
 msgid "Role Description"
 msgstr ""
 
-#: email.php:240
+#: email.php:327
 msgid "You're not yet signed up for a role"
 msgstr ""
 
-#: email.php:356
+#: email.php:420
+#: mobile.php:9
+msgid "You do not have permission to view this page."
+msgstr ""
+
+#: email.php:425
+#: tm-reports.php:50
+msgid "Reminder Email Log"
+msgstr ""
+
+#: email.php:431
+msgid "Last Meeting"
+msgstr ""
+
+#: email.php:434
+msgid "Last 5 Meetings"
+msgstr ""
+
+#: email.php:439
+msgid "No past meeting events found."
+msgstr ""
+
+#: email.php:452
+msgid "Date:"
+msgstr ""
+
+#: email.php:561
 msgid "Speech Intro for"
 msgstr ""
 
-#: email.php:357
+#: email.php:562
 msgid "Speech for"
 msgstr ""
 
-#: email.php:388
+#: email.php:593
 #, php-format
 msgid "Your role: %1$s for %2$s %3$s"
 msgstr ""
 
-#: email.php:400
+#: email.php:605
 msgid "Please sign into the website to add speech project details, particularly if the speech project will require more than the default 7 minutes on the agenda."
 msgstr ""
 
-#: email.php:401
+#: email.php:606
 msgid "Please add project/timing"
 msgstr ""
 
-#: email.php:404
+#: email.php:609
 msgid "If this information is not correct, or if you cannot attend on this date, please let us know as soon as possible."
 msgstr ""
 
-#: email.php:442
+#: email.php:647
 msgid "has recomended you for the role of"
 msgstr ""
 
-#: email.php:442
-#: tm-reports.php:6320
+#: email.php:647
+#: tm-reports.php:6328
 msgid "for"
 msgstr ""
 
-#: email.php:455
+#: email.php:660
 #, php-format
 msgid "<p>Click here to <a href=\"%s\">ACCEPT</a> (no password required if you act before someone else takes this role)</p>"
 msgstr ""
 
-#: email.php:457
+#: email.php:662
 msgid "Note from"
 msgstr ""
 
-#: email.php:466
+#: email.php:671
 msgid "Recommendation sent by email to"
 msgstr ""
 
-#: email.php:558
+#: email.php:763
 msgid "Sign up at"
 msgstr ""
 
-#: email.php:558
+#: email.php:763
 msgid "Roster"
 msgstr ""
 
-#: email.php:623
+#: email.php:828
 msgid "Agenda for"
 msgstr ""
 
-#: email.php:625
+#: email.php:830
 msgid "open roles"
 msgstr ""
 
-#: email.php:656
+#: email.php:861
 msgid "Add a Note (optional)"
 msgstr ""
 
-#: email.php:657
+#: email.php:862
 msgid "Your note will be emailed along with the details shown below."
 msgstr ""
 
-#: email.php:657
+#: email.php:862
 msgid "You can also change the subject line. For example, when emailing the agenda you may want to emphasize the roles you need filled or special plans for a meeting (such as a contest)."
 msgstr ""
 
-#: email.php:662
+#: email.php:867
 msgid "all members"
 msgstr ""
 
-#: email.php:662
+#: email.php:867
 msgid "members without a role"
 msgstr ""
 
-#: email.php:662
+#: email.php:867
 msgid "officers"
 msgstr ""
 
-#: email.php:662
+#: email.php:867
 msgid "this address"
 msgstr ""
 
-#: email.php:693
+#: email.php:898
 msgid "now scheduled to speak on"
 msgstr ""
 
-#: email.php:696
+#: email.php:901
 msgid "Backup speaker promoted to speaker following a cancellation."
 msgstr ""
 
-#: email.php:697
+#: email.php:902
 msgid "This is an automated message. Replies will be sent to"
 msgstr ""
 
-#: email.php:749
+#: email.php:954
 msgid "Check All"
 msgstr ""
 
-#: email.php:776
+#: email.php:981
 msgid "Permission given"
 msgstr ""
 
-#: email.php:779
+#: email.php:984
 msgid "Permission denied"
 msgstr ""
 
-#: email.php:818
+#: email.php:1023
 msgid "Please set your club privacy preference."
 msgstr ""
 
-#: email.php:819
-#: email.php:825
+#: email.php:1024
+#: email.php:1030
 msgid "Yes, give permission"
 msgstr ""
 
-#: email.php:821
-#: email.php:827
+#: email.php:1026
+#: email.php:1032
 msgid "No, DENY permission"
 msgstr ""
 
-#: email.php:822
+#: email.php:1027
 msgid "Member Directory"
 msgstr ""
 
-#: email.php:840
+#: email.php:1045
 msgid "IMPORTANT"
 msgstr ""
 
-#: email.php:840
+#: email.php:1045
 msgid "If you are a new member, please log in to set your email and privacy preference."
 msgstr ""
 
-#: enqueue.php:144
+#: enqueue.php:170
 msgid "Select Role (not set)"
 msgstr ""
 
@@ -2586,7 +2688,7 @@ msgid "Email (roles only)"
 msgstr ""
 
 #: filters.php:56
-#: utility.php:1863
+#: utility.php:1839
 msgid "Export to Word"
 msgstr ""
 
@@ -2667,117 +2769,115 @@ msgstr ""
 msgid "View log of assignments and recommendations."
 msgstr ""
 
-#: filters.php:252
+#: filters.php:253
+#: filters.php:256
 msgid "Role data archived"
 msgstr ""
 
-#: filters.php:268
-#: filters.php:290
-#: filters.php:312
+#: filters.php:275
+#: filters.php:297
+#: filters.php:319
 msgid "Save Changes"
 msgstr ""
 
-#: filters.php:285
+#: filters.php:292
 msgid "Edit Sidebar"
 msgstr ""
 
-#: filters.php:339
-msgid "To view this content, you must be logged with a member account."
+#: filters.php:357
+msgid "Note: This document is only visible to editors."
 msgstr ""
 
-#: filters.php:339
-msgid "Login to View"
-msgstr ""
-
-#: filters.php:344
+#: filters.php:361
+#: filters.php:372
 msgid "Note: This is member-only content (login required)"
 msgstr ""
 
-#: filters.php:365
+#: filters.php:398
 msgid "To view this content, you must be logged in with a member account."
 msgstr ""
 
-#: fse-navigation-block.php:15
-#: fse-navigation-block.php:20
-#: utility.php:5981
+#: fse-navigation-block.php:21
+#: fse-navigation-block.php:26
+#: utility.php:5965
 msgid "Home"
 msgstr ""
 
-#: fse-navigation-block.php:22
-#: fse-navigation-block.php:34
+#: fse-navigation-block.php:28
+#: fse-navigation-block.php:40
 msgid "Calendar"
 msgstr ""
 
-#: fse-navigation-block.php:37
-#: fse-navigation-block.php:51
+#: fse-navigation-block.php:43
+#: fse-navigation-block.php:57
 msgid "Members"
 msgstr ""
 
-#: history.php:11
+#: history.php:121
 msgid "Reports"
 msgstr ""
 
-#: history.php:27
+#: history.php:137
 msgid "Updating role history cache"
 msgstr ""
 
-#: history.php:53
+#: history.php:163
 msgid "Processing"
 msgstr ""
 
-#: history.php:53
+#: history.php:163
 msgid "new records"
 msgstr ""
 
-#: history.php:61
+#: history.php:171
 msgid "Cache updated"
 msgstr ""
 
-#: history.php:61
+#: history.php:171
 msgid "Refresh Cache"
 msgstr ""
 
-#: history.php:237
-#: history.php:407
+#: history.php:307
+#: history.php:460
 msgid "No limit"
 msgstr ""
 
-#: history.php:239
-#: history.php:312
+#: history.php:309
+#: history.php:393
 msgid "Refresh"
 msgstr ""
 
-#: history.php:302
+#: history.php:379
 msgid "Confirm: Delete These Records?"
 msgstr ""
 
-#: history.php:379
-#: utility.php:5953
+#: history.php:432
+#: utility.php:5937
 msgid "Delete"
 msgstr ""
 
-#: history.php:388
-#: utility.php:5957
+#: history.php:441
+#: utility.php:5941
 msgid "Select"
 msgstr ""
 
-#: history.php:713
+#: history.php:824
 msgid "Held a role"
 msgstr ""
 
-#: history.php:720
+#: history.php:833
 msgid "No role but marked present"
 msgstr ""
 
-#: history.php:729
+#: history.php:842
 msgid "Total attendance"
 msgstr ""
 
-#: history.php:741
+#: history.php:854
 msgid "Absent"
 msgstr ""
 
-#: history.php:749
+#: history.php:863
 msgid "Minutes for"
 msgstr ""
 
@@ -2785,12 +2885,22 @@ msgstr ""
 msgid "You must be logged in to view the QR code."
 msgstr ""
 
-#: mobile.php:9
-msgid "You do not have permission to view this page."
+#: mobile.php:36
+msgid "Use the camera on your phone to scan the QR code shown below to authorize the app. If you have not yet installed it, the QR codes linked to the app stores are also included."
 msgstr ""
 
-#: mobile.php:32
-msgid "Use the camera on your phone to scan the QR code shown below to authorize the app. If you have not yet installed it, the QR codes linked to the app stores are also included."
+#: patterns.php:37
+#: tm-reports.php:16
+#: tm-reports.php:907
+msgid "Toastmasters"
+msgstr ""
+
+#: patterns.php:47
+msgid "Toastmasters Officer and Member Profile Listing"
+msgstr ""
+
+#: patterns.php:51
+msgid "Displays member profile blocks for each of the standard officer roles, followed by a listing of the profiles of members who have chosen to make their profiles public."
 msgstr ""
 
 #: projects_array.php:2
@@ -3392,17 +3502,17 @@ msgid "Resolving Conflict"
 msgstr ""
 
 #: projects_array.php:455
-#: utility.php:6213
+#: utility.php:6197
 msgid "Pathways 360° Evaluation"
 msgstr ""
 
 #: projects_array.php:458
-#: utility.php:6217
+#: utility.php:6201
 msgid "Mentor Program: Mentoring"
 msgstr ""
 
 #: projects_array.php:461
-#: utility.php:6221
+#: utility.php:6205
 msgid "Mentor Program: Advanced Mentoring"
 msgstr ""
 
@@ -3418,7 +3528,7 @@ msgstr ""
 #: projects_array.php:2633
 #: projects_array.php:2778
 #: projects_array.php:2928
-#: utility.php:6225
+#: utility.php:6209
 msgid "Ice Breaker"
 msgstr ""
 
@@ -3434,7 +3544,7 @@ msgstr ""
 #: projects_array.php:2636
 #: projects_array.php:2781
 #: projects_array.php:2931
-#: utility.php:6229
+#: utility.php:6213
 msgid "Evaluation and Feedback - First Speech"
 msgstr ""
 
@@ -3450,7 +3560,7 @@ msgstr ""
 #: projects_array.php:2639
 #: projects_array.php:2784
 #: projects_array.php:2934
-#: utility.php:6233
+#: utility.php:6217
 msgid "Evaluation and Feedback - Second Speech"
 msgstr ""
 
@@ -3466,7 +3576,7 @@ msgstr ""
 #: projects_array.php:2642
 #: projects_array.php:2787
 #: projects_array.php:2937
-#: utility.php:6237
+#: utility.php:6221
 msgid "Evaluation and Feedback - Evaluator Speech"
 msgstr ""
 
@@ -3482,7 +3592,7 @@ msgstr ""
 #: projects_array.php:2645
 #: projects_array.php:2790
 #: projects_array.php:2940
-#: utility.php:6241
+#: utility.php:6225
 msgid "Writing a Speech with Purpose"
 msgstr ""
 
@@ -3498,7 +3608,7 @@ msgstr ""
 #: projects_array.php:2648
 #: projects_array.php:2793
 #: projects_array.php:2943
-#: utility.php:6245
+#: utility.php:6229
 msgid "Introduction to Vocal Variety and Body Language"
 msgstr ""
 
@@ -3514,7 +3624,7 @@ msgstr ""
 #: projects_array.php:2651
 #: projects_array.php:2796
 #: projects_array.php:2946
-#: utility.php:6249
+#: utility.php:6233
 msgid "Introduction to Vocal Variety and Body Language - Emphasis on Vocal Variety"
 msgstr ""
 
@@ -3541,7 +3651,7 @@ msgstr ""
 #: projects_array.php:2849
 #: projects_array.php:2949
 #: projects_array.php:3002
-#: utility.php:6253
+#: utility.php:6237
 msgid "Researching and Presenting"
 msgstr ""
 
@@ -3553,7 +3663,7 @@ msgstr ""
 #: projects_array.php:2657
 #: projects_array.php:2802
 #: projects_array.php:2952
-#: utility.php:6257
+#: utility.php:6241
 msgid "Understanding Your Leadership Style"
 msgstr ""
 
@@ -3562,7 +3672,7 @@ msgstr ""
 #: projects_array.php:1745
 #: projects_array.php:2357
 #: projects_array.php:2955
-#: utility.php:6261
+#: utility.php:6245
 msgid "Understanding Your Communication Style"
 msgstr ""
 
@@ -3577,12 +3687,12 @@ msgstr ""
 #: projects_array.php:2663
 #: projects_array.php:2808
 #: projects_array.php:2958
-#: utility.php:6265
+#: utility.php:6249
 msgid "Introduction to Toastmasters Mentoring"
 msgstr ""
 
 #: projects_array.php:523
-#: utility.php:6269
+#: utility.php:6253
 msgid "Negotiate the Best Outcome"
 msgstr ""
 
@@ -3597,7 +3707,7 @@ msgstr ""
 #: projects_array.php:2669
 #: projects_array.php:2805
 #: projects_array.php:2964
-#: utility.php:6273
+#: utility.php:6257
 msgid "Active Listening"
 msgstr ""
 
@@ -3612,7 +3722,7 @@ msgstr ""
 #: projects_array.php:2672
 #: projects_array.php:2814
 #: projects_array.php:2967
-#: utility.php:6277
+#: utility.php:6261
 msgid "Connect with Storytelling"
 msgstr ""
 
@@ -3628,7 +3738,7 @@ msgstr ""
 #: projects_array.php:2675
 #: projects_array.php:2817
 #: projects_array.php:2970
-#: utility.php:6281
+#: utility.php:6265
 msgid "Connect with Your Audience"
 msgstr ""
 
@@ -3643,7 +3753,7 @@ msgstr ""
 #: projects_array.php:2678
 #: projects_array.php:2820
 #: projects_array.php:2973
-#: utility.php:6285
+#: utility.php:6269
 msgid "Creating Effective Visual Aids"
 msgstr ""
 
@@ -3659,7 +3769,7 @@ msgstr ""
 #: projects_array.php:2681
 #: projects_array.php:2823
 #: projects_array.php:2976
-#: utility.php:6289
+#: utility.php:6273
 msgid "Deliver Social Speeches - First Speech"
 msgstr ""
 
@@ -3673,7 +3783,7 @@ msgstr ""
 #: projects_array.php:2685
 #: projects_array.php:2826
 #: projects_array.php:2979
-#: utility.php:6293
+#: utility.php:6277
 msgid "Deliver Social Speeches - Second Speech"
 msgstr ""
 
@@ -3688,7 +3798,7 @@ msgstr ""
 #: projects_array.php:2688
 #: projects_array.php:2829
 #: projects_array.php:2982
-#: utility.php:6297
+#: utility.php:6281
 msgid "Effective Body Language"
 msgstr ""
 
@@ -3703,7 +3813,7 @@ msgstr ""
 #: projects_array.php:2691
 #: projects_array.php:2832
 #: projects_array.php:2985
-#: utility.php:6301
+#: utility.php:6285
 msgid "Focus on the Positive"
 msgstr ""
 
@@ -3718,7 +3828,7 @@ msgstr ""
 #: projects_array.php:2694
 #: projects_array.php:2835
 #: projects_array.php:2988
-#: utility.php:6305
+#: utility.php:6289
 msgid "Inspire Your Audience"
 msgstr ""
 
@@ -3733,7 +3843,7 @@ msgstr ""
 #: projects_array.php:2699
 #: projects_array.php:2840
 #: projects_array.php:2993
-#: utility.php:6309
+#: utility.php:6293
 msgid "Know Your Sense of Humor"
 msgstr ""
 
@@ -3748,7 +3858,7 @@ msgstr ""
 #: projects_array.php:2666
 #: projects_array.php:2843
 #: projects_array.php:2996
-#: utility.php:6313
+#: utility.php:6297
 msgid "Make Connections Through Networking"
 msgstr ""
 
@@ -3763,7 +3873,7 @@ msgstr ""
 #: projects_array.php:2702
 #: projects_array.php:2846
 #: projects_array.php:2999
-#: utility.php:6317
+#: utility.php:6301
 msgid "Prepare for an Interview"
 msgstr ""
 
@@ -3778,7 +3888,7 @@ msgstr ""
 #: projects_array.php:2711
 #: projects_array.php:2855
 #: projects_array.php:3008
-#: utility.php:6321
+#: utility.php:6305
 msgid "Using Descriptive Language"
 msgstr ""
 
@@ -3793,7 +3903,7 @@ msgstr ""
 #: projects_array.php:2714
 #: projects_array.php:2858
 #: projects_array.php:3011
-#: utility.php:6325
+#: utility.php:6309
 msgid "Using Presentation Software"
 msgstr ""
 
@@ -3808,7 +3918,7 @@ msgstr ""
 #: projects_array.php:2708
 #: projects_array.php:2852
 #: projects_array.php:3005
-#: utility.php:6329
+#: utility.php:6313
 msgid "Understanding Vocal Variety"
 msgstr ""
 
@@ -3903,7 +4013,7 @@ msgid "How to Be a Distinguished Club (Successful Club Series)"
 msgstr ""
 
 #: projects_array.php:624
-#: utility.php:6333
+#: utility.php:6317
 msgid "Manage Change"
 msgstr ""
 
@@ -3918,7 +4028,7 @@ msgstr ""
 #: projects_array.php:2720
 #: projects_array.php:2864
 #: projects_array.php:3066
-#: utility.php:6337
+#: utility.php:6321
 msgid "Building a Social Media Presence"
 msgstr ""
 
@@ -3933,7 +4043,7 @@ msgstr ""
 #: projects_array.php:2723
 #: projects_array.php:2867
 #: projects_array.php:3069
-#: utility.php:6341
+#: utility.php:6325
 msgid "Create a Podcast"
 msgstr ""
 
@@ -3948,7 +4058,7 @@ msgstr ""
 #: projects_array.php:2726
 #: projects_array.php:2870
 #: projects_array.php:3072
-#: utility.php:6345
+#: utility.php:6329
 msgid "Manage Online Meetings"
 msgstr ""
 
@@ -3963,7 +4073,7 @@ msgstr ""
 #: projects_array.php:2735
 #: projects_array.php:2879
 #: projects_array.php:3081
-#: utility.php:6349
+#: utility.php:6333
 msgid "Managing a Difficult Audience"
 msgstr ""
 
@@ -3978,7 +4088,7 @@ msgstr ""
 #: projects_array.php:2729
 #: projects_array.php:2873
 #: projects_array.php:3075
-#: utility.php:6353
+#: utility.php:6337
 msgid "Manage Projects Successfully - First Speech"
 msgstr ""
 
@@ -3993,7 +4103,7 @@ msgstr ""
 #: projects_array.php:2732
 #: projects_array.php:2876
 #: projects_array.php:3078
-#: utility.php:6357
+#: utility.php:6341
 msgid "Manage Projects Successfully - Second Speech"
 msgstr ""
 
@@ -4008,7 +4118,7 @@ msgstr ""
 #: projects_array.php:2717
 #: projects_array.php:2882
 #: projects_array.php:3084
-#: utility.php:6361
+#: utility.php:6345
 msgid "Public Relations Strategies"
 msgstr ""
 
@@ -4023,7 +4133,7 @@ msgstr ""
 #: projects_array.php:2738
 #: projects_array.php:2885
 #: projects_array.php:3087
-#: utility.php:6365
+#: utility.php:6349
 msgid "Question-and-Answer Session"
 msgstr ""
 
@@ -4038,7 +4148,7 @@ msgstr ""
 #: projects_array.php:2741
 #: projects_array.php:2888
 #: projects_array.php:3090
-#: utility.php:6369
+#: utility.php:6353
 msgid "Write a Compelling Blog"
 msgstr ""
 
@@ -4134,7 +4244,7 @@ msgstr ""
 
 #: projects_array.php:701
 #: projects_array.php:2891
-#: utility.php:6373
+#: utility.php:6357
 msgid "Lead in Any Situation"
 msgstr ""
 
@@ -4149,7 +4259,7 @@ msgstr ""
 #: projects_array.php:2747
 #: projects_array.php:2894
 #: projects_array.php:3145
-#: utility.php:6377
+#: utility.php:6361
 msgid "Reflect on Your Path"
 msgstr ""
 
@@ -4164,7 +4274,7 @@ msgstr ""
 #: projects_array.php:2750
 #: projects_array.php:2897
 #: projects_array.php:3148
-#: utility.php:6381
+#: utility.php:6365
 msgid "Ethical Leadership"
 msgstr ""
 
@@ -4179,7 +4289,7 @@ msgstr ""
 #: projects_array.php:2753
 #: projects_array.php:2900
 #: projects_array.php:3151
-#: utility.php:6385
+#: utility.php:6369
 msgid "High Performance Leadership - First Speech"
 msgstr ""
 
@@ -4194,7 +4304,7 @@ msgstr ""
 #: projects_array.php:2756
 #: projects_array.php:2903
 #: projects_array.php:3154
-#: utility.php:6389
+#: utility.php:6373
 msgid "High Performance Leadership - Second Speech"
 msgstr ""
 
@@ -4209,7 +4319,7 @@ msgstr ""
 #: projects_array.php:2744
 #: projects_array.php:2906
 #: projects_array.php:3157
-#: utility.php:6393
+#: utility.php:6377
 msgid "Leading in Your Volunteer Organization"
 msgstr ""
 
@@ -4224,7 +4334,7 @@ msgstr ""
 #: projects_array.php:2759
 #: projects_array.php:2909
 #: projects_array.php:3160
-#: utility.php:6397
+#: utility.php:6381
 msgid "Lessons Learned"
 msgstr ""
 
@@ -4239,7 +4349,7 @@ msgstr ""
 #: projects_array.php:2762
 #: projects_array.php:2912
 #: projects_array.php:3163
-#: utility.php:6401
+#: utility.php:6385
 msgid "Moderate a Panel Discussion"
 msgstr ""
 
@@ -4254,7 +4364,7 @@ msgstr ""
 #: projects_array.php:2765
 #: projects_array.php:2915
 #: projects_array.php:3166
-#: utility.php:6405
+#: utility.php:6389
 msgid "Prepare to Speak Professionally"
 msgstr ""
 
@@ -4269,7 +4379,7 @@ msgstr ""
 #: projects_array.php:2768
 #: projects_array.php:2918
 #: projects_array.php:3169
-#: utility.php:6409
+#: utility.php:6393
 msgid "DTM Project Speech 1"
 msgstr ""
 
@@ -4284,7 +4394,7 @@ msgstr ""
 #: projects_array.php:2771
 #: projects_array.php:2921
 #: projects_array.php:3172
-#: utility.php:6413
+#: utility.php:6397
 msgid "DTM Project Speech 2"
 msgstr ""
 
@@ -4299,7 +4409,7 @@ msgstr ""
 #: projects_array.php:2774
 #: projects_array.php:2924
 #: projects_array.php:3175
-#: utility.php:6417
+#: utility.php:6401
 msgid "Pathways 360 Evaluation"
 msgstr ""
 
@@ -4436,120 +4546,120 @@ msgid "Giving Effective Feedback (Leadership Excellence Series)"
 msgstr ""
 
 #: projects_array.php:832
-#: utility.php:6421
+#: utility.php:6405
 msgid "Reaching Consensus - Assignment Option 1"
 msgstr ""
 
 #: projects_array.php:835
-#: utility.php:6425
+#: utility.php:6409
 msgid "Reaching Consensus - Assignment Option 2"
 msgstr ""
 
 #: projects_array.php:914
-#: utility.php:6429
+#: utility.php:6413
 msgid "Improvement Through Positive Coaching"
 msgstr ""
 
 #: projects_array.php:1045
-#: utility.php:6433
+#: utility.php:6417
 msgid "Engage Your Audience with Humor"
 msgstr ""
 
 #: projects_array.php:1143
-#: utility.php:6437
+#: utility.php:6421
 msgid "The Power of Humor in an Impromptu Speech"
 msgstr ""
 
 #: projects_array.php:1219
-#: utility.php:6441
+#: utility.php:6425
 msgid "Deliver Your Message With Humor"
 msgstr ""
 
 #: projects_array.php:1349
-#: utility.php:6445
+#: utility.php:6429
 msgid "Present a Proposal"
 msgstr ""
 
 #: projects_array.php:1591
-#: utility.php:6449
+#: utility.php:6433
 msgid "Managing Time"
 msgstr ""
 
 #: projects_array.php:1600
-#: utility.php:6453
+#: utility.php:6437
 msgid "Planning and Implementing"
 msgstr ""
 
 #: projects_array.php:1653
-#: utility.php:6457
+#: utility.php:6441
 msgid "Leading Your Team"
 msgstr ""
 
 #: projects_array.php:1684
-#: utility.php:6461
+#: utility.php:6445
 msgid "Manage Successful Events"
 msgstr ""
 
 #: projects_array.php:1754
-#: utility.php:6465
+#: utility.php:6449
 msgid "Understanding Emotional Intelligence"
 msgstr ""
 
 #: projects_array.php:1856
 #: projects_array.php:2861
-#: utility.php:6469
+#: utility.php:6453
 msgid "Motivate Others"
 msgstr ""
 
 #: projects_array.php:1932
-#: tm-reports.php:2399
-#: tm-reports.php:2401
-#: utility.php:6473
+#: tm-reports.php:2407
+#: tm-reports.php:2409
+#: utility.php:6457
 msgid "Team Building"
 msgstr ""
 
 #: projects_array.php:2063
-#: utility.php:6477
+#: utility.php:6461
 msgid "Understanding Conflict Resolution"
 msgstr ""
 
 #: projects_array.php:2166
-#: utility.php:6481
+#: utility.php:6465
 msgid "Leading in Difficult Situations"
 msgstr ""
 
 #: projects_array.php:2366
-#: utility.php:6485
+#: utility.php:6469
 msgid "Persuasive Speaking"
 msgstr ""
 
 #: projects_array.php:2660
-#: utility.php:6489
+#: utility.php:6473
 msgid "Cross-Cultural Understanding"
 msgstr ""
 
 #: projects_array.php:2811
-#: utility.php:6493
+#: utility.php:6477
 msgid "Successful Collaboration"
 msgstr ""
 
 #: projects_array.php:2961
-#: utility.php:6497
+#: utility.php:6481
 msgid "Develop a Communication Plan"
 msgstr ""
 
 #: projects_array.php:3063
-#: utility.php:6501
+#: utility.php:6485
 msgid "Communicate Change"
 msgstr ""
 
 #: projects_array.php:3139
-#: utility.php:6505
+#: utility.php:6489
 msgid "Develop Your Vision - First Speech"
 msgstr ""
 
 #: projects_array.php:3142
-#: utility.php:6509
+#: utility.php:6493
 msgid "Develop Your Vision - Second Speech"
 msgstr ""
 
@@ -4741,8 +4851,8 @@ msgstr ""
 msgid "Team Building: Club Webmaster"
 msgstr ""
 
-#: setup-wizard.php:244
-#: setup-wizard.php:364
+#: setup-wizard.php:234
+#: setup-wizard.php:354
 msgid "Webmaster"
 msgstr ""
 
@@ -4750,104 +4860,98 @@ msgstr ""
 msgid "Dues amount"
 msgstr ""
 
-#: tm-online-application.php:188
-#: tm-reports.php:719
-#: tm-reports.php:738
+#: tm-online-application.php:191
+#: tm-reports.php:727
+#: tm-reports.php:746
 msgid "Month"
 msgstr ""
 
-#: tm-online-application.php:188
+#: tm-online-application.php:191
 msgid "TI Dues"
 msgstr ""
 
-#: tm-online-application.php:188
+#: tm-online-application.php:191
 msgid "Club Dues"
 msgstr ""
 
-#: tm-online-application.php:188
+#: tm-online-application.php:191
 msgid "Club New Member"
 msgstr ""
 
-#: tm-online-application.php:188
+#: tm-online-application.php:191
 msgid "Total"
 msgstr ""
 
-#: tm-online-application.php:188
+#: tm-online-application.php:191
 msgid "+ $25 New Member Fee"
 msgstr ""
 
-#: tm-online-application.php:197
+#: tm-online-application.php:202
 msgid "Option: pay the next 6 month renewal for and additional "
 msgstr ""
 
-#: tm-online-application.php:636
+#: tm-online-application.php:663
 msgid "Notification by Title"
 msgstr ""
 
-#: tm-online-application.php:646
+#: tm-online-application.php:673
 msgid "Membership"
 msgstr ""
 
-#: tm-online-application.php:658
+#: tm-online-application.php:685
 msgid "Message to applicant about dues payment (for example, instructions for paying by check)"
 msgstr ""
 
-#: tm-online-application.php:659
+#: tm-online-application.php:686
 msgid "Online Payments Services"
 msgstr ""
 
-#: tm-online-application.php:664
+#: tm-online-application.php:691
 msgid "Configured to use"
 msgstr ""
 
-#: tm-online-application.php:665
+#: tm-online-application.php:692
 msgid "Configure online payment service (Stripe or PayPal)"
 msgstr ""
 
-#: tm-online-application.php:904
+#: tm-online-application.php:931
 msgid "Create user account for"
 msgstr ""
 
-#: tm-online-application.php:904
-#: utility.php:6057
-#: agenda/build/5692.js:1
+#: tm-online-application.php:931
+#: utility.php:6041
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:123
 msgid "Add"
 msgstr ""
 
-#: tm-online-application.php:916
+#: tm-online-application.php:943
 msgid "User account created"
 msgstr ""
 
-#: tm-online-application.php:916
+#: tm-online-application.php:943
 msgid "No user account match for email"
 msgstr ""
 
-#: tm-online-application.php:1065
-#: tm-reports.php:3550
+#: tm-online-application.php:1091
+#: tm-reports.php:3558
 msgid "Dues"
 msgstr ""
 
-#: tm-online-application.php:1067
+#: tm-online-application.php:1093
 msgid "Selected Member"
 msgstr ""
 
-#: tm-online-application.php:1070
+#: tm-online-application.php:1096
 msgid "<a href=\""
 msgstr ""
 
-#: tm-online-application.php:1072
+#: tm-online-application.php:1098
 msgid "Option: renew for 12 months, not 6. Fee:"
 msgstr ""
 
-#: tm-online-application.php:1073
+#: tm-online-application.php:1099
 msgid "Paying Dues For"
-msgstr ""
-
-#: tm-reports.php:16
-#: tm-reports.php:899
-#: utility.php:7361
-msgid "Toastmasters"
 msgstr ""
 
 #: tm-reports.php:18
@@ -4859,7 +4963,7 @@ msgid "Evaluations"
 msgstr ""
 
 #: tm-reports.php:20
-#: tm-reports.php:3120
+#: tm-reports.php:3128
 msgid "Member List"
 msgstr ""
 
@@ -4876,17 +4980,17 @@ msgid "Suggest All Roles"
 msgstr ""
 
 #: tm-reports.php:26
-#: tm-reports.php:76
+#: tm-reports.php:77
 msgid "Member Signups and Suggestions"
 msgstr ""
 
 #: tm-reports.php:28
-#: tm-reports.php:77
+#: tm-reports.php:78
 msgid "Pathways Progress"
 msgstr ""
 
 #: tm-reports.php:30
-#: tm-reports.php:78
+#: tm-reports.php:79
 msgid "Pathways/BaseCamp checklist"
 msgstr ""
 
@@ -4895,7 +4999,7 @@ msgid "Base Camp Checklist"
 msgstr ""
 
 #: tm-reports.php:32
-#: tm-reports.php:79
+#: tm-reports.php:80
 msgid "Reports Dashboard"
 msgstr ""
 
@@ -4904,7 +5008,7 @@ msgid "About Toastmost"
 msgstr ""
 
 #: tm-reports.php:36
-#: tm-reports.php:58
+#: tm-reports.php:59
 msgid "More"
 msgstr ""
 
@@ -4913,18 +5017,18 @@ msgid "TM Administration"
 msgstr ""
 
 #: tm-reports.php:40
-#: tm-reports.php:1013
+#: tm-reports.php:1021
 msgid "Update Roles & Attendance"
 msgstr ""
 
 #: tm-reports.php:44
-#: tm-reports.php:83
-#: tm-reports.php:2449
+#: tm-reports.php:84
+#: tm-reports.php:2457
 msgid "Mentors"
 msgstr ""
 
 #: tm-reports.php:46
-#: tm-reports.php:85
+#: tm-reports.php:86
 msgid "Track Dues"
 msgstr ""
 
@@ -4937,730 +5041,726 @@ msgid "Member Application & Dues Setup"
 msgstr ""
 
 #: tm-reports.php:49
-#: tm-reports.php:84
+#: tm-reports.php:85
 msgid "Role Descriptions Setup"
 msgstr ""
 
-#: tm-reports.php:52
-#: tm-reports.php:86
+#: tm-reports.php:53
+#: tm-reports.php:87
 msgid "Import/Export"
 msgstr ""
 
-#: tm-reports.php:53
+#: tm-reports.php:54
 msgid "Setup Wizard"
 msgstr ""
 
-#: tm-reports.php:54
+#: tm-reports.php:55
 msgid "FreeToastHost Importer"
 msgstr ""
 
-#: tm-reports.php:56
-#: tm-reports.php:2870
+#: tm-reports.php:57
+#: tm-reports.php:2878
 msgid "Activity Log"
 msgstr ""
 
-#: tm-reports.php:59
+#: tm-reports.php:60
 msgid "TM Help"
 msgstr ""
 
-#: tm-reports.php:60
+#: tm-reports.php:61
 msgid "Todo List"
 msgstr ""
 
-#: tm-reports.php:61
-#: tm-reports.php:1496
+#: tm-reports.php:62
+#: tm-reports.php:1504
 msgid "Minutes from Meeting Records"
 msgstr ""
 
-#: tm-reports.php:62
+#: tm-reports.php:63
 msgid "Member Votes"
 msgstr ""
 
-#: tm-reports.php:63
+#: tm-reports.php:64
 msgid "Minutes Templates"
 msgstr ""
 
-#: tm-reports.php:64
+#: tm-reports.php:65
 msgid "Minutes Help"
 msgstr ""
 
-#: tm-reports.php:71
+#: tm-reports.php:72
 msgid "More Menu Items"
 msgstr ""
 
-#: tm-reports.php:74
+#: tm-reports.php:75
 msgid "Check off any of the following menu items to add them to the Toastmasters menu. Uncheck to remove."
 msgstr ""
 
-#: tm-reports.php:80
+#: tm-reports.php:81
 msgid "My Data"
 msgstr ""
 
-#: tm-reports.php:129
+#: tm-reports.php:133
 msgid "View All"
 msgstr ""
 
-#: tm-reports.php:129
-msgid "Print All"
+#: tm-reports.php:134
+msgid "Format Selected for Printing"
 msgstr ""
 
-#: tm-reports.php:129
-msgid "Print 1 Role Per Page"
-msgstr ""
-
-#: tm-reports.php:131
+#: tm-reports.php:136
 msgid "Role List & Descriptions Setup"
 msgstr ""
 
-#: tm-reports.php:140
-#: tm-reports.php:1608
-#: utility.php:1863
+#: tm-reports.php:148
+#: tm-reports.php:1616
+#: utility.php:1839
 msgid "Print"
 msgstr ""
 
-#: tm-reports.php:539
+#: tm-reports.php:547
 msgid "Toastmasters Administration"
 msgstr ""
 
-#: tm-reports.php:543
+#: tm-reports.php:551
 msgid "Upcoming Meetings"
 msgstr ""
 
-#: tm-reports.php:565
-#: tm-reports.php:2585
+#: tm-reports.php:573
+#: tm-reports.php:2593
 msgid "View"
 msgstr ""
 
-#: tm-reports.php:646
-#: tm-reports.php:655
-#: tm-reports.php:747
-#: tm-reports.php:757
-#: tm-reports.php:3086
+#: tm-reports.php:654
+#: tm-reports.php:663
+#: tm-reports.php:755
+#: tm-reports.php:765
+#: tm-reports.php:3094
 msgid "Select Member"
 msgstr ""
 
-#: tm-reports.php:688
-#: tm-reports.php:710
+#: tm-reports.php:696
+#: tm-reports.php:718
 msgid "Saved:"
 msgstr ""
 
-#: tm-reports.php:689
+#: tm-reports.php:697
 msgid "Refresh speech list"
 msgstr ""
 
-#: tm-reports.php:711
+#: tm-reports.php:719
 msgid "Refresh to see changes"
 msgstr ""
 
-#: tm-reports.php:719
-#: tm-reports.php:738
+#: tm-reports.php:727
+#: tm-reports.php:746
 msgid "Day"
 msgstr ""
 
-#: tm-reports.php:719
-#: tm-reports.php:738
+#: tm-reports.php:727
+#: tm-reports.php:746
 msgid "Year"
 msgstr ""
 
-#: tm-reports.php:785
+#: tm-reports.php:793
 msgid "Edit Details"
 msgstr ""
 
-#: tm-reports.php:794
+#: tm-reports.php:802
 msgid "Edit Overview Stats"
 msgstr ""
 
-#: tm-reports.php:846
-#: tm-reports.php:4746
-#: agenda/build/5692.js:1
+#: tm-reports.php:854
+#: tm-reports.php:4754
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:63
 msgid "Updated"
 msgstr ""
 
-#: tm-reports.php:893
+#: tm-reports.php:901
 msgid "Show editable data for all members"
 msgstr ""
 
-#: tm-reports.php:906
+#: tm-reports.php:914
 msgid "Ah Counter"
 msgstr ""
 
-#: tm-reports.php:907
+#: tm-reports.php:915
 msgid "Body Language Monitor"
 msgstr ""
 
-#: tm-reports.php:908
+#: tm-reports.php:916
 msgid "Evaluator"
 msgstr ""
 
-#: tm-reports.php:909
+#: tm-reports.php:917
 msgid "General Evaluator"
 msgstr ""
 
-#: tm-reports.php:910
+#: tm-reports.php:918
 msgid "Grammarian"
 msgstr ""
 
-#: tm-reports.php:911
+#: tm-reports.php:919
 msgid "Humorist"
 msgstr ""
 
-#: tm-reports.php:912
+#: tm-reports.php:920
 msgid "Speaker"
 msgstr ""
 
-#: tm-reports.php:913
+#: tm-reports.php:921
 msgid "Topics Master"
 msgstr ""
 
-#: tm-reports.php:914
+#: tm-reports.php:922
 msgid "Table Topics"
 msgstr ""
 
-#: tm-reports.php:915
-#: utility.php:5989
+#: tm-reports.php:923
+#: utility.php:5973
 msgid "Timer"
 msgstr ""
 
-#: tm-reports.php:916
+#: tm-reports.php:924
 msgid "Toastmaster of the Day"
 msgstr ""
 
-#: tm-reports.php:917
+#: tm-reports.php:925
 msgid "Vote Counter"
 msgstr ""
 
-#: tm-reports.php:918
+#: tm-reports.php:926
 msgid "Contest Master"
 msgstr ""
 
-#: tm-reports.php:919
+#: tm-reports.php:927
 msgid "Chief Judge"
 msgstr ""
 
-#: tm-reports.php:920
+#: tm-reports.php:928
 msgid "Ballot Counter"
 msgstr ""
 
-#: tm-reports.php:921
+#: tm-reports.php:929
 msgid "Evaluation Contestant"
 msgstr ""
 
-#: tm-reports.php:922
+#: tm-reports.php:930
 msgid "Table Topics Contestant"
 msgstr ""
 
-#: tm-reports.php:923
+#: tm-reports.php:931
 msgid "Humorous Contest Speaker"
 msgstr ""
 
-#: tm-reports.php:924
+#: tm-reports.php:932
 msgid "International Contest Speaker"
 msgstr ""
 
-#: tm-reports.php:925
+#: tm-reports.php:933
 msgid "Tall Tales Contest Speaker"
 msgstr ""
 
-#: tm-reports.php:1018
+#: tm-reports.php:1026
 msgid "Use this form to reconcile and add to your record of roles filled at past meetings (members who signed up and did not attend and others who took roles at the last minute)"
 msgstr ""
 
-#: tm-reports.php:1034
+#: tm-reports.php:1042
 msgid "Reconciliation report updated"
 msgstr ""
 
-#: tm-reports.php:1036
+#: tm-reports.php:1044
 msgid "Create Minutes"
 msgstr ""
 
-#: tm-reports.php:1232
+#: tm-reports.php:1240
 msgid "Others attending"
 msgstr ""
 
-#: tm-reports.php:1599
+#: tm-reports.php:1607
 msgid "Email Minutes"
 msgstr ""
 
-#: tm-reports.php:1645
+#: tm-reports.php:1653
 msgid "Start Month"
 msgstr ""
 
-#: tm-reports.php:1646
+#: tm-reports.php:1654
 msgid "Start Year"
 msgstr ""
 
-#: tm-reports.php:1647
+#: tm-reports.php:1655
 msgid "Set"
 msgstr ""
 
-#: tm-reports.php:1776
+#: tm-reports.php:1784
 #, php-format
 msgid "Filtered by default to show members active within the last 3 months (since %1$s) <a href=\"%2$s\">(show all)"
 msgstr ""
 
-#: tm-reports.php:1857
+#: tm-reports.php:1865
 msgid "Advanced Communicator Bronze"
 msgstr ""
 
-#: tm-reports.php:1859
+#: tm-reports.php:1867
 msgid "Complete 2 advanced manuals"
 msgstr ""
 
-#: tm-reports.php:1860
+#: tm-reports.php:1868
 msgid "Advanced Communicator Silver"
 msgstr ""
 
-#: tm-reports.php:1862
+#: tm-reports.php:1870
 msgid "Complete 2 more advanced manuals (total 4)"
 msgstr ""
 
-#: tm-reports.php:1863
-#: tm-reports.php:1905
+#: tm-reports.php:1871
+#: tm-reports.php:1913
 msgid "Deliver 2 educational presentations"
 msgstr ""
 
-#: tm-reports.php:1885
+#: tm-reports.php:1893
 msgid "Note: Successful Club series projects can also be applied to Advanced Leader Bronze (but same the project cannot be counted twice)"
 msgstr ""
 
-#: tm-reports.php:1894
+#: tm-reports.php:1902
 msgid "Advanced Communicator Gold"
 msgstr ""
 
-#: tm-reports.php:1896
+#: tm-reports.php:1904
 msgid "Complete 2 more advanced manuals (6 total)"
 msgstr ""
 
-#: tm-reports.php:1904
+#: tm-reports.php:1912
 msgid "Advanced Leader Bronze"
 msgstr ""
 
-#: tm-reports.php:1927
+#: tm-reports.php:1935
 msgid "Note: Successful Club series projects can also be applied to Advanced Communicator Silver (but the same project cannot be counted twice)"
 msgstr ""
 
-#: tm-reports.php:1936
+#: tm-reports.php:1944
 msgid "Advanced Leader Silver"
 msgstr ""
 
-#: tm-reports.php:2107
+#: tm-reports.php:2115
 msgid "Goal Met!"
 msgstr ""
 
-#: tm-reports.php:2131
+#: tm-reports.php:2139
 #, php-format
 msgid "<p><em>Filtered by default to show members active within the last 3 months (since %1$s) <a href=\"%2$s\">(show all)</a></em></p>"
 msgstr ""
 
-#: tm-reports.php:2174
-#: tm-reports.php:2175
-#: tm-reports.php:2176
-#: tm-reports.php:2177
-#: tm-reports.php:2178
-#: tm-reports.php:2179
-#: tm-reports.php:2180
-#: tm-reports.php:2181
 #: tm-reports.php:2182
 #: tm-reports.php:2183
-#: tm-reports.php:2754
-#: tm-reports.php:2966
-#: tm-reports.php:2967
-#: tm-reports.php:2968
-#: tm-reports.php:2969
-#: tm-reports.php:2970
-#: tm-reports.php:2971
-#: tm-reports.php:2972
-#: tm-reports.php:2973
+#: tm-reports.php:2184
+#: tm-reports.php:2185
+#: tm-reports.php:2186
+#: tm-reports.php:2187
+#: tm-reports.php:2188
+#: tm-reports.php:2189
+#: tm-reports.php:2190
+#: tm-reports.php:2191
+#: tm-reports.php:2762
 #: tm-reports.php:2974
 #: tm-reports.php:2975
+#: tm-reports.php:2976
+#: tm-reports.php:2977
+#: tm-reports.php:2978
+#: tm-reports.php:2979
+#: tm-reports.php:2980
+#: tm-reports.php:2981
+#: tm-reports.php:2982
+#: tm-reports.php:2983
 msgid "Project"
 msgstr ""
 
-#: tm-reports.php:2204
+#: tm-reports.php:2212
 msgid "PROJECT 1: Listening"
 msgstr ""
 
-#: tm-reports.php:2205
-#: tm-reports.php:2281
+#: tm-reports.php:2213
+#: tm-reports.php:2289
 msgid "COMPLETE 3 OF 4"
 msgstr ""
 
-#: tm-reports.php:2216
-#: tm-reports.php:2232
-#: tm-reports.php:2248
-#: tm-reports.php:2292
-#: tm-reports.php:2311
-#: tm-reports.php:2328
-#: tm-reports.php:2352
-#: tm-reports.php:2372
-#: tm-reports.php:2398
+#: tm-reports.php:2224
+#: tm-reports.php:2240
+#: tm-reports.php:2256
+#: tm-reports.php:2300
+#: tm-reports.php:2319
+#: tm-reports.php:2336
+#: tm-reports.php:2360
+#: tm-reports.php:2380
+#: tm-reports.php:2406
 msgid "Project Complete"
 msgstr ""
 
-#: tm-reports.php:2217
-#: tm-reports.php:2249
-#: tm-reports.php:2312
-#: tm-reports.php:2329
-#: tm-reports.php:2353
+#: tm-reports.php:2225
+#: tm-reports.php:2257
+#: tm-reports.php:2320
+#: tm-reports.php:2337
+#: tm-reports.php:2361
 msgid "Done!"
 msgstr ""
 
-#: tm-reports.php:2217
-#: tm-reports.php:2219
+#: tm-reports.php:2225
+#: tm-reports.php:2227
 msgid "Listening: 3 OF 4"
 msgstr ""
 
-#: tm-reports.php:2219
-#: tm-reports.php:2235
-#: tm-reports.php:2251
-#: tm-reports.php:2278
-#: tm-reports.php:2295
-#: tm-reports.php:2359
-#: tm-reports.php:2375
-#: tm-reports.php:2401
+#: tm-reports.php:2227
+#: tm-reports.php:2243
+#: tm-reports.php:2259
+#: tm-reports.php:2286
+#: tm-reports.php:2303
+#: tm-reports.php:2367
+#: tm-reports.php:2383
+#: tm-reports.php:2409
 msgid "TO DO"
 msgstr ""
 
-#: tm-reports.php:2221
+#: tm-reports.php:2229
 msgid "PROJECT 2: Critical Thinking"
 msgstr ""
 
-#: tm-reports.php:2222
+#: tm-reports.php:2230
 msgid "COMPLETE 2 OF 3"
 msgstr ""
 
-#: tm-reports.php:2233
-#: tm-reports.php:2235
+#: tm-reports.php:2241
+#: tm-reports.php:2243
 msgid "Critical Thinking: 2 OF 3"
 msgstr ""
 
-#: tm-reports.php:2237
+#: tm-reports.php:2245
 msgid "PROJECT 3: Giving Feedback"
 msgstr ""
 
-#: tm-reports.php:2238
+#: tm-reports.php:2246
 msgid "COMPLETE 3 OF 3"
 msgstr ""
 
-#: tm-reports.php:2249
-#: tm-reports.php:2251
+#: tm-reports.php:2257
+#: tm-reports.php:2259
 msgid "Feedback: 3 OF 3"
 msgstr ""
 
-#: tm-reports.php:2253
+#: tm-reports.php:2261
 msgid "PROJECT 4: Time Management"
 msgstr ""
 
-#: tm-reports.php:2254
+#: tm-reports.php:2262
 msgid "COMPLETE TIMER"
 msgstr ""
 
-#: tm-reports.php:2260
-#: utility.php:6205
+#: tm-reports.php:2268
+#: utility.php:6189
 msgid "Other"
 msgstr ""
 
-#: tm-reports.php:2272
-#: tm-reports.php:2278
+#: tm-reports.php:2280
+#: tm-reports.php:2286
 msgid "Timer + One Other"
 msgstr ""
 
-#: tm-reports.php:2274
-#: tm-reports.php:2355
+#: tm-reports.php:2282
+#: tm-reports.php:2363
 msgid "Goal 1"
 msgstr ""
 
-#: tm-reports.php:2274
+#: tm-reports.php:2282
 msgid "DONE Timer TO DO + One Other"
 msgstr ""
 
-#: tm-reports.php:2276
+#: tm-reports.php:2284
 msgid "Goal 2"
 msgstr ""
 
-#: tm-reports.php:2276
+#: tm-reports.php:2284
 msgid "TO DO Timer DONE + One Other"
 msgstr ""
 
-#: tm-reports.php:2280
+#: tm-reports.php:2288
 msgid "PROJECT 5: Planning and Implementation"
 msgstr ""
 
-#: tm-reports.php:2293
-#: tm-reports.php:2295
+#: tm-reports.php:2301
+#: tm-reports.php:2303
 msgid "Planning & Implementation: 3 OF 4"
 msgstr ""
 
-#: tm-reports.php:2297
+#: tm-reports.php:2305
 msgid "PROJECT 6: Organization and Delegation"
 msgstr ""
 
-#: tm-reports.php:2298
+#: tm-reports.php:2306
 msgid "COMPLETE 1 OF 6"
 msgstr ""
 
-#: tm-reports.php:2312
-#: tm-reports.php:2314
+#: tm-reports.php:2320
+#: tm-reports.php:2322
 msgid "Organization & Delegation: 1 of 6"
 msgstr ""
 
-#: tm-reports.php:2316
+#: tm-reports.php:2324
 msgid "PROJECT 7: Facilitation"
 msgstr ""
 
-#: tm-reports.php:2317
+#: tm-reports.php:2325
 msgid "COMPLETE 2 OF 4"
 msgstr ""
 
-#: tm-reports.php:2329
+#: tm-reports.php:2337
 msgid "Facilitation: 2 OF 4"
 msgstr ""
 
-#: tm-reports.php:2331
+#: tm-reports.php:2339
 msgid "Facilitation: 2 of 4"
 msgstr ""
 
-#: tm-reports.php:2333
+#: tm-reports.php:2341
 msgid "PROJECT 8: Motivation"
 msgstr ""
 
-#: tm-reports.php:2334
+#: tm-reports.php:2342
 msgid "COMPLETE 1 CHAIR"
 msgstr ""
 
-#: tm-reports.php:2341
+#: tm-reports.php:2349
 msgid "OTHERS"
 msgstr ""
 
-#: tm-reports.php:2353
-#: tm-reports.php:2359
+#: tm-reports.php:2361
+#: tm-reports.php:2367
 msgid "Motivation: Chair + 1 Other"
 msgstr ""
 
-#: tm-reports.php:2355
+#: tm-reports.php:2363
 msgid "DONE Chair TO DO + One Other"
 msgstr ""
 
-#: tm-reports.php:2357
+#: tm-reports.php:2365
 msgid "TO DO Chair DONE + One Other"
 msgstr ""
 
-#: tm-reports.php:2361
+#: tm-reports.php:2369
 msgid "PROJECT 9: Mentoring"
 msgstr ""
 
-#: tm-reports.php:2362
+#: tm-reports.php:2370
 msgid "COMPLETE 1 OF 3"
 msgstr ""
 
-#: tm-reports.php:2373
-#: tm-reports.php:2375
+#: tm-reports.php:2381
+#: tm-reports.php:2383
 msgid "Mentoring: 1 of 3"
 msgstr ""
 
-#: tm-reports.php:2377
+#: tm-reports.php:2385
 msgid "PROJECT 10: Team Building"
 msgstr ""
 
-#: tm-reports.php:2378
+#: tm-reports.php:2386
 msgid "COMPLETE TOASTMASTER + GENERAL EVALUATOR"
 msgstr ""
 
-#: tm-reports.php:2385
+#: tm-reports.php:2393
 msgid "OR 1 OF THE FOLLOWING"
 msgstr ""
 
-#: tm-reports.php:2438
+#: tm-reports.php:2446
 msgid "Last held role"
 msgstr ""
 
-#: tm-reports.php:2457
+#: tm-reports.php:2465
 msgid "Mentor list updated"
 msgstr ""
 
-#: tm-reports.php:2461
+#: tm-reports.php:2469
 msgid "Return to Report"
 msgstr ""
 
-#: tm-reports.php:2502
-#: tm-reports.php:2525
+#: tm-reports.php:2510
+#: tm-reports.php:2533
 msgid "Edit Member Stats"
 msgstr ""
 
-#: tm-reports.php:2506
+#: tm-reports.php:2514
 msgid "Choose a Project"
 msgstr ""
 
-#: tm-reports.php:2559
+#: tm-reports.php:2567
 msgid "Member stats updated"
 msgstr ""
 
-#: tm-reports.php:2615
-#: tm-reports.php:3020
+#: tm-reports.php:2623
+#: tm-reports.php:3028
 msgid "Additonal Competent Leader Credits for"
 msgstr ""
 
-#: tm-reports.php:2635
+#: tm-reports.php:2643
 msgid "Import Free Toast Host Data"
 msgstr ""
 
-#: tm-reports.php:2646
+#: tm-reports.php:2654
 msgid "Match Users"
 msgstr ""
 
-#: tm-reports.php:2646
+#: tm-reports.php:2654
 msgid "Either match with a WordPress user or leave blank (Match?) if there is no match, as with a former member."
 msgstr ""
 
-#: tm-reports.php:2754
+#: tm-reports.php:2762
 msgid "Date"
 msgstr ""
 
-#: tm-reports.php:2771
+#: tm-reports.php:2779
 msgid "Import Records (step 2)"
 msgstr ""
 
-#: tm-reports.php:2777
+#: tm-reports.php:2785
 msgid "Recording data. Verify by checking"
 msgstr ""
 
-#: tm-reports.php:2777
+#: tm-reports.php:2785
 msgid "Toastmaster Reports"
 msgstr ""
 
-#: tm-reports.php:2793
+#: tm-reports.php:2801
 msgid "Historical Data"
 msgstr ""
 
-#: tm-reports.php:2795
+#: tm-reports.php:2803
 msgid "used to track events imported from Free Toast Host. Do not delete."
 msgstr ""
 
-#: tm-reports.php:2839
+#: tm-reports.php:2847
 msgid "Paste in the contents of"
 msgstr ""
 
-#: tm-reports.php:2840
+#: tm-reports.php:2848
 msgid "Member Speech Historical Report"
 msgstr ""
 
-#: tm-reports.php:2843
+#: tm-reports.php:2851
 msgid "Member Role Historical Report"
 msgstr ""
 
-#: tm-reports.php:2845
+#: tm-reports.php:2853
 msgid "Import Records (step 1)"
 msgstr ""
 
-#: tm-reports.php:2886
+#: tm-reports.php:2894
 msgid "Optionally, you can filter by the name of a member or by a keyword such as \"edited\" or \"withdrawn.\""
 msgstr ""
 
-#: tm-reports.php:3035
-#: tm-reports.php:3075
+#: tm-reports.php:3043
+#: tm-reports.php:3083
 msgid "Advanced Manuals"
 msgstr ""
 
-#: tm-reports.php:3174
+#: tm-reports.php:3182
 msgid "Status"
 msgstr ""
 
-#: tm-reports.php:3201
+#: tm-reports.php:3209
 msgid "Welcome to WordPress for Toastmasters"
 msgstr ""
 
-#: tm-reports.php:3248
+#: tm-reports.php:3256
 msgid "Editing your member profile"
 msgstr ""
 
-#: tm-reports.php:3300
+#: tm-reports.php:3308
 msgid "About WordPress for Toastmasters"
 msgstr ""
 
-#: tm-reports.php:3550
+#: tm-reports.php:3558
 msgid "New Member Fee"
 msgstr ""
 
-#: tm-reports.php:3569
+#: tm-reports.php:3577
 msgid "Email all unpaid members"
 msgstr ""
 
-#: tm-reports.php:3572
+#: tm-reports.php:3580
 msgid "Paid Members"
 msgstr ""
 
-#: tm-reports.php:3574
+#: tm-reports.php:3582
 msgid "Email all PAID members"
 msgstr ""
 
-#: tm-reports.php:3586
-#: tm-reports.php:3698
+#: tm-reports.php:3594
+#: tm-reports.php:3706
 msgid "If you want to import or sync a member spreadsheet from toastmasters.org, see the"
 msgstr ""
 
-#: tm-reports.php:3586
-#: tm-reports.php:3698
+#: tm-reports.php:3594
+#: tm-reports.php:3706
 msgid "Add Members page"
 msgstr ""
 
-#: tm-reports.php:3713
+#: tm-reports.php:3721
 msgid "Starting import on"
 msgstr ""
 
-#: tm-reports.php:3713
+#: tm-reports.php:3721
 msgid "lines of data"
 msgstr ""
 
-#: tm-reports.php:4209
+#: tm-reports.php:4217
 msgid "Possible duplicate"
 msgstr ""
 
-#: tm-reports.php:4642
+#: tm-reports.php:4650
 msgid "No Pathways projects recorded"
 msgstr ""
 
-#: tm-reports.php:4895
+#: tm-reports.php:4903
 msgid "This page shows the number of times a member has served in a given role, followed by the month and year of the most recent occurrance"
 msgstr ""
 
-#: tm-reports.php:5050
+#: tm-reports.php:5058
 msgid "This report shows how often a member speaks, versus serving the club in other supporting roles."
 msgstr ""
 
-#: tm-reports.php:5159
+#: tm-reports.php:5167
 msgid "This report shows how often a member speaks, versus serving supporting roles."
 msgstr ""
 
-#: tm-reports.php:5179
+#: tm-reports.php:5187
 msgid "Filter to 6 month snapshot of activity within this club."
 msgstr ""
 
-#: tm-reports.php:5181
+#: tm-reports.php:5189
 msgid "Show all dates."
 msgstr ""
 
-#: tm-reports.php:5181
+#: tm-reports.php:5189
 msgid "Show all clubs, all dates."
 msgstr ""
 
-#: tm-reports.php:5353
+#: tm-reports.php:5361
 msgid "Members without a role for the meeting on "
 msgstr ""
 
-#: tm-reports.php:6333
+#: tm-reports.php:6341
 msgid "from"
 msgstr ""
 
-#: tm-reports.php:6646
+#: tm-reports.php:6654
 msgid "scheduled"
 msgstr ""
 
-#: tm-reports.php:6975
+#: tm-reports.php:6983
 msgid "Admit Member"
 msgstr ""
 
-#: tm-reports.php:7006
+#: tm-reports.php:7014
 msgid "Abstain"
 msgstr ""
 
@@ -5705,294 +5805,291 @@ msgid "Reserved"
 msgstr ""
 
 #: utility.php:389
-#: utility.php:697
+#: utility.php:676
 msgid "Last did"
 msgstr ""
 
-#: utility.php:1572
+#: utility.php:610
+#: utility.php:1645
+msgid "Round Robin"
+msgstr ""
+
+#: utility.php:1547
 msgid "Backup"
 msgstr ""
 
-#: utility.php:1616
-#: utility.php:1744
+#: utility.php:1591
+#: utility.php:1720
 msgid "guest"
 msgstr ""
 
-#: utility.php:1684
+#: utility.php:1660
 msgid "Member not found"
 msgstr ""
 
-#: utility.php:3343
+#: utility.php:3319
 msgid "Role Signup"
 msgstr ""
 
-#: utility.php:3367
+#: utility.php:3343
 msgid "Future Dates"
 msgstr ""
 
-#: utility.php:3407
+#: utility.php:3383
 msgid "Dashboard"
 msgstr ""
 
-#: utility.php:5941
+#: utility.php:5925
 msgid "Cancel"
 msgstr ""
 
-#: utility.php:5949
-#: utility.php:5969
+#: utility.php:5933
+#: utility.php:5953
 msgid "Suggest"
 msgstr ""
 
-#: utility.php:5961
+#: utility.php:5945
 msgid "Send Email"
 msgstr ""
 
-#: utility.php:5965
+#: utility.php:5949
 msgid "Request by Email"
 msgstr ""
 
-#: utility.php:5973
+#: utility.php:5957
 msgid "Vote"
 msgstr ""
 
-#: utility.php:5977
+#: utility.php:5961
 msgid "Voting"
 msgstr ""
 
-#: utility.php:5993
+#: utility.php:5977
 msgid "Start"
 msgstr ""
 
-#: utility.php:5997
+#: utility.php:5981
 msgid "Stop"
 msgstr ""
 
-#: utility.php:6001
+#: utility.php:5985
 msgid "Pause"
 msgstr ""
 
-#: utility.php:6013
+#: utility.php:5997
 msgid "Publish"
 msgstr ""
 
-#: utility.php:6017
+#: utility.php:6001
 msgid "Unpublish"
 msgstr ""
 
-#: utility.php:6021
+#: utility.php:6005
 msgid "New Ballot"
 msgstr ""
 
-#: utility.php:6025
+#: utility.php:6009
 msgid "Include for every meeting"
 msgstr ""
 
-#: utility.php:6029
+#: utility.php:6013
 msgid "Signature Required"
 msgstr ""
 
-#: utility.php:6033
+#: utility.php:6017
 msgid "Send web voting link"
 msgstr ""
 
-#: utility.php:6037
+#: utility.php:6021
 msgid "Email the link to me"
 msgstr ""
 
-#: utility.php:6041
+#: utility.php:6025
 msgid "Email the link to members"
 msgstr ""
 
-#: utility.php:6045
+#: utility.php:6029
 msgid "Reset Ballot"
 msgstr ""
 
-#: utility.php:6049
+#: utility.php:6033
 msgid "Domain or domain|code"
 msgstr ""
 
-#: utility.php:6053
+#: utility.php:6037
 msgid "Code or email"
 msgstr ""
 
-#: utility.php:6061
+#: utility.php:6045
 msgid "Reset Clubs List"
 msgstr ""
 
-#: utility.php:6065
+#: utility.php:6049
 msgid "Assign"
 msgstr ""
 
-#: utility.php:6069
+#: utility.php:6053
 msgid "Back to Vote Counter Controls?"
 msgstr ""
 
-#: utility.php:6073
+#: utility.php:6057
 msgid "Backup Speaker"
 msgstr ""
 
-#: utility.php:6077
+#: utility.php:6061
 msgid "Checking for ballots ..."
 msgstr ""
 
-#: utility.php:6081
+#: utility.php:6065
 msgid "Done"
 msgstr ""
 
-#: utility.php:6085
+#: utility.php:6069
 msgid "Go Back"
 msgstr ""
 
-#: utility.php:6089
+#: utility.php:6073
 msgid "Language Preference"
 msgstr ""
 
-#: utility.php:6093
+#: utility.php:6077
 msgid "Log missed translations"
 msgstr ""
 
-#: utility.php:6097
+#: utility.php:6081
 msgid "Members can vote using the app or a web link."
 msgstr ""
 
-#: utility.php:6101
+#: utility.php:6085
 msgid "Note"
 msgstr ""
 
-#: utility.php:6105
+#: utility.php:6089
 msgid "Or Type Choice"
 msgstr ""
 
-#: utility.php:6113
+#: utility.php:6097
 msgid "Progress Report"
 msgstr ""
 
-#: utility.php:6117
+#: utility.php:6101
 msgid "Send Web Voting Link"
 msgstr ""
 
-#: utility.php:6121
+#: utility.php:6105
 msgid "Status: French translation started."
 msgstr ""
 
-#: utility.php:6125
+#: utility.php:6109
 msgid "Status: Spanish planned."
 msgstr ""
 
-#: utility.php:6129
+#: utility.php:6113
 msgid "Suggest Role"
 msgstr ""
 
-#: utility.php:6133
+#: utility.php:6117
 msgid "Translation"
 msgstr ""
 
-#: utility.php:6137
+#: utility.php:6121
 msgid "Use this function to recommend that another member take the selected role"
 msgstr ""
 
-#: utility.php:6141
+#: utility.php:6125
 msgid "Voted"
 msgstr ""
 
-#: utility.php:6145
+#: utility.php:6129
 msgid "beta"
 msgstr ""
 
-#: utility.php:6149
+#: utility.php:6133
 msgid "Path Not Set"
 msgstr ""
 
-#: utility.php:6153
+#: utility.php:6137
 msgid "Dynamic Leadership"
 msgstr ""
 
-#: utility.php:6157
+#: utility.php:6141
 msgid "Effective Coaching"
 msgstr ""
 
-#: utility.php:6161
+#: utility.php:6145
 msgid "Engaging Humor"
 msgstr ""
 
-#: utility.php:6165
+#: utility.php:6149
 msgid "Innovative Planning"
 msgstr ""
 
-#: utility.php:6169
+#: utility.php:6153
 msgid "Leadership Development"
 msgstr ""
 
-#: utility.php:6173
+#: utility.php:6157
 msgid "Motivational Strategies"
 msgstr ""
 
-#: utility.php:6177
+#: utility.php:6161
 msgid "Persuasive Influence"
 msgstr ""
 
-#: utility.php:6181
+#: utility.php:6165
 msgid "Presentation Mastery"
 msgstr ""
 
-#: utility.php:6185
+#: utility.php:6169
 msgid "Strategic Relationships"
 msgstr ""
 
-#: utility.php:6189
+#: utility.php:6173
 msgid "Team Collaboration"
 msgstr ""
 
-#: utility.php:6193
+#: utility.php:6177
 msgid "Visionary Communication"
 msgstr ""
 
-#: utility.php:6197
+#: utility.php:6181
 msgid "Pathways 360"
 msgstr ""
 
-#: utility.php:6201
+#: utility.php:6185
 msgid "Pathways Mentor Program"
 msgstr ""
 
-#: utility.php:6209
+#: utility.php:6193
 msgid "Level"
 msgstr ""
 
-#: utility.php:7077
+#: utility.php:7061
 msgid "Edit Officers List"
 msgstr ""
 
-#: utility.php:7085
-#: utility.php:7091
+#: utility.php:7069
+#: utility.php:7075
 msgid "Edit Profile"
 msgstr ""
 
-#: utility.php:7085
-#: utility.php:7091
+#: utility.php:7069
+#: utility.php:7075
 msgid "Edit Profile Picture"
 msgstr ""
 
-#: utility.php:7104
+#: utility.php:7088
 #: agenda/build/memberprofile/index.js:1
 #: agenda/src/memberprofile/edit.js:228
 msgid "Choose an option"
 msgstr ""
 
-#: utility.php:7132
+#: utility.php:7116
 msgid "Member list (public profiles)"
 msgstr ""
 
-#: utility.php:7136
+#: utility.php:7120
 msgid "Non-officers list"
-msgstr ""
-
-#: utility.php:7371
-msgid "Toastmasters Officer and Member Profile Listing"
-msgstr ""
-
-#: utility.php:7375
-msgid "Displays member profile blocks for each of the standard officer roles, followed by a listing of the profiles of members who have chosen to make their profiles public."
 msgstr ""
 
 #: voting.php:216
@@ -6031,60 +6128,95 @@ msgstr ""
 msgid "View as vote counter"
 msgstr ""
 
+#: agenda/build/1657.js:1
+#: agenda/build/4038.js:1
+#: agenda/build/agendaedit/index.js:1
+#: agenda/src/agendaedit/edit.js:204
+msgid "Enter default text (can be overridden with meeting-specific edits on the front end)."
+msgstr ""
+
+#: agenda/build/1657.js:1
+#: agenda/build/4038.js:1
+#: agenda/build/agendaedit/index.js:1
+#: agenda/src/agendaedit/edit.js:207
+msgid "Checking for meeting-specific content ..."
+msgstr ""
+
+#: agenda/build/1657.js:1
+#: agenda/build/4038.js:1
+#: agenda/build/agendaedit/index.js:1
+#: agenda/src/agendaedit/edit.js:209
+msgid "Showing meeting-specific text."
+msgstr ""
+
+#: agenda/build/1657.js:1
+#: agenda/build/4038.js:1
+#: agenda/build/agendaedit/index.js:1
+#: agenda/build/agendanoterich2/index.js:1
+#: agenda/build/role/index.js:1
+#: agenda/src/agendaedit/edit.js:216
+#: agenda/src/agendanoterich2/edit.js:80
+#: agenda/src/role/edit.js:147
+#: agenda/src/role/edit.js:192
+msgid "Time Allowed"
+msgstr ""
+
 #: agenda/build/2746.js:1
 #: agenda/src/OtherRoleTitle.js:19
 msgid "Note or Title"
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:36
 msgid "Error loading Hybrid.js data"
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:56
 msgid "Updating ..."
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:66
 msgid "update hybrid error"
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:74
 msgid "Loading hybrid list ..."
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:105
 #: agenda/src/Hybrid.js:131
 msgid "In Person Attendance"
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:110
 msgid "Remove"
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:117
 msgid "Add Member to List"
 msgstr ""
 
-#: agenda/build/5692.js:1
+#: agenda/build/5739.js:1
 #: agenda/src/Hybrid.js:143
 msgid "Add Me"
 msgstr ""
 
 #: agenda/build/agendaedit/index.js:1
+#: agenda/src/agendaedit/index.js:51
+#: agenda/src/agendaedit/index.js:53
+msgid "TM Editable Agenda Note"
+msgstr ""
+
 #: agenda/build/agendanoterich2/index.js:1
-#: agenda/build/role/index.js:1
-#: agenda/src/agendaedit/edit.js:79
-#: agenda/src/agendanoterich2/edit.js:80
-#: agenda/src/role/edit.js:146
-#: agenda/src/role/edit.js:190
-msgid "Time Allowed"
+#: agenda/src/agendanoterich2/index.js:50
+#: agenda/src/agendanoterich2/index.js:52
+msgid "TM Agenda Note"
 msgstr ""
 
 #: agenda/build/agendaprivacy/index.js:1
@@ -6223,22 +6355,28 @@ msgid "Number of Members"
 msgstr ""
 
 #: agenda/build/role/index.js:1
-#: agenda/src/role/edit.js:81
+#: agenda/src/role/index.js:34
+#: agenda/src/role/index.js:39
+msgid "TM Agenda Role"
+msgstr ""
+
+#: agenda/build/role/index.js:1
+#: agenda/src/role/edit.js:82
 msgid "Role"
 msgstr ""
 
 #: agenda/build/role/index.js:1
-#: agenda/src/role/edit.js:112
+#: agenda/src/role/edit.js:113
 msgid "Count"
 msgstr ""
 
 #: agenda/build/role/index.js:1
-#: agenda/src/role/edit.js:162
+#: agenda/src/role/edit.js:163
 msgid "Padding Time"
 msgstr ""
 
 #: agenda/build/role/index.js:1
-#: agenda/src/role/edit.js:202
+#: agenda/src/role/edit.js:206
 msgid "Show Title Prompt"
 msgstr ""
 
@@ -6247,10 +6385,30 @@ msgstr ""
 msgid "Backup for this Role"
 msgstr ""
 
+#: tmminutes-visibility.js:39
+msgid "Visibility"
+msgstr ""
+
+#: tmminutes-visibility.js:42
+msgid "Who can view this document on the front end?"
+msgstr ""
+
+#: tmminutes-visibility.js:46
+msgid "Default member access"
+msgstr ""
+
+#: tmminutes-visibility.js:50
+msgid "Public"
+msgstr ""
+
+#: tmminutes-visibility.js:54
+msgid "Editors only"
+msgstr ""
+
 #: agenda/build/absences/block.json
 #: agenda/src/absences/block.json
 msgctxt "block title"
-msgid "Toastmasters Absences"
+msgid "TM Absences"
 msgstr ""
 
 #: agenda/build/absences/block.json
@@ -6322,13 +6480,13 @@ msgstr ""
 #: agenda/build/agendaedit/block.json
 #: agenda/src/agendaedit/block.json
 msgctxt "block title"
-msgid "Toastmasters Editable Agenda Note"
+msgid "TM Agenda Note"
 msgstr ""
 
 #: agenda/build/agendaedit/block.json
 #: agenda/src/agendaedit/block.json
 msgctxt "block description"
-msgid "A note that can be edited by a meeting organizer on the signup form. Used for things that change from meeting to meeting, such as Meeting Theme. Does not require editing rights."
+msgid "A note that describes an activity, the 'stage directions' of your meeting. You can assign default text and (optionally) the number of minutes allowed for the activity. The text of the note can also be edited on the front end by a meeting organizer."
 msgstr ""
 
 #: agenda/build/agendaedit/block.json
@@ -6340,7 +6498,7 @@ msgstr ""
 #: agenda/build/agendanoterich2/block.json
 #: agenda/src/agendanoterich2/block.json
 msgctxt "block title"
-msgid "Toastmasters Agenda Note"
+msgid "Old version: TM Agenda Note"
 msgstr ""
 
 #: agenda/build/agendanoterich2/block.json
@@ -6378,7 +6536,7 @@ msgstr ""
 #: agenda/build/block.json
 #: agenda/src/block.json
 msgctxt "block title"
-msgid "Toastmasters Dynamic Agenda"
+msgid "TM Dynamic Agenda"
 msgstr ""
 
 #: agenda/build/block.json
@@ -6432,7 +6590,7 @@ msgstr ""
 #: agenda/build/duesrenewal/block.json
 #: agenda/src/duesrenewal/block.json
 msgctxt "block title"
-msgid "Toastmasters Dues Renewal"
+msgid "TM Dues Renewal"
 msgstr ""
 
 #: agenda/build/duesrenewal/block.json
@@ -6456,7 +6614,7 @@ msgstr ""
 #: agenda/build/help/block.json
 #: agenda/src/help/block.json
 msgctxt "block title"
-msgid "Toastmasters Help"
+msgid "TM Help"
 msgstr ""
 
 #: agenda/build/help/block.json
@@ -6474,7 +6632,7 @@ msgstr ""
 #: agenda/build/hybrid/block.json
 #: agenda/src/hybrid/block.json
 msgctxt "block title"
-msgid "Toastmasters Hybrid Meeting"
+msgid "TM Hybrid Meeting"
 msgstr ""
 
 #: agenda/build/hybrid/block.json
@@ -6492,7 +6650,7 @@ msgstr ""
 #: agenda/build/logo/block.json
 #: agenda/src/logo/block.json
 msgctxt "block title"
-msgid "Toastmasters Logo"
+msgid "TM Logo"
 msgstr ""
 
 #: agenda/build/logo/block.json
@@ -6504,7 +6662,7 @@ msgstr ""
 #: agenda/build/memberaccess/block.json
 #: agenda/src/memberaccess/block.json
 msgctxt "block title"
-msgid "Toastmasters Member Access Sidebar Widget"
+msgid "TM Member Access Sidebar Widget"
 msgstr ""
 
 #: agenda/build/memberaccess/block.json
@@ -6548,7 +6706,7 @@ msgstr ""
 #: agenda/build/milestone/block.json
 #: agenda/src/milestone/block.json
 msgctxt "block title"
-msgid "Toastmasters Agenda Milestone"
+msgid "TM Agenda Milestone"
 msgstr ""
 
 #: agenda/build/milestone/block.json
@@ -6566,7 +6724,7 @@ msgstr ""
 #: agenda/build/newestmembers/block.json
 #: agenda/src/newestmembers/block.json
 msgctxt "block title"
-msgid "Toastmasters Newest Members"
+msgid "TM Newest Members"
 msgstr ""
 
 #: agenda/build/newestmembers/block.json
@@ -6590,7 +6748,7 @@ msgstr ""
 #: agenda/build/role/block.json
 #: agenda/src/role/block.json
 msgctxt "block title"
-msgid "Toastmasters Agenda Role"
+msgid "TM Agenda Role"
 msgstr ""
 
 #: agenda/build/role/block.json
@@ -6620,7 +6778,7 @@ msgstr ""
 #: agenda/build/signupnote/block.json
 #: agenda/src/signupnote/block.json
 msgctxt "block title"
-msgid "Toastmasters Signup Note"
+msgid "TM Signup Note"
 msgstr ""
 
 #: agenda/build/signupnote/block.json

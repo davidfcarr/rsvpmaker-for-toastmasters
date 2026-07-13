@@ -54,8 +54,8 @@ export default function Edit({ attributes, attributes: { uid, time_allowed, visi
 <div { ...useBlockProps() }>
 <TimeBlock clientId={clientId} />
 
-<p><strong>Toastmasters Agenda Note</strong></p>
-
+<p><strong>Old version: Toastmasters Agenda Note</strong></p>
+<p>Recommended upgrade: use the new TM Agenda Note block. Click on the toolbar icon (looks like 3 people) and choose Transform, then TM Agenda Note.</p>
 <RichText
 
 	tagName="p"

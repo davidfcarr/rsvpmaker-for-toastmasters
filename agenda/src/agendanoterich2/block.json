@@ -3,7 +3,7 @@
 	"apiVersion": 3,
 	"name": "wp4toastmasters/agendanoterich2",
 	"version": "0.1.0",
-	"title": "TM Agenda Note",
+	"title": "Old version: TM Agenda Note",
 	"category": "toastmasters",
 	"icon": "groups",
 	"postTypes": [

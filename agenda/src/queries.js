@@ -8,7 +8,8 @@ export function useBlocks(post_id,mode='',admin = false) {
 
         admin = window.location.href.indexOf('wp-admin') != -1;
 
-        return apiClient.get('blocks_data/'+post_id+'?mode='+mode+'&admin='+admin+'&_locale=user');
+        const ts = new Date().getTime();
+        return apiClient.get('blocks_data/'+post_id+'?mode='+mode+'&admin='+admin+'&_locale=user&ts='+ts);
 
     }
 

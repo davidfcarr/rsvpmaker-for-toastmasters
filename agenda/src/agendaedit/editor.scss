@@ -7,3 +7,12 @@
 div.editor-block-list__block-edit .wp-block-wp4toastmasters-agendaedit {
   border: 0.2rem solid #F709F7;
 }
+
+div.editor-block-list__block-edit .wp-block-wp4toastmasters-agendaedit .agendaedit-default-content {
+  background: #fff;
+  border: 1px solid #ccd0d4;
+  border-radius: 4px;
+  margin-top: 8px;
+  min-height: 96px;
+  padding: 10px;
+}

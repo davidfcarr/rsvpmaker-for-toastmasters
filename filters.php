@@ -378,9 +378,10 @@ add_filter( 'login_message', function ( $message ) {
 		$message .= "\n\n";
 	}
 	$message .= get_option( 'wp4toastmasters_login_message' );
-	if ( ! empty( $message ) ) {
-		return wpautop( $message );
+	if ( ! empty( $message ) && strpos( $message, '<p' ) === false ) {
+		$message = wpautop( $message );
 	}
+	return $message;
 }
 );
 add_filter( 'the_excerpt', 'wp4t_member_only_excerpt' );

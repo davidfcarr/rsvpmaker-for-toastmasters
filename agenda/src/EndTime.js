@@ -72,23 +72,14 @@ function getStartTime(rest) {
 	return now;
 }
 
-export default function TimeBlock({clientId}) {
+export default function EndTime() {
 	const rsvpmaker_rest = useRsvpmakerRest();
 	const start_time = getStartTime(rsvpmaker_rest);
 
-	const { previousBlocks, nextBlocks } = useSelect((select) => {
-	const allBlocks = select('core/block-editor').getBlocks();
-	const currentIndex = allBlocks.findIndex(
-		(block) => block.clientId === clientId
-	);
-	return {
-			previousBlocks: allBlocks.slice(0, currentIndex),
-			nextBlocks: allBlocks.slice(currentIndex + 1),
-		};
-	}, [clientId]);
+	const allBlocks = useSelect((select) => select('core/block-editor').getBlocks(), []);
 
 	let total_time = 0;
-    previousBlocks.forEach((block) => {
+    allBlocks.forEach((block) => {
         if (block.attributes && typeof block.attributes.time_allowed !== 'undefined') {
 	        total_time += parseInt(block.attributes.time_allowed, 10) || 0;
 		}
@@ -98,5 +89,5 @@ export default function TimeBlock({clientId}) {
     });
 	const end_time = new Date(start_time.getTime() + total_time * 60000);
 	const formatted_time = (rsvpmaker_rest.hour12) ? end_time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) : end_time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-	return <div className="blocktime">{formatted_time}</div>;
+	return <div className="endtime">Estimated meeting end time: {formatted_time}</div>;
 }

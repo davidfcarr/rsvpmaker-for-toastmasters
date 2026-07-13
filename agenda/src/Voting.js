@@ -238,17 +238,19 @@ export default function Voting({post_id}) {
                     return (<div key={'contest'+cindex}>
                         <p style={styles.h2}>{c}</p>
                         {currentBallot.contestants.length ? <p>{mytranslate('Vote for',votingdata)}:</p> : null}
-                        {currentBallot.contestants.map((contestant,index) => {return <div key={'contestant'+index}><p><button style={{backgroundColor: 'black',padding:'10px'}} onClick={() => {const vote = {'vote':contestant,'key':c,identifier:identifier,post_id:currentBallot.post_id ? currentBallot.post_id : post_id,signature:(currentBallot.signature_required) ? votingdata.current_user_name : ''}; console.log('vote',vote); sendVotingUpdate(vote);} }><span style={styles.buttonText}>✔ {mytranslate('Vote',votingdata)}</span></button> {contestant}</p></div>})}
+                        {currentBallot.contestants.map((contestant,index) => {return <div key={'contestant'+index}><p><button style={{backgroundColor: 'black',padding:'10px'}} onClick={() => {const vote = {'vote':contestant,'key':c,identifier:identifier,post_id:currentBallot.post_id ? currentBallot.post_id : post_id,signature:(currentBallot.signature_required) ? votingdata.current_user_name : ''}; console.log('vote',vote); sendVotingUpdate(vote);} }><span style={styles.buttonText}>{mytranslate('Vote for',votingdata)}</span></button> {contestant}</p></div>})}
                         {currentBallot.signature_required ? <p style={{style:'italic'}}>{mytranslate('Vote will be recorded as signed by',votingdata)+' '+votingdata.current_user_name}</p> : null}
                     </div>)
                 }
             )}
             {!votingdata.is_vote_counter && !openBallots ? 
             <div><p>Current vote counter: "{votingdata.vote_counter_name}." No ballots have been created yet.</p>
-            <p style={styles.h2}>Assume the role of Vote Counter?</p>
+            {!votingdata.vote_counter_logged_in ? <div>
+                <p style={styles.h2}>Assume the role of Vote Counter?</p>
             <p>If no Vote Counter is available, any member can assume the role.</p>
             {votingdata.authorized_user ? <p><button style={styles.button} onClick={() => {sendVotingUpdate({post_id:post_id,identifier:identifier,take_vote_counter:true}) }}><span style={styles.buttonText}>Take Vote Counter Role</span></button></p> : <p><a href={votingdata.login_url}>Please login first</a></p>}
-
+            </div>
+                 : null}            
             </div> : null}
             {votingdata.is_vote_counter ? <div><p style={styles.h2}>Back to Vote Counter Controls?</p>
             <p><button style={styles.button} onClick={() => {setControls('')} }><span style={styles.buttonText}>Go Back</span></button></p></div> : null}
