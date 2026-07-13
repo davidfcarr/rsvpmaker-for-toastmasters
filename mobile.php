@@ -29,22 +29,17 @@ $user = (isset($_GET['user_id']) && current_user_can('manage_options')) ? get_us
 $code = wpt_get_mobile_code($user->ID);
 if(is_admin()) {
 ?>
-<h1><?php _e("Download and enable the Toastmost mobile app",'rsvpmaker-for_toastmasters'); ?></h2>
+<h1><?php _e("Download and enable the Toastmost mobile app",'rsvpmaker-for_toastmasters'); ?></h1>
 <?php
 }
 ?>
-<p><?php _e('Use the camera on your phone to scan the QR code shown below to authorize the app. If you have not yet installed it, the QR codes linked to the app stores are also included.','rsvpmaker-for-toastmasters'); ?></p>
+<p><?php _e('If you have not yet installed the app, click to display the QR codes to download it from the <a href="#iosdownload">iOS App Store</a> or <a href="#androiddownload">Android Play Store</a>.','rsvpmaker-for-toastmasters'); ?></p>
+<p><?php _e('Once you have installed the app, use the camera on your iOS or Android device to scan the QR code shown below. This will authorize the app to access this website.','rsvpmaker-for-toastmasters'); ?></p>
 <!--iframe style="border: none;" src="https://toastmost.org/qr/?domain=<?php echo $_SERVER['SERVER_NAME']; ?>&code=<?php echo $code; ?>&type=android" width="100%" height="600">  </iframe -->
 <?php
 $deeplink = 'toastmost:///Settings/?domain='.sanitize_text_field($_SERVER['SERVER_NAME']).'&code='.$code;
 echo '<h3>Authorize the app for '.esc_html($user->display_name).'</h3>'.rsvpmaker_qr(['url' => $deeplink]);
 printf('<p><a href="%s">%s</a></p>',$deeplink,$deeplink);
-$store = 'https://apps.apple.com/us/app/toastmost/id6741133200';
-echo '<h3 style="margin-top: 50px;">iOS App Store</h3>'.rsvpmaker_qr(['url' => $store]);
-printf('<p><a href="%s">%s</a></p>',$store,$store);
-$store = 'https://play.google.com/store/apps/details?id=com.toastmost.mobileagenda';
-echo '<h3 style="margin-top: 50px;">Android Play Store</h3>'.rsvpmaker_qr(['url' => $store]);
-printf('<p><a href="%s">%s</a></p>',$store,$store);
     printf('<p>Domain/code string:</p><code>%s|%s</code>',$_SERVER['SERVER_NAME'],$code);
     if(current_user_can('manage_options')) {
         $url = rest_url('rsvptm/v1/mobile/'.$code);
@@ -54,6 +49,12 @@ printf('<p><a href="%s">%s</a></p>',$store,$store);
             printf('<p><a href="%s">Show code for %s</a></p>',admin_url('admin.php?page=wp4t_enable_mobile&user_id='.$member->ID),$member->display_name);
         }
     }
+$store = 'https://apps.apple.com/us/app/toastmost/id6741133200';
+echo '<h3 id="iosdownload" style="margin-top: 500px;">iOS App Store</h3>'.rsvpmaker_qr(['url' => $store]);
+printf('<p><a href="%s">%s</a></p>',$store,$store);
+$store = 'https://play.google.com/store/apps/details?id=com.toastmost.mobileagenda';
+echo '<h3 id="androiddownload" style="margin-top: 500px;">Android Play Store</h3>'.rsvpmaker_qr(['url' => $store]);
+printf('<p><a href="%s">%s</a></p>',$store,$store);
 
 }
 add_shortcode('toastmost_qr_deeplink','toastmost_qr_deeplink');

@@ -736,73 +736,86 @@ function wpt_minutes_from_history($history_post_id = '') {
     global $wpdb;
     $history_table = $wpdb->base_prefix.'tm_history';
     $speech_history_table = $wpdb->base_prefix.'tm_speech_history';
+    $attended = $role_holder = $present = array();
+    $debug = $additions = $notes = $content = '';
+    $allroles = $agenda_order = $attended = $role_holder = $present = array();
     if(empty($history_post_id))
         $history_post_id = intval($_GET['minutes_from_history']);
     $history_post = get_post($history_post_id);
-    $agenda_data = wpt_blocks_to_data($history_post->post_content);
-    $notes = '';
-    foreach($agenda_data as $index => $item) {
-        if(!empty($item['role'])) {
-            for($i=1; $i <= intval($item['count']); $i++)
-            $allroles['_role_'.str_replace(' ','_',$item['role']).'_'.$i] = '';
-            $agenda_order[$item['role']] = '';
-        }
-        elseif(isset($item['editable'])) {
-            $temp = get_post_meta($history_post_id,'agenda_note_'.$item['uid'],true);
-            if($temp) {
-                $temp = str_replace('<p>',"<!-- wp:paragraph -->\n<p>",$temp);
-                $temp = str_replace('</p>',"</p>\n<!-- /wp:paragraph -->\n\n",$temp);
-                $notes .= sprintf('<!-- wp:heading {"level":3} -->
-<h3 class="wp-block-heading">%s</h3>
-<!-- /wp:heading -->'."\n\n",$item['editable']).$temp."\n";                
+    if(!empty($history_post)) {
+        $agenda_data = wpt_blocks_to_data($history_post->post_content);
+        $notes = '';
+        foreach($agenda_data as $index => $item) {
+            if(!empty($item['role'])) {
+                for($i=1; $i <= intval($item['count']); $i++)
+                $agenda_order[] = $item['role'];
+            }
+            elseif(isset($item['editable'])) {
+                $temp = get_post_meta($history_post_id,'agenda_note_'.$item['uid'],true);
+                if($temp) {
+                    $temp = str_replace('<p>',"<!-- wp:paragraph -->\n<p>",$temp);
+                    $temp = str_replace('</p>',"</p>\n<!-- /wp:paragraph -->\n\n",$temp);
+                    $notes .= sprintf('<!-- wp:heading {"level":3} -->
+    <h3 class="wp-block-heading">%s</h3>
+    <!-- /wp:heading -->'."\n\n",$item['editable']).$temp."\n";                
+                }
             }
         }
     }
-    $additions = '';
-    $attended = $role_holder = $present = array();
-    $content = '';
     $domain = sanitize_text_field( $_SERVER['SERVER_NAME'] );
     $sql = $wpdb->prepare( "SELECT * FROM $history_table LEFT JOIN $speech_history_table ON $history_table.id=$speech_history_table.history_id WHERE post_id=%d AND domain=%s", $history_post_id, $domain );
     //$content .= '<p>'.$sql.'</p>';
     $history_records = $wpdb->get_results($sql);
-    //$content .= '<p>$history_records '.var_export($history_records,true).'</p>';
+    $debug .= '<p>History records: '.var_export($history_records,true).'</p>';
     foreach($history_records as $record) {
+        $debug .= sprintf('<p>Record %s, %s</p>',$record->user_id,$record->role);
+        if($record->user_id <= 0)
+            continue;
         if(!in_array($record->user_id,$present))
             $present[] = $record->user_id;
-        if($record->role == 'Attended') {
-            if(!in_array($record->user_id,$attended))
-                $attended[] = $record->user_id;
-        }
         else {
             if(!in_array($record->user_id,$role_holder))
                 $role_holder[] = $record->user_id;
         }
+        if($record->role == 'Attended') {
+            if(!in_array($record->user_id,$attended))
+                $attended[] = $record->user_id;
+            continue;
+        }
+        $roletext = '';
         $meta_index = wp4t_fieldbase($record->role,$record->rolecount);
         $name = wp4t_get_member_name($record->user_id);
-        $allroles[$meta_index] = $name;
+        $roletext .= $name;
         if(!empty($record->title))
-            $allroles[$meta_index] .= '<br>&quot;'.$record->title.'&quot;';
+            $roletext .= '<br>&quot;'.$record->title.'&quot;';
         if(!empty($record->manual))
-            $allroles[$meta_index] .= '<br>'.$record->manual;
+            $roletext .= '<br>'.$record->manual;
         if(!empty($record->project))
-            $allroles[$meta_index] .= '<br>'.$record->project;
+            $roletext .= '<br>'.$record->project;
+        $allroles[$record->role][] = $roletext;
     }
+    $debug .= '<p>Agenda order: '.implode(', ',$agenda_order).'</p>';
+    $debug .= '<p>All Roles: '.var_export($allroles,true).'</p>';
+    foreach($agenda_order as $index => $role) {
+        if(!empty($allroles[$role])) {
+            foreach($allroles[$role] as $index => $roleline) {
+                $role = trim(preg_replace('/[^A-Za-z]/',' ',$role));
+                $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", str_replace('role ','',$role),$roleline);
+            }
+            unset($allroles[$role]);
+            }
+    }
+
+    if(!empty($allroles))
+    {
     ksort($allroles);
-    foreach($allroles as $index => $roleline) {
-        $output = '';
+    foreach($allroles as $index => $rarray) {
         $role = trim(preg_replace('/[^A-Za-z]/',' ',$index));
-        if(empty($roleline)) {
-            $assigned = get_post_meta($history_post_id,$index,true);
-            if(!empty($assigned) && (($assigned < '0') || !is_numeric($assigned)))
-                $roleline = sprintf('<em>Agenda shows %s</em>',wp4t_get_member_name($assigned));
+        foreach($rarray as $roleline) {
+            $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", str_replace('role ','',$role),$roleline);
         }
-        $output .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", $role,$roleline);
-        if(isset($agenda_order[$role]))
-            $agenda_order[$role] = $output;
-        else
-            $additions = $output;
     }
-    $content .= implode("\n",$agenda_order).$additions;
+    } 
 	if ( ! empty( $role_holder ) ) {
 		foreach ( $role_holder as $index => $marked ) {
 			$user = get_userdata( $marked );
@@ -813,7 +826,9 @@ function wpt_minutes_from_history($history_post_id = '') {
 	}
 	if ( ! empty( $attended ) ) {
 		foreach ( $attended as $user_id ) {
-			$showed_up[] = wp4t_get_member_name($user_id);
+            $name = wp4t_get_member_name($user_id);
+            if(!in_array($name,$participant))
+    			$showed_up[] = $name;
 		}
         $label = __('No role but marked present','rsvpmaker-for-toastmasters');
         $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", $label,implode(', ',$showed_up));
@@ -840,6 +855,7 @@ function wpt_minutes_from_history($history_post_id = '') {
         $content .= sprintf("<!-- wp:paragraph -->\n<p><strong>%s:</strong> %s</p>\n<!-- /wp:paragraph -->\n\n", $label,implode(', ',$absent));
     }
     $content = $notes . $content;
+    //wp_die($debug.$content);
 return $content;
 }
 function wpt_minutes_from_history_title($title = '') {

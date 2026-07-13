@@ -245,10 +245,12 @@ export default function Voting({post_id}) {
             )}
             {!votingdata.is_vote_counter && !openBallots ? 
             <div><p>Current vote counter: "{votingdata.vote_counter_name}." No ballots have been created yet.</p>
-            <p style={styles.h2}>Assume the role of Vote Counter?</p>
+            {!votingdata.vote_counter_logged_in ? <div>
+                <p style={styles.h2}>Assume the role of Vote Counter?</p>
             <p>If no Vote Counter is available, any member can assume the role.</p>
             {votingdata.authorized_user ? <p><button style={styles.button} onClick={() => {sendVotingUpdate({post_id:post_id,identifier:identifier,take_vote_counter:true}) }}><span style={styles.buttonText}>Take Vote Counter Role</span></button></p> : <p><a href={votingdata.login_url}>Please login first</a></p>}
-
+            </div>
+                 : null}            
             </div> : null}
             {votingdata.is_vote_counter ? <div><p style={styles.h2}>Back to Vote Counter Controls?</p>
             <p><button style={styles.button} onClick={() => {setControls('')} }><span style={styles.buttonText}>Go Back</span></button></p></div> : null}

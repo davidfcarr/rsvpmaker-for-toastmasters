@@ -70,20 +70,22 @@ function wpt_email_handler_page () {
 add_action('rsvpmaker_postmark_autoreply','wpt_postmark_autoreply',10,3);
 
 function wpt_postmark_autoreply($emailObj, $blog_id, $from) {
-            if(strpos($emailObj->Subject,'prospective member') && strpos($emailObj->From,'toastmasters.org'))
+            error_log('prospective member check '.$emailObj->Subject);
+            if(strpos($emailObj->Subject,'prospective member'))
             {
-                preg_match_all('/[a-zA-Z_\-\.]+@[a-zA-Z_\-]+?\.[a-zA-Z_\-]{2,3}/',$emailObj->HtmlBody,$fcmatches);
- 
-                foreach($fcmatches[0] as $email) {
-                    if(strpos($email,'toastmasters.org') || strpos($email,'@toastmost.org') || (strcasecmp($email, $forwarder) == 0))
-                        continue;
-                    $contact = $email;
+                $parts = preg_split("/<img[^>]*>/", $emailObj->HtmlBody);
+                $pattern = '/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?/';
+                if(preg_match($pattern,$parts[1],$match))
+                {
+                    $contact = $match[0];
+                    error_log('contact match for '.$blog_id.' from '.$from.' contact '.$contact.' '.$emailObj->Subject);
                 }
-                wpt_email_handler_autoresponder ($contact, $from, $blog_id);
-                $sent = true;
+                else {
+                    error_log('no contact match for '.$blog_id.' from '.$from.' '.$emailObj->Subject);
+                }
             }
             else {
-                error_log('no match for '.$blog_id.' '.$from.' '.var_export($emailObj->Subject, true));
+                error_log('no match for '.$blog_id.' from '.$from.' '.var_export($emailObj->Subject, true));
             }
     // Your function implementation here
 }

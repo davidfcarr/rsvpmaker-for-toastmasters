@@ -480,6 +480,7 @@ function wp4t_awesome_dashboard_widget_function() {
 <p><?php echo sprintf( __( 'You are viewing the private members-only area of the website. For a basic orientation, see the <a href="%s">welcome page</a>.', 'rsvpmaker-for-toastmasters' ), admin_url( 'index.php?page=toastmasters_welcome' ) ); ?>
 
 <br /></p>
+<p><a href="<?php echo admin_url('admin.php?page=wp4t_enable_mobile');?>"><?php echo __( 'Enable the Toastmost Mobile App for this site.', 'rsvpmaker-for-toastmasters' );  ?></a></p>
 
 	<?php
 
@@ -17425,7 +17426,7 @@ function show_wpt_promo( $atts = array() ) {
 
 <p>The <a href="https://toastmost.org">Toastmost.org</a> club website hosting service is operated by <a href="https://carrcommunications.com">Carr Communications Inc.</a>, offering convenient low-cost access to the software. The software and related business arrangements have been reviewed by Toastmasters International for conformance to their brand guidelines.</p>
 
-<p><a href="<?php echo admin_url('admin.php?page=wp4t_enable_mobile');?>"><?php echo __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ) ?></a></p>
+<p><a href="<?php echo admin_url('admin.php?page=wp4t_enable_mobile');?>"><?php echo __( 'Try the Mobile App!', 'rsvpmaker-for-toastmasters' ) ?></a></p>
 
 <p><img decoding="async" data-attachment-id="18653" data-permalink="https://toastmost.org/2025/03/15/toastmost-phone-screenshot/image/" data-orig-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1033%2C1022&amp;ssl=1" data-orig-size="1033,1022" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-medium-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=300%2C297&amp;ssl=1" data-large-file="https://i0.wp.com/toastmost.org/wp-content/uploads/2025/03/image.png?fit=1024%2C1013&amp;ssl=1" src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" data-src="https://toastmost.org/wp-content/uploads/2025/03/image-1024x1013.png" alt="" class="wp-image-18653 ls-is-cached lazyloaded" style="width: 300px"></p>
 
@@ -19600,6 +19601,11 @@ function wp4t_tm_security_setup( $check = true, $cookie = true ) {
 	$tm_security['subscriber']['email_list']        = 1;
 
 	$tm_security['subscriber']['upload_files']      = 0;
+	if(class_exists('Loco_Locale')) {
+		$tm_security['administrator']['loco_admin'] = 1;
+		$tm_security['manager']['loco_admin'] = 1;
+		$tm_security['editor']['loco_admin'] = 1;
+	}
 
 	if ( is_multisite() ) {
 

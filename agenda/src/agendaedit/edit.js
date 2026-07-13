@@ -19,6 +19,7 @@ import { useEntityProp } from '@wordpress/core-data';
 import { useSelect } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import TimeBlock from '../TimeBlock.js';
+import EndTime from '../EndTime.js';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -221,6 +222,9 @@ export default function Edit({ attributes, attributes: { uid, time_allowed, edit
 			onChange={ ( time_allowed ) => setAttributes({ time_allowed: Math.abs(parseInt(time_allowed)) }) }
 
 		/>
+
+	<EndTime />
+
 	<ToggleControl
 
         label="Display inline label, bold, instead of headline"

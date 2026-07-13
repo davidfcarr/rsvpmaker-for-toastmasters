@@ -18,6 +18,7 @@ const { TextareaControl, SelectControl, ToggleControl, TextControl, ServerSideRe
 import { useSelect, useDispatch } from '@wordpress/data';
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 import TimeBlock from '../TimeBlock.js';
+import EndTime from '../EndTime.js';
 import { useRsvpmakerRest } from '../useRsvpmakerRest.js';
 
 /**
@@ -174,7 +175,8 @@ return (
 	<p><em><strong>Time Allowed</strong>: Total minutes allowed on the agenda. In the case of speeches, limits the time that can be booked for speeches without a warning. Example: 24 minutes for 3 speeches, one of which might be longer than 7 minutes.</em></p>
 	
 	<p><em><strong>Padding Time</strong>: Typical use is extra time for introductions, beyond the time allowed for speeches.</em></p>
-	
+	<EndTime />
+
 	</div>
 	
 	}
@@ -198,6 +200,8 @@ return (
 							/>
 	
 	<p><em><strong>Time Allowed</strong>: Total minutes allowed on the agenda. In the case of speeches, limits the time that can be booked for speeches without a warning. Example: 24 minutes for 3 speeches, one of which might be longer than 7 minutes.</em></p>
+	<EndTime />
+
 	<ToggleControl
 			label={ __( 'Show Title Prompt', 'rsvpmaker-for-toastmasters' ) }	
 			checked={ titlePrompt }
@@ -207,10 +211,6 @@ return (
 	</div>
 	
 	}
-	
-	<div>
-		
-	</div>
 	
 	<TextareaControl
 	

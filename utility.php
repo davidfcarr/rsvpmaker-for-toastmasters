@@ -779,11 +779,7 @@ function wp4t_clean_role( $role ) {
 
 	$role = str_replace( '_', ' ', $role );
 
-
-
 	return trim( $role );
-
-
 
 }
 
@@ -3912,12 +3908,6 @@ function wptm_sort_contests_by_count_desc(array &$data): void {
 
 }
 
-
-
-
-
-
-
 function wptm_count_votes($post_id, $votingdata) {
 
 	$added_votes = empty($votingdata['added_votes']) ? array() : $votingdata['added_votes'];
@@ -4010,19 +4000,10 @@ function wptm_count_votes($post_id, $votingdata) {
 
 		wptm_sort_contests_by_count_desc($votingdata['votes']);
 
-
-
 		$output .= '<div id="votingresults"><h2>Voting Results as of '.rsvpmaker_date('H:i:s',time()).'</h2>';
 
 		foreach($votingdata['published_ballots'] as $contest) {
 			$contestvote = $votingdata['votes'][$contest] ?? array();
-		/*
-			
-		}
-
-		foreach($votingdata['votes'] as $contest => $contestvote) {
-
-		*/
 
 			$label = get_post_meta($post_id,'votelabel_'.$contest,true);
 
@@ -4182,14 +4163,14 @@ function wptm_count_votes($post_id, $votingdata) {
 
 	}
 
+	$woutput = '';
 
+	foreach($winner as $w) {
+		if($w != 'None')
+			$woutput .= $w."\n";
 
-	foreach($winner as $w)
-
-
-
-		$output .= '<p>'.$w.'</p>';
-
+		$output .= '<p>'.$w.'</p>';		
+	}
 
 
 	foreach($ranking as $r)
@@ -4210,11 +4191,8 @@ function wptm_count_votes($post_id, $votingdata) {
 
 		$output .= '<pre>'.var_export($votingdata,true).'</pre>';
 
-
-
-	return $output;
+	return array('output' => $output, 'winners' => $woutput);
 }
-
 
 
 function wp4t_hour_past($post_id) {
@@ -5888,7 +5866,10 @@ function wp4t_tm_random_available_check() {
 
 function wpt_mobile_translations() {
 
-
+	$translations = get_transient('wp4t_translations');
+	if($translations) {
+		return $translations;
+	}
 
 	$locale = get_locale();
 
@@ -6616,15 +6597,9 @@ function wpt_mobile_translations() {
 
 	}
 
-
-
-
-
-
+	set_transient('wp4t_translations', $t, DAY_IN_SECONDS);
 
 	return $t;
-
-
 
 }
 
