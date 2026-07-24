@@ -4056,8 +4056,10 @@ function wptm_count_votes($post_id, $votingdata) {
 
 
 				{
-
-
+					if(!is_array($count_voters['voters']) || !$count_voters['voters']) {
+						error_log('Invalid voters array for contest: '.$contest.' name: '.$name.' value: '.var_export($count_voters['voters'],true));
+						continue;
+					}
 
 					$voters = array_unique($count_voters['voters']);
 
