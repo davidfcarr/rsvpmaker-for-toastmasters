@@ -21,7 +21,7 @@
 	"dependencies": {
 		"@tinymce/tinymce-react": "^5.0.1",
 		"@wordpress/icons": "^9.49.0",
-		"axios": ">=1.17.0",
+		"axios": ">=1.18.1",
 		"clipboardy": "^3.0.0",
 		"dompurify": ">=3.4.11",
 		"react-awesome-button": "^7.0.5",
