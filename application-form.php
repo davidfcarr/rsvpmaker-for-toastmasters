@@ -24,7 +24,9 @@ Application Type <?php wp4t_tm_application_form_hidden( 'membership_type' ); ?>
 <p><label>Club name</label> <?php wp4t_tm_application_form_field( 'club_name' ); ?><br><label>Club number</label> <?php wp4t_tm_application_form_field( 'club_number' ); ?><br><label>Club city</label> <?php wp4t_tm_application_form_field( 'club_city' ); ?></p>
 <p><strong>Applicant Information</strong></p>
 <p>Gender <?php wp4t_tm_application_form_choice( 'gender', array( '', 'Male', 'Female', 'Non-binary', 'Decline to respond' ) ); ?></p>
-<?php rsvphoney_ui(); ?>
+<?php rsvphoney_ui();
+do_action( 'wp4t_tm_application_fields_top' );
+?>
 <div class="memberdata"><label>First name</label> <?php wp4t_tm_application_form_field( 'first_name' ); ?></div>
 <div class="memberdata"><label>Middle name</label> <?php wp4t_tm_application_form_field( 'middle_name' ); ?></div>
 <div class="memberdata"><label>Last name/Surname</label> <?php wp4t_tm_application_form_field( 'last_name' ); ?></div>
@@ -39,6 +41,7 @@ Application Type <?php wp4t_tm_application_form_hidden( 'membership_type' ); ?>
 <div class="memberdata"><label>Home phone number</label> <?php wp4t_tm_application_form_field( 'home_phone' ); ?></div>
 <div class="memberdata"><label>Mobile phone number</label> <?php wp4t_tm_application_form_field( 'mobile_phone' ); ?></div>
 <div class="memberdata"><label>Email address</label> <?php wp4t_tm_application_form_field( 'user_email' ); ?></div>
+<?php do_action( 'wp4t_tm_application_fields_bottom' ); ?>
 <p><strong>Toastmasters International Dues and Fees</strong></p>
 <div style="padding: 5px; border: thin dotted #000;">
 <?php

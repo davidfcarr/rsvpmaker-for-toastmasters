@@ -1,12 +1,211 @@
 <?php
+
+function wp4t_import_fth_content($title,$content,$rewrite,$return = false) {
+    global $site;
+    $content = stripslashes($content);
+    $log = '';
+    if(empty($rewrite) && isset($_POST['rewrite']))
+        $rewrite = $_POST['rewrite'];
+    $log .= "\n<p>importer content: ".htmlentities($content)."</p><h2>Importer log</h2>";
+    $content = preg_replace("/[\r\n]/"," ",$content);
+    $content = str_replace("&nbsp;"," ",$content);
+    $content = preg_replace(" {2,}"," ",$content);
+    $content = preg_replace('/<td\b[^>]*>/i', '<p>', $content);
+    $content = preg_replace('/<\/td>/i', '</p>', $content);
+    $content = preg_replace("/(<p|<h|<iframe|<ol|<ul|<td)/","\n$1",$content); //|<table
+    $content = strip_tags($content,'<p><h1><h2><h3><h4><a><iframe><img><br><strong><b><em><i><ul><ol><li>');
+    $content = preg_replace("/\n{2,}/","\n",$content);
+// Remove style and align attributes (handles single, double, or no quotes + spacing)
+    $content = preg_replace('/\s*(?:style|align|class)\s*=\s*([\'"])(.*?)\1|\s*(?:style|align|class)\s*=\s*[^\s>]+/i', '', $content);
+    $content = preg_replace('/<div id="Unsubscribed">.+/sim','',$content);
+    //$parts = explode('<div id="AllUserContent" class="ContentColumn">',$content);
+    //$content = $parts[1];
+    $lines = explode("\n",$content);
+    $html = '';
+    $paragraph = 0;
+    foreach($lines as $index => $line)
+    {
+        $line = trim($line);
+        if(empty($line))
+            continue;
+        if(strpos($line,'<img') !== false) {
+            if(!strpos($line,'.ashx')) {
+                preg_match_all('/<img[^>]+src="([^"]+)"[^>]*>/m',$line,$matches);
+                foreach($matches[1] as $img) {
+                $log .= "\n<br />importer image $img";
+                $html .= '<!-- wp:image {"sizeSlug":"large"} -->
+<figure class="wp-block-image size-large"><img src="'.$img.'" alt=""/></figure>
+<!-- /wp:image -->';
+                }
+            }
+            $line = trim(preg_replace('/<img[^>]+src="([^"]+)"[^>]*>/m','',$line));
+            if(empty($line))
+                continue;
+        }
+        $log .= "\n<br />importer line $index: ".htmlentities($line);
+        if(strpos($line,'<iframe') !== false)
+        {
+            preg_match('/src="([^"]+)"/m',$line,$match);
+            $iframe_src = isset($match[1]) ? $match[1] : '';
+            if (strpos($iframe_src, 'youtu') !== false) {
+    // Extract the 11-character YouTube video ID from various URL formats
+    preg_match('/(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $iframe_src, $video_match);
+    
+    // Fallback to original src if video ID extraction fails for any reason
+    $video_id = isset($video_match[1]) ? $video_match[1] : '';
+    $normalized_url = $video_id ? 'https://www.youtube.com/watch?v=' . $video_id : $iframe_src;
+
+    $log .= "\n<br />importer youtube " . $normalized_url;
+    
+    $html .= '<!-- wp:embed {"url":"' . $normalized_url . '","type":"video","providerNameSlug":"youtube","responsive":true,"className":"wp-embed-aspect-16-9 wp-has-aspect-ratio"} -->
+<figure class="wp-block-embed is-type-video is-provider-youtube wp-block-embed-youtube wp-embed-aspect-16-9 wp-has-aspect-ratio"><div class="wp-block-embed__wrapper">
+' . $normalized_url . '
+</div></figure>
+<!-- /wp:embed -->' . "\n";
+            }
+            else {
+            $log .= "\n<br />importer iframe ".htmlentities($line);
+            $line = strip_tags($line,'<iframe>');
+            $line = str_replace('</iframe>','',$line);
+            $line = str_replace('<','[',$line);
+            $line = str_replace('>',']',$line);
+            $line = str_replace("'",'"',$line);
+            printf('<p>Imported iframe %s</p>',htmlentities($line));
+            $html .= '<!-- wp:group {"layout":{"type":"constrained"}} --><div class="wp-block-group"><!-- wp:shortcode -->'.$line.'<!-- /wp:shortcode --></div><!-- /wp:group -->'."\n";
+            }
+        }
+        elseif(strpos($line,'<ol') !== false  || strpos($line,'<ul') !== false) {
+            $log .= "\n<br />importer list ".htmlentities($line);
+            $html .= "\n".$line."\n";
+        }
+        elseif(strpos($line,'<p') !== false) {
+            if(empty(trim(strip_tags($line))))
+                continue;
+            $log .= "\n<br />importer paragraph ".htmlentities($line);
+            $html .=  "<!-- wp:paragraph -->".$line."<!-- /wp:paragraph -->\n";
+            $paragraph++;
+        }
+        elseif(preg_match('/<h([0-9])/',$line,$match)) {
+            if(empty(trim(strip_tags($line))))
+                continue;
+            $log .= "\n<br />importer heading  ".htmlentities($line);
+            $heading = preg_replace("/<h([0-9])[^>]*>([^<]+)<\/h[0-9]>/","<!-- wp:heading {\"level\":$1} --><h$1 class=\"wp-block-heading\">$2</h$1><!-- /wp:heading -->\n",$line);// "<!-- wp:paragraph -->".$line."<!-- /wp:paragraph -->\n";
+            $html .= $heading."\n";
+        }
+        elseif(strpos($line,'<') === false) {
+            if(empty(trim(strip_tags($line))))
+                continue;
+            $log .= "\n<br />importer untagged paragraph ".htmlentities($line);
+            $html .=  "<!-- wp:paragraph --><p>".$line."</p><!-- /wp:paragraph -->\n";
+            $paragraph++;
+        }
+        else {
+            $log .= "\n<br />Unrecognized line $index: ".htmlentities($line);
+            $html .= "\n".$line."\n";
+        }
+    }
+    $mail['from'] = 'noreply@toastmost.org';
+    $mail['html'] = $log;
+    $mail['subject'] = 'FTH Importer Log';
+    $mail['to'] = 'david@carrcommunications.com';
+    rsvpmailer($mail);
+
+    //$html = preg_replace("/\n.*<!-- wp/","\n<!-- wp",$html);//stray content
+    $html = preg_replace('/\n{2,}/',"\n",$html);
+    $html = preg_replace('/\s+>/',">",$html);
+    $html = preg_replace('/> +/',">",$html);
+    $html = preg_replace('/ {2,}/'," ",$html);
+        $front_id = get_option('page_on_front');
+        error_log('importer $rewrite: '.$rewrite);
+        if('replace' == $rewrite) {
+            $lines = explode("\n",$html);
+            $first = array_shift($lines);
+            $first .= "\n".array_shift($lines);
+            error_log("importer first lines: $first");
+            array_unshift($lines,$first,wp4t_get_tm_guest_registration());
+            //array_unshift($lines,wp4t_get_tm_guest_registration());     
+            $html = implode("\n",$lines);
+            $html .= "\n".'<!-- wp:heading -->
+            <h2 class="wp-block-heading">Club News</h2>
+            <!-- /wp:heading -->
+            
+            <!-- wp:latest-posts {"displayPostContent":true,"displayFeaturedImage":true,"featuredImageSizeSlug":"medium"} /-->';
+        }
+        if($return)
+            return $html;
+        if(!empty($rewrite)) {
+            if('append' == $rewrite){
+                $post = get_post($front_id);
+                if(strpos($post->post_content,'id="boilerplate"'))
+                    wpt_remove_boilerplate($front_id,$html);
+                else {
+                    //add to the end
+                    $html = $post->post_content.$html;
+                    $update['post_content'] = $html;
+                    $update['post_title'] = $title;
+                    $update['ID'] = $front_id;
+                    $result = wp_update_post($update);    
+                }
+            }
+            else {
+                //full rewrite
+                $update['post_content'] = $html;
+                $update['ID'] = $front_id;
+                $update['post_title'] = $title;
+                $result = wp_update_post($update);    
+            }
+            printf('<h1>Home Page</h1><p>Updating home page. <a href="%s" target="_blank">Edit</a></p>',admin_url("post.php?post=$front_id&action=edit"));    
+        } else {
+            $update['post_title'] = $title;
+            $update['post_type'] = 'page';
+            $update['post_status'] = 'draft';
+            $update['post_content'] = $html;
+            $id = wp_insert_post($update);
+            update_post_meta($id,'fth_draft',$title);
+            printf('<h1>Draft Page</h1><p>Saved draft page %s. <a href="%s" target="_blank">Edit</a></p>',$title,admin_url("post.php?post=$id&action=edit"));
+        }
+        //echo do_blocks($html);
+    return $html;
+}
+
 function wp4t_grab_fth_content($s, $page = '') {
     global $site;
-    $tidy = new \tidy;
-    $s = preg_replace('/\/\/([A-Za-z0-9_\-]+.html)/',"/$1",$s);
-    $s = preg_replace('/\?.+/','',$s);
-    ob_start();
-    $content = file_get_contents($s);
-    ob_get_clean();
+    //$tidy = new \tidy;
+    
+    // Clean up the URL input
+    $s = preg_replace('/\/\/([A-Za-z0-9_\-]+.html)/', "/$1", $s);
+    $s = preg_replace('/\?.+/', '', $s);
+
+    // Fetch the remote URL with redirection limits
+    $response = wp_remote_get($s, array(
+        'redirection' => 5, // Allows following up to 5 redirects automatically
+        'timeout'     => 60,
+    ));
+
+    // 1. Catch WP_Error (e.g., DNS failure, timeout, invalid URL)
+    if (is_wp_error($response)) {
+        $error_message = $response->get_error_message();
+        echo '<p>Error: unable to import source content: ' . $error_message . '</p>';
+        error_log("wp_remote_get error for $s: " . $error_message);
+        return false; // Or handle the error gracefully
+    }
+
+    // 2. Capture HTTP Status Code & Redirect Details
+    $response_code = wp_remote_retrieve_response_code($response);
+    
+    // If the server returned a redirect status (301, 302, etc.) or an HTTP error (404, 500, etc.)
+    if ($response_code >= 300) {
+        $headers = wp_remote_retrieve_headers($response);
+        $redirect_url = isset($headers['location']) ? $headers['location'] : 'N/A';
+        echo '<p>Error: unable to import source content, redirect to ' . $redirect_url . '</p>';
+        error_log("HTTP Error/Redirect ($response_code) for $s. Redirect Location: " . $redirect_url);
+        
+        // Return early or return status details depending on your needs
+        return false; 
+    }
+
+    // 3. Extract the body content on success (HTTP 200 OK)
+    $content = wp_remote_retrieve_body($response);
     if(!$content) {
         echo '<p>Error: unable to import source content</p>';
         return;
@@ -218,7 +417,7 @@ function wp4t_fth_importer_custom_sizes( $sizes ) {
 }
 function wp4t_fth_importer_nq() {
     global $post;
-    if(isset($_GET['import_agenda'])) {
+    if(strpos($_SERVER['REQUEST_URI'],'wp4t_fth_importer_docs') !== false || strpos($_SERVER['REQUEST_URI'],'wp-signup.php') !== false ) {
         wp_enqueue_script( 'wp-tinymce' );
         wp_enqueue_script( 'fth-importer', plugins_url( 'rsvpmaker-for-toastmasters/drafty.js' ), array('wp-tinymce'), '3.1', true );    
     }
@@ -274,8 +473,10 @@ function wp4t_fth_importer_docs($atts = array()) {
     
     if(isset($_GET['import_agenda']))
         printf('<div style="padding: 20px; text-align: center;" ><h1>Import Agenda Content</h1><p>Or Switch to <a href="%s">Import Web Page Content</a>. %s</p></div>',$action,$setup_wizard);
-    else
+    else {
         printf('<div style="padding: 20px; text-align: center;" ><h1>Import Web Page Content</h1><p>Or Switch to <a href="%s">Import Agenda Content</a>. %s</p></div>',$agenda_action,$setup_wizard);
+        echo '<div style="padding: 20px; text-align: center; color: red;" ><p>The website content importer seems to be experiencing issues with the latest version of Free Toast Host. You still have the option of trying to import agenda content.</p></div>';
+    }
 	$toast_roles = array(
 		'Ah Counter',
 		'Body Language Monitor',
@@ -297,6 +498,12 @@ if(isset($_POST['url'])){
     $url = sanitize_text_field($_POST['url']);
     update_option('freetoasthost',$url);
     wp4t_grab_fth_content($url);
+}
+if(isset($_POST['content'])){
+    $content = stripslashes($_POST['content']);
+    $title = sanitize_text_field(stripslashes($_POST['title']));
+    $rewrite = sanitize_text_field($_POST['rewrite']);
+    wp4t_import_fth_content($title,$content,$rewrite);
 }
 if(isset($_POST['src'])){
     echo $src = sanitize_text_field($_POST['src']);
@@ -534,16 +741,17 @@ else {
         }
     }    
 ?>
-<h1>Import HTML from FreeToastHost site</h1>
-<p>This tool will import text, images, and other content from your FreeToastHost website, giving you a head start on setting up your new home page, supporting pages (like Meeting Info and Directions), and your blog.</p>
-<p>A guest registration block will be added near the top of your home page, but you can move it or delete it. You can replace the current home page with the version generated by the importer, append the imported content, or save the old home page as a draft.<p>
-<p>The content of other pages will be saved as drafts, and you can decide which of them to keep, update, or discard.</p>
+<h1>Import Text and Images from a FreeToastHost site</h1>
+<p>Copy and paste content from your FreeToastHost site into the text area below, set the title, and this tool will reformat the content so you can edit it more easily in the WordPress editor. Over time, you will want to refine your website content, using WordPress tools, but this can help you get started.</p>
 <form method="post" action="<?php echo esc_url($action); ?>">
 <p>Paste the home page web address of your old toastmastersclubs.org website below. If you have a custom domain name, enter your club number followed by .toastmastersclubs.org (entering the custom domain name below will not work).</p>
-<p><input type="text" name="url" value="<?php echo get_option('freetoasthost'); ?>" size="100" placeholder="https://2445.toastmastersclubs.org" /></p>
-<p><input type="radio" name="rewrite" value="replace" checked="checked" /> Replace home page content with imported content</p>
+<p>By default, imported content will be saved as a draft page for further editing. You can also choose to replace the home page content with imported content, or append imported content to the existing home page.</p>
+<p>Page Title:<br /><input type="text" name="title" value="Welcome to <?php echo esc_attr(get_bloginfo('name')); ?>" size="80" /></p>
+<p><textarea id="mytextarea" name="content"></textarea></p>
+<p><input type="radio" name="rewrite" value="0" checked="checked" /> Save as draft page for further editing.</p>
+<p><input type="radio" name="rewrite" value="replace" /> Replace home page content with imported content. Include guest registration block after first paragraph and latest blog posts listing at the end.</p>
+<p><input type="radio" name="rewrite" value="only" /> Replace home page with ONLY imported content.</p>
 <p><input type="radio" name="rewrite" value="append" /> Append imported home page content (for example, if you have already started editing your home page)</p>
-<p><input type="radio" name="rewrite" value="0" /> Save as draft</p>
 <?php
     wp_nonce_field( 'drafty', 'drafty_field' );
     if(is_admin())

@@ -900,3 +900,25 @@ min-height: 150px;
 	font-size: small;
 	font-style: italic;
 }
+
+/* Fix React-Select grid layout collapse */
+.react-select__value-container {
+    display: grid !important;
+}
+
+.react-select__input-container {
+    grid-area: 1 / 2 !important;
+    display: inline-grid !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.react-select__input-container input {
+    width: 100% !important;
+    min-width: 2px !important;
+}
+
+input.react-select__input, input.react-select__input div {
+    width: 100% !important;
+    min-width: 2px !important;
+}

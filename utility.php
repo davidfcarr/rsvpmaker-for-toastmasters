@@ -5477,109 +5477,31 @@ foreach($results as $row) {
 
 
 function wp4t_get_tm_guest_registration() {
-
-
-
-	return '<!-- wp:group {"metadata":{"name":"Guest Registration"},"layout":{"type":"constrained"}} -->
-
-
-
+	return '<!-- wp:group {"metadata":{"name":"Guest Registration"},"layout":{"type":"default"}} -->
 <div class="wp-block-group"><!-- wp:heading -->
-
-
-
 <h2 class="wp-block-heading" id="visit">Visit as a Guest</h2>
-
-
-
 <!-- /wp:heading -->
-
-
-
 <!-- wp:query {"queryId":0,"query":{"perPage":"1","pages":0,"offset":0,"postType":"rsvpmaker","order":"asc","author":"","search":"","exclude":[],"sticky":"","inherit":false,"eventOrder":"future","excludeType":0},"namespace":"rsvpmaker/rsvpmaker-loop"} -->
-
-
-
 <div class="wp-block-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":1}} -->
-
-
-
 <!-- wp:post-title {"level":3,"isLink":true} /-->
-
-
-
 <!-- wp:rsvpmaker/loop-blocks -->
-
-
-
 <div class="wp-block-rsvpmaker-loop-blocks"><!-- wp:rsvpmaker/rsvpdateblock /-->
-
-
-
 <!-- wp:rsvpmaker/button -->
-
-
-
 <!-- wp:buttons -->
-
-
-
 <div class="wp-block-buttons"><!-- wp:button {"style":{"color":{"background":"#f71b1b"},"className":"rsvplink","border":{"radius":"14px"}}} -->
-
-
-
 <div class="wp-block-button"><a class="wp-block-button__link has-background wp-element-button" href="#rsvpnow" style="border-radius:14px;background-color:#f71b1b">RSVP Now!</a></div>
-
-
-
 <!-- /wp:button --></div>
-
-
-
 <!-- /wp:buttons -->
-
-
-
 <!-- /wp:rsvpmaker/button --></div>
-
-
-
 <!-- /wp:rsvpmaker/loop-blocks -->
-
-
-
 <!-- /wp:post-template --></div>
-
-
-
 <!-- /wp:query -->
-
-
-
 <!-- wp:query {"queryId":0,"query":{"perPage":"5","pages":0,"offset":"1","postType":"rsvpmaker","order":"asc","author":"","search":"","exclude":[],"sticky":"","inherit":false,"eventOrder":"future","excludeType":0},"namespace":"rsvpmaker/rsvpmaker-loop"} -->
-
-
-
 <div class="wp-block-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":1}} -->
-
-
-
 <!-- wp:rsvpmaker/title-date {"style":{"spacing":{"padding":{"top":"0","bottom":"0","left":"0","right":"0"},"margin":{"top":"0","bottom":"0","left":"0","right":"0"}},"typography":{"lineHeight":"1"}}} /-->
-
-
-
 <!-- /wp:post-template --></div>
-
-
-
 <!-- /wp:query --></div>
-
-
-
 <!-- /wp:group -->';
-
-
-
 }
 
 

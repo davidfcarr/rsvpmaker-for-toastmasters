@@ -203,14 +203,38 @@ foreach($month_start_end as $i => $start_end) {
 	}
 	return $output;
 }
+
+function wp4t_get_ti_dues() {
+		$ti_dues = get_option( 'ti_dues' );
+		$standard_dues = array( '36.00', '24.00', '12.00', '72.00', '60.00', '48.00', '36.00', '24.00', '12.00', '72.00', '60.00', '48.00' );
+
+		if ( empty( $ti_dues ) ) {
+			$ti_dues = $standard_dues;
+			update_option( 'ti_dues', $ti_dues );		
+		}
+		if ( !empty( $ti_dues ) && $ti_dues[3] == '60.00' ) {
+		$old_dues = array( '30.00', '20.00', '10.00', '60.00', '50.00', '40.00', '30.00', '20.00', '10.00', '60.00', '50.00', '40.00' );
+			foreach($ti_dues as $i => $dues) {
+				$old_amount = $old_dues[$i];
+				if(floatval($dues) != floatval($old_amount)) {
+					$months = $dues / 10;
+					$ti_dues[$i] = number_format($months * 12, 2);
+					//printf('<p>Updated TI dues for month %d from %s to %s</p>',$i,number_format($dues,2),number_format($ti_dues[$i],2));
+				}
+				else {
+					$ti_dues[$i] = $standard_dues[$i];
+				}
+			}
+			update_option( 'ti_dues', $ti_dues );		
+		}
+		return $ti_dues;
+}
+
 function wp4t_tm_application_fee() {
 	global $post;
 	if ( isset( $_REQUEST['membership_type'] ))  {
 		$new     = ( strtolower($_REQUEST['membership_type']) == 'new' ) ? 25 : 0;
-		$ti_dues = get_option( 'ti_dues' );
-		if ( empty( $ti_dues )  || $ti_dues[3] == '45.00' ) {
-			$ti_dues = array( 30.00, 20.00, 10.00, 60.00, 50.00, 40.00, 30.00, 20.00, 10.00, 60.00, 50.00, 40.00 );
-		}
+		$ti_dues = wp4t_get_ti_dues();
 		$club_dues = get_option( 'club_dues' );
 		if ( empty( $club_dues ) ) {
 			$club_dues = array( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 );
@@ -335,12 +359,7 @@ label {
 <p>Email address <?php wp4t_tm_application_form_field( 'user_email', $email ); ?> (required)</p>
 <p>Application Type <?php wp4t_tm_application_form_choice( 'membership_type', array( 'New', 'Dual', 'Transfer', 'Reinstated (break in membership)', 'Renewing (no break in membership)' ) ); ?></p>
 <?php
-
-	$ti_dues = get_option( 'ti_dues' );
-	if ( empty( $ti_dues ) || $ti_dues[3] == '45.00' ) {
-		$ti_dues = array( '30.00', '20.00', '10.00', '60.00', '50.00', '40.00', '30.00', '20.00', '10.00', '60.00', '50.00', '40.00' );
-		update_option( 'ti_dues',$ti_dues );
-	}
+	$ti_dues = wp4t_get_ti_dues();
 	$club_dues = get_option( 'club_dues' );
 	if ( empty( $club_dues ) ) {
 		$club_dues = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
@@ -556,11 +575,7 @@ function wp4t_member_application_settings( $action = '', $embedded = false ) {
 			$apppage              = wp_insert_post( $page );
 		}
 	}
-	$ti_dues = get_option( 'ti_dues' );
-	if ( empty( $ti_dues ) || $ti_dues[3] == '45.00' ) {
-		$ti_dues = array( '30.00', '20.00', '10.00', '60.00', '50.00', '40.00', '30.00', '20.00', '10.00', '60.00', '50.00', '40.00' );
-		update_option( 'ti_dues',$ti_dues );
-	}
+	$ti_dues = wp4t_get_ti_dues();
 	$club_dues = get_option( 'club_dues' );
 	if ( empty( $club_dues ) ) {
 		$club_dues = array( '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0' );
