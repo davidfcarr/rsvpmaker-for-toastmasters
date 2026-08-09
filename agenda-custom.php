@@ -123,7 +123,7 @@ else {
 	if ( function_exists( 'do_blocks' ) ) {
 		$layout_post->post_content = do_blocks( $layout_post->post_content );
 	}
-	$output = wpautop( convert_chars( wptexturize( do_shortcode( $layout_post->post_content ) ) ) );	
+	$output = wpautop( do_shortcode( $layout_post->post_content ) );
 }
 if ( isset( $_GET['word_agenda'] ) || isset( $_GET['word_test'] ) ) {
 	$output = str_replace( '</p>', '</p><p>&nbsp;</p>', $output );

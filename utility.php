@@ -3886,15 +3886,39 @@ function wptm_sort_contests_by_count_desc(array &$data): void {
 
 
 
-        uasort($candidates, function($a, $b) {
+		uasort($candidates, function($a, $b) {
 
 
 
-            return ($b['count'] ?? 0) <=> ($a['count'] ?? 0);
+			$a_count = ( ! empty( $a['voters'] ) && is_array( $a['voters'] ) )
 
 
 
-        });
+				? count( array_unique( $a['voters'] ) )
+
+
+
+				: (int) ( $a['count'] ?? 0 );
+
+
+
+			$b_count = ( ! empty( $b['voters'] ) && is_array( $b['voters'] ) )
+
+
+
+				? count( array_unique( $b['voters'] ) )
+
+
+
+				: (int) ( $b['count'] ?? 0 );
+
+
+
+			return $b_count <=> $a_count;
+
+
+
+		});
 
 
 
@@ -3943,15 +3967,11 @@ function wptm_count_votes($post_id, $votingdata) {
 
 
 
-			if(isset($votingdata['votes'][$contest][$row->meta_value]['count'])) {
+			if(!isset($votingdata['votes'][$contest][$row->meta_value])) {
 
 
 
-				$votingdata['votes'][$contest][$row->meta_value]['count']++;
-
-
-
-				$votingdata['votes'][$contest][$row->meta_value]['voters'][] = $identifier;
+				$votingdata['votes'][$contest][$row->meta_value] = array('count' => 0, 'voters' => array());
 
 
 
@@ -3959,11 +3979,11 @@ function wptm_count_votes($post_id, $votingdata) {
 
 
 
-			else
+			$votingdata['votes'][$contest][$row->meta_value]['count']++;
 
 
 
-				$votingdata['votes'][$contest][$row->meta_value]['count'] = 1;
+			$votingdata['votes'][$contest][$row->meta_value]['voters'][] = (string) $identifier;
 
 
 
@@ -3977,19 +3997,31 @@ function wptm_count_votes($post_id, $votingdata) {
 
 	
 
+	$admin_vote_counter = 0;
+
 	foreach($added_votes as $addit) {
 
 
 
-		if('Template' == $addit->ballot)
+		if(('Template' == $addit->ballot) || ('c' == $addit->ballot))
 
 
 
 			continue;
 
+		if(!isset($votingdata['votes'][$addit->ballot][$addit->contestant])) {
+
+			$votingdata['votes'][$addit->ballot][$addit->contestant] = array('count' => 0, 'voters' => array());
+
+		}
+
 		for($addone = 0; $addone < $addit->add; $addone++) {
 
-			$votingdata['votes'][$addit->ballot][$addit->contestant]['voters'][] = $addone.' admin added';
+			$admin_vote_counter++;
+
+			$votingdata['votes'][$addit->ballot][$addit->contestant]['count']++;
+
+			$votingdata['votes'][$addit->ballot][$addit->contestant]['voters'][] = 'admin added #'.$admin_vote_counter;
 
 		}
 
@@ -4056,16 +4088,15 @@ function wptm_count_votes($post_id, $votingdata) {
 
 
 				{
-					if(!is_array($count_voters['voters']) || !$count_voters['voters']) {
-						error_log('Invalid voters array for contest: '.$contest.' name: '.$name.' value: '.var_export($count_voters['voters'],true));
-						continue;
-					}
+					$voters = ( isset( $count_voters['voters'] ) && is_array( $count_voters['voters'] ) )
 
-					$voters = array_unique($count_voters['voters']);
+						? array_unique( $count_voters['voters'] )
 
+						: array();
 
 
-					$count = sizeof($voters);
+
+					$count = ! empty( $voters ) ? sizeof( $voters ) : (int) ( $count_voters['count'] ?? 0 );
 
 
 
@@ -4127,9 +4158,9 @@ function wptm_count_votes($post_id, $votingdata) {
 
 						}
 
-						elseif(is_int($voter) && $voter > 0)
+						elseif(is_numeric($voter) && intval($voter) > 0)
 
-							$signatures[] = wp4t_get_member_name($voter);
+							$signatures[] = wp4t_get_member_name(intval($voter));
 
 					}
 
@@ -4174,6 +4205,7 @@ function wptm_count_votes($post_id, $votingdata) {
 		$output .= '<p>'.$w.'</p>';		
 	}
 
+	$output .= '<br /><br /><h2>Detailed Tally</h2>';
 
 	foreach($ranking as $r)
 

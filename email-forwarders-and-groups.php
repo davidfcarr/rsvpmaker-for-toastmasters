@@ -777,6 +777,7 @@ function wpt_email_handler_forwarders() {
     rsvpmaker_admin_heading('Email Forwarders',__FUNCTION__,'','<img style="max-width: 300px;" src="https://www.wp4toastmasters.com/wp-content/uploads/2022/05/forwarders.jpg" /><br><em>Example</em>');
     $blog_id = get_current_blog_id();
     rsvpmail_clear_allforwarders($blog_id);
+    rsvpmaker_reset_forwarder_cache();
     $parts = explode('.',$_SERVER['SERVER_NAME']);
     $prefix = '';
     if(sizeof($parts) > 2) {
@@ -913,6 +914,8 @@ if(function_exists('toastmost_billing_email')) {
 <p>Custom forwarding addresses can be added in the format <?php echo wpt_format_email_forwarder('mycustomlabel'); ?> (example: <?php echo wpt_format_email_forwarder('mentors'); ?>).</p><p>For a default address that should be used if no other is a match, use <strong><?php echo wpt_format_email_forwarder('default'); ?></strong>.</p> <p>Recipient email addresses may be entered on separate lines or separated by commas.</p>
 <form action="<?php echo admin_url('admin.php?page=wpt_email_handler_forwarders'); ?>" method="post">
 <?php
+//printf('<p>Admin URL: %s</p><p>Site URL: %s</p>',admin_url(), site_url());
+
 if(!empty($wpt_email_handler_custom_forwarders)) {
     $index = 0;
     foreach($wpt_email_handler_custom_forwarders as $forward_from => $forward_to) {
@@ -1823,6 +1826,7 @@ function toastmasters_officer_email_array( $site_id = 0 ) {
 		}
 	}
 	$officer_emails[$dp['prefix'].'admin@'.$dp['domain']] = ($site_id) ? get_blog_option( $site_id,'admin_email' ) : get_option( 'admin_email' );
+	$officer_emails[$dp['prefix'].'info@'.$dp['domain']] = $officer_emails[$dp['prefix'].'admin@'.$dp['domain']];
 	return $officer_emails;
 }
 

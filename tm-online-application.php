@@ -294,7 +294,7 @@ function wp4t_tm_application_fee() {
 }
 function wp4t_tm_application_form_start( $atts ) {
 	global $wpdb, $current_user;
-	$pdf = ( isset( $atts['pdf'] ) ) ? $atts['pdf'] : 'https://toastmost.org/wp-content/uploads/2025/11/800-membership-application-ff.pdf';
+	$pdf = ( isset( $atts['pdf'] ) ) ? $atts['pdf'] : 'https://toastmost.org/wp-content/uploads/2026/08/800-membership-application-ff-2026-08.pdf';
 	ob_start();
 	if ( isset( $_POST['user_email'] ) && empty( $_POST['user_email'] ) ) {
 		echo '<p style="color:red">An email address is required</p>';

@@ -924,7 +924,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		}
 		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth($identifier);
 		if($authorized) //if not anonymous, use user ID as identifier
+		{
 			$identifier = $authorized;
+		}
 		$votingdata['current_user_id'] = $current_user->ID;
 		$votingdata['mobileauth'] = wpt_mobile_auth($identifier);
 		$votingdata['current_user'] = $current_user->ID;
@@ -943,9 +945,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			add_post_meta($post_id,'vote_counter_logged_in',$authorized);
 		}
 		else {
-			$logged_in_counter = get_post_meta($post_id,'vote_counter_logged_in',true);
-			$votingdata['vote_counter_logged_in'] = ($logged_in_counter && $logged_in_counter == $votingdata['vote_counter']);
+			$votingdata['vote_counter_logged_in'] = !empty(get_post_meta($post_id,'vote_counter_logged_in',true));
 		}
+
 		$votingdata['weblink'] = add_query_arg('meetingvote',1,get_permalink($post_id));
 		$votingdata['loginurl'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));	
 		$trans = wpt_mobile_translations();
@@ -1989,6 +1991,7 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 		}
 		$agendadata['domain'] = $_SERVER['SERVER_NAME'];
 		$agendadata['sitename'] = get_option('blogname');
+		$agendadata['other_domains'] = toastmost_other_domains($current_user->ID);
 		$agendadata['user_id'] = $current_user->ID;
 		$agendadata['name'] = $current_user->display_name;
 		$agendadata['agendas'] = wpt_get_mobile_agendadata($current_user->ID);
@@ -2195,10 +2198,8 @@ function wpt_get_mobile_agendadata($user_id = 0) {
                 
                 if (empty($text) && !empty($block['attrs']['defaultContent'])) {
                     $text = $block['attrs']['defaultContent'];
-                    if (function_exists('wp4t_decode_editable_note_content')) {
-                        $text = wp4t_decode_editable_note_content($text);
-                    }
                 }
+                $text = wp4t_decode_editable_note_content($text);
                 $editable['content'] = ($text) ? wpt_sanitize_user_html($text) : '';
                 $editable['key'] = 'agenda_note_' . $block['attrs']['uid'];
                 $agenda['editable'][] = $editable;

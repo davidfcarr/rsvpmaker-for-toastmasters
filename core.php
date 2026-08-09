@@ -409,6 +409,27 @@ function wp4t_speech_intro_data( $user_id, $post_id, $field ) {
 
 }
 
+function toastmost_other_domains($user_id) {
+	$blogs = get_blogs_of_user( $user_id );
+	$domains = array();
+
+	if(is_multisite()) {
+
+		$blog_id = get_current_blog_id();
+
+		$blogs    = get_blogs_of_user( $user_id );
+
+	if ( ! empty( $blogs ) ) {
+		foreach ( $blogs as $blog ) {
+			if($blog_id != $blog->userblog_id && $blog->siteurl != 'https://toastmost.org') {
+				$domains[] = str_replace( 'http://', '', str_replace( 'https://', '', $blog->siteurl ) );
+			}
+		}
+	}
+	}
+	return $domains;
+}
+
 function toastmost_other_sites() {
 
 	global $current_user;
@@ -1644,7 +1665,8 @@ function wp4t_decode_editable_note_content( $content ) {
 		'u000d' => "\r",
 	);
 
-	$content = str_replace( array_keys( $replacements ), array_values( $replacements ), $content );
+	// Handle escaped sequences regardless of hex letter case (for example u003C as well as u003c).
+	$content = str_ireplace( array_keys( $replacements ), array_values( $replacements ), $content );
 
 	return $content;
 
@@ -1831,7 +1853,8 @@ function wp4t_agenda_note( $atts, $content = '' ) {
 			}
 
 		}
-
+		//just in case the content was encoded in a way that makes it look like a JSON string, decode it for display
+		$content = wp4t_decode_editable_note_content( $content );
 		return force_balance_tags($content);
 
 	}
@@ -1839,6 +1862,9 @@ function wp4t_agenda_note( $atts, $content = '' ) {
 	$maxtime = ( ! empty( $atts['time_allowed'] ) ) ? $atts['time_allowed'] : '';
 
 	$timeblock = ( $maxtime ) ? '<span class="time_allowed" maxtime="' . $maxtime . '"></span>' : '<span class="notime"></span>';
+
+	// Non-editable note content can also arrive with escaped HTML from block attributes or shortcode content.
+	$content = wp4t_decode_editable_note_content( $content );
 
 	if ( isset( $_REQUEST['print_agenda'] ) || isset( $_REQUEST['email_agenda'] ) ) {
 
