@@ -885,6 +885,114 @@ function wpt_mobile_auth($user_code = '') {
 	}
 	return 0;
 }
+
+function wptm_api_signed_vote_minutes_title( $question ) {
+	$question = sanitize_text_field( $question );
+	return 'Vote: ' . $question;
+}
+
+function wptm_api_create_signed_ballot_post( $question, $meeting_post_id = 0 ) {
+	$meeting_post_id = (int) $meeting_post_id;
+	$new_post_id = wp_insert_post(
+		array(
+			'post_type' => 'tmminutes',
+			'post_title' => wptm_api_signed_vote_minutes_title( $question ),
+			'post_status' => 'publish',
+			'post_content' => 'Vote in progress.',
+		)
+	);
+
+	if ( is_wp_error( $new_post_id ) ) {
+		return 0;
+	}
+
+	if ( $meeting_post_id > 0 ) {
+		update_post_meta( $new_post_id, 'wptm_signed_ballot_meeting_id', $meeting_post_id );
+	}
+
+	return (int) $new_post_id;
+}
+
+function wptm_api_signed_ballot_is_closed( $post_id, $ballot_key ) {
+	$post_id = (int) $post_id;
+	if ( ! $post_id ) {
+		return false;
+	}
+	$ballot_set = get_post_meta( $post_id, 'tm_ballot', true );
+	if ( is_object( $ballot_set ) ) {
+		$ballot_set = (array) $ballot_set;
+	}
+	if ( ! is_array( $ballot_set ) || empty( $ballot_set[ $ballot_key ] ) ) {
+		return false;
+	}
+	$ballot = $ballot_set[ $ballot_key ];
+	if ( is_object( $ballot ) ) {
+		$ballot = (array) $ballot;
+	}
+	return ( is_array( $ballot ) && ! empty( $ballot['status'] ) && 'closed' === $ballot['status'] );
+}
+
+function wptm_api_get_signed_ballot_entries( $include_closed = true, $meeting_post_id = 0 ) {
+	$rows = array();
+	$query = array(
+		'post_type' => 'tmminutes',
+		'post_status' => array( 'publish', 'private', 'draft' ),
+		'numberposts' => -1,
+		'orderby' => 'date',
+		'order' => 'DESC',
+		'meta_key' => 'tm_ballot',
+	);
+	if ( (int) $meeting_post_id > 0 ) {
+		$query['meta_query'] = array(
+			'relation' => 'AND',
+			array(
+				'key' => 'tm_ballot',
+				'compare' => 'EXISTS',
+			),
+			array(
+				'key' => 'wptm_signed_ballot_meeting_id',
+				'value' => (int) $meeting_post_id,
+				'compare' => '=',
+				'type' => 'NUMERIC',
+			),
+		);
+	}
+	$posts = get_posts( $query );
+
+	foreach ( $posts as $post ) {
+		$ballot_set = get_post_meta( $post->ID, 'tm_ballot', true );
+		if ( is_object( $ballot_set ) ) {
+			$ballot_set = (array) $ballot_set;
+		}
+		if ( ! is_array( $ballot_set ) ) {
+			continue;
+		}
+		foreach ( $ballot_set as $ballot_key => $ballot ) {
+			if ( is_object( $ballot ) ) {
+				$ballot = (array) $ballot;
+			}
+			if ( ! is_array( $ballot ) ) {
+				continue;
+			}
+			$status = empty( $ballot['status'] ) ? 'draft' : sanitize_text_field( $ballot['status'] );
+			if ( ! $include_closed && 'closed' === $status ) {
+				continue;
+			}
+			$ballot['status'] = $status;
+			$ballot['signature_required'] = ! empty( $ballot['signature_required'] );
+			$ballot['ballot_post_id'] = (int) $post->ID;
+			$rows[] = array(
+				'post_id' => (int) $post->ID,
+				'post_title' => get_the_title( $post->ID ),
+				'ballot_key' => $ballot_key,
+				'ballot' => (object) $ballot,
+			);
+		}
+	}
+
+	return $rows;
+}
+
 class WPTM_Regular_Voting extends WP_REST_Controller {
 	public function register_routes() {
 		$namespace = 'rsvptm/v1';
@@ -908,45 +1016,81 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 	rsvpmaker_debug_log($_SERVER['SERVER_NAME'].' '.$_SERVER['REQUEST_URI'],'rsvpmaker_api');
 		global $wpdb, $current_user;
 		$post_id = intval($request['post_id']);
+		$vote_counter_post_id = $post_id;
+		if ( 'tmminutes' === get_post_type( $post_id ) ) {
+			$linked_meeting_id = (int) get_post_meta( $post_id, 'wptm_signed_ballot_meeting_id', true );
+			if ( $linked_meeting_id > 0 ) {
+				$vote_counter_post_id = $linked_meeting_id;
+			}
+		}
 		if(0 == $post_id) {
 			$meetings = future_toastmaster_meetings();
 			if(sizeof($meetings))
 				$post_id = $meetings[0]->ID;
+			$vote_counter_post_id = $post_id;
 		}
 		$votingdata['published_ballots'] = get_post_meta($post_id,'published_ballots',true);
 		if(!is_array($votingdata['published_ballots']))
 			$votingdata['published_ballots'] = array();
-	if(!empty($_GET['mobile'])) {
+		if ( empty( $_GET['mobile'] ) ) {
+			$votingdata['error'] = 'mobile identifier missing';
+			$votingdata['post_id'] = $post_id;
+			$votingdata['ballot'] = array();
+			$votingdata['myvotes'] = array();
+			$votingdata['votes'] = array();
+			$votingdata['added_votes'] = array();
+			$votingdata['memberlist'] = array();
+			$votingdata['votecount'] = '';
+			$votingdata['winners'] = '';
+			return new WP_REST_Response( $votingdata, 200 );
+		}
 		$identifier = sanitize_text_field($_GET['mobile']);
 		$json = file_get_contents('php://input');
 		if($json) {
 			$data = json_decode($json);
 		}
-		$authorized = $current_user->ID ? $current_user->ID : wpt_mobile_auth($identifier);
+		$cookie_user_id = 0;
+		if ( function_exists( 'wp_validate_auth_cookie' ) ) {
+			$cookie_user_id = (int) wp_validate_auth_cookie( '', 'logged_in' );
+		}
+		if ( ! $current_user->ID && $cookie_user_id ) {
+			$current_user = get_userdata( $cookie_user_id );
+		}
+		$authorized = $current_user->ID ? $current_user->ID : ( $cookie_user_id ? $cookie_user_id : wpt_mobile_auth($identifier) );
 		if($authorized) //if not anonymous, use user ID as identifier
 		{
 			$identifier = $authorized;
 		}
-		$votingdata['current_user_id'] = $current_user->ID;
+		$current_user_id = ! empty( $current_user->ID ) ? (int) $current_user->ID : (int) $cookie_user_id;
+		$current_user_name = '';
+		if ( $current_user_id ) {
+			$current_user_obj = get_userdata( $current_user_id );
+			if ( $current_user_obj ) {
+				$current_user_name = ! empty( $current_user_obj->display_name ) ? $current_user_obj->display_name : '';
+			}
+		}
+		$votingdata['current_user_id'] = $current_user_id;
 		$votingdata['mobileauth'] = wpt_mobile_auth($identifier);
-		$votingdata['current_user'] = $current_user->ID;
-		$votingdata['current_user_name'] = $current_user->display_name;
+		$votingdata['current_user'] = $current_user_id;
+		$votingdata['current_user_name'] = $current_user_name;
 		$votingdata['post_id'] = $post_id;
 		$votingdata['url'] = add_query_arg('meetingvote',1,get_permalink($post_id));
 		$votingdata['login_url'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));
 		$votingdata['authorized_user'] = $authorized;
 		$votingdata['identifier'] = $identifier;
-		$votingdata['vote_counter'] = get_post_meta($post_id,'_role_Vote_Counter_1',true);
+		$votingdata['vote_counter'] = get_post_meta($vote_counter_post_id,'_role_Vote_Counter_1',true);
 		$votecounter = ($votingdata['vote_counter']) ? get_userdata($votingdata['vote_counter']) : null;
 		$votingdata['vote_counter_name'] = ($votecounter) ? $votecounter->display_name : '';
 		$votingdata['is_vote_counter'] = $votingdata['vote_counter'] == $authorized;
 		if($votingdata['is_vote_counter']) {
 			$votingdata['vote_counter_logged_in'] = true;
-			add_post_meta($post_id,'vote_counter_logged_in',$authorized);
+			add_post_meta($vote_counter_post_id,'vote_counter_logged_in',$authorized);
 		}
 		else {
-			$votingdata['vote_counter_logged_in'] = !empty(get_post_meta($post_id,'vote_counter_logged_in',true));
+			$votingdata['vote_counter_logged_in'] = !empty(get_post_meta($vote_counter_post_id,'vote_counter_logged_in',true));
 		}
+		$votingdata['can_manage_signed_ballots'] = $authorized ? user_can($authorized,'edit_others_pages') : false;
+		$votingdata['can_close_signed_ballots'] = !empty($votingdata['is_vote_counter']) || !empty($votingdata['can_manage_signed_ballots']);
 
 		$votingdata['weblink'] = add_query_arg('meetingvote',1,get_permalink($post_id));
 		$votingdata['loginurl'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));	
@@ -989,58 +1133,64 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			}
 		}
 		if(isset($data) && isset($data->take_vote_counter) && $authorized) {
-			update_post_meta($post_id,'_role_Vote_Counter_1',$authorized);
+			update_post_meta($vote_counter_post_id,'_role_Vote_Counter_1',$authorized);
 			$votingdata['vote_counter'] = $authorized;
 			$votingdata['is_vote_counter'] = true;
 		}
-		if(isset($data) && isset($data->close_ballot) && user_can($authorized,'edit_others_posts')) {
-			toastmasters_close_ballot($data->close_ballot);
-		}
-		if(isset($data) && isset($data->ballot)) {
-			$ballot_array = (array) $data->ballot;
-			foreach($ballot_array as $b => $params) {
-				if($params->status == 'publish' && !in_array($b,$votingdata['published_ballots'])) {
-					$votingdata['published_ballots'][] = $b;
-				}
-			}
-			update_post_meta($post_id,'published_ballots',$votingdata['published_ballots']);
+		if(isset($data) && isset($data->close_ballot) && !empty($votingdata['can_close_signed_ballots'])) {
+			toastmasters_close_ballot( (int) $data->close_ballot );
 		}
 		if(isset($data) && isset($data->ballot) && $authorized) {
 			$ballot_array = (array) $data->ballot;
+			$meeting_ballot_array = array();
+			$published_ballots = array();
 			foreach($ballot_array as $b => $params) {
-				if(!empty($params->everyMeeting) && !in_array($b,$custom_club_contests))
-				{
+				if(!is_object($params)) {
+					$params = (object) $params;
+				}
+				$params->status = empty($params->status) ? 'draft' : sanitize_text_field($params->status);
+				$params->signature_required = !empty($params->signature_required);
+				$params->contestants = isset($params->contestants) && is_array($params->contestants) ? array_map('sanitize_text_field',$params->contestants) : array();
+				if(!empty($params->everyMeeting) && !in_array($b,$custom_club_contests)) {
 					$custom_club_contests[] = $b;
 					update_option('custom_club_contests',$custom_club_contests,false);
 					$votingdata['custom_club_contests'] = $b;
-					unset($ballot_array[$b]->everyMeeting);//don't store this property
 				}
+
 				if($params->signature_required) {
-					if($post_id == $params->ballot_post_id || empty($params->ballot_post_id)) {
-					$params->ballot_post_id = wp_insert_post([
-						'post_type' => 'tmminutes',
-						'post_title' => $b,
-						'post_status' => 'publish',
-						'post_content' => sprintf('<!-- wp:paragraph -->
-<p>This is an open vote.</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p><a href="?meetingvote=1">Vote</a></p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>Editors: <a href="%s">Check votes and close voting</a></p>
-<!-- /wp:paragraph -->',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'))
-					]);
+					$ballot_post_id = empty($params->ballot_post_id) ? 0 : (int) $params->ballot_post_id;
+					if(!$ballot_post_id || ($ballot_post_id === $post_id) || ('tmminutes' !== get_post_type($ballot_post_id))) {
+						if('publish' === $params->status) {
+							$ballot_post_id = wptm_api_create_signed_ballot_post($b, $post_id);
+						}
 					}
-				update_post_meta($params->ballot_post_id,'tm_ballot',[$b => $params]);
-				if($post_id != $params->ballot_post_id)
-					unset($ballot_array[$b]);  //remove from main ballot
-				}	
+					if($ballot_post_id) {
+						if(wptm_api_signed_ballot_is_closed($ballot_post_id,$b)) {
+							$params->status = 'closed';
+						}
+						$params->ballot_post_id = $ballot_post_id;
+						update_post_meta($ballot_post_id,'wptm_signed_ballot_meeting_id',$post_id);
+						update_post_meta($ballot_post_id,'tm_ballot',array($b => $params));
+						wp_update_post(array(
+							'ID' => $ballot_post_id,
+							'post_title' => wptm_api_signed_vote_minutes_title($b),
+						));
+						if('publish' === $params->status && !in_array($b,$published_ballots)) {
+							$published_ballots[] = $b;
+						}
+					}
+					continue;
+				}
+
+				$params->ballot_post_id = $post_id;
+				$meeting_ballot_array[$b] = $params;
+				if('publish' === $params->status && !in_array($b,$published_ballots)) {
+					$published_ballots[] = $b;
+				}
 			}
-			update_post_meta($post_id,'tm_ballot',$ballot_array);
-			$votingdata['ballot'] = $ballot_array;
+			update_post_meta($post_id,'tm_ballot',$meeting_ballot_array);
+			update_post_meta($post_id,'published_ballots',$published_ballots);
+			$votingdata['published_ballots'] = $published_ballots;
 		}
 		if(isset($data) && isset($data->added) && $authorized) {
 			update_post_meta($post_id,'added_votes',$data->added);
@@ -1056,64 +1206,121 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				$votingdata['reset_error'] = 'not authorized';
 			}
 		}
-		else
-			$votingdata['ballot'] = get_post_meta($post_id,'tm_ballot',true);
-		if( empty($votingdata['ballot']) ) {
-			if('rsvpmaker' == get_post_type($post_id)) {
-				foreach(['Speaker','Evaluator'] as $role) {
-					$sql = "select * from $wpdb->postmeta WHERE post_id=$post_id and meta_key LIKE '_role_$role%'";
-					$results = $wpdb->get_results($sql);
-					$votingdata[$role] = [];
-					$ids = [];
-					foreach($results as $row) {
-						
-						if(!empty($row->meta_value)) {
-							if(is_numeric($row->meta_value)) {
-								if($row->meta_value > 0) {
-									if(!in_array($row->meta_key,$ids)) {
-										$user = get_userdata($row->meta_value);
-										$ids[] = $row->meta_key;
-										$speaker_name = ($user->display_name) ? $user->display_name : $user->login_name;
-									}
-								}
-							}
-							else
-								$speaker_name = $row->meta_value;
-							$votingdata[$role][] = $speaker_name;
-				}
-				
-				}
+		$meeting_ballot = get_post_meta($post_id,'tm_ballot',true);
+		if ( is_object( $meeting_ballot ) ) {
+			$meeting_ballot = (array) $meeting_ballot;
+		}
+		$meeting_ballot_json = wp_json_encode( $meeting_ballot );
+		if ( false !== $meeting_ballot_json ) {
+			$meeting_ballot_decoded = json_decode( $meeting_ballot_json, true );
+			if ( is_array( $meeting_ballot_decoded ) ) {
+				$meeting_ballot = $meeting_ballot_decoded;
 			}
-			$emptyballot = array('status'=>'draft','contestants'=>[],'new'=>[],'deleted'=>[],'signature_required'=>false, 'ballot_post_id' => $post_id);
-			$votingdata['ballot'] = array('Speaker'=> array('status'=>'draft','contestants'=>$votingdata['Speaker'],'new'=>[],'deleted'=>[],'signature_required'=>false, 'ballot_post_id' => $post_id),'Evaluator'=> array('status'=>'draft','contestants'=>$votingdata['Evaluator'],'new'=>[],'deleted'=>[],'signature_required'=>false, 'ballot_post_id' => $post_id),'Table Topics'=> $emptyballot,'Template'=> $emptyballot);
-			
+		}
+		if ( ! is_array( $meeting_ballot ) ) {
+			$meeting_ballot = array();
+		}
+		$safe_meeting_ballot = array();
+		if ( is_array( $meeting_ballot ) ) {
+			foreach ( $meeting_ballot as $contest_key => $contest_ballot ) {
+				if ( ! is_scalar( $contest_key ) ) {
+					continue;
+				}
+				$contest_key = sanitize_text_field( (string) $contest_key );
+				if ( '' === $contest_key ) {
+					continue;
+				}
+				if ( is_object( $contest_ballot ) ) {
+					$contest_ballot = (array) $contest_ballot;
+				}
+				if ( ! is_array( $contest_ballot ) ) {
+					continue;
+				}
+
+				$status = empty( $contest_ballot['status'] ) ? 'draft' : sanitize_text_field( $contest_ballot['status'] );
+				if ( ! in_array( $status, array( 'draft', 'publish', 'closed' ), true ) ) {
+					$status = 'draft';
+				}
+
+				$contestants = array();
+				if ( ! empty( $contest_ballot['contestants'] ) && is_array( $contest_ballot['contestants'] ) ) {
+					foreach ( $contest_ballot['contestants'] as $choice ) {
+						$choice = sanitize_text_field( (string) $choice );
+						if ( '' !== $choice ) {
+							$contestants[] = $choice;
+						}
+					}
+				}
+
+				$safe_meeting_ballot[ $contest_key ] = array(
+					'status' => $status,
+					'contestants' => $contestants,
+					'new' => array(),
+					'deleted' => array(),
+					'signature_required' => ! empty( $contest_ballot['signature_required'] ),
+					'ballot_post_id' => (int) ( $contest_ballot['ballot_post_id'] ?? $post_id ),
+				);
+			}
+		}
+
+		$meeting_ballot = $safe_meeting_ballot;
+		if ( empty( $meeting_ballot ) ) {
+			$speaker_defaults = array();
+			$evaluator_defaults = array();
+			$emptyballot = array('status'=>'draft','contestants'=>array(),'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id);
+			$meeting_ballot = array(
+				'Speaker' => array('status'=>'draft','contestants'=>$speaker_defaults,'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id),
+				'Evaluator' => array('status'=>'draft','contestants'=>$evaluator_defaults,'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id),
+				'Table Topics' => $emptyballot,
+				'Template' => $emptyballot,
+			);
 			if($custom_club_contests && is_array($custom_club_contests)) {
-				foreach($custom_club_contests as $contest)
-					$votingdata['ballot'][$contest] = $emptyballot;
-			}
-		}
-		else {
-			$votingdata['ballot'] = [];
-		}
-			
-		}
-		//open club votes
-		$sql ="SELECT post_id, meta_key, meta_value FROM $wpdb->posts p JOIN $wpdb->postmeta m ON p.ID = m.post_id WHERE p.post_type='tmminutes' AND m.`meta_key` = 'tm_ballot' ORDER BY `meta_id` DESC";
-		$results = $wpdb->get_results($sql);
-		foreach($results as $row) {
-			$ballot = unserialize($row->meta_value);
-			if(is_array($ballot)) {
-				foreach($ballot as $bkey => $bdata) {
-					if(!empty($votingdata['ballot'][$bkey]))
+				foreach($custom_club_contests as $contest) {
+					if ( ! is_scalar( $contest ) ) {
 						continue;
-					$bdata->ballot_post_id = $row->post_id;
-					$votingdata['ballot'][$bkey] = $bdata;
+					}
+					$contest = sanitize_text_field( (string) $contest );
+					if ( '' === $contest ) {
+						continue;
+					}
+					$meeting_ballot[$contest] = $emptyballot;
 				}
 			}
-			if(user_can($authorized,'edit_others_posts')) {
-				$votingdata['open_club_ballots'][] = array('value'=>$row->post_id,'label'=>get_the_title($row->post_id));
+		}
+
+		$votingdata['ballot'] = $meeting_ballot;
+		$published_ballots = array();
+		foreach($meeting_ballot as $bkey => $bdata) {
+			$status = is_object($bdata) ? (empty($bdata->status) ? 'draft' : $bdata->status) : (empty($bdata['status']) ? 'draft' : $bdata['status']);
+			if('publish' === $status)
+				$published_ballots[] = $bkey;
+		}
+
+		$meeting_signed_ballots = wptm_api_get_signed_ballot_entries(true, $post_id);
+		$global_open_signed_ballots = wptm_api_get_signed_ballot_entries(false, 0);
+		$signed_ballots = array();
+		$seen_signed_ballots = array();
+		foreach ( array_merge( $meeting_signed_ballots, $global_open_signed_ballots ) as $signed_row ) {
+			$signed_key = (int) $signed_row['post_id'] . '::' . $signed_row['ballot_key'];
+			if ( isset( $seen_signed_ballots[ $signed_key ] ) ) {
+				continue;
+			}
+			$seen_signed_ballots[ $signed_key ] = true;
+			$signed_ballots[] = $signed_row;
+		}
+		foreach($signed_ballots as $signed_row) {
+			$bkey = $signed_row['ballot_key'];
+			$bdata = $signed_row['ballot'];
+			$votingdata['ballot'][$bkey] = $bdata;
+			if('publish' === $bdata->status && !in_array($bkey,$published_ballots)) {
+				$published_ballots[] = $bkey;
+			}
+			if('publish' === $bdata->status && !empty($votingdata['can_close_signed_ballots'])) {
+				$votingdata['open_club_ballots'][] = array('value'=>$signed_row['post_id'],'label'=>$signed_row['post_title']);
 			}
 		}
+		$votingdata['published_ballots'] = $published_ballots;
+		update_post_meta($post_id,'published_ballots',$published_ballots);
 
 		if(isset($data) && isset($data->vote)) {
 			$votingdata['data'] = $data;
@@ -1122,7 +1329,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$ballot_post_id = isset($votingdata['ballot'][$key]->ballot_post_id) ? $votingdata['ballot'][$key]->ballot_post_id : $post_id;
 			$metakey = 'myvote_'.$key.'_'.$identifier;
 			if(!empty($data->signature))
-				update_post_meta($ballot_post_id,'_signedvote_'.$key.$vote,sanitize_text_field($data->signature));
+				update_post_meta($ballot_post_id,'_signedvote_'.$key.'_'.$identifier,sanitize_text_field($data->signature));
 			add_post_meta($ballot_post_id,'audit_'.$metakey,$vote.' '.$_SERVER['REMOTE_ADDR'].' api '.date('r'));
 			$votingdata['voterecorded'] = $metakey;
 			update_post_meta($ballot_post_id,$metakey,$vote);
@@ -1131,11 +1338,17 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$votingdata['myvotes'] = [];
 
 		foreach($votingdata['ballot'] as $bkey => $bdata) {
+			if ( is_array( $bdata ) ) {
+				$bdata = (object) $bdata;
+				$votingdata['ballot'][$bkey] = $bdata;
+			}
+			$ballot_post_id = isset($bdata->ballot_post_id) ? (int) $bdata->ballot_post_id : $post_id;
 			$myvote_key = 'myvote_'.$bkey.'_'.$identifier;
-			$myvote_test = get_post_meta($bdata->ballot_post_id,$myvote_key,true);
+			$myvote_test = get_post_meta($ballot_post_id,$myvote_key,true);
 			if($myvote_test)
 				$votingdata['myvotes'][] = $bkey;
-			foreach($bdata->contestants as $contestant) {
+			$contestants = isset($bdata->contestants) && is_array($bdata->contestants) ? $bdata->contestants : array();
+			foreach($contestants as $contestant) {
 				$votingdata['votes'][$bkey][$contestant]['count'] = 0;
 				$votingdata['votes'][$bkey][$contestant]['voters'] = [];
 			}
@@ -1188,8 +1401,16 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$votingdata['votecount'] = $voteresult['output'];
 		$votingdata['winners'] = $voteresult['winners'];
 		$votingdata['memberlist'] = $memberlist;
+		$encode_probe = wp_json_encode( $votingdata );
+		if ( false === $encode_probe ) {
+			return new WP_REST_Response(
+				array(
+					'error' => 'votingdata_json_encode_failed',
+				),
+				200
+			);
+		}
 	return new WP_REST_Response( $votingdata, 200 );
-	}
 	}
 }
 class WPTM_Reorder extends WP_REST_Controller {

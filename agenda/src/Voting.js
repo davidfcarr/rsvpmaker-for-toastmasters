@@ -233,6 +233,8 @@ export default function Voting({post_id}) {
                     if(('Template' == c) || ('C' == c) || ('c' == c))
                         return;
                     const currentBallot = votingdata.ballot[c];
+                    const ballotIsClosed = currentBallot.status == 'closed';
+                    const canCloseSignedBallot = (currentBallot.status == 'publish') && currentBallot.signature_required && currentBallot.ballot_post_id && votingdata.can_close_signed_ballots;
                     return <div key={'contest'+cindex}>
                         <p style={styles.h2}>{c}</p>
                         {currentBallot.contestants.map((contestant,index) => {return <p key={'contestant'+index}><button style={styles.minusbutton} onClick={() => {updateContestBallot(c, (ballot) => ({...ballot, contestants: ballot.contestants.filter((_, i) => i !== index), deleted: [...(ballot.deleted || []), contestant]}));}}><span style={styles.buttonText}>-</span></button> {contestant}</p>})}
@@ -247,17 +249,21 @@ export default function Voting({post_id}) {
                             }
                             checked={ currentBallot.signature_required }
                         onChange={ () => { const ballotCopy = {...currentBallot}; ballotCopy.signature_required = !currentBallot.signature_required; console.log('modified ballot',ballotCopy); const ballots = {...votingdata.ballot}; ballots[c] =ballotCopy; console.log('modified ballots',ballots); const votingCopy = {...votingdata, ballot: ballots}; console.log('modified voting data',votingCopy); setVotingdata(votingCopy);}} /></p>
-                        {currentBallot.status == 'publish' ? <div><p><button disabled={savingPublishFor !== ''} aria-busy={savingPublishFor === c} style={{...styles.button,opacity:savingPublishFor !== '' ? 0.7 : 1,cursor:savingPublishFor !== '' ? 'wait' : 'pointer'}} onClick={() => { const update = {...currentBallot,status:'draft'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; const startedAt = Date.now(); setSavingPublishFor(c); console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier},{onSettled:() => clearSavingStateWithMinimumDelay(startedAt,() => setSavingPublishFor(''))});} }><span style={styles.buttonText}>{savingPublishFor === c ? mytranslate('Unpublishing...',votingdata) : 'Unpublish'}</span></button></p>
+                        {ballotIsClosed ? <p style={{fontStyle:'italic'}}>{mytranslate('Voting closed. This ballot cannot be reopened.',votingdata)}</p> : null}
+                        {currentBallot.status == 'publish' ? <div><p><button disabled={savingPublishFor !== ''} aria-busy={savingPublishFor === c} style={{...styles.button,opacity:savingPublishFor !== '' ? 0.7 : 1,cursor:savingPublishFor !== '' ? 'wait' : 'pointer'}} onClick={() => { const update = {...currentBallot,status:'draft'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; const startedAt = Date.now(); setSavingPublishFor(c); console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier},{onSettled:() => clearSavingStateWithMinimumDelay(startedAt,() => setSavingPublishFor(''))});} }><span style={styles.buttonText}>{savingPublishFor === c ? mytranslate('Unpublishing...',votingdata) : 'Unpublish'}</span></button>
+                        {canCloseSignedBallot ? <button disabled={closingBallot} aria-busy={closingBallot} style={{...styles.button,opacity:closingBallot ? 0.7 : 1,cursor:closingBallot ? 'wait' : 'pointer'}} onClick={() => { const startedAt = Date.now(); setClosingBallot(true); sendVotingUpdate({close_ballot:currentBallot.ballot_post_id,post_id:post_id,identifier:identifier},{onSettled:() => clearSavingStateWithMinimumDelay(startedAt,() => setClosingBallot(false))});}}><span style={styles.buttonText}>{closingBallot ? mytranslate('Closing...',votingdata) : mytranslate('Close Voting',votingdata)}</span></button> : null}
+                        </p>
                         {savingPublishFor === c ? <p style={{fontStyle:'italic'}}>{mytranslate('Saving ballot status...',votingdata)}</p> : null}
+                        {closingBallot && canCloseSignedBallot ? <p style={{fontStyle:'italic'}}>{mytranslate('Saving closed ballot...',votingdata)}</p> : null}
                         {copied ? <button style={styles.button} ><span style={{color:'green',backgroundColor:'white',padding:'5px'}}>{mytranslate('Copied!',votingdata)}</span></button> : <CopyToClipboard text={mytranslate('Please vote using the link below. For subsequent votes, click "Refresh" if the ballot of choices is not displayed')+"\n\n"+votingdata.url} onCopy={() => {setCopied(true); setTimeout(() => {setCopied(false)},9000)}} >
                         <button style={styles.button}><span style={styles.buttonText}>{mytranslate('Copy Voting Link',votingdata)}</span></button>
                         </CopyToClipboard>}
-                        </div> 
-                        : 
+                        </div>
+                        : (ballotIsClosed ? null :
                         <div>
                         <p><button disabled={savingPublishFor !== ''} aria-busy={savingPublishFor === c} style={{...styles.button,opacity:savingPublishFor !== '' ? 0.7 : 1,cursor:savingPublishFor !== '' ? 'wait' : 'pointer'}} onClick={() => { const update = {...currentBallot,status:'publish'}; const bigUpdate = {...votingdata.ballot}; bigUpdate[c] = update; const startedAt = Date.now(); setSavingPublishFor(c); console.log('ballot update for '+c,bigUpdate); sendVotingUpdate({ballot:bigUpdate,post_id:post_id,identifier:identifier},{onSettled:() => clearSavingStateWithMinimumDelay(startedAt,() => setSavingPublishFor(''))}); setCopied(false);} }><span style={styles.buttonText}>{savingPublishFor === c ? mytranslate('Publishing...',votingdata) : mytranslate('Publish',votingdata)}</span></button></p>
                         {savingPublishFor === c ? <p style={{fontStyle:'italic'}}>{mytranslate('Saving ballot status...',votingdata)}</p> : null}
-                        </div>
+                        </div>)
                         }
                     </div>
                 }

@@ -3935,17 +3935,24 @@ function wptm_sort_contests_by_count_desc(array &$data): void {
 function wptm_count_votes($post_id, $votingdata) {
 
 	$added_votes = empty($votingdata['added_votes']) ? array() : $votingdata['added_votes'];
+	$woutput = '';
+	$winner = array();
+	$ranking = array();
 
 	global $wpdb;
 
 	$output = '';
 
 	foreach($votingdata['published_ballots'] as $bkey) {
-		$ballot = $votingdata['ballots'][$bkey];
+		$ballot = $votingdata['ballot'][$bkey] ?? null;
 
 		$pid = (isset($ballot->ballot_post_id)) ? $ballot->ballot_post_id : $votingdata["post_id"];
-
-		$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$pid." AND meta_key LIKE 'myvote_$bkey%' ORDER BY meta_key, meta_value";
+		$vote_like = $wpdb->esc_like( 'myvote_' . $bkey . '_' ) . '%';
+		$sql = $wpdb->prepare(
+			"SELECT * FROM $wpdb->postmeta WHERE post_id = %d AND meta_key LIKE %s ORDER BY meta_key, meta_value",
+			(int) $pid,
+			$vote_like
+		);
 
 		$results = $wpdb->get_results($sql);
 
@@ -4000,6 +4007,12 @@ function wptm_count_votes($post_id, $votingdata) {
 	$admin_vote_counter = 0;
 
 	foreach($added_votes as $addit) {
+		if ( is_array( $addit ) ) {
+			$addit = (object) $addit;
+		}
+		if ( ! is_object( $addit ) || ! isset( $addit->ballot ) || ! isset( $addit->contestant ) || ! isset( $addit->add ) ) {
+			continue;
+		}
 
 
 
@@ -4036,6 +4049,8 @@ function wptm_count_votes($post_id, $votingdata) {
 
 		foreach($votingdata['published_ballots'] as $contest) {
 			$contestvote = $votingdata['votes'][$contest] ?? array();
+			$contest_ballot = $votingdata['ballot'][$contest] ?? null;
+			$show_voter_names = ! empty( $contest_ballot ) && ! empty( $contest_ballot->signature_required );
 
 			$label = get_post_meta($post_id,'votelabel_'.$contest,true);
 
@@ -4166,7 +4181,8 @@ function wptm_count_votes($post_id, $votingdata) {
 
 
 
-					$ranking[$contest] .= sprintf('<p>%s: %s %s</p>',$name,$count,empty($signatures) ? '' : ' votes from: '.implode(', ',$signatures));
+					$voter_label = ( $show_voter_names && ! empty( $signatures ) ) ? ' votes from: '.implode(', ',$signatures) : '';
+					$ranking[$contest] .= sprintf('<p>%s: %s %s</p>',$name,$count,$voter_label);
 
 					if($admin_added) {
 
@@ -4195,8 +4211,6 @@ function wptm_count_votes($post_id, $votingdata) {
 
 
 	}
-
-	$woutput = '';
 
 	foreach($winner as $w) {
 		if($w != 'None')

@@ -59,6 +59,86 @@ function wpt_tmminutes_denial_message( $post = null ) {
 	return '<div style="width: 100%; background-color: #ddd;">' . esc_html( $message ) . '</div>' . $login;
 }
 
+add_filter( 'manage_tmminutes_posts_columns', 'wpt_tmminutes_signed_ballot_column' );
+function wpt_tmminutes_signed_ballot_column( $columns ) {
+	$updated = array();
+	foreach ( $columns as $key => $label ) {
+		$updated[ $key ] = $label;
+		if ( 'title' === $key ) {
+			$updated['wpt_signed_ballot_status'] = esc_html__( 'Signed Ballot', 'rsvpmaker-for-toastmasters' );
+		}
+	}
+
+	if ( ! isset( $updated['wpt_signed_ballot_status'] ) ) {
+		$updated['wpt_signed_ballot_status'] = esc_html__( 'Signed Ballot', 'rsvpmaker-for-toastmasters' );
+	}
+
+	return $updated;
+}
+
+add_action( 'manage_tmminutes_posts_custom_column', 'wpt_tmminutes_signed_ballot_column_content', 10, 2 );
+function wpt_tmminutes_signed_ballot_column_content( $column_name, $post_id ) {
+	if ( 'wpt_signed_ballot_status' !== $column_name ) {
+		return;
+	}
+
+	$ballot_set = get_post_meta( $post_id, 'tm_ballot', true );
+	if ( empty( $ballot_set ) || ! is_array( $ballot_set ) ) {
+		echo '&mdash;';
+		return;
+	}
+
+	$counts = array(
+		'publish' => 0,
+		'draft'   => 0,
+		'closed'  => 0,
+		'other'   => 0,
+	);
+
+	foreach ( $ballot_set as $ballot ) {
+		$status = 'other';
+		if ( is_object( $ballot ) && isset( $ballot->status ) ) {
+			$status = sanitize_key( $ballot->status );
+		} elseif ( is_array( $ballot ) && isset( $ballot['status'] ) ) {
+			$status = sanitize_key( $ballot['status'] );
+		}
+
+		if ( isset( $counts[ $status ] ) ) {
+			$counts[ $status ]++;
+		} else {
+			$counts['other']++;
+		}
+	}
+
+	$total = array_sum( $counts );
+	if ( 0 === $total ) {
+		echo '&mdash;';
+		return;
+	}
+
+	if ( $total === $counts['closed'] ) {
+		echo esc_html__( 'Closed', 'rsvpmaker-for-toastmasters' );
+		return;
+	}
+
+	if ( $counts['publish'] > 0 ) {
+		if ( $counts['closed'] > 0 || $counts['draft'] > 0 || $counts['other'] > 0 ) {
+			echo esc_html__( 'Open (mixed)', 'rsvpmaker-for-toastmasters' );
+			return;
+		}
+
+		echo esc_html__( 'Open', 'rsvpmaker-for-toastmasters' );
+		return;
+	}
+
+	if ( $total === $counts['draft'] ) {
+		echo esc_html__( 'Draft', 'rsvpmaker-for-toastmasters' );
+		return;
+	}
+
+	echo esc_html__( 'Mixed', 'rsvpmaker-for-toastmasters' );
+}
+
 add_filter( 'request', 'wpt_tmminutes_request_fallback', 9 );
 function wpt_tmminutes_request_fallback( $query_vars ) {
 	if ( is_admin() ) {

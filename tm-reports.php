@@ -59,10 +59,10 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_screen', __( 'More', 'rsvpmaker-for-toastmasters' ), __( 'More', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmost_more', 'toastmost_more' );	
 	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ),'edit_users', 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
-	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
-	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_member_votes', 'toastmasters_member_votes' );
-	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
-	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_posts', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_member_votes', 'toastmasters_member_votes' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
 }
 
 function toastmost_more () {
@@ -6956,296 +6956,402 @@ function wpt_suggest_all_roles() {
 
 add_action('wp4t_ballot_status_email','wp4t_ballot_status_email');
 function wp4t_ballot_status_email() {
-	toastmasters_member_votes(['ballot_status'=>true]);
+	// Reserved for future digest emails.
+	return;
+}
+
+function wptm_signed_votes_user_can_manage() {
+	return current_user_can( 'edit_others_pages' ) || current_user_can( 'edit_pages' );
+}
+
+function wptm_normalize_signed_ballot( $ballot_key, $ballot_data, $post_id ) {
+	if ( is_object( $ballot_data ) ) {
+		$ballot_data = (array) $ballot_data;
+	}
+	if ( ! is_array( $ballot_data ) ) {
+		$ballot_data = array();
+	}
+
+	$contestants = array();
+	if ( ! empty( $ballot_data['contestants'] ) && is_array( $ballot_data['contestants'] ) ) {
+		foreach ( $ballot_data['contestants'] as $contestant ) {
+			$contestant = sanitize_text_field( $contestant );
+			if ( '' !== trim( $contestant ) ) {
+				$contestants[] = $contestant;
+			}
+		}
+	}
+
+	$status = empty( $ballot_data['status'] ) ? 'draft' : sanitize_text_field( $ballot_data['status'] );
+	if ( ! in_array( $status, array( 'draft', 'publish', 'closed' ), true ) ) {
+		$status = 'draft';
+	}
+
+	return (object) array(
+		'key' => sanitize_text_field( $ballot_key ),
+		'status' => $status,
+		'contestants' => $contestants,
+		'new' => array(),
+		'deleted' => array(),
+		'signature_required' => true,
+		'ballot_post_id' => (int) $post_id,
+		'closed_on' => empty( $ballot_data['closed_on'] ) ? '' : sanitize_text_field( $ballot_data['closed_on'] ),
+	);
+}
+
+function wptm_get_signed_ballot_documents( $args = array() ) {
+	$defaults = array(
+		'include_closed' => true,
+		'post_id' => 0,
+	);
+	$args = wp_parse_args( $args, $defaults );
+
+	$query = array(
+		'post_type' => 'tmminutes',
+		'post_status' => array( 'publish', 'private', 'draft' ),
+		'numberposts' => -1,
+		'orderby' => 'date',
+		'order' => 'DESC',
+		'meta_key' => 'tm_ballot',
+	);
+	if ( ! empty( $args['post_id'] ) ) {
+		$query['include'] = array( (int) $args['post_id'] );
+	}
+
+	$posts = get_posts( $query );
+	$rows = array();
+	foreach ( $posts as $post ) {
+		$ballot_set = get_post_meta( $post->ID, 'tm_ballot', true );
+		if ( is_object( $ballot_set ) ) {
+			$ballot_set = (array) $ballot_set;
+		}
+		if ( ! is_array( $ballot_set ) ) {
+			continue;
+		}
+
+		foreach ( $ballot_set as $ballot_key => $ballot_data ) {
+			$normalized = wptm_normalize_signed_ballot( $ballot_key, $ballot_data, $post->ID );
+			if ( empty( $normalized->signature_required ) ) {
+				continue;
+			}
+			if ( ! $args['include_closed'] && ( 'closed' === $normalized->status ) ) {
+				continue;
+			}
+			$rows[] = array(
+				'post' => $post,
+				'ballot_key' => $normalized->key,
+				'ballot' => $normalized,
+			);
+		}
+	}
+
+	return $rows;
+}
+
+function wptm_collect_signed_ballot_votes( $ballot_post_id, $ballot_key, $contestants = array() ) {
+	global $wpdb;
+
+	$results = array();
+	foreach ( $contestants as $contestant ) {
+		$results[ $contestant ] = array(
+			'count' => 0,
+			'voters' => array(),
+		);
+	}
+
+	$like_key = $wpdb->esc_like( 'myvote_' . $ballot_key . '_' ) . '%';
+	$sql = $wpdb->prepare(
+		"SELECT meta_key, meta_value FROM $wpdb->postmeta WHERE post_id = %d AND meta_key LIKE %s ORDER BY meta_key, meta_value",
+		(int) $ballot_post_id,
+		$like_key
+	);
+	$rows = $wpdb->get_results( $sql );
+	if ( $rows ) {
+		foreach ( $rows as $row ) {
+			$choice = sanitize_text_field( $row->meta_value );
+			if ( '' === $choice ) {
+				continue;
+			}
+			if ( empty( $results[ $choice ] ) ) {
+				$results[ $choice ] = array(
+					'count' => 0,
+					'voters' => array(),
+				);
+			}
+
+			$identifier = substr( $row->meta_key, strlen( 'myvote_' . $ballot_key . '_' ) );
+			$voter_name = '';
+			if ( is_numeric( $identifier ) && (int) $identifier > 0 ) {
+				$voter_name = wp4t_get_member_name( (int) $identifier );
+			}
+			if ( empty( $voter_name ) ) {
+				$stored_signature = get_post_meta( $ballot_post_id, '_signedvote_' . $ballot_key . '_' . $identifier, true );
+				if ( ! empty( $stored_signature ) ) {
+					$voter_name = sanitize_text_field( $stored_signature );
+				}
+			}
+
+			$results[ $choice ]['count']++;
+			if ( ! empty( $voter_name ) ) {
+				$results[ $choice ]['voters'][] = $voter_name;
+			}
+		}
+	}
+
+	foreach ( $results as $choice => $line ) {
+		$results[ $choice ]['voters'] = array_values( array_unique( $line['voters'] ) );
+	}
+
+	$sorted = array( 'temp' => $results );
+	wptm_sort_contests_by_count_desc( $sorted );
+
+	return $sorted['temp'];
+}
+
+function wptm_signed_ballot_results_blocks( $post_id, $ballot_key, $ballot ) {
+	$contestvote = wptm_collect_signed_ballot_votes( $post_id, $ballot_key, $ballot->contestants );
+	$title = get_the_title( $post_id );
+	$output = sprintf(
+		"<!-- wp:heading {\"level\":3} -->\n<h3>Vote Results: %s</h3>\n<!-- /wp:heading -->\n",
+		esc_html( $title )
+	);
+
+	$total_votes = 0;
+	$first_name = '';
+	$first_score = null;
+	$ties = array();
+
+	foreach ( $contestvote as $choice => $line ) {
+		$count = isset( $line['count'] ) ? (int) $line['count'] : 0;
+		$voters = isset( $line['voters'] ) && is_array( $line['voters'] ) ? $line['voters'] : array();
+		$total_votes += $count;
+
+		if ( null === $first_score ) {
+			$first_score = $count;
+			$first_name = $choice;
+		} elseif ( $count === $first_score ) {
+			$ties[] = $choice;
+		}
+
+		$output .= sprintf(
+			"<!-- wp:paragraph -->\n<p>%s: %d%s</p>\n<!-- /wp:paragraph -->\n",
+			esc_html( $choice ),
+			$count,
+			empty( $voters ) ? '' : esc_html( ' votes from: ' . implode( ', ', $voters ) )
+		);
+	}
+
+	if ( '' !== $first_name ) {
+		$winner = $first_name;
+		if ( ! empty( $ties ) ) {
+			$winner .= ' (tie with ' . implode( ', ', $ties ) . ')';
+		}
+		$output .= sprintf(
+			"<!-- wp:paragraph -->\n<p>Winner: %s</p>\n<!-- /wp:paragraph -->\n",
+			esc_html( $winner )
+		);
+	}
+
+	$output .= sprintf(
+		"<!-- wp:paragraph -->\n<p>Total votes cast: %d</p>\n<!-- /wp:paragraph -->\n",
+		$total_votes
+	);
+
+	return $output;
 }
 
 function toastmasters_close_ballot($post_id) {
-	ob_start();
-	toastmasters_member_votes(['close_ballot'=>$post_id]);
-	ob_clean();
+	$post_id = (int) $post_id;
+	if ( ! $post_id ) {
+		return false;
+	}
+
+	$ballot_set = get_post_meta( $post_id, 'tm_ballot', true );
+	if ( is_object( $ballot_set ) ) {
+		$ballot_set = (array) $ballot_set;
+	}
+	if ( ! is_array( $ballot_set ) || empty( $ballot_set ) ) {
+		return false;
+	}
+
+	$updated = false;
+	$result_blocks = "<!-- wp:paragraph -->\n<p>Voting closed " . esc_html( current_time( 'mysql' ) ) . ".</p>\n<!-- /wp:paragraph -->\n";
+
+	foreach ( $ballot_set as $ballot_key => $ballot_data ) {
+		$ballot = wptm_normalize_signed_ballot( $ballot_key, $ballot_data, $post_id );
+		if ( 'closed' === $ballot->status ) {
+			continue;
+		}
+		$ballot->status = 'closed';
+		$ballot->closed_on = current_time( 'mysql' );
+		$ballot_set[ $ballot_key ] = $ballot;
+		$result_blocks .= wptm_signed_ballot_results_blocks( $post_id, $ballot_key, $ballot );
+		$updated = true;
+	}
+
+	if ( ! $updated ) {
+		return false;
+	}
+
+	update_post_meta( $post_id, 'tm_ballot', $ballot_set );
+	wp_update_post(
+		array(
+			'ID' => $post_id,
+			'post_content' => $result_blocks,
+		)
+	);
+
+	return true;
 }
 
 function toastmasters_member_votes ($args=[]) {
-echo '<h1>Function Disabled, needs to be updated</h1>';
-return;
+	if ( ! wptm_signed_votes_user_can_manage() ) {
+		echo '<div class="notice notice-error"><p>' . esc_html__( 'You do not have permission to manage signed ballots.', 'rsvpmaker-for-toastmasters' ) . '</p></div>';
+		return;
+	}
 
-	if(!is_array($args))
-		$args = [];
-	global $wpdb, $current_user;
-	$output = '';
-		if(isset($_POST['candidates'])) {
-		if ( empty($_POST['tm_setup_vote_nonce']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tm_setup_vote_nonce'])), 'tm_setup_vote') ) {
-			wp_die('nonce security error');
-		}
-		$candidates = explode("\n",$_POST['candidates']);
-		$names = [];
-		foreach($candidates as $name) {
-			$name = __('Admit Member','rsvpmaker-for-toastmasters') .': '.sanitize_text_field(stripslashes(trim($name)));
-			if(!empty($name))
-				$names[] = $name;
-		}
-		if(!empty($_POST['othervote']))
-			$names[] = sanitize_text_field(stripslashes($_POST['othervote']));
-		if(empty($names)) {
-			echo '<p>No votes submitted</p>';
-			printf('<p><a href="%s">Back to ballot setup</a></p>',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'));
-			return;
-		}
-		$new['post_title'] = 'Vote for: ' . implode(', ',$names);
-		$new['post_type'] = 'tmminutes';
-		$new['post_status'] = 'publish';
-		$new['post_content'] = sprintf('<!-- wp:paragraph -->
-<p>This is an open vote.</p>
-<!-- /wp:paragraph -->
+	if ( ! is_array( $args ) ) {
+		$args = array();
+	}
 
-<!-- wp:paragraph -->
-<p><a href="?meetingvote=1">Vote</a></p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph -->
-<p>Editors: <a href="%s">Check votes and close voting</a></p>
-<!-- /wp:paragraph -->',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'));
-		$post_id = wp_insert_post($new);
-		$ballot = [];
-		foreach($names as $name) {
-			$slug = $name;
-			$ballot[$slug] = (object) array(
-				'status' => 'publish',
-				'contestants' => [__('Yes','rsvpmaker-for-toastmasters'),__('No','rsvpmaker-for-toastmasters'),__('Abstain','rsvpmaker-for-toastmasters')],
-				'new' => [],
-				'deleted' => [],
-				'signature_required' => true,
-				'ballot_post_id' => $post_id,
-				'everyMeeting' => false,
-			);
+	if ( isset( $_POST['wptm_signed_ballot_action'] ) ) {
+		if ( empty( $_POST['wptm_signed_ballot_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wptm_signed_ballot_nonce'] ) ), 'wptm_signed_ballot_action' ) ) {
+			wp_die( 'nonce security error' );
 		}
-		update_post_meta($post_id,'tm_ballot',$ballot);
-		if(!empty($_POST['tm_ballot_status_emails'])) {
-			$emails = explode(',',stripslashes($_POST['tm_ballot_status_emails']));
-			$cleaned = [];
-			foreach($emails as $e) {
-				$e = sanitize_email(trim($e));
-				if(is_email($e))
-					$cleaned[] = $e;
+
+		$action = sanitize_text_field( wp_unslash( $_POST['wptm_signed_ballot_action'] ) );
+		if ( 'create' === $action ) {
+			$question = sanitize_text_field( wp_unslash( $_POST['question'] ?? '' ) );
+			$choices_raw = sanitize_textarea_field( wp_unslash( $_POST['choices'] ?? '' ) );
+			$choices = array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $choices_raw ) ) );
+			if ( empty( $choices ) ) {
+				$choices = array( __( 'Yes', 'rsvpmaker-for-toastmasters' ), __( 'No', 'rsvpmaker-for-toastmasters' ), __( 'Abstain', 'rsvpmaker-for-toastmasters' ) );
 			}
-			update_option('tm_ballot_status_emails',$cleaned);
-			if(isset($_GET['page']) && 'toastmasters_member_votes' == $_GET['page']) {
-				wp_unschedule_hook( 'wp4t_ballot_status_email'); //clear any that might be waiting
-				wp_schedule_event( time() + DAY_IN_SECONDS, 'daily', 'wp4t_ballot_status_email');
-			}
-		}
-		printf('<p>Created ballot post %d</p>',$post_id);
-	}
 
-	if(empty($args)) { //interactive mode, not chron
-	$ballot_status_emails = get_option('tm_ballot_status_emails');
-	if(empty($ballot_status_emails))
-		$ballot_status_emails = [$current_user->user_email];
-	printf('<form method="post" action="%s"><h3>Club Vote Setup</h3>
-	<p>Use this form to create a new ballot for new member votes and other club business. Members can vote using the Toastmost mobile app, the interactive ballot used for voting within meetings, or in response to an email prompt. Once you have gathered enough votes to meet quorum for a given set of questions, return to this page to close the voting.</p>
-	<p>For new member approval, enter names, one per line</p><p><textarea name="candidates" rows="3" cols="80"></textarea>
-	<p>Other vote (example: Budgetary issue)<br /><input type="text" name="othervote" style="width:800px"></p>
-	<p>To send ballot updates to site editors authorized to close the voting, enter emails, separated by commas.<br /><input type="text" name="tm_ballot_status_emails" value="%s" style="width:800px"></p>',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'),implode(',',$ballot_status_emails));
-	wp_nonce_field('tm_setup_vote','tm_setup_vote_nonce', true, true);
-	submit_button('Create Ballot');
-	echo '</form>';
-	}
+			if ( ! empty( $question ) ) {
+				$new_post_id = wp_insert_post(
+					array(
+						'post_type' => 'tmminutes',
+						'post_status' => 'publish',
+						'post_title' => 'Vote: ' . $question,
+						'post_content' => 'Vote in progress.',
+					)
+				);
 
-	$ballots = [];
-	$all_contests = [];
-	$have_voted = [];
-	$where = '';
-	$email_vote = [];
-	$totalvotes = [];
-	$email_check_vote = '';
-	if(isset($_GET['close_ballot']))
-		$args['close_ballot'] = intval($_GET['close_ballot']);
-
-	if(isset($args['close_ballot'])) {
-		$where = " AND p.ID = ".intval($args['close_ballot']);
-	}
-	$sql ="SELECT post_id, meta_key, meta_value FROM $wpdb->posts p JOIN $wpdb->postmeta m ON p.ID = m.post_id WHERE p.post_type='tmminutes' AND m.`meta_key` = 'tm_ballot' $where ORDER BY `meta_id` DESC";
-	echo $sql;
-	$results = $wpdb->get_results($sql);
-	foreach($results as $row) {
-		if(empty($email_vote[$row->post_id]))
-			$email_vote[$row->post_id] = '';
-		echo $prompt = sprintf('<h2>Ballot %s</h2><p><a target="_blank" href="%s">Interactive Ballot</a></p><p><a href="%s">Close Ballot</a></p>',get_the_title($row->post_id),get_permalink($row->post_id).'?meetingvote=1',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes&close_ballot='.$row->post_id));
-		$email_check_vote .= $prompt;
-
-		if('closed_tm_ballot'==$row->meta_value)
-			continue;
-		$ballot = unserialize($row->meta_value);
-			if(is_array($ballot)) {
-				foreach($ballot as $bkey => $bdata) {
-					$all_contests[] = $bkey;
-					$ballots[$bkey] = $bdata;
-					$email_vote[$row->post_id] .= sprintf('<h3>%s</h3>'."\n",$bkey);
-					foreach($bdata->contestants as $index => $contestant) {
-						$email_vote[$row->post_id] .= sprintf('<p><a href="%s">Vote %s</a></p>'."\n",add_query_arg(array('emailvote' => 'VOTINGID','key'=>'VOTINGKEY','ballot' => $bkey,'choice' => $contestant),get_permalink($row->post_id)),$contestant);
-						$votes[$bkey][$contestant]['count'] = 0;
-						$votes[$bkey][$contestant]['voters'] = [];
-					}
-					$sql = "SELECT * FROM $wpdb->postmeta where post_id=".$row->post_id." AND meta_key LIKE 'myvote_$bkey%' ORDER BY meta_key, meta_value";
-					$results = $wpdb->get_results($sql);
-					foreach($results as $row) {
-						$p = explode('_',$row->meta_key);
-						$identifier = $p[2];
-						if(isset($votes[$bkey][$row->meta_value]['count'])) {
-							$votes[$bkey][$row->meta_value]['count']++;
-							if(!isset($totalvotes[$bkey]))
-								$totalvotes[$bkey] = 0;
-							$totalvotes[$bkey]++;
-							$votes[$bkey][$row->meta_value]['voters'][] = $identifier;
-							$have_voted[$row->post_id][] = $identifier;
-						}			
+				if ( $new_post_id && ! is_wp_error( $new_post_id ) ) {
+					$ballot = array(
+						$question => (object) array(
+							'status' => 'publish',
+							'contestants' => $choices,
+							'new' => array(),
+							'deleted' => array(),
+							'signature_required' => true,
+							'ballot_post_id' => (int) $new_post_id,
+						),
+					);
+					update_post_meta( $new_post_id, 'tm_ballot', $ballot );
 				}
 			}
 		}
-	}
-		if(!empty($votes)) {
-		wptm_sort_contests_by_count_desc($votes);
-		$output .= '<!-- wp:heading -->
-<h2>Voting Results as of '.rsvpmaker_date('H:i:s',time()).'</h2>
-<!-- /wp:heading -->
-';
-		foreach($votes as $contest => $contestvote) {
-			$label = $contest;
-			$ranking[$contest] = sprintf('<!-- wp:heading {"level":3} -->
-<h3>Votes for %s</h3>
-<!-- /wp:heading -->
-',$label);
-			if(empty($contestvote))
-				$ranking[$contest] .= '<p>'.$contest.': none</p>';
-			else {
-				$i = 0;
-				$count = 0;
-				$last = 0;
-				foreach($contestvote as $name => $count_voters)
-				{
-					$count = $count_voters['count'];
-					$voters = $count_voters['voters'];
-					if(!$i && !$count) {
-						$winner[$contest] = $contest.': None';
-						continue;
-					}
-					elseif(empty($winner[$contest])) {
-						$winner[$contest] = sprintf('%s: %s',$label,$name);
-						$winner_score = $count;
-					}
-					if($i && ($count == $winner_score)) {
-						$winner[$contest] .= ' (tie with '.$name.')';
-					}
-					$signatures = [];
-					foreach($voters as $voter) {
-						//if(is_integer($voter) && $voter > 0)
-							$signatures[] = wp4t_get_member_name($voter);
-					}
-					$ranking[$contest] .= sprintf('<!-- wp:paragraph -->
-<p>%s: %s %s</p>
-<!-- /wp:paragraph -->
-',$name,$count,empty($signatures) ? '' : ' votes from: '.implode(', ',$signatures));
-					$i++;
+
+		if ( 'update' === $action ) {
+			$post_id = (int) ( $_POST['ballot_post_id'] ?? 0 );
+			$ballot_key = sanitize_text_field( wp_unslash( $_POST['ballot_key'] ?? '' ) );
+			$choices_raw = sanitize_textarea_field( wp_unslash( $_POST['choices'] ?? '' ) );
+			$choices = array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $choices_raw ) ) );
+			$ballot_set = get_post_meta( $post_id, 'tm_ballot', true );
+			if ( is_object( $ballot_set ) ) {
+				$ballot_set = (array) $ballot_set;
+			}
+			if ( is_array( $ballot_set ) && isset( $ballot_set[ $ballot_key ] ) ) {
+				$current = wptm_normalize_signed_ballot( $ballot_key, $ballot_set[ $ballot_key ], $post_id );
+				if ( 'closed' !== $current->status ) {
+					$current->contestants = empty( $choices ) ? $current->contestants : array_values( $choices );
+					$ballot_set[ $ballot_key ] = $current;
+					update_post_meta( $post_id, 'tm_ballot', $ballot_set );
 				}
 			}
-	}
-	foreach($winner as $w)
-		$output .= '<!-- wp:paragraph -->
-<p>'.$w.'</p>
-<!-- /wp:paragraph -->
-';
-	foreach($ranking as $r)
-		$output .= $r;
-	foreach($totalvotes as $contest => $count)
-		$output .= sprintf('<!-- wp:paragraph -->
-<p>'.$contest.' votes cast: %d</p>
-<!-- /wp:paragraph -->',$count);
-	echo $output;
-		if(isset($args['ballot_status']) || isset($_GET['ballot_status'])) {
-			$emails = get_option('tm_ballot_status_emails');
-			if(empty($emails) || !is_array($emails)) {
-				$output .= '<p>No ballot status emails configured ('.var_export($emails,true).'), using admin email</p>';
-				$emails = [get_bloginfo('admin_email')];
-			}
-			$mail['html'] = $output.$email_check_vote;
-			$mail['subject'] = 'Ballot Status Update: '.substr(implode(', ',$all_contests),0,100);
-			$mail['from'] = get_bloginfo('admin_email');
-			$mail['fromname'] = get_bloginfo('name');
-			foreach($emails as $e) {
-				$mail['to'] = $e;
-				rsvpmailer($mail);
-			}
-			echo '<p>Status update email sent to '.$mail['to'].'</p>';
-		}
-	}//!EMPTY VOTES
-	if(isset($args['close_ballot'])) {
-		$ballot_id = intval($args['close_ballot']);
-		if(!empty($output)) {
-			$new['post_content'] = $output;
-			$new['ID'] = $ballot_id;
-			wp_update_post($new);
-		}
-		$sql = "update $wpdb->postmeta set meta_key = 'closed_tm_ballot' where post_id = ".$ballot_id." AND meta_key = 'tm_ballot'";
-		$wpdb->query($sql);
-		$title = get_the_title($ballot_id);
-		printf('<p>Closed voting on %s <a href="%s">Edit</a> | <a href="%s">View</a></p>',$title,admin_url('post.php?post='.$ballot_id.'&action=edit'),get_permalink($ballot_id));
-	}
-
-	if(!empty($args))
-		return; //cron or api mode exit here
-
-	$clubname = get_bloginfo('name');
-	if(isset($_REQUEST['email_vote'])) {
-		if ( empty($_POST['tm_email_vote_nonce']) || ! wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tm_email_vote_nonce'])), 'tm_email_vote') ) {
-			wp_die('nonce security');
-		}
-		echo '<h2>Preparing Email Ballot</h2>';
-		echo '<p>Sending to members who have not yet voted:</p>';
-		$members = wp4t_get_club_members();
-		foreach($members as $member) {
-			if(in_array($member->ID,$have_voted))
-				continue;
-			$voting_key = get_user_meta($member->ID,'voting_key',true);
-			if(!$voting_key) {
-				$voting_key = wp_generate_password(20,false,false);
-				update_user_meta($member->ID,'voting_key',$voting_key);
-			}
-			$email_vote_content = '';
-			foreach($email_vote as $post_id => $v) {
-				if(empty($have_voted[$post_id]) || !in_array($member->ID,$have_voted[$post_id]))
-					$email_vote_content .= $v;
-			}
-			if(empty($email_vote_content))
-				continue;
-			$mail = [];
-			$mail['to'] = $member->user_email;
-			$mail['toname'] = $member->display_name;
-			$mail['from'] = $current_user->user_email;
-			$mail['fromname'] = $clubname;
-			$mail['subject'] = sanitize_text_field(wp_kses_stripslashes($_REQUEST['subject']));
-			$mail['html'] = '<p>From: '.$current_user->display_name.'<p>';
-			$mail['html'] .= ($_REQUEST['intro']) ? wpautop(wp_kses_post(stripslashes($_REQUEST['intro']))) : '';
-			$mail['html'] .= str_replace(['VOTINGID','VOTINGKEY'],[$member->ID,$voting_key],$email_vote_content);
-			if(user_can($member->ID,'edit_others_posts')) {
-				$mail['html'] .= '<hr><p>As an editor, you can also:</p>'.sprintf('<p><a href="%s">Check all votes</a></p>',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'));
-				$mail['html'] .= $email_check_vote;
-			}
-			echo '<p><strong>sending to: '.$mail['to'].'</strong></p>'.$mail['html'];
-			rsvpmailer($mail);
 		}
 
+		if ( 'close' === $action ) {
+			$post_id = (int) ( $_POST['ballot_post_id'] ?? 0 );
+			if ( $post_id ) {
+				toastmasters_close_ballot( $post_id );
+			}
+		}
 	}
-	else {
-	printf('<h2>Email Ballot</h2><form method="post" action="%s">',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'));
-	echo '<input type="hidden" name="email_vote" value="1">';
-	printf('<p><input type="text" name="subject" style="width: 600px" value="Club Vote: %s"></p>',$clubname);
-	printf('<div><textarea name="intro" class="mce" style="width: 600px" rows="3">%s</textarea></div>','Please cast your vote for the open issues listed below by clicking on your choices:');
-	submit_button('Send Email Ballot');
-	wp_nonce_field('tm_email_vote','tm_email_vote_nonce', true, true);
+
+	echo '<div class="wrap"><h1>' . esc_html__( 'Signed Member Votes', 'rsvpmaker-for-toastmasters' ) . '</h1>';
+	echo '<p>' . esc_html__( 'Create and manage signature-required ballots stored as Minutes documents.', 'rsvpmaker-for-toastmasters' ) . '</p>';
+
+	echo '<h2>' . esc_html__( 'Create New Signed Ballot', 'rsvpmaker-for-toastmasters' ) . '</h2>';
+	echo '<form method="post" action="' . esc_url( admin_url( 'edit.php?post_type=tmminutes&page=toastmasters_member_votes' ) ) . '">';
+	echo '<p><label>' . esc_html__( 'Question', 'rsvpmaker-for-toastmasters' ) . '<br><input type="text" name="question" style="width:600px" /></label></p>';
+	echo '<p><label>' . esc_html__( 'Choices (one per line)', 'rsvpmaker-for-toastmasters' ) . '<br><textarea name="choices" rows="5" cols="80">Yes' . "\n" . 'No' . "\n" . 'Abstain</textarea></label></p>';
+	echo '<input type="hidden" name="wptm_signed_ballot_action" value="create" />';
+	wp_nonce_field( 'wptm_signed_ballot_action', 'wptm_signed_ballot_nonce' );
+	submit_button( __( 'Create Signed Ballot', 'rsvpmaker-for-toastmasters' ) );
 	echo '</form>';
+
+	$open_rows = wptm_get_signed_ballot_documents( array( 'include_closed' => false ) );
+	$all_rows = wptm_get_signed_ballot_documents( array( 'include_closed' => true ) );
+	$closed_rows = array();
+	foreach ( $all_rows as $row ) {
+		if ( 'closed' === $row['ballot']->status ) {
+			$closed_rows[] = $row;
+		}
 	}
+
+	echo '<h2>' . esc_html__( 'Open Signed Ballots', 'rsvpmaker-for-toastmasters' ) . '</h2>';
+	if ( empty( $open_rows ) ) {
+		echo '<p>' . esc_html__( 'No open signed ballots.', 'rsvpmaker-for-toastmasters' ) . '</p>';
+	}
+	foreach ( $open_rows as $row ) {
+		$post = $row['post'];
+		$ballot_key = $row['ballot_key'];
+		$ballot = $row['ballot'];
+		echo '<div style="padding:10px;border:1px solid #ccd0d4;margin:10px 0;">';
+		echo '<h3>' . esc_html( get_the_title( $post->ID ) ) . '</h3>';
+		echo '<p><a href="' . esc_url( get_permalink( $post->ID ) . '?meetingvote=1' ) . '" target="_blank">' . esc_html__( 'Open Voting Link', 'rsvpmaker-for-toastmasters' ) . '</a> | <a href="' . esc_url( admin_url( 'post.php?post=' . (int) $post->ID . '&action=edit' ) ) . '">' . esc_html__( 'Edit Minutes Document', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
+
+		echo '<form method="post" action="' . esc_url( admin_url( 'edit.php?post_type=tmminutes&page=toastmasters_member_votes' ) ) . '">';
+		echo '<p><label>' . esc_html__( 'Choices (one per line)', 'rsvpmaker-for-toastmasters' ) . '<br><textarea name="choices" rows="5" cols="80">' . esc_textarea( implode( "\n", $ballot->contestants ) ) . '</textarea></label></p>';
+		echo '<input type="hidden" name="ballot_post_id" value="' . (int) $post->ID . '">';
+		echo '<input type="hidden" name="ballot_key" value="' . esc_attr( $ballot_key ) . '">';
+		echo '<input type="hidden" name="wptm_signed_ballot_action" value="update" />';
+		wp_nonce_field( 'wptm_signed_ballot_action', 'wptm_signed_ballot_nonce' );
+		submit_button( __( 'Update Choices', 'rsvpmaker-for-toastmasters' ), 'secondary', 'submit', false );
+		echo '</form>';
+
+		echo '<form method="post" action="' . esc_url( admin_url( 'edit.php?post_type=tmminutes&page=toastmasters_member_votes' ) ) . '" style="margin-top:10px;">';
+		echo '<input type="hidden" name="ballot_post_id" value="' . (int) $post->ID . '">';
+		echo '<input type="hidden" name="wptm_signed_ballot_action" value="close" />';
+		wp_nonce_field( 'wptm_signed_ballot_action', 'wptm_signed_ballot_nonce' );
+		submit_button( __( 'Close Voting', 'rsvpmaker-for-toastmasters' ), 'primary', 'submit', false );
+		echo '</form>';
+
+		echo wptm_signed_ballot_results_blocks( $post->ID, $ballot_key, $ballot );
+		echo '</div>';
+	}
+
+	echo '<h2>' . esc_html__( 'Closed Signed Ballots', 'rsvpmaker-for-toastmasters' ) . '</h2>';
+	if ( empty( $closed_rows ) ) {
+		echo '<p>' . esc_html__( 'No closed signed ballots yet.', 'rsvpmaker-for-toastmasters' ) . '</p>';
+	}
+	foreach ( $closed_rows as $row ) {
+		$post = $row['post'];
+		$ballot_key = $row['ballot_key'];
+		$ballot = $row['ballot'];
+		echo '<div style="padding:10px;border:1px solid #ccd0d4;margin:10px 0;background:#f6f7f7;">';
+		echo '<h3>' . esc_html( get_the_title( $post->ID ) ) . '</h3>';
+		echo '<p><a href="' . esc_url( get_permalink( $post->ID ) ) . '" target="_blank">' . esc_html__( 'View Minutes Document', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
+		echo '<p><strong>' . esc_html__( 'Status', 'rsvpmaker-for-toastmasters' ) . ':</strong> ' . esc_html__( 'Closed', 'rsvpmaker-for-toastmasters' ) . '</p>';
+		echo wptm_signed_ballot_results_blocks( $post->ID, $ballot_key, $ballot );
+		echo '</div>';
+	}
+
+	echo '</div>';
 }
-
 add_filter('the_content','wpt_vote_by_email',99);
 function wpt_vote_by_email($content) {
 	global $post, $wpdb;
