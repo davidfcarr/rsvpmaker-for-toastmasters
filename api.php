@@ -1205,16 +1205,16 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 
 				if($params->signature_required) {
 					$ballot_post_id = empty($params->ballot_post_id) ? 0 : (int) $params->ballot_post_id;
-					if(!$ballot_post_id || ($ballot_post_id === $post_id) || ('tmminutes' !== get_post_type($ballot_post_id))) {
-						if('publish' === $params->status) {
-							$ballot_post_id = wptm_api_create_signed_ballot_post($b, $post_id);
-						}
+					$needs_signed_ballot_document = !$ballot_post_id || ($ballot_post_id === $post_id) || ('tmminutes' !== get_post_type($ballot_post_id));
+					if($needs_signed_ballot_document) {
+						$ballot_post_id = wptm_api_create_signed_ballot_post($b, $post_id);
 					}
 					if($ballot_post_id) {
 						if(wptm_api_signed_ballot_is_closed($ballot_post_id,$b)) {
 							$params->status = 'closed';
 						}
 						$params->ballot_post_id = $ballot_post_id;
+						$meeting_ballot_array[$b] = $params;
 						update_post_meta($ballot_post_id,'wptm_signed_ballot_meeting_id',$post_id);
 						update_post_meta($ballot_post_id,'tm_ballot',array($b => $params));
 						wp_update_post(array(
