@@ -993,6 +993,51 @@ function wptm_api_get_signed_ballot_entries( $include_closed = true, $meeting_po
 	return $rows;
 }
 
+function wptm_api_assignment_names_for_role( $post_id, $role ) {
+	global $wpdb;
+	$post_id = (int) $post_id;
+	$role = sanitize_text_field( $role );
+	if ( ! $post_id || empty( $role ) ) {
+		return array();
+	}
+
+	$like = $wpdb->esc_like( '_role_' . $role . '_' ) . '%';
+	$sql = $wpdb->prepare(
+		"SELECT meta_value FROM $wpdb->postmeta WHERE post_id = %d AND meta_key LIKE %s",
+		$post_id,
+		$like
+	);
+	$results = $wpdb->get_results( $sql );
+	if ( ! is_array( $results ) || empty( $results ) ) {
+		return array();
+	}
+
+	$names = array();
+	foreach ( $results as $row ) {
+		if ( empty( $row->meta_value ) ) {
+			continue;
+		}
+		$value = $row->meta_value;
+		if ( is_numeric( $value ) ) {
+			$member_id = (int) $value;
+			if ( $member_id < 1 ) {
+				continue;
+			}
+			$value = wp4t_get_member_name( $member_id );
+		}
+		$value = sanitize_text_field( (string) $value );
+		if ( '' !== $value ) {
+			$names[] = $value;
+		}
+	}
+
+	if ( empty( $names ) ) {
+		return array();
+	}
+
+	return array_values( array_unique( $names ) );
+}
+
 class WPTM_Regular_Voting extends WP_REST_Controller {
 	public function register_routes() {
 		$namespace = 'rsvptm/v1';
@@ -1017,7 +1062,8 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		global $wpdb, $current_user;
 		$post_id = intval($request['post_id']);
 		$vote_counter_post_id = $post_id;
-		if ( 'tmminutes' === get_post_type( $post_id ) ) {
+		$post_type = get_post_type( $post_id );
+		if ( 'tmminutes' === $post_type ) {
 			$linked_meeting_id = (int) get_post_meta( $post_id, 'wptm_signed_ballot_meeting_id', true );
 			if ( $linked_meeting_id > 0 ) {
 				$vote_counter_post_id = $linked_meeting_id;
@@ -1264,10 +1310,10 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		}
 
 		$meeting_ballot = $safe_meeting_ballot;
+		$speaker_defaults = wptm_api_assignment_names_for_role( $post_id, 'Speaker' );
+		$evaluator_defaults = wptm_api_assignment_names_for_role( $post_id, 'Evaluator' );
+		$emptyballot = array('status'=>'draft','contestants'=>array(),'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id);
 		if ( empty( $meeting_ballot ) ) {
-			$speaker_defaults = array();
-			$evaluator_defaults = array();
-			$emptyballot = array('status'=>'draft','contestants'=>array(),'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id);
 			$meeting_ballot = array(
 				'Speaker' => array('status'=>'draft','contestants'=>$speaker_defaults,'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id),
 				'Evaluator' => array('status'=>'draft','contestants'=>$evaluator_defaults,'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id),
@@ -1286,6 +1332,12 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 					$meeting_ballot[$contest] = $emptyballot;
 				}
 			}
+		}
+		if ( ! isset( $meeting_ballot['Speaker'] ) || ! is_array( $meeting_ballot['Speaker'] ) ) {
+			$meeting_ballot['Speaker'] = array('status'=>'draft','contestants'=>$speaker_defaults,'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id);
+		}
+		if ( ! isset( $meeting_ballot['Evaluator'] ) || ! is_array( $meeting_ballot['Evaluator'] ) ) {
+			$meeting_ballot['Evaluator'] = array('status'=>'draft','contestants'=>$evaluator_defaults,'new'=>array(),'deleted'=>array(),'signature_required'=>false,'ballot_post_id'=>$post_id);
 		}
 
 		$votingdata['ballot'] = $meeting_ballot;
@@ -1312,6 +1364,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$bkey = $signed_row['ballot_key'];
 			$bdata = $signed_row['ballot'];
 			$votingdata['ballot'][$bkey] = $bdata;
+			$signed_ballot_link = add_query_arg('meetingvote',1,get_permalink($bdata->ballot_post_id));
 			if('publish' === $bdata->status && !in_array($bkey,$published_ballots)) {
 				$published_ballots[] = $bkey;
 			}
@@ -1320,6 +1373,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			}
 		}
 		$votingdata['published_ballots'] = $published_ballots;
+		$votingdata['signed_ballot_link'] = isset($signed_ballot_link) ? $signed_ballot_link : '';
 		update_post_meta($post_id,'published_ballots',$published_ballots);
 
 		if(isset($data) && isset($data->vote)) {
@@ -1694,8 +1748,29 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 		}
 		if(!empty($agendadata['blocksdata']))
 		foreach($agendadata['blocksdata'] as $index => $block) {
-			if(!empty($block['attrs']['custom_role']))
-				$agendadata['blocksdata'][$index]['attrs']['role'] = $block['attrs']['custom_role'];
+			if(!empty($block['attrs']['custom_role'])) {
+				$custom_role = $block['attrs']['custom_role'];
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$custom_role = wp4t_decode_editable_note_content( $custom_role );
+				}
+				$custom_role = sanitize_text_field( $custom_role );
+				$agendadata['blocksdata'][$index]['attrs']['custom_role'] = $custom_role;
+				$agendadata['blocksdata'][$index]['attrs']['role'] = $custom_role;
+			}
+			elseif(!empty($block['attrs']['role'])) {
+				$role_display = $block['attrs']['role'];
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$role_display = wp4t_decode_editable_note_content( $role_display );
+				}
+				$agendadata['blocksdata'][$index]['attrs']['role'] = sanitize_text_field( $role_display );
+			}
+			if(!empty($block['attrs']['editable'])) {
+				$editable_label = $block['attrs']['editable'];
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$editable_label = wp4t_decode_editable_note_content( $editable_label );
+				}
+				$agendadata['blocksdata'][$index]['attrs']['editable'] = sanitize_text_field( $editable_label );
+			}
 			$agendadata['blocksdata'][$index]['DnDid'] = 'dnd'.$index;
 			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid'])) {
 				$editable_meta = empty($all_assignments['agenda_note_'.$block['attrs']['uid']]) ? '' : $all_assignments['agenda_note_'.$block['attrs']['uid']];
@@ -1714,22 +1789,27 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 			}
 			elseif(isset($block['attrs']) && isset($block['attrs']['role']))
 				{
-					$agendadata['blocksdata'][$index]['memberoptions'] = wp4t_awe_rest_user_options($block['attrs']['role'],$post_id);
+					$raw_role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
+					$role = $raw_role;
+					if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+						$role = wp4t_decode_editable_note_content( $role );
+					}
+					$role = sanitize_text_field( $role );
+					$agendadata['blocksdata'][$index]['memberoptions'] = wp4t_awe_rest_user_options($raw_role,$post_id);
 					$agendadata['blocksdata'][$index]['assignments'] = [];
-					$role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
 					$trans  = translate($role,'rsvpmaker-for-toastmasters');
 					$agendadata['blocksdata'][$index]['attrs']['translated_role'] = ($trans != $role) ? $trans : '';
 					$count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
-					if('Speaker' == $role)
+					if('Speaker' == $raw_role)
 						wp4t_pack_speakers($count,$agendadata['post_id']);
-					$start = (isset($lastcount[$role])) ? $lastcount[$role] + 1 : 1;
+					$start = (isset($lastcount[$raw_role])) ? $lastcount[$raw_role] + 1 : 1;
 					$agendadata['blocksdata'][$index]['attrs']['start'] = $start;
-					$lastcount[$role] = (empty($lastcount[$role])) ? $count : + $count + $lastcount[$role];
+					$lastcount[$raw_role] = (empty($lastcount[$raw_role])) ? $count : + $count + $lastcount[$raw_role];
 					$backup = !empty($block['attrs']['backup']) ? 1 : 0;
 					$blanks = array();
 					for($i=$start; $i < ($count + $start); $i++)
 					{
-						$key = wp4t_fieldbase($role,$i);
+						$key = wp4t_fieldbase($raw_role,$i);
 						$assignment = array('post_id'=>$post_id);
 						//$assignment['ID'] = get_post_meta($post_id,$key, true);
 						$assignment['ID'] = empty($all_assignments[$key]) ? '' : $all_assignments[$key];
@@ -1745,7 +1825,7 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 						}							
 						else
 							$assignment['name'] = $assignment['ID'].' (guest)';
-						if($assignment['ID'] && ('Speaker' == $role)) {
+						if($assignment['ID'] && ('Speaker' == $raw_role)) {
 							$speakerdata = wp4t_extract_speaker_array($post_id, $key,$assignment['ID'],$all_assignments);
 							$project_key = ($speakerdata['project']) ? $speakerdata['project'] : '';
 							$speakerdata['evaluation_link'] = wp4t_evaluation_form_url( $assignment['ID'], $post_id );//add_query_arg('evalme',$current_user->ID,get_permalink())
@@ -1764,7 +1844,7 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 							}
 							$assignment['ID'] = 999999999999 + sizeof($democharacters);
 							$assignment['name'] = array_pop($democharacters);
-							if('Speaker' == $role) {
+							if('Speaker' == $raw_role) {
 								$assignment['manual'] = 'Dynamic Demos';
 								$assignment['project'] = 'Dynamic Demos 123';
 								$assignment['project_text'] = 'Dynamic Demos to Fill the Agenda';
@@ -1777,11 +1857,11 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 						$agendadata['blocksdata'][$index]['assignments'][] = $assignment;
 					}
 					if($backup) {
-						$key = wp4t_fieldbase('Backup '.$role,$start);
+						$key = wp4t_fieldbase('Backup '.$raw_role,$start);
 						$assignment = array();
 						$assignment['ID'] = intval( get_post_meta($agendadata['post_id'],$key, true) );
 						$assignment['name'] = ($assignment['ID']) ? wp4t_get_member_name($assignment['ID']) : '';
-						if($assignment['ID'] && ('Speaker' == $role)) {
+						if($assignment['ID'] && ('Speaker' == $raw_role)) {
 							$speakerdata = wp4t_get_speaker_array_by_field($key,$assignment['ID'],$agendadata['post_id']);
 							$assignment = array_merge($assignment,$speakerdata);
 						}
@@ -2357,16 +2437,21 @@ function wpt_get_mobile_agendadata($user_id = 0) {
         
         foreach($blocksdata as $block) {
             if(isset($block['attrs']) && isset($block['attrs']['role'])) {
-                $role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
+				$raw_role = (!empty($block['attrs']['custom_role'])) ? $block['attrs']['custom_role'] : $block['attrs']['role'];
+				$role = $raw_role;
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$role = wp4t_decode_editable_note_content( $role );
+				}
+				$role = sanitize_text_field( $role );
 				$guests = [];
                 $role_display = __($role, 'rsvpmaker-for-toastmasters');
                 $count = isset($block['attrs']['count']) ? $block['attrs']['count'] : 1;
-                $start = (isset($lastcount[$role])) ? $lastcount[$role] + 1 : 1;
-                $lastcount[$role] = $start + $count - 1;
+				$start = (isset($lastcount[$raw_role])) ? $lastcount[$raw_role] + 1 : 1;
+				$lastcount[$raw_role] = $start + $count - 1;
                 $backup = !empty($block['attrs']['backup']) ? 1 : 0;
                 
                 for($i = $start; $i < ($count + $start); $i++) {
-                    $key = wp4t_fieldbase($role, $i);
+					$key = wp4t_fieldbase($raw_role, $i);
                     $assignment = array('post_id' => $post_id, 'assignment_key' => $key, 'role' => $role, 'role_display' => $role_display);
                     
                     // Optimized: Reading from internal array
@@ -2386,7 +2471,7 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 						$guests[] = $assignment['ID'] . ' (guest)';
                     }
                     
-                    if($assignment['ID'] && ('Speaker' == $role)) {
+					if($assignment['ID'] && ('Speaker' == $raw_role)) {
                         $speakerdata = wp4t_get_speaker_array_by_field($key, $assignment['ID'], $post_id);
                         $project_key = ($speakerdata['project']) ? $speakerdata['project'] : '';
                         $speakerdata['evaluation_link'] = wp4t_evaluation_form_url($assignment['ID'], $post_id);
@@ -2396,14 +2481,14 @@ function wpt_get_mobile_agendadata($user_id = 0) {
                 }
         
                 if($backup) {
-                    $key = wp4t_fieldbase('Backup ' . $role, $start);
+					$key = wp4t_fieldbase('Backup ' . $raw_role, $start);
                     $assignment = array('post_id' => $post_id, 'assignment_key' => $key, 'role' => 'Backup ' . $role);
                     
                     // Optimized: Reading from internal array
                     $assignment['ID'] = intval($get_cached_meta_single($key));
                     $assignment['name'] = ($assignment['ID']) ? wp4t_get_member_name($assignment['ID']) : '';
                     
-                    if($assignment['ID'] && ('Speaker' == $role)) {
+					if($assignment['ID'] && ('Speaker' == $raw_role)) {
                         $speakerdata = wp4t_get_speaker_array_by_field($key, $assignment['ID'], $post_id);
                         $assignment = array_merge($assignment, $speakerdata);
                     }
@@ -2412,7 +2497,11 @@ function wpt_get_mobile_agendadata($user_id = 0) {
 
             }
             elseif('wp4toastmasters/agendaedit' == $block['blockName']) {
-                $editable['headline'] = $block['attrs']['editable'];
+				$editable_headline = empty($block['attrs']['editable']) ? '' : $block['attrs']['editable'];
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$editable_headline = wp4t_decode_editable_note_content( $editable_headline );
+				}
+				$editable['headline'] = sanitize_text_field( $editable_headline );
                 
                 // Optimized: Reading from internal array
                 $text = $get_cached_meta_single('agenda_note_' . $block['attrs']['uid']);

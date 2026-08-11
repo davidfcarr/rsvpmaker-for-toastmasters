@@ -54,7 +54,7 @@ function wpt_tmminutes_denial_message( $post = null ) {
 
 	$login = is_user_logged_in()
 		? ''
-		: sprintf( '<div id="member_only_login"><a href="%s">%s</a></div>', esc_url( site_url( '/wp-login.php?redirect_to=' . urlencode( get_permalink( $post ) ) ) ), esc_html__( 'Login to View', 'rsvpmaker-for-toastmasters' ) );
+		: sprintf( '<div id="member_only_login"><a href="%s">%s</a></div>', esc_url( site_url( '/wp-login.php?redirect_to=' . urlencode( add_query_arg( $_GET, get_permalink( $post ) ) ) ) ), isset($_GET['meetingvote']) ? esc_html__( 'Login to Vote', 'rsvpmaker-for-toastmasters' ) : esc_html__( 'Login to View', 'rsvpmaker-for-toastmasters' ) );
 
 	return '<div style="width: 100%; background-color: #ddd;">' . esc_html( $message ) . '</div>' . $login;
 }

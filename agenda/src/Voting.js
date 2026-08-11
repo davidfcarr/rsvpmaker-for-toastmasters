@@ -111,6 +111,7 @@ export default function Voting({post_id}) {
     const [newBallot,setNewBallot] = useState('');
     const [copied,setCopied] = useState(false);
     const [close,setClose] = useState(0);
+    const [explanation,setExplanation] = useState('Please vote using the link below. For subsequent votes, click "Refresh" if the ballot of choices is not displayed');
     const [savingVoteFor, setSavingVoteFor] = useState('');
     const [savingPublishFor, setSavingPublishFor] = useState('');
     const [addingBallot, setAddingBallot] = useState(false);
@@ -222,7 +223,7 @@ export default function Voting({post_id}) {
             <div>
             <p style={styles.h1}>{mytranslate('Vote Counter\'s Tool',votingdata)}: {mytranslate('Ballot Setup',votingdata)}</p>
             <div style={{display:'flex',flex:1,flexDirection:'row'}}>
-            {copied ? <button style={styles.button} ><span style={{color:'green',backgroundColor:'white',padding:'5px'}}>{mytranslate('Copied!',votingdata)}</span></button> : <CopyToClipboard text={mytranslate('Please vote using the link below. For subsequent votes, click "Refresh" if the ballot of choices is not displayed')+"\n\n"+votingdata.url} onCopy={() => {setCopied(true); setTimeout(() => {setCopied(false)},9000)}} >
+            {copied ? <button style={styles.button} ><span style={{color:'green',backgroundColor:'white',padding:'5px'}}>{mytranslate('Copied!',votingdata)}</span></button> : <CopyToClipboard text={explanation+"\n\n"+votingdata.url} onCopy={() => {setCopied(true); setTimeout(() => {setCopied(false)},9000)}} >
             <button style={styles.button}><span style={styles.buttonText}>{mytranslate('Copy Voting Link',votingdata)}</span></button>
             </CopyToClipboard>}
                 <button style={styles.button} onClick={() => {setControls('counting')}}><span style={styles.buttonText}>{mytranslate('Vote Count',votingdata)}</span></button> <button style={styles.button} onClick={() => {setControls('ballot')}}><span style={styles.buttonText}>Ballot</span></button> <button style={styles.button} onClick={() => {refetch()}}><span style={styles.buttonText}>Refresh</span></button>
@@ -255,8 +256,8 @@ export default function Voting({post_id}) {
                         </p>
                         {savingPublishFor === c ? <p style={{fontStyle:'italic'}}>{mytranslate('Saving ballot status...',votingdata)}</p> : null}
                         {closingBallot && canCloseSignedBallot ? <p style={{fontStyle:'italic'}}>{mytranslate('Saving closed ballot...',votingdata)}</p> : null}
-                        {copied ? <button style={styles.button} ><span style={{color:'green',backgroundColor:'white',padding:'5px'}}>{mytranslate('Copied!',votingdata)}</span></button> : <CopyToClipboard text={mytranslate('Please vote using the link below. For subsequent votes, click "Refresh" if the ballot of choices is not displayed')+"\n\n"+votingdata.url} onCopy={() => {setCopied(true); setTimeout(() => {setCopied(false)},9000)}} >
-                        <button style={styles.button}><span style={styles.buttonText}>{mytranslate('Copy Voting Link',votingdata)}</span></button>
+                        {copied ? <button style={styles.button} ><span style={{color:'green',backgroundColor:'white',padding:'5px'}}>{mytranslate('Copied!',votingdata)}</span></button> : <CopyToClipboard text={explanation+"\n\n"+(currentBallot.signature_required ? votingdata.signed_ballot_link : votingdata.url)} onCopy={() => {setCopied(true); setExplanation(''); setTimeout(() => {setCopied(false)},9000)}} >
+                        <button style={styles.button}><span style={styles.buttonText}>{(currentBallot.signature_required ? mytranslate('Copy Signed Ballot Link',votingdata) : mytranslate('Copy Voting Link',votingdata))}</span></button>
                         </CopyToClipboard>}
                         </div>
                         : (ballotIsClosed ? null :
