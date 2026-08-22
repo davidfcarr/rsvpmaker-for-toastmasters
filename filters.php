@@ -56,7 +56,7 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&word_agenda=1">' . __( 'Export to Word', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link     .= '<li><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&simple=1">' . __( 'Simple Copy and Paste', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link    .= '<li><a target="_blank" href="' . $permalink . 'scoring=dashboard">' . __( 'Contest Scoring Dashboard', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
-	$link    .= '<li><a target="_blank" href="' . $permalink . 'meetingvote=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li><a target="_blank" href="' . $permalink . 'mvote=1">' . __( "Vote Counter's Tool", 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 	$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'timer=1">' . __( 'Online Timer', 'rsvpmaker-for-toastmasters' ) . '</a></li></ul></li>';
 	$template_id = get_post_meta( $post->ID, '_meet_recur', true );
 	if ( current_user_can( $security['agenda_setup'] ) ) {
@@ -127,8 +127,149 @@ function wptmagenda_menu( $post_id, $frontend = true ) {
 	} elseif ( ! empty( $post_lock ) && strpos( $post_lock, 'admin' ) ) {
 		$link .= '<p style="margin: 10px; padding: 5px; border: thin dotted red;">Agenda is locked (except for administrator/manager/editor).</p>';
 	}
+$site = wp_parse_url( home_url( '/' ), PHP_URL_HOST );
+
+$timer_url = add_query_arg(
+    array( 'v' => '1', 'site' => $site ),
+    'https://speaking.app/tools/speech-timer/import/toastmost'
+);
+
+$counter_url = add_query_arg(
+    array( 'v' => '1', 'site' => $site ),
+    'https://speaking.app/tools/filler-counter/import/toastmost'
+);
+$link .= sprintf('<details><summary>Integration: speaking.app</summary><div style="border: thin solid gray; padding: 10px;"><p>Toastmost supports an <a href="https://speaking.app/integrations/toastmost" target="_blank" rel="noopener">integration</a> with speaking.app for additional tools that work with the agenda.</p><ul><li><a href="%s" target="_blank" rel="noopener">speaking.app Speech Timer</a></li><li><a href="%s" target="_blank" rel="noopener">speaking.app Ah-Counter</a></li></ul></details>',$timer_url,$counter_url);
+
 	return $link;
 }
+function wp4t_vuser_cookie_name() {
+	return 'wp4t_vuser';
+}
+
+function wp4t_vuser_cookie_sign( $user_id, $expires ) {
+	return hash_hmac( 'sha256', $user_id . '|' . $expires, wp_salt( 'auth' ) );
+}
+
+function wp4t_vuser_issue_cookie( $user_id, $ttl = 1800 ) {
+	$user_id = (int) $user_id;
+	if ( $user_id < 1 ) {
+		return;
+	}
+	$expires = time() + (int) $ttl;
+	$token   = $user_id . ':' . $expires . ':' . wp4t_vuser_cookie_sign( $user_id, $expires );
+	setcookie(
+		wp4t_vuser_cookie_name(),
+		$token,
+		$expires,
+		COOKIEPATH,
+		COOKIE_DOMAIN,
+		is_ssl(),
+		true
+	);
+	$_COOKIE[ wp4t_vuser_cookie_name() ] = $token;
+}
+
+function wp4t_vuser_clear_cookie() {
+	setcookie( wp4t_vuser_cookie_name(), '', time() - HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+	unset( $_COOKIE[ wp4t_vuser_cookie_name() ] );
+}
+
+function wp4t_vuser_user_from_cookie() {
+	if ( empty( $_COOKIE[ wp4t_vuser_cookie_name() ] ) ) {
+		return 0;
+	}
+	$parts = explode( ':', wp_unslash( $_COOKIE[ wp4t_vuser_cookie_name() ] ), 3 );
+	if ( 3 !== count( $parts ) ) {
+		return 0;
+	}
+	$user_id = (int) $parts[0];
+	$expires = (int) $parts[1];
+	$sig     = sanitize_text_field( $parts[2] );
+	if ( $user_id < 1 || $expires < time() ) {
+		return 0;
+	}
+	$expected = wp4t_vuser_cookie_sign( $user_id, $expires );
+	if ( ! hash_equals( $expected, $sig ) ) {
+		return 0;
+	}
+	return $user_id;
+}
+
+function wp4t_vuser_validate_url_code() {
+	if ( ! isset( $_GET['vuser'] ) || strpos( $_GET['vuser'], ':' ) === false ) {
+		return 0;
+	}
+	$parts   = explode( ':', wp_unslash( $_GET['vuser'] ), 2 );
+	$user_id = (int) $parts[0];
+	$code    = sanitize_text_field( $parts[1] );
+	$check   = (string) get_user_meta( $user_id, '_vuser_code', true );
+	if ( $user_id > 0 && ! empty( $check ) && hash_equals( $check, $code ) ) {
+		return $user_id;
+	}
+	return 0;
+}
+
+function wp4t_vuser_context_user_id( $expected_user_id = 0 ) {
+	global $post;
+	if ( empty( $post ) || 'tmminutes' !== $post->post_type ) {
+		return 0;
+	}
+	$user_id = wp4t_vuser_validate_url_code();
+	if ( ! $user_id ) {
+		return 0;
+	}
+	if ( $expected_user_id && (int) $expected_user_id !== (int) $user_id ) {
+		return 0;
+	}
+	return $user_id;
+}
+
+add_action( 'admin_init', function() {
+	$marker_user_id = wp4t_vuser_user_from_cookie();
+	if ( $marker_user_id && is_user_logged_in() && (int) get_current_user_id() === (int) $marker_user_id ) {
+		wp_logout();
+	}
+	if ( $marker_user_id || ! empty( $_COOKIE[ wp4t_vuser_cookie_name() ] ) ) {
+		wp4t_vuser_clear_cookie();
+	}
+}, 1 );
+
+add_action('wp', function() {
+	$marker_user_id = wp4t_vuser_user_from_cookie();
+
+	if ( is_user_logged_in() ) {
+		if ( ! $marker_user_id ) {
+			return;
+		}
+		if ( (int) get_current_user_id() !== (int) $marker_user_id || ! wp4t_vuser_context_user_id( $marker_user_id ) ) {
+			wp_logout();
+			wp4t_vuser_clear_cookie();
+		}
+		return;
+	}
+
+	if ( ! $marker_user_id && ! empty( $_COOKIE[ wp4t_vuser_cookie_name() ] ) ) {
+		wp4t_vuser_clear_cookie();
+	}
+
+	$user_id_from_url = wp4t_vuser_context_user_id();
+	if ( ! $user_id_from_url ) {
+		return;
+	}
+
+	wp_set_current_user( $user_id_from_url );
+	wp_set_auth_cookie( $user_id_from_url, false, is_ssl() );
+	wp4t_vuser_issue_cookie( $user_id_from_url );
+});
+
+add_filter('the_title', function($title) {
+	global $post;
+	if((isset($_GET['mvote']) || isset($_GET['meetingvote'])) && $post->post_type == 'tmminutes') {
+		$title = 'Member Vote';
+	}
+	return $title;
+});
+
 //wp4toastmasters_event_content
 add_filter( 'the_content', function ( $content ) {
 	//return var_export( $_GET, true ) . $content;
@@ -138,7 +279,7 @@ add_filter( 'the_content', function ( $content ) {
 	$promo = '';
 	if('rsvpmaker_template' == $post->post_type)
 		return '<div  id="react-agenda" '.wp4t_get_to_attributes().' post_id="'.$post_id.'">Loading ...</div>';
-	if(isset($_GET['meetingvote']) && $post->post_type == 'tmminutes') {
+	if((isset($_GET['mvote']) || isset($_GET['meetingvote'])) && $post->post_type == 'tmminutes') {
 		return '<div id="react-agenda" mode="meeting_vote" style="margin-bottom: 200px;" post_id="'.$post_id.'" >Loading ...</div>';
 	}
 	if ( ! strpos( $_SERVER['REQUEST_URI'], 'rsvpmaker' ) || is_admin() ) {
@@ -180,7 +321,7 @@ add_filter( 'the_content', function ( $content ) {
 		$link .= '<div  id="react-agenda" '.wp4t_get_to_attributes('evaluation').' post_id="'.$post_id.'" >Loading ...</div>';
 		return $link;
 	}
-	elseif(isset($_GET['meetingvote'])) {
+	elseif(isset($_GET['mvote']) || isset($_GET['meetingvote'])) {
 		if(wp4t_is_club_member())
 			$link .= '<div id="react-agenda" mode="voting" style="margin-bottom: 200px;" post_id="'.$post_id.'" >Loading ...</div>';
 		else
@@ -205,7 +346,7 @@ add_filter( 'the_content', function ( $content ) {
 			$link .= '<p>Visit the <a href="'.admin_url('admin.php?page=wp4t_enable_mobile').'">app setup page</a> from your phone or search the app store for "toastmost"</p>';
 			}
 		else {
-			$link .= '<p><a href="'.admin_url('admin.php?page=wp4t_enable_mobile').'">'. __( 'NEW: Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a> | <a href="?app_promo=1">'. __( 'Video Demo', 'rsvpmaker-for-toastmasters' ). '</a></p>';
+			$link .= '<p><a href="'.admin_url('admin.php?page=wp4t_enable_mobile').'">'. __( 'Try the Mobile App!', 'rsvpmaker-for-toastmasters' ). '</a> | <a href="?app_promo=1">'. __( 'Video Demo', 'rsvpmaker-for-toastmasters' ). '</a></p>';
 		}
 		if(function_exists('create_block_toastmasters_dynamic_agenda_block_init')) {
 			if(isset($_GET['revert_by_default']) && current_user_can('manage_options')) {

@@ -897,6 +897,7 @@ function wptm_api_create_signed_ballot_post( $question, $meeting_post_id = 0 ) {
 		array(
 			'post_type' => 'tmminutes',
 			'post_title' => wptm_api_signed_vote_minutes_title( $question ),
+			'post_name' => 'vote-' . time(),
 			'post_status' => 'publish',
 			'post_content' => 'Vote in progress.',
 		)
@@ -1062,11 +1063,13 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		global $wpdb, $current_user;
 		$post_id = intval($request['post_id']);
 		$vote_counter_post_id = $post_id;
+		$signed_ballot_meeting_post_id = $post_id;
 		$post_type = get_post_type( $post_id );
 		if ( 'tmminutes' === $post_type ) {
 			$linked_meeting_id = (int) get_post_meta( $post_id, 'wptm_signed_ballot_meeting_id', true );
 			if ( $linked_meeting_id > 0 ) {
 				$vote_counter_post_id = $linked_meeting_id;
+				$signed_ballot_meeting_post_id = $linked_meeting_id;
 			}
 		}
 		if(0 == $post_id) {
@@ -1074,6 +1077,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			if(sizeof($meetings))
 				$post_id = $meetings[0]->ID;
 			$vote_counter_post_id = $post_id;
+			$signed_ballot_meeting_post_id = $post_id;
 		}
 		$votingdata['published_ballots'] = get_post_meta($post_id,'published_ballots',true);
 		if(!is_array($votingdata['published_ballots']))
@@ -1120,8 +1124,9 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		$votingdata['current_user'] = $current_user_id;
 		$votingdata['current_user_name'] = $current_user_name;
 		$votingdata['post_id'] = $post_id;
-		$votingdata['url'] = add_query_arg('meetingvote',1,get_permalink($post_id));
-		$votingdata['login_url'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));
+		$votingdata['post_type'] = $post_type;
+		$votingdata['url'] = add_query_arg('mvote',1,get_permalink($post_id));
+		$votingdata['login_url'] = wp_login_url(add_query_arg('mvote',1,get_permalink($post_id)));
 		$votingdata['authorized_user'] = $authorized;
 		$votingdata['identifier'] = $identifier;
 		$votingdata['vote_counter'] = get_post_meta($vote_counter_post_id,'_role_Vote_Counter_1',true);
@@ -1137,9 +1142,10 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		}
 		$votingdata['can_manage_signed_ballots'] = $authorized ? user_can($authorized,'edit_others_pages') : false;
 		$votingdata['can_close_signed_ballots'] = !empty($votingdata['is_vote_counter']) || !empty($votingdata['can_manage_signed_ballots']);
+		$tracked_signed_ballots = array();
 
-		$votingdata['weblink'] = add_query_arg('meetingvote',1,get_permalink($post_id));
-		$votingdata['loginurl'] = wp_login_url(add_query_arg('meetingvote',1,get_permalink($post_id)));	
+		$votingdata['weblink'] = add_query_arg('mvote',1,get_permalink($post_id));
+		$votingdata['loginurl'] = wp_login_url(add_query_arg('mvote',1,get_permalink($post_id)));	
 		$trans = wpt_mobile_translations();
 		$votingdata['translations'] = ($trans && !empty($trans['translations'])) ? $trans['translations'] : array();
 		//$open = get_post_meta($post_id,'openvotes');
@@ -1161,7 +1167,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$mail['fromname'] = $auth_user->display_name;
 			$mail['subject'] = 'Voting link for '.get_bloginfo('name');
 			$mobile_link = site_url('?toastmost_app_redirect=Voting&domain='.$_SERVER['SERVER_NAME']);
-			$web_link = add_query_arg('meetingvote',1,get_permalink($post_id));
+			$web_link = add_query_arg('mvote',1,get_permalink($post_id));
 			$mail['html'] = sprintf('<p>To cast votes on the website, visit <a href="%s">%s</a></p>',$web_link,$web_link);
 			$mail['html'] .= sprintf('<p>If you have the Toastmost mobile app on your phone, this link should open the <a href="%s">Voting screen</a> of the app.</p>',$mobile_link);
 			if('all' == $data->email_link)
@@ -1189,6 +1195,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 		if(isset($data) && isset($data->ballot) && $authorized) {
 			$ballot_array = (array) $data->ballot;
 			$meeting_ballot_array = array();
+			$signed_ballot_keys = array();
 			$published_ballots = array();
 			foreach($ballot_array as $b => $params) {
 				if(!is_object($params)) {
@@ -1204,6 +1211,7 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				}
 
 				if($params->signature_required) {
+					$signed_ballot_keys[] = $b;
 					$ballot_post_id = empty($params->ballot_post_id) ? 0 : (int) $params->ballot_post_id;
 					$needs_signed_ballot_document = !$ballot_post_id || ($ballot_post_id === $post_id) || ('tmminutes' !== get_post_type($ballot_post_id));
 					if($needs_signed_ballot_document) {
@@ -1214,13 +1222,14 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 							$params->status = 'closed';
 						}
 						$params->ballot_post_id = $ballot_post_id;
-						$meeting_ballot_array[$b] = $params;
 						update_post_meta($ballot_post_id,'wptm_signed_ballot_meeting_id',$post_id);
 						update_post_meta($ballot_post_id,'tm_ballot',array($b => $params));
 						wp_update_post(array(
 							'ID' => $ballot_post_id,
 							'post_title' => wptm_api_signed_vote_minutes_title($b),
 						));
+						// Signed ballots should live only on their tmminutes post, not in the meeting tm_ballot.
+						unset($meeting_ballot_array[$b]);
 						if('publish' === $params->status && !in_array($b,$published_ballots)) {
 							$published_ballots[] = $b;
 						}
@@ -1232,6 +1241,11 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				$meeting_ballot_array[$b] = $params;
 				if('publish' === $params->status && !in_array($b,$published_ballots)) {
 					$published_ballots[] = $b;
+				}
+			}
+			if(!empty($signed_ballot_keys)) {
+				foreach($signed_ballot_keys as $signed_ballot_key) {
+					unset($meeting_ballot_array[$signed_ballot_key]);
 				}
 			}
 			update_post_meta($post_id,'tm_ballot',$meeting_ballot_array);
@@ -1342,13 +1356,23 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 
 		$votingdata['ballot'] = $meeting_ballot;
 		$published_ballots = array();
+		$results_ballot_targets = array();
 		foreach($meeting_ballot as $bkey => $bdata) {
 			$status = is_object($bdata) ? (empty($bdata->status) ? 'draft' : $bdata->status) : (empty($bdata['status']) ? 'draft' : $bdata['status']);
 			if('publish' === $status)
 				$published_ballots[] = $bkey;
+			if('publish' === $status) {
+				$results_target_key = (int) $post_id . '::' . $bkey;
+				$results_ballot_targets[ $results_target_key ] = array(
+					'contest_key' => sanitize_text_field( (string) $bkey ),
+					'ballot_post_id' => (int) $post_id,
+					'status' => 'publish',
+					'signature_required' => false,
+				);
+			}
 		}
 
-		$meeting_signed_ballots = wptm_api_get_signed_ballot_entries(true, $post_id);
+		$meeting_signed_ballots = wptm_api_get_signed_ballot_entries(true, $signed_ballot_meeting_post_id);
 		$global_open_signed_ballots = wptm_api_get_signed_ballot_entries(false, 0);
 		$signed_ballots = array();
 		$seen_signed_ballots = array();
@@ -1364,7 +1388,21 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 			$bkey = $signed_row['ballot_key'];
 			$bdata = $signed_row['ballot'];
 			$votingdata['ballot'][$bkey] = $bdata;
-			$signed_ballot_link = add_query_arg('meetingvote',1,get_permalink($bdata->ballot_post_id));
+			$signed_ballot_link = add_query_arg('mvote',1,get_permalink($bdata->ballot_post_id));
+			$signed_target_key = (int) $signed_row['post_id'] . '::' . $bkey;
+			$results_ballot_targets[ $signed_target_key ] = array(
+				'contest_key' => sanitize_text_field( (string) $bkey ),
+				'ballot_post_id' => (int) $signed_row['post_id'],
+				'status' => empty( $bdata->status ) ? 'draft' : sanitize_text_field( $bdata->status ),
+				'signature_required' => ! empty( $bdata->signature_required ),
+			);
+			$tracked_signed_ballots[ $signed_target_key ] = array(
+				'post_id' => (int) $signed_row['post_id'],
+				'post_title' => sanitize_text_field( (string) $signed_row['post_title'] ),
+				'ballot_key' => sanitize_text_field( (string) $bkey ),
+				'status' => empty( $bdata->status ) ? 'draft' : sanitize_text_field( $bdata->status ),
+				'link' => add_query_arg('mvote',1,get_permalink($signed_row['post_id'])),
+			);
 			if('publish' === $bdata->status && !in_array($bkey,$published_ballots)) {
 				$published_ballots[] = $bkey;
 			}
@@ -1372,6 +1410,38 @@ class WPTM_Regular_Voting extends WP_REST_Controller {
 				$votingdata['open_club_ballots'][] = array('value'=>$signed_row['post_id'],'label'=>$signed_row['post_title']);
 			}
 		}
+		if(!empty($tracked_signed_ballots)) {
+			$votingdata['tmminutes_signed_ballots'] = array_values($tracked_signed_ballots);
+			$votingdata['tmminutes_signed_ballot_post_ids'] = array_values(array_unique(array_map('intval',array_column($votingdata['tmminutes_signed_ballots'],'post_id'))));
+		}
+		else {
+			$votingdata['tmminutes_signed_ballots'] = array();
+			$votingdata['tmminutes_signed_ballot_post_ids'] = array();
+		}
+		$votingdata['recent_closed_signed_ballot_titles'] = array();
+		$recent_closed_signed_ballot_posts = array();
+		$all_signed_ballots = wptm_api_get_signed_ballot_entries( true, 0 );
+		foreach ( $all_signed_ballots as $signed_row ) {
+			$ballot_data = is_object( $signed_row['ballot'] ) ? (array) $signed_row['ballot'] : $signed_row['ballot'];
+			$status = empty( $ballot_data['status'] ) ? 'draft' : sanitize_text_field( $ballot_data['status'] );
+			if ( 'closed' !== $status || empty( $ballot_data['signature_required'] ) ) {
+				continue;
+			}
+			$post_id_key = (int) $signed_row['post_id'];
+			if ( isset( $recent_closed_signed_ballot_posts[ $post_id_key ] ) ) {
+				continue;
+			}
+			$title = sanitize_text_field( (string) $signed_row['post_title'] );
+			if ( '' === $title ) {
+				continue;
+			}
+			$recent_closed_signed_ballot_posts[ $post_id_key ] = true;
+			$votingdata['recent_closed_signed_ballot_titles'][] = $title;
+			if ( count( $votingdata['recent_closed_signed_ballot_titles'] ) >= 5 ) {
+				break;
+			}
+		}
+		$votingdata['results_ballot_targets'] = array_values($results_ballot_targets);
 		$votingdata['published_ballots'] = $published_ballots;
 		$votingdata['signed_ballot_link'] = isset($signed_ballot_link) ? $signed_ballot_link : '';
 		update_post_meta($post_id,'published_ballots',$published_ballots);
@@ -2081,7 +2151,7 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 		}
 		if(isset($data) && isset($data->sendBallot))
 		{
-			$votelink = add_query_arg('meetingvote','1',get_permalink($post_id));
+			$votelink = add_query_arg('mvote','1',get_permalink($post_id));
 			$mail['from'] = $current_user->user_email;
 			$mail['fromname'] = $current_user->display_name;
 			$mail['subject'] = 'Toastmasters voting link';

@@ -818,6 +818,7 @@ width: 150px;
 }
 </style>
 ';
+printf('<p>See also <a href="%s">%s</a> for voting in members.</p>',admin_url('edit.php?post_type=tmminutes&page=toastmasters_member_votes'),'Member Votes');
 	global $wpdb, $current_user;
 	if ( isset( $_POST['officer_signature'] ) ) {
 		if(!wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')))
@@ -919,7 +920,7 @@ width: 150px;
 	}
 	$emailopt = '';
 	$emails   = array();
-	$results  = $wpdb->get_results( 'SELECT ID, post_title, meta_value FROM ' . $wpdb->posts . ' JOIN ' . $wpdb->postmeta . ' on ' . $wpdb->posts . '.ID = ' . $wpdb->postmeta . '.post_id WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") AND meta_key="user_email" ORDER BY ID DESC' );
+	$results  = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->posts . ' JOIN ' . $wpdb->postmeta . ' on ' . $wpdb->posts . '.ID = ' . $wpdb->postmeta . '.post_id WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") AND post_modified > DATE_SUB(NOW(), INTERVAL 3 MONTH) AND meta_key="user_email" ORDER BY ID DESC ' );
 	if ( $results ) {
 		foreach ( $results as $row ) {
 			$p = explode( ': ', $row->post_title );
@@ -940,7 +941,7 @@ width: 150px;
 		}
 	}
 	$last    = '';
-	$results = $wpdb->get_results( 'SELECT ID, post_title, post_modified FROM ' . $wpdb->posts . ' WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") ORDER BY ID DESC' );
+	//$results = $wpdb->get_results( 'SELECT ID, post_title, post_modified FROM ' . $wpdb->posts . ' WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") ORDER BY ID DESC' );
 	if ( $results ) {
 		if ( ! empty( $emailopt ) ) {
 			printf( '<form method="post" action="%s"><p>%s <select name="add_account">%s</select> <button>%s</button></p>%s</form>', admin_url( 'admin.php?page=wp4t_member_application_approval' ), __( 'Create user account for', 'rsvpmaker-for-toastmasters' ), $emailopt, __( 'Add', 'rsvpmaker-for-toastmasters' ),rsvpmaker_nonce('return') );
@@ -1043,7 +1044,6 @@ label {
 }
 function wp4t_tm_application_menus() {
 	add_menu_page( 'Review/Approve Applications', 'Review/Approve Applications', 'edit_users', 'wp4t_member_application_approval', 'wp4t_member_application_approval' );
-	add_submenu_page( 'wp4t_member_application_approval', 'Add File or Link', 'Add File or Link', 'edit_users', 'wp4t_member_application_upload', 'wp4t_member_application_upload' );
 }
 add_action( 'admin_menu', 'wp4t_tm_application_menus' );
 add_shortcode('wp4t_dues_renewal','wp4t_dues_renewal');

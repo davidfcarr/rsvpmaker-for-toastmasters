@@ -54,7 +54,7 @@ function wpt_tmminutes_denial_message( $post = null ) {
 
 	$login = is_user_logged_in()
 		? ''
-		: sprintf( '<div id="member_only_login"><a href="%s">%s</a></div>', esc_url( site_url( '/wp-login.php?redirect_to=' . urlencode( add_query_arg( $_GET, get_permalink( $post ) ) ) ) ), isset($_GET['meetingvote']) ? esc_html__( 'Login to Vote', 'rsvpmaker-for-toastmasters' ) : esc_html__( 'Login to View', 'rsvpmaker-for-toastmasters' ) );
+		: sprintf( '<div id="member_only_login"><a href="%s">%s</a></div>', esc_url( site_url( '/wp-login.php?redirect_to=' . urlencode( add_query_arg( $_GET, get_permalink( $post ) ) ) ) ), (isset($_GET['mvote']) || isset($_GET['meetingvote'])) ? esc_html__( 'Login to Vote', 'rsvpmaker-for-toastmasters' ) : esc_html__( 'Login to View', 'rsvpmaker-for-toastmasters' ) );
 
 	return '<div style="width: 100%; background-color: #ddd;">' . esc_html( $message ) . '</div>' . $login;
 }
@@ -192,9 +192,9 @@ function wp4t_minutes_post_type() {
 
         'singular_name'         => _x( 'Minutes Item', 'Post type singular name', 'rsvpmaker-for-toastmasters' ),
 
-        'menu_name'             => _x( 'TM Minutes', 'Admin Menu text', 'rsvpmaker-for-toastmasters' ),
+        'menu_name'             => _x( 'TM Minutes & Records', 'Admin Menu text', 'rsvpmaker-for-toastmasters' ),
 
-        'name_admin_bar'        => _x( 'Minutes', 'Add New on Toolbar', 'rsvpmaker-for-toastmasters' ),
+        'name_admin_bar'        => _x( 'Minutes & Records', 'Add New on Toolbar', 'rsvpmaker-for-toastmasters' ),
 
         'add_new'               => __( 'Add New', 'rsvpmaker-for-toastmasters' ),
 
@@ -4755,7 +4755,7 @@ submit_button('Switch to District');
 
 	?>
 
-	 /> <?php _e( 'No, do not sent automated email from the website', 'rsvpmaker-for-toastmasters' ); ?>.</p>
+	 /> <?php _e( 'No, do not send automated email from the website', 'rsvpmaker-for-toastmasters' ); ?>.</p>
 
 <h3><?php _e( 'Sync With WP4Toastmasters.com', 'rsvpmaker-for-toastmasters' ); ?></h3>
 
@@ -8452,7 +8452,7 @@ if(!empty($args['voting_qr'])) {
 <p><strong>Digital Voting Tool: </strong>If the vote counter uses the digital voting tool, you can scan this QR Code with your phone to open the ballot.</p>
 <!-- /wp:paragraph -->
 
-<!-- wp:rsvpmaker/qr {"queryString":"?meetingvote=1"} /-->';
+<!-- wp:rsvpmaker/qr {"queryString":"?mvote=1"} /-->';
 }
 
 if(!empty($args['sidebar']))
@@ -9552,7 +9552,7 @@ function dash_wptmagenda_menu( $post_id, $rsvp_report = '' ) {
 
 	$link    .= '<li ><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 
-	$link    .= '<li ><a target="_blank" href="' . $permalink . '?meetingvote=1">' . __( 'NEW Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li ><a target="_blank" href="' . $permalink . '?mvote=1">' . __( 'NEW Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 
 	if($rsvp_report)
 

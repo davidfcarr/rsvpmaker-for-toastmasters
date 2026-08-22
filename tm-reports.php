@@ -53,15 +53,15 @@ function toastmasters_reports_menu() {
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), __( 'Import/Export', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmost_import_export', 'toastmost_import_export' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), __( 'Setup Wizard', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_setup_wizard', 'wp4t_setup_wizard' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), __( 'FreeToastHost Importer', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_fth_importer_docs', 'wp4t_fth_importer_docs' );
-
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), __( 'Activity Log', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmasters_activity_log', 'toastmasters_activity_log' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'Settings', 'rsvpmaker-for-toastmasters' ), __( 'Settings', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4toastmasters_settings', 'wp4toastmasters_settings' );
 	add_submenu_page( 'toastmasters_admin_screen', __( 'More', 'rsvpmaker-for-toastmasters' ), __( 'More', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'toastmost_more', 'toastmost_more' );	
 	add_menu_page( __( 'TM Help', 'rsvpmaker-for-toastmasters' ), __( 'TM Help', 'rsvpmaker-for-toastmasters' ),'edit_users', 'toastmasters_admin_help', 'toastmasters_admin_help', 'dashicons-editor-help', '2.05' );
 	add_submenu_page( 'toastmasters_admin_help', __( 'Todo List', 'rsvpmaker-for-toastmasters' ), __( 'Todo List', 'rsvpmaker-for-toastmasters' ), 'manage_options', 'wp4t_todolist_screen', 'wp4t_todolist_screen' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), __( 'Minutes from Meeting Records', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_meeting_minutes', 'toastmasters_meeting_minutes' );
-	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_member_votes', 'toastmasters_member_votes' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Templates', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_minutes_templates', 'toastmasters_minutes_templates' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Review/Approve Applications', 'rsvpmaker-for-toastmasters' ), __( 'Review/Approve Applications', 'rsvpmaker-for-toastmasters' ), 'edit_users', 'wp4t_member_application_approval', 'wp4t_member_application_approval' );
+	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), __( 'Member Votes', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_member_votes', 'toastmasters_member_votes' );
 	add_submenu_page( 'edit.php?post_type=tmminutes', __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), __( 'Minutes Help', 'rsvpmaker-for-toastmasters' ), 'edit_others_pages', 'toastmasters_minutes_help', 'toastmasters_minutes_help' );
 }
 
@@ -7056,6 +7056,7 @@ function wptm_collect_signed_ballot_votes( $ballot_post_id, $ballot_key, $contes
 		$results[ $contestant ] = array(
 			'count' => 0,
 			'voters' => array(),
+			'voter_ids' => array(),
 		);
 	}
 
@@ -7076,6 +7077,7 @@ function wptm_collect_signed_ballot_votes( $ballot_post_id, $ballot_key, $contes
 				$results[ $choice ] = array(
 					'count' => 0,
 					'voters' => array(),
+					'voter_ids' => array(),
 				);
 			}
 
@@ -7095,11 +7097,15 @@ function wptm_collect_signed_ballot_votes( $ballot_post_id, $ballot_key, $contes
 			if ( ! empty( $voter_name ) ) {
 				$results[ $choice ]['voters'][] = $voter_name;
 			}
+			if ( is_numeric( $identifier ) && (int) $identifier > 0 ) {
+				$results[ $choice ]['voter_ids'][] = (int) $identifier;
+			}
 		}
 	}
 
 	foreach ( $results as $choice => $line ) {
 		$results[ $choice ]['voters'] = array_values( array_unique( $line['voters'] ) );
+		$results[ $choice ]['voter_ids'] = array_values( array_unique( array_map( 'intval', $line['voter_ids'] ) ) );
 	}
 
 	$sorted = array( 'temp' => $results );
@@ -7110,11 +7116,14 @@ function wptm_collect_signed_ballot_votes( $ballot_post_id, $ballot_key, $contes
 
 function wptm_signed_ballot_results_blocks( $post_id, $ballot_key, $ballot ) {
 	$contestvote = wptm_collect_signed_ballot_votes( $post_id, $ballot_key, $ballot->contestants );
+	$quorum = get_option( 'tm_saved_quorum', ceil( count( wp4t_get_club_members() ) / 2 ) );
 	$title = get_the_title( $post_id );
 	$output = sprintf(
 		"<!-- wp:heading {\"level\":3} -->\n<h3>Vote Results: %s</h3>\n<!-- /wp:heading -->\n",
 		esc_html( $title )
 	);
+
+	$members = wp4t_get_club_members();
 
 	$total_votes = 0;
 	$first_name = '';
@@ -7133,6 +7142,7 @@ function wptm_signed_ballot_results_blocks( $post_id, $ballot_key, $ballot ) {
 			$ties[] = $choice;
 		}
 
+		sort($voters);
 		$output .= sprintf(
 			"<!-- wp:paragraph -->\n<p>%s: %d%s</p>\n<!-- /wp:paragraph -->\n",
 			esc_html( $choice ),
@@ -7153,8 +7163,37 @@ function wptm_signed_ballot_results_blocks( $post_id, $ballot_key, $ballot ) {
 	}
 
 	$output .= sprintf(
-		"<!-- wp:paragraph -->\n<p>Total votes cast: %d</p>\n<!-- /wp:paragraph -->\n",
-		$total_votes
+		"<!-- wp:paragraph -->\n<p>Total votes cast: %d, Quorum required: %d</p>\n<!-- /wp:paragraph -->\n",
+		$total_votes,
+		$quorum
+	);
+
+	$voted_ids = array();
+	foreach ( $contestvote as $line ) {
+		if ( ! empty( $line['voter_ids'] ) && is_array( $line['voter_ids'] ) ) {
+			$voted_ids = array_merge( $voted_ids, array_map( 'intval', $line['voter_ids'] ) );
+		}
+	}
+	$voted_ids = array_values( array_unique( $voted_ids ) );
+
+	$not_voted = array();
+	foreach ( $members as $member ) {
+		if ( empty( $member->ID ) ) {
+			continue;
+		}
+		if ( in_array( (int) $member->ID, $voted_ids, true ) ) {
+			continue;
+		}
+		$not_voted[] = sanitize_text_field( $member->display_name );
+	}
+
+	$output .= sprintf(
+		"<!-- wp:heading {\"level\":4} -->\n<h4>Not Yet Voted (May Include Inactive Members) %d</h4>\n<!-- /wp:heading -->\n",
+		count( $not_voted )
+	);
+	$output .= sprintf(
+		"<!-- wp:paragraph -->\n<p>%s</p>\n<!-- /wp:paragraph -->\n",
+		empty( $not_voted ) ? esc_html__( 'All eligible members have voted.', 'rsvpmaker-for-toastmasters' ) : esc_html( implode( ', ', $not_voted ) )
 	);
 
 	return $output;
@@ -7204,7 +7243,21 @@ function toastmasters_close_ballot($post_id) {
 	return true;
 }
 
+function wp4t_get_vuser_code($user_id = 0) {
+	$check = '';
+	if($user_id){
+		$check = (string) get_user_meta( $user_id, '_vuser_code', true );
+		if(empty($check)){
+			$check = wp_generate_password( 12, false );
+			update_user_meta( $user_id, '_vuser_code', $check );
+		}
+	}
+	return $check;
+}
+
 function toastmasters_member_votes ($args=[]) {
+	$current_user = wp_get_current_user();
+	global $wpdb;
 	if ( ! wptm_signed_votes_user_can_manage() ) {
 		echo '<div class="notice notice-error"><p>' . esc_html__( 'You do not have permission to manage signed ballots.', 'rsvpmaker-for-toastmasters' ) . '</p></div>';
 		return;
@@ -7220,6 +7273,9 @@ function toastmasters_member_votes ($args=[]) {
 		}
 
 		$action = sanitize_text_field( wp_unslash( $_POST['wptm_signed_ballot_action'] ) );
+		if(!empty($_POST['quorum']))
+		update_option( 'tm_saved_quorum', intval($_POST['quorum']) );
+
 		if ( 'create' === $action ) {
 			$question = sanitize_text_field( wp_unslash( $_POST['question'] ?? '' ) );
 			$choices_raw = sanitize_textarea_field( wp_unslash( $_POST['choices'] ?? '' ) );
@@ -7234,6 +7290,7 @@ function toastmasters_member_votes ($args=[]) {
 						'post_type' => 'tmminutes',
 						'post_status' => 'publish',
 						'post_title' => 'Vote: ' . $question,
+						'post_name' => sanitize_title( 'vote-' . time() ),
 						'post_content' => 'Vote in progress.',
 					)
 				);
@@ -7280,15 +7337,39 @@ function toastmasters_member_votes ($args=[]) {
 			}
 		}
 	}
+	$members = wp4t_get_club_members();
+	$calculated_quorum = ceil( count( $members ) / 2 );
+	$saved_quorum = get_option( 'tm_saved_quorum', $calculated_quorum );
 
 	echo '<div class="wrap"><h1>' . esc_html__( 'Signed Member Votes', 'rsvpmaker-for-toastmasters' ) . '</h1>';
 	echo '<p>' . esc_html__( 'Create and manage signature-required ballots stored as Minutes documents.', 'rsvpmaker-for-toastmasters' ) . '</p>';
 
+	$voteopt = '<option value="">Enter question below or select new member</option>';
+	$results  = $wpdb->get_results( 'SELECT ID, post_title, meta_value FROM ' . $wpdb->posts . ' JOIN ' . $wpdb->postmeta . ' on ' . $wpdb->posts . '.ID = ' . $wpdb->postmeta . '.post_id WHERE post_status="private" AND (post_type="tmapplication" OR post_type="tmminutes") AND meta_key="user_email" ORDER BY ID DESC LIMIT 0, 10' );
+	if ( $results ) {
+		foreach ( $results as $row ) {
+			$p = explode( ': ', $row->post_title );
+			if ( empty( $p[1] ) ) {
+				continue;
+			}
+			$name  = 'Approve New Member: '.$p[1];
+			$voteopt .= sprintf( '<option value="%s">%s</option>', $name, $name );
+		}
+	}
+
 	echo '<h2>' . esc_html__( 'Create New Signed Ballot', 'rsvpmaker-for-toastmasters' ) . '</h2>';
 	echo '<form method="post" action="' . esc_url( admin_url( 'edit.php?post_type=tmminutes&page=toastmasters_member_votes' ) ) . '">';
-	echo '<p><label>' . esc_html__( 'Question', 'rsvpmaker-for-toastmasters' ) . '<br><input type="text" name="question" style="width:600px" /></label></p>';
+	echo '<p><label>' . esc_html__( 'Question', 'rsvpmaker-for-toastmasters' ) . '</label></p>';
+	echo '<p><select name="vote_option" id="vote_option">' . $voteopt . '</select></p>';
+	echo '<script>
+	document.getElementById("vote_option").addEventListener("change", function() {
+		document.getElementById("question").value = this.value;
+	});
+	</script>';
+	echo '<p><input type="text" id="question" name="question" style="width:600px" /></p>';
 	echo '<p><label>' . esc_html__( 'Choices (one per line)', 'rsvpmaker-for-toastmasters' ) . '<br><textarea name="choices" rows="5" cols="80">Yes' . "\n" . 'No' . "\n" . 'Abstain</textarea></label></p>';
 	echo '<input type="hidden" name="wptm_signed_ballot_action" value="create" />';
+	echo '<p><label>' . esc_html__( 'Quorum Required', 'rsvpmaker-for-toastmasters' ) . '</label></p><p><input type="number" name="quorum" value="' . esc_attr( $saved_quorum ) . '" /><br /><em>' . esc_html__( 'Based on number of club member user accounts: ', 'rsvpmaker-for-toastmasters' ) .$calculated_quorum. '</em></p>';
 	wp_nonce_field( 'wptm_signed_ballot_action', 'wptm_signed_ballot_nonce' );
 	submit_button( __( 'Create Signed Ballot', 'rsvpmaker-for-toastmasters' ) );
 	echo '</form>';
@@ -7306,13 +7387,19 @@ function toastmasters_member_votes ($args=[]) {
 	if ( empty( $open_rows ) ) {
 		echo '<p>' . esc_html__( 'No open signed ballots.', 'rsvpmaker-for-toastmasters' ) . '</p>';
 	}
+	$email_ballot = 0;
+	$ballot_names = [];
 	foreach ( $open_rows as $row ) {
 		$post = $row['post'];
+		if(empty($email_ballot))
+			$email_ballot = $post->ID;
 		$ballot_key = $row['ballot_key'];
 		$ballot = $row['ballot'];
 		echo '<div style="padding:10px;border:1px solid #ccd0d4;margin:10px 0;">';
-		echo '<h3>' . esc_html( get_the_title( $post->ID ) ) . '</h3>';
-		echo '<p><a href="' . esc_url( get_permalink( $post->ID ) . '?meetingvote=1' ) . '" target="_blank">' . esc_html__( 'Open Voting Link', 'rsvpmaker-for-toastmasters' ) . '</a> | <a href="' . esc_url( admin_url( 'post.php?post=' . (int) $post->ID . '&action=edit' ) ) . '">' . esc_html__( 'Edit Minutes Document', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
+		$title = get_the_title( $post->ID );
+		$ballot_names[] = trim(str_replace('Vote:','',$title));
+		echo '<h3>' . esc_html( $title ) . '</h3>';
+		echo '<p><a href="' . esc_url( get_permalink( $post->ID ) . '?mvote=1' ) . '" target="_blank">' . esc_html__( 'Open Voting Link', 'rsvpmaker-for-toastmasters' ) . '</a> | <a href="' . esc_url( admin_url( 'post.php?post=' . (int) $post->ID . '&action=edit' ) ) . '">' . esc_html__( 'Edit Minutes Document', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'edit.php?post_type=tmminutes&page=toastmasters_member_votes' ) ) . '">';
 		echo '<p><label>' . esc_html__( 'Choices (one per line)', 'rsvpmaker-for-toastmasters' ) . '<br><textarea name="choices" rows="5" cols="80">' . esc_textarea( implode( "\n", $ballot->contestants ) ) . '</textarea></label></p>';
@@ -7348,6 +7435,38 @@ function toastmasters_member_votes ($args=[]) {
 		echo '<p><strong>' . esc_html__( 'Status', 'rsvpmaker-for-toastmasters' ) . ':</strong> ' . esc_html__( 'Closed', 'rsvpmaker-for-toastmasters' ) . '</p>';
 		echo wptm_signed_ballot_results_blocks( $post->ID, $ballot_key, $ballot );
 		echo '</div>';
+	}
+
+	if($email_ballot) {
+		echo '<h2 id="email-ballots">' . esc_html__( 'Email Ballots', 'rsvpmaker-for-toastmasters' ) . '</h2>';
+		$permalink = get_permalink( $email_ballot );
+		$note = isset($_POST['note']) ? sanitize_text_field(wp_unslash($_POST['note'])) : '';
+		$subject = isset($_POST['subject']) ? sanitize_text_field(wp_unslash($_POST['subject'])) : '';
+		foreach($members as $member) {
+		$code = wp4t_get_vuser_code($member->ID);
+		$permalink = add_query_arg(array('mvote'=>$member->ID,'vuser'=>$member->ID.':'.$code),$permalink);
+		$ballot = '<p><a href="' . esc_url( $permalink ) . '" target="_blank"><strong>' . esc_html__( 'Ballot for', 'rsvpmaker-for-toastmasters' ) . ': ' . esc_html( $member->display_name ) . '</strong> ' . esc_url( $permalink ) . '</a></p>';
+		echo $ballot;
+		if(isset($_POST['email_ballots'])) {
+			// code to handle emailing the ballot
+			$mail['from'] = $current_user->user_email;
+			$mail['fromname'] = $current_user->display_name;
+			$mail['to'] = $member->user_email;
+			$mail['subject'] = $subject;
+			$mail['html'] = '<p>' . esc_html( $note ) . '</p><p>Click the link below to vote:</p>'.$ballot;
+			$sent = rsvpmailer($mail);
+			if($sent) {
+				echo '<p>Email sent to ' . esc_html( $member->display_name ) . '</p>';
+			} else {
+				echo '<p>Failed to send email to ' . esc_html( $member->display_name ) . '</p>';
+			}
+		}
+		}
+		echo '<form method="post" action="' . esc_url( admin_url( 'edit.php?post_type=tmminutes&page=toastmasters_member_votes#email-ballots' ) ) . '"><input type="hidden" name="email_ballots" value="' . esc_attr( $email_ballot ) . '">';
+		echo '<p>Subject:<br /><input style="width: 95%;" type="text" name="subject" value="' . esc_attr( isset($_POST['subject']) ? $_POST['subject'] : 'Please vote: ' . implode(', ', $ballot_names) ) . '" >';
+		echo '<p>Note:<br /><textarea name="note" style="width: 95%;">' . esc_html( isset($_POST['note']) ? $_POST['note'] : '' ) . '</textarea></p>';
+		submit_button( __( 'Email Ballots', 'rsvpmaker-for-toastmasters' ), 'secondary', 'submit', false );
+		echo '</form>';
 	}
 
 	echo '</div>';

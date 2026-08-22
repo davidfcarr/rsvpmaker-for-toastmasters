@@ -93,7 +93,7 @@ dialog::backdrop {
 <?php
 if(isset($_GET['show_voting_qr'])) {
 	echo rsvpmaker_qr([
-		'url' => get_permalink().'?meetingvote=1',
+		'url' => get_permalink().'?mvote=1',
 		'pixel' => 20,
 	]);
 }

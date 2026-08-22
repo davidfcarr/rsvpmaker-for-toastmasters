@@ -2346,11 +2346,10 @@ function wp4t_emails() {
 
 }
 
-
-
 function wp4t_is_club_member($user_id = 0) {
 
-
+	if(current_user_can('manage_network'))
+		return true;
 
 	global $current_user;
 
@@ -3942,11 +3941,44 @@ function wptm_count_votes($post_id, $votingdata) {
 	global $wpdb;
 
 	$output = '';
+	$ballot_targets = array();
 
-	foreach($votingdata['published_ballots'] as $bkey) {
-		$ballot = $votingdata['ballot'][$bkey] ?? null;
+	if ( ! empty( $votingdata['results_ballot_targets'] ) && is_array( $votingdata['results_ballot_targets'] ) ) {
+		foreach ( $votingdata['results_ballot_targets'] as $target ) {
+			if ( is_object( $target ) ) {
+				$target = (array) $target;
+			}
+			if ( ! is_array( $target ) || empty( $target['contest_key'] ) || empty( $target['ballot_post_id'] ) ) {
+				continue;
+			}
+			$contest_key = sanitize_text_field( (string) $target['contest_key'] );
+			$ballot_post_id = (int) $target['ballot_post_id'];
+			if ( '' === $contest_key || $ballot_post_id < 1 ) {
+				continue;
+			}
+			$target_key = $ballot_post_id . '::' . $contest_key;
+			$ballot_targets[ $target_key ] = array(
+				'contest_key' => $contest_key,
+				'ballot_post_id' => $ballot_post_id,
+			);
+		}
+	}
 
-		$pid = (isset($ballot->ballot_post_id)) ? $ballot->ballot_post_id : $votingdata["post_id"];
+	if ( empty( $ballot_targets ) ) {
+		foreach ( $votingdata['published_ballots'] as $bkey ) {
+			$ballot = $votingdata['ballot'][ $bkey ] ?? null;
+			$pid = ( isset( $ballot->ballot_post_id ) ) ? $ballot->ballot_post_id : $votingdata['post_id'];
+			$target_key = (int) $pid . '::' . sanitize_text_field( (string) $bkey );
+			$ballot_targets[ $target_key ] = array(
+				'contest_key' => sanitize_text_field( (string) $bkey ),
+				'ballot_post_id' => (int) $pid,
+			);
+		}
+	}
+
+	foreach($ballot_targets as $target) {
+		$bkey = $target['contest_key'];
+		$pid = (int) $target['ballot_post_id'];
 		$vote_like = $wpdb->esc_like( 'myvote_' . $bkey . '_' ) . '%';
 		$sql = $wpdb->prepare(
 			"SELECT * FROM $wpdb->postmeta WHERE post_id = %d AND meta_key LIKE %s ORDER BY meta_key, meta_value",
@@ -4044,10 +4076,22 @@ function wptm_count_votes($post_id, $votingdata) {
 	if(!empty($votingdata['votes'])) {
 
 		wptm_sort_contests_by_count_desc($votingdata['votes']);
+		$results_contests = array();
+		if ( ! empty( $ballot_targets ) ) {
+			foreach ( $ballot_targets as $target ) {
+				$contest_key = $target['contest_key'];
+				if ( ! in_array( $contest_key, $results_contests, true ) ) {
+					$results_contests[] = $contest_key;
+				}
+			}
+		}
+		if ( empty( $results_contests ) ) {
+			$results_contests = $votingdata['published_ballots'];
+		}
 
 		$output .= '<div id="votingresults"><h2>Voting Results as of '.rsvpmaker_date('H:i:s',time()).'</h2>';
 
-		foreach($votingdata['published_ballots'] as $contest) {
+		foreach($results_contests as $contest) {
 			$contestvote = $votingdata['votes'][$contest] ?? array();
 			$contest_ballot = $votingdata['ballot'][$contest] ?? null;
 			$show_voter_names = ! empty( $contest_ballot ) && ! empty( $contest_ballot->signature_required );

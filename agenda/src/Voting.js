@@ -370,7 +370,8 @@ export default function Voting({post_id}) {
                     </div>)
                 }
             )}
-            {!votingdata.is_vote_counter && !openBallots ? 
+            {'tmminutes' == votingdata.post_type && votingdata.recent_closed_signed_ballot_titles.length ? <div><h3>Voting Closed</h3>{votingdata.recent_closed_signed_ballot_titles.map((title,index) => <p key={'closed'+index}>{title}</p>)}</div> : null }
+            {!votingdata.is_vote_counter && 'rsvpmaker' == votingdata.post_type && !openBallots ? 
             <div><p>Current vote counter: "{votingdata.vote_counter_name}." No ballots have been created yet.</p>
             {!votingdata.vote_counter_logged_in ? <div>
                 <p style={styles.h2}>Assume the role of Vote Counter?</p>
