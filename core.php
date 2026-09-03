@@ -1728,25 +1728,21 @@ function wp4t_decode_editable_note_content( $content ) {
 
 	}
 
-	$replacements = array(
-		'\\u003c' => '<',
-		'\\u003e' => '>',
-		'\\u0026' => '&',
-		'\\u0022' => '"',
-		"\\u0027" => "'",
-		'\\u000a' => "\n",
-		'\\u000d' => "\r",
-		'u003c' => '<',
-		'u003e' => '>',
-		'u0026' => '&',
-		'u0022' => '"',
-		"u0027" => "'",
-		'u000a' => "\n",
-		'u000d' => "\r",
-	);
+	$decode_unicode = static function ( $matches ) {
+		$hex = isset( $matches[1] ) ? $matches[1] : '';
+		if ( ! preg_match( '/^[0-9a-fA-F]{4}$/', $hex ) ) {
+			return $matches[0];
+		}
 
-	// Handle escaped sequences regardless of hex letter case (for example u003C as well as u003c).
-	$content = str_ireplace( array_keys( $replacements ), array_values( $replacements ), $content );
+		$decoded = html_entity_decode( '&#x' . strtolower( $hex ) . ';', ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		return ( '' === $decoded ) ? $matches[0] : $decoded;
+	};
+
+	// Decode both JSON-style escapes (\u00e9) and broken bare escapes (u00e9).
+	$content = preg_replace_callback( '/\\\\+u([0-9a-fA-F]{4})/', $decode_unicode, $content );
+	$content = preg_replace_callback( '/u([0-9a-fA-F]{4})/', $decode_unicode, $content );
+
+	$content = str_ireplace( array( '\\n', '\\r' ), array( "\n", "\r" ), $content );
 
 	return $content;
 
@@ -1878,7 +1874,7 @@ function wp4t_agenda_note( $atts, $content = '' ) {
 
 		}
 
-		if ( is_single() && wp4t_is_club_member() && ! isset( $_REQUEST['edit_roles'] ) && ! isset( $_REQUEST['recommend_roles'] ) && ( current_user_can( 'edit_signups' ) || wp4t_edit_signups_role() ) && ! isset( $_REQUEST['print_agenda'] ) && ! rsvpmaker_is_email_context() ) {
+		if ( is_single() && wp4t_is_club_member() && ! isset( $_REQUEST['edit_roles'] ) && ! isset( $_REQUEST['recommend_roles'] ) && ( current_user_can( 'edit_signups' ) || wp4t_edit_signups_role() ) && ! isset( $_REQUEST['print_agenda'] )  && ! isset( $_REQUEST['show_agenda'] ) && ! rsvpmaker_is_email_context() ) {
 
 			$permalink     = get_permalink( $post->ID ) . '#' . $slug;
 
@@ -1946,7 +1942,7 @@ function wp4t_agenda_note( $atts, $content = '' ) {
 	// Non-editable note content can also arrive with escaped HTML from block attributes or shortcode content.
 	$content = wp4t_decode_editable_note_content( $content );
 
-	if ( isset( $_REQUEST['print_agenda'] ) || isset( $_REQUEST['email_agenda'] ) ) {
+	if ( isset( $_REQUEST['print_agenda'] ) || isset( $_REQUEST['show_agenda'] ) || isset( $_REQUEST['email_agenda'] ) ) {
 
 		if ( $display != 'web' ) {
 
@@ -2272,19 +2268,21 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 
 		if ( isset( $atts['wp4t_agenda_note'] ) && ! empty( $atts['wp4t_agenda_note'] ) && strpos( $atts['wp4t_agenda_note'], 'Speaker}' ) ) {
 
+			$decoded_note_template = wp4t_decode_editable_note_content( $atts['wp4t_agenda_note'] );
+
 			$speakerID_to_be_evaluated = get_post_meta( $post->ID, '_role_Speaker_' . $i, true );
 
 			if ( $speakerID_to_be_evaluated > 0 ) {
 
-				$note = str_replace( '{Speaker}', wp4t_get_member_name( $speaker_to_be_evaluated ), $atts['wp4t_agenda_note'] );
+				$note = str_replace( '{Speaker}', wp4t_get_member_name( $speaker_to_be_evaluated ), $decoded_note_template );
 
 			} else {
 
-				$note = str_replace( '{Speaker}', '?', $atts['wp4t_agenda_note'] );
+				$note = str_replace( '{Speaker}', '?', $decoded_note_template );
 
 			}
 
-			$output .= '<div class="role_agenda_note">' . $note . '</div>';
+			$output .= '<div class="role_agenda_note">' . esc_html( $note ) . '</div>';
 
 		}
 
@@ -2324,9 +2322,9 @@ function toastmasters_agenda_display( $atts, $assignments ) {
 
 	if ( isset( $atts['wp4t_agenda_note'] ) && ! empty( $atts['wp4t_agenda_note'] ) && ! strpos( $atts['wp4t_agenda_note'], 'Speaker}' ) ) {
 
-		$note    = $atts['wp4t_agenda_note'];
+		$note    = wp4t_decode_editable_note_content( $atts['wp4t_agenda_note'] );
 
-		$output .= '<div class="role_agenda_note">' . $note . '</div>';
+		$output .= '<div class="role_agenda_note">' . esc_html( $note ) . '</div>';
 
 	}
 
@@ -2536,7 +2534,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 
 	}
 
-	if ( isset( $_GET['print_agenda'] ) && strpos( $field_base, 'ackup' ) && ( $assigned < 1 ) ) {
+	if ( ( isset( $_GET['print_agenda'] ) || isset( $_GET['show_agenda'] ) ) && strpos( $field_base, 'ackup' ) && ( $assigned < 1 ) ) {
 
 		return; // don't need to output empty backup speaker slot on agenda
 
@@ -2576,7 +2574,7 @@ function toastmaster_short( $atts = array(), $content = '' ) {
 
 	}
 
-	if ( ! wp4t_is_edit_roles() && ( ( isset( $_REQUEST['print_agenda'] ) || rsvpmaker_is_email_context() || wp4t_is_agenda_locked() ) ) ) {
+	if ( ! wp4t_is_edit_roles() && ( ( isset( $_REQUEST['print_agenda'] ) || isset( $_REQUEST['show_agenda'] ) || rsvpmaker_is_email_context() || wp4t_is_agenda_locked() ) ) ) {
 
 		return toastmasters_agenda_display( $atts, $assignments );
 
@@ -3216,7 +3214,7 @@ function wp4t_tm_agenda_content($post_id = 0) {
 
 						$details .= ' - '.$assignment['project_text'];
 
-					if((rsvpmaker_is_email_context() || isset($_GET['no_print'])) && !empty($assignment['project']))
+					if((rsvpmaker_is_email_context() || isset($_GET['show_agenda'])) && !empty($assignment['project']))
 
 						$details .= wp4t_evaluation_form_link( $assignment['ID'], $post_id, $assignment['project'] );
 
@@ -3768,7 +3766,7 @@ function wp4t_speech_public_details( $field, $assigned ) {
 
 function wp4t_evaluation_form_link( $speaker, $meeting_id, $project_key = '' ) {
 
-	if ( isset( $_GET['print_agenda'] ) ) {
+	if ( isset( $_GET['print_agenda'] ) ||  isset( $_GET['show_agenda'] ) ) {
 
 		return '';
 
@@ -3776,7 +3774,7 @@ function wp4t_evaluation_form_link( $speaker, $meeting_id, $project_key = '' ) {
 
 	//$slug = ( empty( $project_key ) ) ? 'unspecified' : urlencode( $project_key );
 
-	if ( ! isset( $_GET['print_agenda'] ) ) {
+	if ( ! isset( $_GET['print_agenda'] ) && ! isset( $_GET['show_agenda'] ) ) {
 
 		return sprintf( ' (<a href="%s" target="_blank">%s</a>)', wp4t_evaluation_form_url($speaker, $meeting_id), __( 'evaluation form', 'rsvpmaker-for-toastmasters' ) );
 
@@ -9490,7 +9488,7 @@ if(!empty($_REQUEST['by'])) {
 
 }
 
-$output .= sprintf('<p>%s signed up for %s. <a href="%s">View agenda</a></p>',$user->display_name,$clean,add_query_arg(array('print_agenda' =>1, 'no_print' =>1),get_permalink()) );
+$output .= sprintf('<p>%s signed up for %s. <a href="%s">View agenda</a></p>',$user->display_name,$clean,add_query_arg(array('show_agenda' =>1),get_permalink()) );
 
 $output .= wp4t_oneclick_future($user_id);
 
@@ -9540,11 +9538,11 @@ function dash_wptmagenda_menu( $post_id, $rsvp_report = '' ) {
 
 	}
 
-	$link     .= '<li ><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1">' . __( 'Agenda Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link     .= '<li ><a target="_blank" href="' . $permalink . 'show_agenda=1">' . __( 'Agenda Show', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 
 	if ( ! get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
 
-		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'print_agenda=1&no_print=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+		$link .= '<li class="last"><a target="_blank" href="' . $permalink . 'show_agenda=1&showintros=1">' . __( 'Show with Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 
 	}
 
@@ -9552,7 +9550,7 @@ function dash_wptmagenda_menu( $post_id, $rsvp_report = '' ) {
 
 	$link    .= '<li ><a target="_blank" href="' . $permalink . 'intros=show">' . __( 'Speech Introductions', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 
-	$link    .= '<li ><a target="_blank" href="' . $permalink . '?mvote=1">' . __( 'NEW Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
+	$link    .= '<li ><a target="_blank" href="' . add_query_arg('mvote',1,$permalink) . '">' . __( 'Vote Counter\'s Tool', 'rsvpmaker-for-toastmasters' ) . '</a></li>';
 
 	if($rsvp_report)
 
@@ -14419,7 +14417,7 @@ function wp4t_redirect() {
 
 		} 
 
-		elseif ( isset( $_REQUEST['print_agenda'] ) ) {
+		elseif ( isset( $_REQUEST['print_agenda'] ) || isset( $_REQUEST['show_agenda'] ) ) {
 
 			if ( get_option( 'wp4toastmasters_stoplight' ) ) {
 
@@ -17739,7 +17737,7 @@ function rsvptoast_admin_notice() {
 
 		}
 
-		printf( '<a href="%s" target="_blank">%s</a> | ', rsvpmaker_permalink_query( (int) $_REQUEST['post_id'], 'print_agenda=1&no_print=1' ), __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) );
+		printf( '<a href="%s" target="_blank">%s</a> | ', rsvpmaker_permalink_query( (int) $_REQUEST['post_id'], 'show_agenda=1' ), __( 'View Agenda', 'rsvpmaker-for-toastmasters' ) );
 
 		printf( '<a href="%s">%s</a>', get_permalink( (int) $_REQUEST['post_id'] ), __( 'View Signup Form', 'rsvpmaker-for-toastmasters' ) );
 
@@ -22674,7 +22672,7 @@ function wp4t_tm_absence( $atts ) {
 
 	}
 
-	if ( empty( $atts['show_on_agenda'] ) && ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) ) ) {
+	if ( isset( $atts['show_on_agenda'] ) && empty( $atts['show_on_agenda'] ) && ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) ) ) {
 
 		return;
 
@@ -22794,15 +22792,21 @@ function wp4t_tm_absence( $atts ) {
 
 	}
 
-	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['wp4t_signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
+	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['show_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['wp4t_signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
 
 		$list = [];
 
 		foreach ( $absences as $absent ) {
 
 		$userdata = get_userdata( $absent );
-		if($userdata)
-		$list[] = empty( $userdata->first_name ) ? $userdata->display_name : $userdata->first_name.' '.$userdata->last_name;
+		if($userdata) {
+			$name = empty( $userdata->first_name ) ? $userdata->display_name : $userdata->first_name.' '.$userdata->last_name;
+			$until = get_user_meta( $absent, 'tm_absence_until', true );
+			if ( ! empty( $until ) && strtotime( $until ) > time() ) {
+				$name .= ' (' . __( 'until', 'rsvpmaker-for-toastmasters' ) . ' ' . rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $until ) ) . ')';
+			}
+			$list[] = $name;
+		}
 
 		}
 
@@ -22904,19 +22908,27 @@ function wp4t_tm_absence( $atts ) {
 
 	}
 
-	$dropdown = wp4t_awe_user_dropdown( 'away_user_id', $current_user->ID, true );
-
-	if ( ! empty( $absences ) && is_array( $absences ) && in_array( $current_user->ID, $absences ) ) {
-
-		$output .= sprintf( '<form method="post" action="%s"><input type="hidden" name="cancel_absence" value="1"><button>%s</button><select name="until">%s</select> %s %s</form>', get_permalink(),__('Cancel My Absence','rsvpmaker-for-toastmasters'),$o,$dropdown,rsvpmaker_nonce('return') );
-
+	$me_absent = ( ! empty( $absences ) && is_array( $absences ) && in_array( $current_user->ID, $absences ) );
+	$me_until  = $me_absent ? get_user_meta( $current_user->ID, 'tm_absence_until', true ) : '';
+	$status_id = 'wp4t_absence_status_' . $post->ID;
+	$widget_id = 'wp4t_absence_widget_' . $post->ID;
+	$output .= '<div id="' . esc_attr( $widget_id ) . '" class="wp4t-absence-widget" data-endpoint="' . esc_url( get_rest_url( null, 'rsvptm/v1/absences' ) ) . '" data-post-id="' . intval( $post->ID ) . '" data-user-id="' . intval( $current_user->ID ) . '" data-until="' . esc_attr( $me_until ) . '" data-absent="' . ( $me_absent ? '1' : '0' ) . '">';
+	$output .= '<h4>' . __( 'Planned Absence', 'rsvpmaker-for-toastmasters' ) . '</h4>';
+	$output .= '<p>';
+	if ( $me_absent ) {
+		$output .= '<button type="button" class="agenda-tooltip wp4t-absence-remove" aria-label="' . esc_attr__( 'Remove me from absences', 'rsvpmaker-for-toastmasters' ) . '"><span class="agenda-tooltip-text">' . esc_html__( 'Remove Me', 'rsvpmaker-for-toastmasters' ) . '</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4C7.6 4 4 7.6 4 12s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm3.5 10.1-1.4 1.4-2.1-2.1-2.1 2.1-1.4-1.4 2.1-2.1-2.1-2.1 1.4-1.4 2.1 2.1 2.1-2.1 1.4 1.4-2.1 2.1 2.1 2.1z"/></svg></button> ';
+		$output .= __( 'Remove me from absences', 'rsvpmaker-for-toastmasters' );
 	} else {
-
-		$output .= sprintf( '<form class="planned_absence_form" method="post" action="%s"><h4>%s</h4><input type="hidden" name="add_absence" value="1"><p><select name="until">%s</select> <span class="absence_user">%s</span> %s</p><p><button>%s</button></p></form>', get_permalink(),__('Planned Absence','rsvpmaker-for-toastmasters'),$o,$dropdown, rsvpmaker_nonce('return'),__('Submit','rsvpmaker-for-toastmasters') );
-
+		$output .= '<button type="button" class="agenda-tooltip wp4t-absence-add" aria-label="' . esc_attr__( 'Add me to absences', 'rsvpmaker-for-toastmasters' ) . '"><span class="agenda-tooltip-text">' . esc_html__( 'Add Me', 'rsvpmaker-for-toastmasters' ) . '</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4C7.6 4 4 7.6 4 12s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm1 4.5v2.5h2.5v2H13v2.5h-2V13H8.5v-2H11V8.5h2z"/></svg></button> ';
+		$output .= __( 'Add me to absences', 'rsvpmaker-for-toastmasters' );
 	}
-
-	$output .= '<p>'. __( 'Use this to mark yourself or another member unavailable for one more meetings.', 'rsvpmaker-for-toastmasters' ).'</p>';
+	$output .= '</p>';
+	$output .= '<div class="wp4t-absence-until" style="display:' . ( $me_absent ? 'block' : 'none' ) . '">';
+	$output .= '<label>' . __( 'Absent until', 'rsvpmaker-for-toastmasters' ) . ' <select class="wp4t-absence-until-select">' . $o . '</select></label>';
+	$output .= '</div>';
+	$output .= '<div id="' . esc_attr( $status_id ) . '" class="wp4t-absence-status" aria-live="polite"></div>';
+	$output .= '<p>' . __( 'Use this to mark yourself unavailable for one or more meetings.', 'rsvpmaker-for-toastmasters' ) . '</p>';
+	$output .= '</div>';
 
 	return $output;
 
@@ -22952,7 +22964,7 @@ if ( 'add' == $operation ) {
 
 	$away_user_id = intval($data->ID);
 
-	add_post_meta( $post_id, 'wp4t_tm_absence', $away_user_id );
+	add_post_meta( $post_id, 'wp4t_tm_absence', $away_user_id, true );
 
 	if(!empty($data->until)) {
 
@@ -22966,7 +22978,7 @@ if ( 'add' == $operation ) {
 
 		foreach($results as $row) {
 
-			add_post_meta( $row->event, 'wp4t_tm_absence', $away_user_id );
+			add_post_meta( $row->event, 'wp4t_tm_absence', $away_user_id, true );
 
 			$status .= 'add '.$row->event.' ';
 
@@ -22989,6 +23001,8 @@ if ( 'remove' == $operation ) {
 	if(!empty($data->until)) {
 
 		$until = sanitize_text_field($data->until);
+
+		$thisdate = get_rsvp_date($post_id);
 
 		$results = $wpdb->get_results("SELECT event from $event_table WHERE  date > '$thisdate' AND date <= '$until' ");
 
@@ -23291,7 +23305,7 @@ function wpt_embed_agenda( $atts ) {
 
 	$style      = ( empty( $atts['style'] ) ) ? 'height: 1000px; width: 100%;' : $atts['style'];
 
-	return sprintf( '<iframe src="%sprint_agenda=1&no_print=1" style="%s"></iframe>', $permalink, $style );
+	return sprintf( '<iframe src="%sshow_agenda=1" style="%s"></iframe>', $permalink, $style );
 
 }
 

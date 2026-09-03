@@ -6,28 +6,7 @@ import {useMutation, useQueryClient} from 'react-query';
 import {SanitizedHTML} from './SanitizedHTML.js';
 import { __experimentalNumberControl as NumberControl, TextControl } from '@wordpress/components';
 import {initChangeBlockAttribute,updateAgenda} from './queries.js'
-
-function decodeAgendaHtml(value = '') {
-  if (!value || typeof value !== 'string') {
-    return '';
-  }
-
-  const decoded = value
-    .replace(/\\u003c|u003c/gi, '<')
-    .replace(/\\u003e|u003e/gi, '>')
-    .replace(/\\u0026|u0026/gi, '&')
-    .replace(/\\u0022|u0022/gi, '"')
-    .replace(/\\u0027|u0027/gi, "'")
-    .replace(/\\n/g, "\n")
-    .replace(/\\r/g, "\r")
-    .replace(/<\/p>\s*n\s*<p/gi, '</p>\n<p');
-
-  return decoded
-    // remove accidental empty paragraphs inserted between non-empty paragraphs
-    .replace(/(<\/p>)(?:\s*<p>(?:\s|&nbsp;|<br\s*\/?\s*>)*<\/p>\s*)+(<p)/gi, '$1$2')
-    // normalize paragraph boundary whitespace to avoid visual double spacing in editors
-    .replace(/<\/p>\s+<p/gi, '</p><p');
-}
+import { decodeAgendaHtml } from './decodeAgendaText.js';
 
 function hasMeaningfulContent(html = '') {
   return html

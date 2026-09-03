@@ -17,6 +17,7 @@ import { RichText } from '@wordpress/block-editor';
 import { __experimentalNumberControl as NumberControl } from '@wordpress/components';
 import { RadioControl } from '@wordpress/components';
 import TimeBlock from '../TimeBlock.js';
+import { decodeAgendaText } from '../decodeAgendaText.js';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -36,6 +37,7 @@ import './editor.scss';
  */
 
 export default function Edit({ attributes, attributes: { uid, time_allowed, visibility }, setAttributes, isSelected, className, clientId }) {
+	const decodedContent = decodeAgendaText(attributes.content || '');
 
 	if(!uid)
 
@@ -60,9 +62,9 @@ export default function Edit({ attributes, attributes: { uid, time_allowed, visi
 
 	tagName="p"
 
-	value={attributes.content}
+	value={decodedContent}
 
-	onChange={(content) => setAttributes({ content })}
+	onChange={(content) => setAttributes({ content: decodeAgendaText(content) })}
 
 />
 

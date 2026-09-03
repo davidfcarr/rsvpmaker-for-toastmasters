@@ -20,6 +20,7 @@ import { useSelect } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import TimeBlock from '../TimeBlock.js';
 import EndTime from '../EndTime.js';
+import { decodeAgendaHtml } from '../decodeAgendaText.js';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -28,26 +29,6 @@ import EndTime from '../EndTime.js';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 import './editor.scss';
-
-function decodeAgendaHtml(value = '') {
-	if (!value || typeof value !== 'string') {
-		return '';
-	}
-
-	const decoded = value
-		.replace(/\\u003c|u003c/gi, '<')
-		.replace(/\\u003e|u003e/gi, '>')
-		.replace(/\\u0026|u0026/gi, '&')
-		.replace(/\\u0022|u0022/gi, '"')
-		.replace(/\\u0027|u0027/gi, "'")
-		.replace(/\\n/g, "\n")
-		.replace(/\\r/g, "\r")
-		.replace(/<\/p>\s*n\s*<p/gi, '</p>\n<p');
-
-	return decoded
-		.replace(/(<\/p>)(?:\s*<p>(?:\s|&nbsp;|<br\s*\/?\s*>)*<\/p>\s*)+(<p)/gi, '$1$2')
-		.replace(/<\/p>\s+<p/gi, '</p><p');
-}
 
 /**
  * The edit function describes the structure of your block in the context of the

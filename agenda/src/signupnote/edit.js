@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
 import { useBlockProps } from '@wordpress/block-editor';
 
 import { RichText } from '@wordpress/block-editor';
+import { decodeAgendaText } from '../decodeAgendaText.js';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -33,6 +34,7 @@ import './editor.scss';
  */
 
 export default function Edit({ attributes, setAttributes }) {
+	const decodedContent = decodeAgendaText(attributes.content || '');
 
 	return (
 
@@ -44,9 +46,9 @@ export default function Edit({ attributes, setAttributes }) {
 
 	tagName="p"
 
-	value={attributes.content}
+	value={decodedContent}
 
-	onChange={(content) => setAttributes({ content })}
+	onChange={(content) => setAttributes({ content: decodeAgendaText(content) })}
 
 />
 </div>

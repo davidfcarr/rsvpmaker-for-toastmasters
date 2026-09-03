@@ -20,7 +20,7 @@ function wp4t_agenda_layout_options() {
     if(!current_user_can('edit_others_rsvpmakers'))
         return;
     $permalink = get_permalink($post->ID);
-    $agendalink = add_query_arg(array('print_agenda'=>1,'no_print'=>1,'t'=>time()),$permalink);
+    $agendalink = add_query_arg(array('show_agenda'=>1,'t'=>time()),$permalink);
     $layoutlink = add_query_arg(array('agenda_layout'=>1),$permalink);
     $layout = wp4toastmasters_agenda_layout_check( );
     $version = get_option('wpt_layout_version');

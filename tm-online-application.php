@@ -7,6 +7,22 @@ function wp4t_paypal_application_payment($response,$get) {
 	global $wpdb;
 }
 $formdefaults = [];
+
+// Convert currency-like strings (for example "$60.00") to a float for math/formatting.
+function wp4t_parse_amount( $amount ) {
+	if ( is_numeric( $amount ) ) {
+		return (float) $amount;
+	}
+
+	$clean = preg_replace( '/[^0-9.\-]/', '', (string) $amount );
+
+	if ( $clean === '' || ! is_numeric( $clean ) ) {
+		return 0.0;
+	}
+
+	return (float) $clean;
+}
+
 function wp4t_tm_member_application( $atts ) {
 	global $rsvp_options, $formdefaults, $wpdb;
 	$formdefaults = array(
@@ -108,6 +124,7 @@ label {
 		$vars['amount'] = get_post_meta( $post->ID, 'wp4t_tm_application_fee', true );// fetch from page for form
 		if(empty($vars['amount']) && !empty($_POST['wp4t_tm_application_fee']))
 			$vars['amount'] = sanitize_text_input($_POST['wp4t_tm_application_fee']);
+		$vars['amount'] = wp4t_parse_amount( $vars['amount'] );
 		if(empty($vars['amount']))
 			$payprompt .= '<p style="color:red">Error recording dues amount.</p>';		
 		update_post_meta( $post_id, 'wp4t_tm_application_fee', $vars['amount'] );// record to app document
@@ -149,7 +166,7 @@ label {
 }
 function wp4t_paydues_later() {
 	$id                  = (int) $_GET['paydues'];
-	$vars['amount']      = get_post_meta( $id, 'wp4t_tm_application_fee', true );
+	$vars['amount']      = wp4t_parse_amount( get_post_meta( $id, 'wp4t_tm_application_fee', true ) );
 	$vars['description'] = 'Toastmasters Dues Payment';
 	$vars['name']        = get_post_meta( $id, 'first_name', true ) . ' ' . get_post_meta( $id, 'last_name', true );
 	$vars['email']       = get_post_meta( $id, 'user_email', true );
@@ -1059,11 +1076,11 @@ function wp4t_dues_renewal($atts) {
 		$renew6 = $ti_dues[3] + $club_dues[3];
 	}
 	if(isset($atts['amount']) && !empty($atts['amount']))
-		$vars['amount'] = $atts['amount'];
+		$vars['amount'] = wp4t_parse_amount( $atts['amount'] );
 	elseif(isset($_GET['renew12']) && $renew12)
-		$vars['amount'] = $renew12;
+		$vars['amount'] = wp4t_parse_amount( $renew12 );
 	elseif($renew6) {
-		$vars['amount'] = $renew6;
+		$vars['amount'] = wp4t_parse_amount( $renew6 );
 	}
 	else 
 		return '<p>Dues not set</p>';

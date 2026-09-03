@@ -4904,6 +4904,32 @@ function wp4t_jsonBlockDataOutput($block, $post_id) {
 		return;
 	}
 
+	if ( ! function_exists( 'wp4t_normalize_block_text_value' ) ) {
+		function wp4t_normalize_block_text_value( $value ) {
+			if ( is_string( $value ) ) {
+				return function_exists( 'wp4t_decode_editable_note_content' ) ? wp4t_decode_editable_note_content( $value ) : $value;
+			}
+
+			if ( is_array( $value ) ) {
+				foreach ( $value as $key => $item ) {
+					$value[ $key ] = wp4t_normalize_block_text_value( $item );
+				}
+				return $value;
+			}
+
+			if ( is_object( $value ) ) {
+				foreach ( $value as $key => $item ) {
+					$value->$key = wp4t_normalize_block_text_value( $item );
+				}
+				return $value;
+			}
+
+			return $value;
+		}
+	}
+
+	$block = wp4t_normalize_block_text_value( $block );
+
 	if ( ! function_exists( 'wp4t_normalize_note_innerhtml' ) ) {
 		function wp4t_normalize_note_innerhtml( $inner_html, $class_name ) {
 			$inner_html = trim( (string) $inner_html );
@@ -6717,7 +6743,7 @@ if($emailcontext && $showonagenda)
 
 	$output = true;
 
-if(isset($_GET['print_agenda']) || isset($_GET['email_agenda']))
+if(isset($_GET['print_agenda']) || isset($_GET['show_agenda']) || isset($_GET['email_agenda']))
 
 	$output = true;
 
@@ -6727,7 +6753,7 @@ if(!$output && $showonsignup)
 
 if($output)
 
-	return $content;
+	return function_exists( 'wp4t_decode_editable_note_content' ) ? wp4t_decode_editable_note_content( $content ) : $content;
 
 return;
 

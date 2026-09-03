@@ -28,6 +28,8 @@ import SignupNoteBlockEdit from './signupnote/edit.js';
 import AbsencesBlockEdit from './absences/edit.js';
 import SpeakerEvaluatorBlockEdit from './speaker-evaluator/edit.js';
 import HelpBlockEdit from './help/edit.js';
+import { decodeAgendaText, decodeAgendaHtml } from './decodeAgendaText.js';
+import { getAgendaStartDate } from './agendaStartDate.js';
 
 const WIDGET_EDITORS = {
     'wp4toastmasters/agendaedit': AgendaEditBlockEdit,
@@ -41,7 +43,7 @@ const WIDGET_EDITORS = {
 const NOTE_BLOCKS = ['wp4toastmasters/agendanoterich2', 'wp4toastmasters/signupnote'];
 
 function stripHtml(html = '') {
-    return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return decodeAgendaText(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function makeExcerpt(html = '', length = 80) {
@@ -83,10 +85,10 @@ function extractRichTextContent(block) {
     }
 
     if (block?.attrs?.content) {
-        return block.attrs.content;
+        return decodeAgendaText(block.attrs.content);
     }
 
-    const html = block.innerHTML || '';
+    const html = decodeAgendaHtml(block.innerHTML || '');
     return html
         .replace(/^<p[^>]*>/i, '')
         .replace(/<\/p>\s*$/i, '');
@@ -181,6 +183,7 @@ function matchesFilter(block, showDetails) {
 }
 
 function RoleWidgetPreview({ block, data, makeNotification }) {
+    const decodedAgendaNote = decodeAgendaText(block?.attrs?.agenda_note || '');
     return (
         <div className="reorganize-widget-preview reorganize-role-preview">
             {block?.assignments && Array.isArray(block.assignments) && block.assignments.length > 0 && (
@@ -197,7 +200,7 @@ function RoleWidgetPreview({ block, data, makeNotification }) {
                 {!!block?.attrs?.padding_time && <span>{block.attrs.padding_time} min padding</span>}
             </div>
             <SpeakerTimeCount block={block} makeNotification={makeNotification} data={data} />
-            {!!block?.attrs?.agenda_note && <p className="reorganize-inline-note">{block.attrs.agenda_note}</p>}
+            {!!decodedAgendaNote && <p className="reorganize-inline-note">{decodedAgendaNote}</p>}
         </div>
     );
 }
@@ -416,12 +419,12 @@ export default function Reorganize(props) {
         });
     }
 
-    const baseDate = new Date(data.datetime);
+    const baseDate = getAgendaStartDate(data);
     const dateoptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const localedate = baseDate.toLocaleDateString('en-US', dateoptions);
 
     let endtime = '';
-    let timeCursor = new Date(data.datetime);
+    let timeCursor = new Date(baseDate.getTime());
     const blocksWithDateStrings = (data.blocksdata && Array.isArray(data.blocksdata))
         ? data.blocksdata.map((block) => {
             let datestring = timeCursor.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });

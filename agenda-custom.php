@@ -89,11 +89,11 @@ dialog::backdrop {
 }
 </style>
 </head>
-<body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['no_print'])) echo ' id="show" '; ?> >
+<body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['show_agenda'])) echo ' id="show" '; ?> >
 <?php
 if(isset($_GET['show_voting_qr'])) {
 	echo rsvpmaker_qr([
-		'url' => get_permalink().'?mvote=1',
+		'url' => add_query_arg('mvote',1,get_permalink()),
 		'pixel' => 20,
 	]);
 }
@@ -105,7 +105,7 @@ if ( !isset($_GET['showintros']) && !isset($_GET['simple']) && !isset($_GET['wor
 <legend><strong><?php _e( 'Will not print', 'rsvpmaker-for-toastmasters' ); ?></strong></legend>
 <p style="font-size: 15px;"><?php
  if(!get_option( 'wp4toastmasters_intros_on_agenda' ) )
-	printf( '<a href="%s?print_agenda=1&no_print=1&showintros=show">%s</a> | ', get_permalink(), __( 'Show Speech Introductions on Agenda', 'rsvpmaker-for-toastmasters' ) );
+	printf( '<a href="%s?show_agenda=1&showintros=show">%s</a> | ', get_permalink(), __( 'Show Speech Introductions on Agenda', 'rsvpmaker-for-toastmasters' ) );
 ?>
 <a href="<?php echo $intros_link; ?>" target="_blank"><?php _e( 'Show Speech Introductions (New Tab)', 'rsvpmaker-for-toastmasters' ); ?></a><br />
 <em><?php _e( 'Note: content shown above will not be included on the printed agenda.', 'rsvpmaker-for-toastmasters' ); ?></em></p>
@@ -133,7 +133,7 @@ echo $output;
 ?>
 </div>
 <?php
-if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['no_print'] ) ) {
+if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['show_agenda'] ) ) {
 	echo '<script type="text/javascript">
 <!--
 window.print();

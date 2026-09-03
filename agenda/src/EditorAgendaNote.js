@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import mytranslate from './mytranslate'
 import simplifyPastedHtml from './simplifyPastedHtml';
+import { decodeAgendaHtml, decodeAgendaText } from './decodeAgendaText.js';
 
 export function EditorAgendaNote(props) {
   const editorRef = useRef(null);
@@ -28,8 +29,8 @@ export function EditorAgendaNote(props) {
   function save() {
       const currentContent = editorRef.current ? editorRef.current.getContent() : '';
     const simplified = simplifyPastedHtml(currentContent);
-    const normalized = normalizeToSingleParagraph(simplified);
-    const content = normalized.replace(/^<p[^>]*>/i, '').replace(/<\/p>\s*$/i, '');
+    const normalized = normalizeToSingleParagraph(decodeAgendaHtml(simplified));
+    const content = decodeAgendaText(normalized.replace(/^<p[^>]*>/i, '').replace(/<\/p>\s*$/i, ''));
 
     const nextBlock = {
       ...block,
@@ -48,7 +49,7 @@ export function EditorAgendaNote(props) {
      <h4>{mytranslate('Agenda Note', data)}</h4>
      <Editor
         onInit={(evt, editor) => editorRef.current = editor}
-        initialValue={block.innerHTML}
+        initialValue={decodeAgendaHtml(block.innerHTML || '')}
         init={{
           height: 100,
           plugins: 'link autolink',

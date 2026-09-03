@@ -93,8 +93,8 @@ function wpt_email_tod($meeting_hours = 0) {
 	foreach ( $results as $row ) {
 		$message .= '<div style="margin-bottom: 20px; padding: 10px; border: thin dotted #000;">' . wpautop( wp4t_speech_intro_data( $row->meta_value, $next->ID, $row->meta_key ) ) . '</div>'."\n";
 	}
-	$message .= '<p>'.sprintf(__( 'If the speakers post updates, you will be able to see them here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?print_agenda=1&no_print=1', get_permalink( $next->ID ) .'?intros=1').'</p>';
-	$message .= '<p>'.sprintf(__( 'You can view the full agenda here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?print_agenda=1&no_print=1', get_permalink( $next->ID ) .'?print_agenda=1&no_print=1').'</p>';
+	$message .= '<p>'.sprintf(__( 'If the speakers post updates, you will be able to see them here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?show_agenda=1', get_permalink( $next->ID ) .'?intros=1').'</p>';
+	$message .= '<p>'.sprintf(__( 'You can view the full agenda here: <a href="%s">%s</a>.', 'rsvpmaker-for-toastmasters' ), get_permalink( $next->ID ) .'?show_agenda=1', get_permalink( $next->ID ) .'?show_agenda=1').'</p>';
 	$message .= "<p>This meeting is $hours_away hours away</p>";
 	if(!empty($mail)) {
 			$subject = sprintf( __( 'Speakers and Introductions for %s %s', 'rsvpmaker-for-toastmasters' ), $next->post_title, rsvpmaker_date($rsvp_options['short_date'],$next->ts_start ));
@@ -181,7 +181,7 @@ function wp4t_email_with_without_role( $meeting_hours, $test = false ) {
 	$ical_sent = get_post_meta( $next->ID, '_ical_sent', true );
 	if(empty($ical_sent))
 		update_post_meta( $next->ID, '_ical_sent', true );
-	$ical_message = sprintf( __( "<p>Here is the agenda for the meeting on %s</p>.\n\n<p>%s <a href=\"%s\">%s</a></p>\n\n<p>View agenda: <a href=\"%s\">%s</a></p>\n\n", 'rsvpmaker-for-toastmasters' ), $date, __( 'Sign up', 'rsvpmaker-for-toastmasters' ), $permalink, $permalink, $permalink.'?print_agenda=1&no_print=1', $permalink.'?print_agenda=1&no_print=1' );
+	$ical_message = sprintf( __( "<p>Here is the agenda for the meeting on %s</p>.\n\n<p>%s <a href=\"%s\">%s</a></p>\n\n<p>View agenda: <a href=\"%s\">%s</a></p>\n\n", 'rsvpmaker-for-toastmasters' ), $date, __( 'Sign up', 'rsvpmaker-for-toastmasters' ), $permalink, $permalink, $permalink.'?show_agenda=1', $permalink.'?show_agenda=1' );
 	$ical_message .= get_option('wpt_ical_message');
 
 	$log = array(

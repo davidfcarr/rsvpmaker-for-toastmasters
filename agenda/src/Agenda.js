@@ -23,6 +23,7 @@ import { useBlocks, updateAgenda } from './queries.js';
 import { Icon, edit } from '@wordpress/icons';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
 import { setupNonceInterceptor } from './http-common.js';
+import { getAgendaStartDate } from './agendaStartDate.js';
 
 export default function Agenda(props) {
 
@@ -229,7 +230,7 @@ export default function Agenda(props) {
         const raw = ['core/image', 'core/paragraph', 'core/heading', 'wp4toastmasters-signupnote'];
         const ignore = ['wp4toastmasters/agendanoterich2', 'wp4toastmasters/milestone', 'wp4toastmasters/help'];
 
-        let date = new Date(data.datetime);
+        let date = getAgendaStartDate(data);
         const dateoptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         let datestring = '';
         const isGuestUser = (!data.is_user_logged_in || !data.is_club_member);

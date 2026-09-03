@@ -18,7 +18,7 @@
 	"attributes": {
 		"show_on_agenda": {
 			"type": "boolean",
-			"default": false
+			"default": true
 		}
 	},
 	"supports": {

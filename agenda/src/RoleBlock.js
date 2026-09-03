@@ -8,6 +8,7 @@ const Suggest = React.lazy(() => import('./Suggest.js'));
 import { Up, Down, Top, Close, Move } from './icons.js';
 import apiClient, { setupNonceInterceptor } from './http-common.js';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
+import { decodeAgendaText } from './decodeAgendaText.js';
 import { useMutation, useQueryClient } from 'react-query';
 import { Icon, plusCircle, chevronRight, cancelCircleFilled, edit, tool } from '@wordpress/icons';
 
@@ -60,6 +61,7 @@ export default function RoleBlock(props) {
     let filledslots = [];
     let role = attrs.role;
     let role_label = mytranslate(attrs.role,data);
+    const decodedAgendaNote = decodeAgendaText(attrs?.agenda_note || '');
 
     function updateAssignment(assignment, blockindex = null, start = 1, count = 1) {
         console.log('updateAssignment', assignment, blockindex, start, count);
@@ -439,7 +441,7 @@ export default function RoleBlock(props) {
                              {assignment.avatar && <div style={{float:'left',marginRight:'10px'}}><img src={assignment.avatar} className="tm_avatar" alt={assignment.name} /></div>} {role_label} {shownumber} {assignment.name} {assignment.suggestion && <span className="suggestion">{assignment.suggestion}</span>}
                         </h3>
                     </div>
-                    {attrs.agenda_note && assignments.length - 1 == roleindex ? <p><em>{attrs.agenda_note}</em></p> : null}
+                    {decodedAgendaNote && assignments.length - 1 == roleindex ? <p><em>{decodedAgendaNote}</em></p> : null}
                     <>{'suggest' == mode && (isMe || isOpen) && <Suspense fallback={<p>{mytranslate('Loading ...', data)}</p>}><Suggest memberoptions={memberoptions} roletag={roletagbase + (roleindex + 1)} post_id={props.post_id} current_user_id={current_user_id} /></Suspense>}</>
                     <>{('edit' == mode || (itemMode.mode == 'edit' && itemMode.item == roleindex)) && <SelectCtrl label={mytranslate('Select Member', data)} value={assignment.ID} options={memberoptions} onChange={(id) => {
                         if ('Speaker' == role) updateAssignment({

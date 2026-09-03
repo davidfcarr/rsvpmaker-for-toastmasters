@@ -3,6 +3,7 @@ import {useQuery,useMutation, useQueryClient} from 'react-query';
 import {SelectCtrl} from './Ctrl.js'
 import apiClient, { setupNonceInterceptor } from './http-common.js';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
+import { Icon, plusCircle, cancelCircleFilled } from '@wordpress/icons';
 
 export function Absence(props) {
     const {current_user_id, post_id, mode, makeNotification} = props;
@@ -38,12 +39,14 @@ export function Absence(props) {
         {
             onMutate: async (addremove) => {
                 await queryClient.cancelQueries(['absences-data',post_id]);
-                const previousData = queryClient.getQueryData(['blocks-data',post_id]);
+                const previousData = queryClient.getQueryData(['absences-data',post_id]);
                 queryClient.setQueryData(['absences-data',post_id],(oldQueryData) => {
+                    if(!oldQueryData || !oldQueryData.data)
+                        return oldQueryData;
                     const {data} = oldQueryData;
-                    const {absences} = data;
+                    const absences = Array.isArray(data.absences) ? [...data.absences] : [];
                     if('add' == addremove.operation)
-                        absences.push({'ID':addremove.ID,'name':addremove.name});
+                        absences.push({'ID':addremove.ID,'name':addremove.name, 'until': addremove.until});
                     else if('remove' == addremove.operation)
                         absences.splice(addremove.index,1);
                     const newdata = {
@@ -54,16 +57,16 @@ export function Absence(props) {
                 makeNotification('Updating ...');
                 return {previousData}
             },
-            onSettled: (data, error, variables, context) => {
-                queryClient.invalidateQueries(['absences-data',variables.post_id]);
+            onSettled: () => {
+                queryClient.invalidateQueries(['absences-data',post_id]);
             },
             onSuccess: (data, error, variables, context) => {
                 makeNotification('Updated');
             },
             onError: (err, variables, context) => {
-                makeNotification('Error updating abscences '+err.message);
+                makeNotification('Error updating absences '+err.message);
                 console.log('mutate assignment error',err);
-                queryClient.setQueryData("absences-data", context.previousData);
+                queryClient.setQueryData(['absences-data',post_id], context.previousData);
             },
         }
     );
@@ -76,8 +79,18 @@ export function Absence(props) {
     function removeAbsence(id,index,until) {
         absMutation.mutate({'operation':'remove','index':index,'ID':id,'until':until});
     }
-    function addAbsence(id) {
-        absMutation.mutate({'operation':'add','ID':id,'name':getMemberName(id),'until':until});
+    function addAbsence(id, selectedUntil = '') {
+        absMutation.mutate({'operation':'add','ID':id,'name':getMemberName(id),'until':selectedUntil});
+    }
+
+    function addSelfSingleMeeting() {
+        setUntil('');
+        addAbsence(current_user_id,'');
+    }
+
+    function extendSelfAbsenceUntil(selectedUntil) {
+        setUntil(selectedUntil);
+        addAbsence(current_user_id,selectedUntil ? selectedUntil : '');
     }
     if(isLoading)
     return <div>Loading absences list ...</div>
@@ -91,9 +104,10 @@ export function Absence(props) {
         if(ab.ID == current_user_id)
             {
                 absentIndex = index;
+                meuntil = ab.until ? ab.until : '';
             }
     });
-    
+
     if('edit' == mode)
     return (<div className="absence">
         <h3>Planned Absences</h3>
@@ -111,7 +125,12 @@ export function Absence(props) {
     {absences.map( (ab) => {
     return <p>{ab.name} { (ab.until && ab.until != '') && <em>until {new Date(ab.until).toLocaleDateString()}</em>}</p>
     } ) }
-    {(absentIndex < 0) && <SelectCtrl label="One meeting or several?" options={upcoming} value={until} onChange={setUntil} />}
-    <p>{(absentIndex > -1) && <button className="tmform" onClick={() => {removeAbsence(current_user_id,absentIndex)} }>Remove Me</button>} {(absentIndex < 0) && <button  className="tmform" onClick={() => {addAbsence(current_user_id)} }>Add Me</button>}</p>
+    {(absentIndex > -1) && <div>
+        <SelectCtrl label="Absent until" options={upcoming} value={until ? until : meuntil} onChange={extendSelfAbsenceUntil} />
+    </div>}
+    <p>
+        {(absentIndex > -1) && <button className="agenda-tooltip" onClick={() => {removeAbsence(current_user_id,absentIndex,meuntil)} }><span className="agenda-tooltip-text">Remove Me</span><Icon icon={cancelCircleFilled} /></button>}
+        {(absentIndex < 0) && <button className="agenda-tooltip" onClick={addSelfSingleMeeting}><span className="agenda-tooltip-text">Add Me</span><Icon icon={plusCircle} /></button>}
+    </p>
     </div>);
 }

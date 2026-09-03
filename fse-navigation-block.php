@@ -69,23 +69,32 @@ function wp4t_block_theme_menu($owner = 0) {
 	}
 return $menu_id;
 }
-function check_toastmasters_logo_header($owner = 0) {
-$logo_id = get_option('site_logo');
-$tag = '';
-if($logo_id) {
-	$tag = get_custom_logo();
-}
-//if not defined or not installed locally
-if(!$logo_id || !strpos($tag,$_SERVER['SERVER_NAME'])) {
-	$logo_id = media_sideload_image('https://toastmost.org/tmbranding/toastmasters-75.png', 0, 'copy of Toastmasters logo','id' );
-	update_option('site_logo',$logo_id);
-}
+function check_toastmasters_logo_header( $owner = 0 ) {
+	$logo_id = (int) get_option( 'site_logo' );
+
+	// Only download the default logo when no valid image attachment is configured.
+	if ( ! $logo_id || ! wp_attachment_is_image( $logo_id ) ) {
+		$logo_id = media_sideload_image(
+			'https://toastmost.org/tmbranding/toastmasters-75.png',
+			0,
+			'Toastmasters logo',
+			'id'
+		);
+
+		// Do not save a WP_Error object when the download fails.
+		if ( ! is_wp_error( $logo_id ) ) {
+			update_option( 'site_logo', (int) $logo_id );
+		}
+	}
+
 	if ( function_exists( 'rsvptoast_get_primary_navigation_id' ) ) {
 		$nav_menu_id = (int) rsvptoast_get_primary_navigation_id();
 	} else {
 		$nav_menu_id = 0;
 	}
-if(!$nav_menu_id)
-	$nav_menu_id = wp4t_block_theme_menu($owner);
+
+	if ( ! $nav_menu_id ) {
+		wp4t_block_theme_menu( $owner );
+	}
 }
 add_action('admin_init','check_toastmasters_logo_header');

@@ -7399,7 +7399,7 @@ function toastmasters_member_votes ($args=[]) {
 		$title = get_the_title( $post->ID );
 		$ballot_names[] = trim(str_replace('Vote:','',$title));
 		echo '<h3>' . esc_html( $title ) . '</h3>';
-		echo '<p><a href="' . esc_url( get_permalink( $post->ID ) . '?mvote=1' ) . '" target="_blank">' . esc_html__( 'Open Voting Link', 'rsvpmaker-for-toastmasters' ) . '</a> | <a href="' . esc_url( admin_url( 'post.php?post=' . (int) $post->ID . '&action=edit' ) ) . '">' . esc_html__( 'Edit Minutes Document', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
+		echo '<p><a href="' . esc_url( add_query_arg('mvote',1,get_permalink( $post->ID )) ) . '" target="_blank">' . esc_html__( 'Open Voting Link', 'rsvpmaker-for-toastmasters' ) . '</a> | <a href="' . esc_url( admin_url( 'post.php?post=' . (int) $post->ID . '&action=edit' ) ) . '">' . esc_html__( 'Edit Minutes Document', 'rsvpmaker-for-toastmasters' ) . '</a></p>';
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'edit.php?post_type=tmminutes&page=toastmasters_member_votes' ) ) . '">';
 		echo '<p><label>' . esc_html__( 'Choices (one per line)', 'rsvpmaker-for-toastmasters' ) . '<br><textarea name="choices" rows="5" cols="80">' . esc_textarea( implode( "\n", $ballot->contestants ) ) . '</textarea></label></p>';

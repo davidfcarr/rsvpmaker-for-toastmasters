@@ -105,7 +105,7 @@ echo wp4t_tm_agenda_content();
 <?php
 // if(!isset($_GET["word_agenda"]))
    // wp4t_agenda_timing_footer($datestring);
-if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['no_print'] ) ) {
+if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['show_agenda'] ) ) {
 	echo '<script type="text/javascript">
 <!--
 window.print();

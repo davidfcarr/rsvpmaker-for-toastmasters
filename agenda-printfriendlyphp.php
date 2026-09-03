@@ -109,7 +109,7 @@ if (class_exists('PrintFriendly_WordPress'))
 ?>
 </style>
 </head>
-<body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['no_print'])) echo ' id="show" '; ?> >
+<body lang=EN-US style='tab-interval:.5in' <?php if(isset($_GET['show_agenda'])) echo ' id="show" '; ?> >
 <div class="Section1">
 <?php
 if(isset($_GET['simple'])) {
@@ -153,7 +153,7 @@ echo $output;
 ?>
 </div>
 <?php
-if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['no_print'] ) ) {
+if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['show_agenda'] ) ) {
 	echo '<script type="text/javascript">
 <!--
 window.print();

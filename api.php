@@ -843,7 +843,7 @@ class WPTM_Tweak_Times extends WP_REST_Controller {
 			add_query_arg(
 				array(
 					'print_agenda' => 1,
-					'no_print'     => 1,
+					'show_agenda'     => 1,
 				),
 				get_permalink( $post->ID )
 			)
@@ -1749,7 +1749,12 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 		$absences = [];
 	$agendadata['absences'] = [];
 	foreach($absences as $ab) {
-		$agendadata['absences'][] = array('ID' => $ab, 'name' => wp4t_get_member_name($ab));
+		$until = get_user_meta( $ab, 'tm_absence_until', true );
+		if ( ! empty( $until ) && strtotime( $until ) < time() ) {
+			delete_user_meta( $ab, 'tm_absence_until' );
+			$until = '';
+		}
+		$agendadata['absences'][] = array('ID' => $ab, 'name' => wp4t_get_member_name($ab), 'until' => $until);
 	}
 		$r       = get_role( 'subscriber' );
 		$agendadata['subscribers_can_edit_signups'] = $r->has_cap( 'edit_signups' );
@@ -1796,7 +1801,7 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 		if($agendadata['is_template'])
 		{
 			$agendadata['datetime'] = '1924-10-22 '.$agendadata['is_template']['hour'].':'.$agendadata['is_template']['minutes'].':00';
-			$agendadata['agenda_preview'] = get_permalink($post_id).'?print_agenda=1&no_print=1&mode=reorg_admin';
+			$agendadata['agenda_preview'] = get_permalink($post_id).'?show_agenda=1&mode=reorg_admin';
 		}
 		else {
 			$agendadata['datetime'] = get_rsvp_date($post_id);
@@ -1818,6 +1823,16 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 		}
 		if(!empty($agendadata['blocksdata']))
 		foreach($agendadata['blocksdata'] as $index => $block) {
+			if ( ! empty( $block['innerHTML'] ) && is_string( $block['innerHTML'] ) && function_exists( 'wp4t_decode_editable_note_content' ) ) {
+				$agendadata['blocksdata'][ $index ]['innerHTML'] = wp4t_decode_editable_note_content( $block['innerHTML'] );
+			}
+			if ( ! empty( $block['attrs'] ) && is_array( $block['attrs'] ) && function_exists( 'wp4t_decode_editable_note_content' ) ) {
+				foreach ( $block['attrs'] as $attr_key => $attr_value ) {
+					if ( is_string( $attr_value ) ) {
+						$agendadata['blocksdata'][ $index ]['attrs'][ $attr_key ] = wp4t_decode_editable_note_content( $attr_value );
+					}
+				}
+			}
 			if(!empty($block['attrs']['custom_role'])) {
 				$custom_role = $block['attrs']['custom_role'];
 				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
@@ -1841,6 +1856,20 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 				}
 				$agendadata['blocksdata'][$index]['attrs']['editable'] = sanitize_text_field( $editable_label );
 			}
+			if(!empty($block['attrs']['agenda_note'])) {
+				$agenda_note = $block['attrs']['agenda_note'];
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$agenda_note = wp4t_decode_editable_note_content( $agenda_note );
+				}
+				$agendadata['blocksdata'][$index]['attrs']['agenda_note'] = sanitize_textarea_field( $agenda_note );
+			}
+			if(!empty($block['attrs']['content'])) {
+				$content_text = $block['attrs']['content'];
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$content_text = wp4t_decode_editable_note_content( $content_text );
+				}
+				$agendadata['blocksdata'][$index]['attrs']['content'] = wp_kses_post( $content_text );
+			}
 			$agendadata['blocksdata'][$index]['DnDid'] = 'dnd'.$index;
 			if('wp4toastmasters/agendaedit' == $block['blockName'] && !empty($block['attrs']['uid'])) {
 				$editable_meta = empty($all_assignments['agenda_note_'.$block['attrs']['uid']]) ? '' : $all_assignments['agenda_note_'.$block['attrs']['uid']];
@@ -1852,6 +1881,9 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 
 				if ( empty( $editable_meta ) ) {
 					$editable_meta = wp_kses_post( $default_content );
+				}
+				if ( function_exists( 'wp4t_decode_editable_note_content' ) ) {
+					$editable_meta = wp4t_decode_editable_note_content( $editable_meta );
 				}
 
 				$agendadata['blocksdata'][$index]['attrs']['defaultContent'] = wp_kses_post( $default_content );

@@ -20,6 +20,7 @@ import { __experimentalNumberControl as NumberControl } from '@wordpress/compone
 import TimeBlock from '../TimeBlock.js';
 import EndTime from '../EndTime.js';
 import { useRsvpmakerRest } from '../useRsvpmakerRest.js';
+import { decodeAgendaText } from '../decodeAgendaText.js';
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -48,6 +49,8 @@ const rsvpmaker_rest = useRsvpmakerRest();
 const toast_roles = rsvpmaker_rest.toast_roles;
 const toast_role_properties = rsvpmaker_rest.toast_role_properties;
 const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
+const decodedAgendaNote = decodeAgendaText(agenda_note || '');
+const decodedCustomRole = decodeAgendaText(custom_role || '');
 
 const roleBlocks = useSelect( ( select ) => {
 	const editor = select( 'core/block-editor' );
@@ -100,9 +103,9 @@ return (
 	
 			label="Custom Role"
 	
-			value={ custom_role }
+			value={ decodedCustomRole }
 	
-			onChange={ ( custom_role ) => setAttributes( { custom_role } ) }
+			onChange={ ( custom_role ) => setAttributes( { custom_role: decodeAgendaText(custom_role) } ) }
 	
 	/>
 	
@@ -216,11 +219,11 @@ return (
 	
 			label="Agenda Note"
 	
-			help="A note that appears immediately below the role on the agenda and signup form. Do not include quotation marks or HTML."
+			help="A note that appears immediately below the role on the agenda and signup form. Do not include HTML."
 	
-			value={ agenda_note }
+			value={ decodedAgendaNote }
 	
-			onChange={ ( agenda_note ) => { setAttributes( { agenda_note: fix_quotes_in_note(agenda_note) } ); } }
+			onChange={ ( agenda_note ) => { setAttributes( { agenda_note: decodeAgendaText(agenda_note) } ); } }
 	
 		/>
 	
@@ -240,14 +243,4 @@ return (
 
 </div>
 		);
-}
-
-function fix_quotes_in_note(agenda_note) {
-
-	agenda_note = agenda_note.replace('"','');
-
-	agenda_note = agenda_note.replace('\u0022','');
-
-	return agenda_note;
-
 }

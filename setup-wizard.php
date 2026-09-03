@@ -420,7 +420,7 @@ function wpt_setup_wizard_3() {
 <h3>Basics</h3>
 	<ul>
 	<li><a target="_blank" href="<?php echo admin_url( 'post.php?post=' . $frontpage_id . '&action=edit' ); ?>">Edit your home page</a> - tell everyone what makes your club special! <a target="_blank" href="https://wordpress.org/support/article/wordpress-editor/">Learn about the WordPress editor</a>.</li>
-	<li>View the <a target="_blank" href="<?php echo get_permalink( $next ); ?>">role signup page</a> for a meeting and <a target="_blank" href="<?php echo get_permalink( $next ); ?>?print_agenda=1&no_print=1">agenda</a> for a meeting. Try signing up for a role. Explore the different options on the agenda menu, such as how to email it to the club. Ask club officers or other trusted users to test these features as well.</li>
+	<li>View the <a target="_blank" href="<?php echo get_permalink( $next ); ?>">role signup page</a> for a meeting and <a target="_blank" href="<?php echo get_permalink( $next ); ?>?show_agenda=1">agenda</a> for a meeting. Try signing up for a role. Explore the different options on the agenda menu, such as how to email it to the club. Ask club officers or other trusted users to test these features as well.</li>
 	<li>Once things are starting to look good, <a target="_blank" href="<?php echo admin_url( 'users.php?page=wp4t_add_awesome_member' ); ?>">add members</a> to your club website. You can save time by importing the member roster spreadsheet you can get from Club Central on toastmasters.org. <a target="blank" href="https://www.wp4toastmasters.com/2018/10/05/video-how-to-import-your-member-list-then-add-and-accounts-after-dues-renewal/">Learn How</a></li>
 </ul>
 <h3>Further Enhancements</h3>

@@ -33,7 +33,7 @@ if ( isset( $_GET['word_agenda'] ) ) {
 if ( !isset($_GET['showintros']) && !get_option( 'wp4toastmasters_intros_on_agenda' ) ) {
 	?>
 <div class="noPrint" style="text-align:right;margin:10px;">
-<p><a href="<?php echo get_permalink(); ?>?print_agenda=1&no_print=1&showintros=1"><?php _e( 'Show Intros on Agenda', 'rsvpmaker-for-toastmasters' ); ?></a> |
+<p><a href="<?php echo get_permalink(); ?>?show_agenda=1&showintros=1"><?php _e( 'Show Intros on Agenda', 'rsvpmaker-for-toastmasters' ); ?></a> |
 <a href="<?php echo get_permalink(); ?>?intros=show" target="_blank"><?php _e( 'Show Intros (New Tab)', 'rsvpmaker-for-toastmasters' ); ?></a></p>
 <p><em><?php _e( 'Note: content shown above will not be included on the printed agenda.', 'rsvpmaker-for-toastmasters' ); ?></em></p>
 </div>
@@ -89,7 +89,7 @@ echo wp4t_tm_agenda_content();
 <?php
 // if(!isset($_GET["word_agenda"]))
    // wp4t_agenda_timing_footer($datestring);
-if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['no_print'] ) ) {
+if ( ! isset( $_GET['word_agenda'] ) && ! isset( $_GET['show_agenda'] ) ) {
 	echo '<script type="text/javascript">
 <!--
 window.print();
