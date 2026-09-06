@@ -124,47 +124,19 @@ function wp4t_last_held_role($user_id, $role, $include_ts = false) {
 
 function wp4t_awe_user_dropdown( $role, $assigned = 0, $settings = false, $openlabel = 'Open' ) {
 
-
-
 	if ( rsvpmaker_is_template() ) {
-
-
-
 		return 'Member dropdown will appear here';
-
-
-
 	}
-
-
 
 	global $wpdb, $sortmember, $fnamesort, $histories, $post, $haverole;
 
-
-
 	if(empty($haverole) && !empty($post->ID))
-
-
-
 		$haverole = wp4t_haverole($post->ID);
-
-
-
-	if(!empty($post->ID))
-
-
-
-		$absences = get_post_meta( $post->ID, 'wp4t_tm_absence' );
-
-
-
-	if(empty($absences))
-
-
-
-		$absences = array();
-
-
+	$absencesObject = wp4t_get_absences($post->ID);
+	$absences = [];
+	foreach($absencesObject['absences'] as $absence) {
+		$absences[$absence['ID']] = $absence['dates'];
+	}
 
 	if ( ! wp_next_scheduled( 'wp4t_refresh_tm_history' ) ) {
 
@@ -366,14 +338,8 @@ function wp4t_awe_user_dropdown( $role, $assigned = 0, $settings = false, $openl
 
 
 
-		elseif(in_array($member->ID,$absences))
-
-
-
-			$status = __('Planned Absence','rsvpmaker-for-toastmasters');
-
-
-
+		elseif(isset($absences[$member->ID]))
+			$status = __('Planned Absence','rsvpmaker-for-toastmasters') . ' ' . $absences[$member->ID];
 		elseif ( $member->ID > 0 ) {
 
 
@@ -569,35 +535,19 @@ function wp4t_awe_rest_user_options( $role, $post_id ) {
 		$absences = get_post_meta( $post_id, 'wp4t_tm_absence' );
 
 
-
-		
-
-
-
-	if(empty($absences))
-
-
-
-		$absences = array();
-
-
-
+	$absencesObject = wp4t_get_absences($post->ID);
+	$absences = [];
+	foreach($absencesObject['absences'] as $absence) {
+		$absences[$absence['ID']] = $absence['dates'];
+	}
+	
 	if ( ! wp_next_scheduled( 'wp4t_refresh_tm_history' ) ) {
-
-
 
 		wp_schedule_event( rsvpmaker_strtotime( 'tomorrow 02:00' ), 'daily', 'wp4t_refresh_tm_history' );
 
-
-
 	}
 
-
-
 	$options[] = array('label' => 'Open', 'name' => 'Open', 'value' => 0);
-
-
-
 	$options[] = array('label' => 'Guest', 'name' => 'Guest', 'value' => 'Guest');
 	$options[] = array('label' => 'Not Available', 'name' => 'Not Available', 'value' => -1);
 	$options[] = array('label' => 'To Be Announced', 'name' => 'To Be Announced', 'value' => -2);
@@ -611,31 +561,13 @@ function wp4t_awe_rest_user_options( $role, $post_id ) {
 
 	$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
 
-
-
 	foreach ( $blogusers as $user ) {
-
-
-
 		$member = get_userdata( $user->ID );
-
-
-
 		$findex = preg_replace( '/[^a-zA-Z]/', '', $member->first_name . $member->last_name . $member->user_login );
-
-
-
 		$fnamesort[ $findex ] = $member;
-
-
-
 	}
 
-
-
 	ksort( $fnamesort );
-
-
 
 	foreach ( $fnamesort as $fnindex => $member ) {
 
@@ -646,20 +578,10 @@ function wp4t_awe_rest_user_options( $role, $post_id ) {
 
 
 		if(isset($haverole[$member->ID]))
-
-
-
 			$status = $haverole[$member->ID];
 
-
-
-		elseif(in_array($member->ID,$absences))
-
-
-
-			$status = __('Planned Absence','rsvpmaker-for-toastmasters');
-
-
+		if(isset($absences[$member->ID]))
+			$status = __('Planned Absence','rsvpmaker-for-toastmasters') . ' ' . $absences[$member->ID];
 
 		elseif ( $member->ID > 0 ) {
 

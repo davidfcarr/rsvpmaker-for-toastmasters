@@ -162,7 +162,7 @@ export function Absence(props) {
     <h3>Planned Absences</h3>
     {absences.map( (ab) => {
     const name = ab.label ? ab.label : ab.name;
-    return <p>{name}</p>
+    return <p>{name}{ab.dates ? ` (${ab.dates})` : ''}</p>
     } ) }
     {(absentIndex > -1) && <div>
         <SelectCtrl label="Absent until" options={upcoming} value={until ? until : meuntil} onChange={extendSelfAbsenceUntil} />

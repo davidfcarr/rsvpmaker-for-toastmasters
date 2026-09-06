@@ -2409,8 +2409,16 @@ class WP4T_Mobile_Agenda extends WP_REST_Controller {
 		if(empty($memberlist) || !is_array($memberlist)) {
 			$memberlist = [];
 			$members = wp4t_get_club_members();
+			$absencesObject = wp4t_get_absences($post->ID);
+			$absences = [];
+			foreach($absencesObject['absences'] as $absence) {
+				$absences[$absence['ID']] = $absence['dates'];
+			}
 			foreach($members as $member) {
 				$name = (!empty($member->first_name)) ? $member->first_name.' '.$member->last_name : $member->display_name;
+				$status = '';
+				if(isset($absences[$member->ID]))
+					$name .= __('Planned Absence','rsvpmaker-for-toastmasters') . ' ' . $absences[$member->ID];
 				$memberlist[] = array('name'=>$name,'ID'=>$member->ID);
 			}
 			$memberlist[] = array('name' => 'Open', 'ID' => 0);

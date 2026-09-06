@@ -22553,10 +22553,8 @@ function wp4t_tm_absence( $atts ) {
 		foreach ( $absences as $absent ) {
 
 			$name = ! empty( $absent['label'] ) ? $absent['label'] : '';
-			if ( empty( $name ) && ! empty( $absent['ID'] ) ) {
-				$name = wp4t_get_member_name( intval( $absent['ID'] ) );
-			}
-
+			if($absent['dates'])
+				$name .= ' (' . $absent['dates'] . ')';
 			if ( ! empty( $name ) ) {
 				$list[] = $name;
 			}
@@ -22643,9 +22641,16 @@ function wp4t_remove_absence($user_id) {
 	delete_user_meta($user_id,$untilkey);
 }
 
-function wp4t_get_absences($post_id, $user_id = 0) {
+function wp4t_get_absences($post_id=0, $user_id = 0) {
+if(empty($post_id))
+	{
+		$f = rsvpmaker_get_future_events('',1);
+		$event = $f[0];
+	}
+else {
+	$event = get_rsvpmaker_event($post_id);
+}
 global $wpdb, $rsvp_options;
-$event = get_rsvpmaker_event($post_id);
 $key = 'wp4t_absence' . (is_multisite() ? '_' . get_current_blog_id() : '');
 $until = $key . '_until';
 $legacy = get_post_meta( $post_id, 'wp4t_tm_absence');
@@ -22664,8 +22669,8 @@ foreach($untilresults as $row) {
 		$start = get_user_meta($row->user_id,$key,true);
 		if($start <= $event->ts_start) {
 			$name = wp4t_get_member_name($row->user_id);
-			$dates = ($start != $row->meta_value) ? ' ('.rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $row->meta_value).')' : '';
-			$absences[] = array('ID' => $row->user_id, 'label' => $name . $dates, 'until' => $row->meta_value);
+			$dates = ($start != $row->meta_value) ? rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $row->meta_value) : '';
+			$absences[] = array('ID' => $row->user_id, 'label' => $name, 'until' => $row->meta_value, 'dates' => $dates);
 			if($user_id && $row->user_id == $user_id) {
 				$user_is_absent = true;
 			}
