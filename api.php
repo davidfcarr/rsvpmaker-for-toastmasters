@@ -3251,11 +3251,10 @@ class WP4T_Absences extends WP_REST_Controller {
 			$namespace,
 			'/' . $path,
 			array(
-				array(
-					'methods'             => 'GET,POST',
-					'callback'            => array( $this, 'handle' ),
-					'permission_callback' => array( $this, 'get_items_permissions_check' ),
-				),
+			array(
+			'methods'             => array( 'GET', 'POST' ), // Or WP_REST_Server::READABLE . ',' . WP_REST_Server::CREATABLE
+            'callback'            => array( $this, 'handle' ),
+            'permission_callback' => array( $this, 'get_items_permissions_check' ),				),
 			)
 		);
 	}
@@ -3267,7 +3266,7 @@ class WP4T_Absences extends WP_REST_Controller {
 		global $rsvp_options;
 		$response = wp4t_tm_absences_json();
 		$post_id = intval( $request->get_param( 'post_id' ) );
-		$response['can_manage_others'] = ( $post_id > 0 && ( wp4t_is_edit_roles() || current_user_can( 'edit_post', $post_id ) ) ) ? 1 : 0;
+		$response['can_manage_others'] = true; //( $post_id > 0 && ( wp4t_is_edit_roles() || current_user_can( 'edit_post', $post_id ) ) ) ? 1 : 0;
 		$members = wp4t_get_club_members();
 		foreach($members as $m) {
 			$response['memberlist'][] = array('value'=>$m->ID,'label'=>$m->display_name);

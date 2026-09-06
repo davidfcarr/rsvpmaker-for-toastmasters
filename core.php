@@ -717,6 +717,8 @@ echo '<p>'.wp4t_club_member_mailto().'</p>';
 
 	}
 
+	echo wp4t_tm_absence(['show_in_admin'=>true,'fromnow'=>true]);
+
 	?>
 
 <p><a href="./profile.php#user_login"><?php _e( 'Edit My Member Profile', 'rsvpmaker-for-toastmasters' ); ?></a>
@@ -8864,18 +8866,6 @@ function wpt_member_signups_suggestions ($user_id = 0, $sortalpha = false) {
 	foreach($meetings as $meeting) {
 
 		$output .= sprintf('<h4><a href="%s?mode=edit">%s %s</a></h4>', get_permalink($meeting->ID), $meeting->post_title, rsvpmaker_date($rsvp_options['long_date'],$meeting->ts_start));
-
-		$ab = wp4t_get_absences_array( $meeting->ID );
-
-		if(in_array($user_id,$ab))
-
-			{
-
-				$output .= '<p><strong>Planned absence</strong></p>';
-
-				continue;
-
-			}
 
 		$exists = $wpdb->get_var("select meta_key from $wpdb->postmeta where meta_key LIKE '_role_%' and post_id=$meeting->ID and meta_value=$user_id ");
 
@@ -22498,7 +22488,7 @@ function rsvptoast_showbutton( $showbutton ) {
 
 add_filter( 'rsvpmaker_showbutton', 'rsvptoast_showbutton' );
 
-function wp4t_tm_absence( $atts ) {
+function wp4t_tm_absence( $atts = [] ) {
 
 	global $email_context;
 
@@ -22516,7 +22506,7 @@ function wp4t_tm_absence( $atts ) {
 
 	}
 
-	if ( is_admin() ) {
+	if ( is_admin() && empty($atts['show_in_admin']) ) {
 
 		return;
 
@@ -22543,10 +22533,10 @@ function wp4t_tm_absence( $atts ) {
 	}
 
 	$output = '';
-	$absence_data = wp4t_get_absences( $post->ID, $current_user->ID );
+	$absence_data = wp4t_get_absences( $post->ID, $current_user->ID, isset($atts['fromnow']) );
 	$absences     = ( ! empty( $absence_data['absences'] ) && is_array( $absence_data['absences'] ) ) ? $absence_data['absences'] : array();
 
-	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['show_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['wp4t_signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
+	if ( isset($atts['show_in_admin']) || isset( $_GET['print_agenda'] ) || isset( $_GET['show_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['wp4t_signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
 
 		$list = [];
 
@@ -22641,7 +22631,32 @@ function wp4t_remove_absence($user_id) {
 	delete_user_meta($user_id,$untilkey);
 }
 
-function wp4t_get_absences($post_id=0, $user_id = 0) {
+function wp4t_get_absences_array($post_id=0) {
+	$absences = wp4t_get_absences($post_id);
+	$ids = [];
+	foreach($absences as $ab) {
+		$ids[] = $ab['ID'];
+	}
+	return $ids;
+}
+
+function wp4t_get_user_absence_status($user_id, $post_id = 0) {
+	if($post_id)
+		$event = get_rsvpmaker_event($post_id);
+	else {
+		$f = rsvpmaker_get_future_events('',1);
+		$event = $f[0];
+	}
+	$key = 'wp4t_absence' . (is_multisite() ? '_' . get_current_blog_id() : '');
+	$untilkey = $key . '_until';
+	$start = get_user_meta($user_id, $key, true);
+	$until = get_user_meta($user_id, $untilkey, true);
+	if(empty($start) || $start > $event->ts_start || $until < $event->ts_start)
+		return '';
+	return __('Planned Absence','rsvpmaker-for-toastmasters') . ($start != $until) ? rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $until) : '';
+}
+
+function wp4t_get_absences($post_id=0, $user_id = 0, $fromnow = false) {
 if(empty($post_id))
 	{
 		$f = rsvpmaker_get_future_events('',1);
@@ -22667,9 +22682,9 @@ $untilresults = $wpdb->get_results($untilsql);
 foreach($untilresults as $row) {
 	if(wp4t_is_club_member($row->user_id)) {
 		$start = get_user_meta($row->user_id,$key,true);
-		if($start <= $event->ts_start) {
+		if($fromnow || ($start <= $event->ts_start)) {
 			$name = wp4t_get_member_name($row->user_id);
-			$dates = ($start != $row->meta_value) ? rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $row->meta_value) : '';
+			$dates = ($start != $row->meta_value) ? rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $row->meta_value) : rsvpmaker_date('F j', $start);
 			$absences[] = array('ID' => $row->user_id, 'label' => $name, 'until' => $row->meta_value, 'dates' => $dates);
 			if($user_id && $row->user_id == $user_id) {
 				$user_is_absent = true;
@@ -22680,7 +22695,7 @@ foreach($untilresults as $row) {
 $event_table = get_rsvpmaker_event_table();
 //events following post_id selected event
 $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE ts_start >  %d", $event_table, $event->ts_start));
-$upcoming_events = [['value' => 0, 'label' => 'Just this one']];
+$upcoming_events = [['value' => $event->ts_start, 'label' => __('Just this meeting','rsvpmaker-for-toastmasters')]];
 foreach($results as $row) {
 	// process each following event as needed
 	$upcoming_events[] = array('value' => $row->ts_start, 'label' => rsvpmaker_date($rsvp_options['long_date'], $row->ts_start));
@@ -22725,9 +22740,6 @@ if ( 'add' == $operation ) {
 	if ( empty( $away_user_id ) ) {
 		return array( 'status' => 'invalid user id' );
 	}
-	if ( ( $away_user_id !== $current_user_id ) && ! wp4t_is_edit_roles() && ! current_user_can( 'edit_post', $post_id ) ) {
-		return array( 'status' => 'permission denied' );
-	}
 	wp4t_add_absence($away_user_id, $event->ts_start, !empty($data->until) ? $data->until : $event->ts_start);
 	$status .= 'add '.$away_user_id.'  '.$event->ts_start .' to '.(!empty($data->until) ? $data->until : $event->ts_start);
 }
@@ -22736,9 +22748,6 @@ if ( 'remove' == $operation ) {
 	$away_user_id = intval($data->ID);
 	if ( empty( $away_user_id ) ) {
 		return array( 'status' => 'invalid user id' );
-	}
-	if ( ( $away_user_id !== $current_user_id ) && ! wp4t_is_edit_roles() && ! current_user_can( 'edit_post', $post_id ) ) {
-		return array( 'status' => 'permission denied' );
 	}
 	wp4t_remove_absence($away_user_id);
 	$status .= 'remove '.$away_user_id.' post_id '.$post_id;
