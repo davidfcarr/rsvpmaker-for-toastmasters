@@ -293,7 +293,9 @@ export default function Agenda(props) {
                 {Array.isArray(data.blocksdata) && data.blocksdata.map((block, blockindex) => {
                     datestring = date.toLocaleTimeString('en-US', { hour: "2-digit", minute: "2-digit", hour12: true });
 
-                    if(block.rendered && block.rendered.length > 0) {
+                    const forceClientRender = ['wp4toastmasters/absences', 'wp4toastmasters/hybrid'].includes(block.blockName);
+
+                    if(block.rendered && block.rendered.length > 0 && !forceClientRender) {
                         return <SanitizedHTML innerHTML={block.rendered} />
                     }
 

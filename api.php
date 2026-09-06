@@ -3257,12 +3257,9 @@ class WP4T_Absences extends WP_REST_Controller {
 	public function handle( $request ) {
 	rsvpmaker_debug_log($_SERVER['SERVER_NAME'].' '.$_SERVER['REQUEST_URI'],'rsvpmaker_api');
 		global $rsvp_options;
-		$response['absences'] = wp4t_tm_absences_json();
-		$future = future_toastmaster_meetings();
-		$response['upcoming'][] = array('value'=>'','label'=>'Just this meeting');
-		foreach($future as $f)
-			$response['upcoming'][] = array('value'=>$f->datetime,'label'=>'until '.rsvpmaker_date($rsvp_options['long_date'],rsvpmaker_strtotime($f->datetime)));
-		$response['memberlist'][] = array('value'=>'0','label'=>'Choose Member');
+		$response = wp4t_tm_absences_json();
+		$post_id = intval( $request->get_param( 'post_id' ) );
+		$response['can_manage_others'] = ( $post_id > 0 && ( wp4t_is_edit_roles() || current_user_can( 'edit_post', $post_id ) ) ) ? 1 : 0;
 		$members = wp4t_get_club_members();
 		foreach($members as $m) {
 			$response['memberlist'][] = array('value'=>$m->ID,'label'=>$m->display_name);

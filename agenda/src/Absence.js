@@ -3,13 +3,16 @@ import {useQuery,useMutation, useQueryClient} from 'react-query';
 import {SelectCtrl} from './Ctrl.js'
 import apiClient, { setupNonceInterceptor } from './http-common.js';
 import { useRsvpmakerRest } from './useRsvpmakerRest.js';
-import { Icon, plusCircle, cancelCircleFilled } from '@wordpress/icons';
+import { Icon, plusCircle, cancelCircleFilled, edit } from '@wordpress/icons';
 
 export function Absence(props) {
     const {current_user_id, post_id, mode, makeNotification} = props;
     const [addtolist,setAddToList] = useState(0);
     const [until,setUntil] = useState('');
+    const [showEditor,setShowEditor] = useState(false);
     const rsvpmaker_rest = useRsvpmakerRest();
+
+    console.log('absence mode ', mode);
     
     useEffect(() => {
         if (rsvpmaker_rest?.nonce) {
@@ -17,10 +20,11 @@ export function Absence(props) {
         }
     }, [rsvpmaker_rest?.nonce]);
 
+
     const { isLoading, isFetching, isSuccess, isError, data, error, refetch} =
     useQuery(['absences-data',post_id], fetchAbsences, { enabled: true, retry: 2, onSuccess, onError, refetchInterval: 60000 });
     function fetchAbsences() {
-        return apiClient.get('absences?post_id='+post_id);
+        return apiClient.get('absences?post_id='+post_id+'&user_id='+current_user_id+'&_locale=user');
     }
     function onSuccess(data) {
         //console.log('absences',data);
@@ -35,7 +39,7 @@ export function Absence(props) {
     const queryClient = useQueryClient();
 
     const absMutation = useMutation(
-        async (addremove) => { return await apiClient.post("absences?post_id="+post_id+'&_locale=user', addremove)},
+        async (addremove) => { return await apiClient.post("absences?post_id="+post_id+'&user_id='+current_user_id+'&_locale=user', addremove)},
         {
             onMutate: async (addremove) => {
                 await queryClient.cancelQueries(['absences-data',post_id]);
@@ -72,15 +76,37 @@ export function Absence(props) {
     );
 
     function getMemberName(id) {
-        let m = memberlist.find( (item) => { if(item.value == id) return item; } );
-        return m?.label;
+        if(!Array.isArray(memberlist))
+            return '';
+        let m = memberlist.find((item) => item.value == id);
+        return m?.label ? m.label : '';
     }
 
     function removeAbsence(id,index,until) {
-        absMutation.mutate({'operation':'remove','index':index,'ID':id,'until':until});
+        const normalizedId = parseInt(id, 10);
+        if(!normalizedId)
+            return;
+        absMutation.mutate({'operation':'remove','index':index,'ID':normalizedId,'until':until ? until : ''});
     }
     function addAbsence(id, selectedUntil = '') {
-        absMutation.mutate({'operation':'add','ID':id,'name':getMemberName(id),'until':selectedUntil});
+        const normalizedId = parseInt(id, 10);
+        if(!normalizedId) {
+            makeNotification('Please select a member first.');
+            return;
+        }
+        const normalizedUntil = (selectedUntil === null || typeof selectedUntil === 'undefined') ? '' : selectedUntil;
+        absMutation.mutate({'operation':'add','ID':normalizedId,'name':getMemberName(normalizedId),'until':normalizedUntil});
+    }
+
+    function formatUntilDate(untilDate) {
+        if(!untilDate)
+            return '';
+        const raw = Number(untilDate);
+        if(!Number.isNaN(raw) && raw > 0) {
+            const millis = raw < 1000000000000 ? raw * 1000 : raw;
+            return new Date(millis).toLocaleDateString();
+        }
+        return new Date(untilDate).toLocaleDateString();
     }
 
     function addSelfSingleMeeting() {
@@ -96,6 +122,11 @@ export function Absence(props) {
     return <div>Loading absences list ...</div>
     
     const {absences, upcoming,memberlist} = data.data; 
+    const canManageOthers = (mode == 'edit') || !!data?.data?.can_manage_others;
+    const showManagerPanel = (mode == 'edit') || showEditor;
+    console.log('absences',absences);
+    console.log('upcoming',upcoming);
+    console.log('memberlist',memberlist);
 
     let absentIndex = -1;
     let meuntil = '';
@@ -108,29 +139,39 @@ export function Absence(props) {
             }
     });
 
-    if('edit' == mode)
-    return (<div className="absence">
-        <h3>Planned Absences</h3>
+    function ManagerPanel() {
+        return (<>
         {absences.map( (ab, index) => {
-            return <p><button className="tmform" onClick={() => {removeAbsence(ab.ID,index,ab.until);} }>Remove</button> {ab.name} { (ab.until && ab.until != '') && <em>until {new Date(ab.until).toLocaleDateString()}</em>}</p>
+            const name = ab.label ? ab.label : ab.name;
+            return <p><button type="button" className="tmform" onClick={() => {removeAbsence(ab.ID,index,ab.until);} }>Remove</button> {name}</p>
         } ) }
         <SelectCtrl label="Add Member to List" value={addtolist} options={memberlist} onChange={(id) => { setAddToList(id) }} />
         <SelectCtrl label="One meeting or several?" options={upcoming} value={until} onChange={setUntil} />
-        <button className="tmform" onClick={() => {addAbsence(addtolist)} }>Add</button>
+        <button type="button" className="tmform" onClick={() => {addAbsence(addtolist, until)} }>Add</button>
+        </>);
+    }
+
+    if('edit' == mode)
+    return (<div className="absence">
+        <h3>Planned Absences</h3>
+        <ManagerPanel />
     </div>);
 
     //signup mode
     return (<div className="absence">
     <h3>Planned Absences</h3>
     {absences.map( (ab) => {
-    return <p>{ab.name} { (ab.until && ab.until != '') && <em>until {new Date(ab.until).toLocaleDateString()}</em>}</p>
+    const name = ab.label ? ab.label : ab.name;
+    return <p>{name}</p>
     } ) }
     {(absentIndex > -1) && <div>
         <SelectCtrl label="Absent until" options={upcoming} value={until ? until : meuntil} onChange={extendSelfAbsenceUntil} />
     </div>}
     <p>
-        {(absentIndex > -1) && <button className="agenda-tooltip" onClick={() => {removeAbsence(current_user_id,absentIndex,meuntil)} }><span className="agenda-tooltip-text">Remove Me</span><Icon icon={cancelCircleFilled} /></button>}
-        {(absentIndex < 0) && <button className="agenda-tooltip" onClick={addSelfSingleMeeting}><span className="agenda-tooltip-text">Add Me</span><Icon icon={plusCircle} /></button>}
+        {(absentIndex > -1) && <button type="button" className="agenda-tooltip" onClick={() => {removeAbsence(current_user_id,absentIndex,meuntil)} }><span className="agenda-tooltip-text">Remove Me</span><Icon icon={cancelCircleFilled} /></button>}
+        {(absentIndex < 0) && <button type="button" className="agenda-tooltip" onClick={addSelfSingleMeeting}><span className="agenda-tooltip-text">Add Me</span><Icon icon={plusCircle} /></button>}
+        {canManageOthers && <button type="button" className="agenda-tooltip" onClick={() => setShowEditor(!showEditor)}><span className="agenda-tooltip-text">Edit Absences</span><Icon icon={edit} /></button>}
     </p>
+    {canManageOthers && showManagerPanel && <div className="absence-manager-panel"><ManagerPanel /></div>}
     </div>);
 }

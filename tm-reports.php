@@ -4106,42 +4106,6 @@ function wp4t_wp_ajax_editor_assign() {
 	wp_die();
 }
 add_action( 'wp4t_wp_ajax_editor_assign', 'wp4t_wp_ajax_editor_assign' );
-function wp4t_wp_ajax_absences_remove() {
-	global $wpdb;
-	$post_id = (int) $_POST['post_id'];
-	$user_id = (int) $_POST['user_id'];
-	if ( $user_id < 1 ) {
-		wp_die( 'user id was empty' );
-	}
-	$userdata = get_userdata( $user_id );
-	if ( empty( $userdata->first_name ) ) {
-		$name = $userdata->display_name;
-	} else {
-		$name = $userdata->first_name . ' ' . $userdata->last_name;
-	}
-	printf( '%s removed from absences list', $name );
-	delete_post_meta( $post_id, 'wp4t_tm_absence', $user_id );
-	wp_die();
-}
-add_action( 'wp4t_wp_ajax_absences_remove', 'wp4t_wp_ajax_absences_remove' );
-function wp4t_wp_ajax_editor_absences() {
-	global $wpdb;
-	$post_id = (int) $_POST['post_id'];
-	$user_id = (int) $_POST['user_id'];
-	if ( $user_id < 1 ) {
-		wp_die( 'user id was empty' );
-	}
-	$userdata = get_userdata( $user_id );
-	if ( empty( $userdata->first_name ) ) {
-		$name = $userdata->display_name;
-	} else {
-		$name = $userdata->first_name . ' ' . $userdata->last_name;
-	}
-	printf( '%s added to absences list', $name );
-	add_post_meta( $post_id, 'wp4t_tm_absence', $user_id );
-	wp_die();
-}
-add_action( 'wp4t_wp_ajax_editor_absences', 'wp4t_wp_ajax_editor_absences' );
 function wp4t_get_tm_stats( $user_id = 0 ) {
 	global $current_user;
 	global $stats_array;

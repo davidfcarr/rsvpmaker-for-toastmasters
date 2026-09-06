@@ -12828,57 +12828,6 @@ $('.editor_assign').on('change', function(){
 
 });	
 
-$('.absences').on('change', function(){
-
-	var user_id = this.value;
-
-	if(user_id < 1)
-
-		return;
-
-	var id = this.id;
-
-	var post_id = $('#'+id).attr('post_id');
-
-	var statusid = 'status_absences'+post_id;
-
-	$('#'+statusid).html('Saving ...');
-
-	var editor_id = $('#editor_id').val();
-
-	if(post_id > 0)
-
-	{
-
-		var data = {
-
-			'action': 'editor_absences',
-
-			'away_user_id': user_id,
-
-			'editor_id': editor_id,
-
-			'timelord': timelord,
-
-			'post_id': post_id
-
-		};
-
-		jQuery.post(ajaxurl, data, function(response) {
-
-		console.log(response);
-
-		$('#'+statusid).html(response.content);
-
-		$('#'+statusid).fadeIn(200);
-
-		wp4t_norole(post_id);
-
-		});
-
-	}
-
-});	
 
 $('.assign_to_guest').on('click', function(){
 
@@ -12928,57 +12877,6 @@ $('.assign_to_guest').on('click', function(){
 
 });
 
-$('.absences_remove').on('click', function(){
-
-	var user_id = this.value;
-
-	if(user_id < 1)
-
-		return;
-
-	var id = this.id;
-
-	var post_id = $('#'+id).attr('post_id');
-
-	var statusid = 'current_absences'+post_id+user_id;
-
-	$('#'+statusid).html('Saving ...');
-
-	var editor_id = $('#editor_id').val();
-
-	if(post_id > 0)
-
-	{
-
-		var data = {
-
-			'action': 'absences_remove',
-
-			'user_id': user_id,
-
-			'editor_id': editor_id,
-
-			'timelord': timelord,
-
-			'post_id': post_id
-
-		};
-
-		jQuery.post(ajaxurl, data, function(response) {
-
-		console.log(response);
-
-		$('#'+statusid).html(response);
-
-		$('#'+statusid).fadeIn(200);
-
-		wp4t_norole(post_id);
-
-		});
-
-	}
-
-});	
 
 function wp4t_norole(post_id) {
 
@@ -15203,52 +15101,6 @@ function wp4t_assigned_open() {
 	}
 
 	return $roster;
-
-}
-
-function wp4t_get_absences_array( $post_id ) {
-
-	global $post;
-
-	$absences = get_post_meta( $post_id, 'wp4t_tm_absence' );
-
-	if ( empty( $absences ) ) {
-
-		$absences = array();
-
-	}
-
-	if(isset($_GET['test']))
-
-		print_r($absences);
-
-		$time      = get_rsvpmaker_timestamp( $post_id );
-
-		$away      = '';
-
-		$blogusers = get_users( 'blog_id=' . get_current_blog_id() );
-
-		// Array of WP_User objects.
-
-	foreach ( $blogusers as $user ) {
-
-		$exp = get_user_meta( $user->ID, 'status_expires', true );
-
-		if ( empty( $exp ) ) {
-
-			continue;
-
-		}
-
-		if ( $exp >= $time ) {
-
-			$absences[] = $user->ID;
-
-		}
-
-	}
-
-	return array_unique( $absences );
 
 }
 
@@ -22654,8 +22506,6 @@ function wp4t_tm_absence( $atts ) {
 
 	global $current_user;
 
-	global $wpdb;
-
 	global $rsvp_options, $email_context;
 
 	if ( is_admin() && isset( $_GET['convert'] ) ) {
@@ -22684,113 +22534,17 @@ function wp4t_tm_absence( $atts ) {
 
 	}
 
-	$event_table = get_rsvpmaker_event_table();
+	if ( function_exists( 'wp4t_get_dynamic_agenda_script_handle' ) ) {
+		$script_handle = wp4t_get_dynamic_agenda_script_handle( 'viewScript' );
+		if ( ! empty( $script_handle ) ) {
+			wp_enqueue_script( $script_handle );
+			wp_localize_script( $script_handle, 'wpt_rest', wpt_rest_array() );
+		}
+	}
 
 	$output = '';
-
-	if ( isset( $_POST['add_absence'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-
-		$away_user_id = intval($_POST['away_user_id']);
-
-		add_post_meta( $post->ID, 'wp4t_tm_absence', $away_user_id );
-
-		if(!empty($_POST['until'])) {
-
-			$until = sanitize_text_field($_POST['until']);
-
-			$thisdate = get_rsvp_date($post->ID);
-
-			$results = $wpdb->get_results("SELECT event from $event_table WHERE date > '$thisdate' AND date <= '$until' ");
-
-			foreach($results as $row)
-
-				add_post_meta( $row->event, 'wp4t_tm_absence', $away_user_id );
-
-		}
-
-	}
-
-	if ( isset( $_POST['cancel_absence'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-
-		$away_user_id = intval($_POST['away_user_id']);
-
-		delete_post_meta( $post->ID, 'wp4t_tm_absence', $away_user_id );
-
-		if(!empty($_POST['until'])) {
-
-			$until = sanitize_text_field($_POST['until']);
-
-			$results = $wpdb->get_results("SELECT event from $event_table WHERE  date > '$thisdate' AND date <= '$until' ");
-
-			foreach($results as $row)
-
-				delete_post_meta( $row->event, 'wp4t_tm_absence', $away_user_id );
-
-		}
-
-	}
-
-	if(isset($_POST['remove_absence'])) {
-
-		foreach($_POST['remove_absence'] as $a) {
-
-			$a = intval($a);
-
-			delete_post_meta( $post->ID, 'wp4t_tm_absence', $a );
-
-		}
-
-	}
-
-	$absences = get_post_meta( $post->ID, 'wp4t_tm_absence' );
-
-	if ( is_array( $absences ) ) {
-
-		$absences = array_unique( $absences );
-
-	}
-
-	if ( wp4t_is_edit_roles() || isset( $_GET['recommend_roles'] ) || isset( $_GET['wp4t_signup_sheet_editor'] ) ) {
-
-		if ( ! empty( $absences ) && is_array( $absences ) ) {
-
-			$output .= '<div><strong>Planned Absences</strong> : ';
-
-			foreach ( $absences as $absent ) {
-
-				$userdata = get_userdata( $absent );
-
-				if(rsvpmaker_is_email_context() || isset($_GET['print_agenda']))
-
-				$output  .= sprintf( '<div id="current_absences%s%s">%s %s  Cancel</div>', $post->ID, $absent, $userdata->first_name, $userdata->last_name );
-
-				else
-
-				$output  .= sprintf( '<div id="current_absences%s%s">%s %s <input type="checkbox" id="absences_remove%d" class="absences_remove" name="cancel_absences[]" post_id="%s" value="%d" /> Cancel</div>', $post->ID, $absent, $userdata->first_name, $userdata->last_name, $absent, $post->ID, $absent );
-
-			}
-
-			$output .= '</div>';
-
-		}
-
-		$output .= '<div>Add to Planned Absences list</div>';
-
-		for ( $i = 0; $i < 4; $i++ ) {
-
-			$select  = wp4t_awe_user_dropdown( 'absences[]', 0, true );
-
-			$select  = str_replace( '<select ', '<select id="absences' . $i . $post->ID . '" class="absences" post_id="' . $post->ID . '"', $select );
-
-			$output .= sprintf( '<div>%s</div>', $select );
-
-		}
-
-		$output .= '<div id="status_absences' . $post->ID . '"></div>';
-
-		return $output;
-
-	}
+	$absence_data = wp4t_get_absences( $post->ID, $current_user->ID );
+	$absences     = ( ! empty( $absence_data['absences'] ) && is_array( $absence_data['absences'] ) ) ? $absence_data['absences'] : array();
 
 	if ( isset( $_GET['print_agenda'] ) || isset( $_GET['show_agenda'] ) || isset( $_GET['email_agenda'] ) || isset( $_GET['wp4t_signup_sheet_editor'] ) || $email_context || !is_user_logged_in() ) {
 
@@ -22798,15 +22552,14 @@ function wp4t_tm_absence( $atts ) {
 
 		foreach ( $absences as $absent ) {
 
-		$userdata = get_userdata( $absent );
-		if($userdata) {
-			$name = empty( $userdata->first_name ) ? $userdata->display_name : $userdata->first_name.' '.$userdata->last_name;
-			$until = get_user_meta( $absent, 'tm_absence_until', true );
-			if ( ! empty( $until ) && strtotime( $until ) > time() ) {
-				$name .= ' (' . __( 'until', 'rsvpmaker-for-toastmasters' ) . ' ' . rsvpmaker_date( $rsvp_options['long_date'], rsvpmaker_strtotime( $until ) ) . ')';
+			$name = ! empty( $absent['label'] ) ? $absent['label'] : '';
+			if ( empty( $name ) && ! empty( $absent['ID'] ) ) {
+				$name = wp4t_get_member_name( intval( $absent['ID'] ) );
 			}
-			$list[] = $name;
-		}
+
+			if ( ! empty( $name ) ) {
+				$list[] = $name;
+			}
 
 		}
 
@@ -22817,32 +22570,6 @@ function wp4t_tm_absence( $atts ) {
 		}
 
 		return $output; // don't display button
-
-	}
-
-	if ( ! empty( $absences ) && is_array( $absences )  ) {
-
-		$output .= '<div><strong>Planned Absences</strong>: ';
-
-		$output .= '<form method="post" action="'.get_permalink().'">';
-
-		foreach ( $absences as $absent ) {
-
-			$userdata = get_userdata( $absent );
-
-			if ( ! empty( $userdata->first_name ) ) {
-
-				$output .= sprintf( '<br /><input class="remove_absences" type="checkbox" name="remove_absence[]" value="%d"> %s %s', $absent, $userdata->first_name, $userdata->last_name );
-
-			}
-
-		}
-
-		$output .= '<p class="remove_absences"><button>Remove Checked</button></p></form>';
-
-		$output .= '<p class="remove_names_line"><input type="checkbox" class="remove_names"> Remove names</p>';
-
-		$output .= '</div>';
 
 	}
 
@@ -22892,46 +22619,71 @@ function wp4t_tm_absence( $atts ) {
 
 	}
 
-	$future = future_toastmaster_meetings(26);
-
-	if('rsvpmaker' == $post->post_type)
-
-		$o = '<option value="">'.__('Just this meeting','rsvpmaker-for-toastmasters').'</option>';
-
-	else
-
-		$o = '<option value="'.$future[0]->date.'">'.__('Just the next meeting','rsvpmaker-for-toastmasters').'</option>';
-
-	foreach($future  as $f) {
-
-		$o .= sprintf('<option value="%s">%s %s</option>',$f->datetime,__('Until','rsvpmaker-for-taostmasters'),rsvpmaker_prettydate($f->ts_start,'short_date'));
-
-	}
-
-	$me_absent = ( ! empty( $absences ) && is_array( $absences ) && in_array( $current_user->ID, $absences ) );
-	$me_until  = $me_absent ? get_user_meta( $current_user->ID, 'tm_absence_until', true ) : '';
-	$status_id = 'wp4t_absence_status_' . $post->ID;
+	$mode      = ( wp4t_is_edit_roles() || isset( $_GET['recommend_roles'] ) || isset( $_GET['wp4t_signup_sheet_editor'] ) ) ? 'edit' : 'signup';
 	$widget_id = 'wp4t_absence_widget_' . $post->ID;
-	$output .= '<div id="' . esc_attr( $widget_id ) . '" class="wp4t-absence-widget" data-endpoint="' . esc_url( get_rest_url( null, 'rsvptm/v1/absences' ) ) . '" data-post-id="' . intval( $post->ID ) . '" data-user-id="' . intval( $current_user->ID ) . '" data-until="' . esc_attr( $me_until ) . '" data-absent="' . ( $me_absent ? '1' : '0' ) . '">';
-	$output .= '<h4>' . __( 'Planned Absence', 'rsvpmaker-for-toastmasters' ) . '</h4>';
-	$output .= '<p>';
-	if ( $me_absent ) {
-		$output .= '<button type="button" class="agenda-tooltip wp4t-absence-remove" aria-label="' . esc_attr__( 'Remove me from absences', 'rsvpmaker-for-toastmasters' ) . '"><span class="agenda-tooltip-text">' . esc_html__( 'Remove Me', 'rsvpmaker-for-toastmasters' ) . '</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4C7.6 4 4 7.6 4 12s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm3.5 10.1-1.4 1.4-2.1-2.1-2.1 2.1-1.4-1.4 2.1-2.1-2.1-2.1 1.4-1.4 2.1 2.1 2.1-2.1 1.4 1.4-2.1 2.1 2.1 2.1z"/></svg></button> ';
-		$output .= __( 'Remove me from absences', 'rsvpmaker-for-toastmasters' );
-	} else {
-		$output .= '<button type="button" class="agenda-tooltip wp4t-absence-add" aria-label="' . esc_attr__( 'Add me to absences', 'rsvpmaker-for-toastmasters' ) . '"><span class="agenda-tooltip-text">' . esc_html__( 'Add Me', 'rsvpmaker-for-toastmasters' ) . '</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4C7.6 4 4 7.6 4 12s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm1 4.5v2.5h2.5v2H13v2.5h-2V13H8.5v-2H11V8.5h2z"/></svg></button> ';
-		$output .= __( 'Add me to absences', 'rsvpmaker-for-toastmasters' );
-	}
-	$output .= '</p>';
-	$output .= '<div class="wp4t-absence-until" style="display:' . ( $me_absent ? 'block' : 'none' ) . '">';
-	$output .= '<label>' . __( 'Absent until', 'rsvpmaker-for-toastmasters' ) . ' <select class="wp4t-absence-until-select">' . $o . '</select></label>';
-	$output .= '</div>';
-	$output .= '<div id="' . esc_attr( $status_id ) . '" class="wp4t-absence-status" aria-live="polite"></div>';
-	$output .= '<p>' . __( 'Use this to mark yourself unavailable for one or more meetings.', 'rsvpmaker-for-toastmasters' ) . '</p>';
-	$output .= '</div>';
+	$output   .= '<div id="' . esc_attr( $widget_id ) . '" class="wp4t-react-absence" data-post-id="' . intval( $post->ID ) . '" data-user-id="' . intval( $current_user->ID ) . '" data-mode="' . esc_attr( $mode ) . '"></div>';
 
 	return $output;
 
+}
+
+function wp4t_add_absence($user_id, $start, $until = null) {
+	$key = 'wp4t_absence' . (is_multisite() ? '_' . get_current_blog_id() : '');
+	$untilkey = $key . '_until';
+	if(empty($until))
+		$until = $start;
+	update_user_meta($user_id,$key,$start);
+	update_user_meta($user_id,$untilkey,$until);
+}
+
+function wp4t_remove_absence($user_id) {
+	$key = 'wp4t_absence' . (is_multisite() ? '_' . get_current_blog_id() : '');
+	$untilkey = $key . '_until';
+	delete_user_meta($user_id,$key);
+	delete_user_meta($user_id,$untilkey);
+}
+
+function wp4t_get_absences($post_id, $user_id = 0) {
+global $wpdb, $rsvp_options;
+$event = get_rsvpmaker_event($post_id);
+$key = 'wp4t_absence' . (is_multisite() ? '_' . get_current_blog_id() : '');
+$until = $key . '_until';
+$legacy = get_post_meta( $post_id, 'wp4t_tm_absence');
+if(!empty($legacy) && is_array($legacy)) {
+	foreach($legacy as $user_id) {
+		wp4t_add_absence($user_id, $event->ts_start);
+	}
+	delete_post_meta( $post_id, 'wp4t_tm_absence' );
+}
+$absences = [];
+$user_is_absent = false;
+$untilsql = $wpdb->prepare("SELECT * FROM $wpdb->usermeta WHERE meta_key = '%s' and meta_value >= %d", $until,$event->ts_start);
+$untilresults = $wpdb->get_results($untilsql);
+foreach($untilresults as $row) {
+	if(wp4t_is_club_member($row->user_id)) {
+		$start = get_user_meta($row->user_id,$key,true);
+		if($start <= $event->ts_start) {
+			$name = wp4t_get_member_name($row->user_id);
+			$dates = ($start != $row->meta_value) ? ' ('.rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $row->meta_value).')' : '';
+			$absences[] = array('ID' => $row->user_id, 'label' => $name . $dates, 'until' => $row->meta_value);
+			if($user_id && $row->user_id == $user_id) {
+				$user_is_absent = true;
+			}
+		}
+	}
+}
+$event_table = get_rsvpmaker_event_table();
+//events following post_id selected event
+$results = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE ts_start >  %d", $event_table, $event->ts_start));
+$upcoming_events = [['value' => 0, 'label' => 'Just this one']];
+foreach($results as $row) {
+	// process each following event as needed
+	$upcoming_events[] = array('value' => $row->ts_start, 'label' => rsvpmaker_date($rsvp_options['long_date'], $row->ts_start));
+}
+usort($absences, function($a, $b) {
+	return strcasecmp($a['label'], $b['label']);
+});
+return array('absences' => $absences, 'user_is_absent' => $user_is_absent, 'upcoming' => $upcoming_events);
 }
 
 function wp4t_tm_absences_json() {
@@ -22947,101 +22699,48 @@ $data = array();
 $json = file_get_contents('php://input');
 
 if($json) {
-
 	$data = json_decode($json);
-
+	$away_user_id = intval($data->ID);
 	$operation = $data->operation;
-
 }
 
-if(isset($_GET['post_id']))
+$post_id = (isset($_GET['post_id']) ? intval($_GET['post_id']) : 0);
+$user_id = (isset($_GET['user_id']) ? intval($_GET['user_id']) : 0);
+$event = get_rsvpmaker_event($post_id);
+$current_user_id = get_current_user_id();
 
-	$post_id = intval($_GET['post_id']);
+if ( empty( $post_id ) || empty( $event ) ) {
+	return array( 'status' => 'invalid post_id' );
+}
 
 $status = '';
 
 if ( 'add' == $operation ) {
-
 	$away_user_id = intval($data->ID);
-
-	add_post_meta( $post_id, 'wp4t_tm_absence', $away_user_id, true );
-
-	if(!empty($data->until)) {
-
-		$until = sanitize_text_field($data->until);
-
-		update_user_meta($away_user_id,'tm_absence_until',$until);
-
-		$thisdate = get_rsvp_date($post_id);
-
-		$results = $wpdb->get_results("SELECT event from $event_table WHERE date > '$thisdate' AND date <= '$until' ");
-
-		foreach($results as $row) {
-
-			add_post_meta( $row->event, 'wp4t_tm_absence', $away_user_id, true );
-
-			$status .= 'add '.$row->event.' ';
-
-		}
-
+	if ( empty( $away_user_id ) ) {
+		return array( 'status' => 'invalid user id' );
 	}
-
+	if ( ( $away_user_id !== $current_user_id ) && ! wp4t_is_edit_roles() && ! current_user_can( 'edit_post', $post_id ) ) {
+		return array( 'status' => 'permission denied' );
+	}
+	wp4t_add_absence($away_user_id, $event->ts_start, !empty($data->until) ? $data->until : $event->ts_start);
+	$status .= 'add '.$away_user_id.'  '.$event->ts_start .' to '.(!empty($data->until) ? $data->until : $event->ts_start);
 }
 
 if ( 'remove' == $operation ) {
-
 	$away_user_id = intval($data->ID);
-
-	$status .= 'attempt to remove '.$away_user_id.' post_id '.$post_id;
-
-	delete_post_meta( $post_id, 'wp4t_tm_absence', $away_user_id );
-
-	delete_user_meta($away_user_id,'tm_absence_until');
-
-	if(!empty($data->until)) {
-
-		$until = sanitize_text_field($data->until);
-
-		$thisdate = get_rsvp_date($post_id);
-
-		$results = $wpdb->get_results("SELECT event from $event_table WHERE  date > '$thisdate' AND date <= '$until' ");
-
-		foreach($results as $row)
-
-			delete_post_meta( $row->event, 'wp4t_tm_absence', $away_user_id );
-
+	if ( empty( $away_user_id ) ) {
+		return array( 'status' => 'invalid user id' );
 	}
-
-}
-
-$absences = get_post_meta( $post_id, 'wp4t_tm_absence' );
-
-if ( is_array( $absences ) ) {
-
-	$absences = array_unique( $absences );
-
-}
-
-$result = [];
-
-foreach($absences as $ab) {
-
-	$until = get_user_meta($ab,'tm_absence_until',true);
-
-	if(strtotime($until) < time()) {
-
-		delete_user_meta($ab,'tm_absence_until');
-
-		$until = '';
-
+	if ( ( $away_user_id !== $current_user_id ) && ! wp4t_is_edit_roles() && ! current_user_can( 'edit_post', $post_id ) ) {
+		return array( 'status' => 'permission denied' );
 	}
-
-	$result[] = array('ID'=>$ab,'name' => wp4t_get_member_name($ab),'until'=> $until,'operation' => $operation, 'status' => $status, 'request' => $data);
-
+	wp4t_remove_absence($away_user_id);
+	$status .= 'remove '.$away_user_id.' post_id '.$post_id;
 }
-
-return $result;
-
+$answer = wp4t_get_absences($post_id,$user_id);
+$answer['status'] = $status;
+return $answer;
 }
 
 function toastmasters_role_signup() {
