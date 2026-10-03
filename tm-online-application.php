@@ -1067,6 +1067,7 @@ add_shortcode('wp4t_dues_renewal','wp4t_dues_renewal');
 function wp4t_dues_renewal($atts) {
 	global $current_user;
 	$payprompt = '';
+	$user_id = 0;
 	$renew6 = get_option('tm_6monthfee');
 	$renew12 = get_option("tm_renew12");
 	if(empty($renew6))

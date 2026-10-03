@@ -1932,10 +1932,17 @@ $sync_link = add_query_arg('scoring','dashboard',get_permalink($sync_from));
 }
 add_shortcode('toast_ballot_standalone','toast_ballot_standalone');
 function toast_ballot_standalone() {
+	global $post, $current_user;
 	$contest_selection = wpt_get_contest_array();
+	$contest_defaults = array();
+	$actionlink = get_permalink();
+	$post_content = ( is_object( $post ) && isset( $post->post_content ) ) ? $post->post_content : '';
+	$post_id = ( is_object( $post ) && ! empty( $post->ID ) ) ? (int) $post->ID : 0;
 	$output = '';
 	if ( ! empty( $_POST['contest_scoring_more'] ) && wp_verify_nonce(rsvpmaker_nonce_data('data'),rsvpmaker_nonce_data('key')) ) {
-		update_post_meta($post->ID,'contest_data_model',1);
+		if ( $post_id ) {
+			update_post_meta($post_id,'contest_data_model',1);
+		}
 		foreach($_POST['contest_scoring_more'] as $index => $scoring_index) {
 			if(empty($scoring_index))
 				continue;
@@ -1974,7 +1981,7 @@ else {
 	} else {
 		$options .= get_option( 'toast_custom_contest' );
 	}
-	preg_match_all('/{"role":"([a-zA-Z ]+ Contest[^"]+)/',$post->post_content,$matches);
+	preg_match_all('/{"role":"([a-zA-Z ]+ Contest[^"]+)/',$post_content,$matches);
 	$roles = (isset($matches[1])) ? $matches[1] : array();
 	if(!empty($roles)) {
 		foreach($roles as $role){

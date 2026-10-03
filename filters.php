@@ -264,7 +264,7 @@ add_action('wp', function() {
 
 add_filter('the_title', function($title) {
 	global $post;
-	if((isset($_GET['mvote']) || isset($_GET['meetingvote'])) && $post->post_type == 'tmminutes') {
+	if((isset($_GET['mvote']) || isset($_GET['meetingvote'])) && is_object($post) && isset($post->post_type) && $post->post_type == 'tmminutes') {
 		$title = 'Member Vote';
 	}
 	return $title;
@@ -274,7 +274,10 @@ add_filter('the_title', function($title) {
 add_filter( 'the_content', function ( $content ) {
 	//return var_export( $_GET, true ) . $content;
 	global $post;
-	$post_id = isset($_GET['post_id']) ? (int) $_GET['post_id'] : $post->ID;
+	if ( ! is_object( $post ) ) {
+		return $content;
+	}
+	$post_id = isset($_GET['post_id']) ? (int) $_GET['post_id'] : ( isset( $post->ID ) ? (int) $post->ID : 0 );
 	$reactdiv ='';
 	$promo = '';
 	if('rsvpmaker_template' == $post->post_type)

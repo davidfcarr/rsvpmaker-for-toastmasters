@@ -6175,6 +6175,32 @@ function wptoast_reminder_clear() {
 
 }
 
+function wp4t_parse_reminder_hours( $setting_value ) {
+	$parts = explode( ' ', trim( (string) $setting_value ) );
+	$amount = isset( $parts[0] ) ? (int) $parts[0] : 0;
+	$unit = isset( $parts[1] ) ? strtolower( $parts[1] ) : 'hours';
+	if ( strpos( $unit, 'day' ) !== false ) {
+		$amount = $amount * 24;
+	}
+	return max( 0, $amount );
+}
+
+function wp4t_reminder_timestamp( $event, $hours_before ) {
+	$hours_before = (int) $hours_before;
+	if ( empty( $event ) ) {
+		return 0;
+	}
+	if ( ! empty( $event->ts_start ) ) {
+		$start_ts = (int) $event->ts_start;
+	} elseif ( ! empty( $event->datetime ) ) {
+		$timezone = ! empty( $event->timezone ) ? $event->timezone : '';
+		$start_ts = rsvpmaker_strtotime( $event->datetime, $timezone );
+	} else {
+		return 0;
+	}
+	return $start_ts - ( $hours_before * HOUR_IN_SECONDS );
+}
+
 function register_wp4toastmasters_settings() {
 
 	register_setting( 'wp4toastmasters-settings-group', 'wp4toastmasters_officer_titles' );
@@ -6276,17 +6302,7 @@ function register_wp4toastmasters_settings() {
 
 		if ( ! empty( $_POST['wp4toast_reminder'] ) ) {
 
-				$p = explode( ' ', sanitize_text_field($_POST['wp4toast_reminder']) );
-
-			if ( $p[1] == 'hours' ) {
-
-				$hours = $p[0];
-
-			} else {
-
-				$hours = $p[0] * 24;
-
-			}
+				$hours = wp4t_parse_reminder_hours( sanitize_text_field($_POST['wp4toast_reminder']) );
 
 				$fudge  = $hours + 1;
 
@@ -6296,7 +6312,7 @@ function register_wp4toastmasters_settings() {
 
 				$next = $future[0];
 
-				$timestamp = rsvpmaker_strtotime( $next->datetime . ' -' . $hours . ' hours' );
+				$timestamp = wp4t_reminder_timestamp( $next, $hours );
 
 				if(!wpt_exclude_agenda_functions())
 
@@ -6318,17 +6334,7 @@ function register_wp4toastmasters_settings() {
 
 		if ( ! empty( $previous ) ) {
 
-			$p = explode( ' ', $previous );
-
-			if ( $p[1] == 'hours' ) {
-
-				$hours = $p[0];
-
-			} else {
-
-				$hours = $p[0] * 24;
-
-			}
+			$hours = wp4t_parse_reminder_hours( $previous );
 
 			wp_clear_scheduled_hook( 'wp4toast_reminders_cron', array( $hours ) );
 
@@ -6336,17 +6342,7 @@ function register_wp4toastmasters_settings() {
 
 		if ( ! empty( $_POST['wp4toast_reminder2'] ) ) {
 
-				$p = explode( ' ', sanitize_text_field($_POST['wp4toast_reminder2']) );
-
-			if ( $p[1] == 'hours' ) {
-
-				$hours = $p[0];
-
-			} else {
-
-				$hours = $p[0] * 24;
-
-			}
+				$hours = wp4t_parse_reminder_hours( sanitize_text_field($_POST['wp4toast_reminder2']) );
 
 				$fudge  = $hours + 1;
 
@@ -6360,7 +6356,7 @@ function register_wp4toastmasters_settings() {
 
 				if(!wpt_exclude_agenda_functions())
 
-				wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
+				wp_schedule_event( wp4t_reminder_timestamp( $next, $hours ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 
 				update_option( 'wp4toast_reminders_cron', 1 );
 
@@ -6640,31 +6636,11 @@ function wp4toast_reminders_dst_fix( $args = array() ) {
 
 	if ( ! empty( $previous ) ) {
 
-		$p = explode( ' ', $previous );
-
-		if ( $p[1] == 'hours' ) {
-
-			$hours = $p[0];
-
-		} else {
-
-			$hours = $p[0] * 24;
-
-		}
+		$hours = wp4t_parse_reminder_hours( $previous );
 
 		wp_clear_scheduled_hook( 'wp4toast_reminders_cron', array( $hours ) );
 
-			$p = explode( ' ', $previous );
-
-		if ( $p[1] == 'hours' ) {
-
-			$hours = $p[0];
-
-		} else {
-
-			$hours = $p[0] * 24;
-
-		}
+			$hours = wp4t_parse_reminder_hours( $previous );
 
 			$fudge  = $hours + 1;
 
@@ -6678,7 +6654,7 @@ function wp4toast_reminders_dst_fix( $args = array() ) {
 
 				if(!wpt_exclude_agenda_functions())
 
-				wp_schedule_event( strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
+				wp_schedule_event( wp4t_reminder_timestamp( $next, $hours ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 
 		}
 
@@ -6688,37 +6664,17 @@ function wp4toast_reminders_dst_fix( $args = array() ) {
 
 	if ( ! empty( $previous ) ) {
 
-		$p = explode( ' ', $previous );
-
-		if ( $p[1] == 'hours' ) {
-
-			$hours = $p[0];
-
-		} else {
-
-			$hours = $p[0] * 24;
-
-		}
+		$hours = wp4t_parse_reminder_hours( $previous );
 
 		wp_clear_scheduled_hook( 'wp4toast_reminders_cron', array( $hours ) );
 
-			$p = explode( ' ', $previous );
-
-		if ( $p[1] == 'hours' ) {
-
-			$hours = $p[0];
-
-		} else {
-
-			$hours = $p[0] * 24;
-
-		}
+			$hours = wp4t_parse_reminder_hours( $previous );
 
 			$fudge = $hours + 1;
 
 		if ( ! empty( $next ) && (!wpt_exclude_agenda_functions())) {
 
-				wp_schedule_event( rsvpmaker_strtotime( $next->datetime . ' -' . $hours . ' hours' ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
+				wp_schedule_event( wp4t_reminder_timestamp( $next, $hours ), 'weekly', 'wp4toast_reminders_cron', array( $next->ID . ':' . $hours ) );
 
 		}
 
@@ -22632,10 +22588,13 @@ function wp4t_remove_absence($user_id) {
 }
 
 function wp4t_get_absences_array($post_id=0) {
-	$absences = wp4t_get_absences($post_id);
+	$data = wp4t_get_absences($post_id);
+	$absences = ( isset( $data['absences'] ) && is_array( $data['absences'] ) ) ? $data['absences'] : array();
 	$ids = [];
 	foreach($absences as $ab) {
-		$ids[] = $ab['ID'];
+		if ( isset( $ab['ID'] ) ) {
+			$ids[] = $ab['ID'];
+		}
 	}
 	return $ids;
 }
@@ -22645,7 +22604,10 @@ function wp4t_get_user_absence_status($user_id, $post_id = 0) {
 		$event = get_rsvpmaker_event($post_id);
 	else {
 		$f = rsvpmaker_get_future_events('',1);
-		$event = $f[0];
+		$event = ( ! empty( $f[0] ) ) ? $f[0] : null;
+	}
+	if ( ! is_object( $event ) || empty( $event->ts_start ) ) {
+		return '';
 	}
 	$key = 'wp4t_absence' . (is_multisite() ? '_' . get_current_blog_id() : '');
 	$untilkey = $key . '_until';
@@ -22653,17 +22615,21 @@ function wp4t_get_user_absence_status($user_id, $post_id = 0) {
 	$until = get_user_meta($user_id, $untilkey, true);
 	if(empty($start) || $start > $event->ts_start || $until < $event->ts_start)
 		return '';
-	return __('Planned Absence','rsvpmaker-for-toastmasters') . ($start != $until) ? rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $until) : '';
+	$dates = ( $start != $until ) ? rsvpmaker_date('F j', $start) . '-' . rsvpmaker_date('F j', $until) : rsvpmaker_date('F j', $start);
+	return __('Planned Absence','rsvpmaker-for-toastmasters') . ' ' . $dates;
 }
 
 function wp4t_get_absences($post_id=0, $user_id = 0, $fromnow = false) {
 if(empty($post_id))
 	{
 		$f = rsvpmaker_get_future_events('',1);
-		$event = $f[0];
+		$event = ( ! empty( $f[0] ) ) ? $f[0] : null;
 	}
 else {
 	$event = get_rsvpmaker_event($post_id);
+}
+if ( ! is_object( $event ) || empty( $event->ts_start ) ) {
+	return array('absences' => array(), 'user_is_absent' => false, 'upcoming' => array());
 }
 global $wpdb, $rsvp_options;
 $key = 'wp4t_absence' . (is_multisite() ? '_' . get_current_blog_id() : '');
@@ -23543,6 +23509,7 @@ function wp4t_reminders_nudge() {
 	wp_suspend_cache_addition(true);
 
 	$future = future_toastmaster_meetings( 2 );
+	$reminders = array();
 
 	$temp = get_option( 'wp4toast_reminder' );
 
@@ -23560,23 +23527,20 @@ function wp4t_reminders_nudge() {
 
 	}
 
-	wp_unschedule_hook( 'wp4toast_reminders_intro' );
+	wp_unschedule_hook( 'wp4toast_reminders_intros' );
 
 	$temp = get_option( 'wp4toast_reminder_intros' );
 
 	if ( ! empty( $temp ) ) {
 
-		$hours = $temp;
+		$hours = wp4t_parse_reminder_hours( $temp );
+		if ( empty( $hours ) ) {
+			$hours = 0;
+		}
 
 		foreach ( $future as $meeting ) {
 
-			$time = $meeting->datetime;
-
-				$string = $time . ' -' . $hours;
-
-				$timestamp = rsvpmaker_strtotime( $string );
-
-				$hours = trim( str_replace( 'hours', '', $hours ) );
+				$timestamp = wp4t_reminder_timestamp( $meeting, $hours );
 
 				if ( $timestamp > time() ) {
 
@@ -23602,15 +23566,14 @@ function wp4t_reminders_nudge() {
 
 	foreach ( $future as $meeting ) {
 
-		$time = $meeting->datetime;
+		foreach ( $reminders as $hours_text ) {
 
-		foreach ( $reminders as $hours ) {
+			$hours = wp4t_parse_reminder_hours( $hours_text );
+			if ( empty( $hours ) ) {
+				continue;
+			}
 
-			$string = $time . ' -' . $hours;
-
-			$timestamp = rsvpmaker_strtotime( $string );
-
-			$hours = trim( str_replace( 'hours', '', $hours ) );
+			$timestamp = wp4t_reminder_timestamp( $meeting, $hours );
 
 			if ( $timestamp > time() ) {
 
@@ -23624,9 +23587,12 @@ function wp4t_reminders_nudge() {
 
 	if(get_option('wpt_evaluation_reminder')) {
 
-		$timestamp = rsvpmaker_strtotime( $time . ' +4 hours' );
+		$next_meeting = ! empty( $future[0] ) ? $future[0] : null;
+		$timestamp = ( $next_meeting ) ? wp4t_reminder_timestamp( $next_meeting, -4 ) : 0;
 
-		wp_schedule_single_event( $timestamp, 'wpt_evaluation_reminder');	
+		if ( $timestamp > time() ) {
+			wp_schedule_single_event( $timestamp, 'wpt_evaluation_reminder');
+		}	
 
 	}
 

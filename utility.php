@@ -631,7 +631,8 @@ function wp4t_awe_rest_user_options( $role, $post_id ) {
 
 
 
-		$avatar_url = get_avatar_url( $member->ID, ['size' => 30,'default' => 'blank'] );
+		$avatar_subject = ! empty( $member->user_email ) ? $member->user_email : $member->ID;
+		$avatar_url = get_avatar_url( $avatar_subject, ['size' => 30,'default' => 'blank'] );
 
 
 
@@ -7237,7 +7238,8 @@ function wpt_public_profile($id,$contactmethods,$attributes, $is_officer = false
 
 	}
 
-	$profile['avatar'] = get_avatar_url($id,[
+	$avatar_subject = ! empty( $data->user_email ) ? $data->user_email : $id;
+	$profile['avatar'] = get_avatar_url($avatar_subject,[
 
 		'size' => isset($attributes['pictureSize']) ? intval($attributes['pictureSize']) : 200
 

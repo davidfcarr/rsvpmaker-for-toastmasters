@@ -988,17 +988,29 @@ function wp4t_latest_manual_test() {
 	return $output;
 }
 function wp4t_get_speaking_track( $user_id ) {
-	if(is_null($user_id))
+	if ( is_null( $user_id ) )
 		return array();
+	$user_id = (int) $user_id;
+	if ( $user_id < 1 ) {
+		return array();
+	}
 	global $wpdb;
-	global $current_user;
-	$manuals  = wp4t_get_manuals_options();
 	$projects = wp4t_get_projects_array( 'options' );
 	$history_table = $wpdb->base_prefix.'tm_history';
 	$speech_history_table = $wpdb->base_prefix.'tm_speech_history';
-	
-	$sql = "SELECT manual FROM `$history_table` JOIN `$speech_history_table` ON `$history_table`.id=`$speech_history_table`.history_id WHERE user_id=$user_id AND manual NOT LIKE 'Other%' ORDER BY datetime DESC";
-	$manual = $wpdb->get_var($sql);
+
+	$sql = $wpdb->prepare(
+		"SELECT `$speech_history_table`.`manual`
+		FROM `$history_table`
+		JOIN `$speech_history_table` ON `$history_table`.`id` = `$speech_history_table`.`history_id`
+		WHERE `$speech_history_table`.`user_id` = %d
+		AND `$speech_history_table`.`manual` NOT LIKE %s
+		ORDER BY `$history_table`.`datetime` DESC
+		LIMIT 1",
+		$user_id,
+		'Other%'
+	);
+	$manual = $wpdb->get_var( $sql );
 	if ( empty( $manual ) ) {
 		$manual_type  = 'Path Not Set';
 		$manual_label = 'Level 1 Mastering Fundamentals';
@@ -1014,7 +1026,7 @@ function wp4t_get_speaking_track( $user_id ) {
 		 return array(
 			 'type'     => $manual_type,
 			 'manual'   => $manual,
-			 'projects' => $projects[ $manual ],
+			 'projects' => isset( $projects[ $manual ] ) ? $projects[ $manual ] : array(),
 		 );
 }
 function toastmasters_reconcile() {

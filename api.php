@@ -1922,8 +1922,11 @@ function wpt_get_agendadata($post_id = 0, $render = true) {
 						}
 						elseif(is_numeric($assignment['ID'])) {
 							$assignment['name'] = wp4t_get_member_name($assignment['ID']);
-							if($assignment['ID'] > 0)
-								$assignment['avatar'] = get_avatar_url( $assignment['ID'], ['size' => 48,'default' => 'blank'] );
+							if($assignment['ID'] > 0) {
+								$member = get_userdata( (int) $assignment['ID'] );
+								$avatar_subject = ( $member && ! empty( $member->user_email ) ) ? $member->user_email : $assignment['ID'];
+								$assignment['avatar'] = get_avatar_url( $avatar_subject, ['size' => 48,'default' => 'blank'] );
+							}
 						}							
 						else
 							$assignment['name'] = $assignment['ID'].' (guest)';

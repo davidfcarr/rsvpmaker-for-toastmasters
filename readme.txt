@@ -43,6 +43,8 @@ The toastmost.org service is supported by subscriptions from member clubs.
 5. Email version of the agenda with one-click signup links for open roles (inset).
 6. Web-based application form saves you the trouble of emailing PDFs. Members who complete the online application can be prompted to pay via PayPal or Stripe. Members can also pay dues renewal online.
 == Changelog ==
+= 6.9.1 =
+* Better tracking of absences, including in the mobile app
 = 6.8.7 =
 * Improvements to the voting tool, including support for signed / login required votes where the results are saved to a minutes document
 = 6.8.6 =
